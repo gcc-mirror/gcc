@@ -142,6 +142,23 @@ store_double_p (rtx_insn *insn)
   return true;
 }
 
+bool
+store_offset_reg_p (rtx_insn *insn)
+{
+  if (get_attr_type (insn) != TYPE_STORE)
+    return false;
+
+  rtx offset_rtx = extract_offset_rtx (insn);
+
+  if (offset_rtx == NULL_RTX)
+    return false;
+
+  if (REG_P (offset_rtx))
+    return true;
+
+  return false;
+}
+
 /* Determine if INSN is a post update insn.  */
 bool
 post_update_insn_p (rtx_insn *insn)
@@ -316,22 +333,114 @@ extract_base_reg (rtx_insn *insn)
   if (REG_P (XEXP (mem_rtx, 0)))
     return XEXP (mem_rtx, 0);
 
+  /* (mem (lo_sum (reg) (symbol_ref)) */
+  if (GET_CODE (XEXP (mem_rtx, 0)) == LO_SUM)
+    return XEXP (XEXP (mem_rtx, 0), 0);
+
   plus_rtx = XEXP (mem_rtx, 0);
 
   if (GET_CODE (plus_rtx) == SYMBOL_REF
       || GET_CODE (plus_rtx) == CONST)
     return NULL_RTX;
 
+  /* (mem (plus (reg) (const_int))) or
+     (mem (plus (mult (reg) (const_int 4)) (reg))) or
+     (mem (post_inc (reg))) or
+     (mem (post_dec (reg))) or
+     (mem (post_modify (reg) (plus (reg) (reg))))  */
   gcc_assert (GET_CODE (plus_rtx) == PLUS
 	      || GET_CODE (plus_rtx) == POST_INC
 	      || GET_CODE (plus_rtx) == POST_DEC
 	      || GET_CODE (plus_rtx) == POST_MODIFY);
-  gcc_assert (REG_P (XEXP (plus_rtx, 0)));
-  /* (mem (plus (reg) (const_int))) or
-     (mem (post_inc (reg))) or
-     (mem (post_dec (reg))) or
-     (mem (post_modify (reg) (plus (reg) (reg))))  */
-  return XEXP (plus_rtx, 0);
+
+  if (REG_P (XEXP (plus_rtx, 0)))
+    return XEXP (plus_rtx, 0);
+
+  gcc_assert (REG_P (XEXP (plus_rtx, 1)));
+  return XEXP (plus_rtx, 1);
+}
+
+/* Extract the offset rtx from load/store insns.  The function returns
+   NULL_RTX if offset is absent.  */
+rtx
+extract_offset_rtx (rtx_insn *insn)
+{
+  rtx mem_rtx;
+  rtx plus_rtx;
+  rtx offset_rtx;
+
+  /* Find the MEM rtx.  The multiple load/store insns doens't have
+     the offset field so we can return NULL_RTX here.  */
+  switch (get_attr_type (insn))
+    {
+    case TYPE_LOAD_MULTIPLE:
+    case TYPE_STORE_MULTIPLE:
+      return NULL_RTX;
+
+    case TYPE_LOAD:
+    case TYPE_FLOAD:
+    case TYPE_STORE:
+    case TYPE_FSTORE:
+      mem_rtx = extract_mem_rtx (insn);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  gcc_assert (MEM_P (mem_rtx));
+
+  /* (mem (reg))  */
+  if (REG_P (XEXP (mem_rtx, 0)))
+    return NULL_RTX;
+
+  plus_rtx = XEXP (mem_rtx, 0);
+
+  switch (GET_CODE (plus_rtx))
+    {
+    case SYMBOL_REF:
+    case CONST:
+    case POST_INC:
+    case POST_DEC:
+      return NULL_RTX;
+
+    case PLUS:
+      /* (mem (plus (reg) (const_int))) or
+         (mem (plus (mult (reg) (const_int 4)) (reg))) */
+      if (REG_P (XEXP (plus_rtx, 0)))
+        offset_rtx = XEXP (plus_rtx, 1);
+      else
+	{
+	  gcc_assert (REG_P (XEXP (plus_rtx, 1)));
+	  offset_rtx = XEXP (plus_rtx, 0);
+	}
+
+      if (ARITHMETIC_P (offset_rtx))
+	{
+	  gcc_assert (GET_CODE (offset_rtx) == MULT);
+	  gcc_assert (REG_P (XEXP (offset_rtx, 0)));
+	  offset_rtx = XEXP (offset_rtx, 0);
+	}
+      break;
+
+    case LO_SUM:
+      /* (mem (lo_sum (reg) (symbol_ref)) */
+      offset_rtx = XEXP (plus_rtx, 1);
+      break;
+
+    case POST_MODIFY:
+      /* (mem (post_modify (reg) (plus (reg) (reg / const_int)))) */
+      gcc_assert (REG_P (XEXP (plus_rtx, 0)));
+      plus_rtx = XEXP (plus_rtx, 1);
+      gcc_assert (GET_CODE (plus_rtx) == PLUS);
+      offset_rtx = XEXP (plus_rtx, 0);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return offset_rtx;
 }
 
 /* Extract the register of the shift operand from an ALU_SHIFT rtx.  */
@@ -413,6 +522,7 @@ extract_mac_non_acc_rtx (rtx_insn *insn)
   switch (get_attr_type (insn))
     {
     case TYPE_MAC:
+    case TYPE_DMAC:
       if (REG_P (XEXP (exp, 0)))
 	return XEXP (exp, 1);
       else
@@ -421,6 +531,19 @@ extract_mac_non_acc_rtx (rtx_insn *insn)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Check if the DIV insn needs two write ports.  */
+bool
+divmod_p (rtx_insn *insn)
+{
+  gcc_assert (get_attr_type (insn) == TYPE_DIV);
+
+  if (INSN_CODE (insn) == CODE_FOR_divmodsi4
+      || INSN_CODE (insn) == CODE_FOR_udivmodsi4)
+    return true;
+
+  return false;
 }
 
 /* Extract the rtx representing the branch target to help recognize

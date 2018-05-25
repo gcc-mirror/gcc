@@ -2528,11 +2528,7 @@ copy_default_args_to_explicit_spec (tree decl)
 				    new_spec_types);
   new_type = cp_build_type_attribute_variant (new_type,
 					      TYPE_ATTRIBUTES (old_type));
-  new_type = build_exception_variant (new_type,
-				      TYPE_RAISES_EXCEPTIONS (old_type));
-
-  if (TYPE_HAS_LATE_RETURN_TYPE (old_type))
-    TYPE_HAS_LATE_RETURN_TYPE (new_type) = 1;
+  new_type = cxx_copy_lang_qualifiers (new_type, old_type);
 
   TREE_TYPE (decl) = new_type;
 }
@@ -4007,9 +4003,9 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
       if (complain & tf_error)
 	{
 	  if (TYPE_P (arg))
-	    error ("expansion pattern %qT contains no argument packs", arg);
+	    error ("expansion pattern %qT contains no parameter packs", arg);
 	  else
-	    error ("expansion pattern %qE contains no argument packs", arg);
+	    error ("expansion pattern %qE contains no parameter packs", arg);
 	}
       return error_mark_node;
     }
@@ -6276,7 +6272,7 @@ convert_nontype_argument_function (tree type, tree expr,
     }
 
  accept:
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     {
       if (REFERENCE_REF_P (fn))
 	fn = TREE_OPERAND (fn, 0);
@@ -6685,7 +6681,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	}
     }
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     expr = mark_lvalue_use (expr);
   else
     expr = mark_rvalue_use (expr);
@@ -6710,7 +6706,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	     could actually change the type to something more cv-qualified,
 	     and this is not folded by convert_from_reference.  */
 	  tree addr = TREE_OPERAND (probe, 0);
-	  if (TREE_CODE (probe_type) == REFERENCE_TYPE
+	  if (TYPE_REF_P (probe_type)
 	      && TREE_CODE (addr) == ADDR_EXPR
 	      && TYPE_PTR_P (TREE_TYPE (addr))
 	      && (same_type_ignoring_top_level_qualifiers_p
@@ -6834,7 +6830,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		       "a variable", orig_expr, expr);
 	      return NULL_TREE;
 	    }
-	  if (POINTER_TYPE_P (expr_type))
+	  if (INDIRECT_TYPE_P (expr_type))
 	    {
 	      if (complain & tf_error)
 		error ("%qE is not a valid template argument for %qT "
@@ -8018,7 +8014,7 @@ convert_template_argument (tree parm,
           const_tree inner = TREE_OPERAND (val, 0);
 	  const_tree innertype = TREE_TYPE (inner);
 	  if (innertype
-	      && TREE_CODE (innertype) == REFERENCE_TYPE
+	      && TYPE_REF_P (innertype)
 	      && TREE_CODE (TREE_TYPE (innertype)) == FUNCTION_TYPE
 	      && TREE_OPERAND_LENGTH (inner) > 0
               && reject_gcc_builtin (TREE_OPERAND (inner, 0)))
@@ -9829,6 +9825,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
       break;
 
     case TYPEOF_TYPE:
+    case DECLTYPE_TYPE:
     case UNDERLYING_TYPE:
       if (pfd->include_nondeduced_p
 	  && for_each_template_parm (TYPE_VALUES_RAW (t), fn, data,
@@ -9836,6 +9833,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 				     pfd->include_nondeduced_p,
 				     pfd->any_fn))
 	return error_mark_node;
+      *walk_subtrees = false;
       break;
 
     case FUNCTION_DECL:
@@ -12069,8 +12067,13 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	}
       else if (builtin_pack_call_p (parm_pack))
 	{
-	  /* ??? Support use in other patterns.  */
-	  gcc_assert (parm_pack == pattern);
+	  if (parm_pack != pattern)
+	    {
+	      if (complain & tf_error)
+		sorry ("%qE is not the entire pattern of the pack expansion",
+		       parm_pack);
+	      return error_mark_node;
+	    }
 	  return expand_builtin_pack_call (parm_pack, args,
 					   complain, in_decl);
 	}
@@ -12202,7 +12205,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       /* Also optimize expression pack expansions if we can tell that the
 	 elements won't have reference type.  */
       tree type = TREE_TYPE (pattern);
-      if (type && TREE_CODE (type) != REFERENCE_TYPE
+      if (type && !TYPE_REF_P (type)
 	  && !PACK_EXPANSION_P (type)
 	  && !WILDCARD_TYPE_P (type))
 	return args;
@@ -12939,7 +12942,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
       tree argtype
 	= TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (t))));
       argtype = tsubst (argtype, args, complain, in_decl);
-      if (TREE_CODE (argtype) == REFERENCE_TYPE)
+      if (TYPE_REF_P (argtype))
 	error_at (DECL_SOURCE_LOCATION (t),
 		  "reference type %qT in "
 		  "%<#pragma omp declare reduction%>", argtype);
@@ -13683,9 +13686,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  }
 	if (VAR_P (r))
 	  {
-	    /* Even if the original location is out of scope, the
-	       newly substituted one is not.  */
-	    DECL_DEAD_FOR_LOCAL (r) = 0;
 	    DECL_INITIALIZED_P (r) = 0;
 	    DECL_TEMPLATE_INSTANTIATED (r) = 0;
 	    if (type == error_mark_node)
@@ -13724,7 +13724,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 				  /*constant_expression_p=*/false);
 		if (REFERENCE_REF_P (ve))
 		  {
-		    gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+		    gcc_assert (TYPE_REF_P (type));
 		    ve = TREE_OPERAND (ve, 0);
 		  }
 		SET_DECL_VALUE_EXPR (r, ve);
@@ -14021,9 +14021,7 @@ tsubst_function_type (tree t,
   if (TREE_CODE (t) == FUNCTION_TYPE)
     {
       fntype = build_function_type (return_type, arg_types);
-      fntype = apply_memfn_quals (fntype,
-				  type_memfn_quals (t),
-				  type_memfn_rqual (t));
+      fntype = apply_memfn_quals (fntype, type_memfn_quals (t));
     }
   else
     {
@@ -14047,12 +14045,13 @@ tsubst_function_type (tree t,
 
       fntype = build_method_type_directly (r, return_type,
 					   TREE_CHAIN (arg_types));
-      fntype = build_ref_qualified_type (fntype, type_memfn_rqual (t));
     }
   fntype = cp_build_type_attribute_variant (fntype, TYPE_ATTRIBUTES (t));
 
-  if (late_return_type_p)
-    TYPE_HAS_LATE_RETURN_TYPE (fntype) = 1;
+  /* See comment above.  */
+  tree raises = NULL_TREE;
+  cp_ref_qualifier rqual = type_memfn_rqual (t);
+  fntype = build_cp_fntype_variant (fntype, rqual, raises, late_return_type_p);
 
   return fntype;
 }
@@ -14621,7 +14620,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  Core issue 106 says that creating a reference to a reference
 	  during instantiation is no longer a cause for failure. We
 	  only enforce this check in strict C++98 mode.  */
-	if ((TREE_CODE (type) == REFERENCE_TYPE
+	if ((TYPE_REF_P (type)
 	     && (((cxx_dialect == cxx98) && flag_iso) || code != REFERENCE_TYPE))
 	    || (code == REFERENCE_TYPE && VOID_TYPE_P (type)))
 	  {
@@ -14665,7 +14664,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (TREE_CODE (type) == METHOD_TYPE)
 	      r = build_ptrmemfunc_type (r);
 	  }
-	else if (TREE_CODE (type) == REFERENCE_TYPE)
+	else if (TYPE_REF_P (type))
 	  /* In C++0x, during template argument substitution, when there is an
 	     attempt to create a reference to a reference type, reference
 	     collapsing is applied as described in [14.3.1/4 temp.arg.type]:
@@ -14705,7 +14704,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      error ("creating pointer to member of non-class type %qT", r);
 	    return error_mark_node;
 	  }
-	if (TREE_CODE (type) == REFERENCE_TYPE)
+	if (TYPE_REF_P (type))
 	  {
 	    if (complain & tf_error)
 	      error ("creating pointer to member reference type %qT", type);
@@ -14777,7 +14776,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    || TREE_CODE (type) == FUNCTION_TYPE
 	    || (TREE_CODE (type) == ARRAY_TYPE
 		&& TYPE_DOMAIN (type) == NULL_TREE)
-	    || TREE_CODE (type) == REFERENCE_TYPE)
+	    || TYPE_REF_P (type))
 	  {
 	    if (complain & tf_error)
 	      error ("creating array of %qT", type);
@@ -14788,6 +14787,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  return error_mark_node;
 
 	r = build_cplus_array_type (type, domain);
+
+	if (!valid_array_size_p (input_location, r, in_decl,
+				 (complain & tf_error)))
+	  return error_mark_node;
 
 	if (TYPE_USER_ALIGN (t))
 	  {
@@ -17633,6 +17636,17 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       register_parameter_specializations (oldfn, fn);
 
+      if (oldtmpl)
+	{
+	  /* We might not partially instantiate some parts of the function, so
+	     copy these flags from the original template.  */
+	  language_function *ol = DECL_STRUCT_FUNCTION (oldfn)->language;
+	  current_function_returns_value = ol->returns_value;
+	  current_function_returns_null = ol->returns_null;
+	  current_function_returns_abnormally = ol->returns_abnormally;
+	  current_function_infinite_loop = ol->infinite_loop;
+	}
+
       tsubst_expr (DECL_SAVED_TREE (oldfn), args, complain, r,
 		   /*constexpr*/false);
 
@@ -18148,6 +18162,9 @@ tsubst_copy_and_build (tree t,
 	      }
 	  }
 
+	/* Avoid passing an enclosing decl to valid_array_size_p.  */
+	in_decl = NULL_TREE;
+
 	tree op1 = tsubst (TREE_OPERAND (t, 1), args, complain, in_decl);
 	tree op2 = RECUR (TREE_OPERAND (t, 2));
 	ret = build_new (&placement_vec, op1, op2, &init_vec,
@@ -18427,7 +18444,9 @@ tsubst_copy_and_build (tree t,
 	      /* Unsupported internal function with arguments.  */
 	      gcc_unreachable ();
 	    }
-	else if (TREE_CODE (function) == OFFSET_REF)
+	else if (TREE_CODE (function) == OFFSET_REF
+		 || TREE_CODE (function) == DOTSTAR_EXPR
+		 || TREE_CODE (function) == MEMBER_REF)
 	  ret = build_offset_ref_call_from_tree (function, &call_args,
 						 complain);
 	else if (TREE_CODE (function) == COMPONENT_REF)
@@ -18856,7 +18875,7 @@ tsubst_copy_and_build (tree t,
 	else if (outer_automatic_var_p (r))
 	  r = process_outer_var_ref (r, complain);
 
-	if (TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE)
+	if (!TYPE_REF_P (TREE_TYPE (t)))
 	  /* If the original type was a reference, we'll be wrapped in
 	     the appropriate INDIRECT_REF.  */
 	  r = convert_from_reference (r);
@@ -19540,7 +19559,7 @@ fn_type_unification (tree fn,
     {
       /* We're deducing for a call to the result of a template conversion
          function.  The parms we really want are in return_type.  */
-      if (POINTER_TYPE_P (return_type))
+      if (INDIRECT_TYPE_P (return_type))
 	return_type = TREE_TYPE (return_type);
       parms = TYPE_ARG_TYPES (return_type);
     }
@@ -19722,11 +19741,11 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
       /* Core issue #873: Do the DR606 thing (see below) for these cases,
 	 too, but here handle it by stripping the reference from PARM
 	 rather than by adding it to ARG.  */
-      if (TREE_CODE (*parm) == REFERENCE_TYPE
+      if (TYPE_REF_P (*parm)
 	  && TYPE_REF_IS_RVALUE (*parm)
 	  && TREE_CODE (TREE_TYPE (*parm)) == TEMPLATE_TYPE_PARM
 	  && cp_type_quals (TREE_TYPE (*parm)) == TYPE_UNQUALIFIED
-	  && TREE_CODE (*arg) == REFERENCE_TYPE
+	  && TYPE_REF_P (*arg)
 	  && !TYPE_REF_IS_RVALUE (*arg))
 	*parm = TREE_TYPE (*parm);
       /* Nothing else to do in this case.  */
@@ -19736,7 +19755,7 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
       gcc_unreachable ();
     }
 
-  if (TREE_CODE (*parm) != REFERENCE_TYPE)
+  if (!TYPE_REF_P (*parm))
     {
       /* [temp.deduct.call]
 
@@ -19768,7 +19787,7 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
      deduction (13.3.1.8)). If P is a forwarding reference and the argument is
      an lvalue, the type "lvalue reference to A" is used in place of A for type
      deduction. */
-  if (TREE_CODE (*parm) == REFERENCE_TYPE
+  if (TYPE_REF_P (*parm)
       && TYPE_REF_IS_RVALUE (*parm)
       && TREE_CODE (TREE_TYPE (*parm)) == TEMPLATE_TYPE_PARM
       && !TEMPLATE_TYPE_PARM_FOR_CLASS (TREE_TYPE (*parm))
@@ -19786,7 +19805,7 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
      reference type, the type referred to by P is used for
      type deduction.  */
   *parm = TYPE_MAIN_VARIANT (*parm);
-  if (TREE_CODE (*parm) == REFERENCE_TYPE)
+  if (TYPE_REF_P (*parm))
     {
       *parm = TREE_TYPE (*parm);
       result |= UNIFY_ALLOW_OUTER_MORE_CV_QUAL;
@@ -19794,7 +19813,7 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
 
   /* DR 322. For conversion deduction, remove a reference type on parm
      too (which has been swapped into ARG).  */
-  if (strict == DEDUCE_CONV && TREE_CODE (*arg) == REFERENCE_TYPE)
+  if (strict == DEDUCE_CONV && TYPE_REF_P (*arg))
     *arg = TREE_TYPE (*arg);
 
   return result;
@@ -19920,7 +19939,7 @@ uses_deducible_template_parms (tree type)
   /* T*
      T&
      T&&  */
-  if (POINTER_TYPE_P (type))
+  if (INDIRECT_TYPE_P (type))
     return uses_deducible_template_parms (TREE_TYPE (type));
 
   /* T[integer-constant ]
@@ -20931,13 +20950,13 @@ check_cv_quals_for_unify (int strict, tree arg, tree parm)
 	  types are not of the form "cv-list T" [14.8.2.5 temp.deduct.type].
 	  It is ok when we're allowing additional CV qualifiers
 	  at the outer level [14.8.2.1]/3,1st bullet.  */
-      if ((TREE_CODE (arg) == REFERENCE_TYPE
+      if ((TYPE_REF_P (arg)
 	   || TREE_CODE (arg) == FUNCTION_TYPE
 	   || TREE_CODE (arg) == METHOD_TYPE)
 	  && (parm_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)))
 	return 0;
 
-      if ((!POINTER_TYPE_P (arg) && TREE_CODE (arg) != TEMPLATE_TYPE_PARM)
+      if ((!INDIRECT_TYPE_P (arg) && TREE_CODE (arg) != TEMPLATE_TYPE_PARM)
 	  && (parm_quals & TYPE_QUAL_RESTRICT))
 	return 0;
     }
@@ -21738,7 +21757,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       }
 
     case REFERENCE_TYPE:
-      if (TREE_CODE (arg) != REFERENCE_TYPE)
+      if (!TYPE_REF_P (arg))
 	return unify_type_mismatch (explain_p, parm, arg);
       return unify (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
 		    strict & UNIFY_ALLOW_MORE_CV_QUAL, explain_p);
@@ -22302,14 +22321,14 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 	  && !uses_deducible_template_parms (arg2))
 	goto next;
 
-      if (TREE_CODE (arg1) == REFERENCE_TYPE)
+      if (TYPE_REF_P (arg1))
 	{
 	  ref1 = TYPE_REF_IS_RVALUE (arg1) + 1;
 	  arg1 = TREE_TYPE (arg1);
 	  quals1 = cp_type_quals (arg1);
 	}
 
-      if (TREE_CODE (arg2) == REFERENCE_TYPE)
+      if (TYPE_REF_P (arg2))
 	{
 	  ref2 = TYPE_REF_IS_RVALUE (arg2) + 1;
 	  arg2 = TREE_TYPE (arg2);
@@ -23891,6 +23910,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
     push_to_top_level ();
   else
     {
+      gcc_assert (!processing_template_decl);
       push_function_context ();
       cp_unevaluated_operand = 0;
       c_inhibit_evaluation_warnings = 0;
@@ -24397,7 +24417,7 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
     return false;
   else if (TYPE_PTR_P (type))
     return false;
-  else if (TREE_CODE (type) == REFERENCE_TYPE
+  else if (TYPE_REF_P (type)
 	   && !TYPE_REF_IS_RVALUE (type))
     return false;
   else if (TYPE_PTRMEM_P (type))
@@ -24466,8 +24486,7 @@ dependent_type_p_r (tree type)
     return (dependent_type_p (TYPE_PTRMEM_CLASS_TYPE (type))
 	    || dependent_type_p (TYPE_PTRMEM_POINTED_TO_TYPE
 					   (type)));
-  else if (TYPE_PTR_P (type)
-	   || TREE_CODE (type) == REFERENCE_TYPE)
+  else if (INDIRECT_TYPE_P (type))
     return dependent_type_p (TREE_TYPE (type));
   else if (TREE_CODE (type) == FUNCTION_TYPE
 	   || TREE_CODE (type) == METHOD_TYPE)
@@ -24716,7 +24735,7 @@ value_dependent_expression_p (tree expression)
 	  with an expression that is value-dependent.  */
       if (DECL_DEPENDENT_INIT_P (expression)
 	  /* FIXME cp_finish_decl doesn't fold reference initializers.  */
-	  || TREE_CODE (TREE_TYPE (expression)) == REFERENCE_TYPE)
+	  || TYPE_REF_P (TREE_TYPE (expression)))
 	return true;
       if (DECL_HAS_VALUE_EXPR_P (expression))
 	{
@@ -25207,6 +25226,7 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
 	 TREE_TYPE.  */
     case TREE_LIST:
     case TREE_VEC:
+    case NONTYPE_ARGUMENT_PACK:
       return NULL_TREE;
 
     case TEMPLATE_PARM_INDEX:
@@ -26278,7 +26298,7 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
   if (TYPE_P (ctor))
     {
       type = ctor;
-      bool copy_p = TREE_CODE (type) == REFERENCE_TYPE;
+      bool copy_p = TYPE_REF_P (type);
       if (copy_p)
 	{
 	  type = TREE_TYPE (type);
@@ -26869,7 +26889,7 @@ type_uses_auto (tree type)
 	 them.  */
       if (uses_template_parms (type))
 	return for_each_template_parm (type, is_auto_r, /*data*/NULL,
-				       /*visited*/NULL, /*nondeduced*/true);
+				       /*visited*/NULL, /*nondeduced*/false);
       else
 	return NULL_TREE;
     }

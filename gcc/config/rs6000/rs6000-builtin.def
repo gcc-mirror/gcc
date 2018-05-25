@@ -32,7 +32,6 @@
    RS6000_BUILTIN_D -- DST builtins
    RS6000_BUILTIN_H -- HTM builtins
    RS6000_BUILTIN_P -- Altivec, VSX, ISA 2.07 vector predicate builtins
-   RS6000_BUILTIN_Q -- Paired floating point VSX predicate builtins
    RS6000_BUILTIN_X -- special builtins
 
    Each of the above macros takes 4 arguments:
@@ -72,10 +71,6 @@
 
 #ifndef RS6000_BUILTIN_P
   #error "RS6000_BUILTIN_P is not defined."
-#endif
-
-#ifndef RS6000_BUILTIN_Q
-  #error "RS6000_BUILTIN_Q is not defined."
 #endif
 
 #ifndef RS6000_BUILTIN_X
@@ -548,47 +543,6 @@
 		     | RS6000_BTC_UNARY					\
 		     | RS6000_BTC_VOID),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
-
-/* Paired floating point convenience macros.  */
-#define BU_PAIRED_1(ENUM, NAME, ATTR, ICODE)				\
-  RS6000_BUILTIN_1 (PAIRED_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_paired_" NAME,		/* NAME */	\
-		    RS6000_BTM_PAIRED,			/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_UNARY),				\
-		    CODE_FOR_ ## ICODE)			/* ICODE */
-
-#define BU_PAIRED_2(ENUM, NAME, ATTR, ICODE)				\
-  RS6000_BUILTIN_2 (PAIRED_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_paired_" NAME,		/* NAME */	\
-		    RS6000_BTM_PAIRED,			/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_BINARY),				\
-		    CODE_FOR_ ## ICODE)			/* ICODE */
-
-#define BU_PAIRED_3(ENUM, NAME, ATTR, ICODE)				\
-  RS6000_BUILTIN_3 (PAIRED_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_paired_" NAME,		/* NAME */	\
-		    RS6000_BTM_PAIRED,			/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_TERNARY),				\
-		    CODE_FOR_ ## ICODE)			/* ICODE */
-
-#define BU_PAIRED_P(ENUM, NAME, ATTR, ICODE)				\
-  RS6000_BUILTIN_Q (PAIRED_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_paired_" NAME,		/* NAME */	\
-		    RS6000_BTM_PAIRED,			/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_PREDICATE),				\
-		    CODE_FOR_ ## ICODE)			/* ICODE */
-
-#define BU_PAIRED_X(ENUM, NAME, ATTR)					\
-  RS6000_BUILTIN_X (PAIRED_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_paired_" NAME,		/* NAME */	\
-		    RS6000_BTM_PAIRED,			/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_SPECIAL),				\
-		    CODE_FOR_nothing)			/* ICODE */
 
 #define BU_SPECIAL_X(ENUM, NAME, MASK, ATTR)				\
   RS6000_BUILTIN_X (ENUM,				/* ENUM */	\
@@ -2480,44 +2434,6 @@ BU_HTM_V1 (SET_TEXASR,	"set_texasr",	SPR,	nothing)
 BU_HTM_0  (GET_TEXASRU,	"get_texasru",	SPR,	nothing)
 BU_HTM_V1 (SET_TEXASRU,	"set_texasru",	SPR,	nothing)
 
-
-/* 3 argument paired floating point builtins.  */
-BU_PAIRED_3 (MSUB,            "msub",           FP, 	fmsv2sf4)
-BU_PAIRED_3 (MADD,            "madd",           FP, 	fmav2sf4)
-BU_PAIRED_3 (MADDS0,          "madds0",         FP, 	paired_madds0)
-BU_PAIRED_3 (MADDS1,          "madds1",         FP, 	paired_madds1)
-BU_PAIRED_3 (NMSUB,           "nmsub",          FP, 	nfmsv2sf4)
-BU_PAIRED_3 (NMADD,           "nmadd",          FP, 	nfmav2sf4)
-BU_PAIRED_3 (SUM0,            "sum0",           FP, 	paired_sum0)
-BU_PAIRED_3 (SUM1,            "sum1",           FP, 	paired_sum1)
-BU_PAIRED_3 (SELV2SF4,        "selv2sf4",       CONST, 	selv2sf4)
-
-/* 2 argument paired floating point builtins.  */
-BU_PAIRED_2 (DIVV2SF3,	      "divv2sf3",	FP,	divv2sf3)
-BU_PAIRED_2 (ADDV2SF3,	      "addv2sf3",	FP,	addv2sf3)
-BU_PAIRED_2 (SUBV2SF3,	      "subv2sf3",	FP,	subv2sf3)
-BU_PAIRED_2 (MULV2SF3,	      "mulv2sf3",	FP,	mulv2sf3)
-BU_PAIRED_2 (MULS0,	      "muls0",		FP,	paired_muls0)
-BU_PAIRED_2 (MULS1,	      "muls1",		FP,	paired_muls1)
-BU_PAIRED_2 (MERGE00,	      "merge00",	CONST,	paired_merge00)
-BU_PAIRED_2 (MERGE01,	      "merge01",	CONST,	paired_merge01)
-BU_PAIRED_2 (MERGE10,	      "merge10",	CONST,	paired_merge10)
-BU_PAIRED_2 (MERGE11,	      "merge11",	CONST,	paired_merge11)
-
-/* 1 argument paired floating point builtin functions.  */
-BU_PAIRED_1 (ABSV2SF2,	      "absv2sf2",	CONST,	absv2sf2)
-BU_PAIRED_1 (NABSV2SF2,	      "nabsv2sf2",	CONST,	nabsv2sf2)
-BU_PAIRED_1 (NEGV2SF2,	      "negv2sf2",	CONST,	negv2sf2)
-BU_PAIRED_1 (SQRTV2SF2,	      "sqrtv2sf2",	FP,	sqrtv2sf2)
-BU_PAIRED_1 (RESV2SF,	      "resv2sf2",	FP,	resv2sf2)
-
-/* PAIRED builtins that are handled as special cases.  */
-BU_PAIRED_X (STX,	      "stx",		MISC)
-BU_PAIRED_X (LX,	      "lx",		MISC)
-
-/* Paired predicates.  */
-BU_PAIRED_P (CMPU0,	"cmpu0",	CONST,	paired_cmpu0)
-BU_PAIRED_P (CMPU1,	"cmpu1",	CONST,	paired_cmpu1)
 
 /* Power7 builtins, that aren't VSX instructions.  */
 BU_SPECIAL_X (POWER7_BUILTIN_BPERMD, "__builtin_bpermd", RS6000_BTM_POPCNTD,

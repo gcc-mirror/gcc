@@ -64,6 +64,26 @@ const int internal_fn_flags_array[] = {
   0
 };
 
+/* Return the internal function called NAME, or IFN_LAST if there's
+   no such function.  */
+
+internal_fn
+lookup_internal_fn (const char *name)
+{
+  typedef hash_map<nofree_string_hash, internal_fn> name_to_fn_map_type;
+  static name_to_fn_map_type *name_to_fn_map;
+
+  if (!name_to_fn_map)
+    {
+      name_to_fn_map = new name_to_fn_map_type (IFN_LAST);
+      for (unsigned int i = 0; i < IFN_LAST; ++i)
+	name_to_fn_map->put (internal_fn_name (internal_fn (i)),
+			     internal_fn (i));
+    }
+  internal_fn *entry = name_to_fn_map->get (name);
+  return entry ? *entry : IFN_LAST;
+}
+
 /* Fnspec of each internal function, indexed by function number.  */
 const_tree internal_fn_fnspec_array[IFN_LAST + 1];
 
@@ -90,6 +110,7 @@ init_internal_fns ()
 #define scatter_store_direct { 3, 3, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
+#define ternary_direct { 0, 0, true }
 #define cond_unary_direct { 1, 1, true }
 #define cond_binary_direct { 1, 1, true }
 #define while_direct { 0, 2, false }
@@ -2870,14 +2891,15 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
   insn_code icode = direct_optab_handler (optab, TYPE_MODE (types.first));
 
   tree lhs = gimple_call_lhs (stmt);
-  tree lhs_type = TREE_TYPE (lhs);
-  rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx lhs_rtx = NULL_RTX;
+  if (lhs)
+    lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
   /* Do not assign directly to a promoted subreg, since there is no
      guarantee that the instruction will leave the upper bits of the
      register in the state required by SUBREG_PROMOTED_SIGN.  */
   rtx dest = lhs_rtx;
-  if (GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
+  if (dest && GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
     dest = NULL_RTX;
 
   create_output_operand (&ops[0], dest, insn_data[icode].operand[0].mode);
@@ -2896,7 +2918,7 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
     }
 
   expand_insn (icode, nargs + 1, ops);
-  if (!rtx_equal_p (lhs_rtx, ops[0].value))
+  if (lhs_rtx && !rtx_equal_p (lhs_rtx, ops[0].value))
     {
       /* If the return value has an integral type, convert the instruction
 	 result to that type.  This is useful for things that return an
@@ -2910,7 +2932,7 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
 	  /* If this is a scalar in a register that is stored in a wider
 	     mode than the declared mode, compute the result into its
 	     declared mode and then convert to the wider mode.  */
-	  gcc_checking_assert (INTEGRAL_TYPE_P (lhs_type));
+	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
 	  rtx tmp = convert_to_mode (GET_MODE (lhs_rtx), ops[0].value, 0);
 	  convert_move (SUBREG_REG (lhs_rtx), tmp,
 			SUBREG_PROMOTED_SIGN (lhs_rtx));
@@ -2919,7 +2941,7 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
 	emit_move_insn (lhs_rtx, ops[0].value);
       else
 	{
-	  gcc_checking_assert (INTEGRAL_TYPE_P (lhs_type));
+	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
 	  convert_move (lhs_rtx, ops[0].value, 0);
 	}
     }
@@ -2962,11 +2984,14 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_binary_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
+#define expand_ternary_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
+
 #define expand_cond_unary_optab_fn(FN, STMT, OPTAB) \
-  expand_direct_optab_fn (FN, STMT, OPTAB, 2)
+  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
 
 #define expand_cond_binary_optab_fn(FN, STMT, OPTAB) \
-  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
+  expand_direct_optab_fn (FN, STMT, OPTAB, 4)
 
 #define expand_fold_extract_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 3)
@@ -3047,6 +3072,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 
 #define direct_unary_optab_supported_p direct_optab_supported_p
 #define direct_binary_optab_supported_p direct_optab_supported_p
+#define direct_ternary_optab_supported_p direct_optab_supported_p
 #define direct_cond_unary_optab_supported_p direct_optab_supported_p
 #define direct_cond_binary_optab_supported_p direct_optab_supported_p
 #define direct_mask_load_optab_supported_p direct_optab_supported_p
@@ -3193,12 +3219,19 @@ static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
   0
 };
 
-/* Return a function that performs the conditional form of CODE, i.e.:
+/* Return a function that only performs CODE when a certain condition is met
+   and that uses a given fallback value otherwise.  For example, if CODE is
+   a binary operation associated with conditional function FN:
 
-     LHS = RHS1 ? RHS2 CODE RHS3 : RHS2
+     LHS = FN (COND, A, B, ELSE)
 
-   (operating elementwise if the operands are vectors).  Return IFN_LAST
-   if no such function exists.  */
+   is equivalent to the C expression:
+
+     LHS = COND ? A CODE B : ELSE;
+
+   operating elementwise if the operands are vectors.
+
+   Return IFN_LAST if no such function exists.  */
 
 internal_fn
 get_conditional_internal_fn (tree_code code)
@@ -3213,6 +3246,12 @@ get_conditional_internal_fn (tree_code code)
       return IFN_COND_MIN;
     case MAX_EXPR:
       return IFN_COND_MAX;
+    case TRUNC_DIV_EXPR:
+      return IFN_COND_DIV;
+    case TRUNC_MOD_EXPR:
+      return IFN_COND_MOD;
+    case RDIV_EXPR:
+      return IFN_COND_RDIV;
     case BIT_AND_EXPR:
       return IFN_COND_AND;
     case BIT_IOR_EXPR:

@@ -285,7 +285,19 @@ containers have additional debug capability.
   </row>
 </thead>
 <tbody>
-    <row>
+  <row>
+    <entry><classname>std::array</classname></entry>
+    <entry><filename class="headerfile">array</filename></entry>
+    <entry><classname>__gnu_debug::array</classname></entry>
+    <entry><filename class="headerfile">&lt;debug/array&gt;</filename></entry>
+  </row>
+  <row>
+    <entry><classname>std::forward_list</classname></entry>
+    <entry><filename class="headerfile">forward_list</filename></entry>
+    <entry><classname>__gnu_debug::forward_list</classname></entry>
+    <entry><filename class="headerfile">&lt;debug/forward_list&gt;</filename></entry>
+  </row>
+  <row>
     <entry><classname>std::unordered_map</classname></entry>
     <entry><filename class="headerfile">unordered_map</filename></entry>
     <entry><classname>__gnu_debug::unordered_map</classname></entry>

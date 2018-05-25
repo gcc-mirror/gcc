@@ -1,3 +1,17 @@
+2018-05-17  Jason Merrill  <jason@redhat.com>
+
+	* beginend.cc (save): Disable -Werror=deprecated-copy.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libitm.exp: Include scanltranstree.exp.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libitm.exp: Include scanwpaipa.exp.
+
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/x86/sjlj.S (_ITM_beginTransaction): Add

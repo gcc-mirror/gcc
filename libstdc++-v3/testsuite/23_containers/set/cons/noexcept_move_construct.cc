@@ -23,4 +23,25 @@
 
 typedef std::set<int> stype;
 
-static_assert(std::is_nothrow_move_constructible<stype>::value, "Error");
+static_assert( std::is_nothrow_move_constructible<stype>::value,
+	       "noexcept move constructor" );
+static_assert( std::is_nothrow_constructible<stype,
+	       stype&&, const typename stype::allocator_type&>::value,
+	       "noexcept move constructor with allocator" );
+
+struct not_noexcept_less
+{
+  not_noexcept_less() = default;
+  not_noexcept_less(const not_noexcept_less&) /* noexcept */
+  { }
+
+  bool
+  operator()(int l, int r) const
+  { return l < r; }
+};
+
+typedef std::set<int, not_noexcept_less> estype;
+
+static_assert( !std::is_nothrow_constructible<estype, estype&&,
+	       const typename estype::allocator_type&>::value,
+	       "except move constructor with allocator" );

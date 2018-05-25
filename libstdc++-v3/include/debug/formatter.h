@@ -30,7 +30,6 @@
 #define _GLIBCXX_DEBUG_FORMATTER_H 1
 
 #include <bits/c++config.h>
-#include <bits/cpp_type_traits.h>
 
 #if __cpp_rtti
 # include <typeinfo>
@@ -41,6 +40,31 @@ namespace std
   class type_info;
 }
 # define _GLIBCXX_TYPEID(_Type) 0
+#endif
+
+#if __cplusplus >= 201103L
+namespace __gnu_cxx
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+template<typename _Iterator, typename _Container>
+  class __normal_iterator;
+
+_GLIBCXX_END_NAMESPACE_VERSION
+}
+
+namespace std
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+template<typename _Iterator>
+  class reverse_iterator;
+
+template<typename _Iterator>
+  class move_iterator;
+
+_GLIBCXX_END_NAMESPACE_VERSION
+}
 #endif
 
 namespace __gnu_debug
@@ -157,6 +181,9 @@ namespace __gnu_debug
       __middle,		// dereferenceable, not at the beginning
       __end,		// past-the-end, may be at beginning if sequence empty
       __before_begin,	// before begin
+      __rbegin,		// dereferenceable, and at the reverse-beginning
+      __rmiddle,	// reverse-dereferenceable, not at the reverse-beginning
+      __rend,		// reverse-past-the-end
       __last_state
     };
 
@@ -243,11 +270,9 @@ namespace __gnu_debug
 	{
 	  _M_variant._M_iterator._M_name = __name;
 	  _M_variant._M_iterator._M_address = std::__addressof(__it);
-	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it);
+	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(_Iterator);
 	  _M_variant._M_iterator._M_constness =
-	    std::__are_same<_Safe_iterator<_Iterator, _Sequence>,
-			    typename _Sequence::iterator>::
-	      __value ? __mutable_iterator : __const_iterator;
+	    __it._S_constant() ? __const_iterator : __mutable_iterator;
 	  _M_variant._M_iterator._M_sequence = __it._M_get_sequence();
 	  _M_variant._M_iterator._M_seq_type = _GLIBCXX_TYPEID(_Sequence);
 
@@ -273,11 +298,10 @@ namespace __gnu_debug
 	{
 	  _M_variant._M_iterator._M_name = __name;
 	  _M_variant._M_iterator._M_address = std::__addressof(__it);
-	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it);
+	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(_Iterator);
 	  _M_variant._M_iterator._M_constness =
-	    std::__are_same<_Safe_local_iterator<_Iterator, _Sequence>,
-			    typename _Sequence::local_iterator>::
-	      __value ? __mutable_iterator : __const_iterator;
+	  _M_variant._M_iterator._M_constness =
+	    __it._S_constant() ? __const_iterator : __mutable_iterator;
 	  _M_variant._M_iterator._M_sequence = __it._M_get_sequence();
 	  _M_variant._M_iterator._M_seq_type = _GLIBCXX_TYPEID(_Sequence);
 
@@ -333,6 +357,74 @@ namespace __gnu_debug
 	  _M_variant._M_iterator._M_sequence = 0;
 	  _M_variant._M_iterator._M_seq_type = 0;
 	}
+
+#if __cplusplus >= 201103L
+      // The following constructors are only defined in C++11 to take
+      // advantage of the constructor delegation feature.
+      template<typename _Iterator, typename _Container>
+        _Parameter(
+	  __gnu_cxx::__normal_iterator<_Iterator, _Container> const& __it,
+	const char* __name, _Is_iterator)
+	: _Parameter(__it.base(), __name, _Is_iterator{})
+	{ _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it); }
+
+      template<typename _Iterator>
+	_Parameter(std::reverse_iterator<_Iterator> const& __it,
+		   const char* __name, _Is_iterator)
+	: _Parameter(__it.base(), __name, _Is_iterator{})
+	{
+	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it);
+	  _M_variant._M_iterator._M_state
+	    = _S_reverse_state(_M_variant._M_iterator._M_state);
+	}
+
+      template<typename _Iterator, typename _Sequence>
+	_Parameter(std::reverse_iterator<_Safe_iterator<_Iterator,
+							_Sequence>> const& __it,
+		   const char* __name, _Is_iterator)
+	: _Parameter(__it.base(), __name, _Is_iterator{})
+	{
+	  _M_variant._M_iterator._M_type
+	    = _GLIBCXX_TYPEID(std::reverse_iterator<_Iterator>);
+	  _M_variant._M_iterator._M_state
+	    = _S_reverse_state(_M_variant._M_iterator._M_state);
+	}
+
+      template<typename _Iterator>
+	_Parameter(std::move_iterator<_Iterator> const& __it,
+		   const char* __name, _Is_iterator)
+	: _Parameter(__it.base(), __name, _Is_iterator{})
+	{ _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(__it); }
+
+      template<typename _Iterator, typename _Sequence>
+	_Parameter(std::move_iterator<_Safe_iterator<_Iterator,
+						     _Sequence>> const& __it,
+		   const char* __name, _Is_iterator)
+	: _Parameter(__it.base(), __name, _Is_iterator{})
+      {
+	_M_variant._M_iterator._M_type
+	  = _GLIBCXX_TYPEID(std::move_iterator<_Iterator>);
+      }
+
+    private:
+      _Iterator_state
+      _S_reverse_state(_Iterator_state __state)
+      {
+	  switch (__state)
+	    {
+	    case __begin:
+	      return __rend;
+	    case __middle:
+	      return __rmiddle;
+	    case __end:
+	      return __rbegin;
+	    default:
+	      return __state;
+	    }
+      }
+
+    public:
+#endif
 
       template<typename _Sequence>
 	_Parameter(const _Safe_sequence<_Sequence>& __seq,
@@ -467,8 +559,10 @@ namespace __gnu_debug
 #endif
 
   private:
-    _Error_formatter(const char* __file, unsigned int __line)
+    _Error_formatter(const char* __file, unsigned int __line,
+		     const char* __function)
     : _M_file(__file), _M_line(__line), _M_num_parameters(0), _M_text(0)
+    , _M_function(__function)
     { }
 
 #if !_GLIBCXX_INLINE_VERSION
@@ -483,12 +577,13 @@ namespace __gnu_debug
     _Parameter		_M_parameters[__max_parameters];
     unsigned int	_M_num_parameters;
     const char*		_M_text;
+    const char*		_M_function;
 
   public:
     static _Error_formatter&
-    _M_at(const char* __file, unsigned int __line)
+    _S_at(const char* __file, unsigned int __line, const char* __function)
     {
-      static _Error_formatter __formatter(__file, __line);
+      static _Error_formatter __formatter(__file, __line, __function);
       return __formatter;
     }
   };

@@ -1860,7 +1860,7 @@ conv_caf_send (gfc_code *code) {
 
   lhs_expr = code->ext.actual->expr;
   rhs_expr = code->ext.actual->next->expr;
-  may_require_tmp = gfc_check_dependency (lhs_expr, rhs_expr, false) == 0
+  may_require_tmp = gfc_check_dependency (lhs_expr, rhs_expr, true) == 0
 		    ? boolean_false_node : boolean_true_node;
   gfc_init_block (&block);
 
@@ -4684,7 +4684,20 @@ gfc_conv_intrinsic_dot_product (gfc_se * se, gfc_expr * expr)
 	S++;
       }
    For 3) and 5), if mask is scalar, this all goes into a conditional,
-   setting pos = 0; in the else branch.  */
+   setting pos = 0; in the else branch.
+
+   Since we now also support the BACK argument, instead of using
+   if (a[S] < limit), we now use
+
+   if (back)
+     cond = a[S] <= limit;
+   else
+     cond = a[S] < limit;
+   if (cond) {
+     ....
+
+     The optimizer is smart enough to move the condition out of the loop.
+     The are now marked as unlikely to for further speedup.  */
 
 static void
 gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
@@ -4702,6 +4715,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   tree offset;
   tree nonempty;
   tree lab1, lab2;
+  tree b_if, b_else;
   gfc_loopinfo loop;
   gfc_actual_arglist *actual;
   gfc_ss *arrayss;
@@ -4710,6 +4724,8 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_se maskse;
   gfc_expr *arrayexpr;
   gfc_expr *maskexpr;
+  gfc_expr *backexpr;
+  gfc_se backse;
   tree pos;
   int n;
 
@@ -4766,6 +4782,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   actual = actual->next->next;
   gcc_assert (actual);
   maskexpr = actual->expr;
+  backexpr = actual->next->next->expr;
   nonempty = NULL;
   if (maskexpr && maskexpr->rank != 0)
     {
@@ -4904,6 +4921,10 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_conv_expr_val (&arrayse, arrayexpr);
   gfc_add_block_to_block (&block, &arrayse.pre);
 
+  gfc_init_se (&backse, NULL);
+  gfc_conv_expr_val (&backse, backexpr);
+  gfc_add_block_to_block (&block, &backse.pre);
+
   /* We do the following if this is a more extreme value.  */
   gfc_start_block (&ifblock);
 
@@ -4943,9 +4964,33 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 				op == GT_EXPR ? GE_EXPR : LE_EXPR,
 				logical_type_node, arrayse.expr, limit);
       else
-	cond = fold_build2_loc (input_location, op, logical_type_node,
-				arrayse.expr, limit);
+	{
+	  tree ifbody2, elsebody2;
 
+	  /* We switch to > or >= depending on the value of the BACK argument. */
+	  cond = gfc_create_var (logical_type_node, "cond");
+
+	  gfc_start_block (&ifblock);
+	  b_if = fold_build2_loc (input_location, op == GT_EXPR ? GE_EXPR : LE_EXPR,
+				  logical_type_node, arrayse.expr, limit);
+
+	  gfc_add_modify (&ifblock, cond, b_if);
+	  ifbody2 = gfc_finish_block (&ifblock);
+
+	  gfc_start_block (&elseblock);
+	  b_else = fold_build2_loc (input_location, op, logical_type_node,
+				    arrayse.expr, limit);
+
+	  gfc_add_modify (&elseblock, cond, b_else);
+	  elsebody2 = gfc_finish_block (&elseblock);
+
+	  tmp = fold_build3_loc (input_location, COND_EXPR, logical_type_node,
+				 backse.expr, ifbody2, elsebody2);
+
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+
+      cond = gfc_unlikely (cond, PRED_BUILTIN_EXPECT);
       ifbody = build3_v (COND_EXPR, cond, ifbody,
 			 build_empty_stmt (input_location));
     }
@@ -5014,11 +5059,35 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
       ifbody = gfc_finish_block (&ifblock);
 
-      cond = fold_build2_loc (input_location, op, logical_type_node,
-			      arrayse.expr, limit);
+      /* We switch to > or >= depending on the value of the BACK argument. */
+      {
+	tree ifbody2, elsebody2;
 
+	cond = gfc_create_var (logical_type_node, "cond");
+
+	gfc_start_block (&ifblock);
+	b_if = fold_build2_loc (input_location, op == GT_EXPR ? GE_EXPR : LE_EXPR,
+				logical_type_node, arrayse.expr, limit);
+
+	gfc_add_modify (&ifblock, cond, b_if);
+	ifbody2 = gfc_finish_block (&ifblock);
+
+	gfc_start_block (&elseblock);
+	b_else = fold_build2_loc (input_location, op, logical_type_node,
+				  arrayse.expr, limit);
+
+	gfc_add_modify (&elseblock, cond, b_else);
+	elsebody2 = gfc_finish_block (&elseblock);
+
+	tmp = fold_build3_loc (input_location, COND_EXPR, logical_type_node,
+			       backse.expr, ifbody2, elsebody2);
+      }
+
+      gfc_add_expr_to_block (&block, tmp);
+      cond = gfc_unlikely (cond, PRED_BUILTIN_EXPECT);
       tmp = build3_v (COND_EXPR, cond, ifbody,
 		      build_empty_stmt (input_location));
+
       gfc_add_expr_to_block (&block, tmp);
 
       if (maskss)
@@ -7831,15 +7900,17 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 					      logical_type_node, tmp,
 					      build_int_cst (TREE_TYPE (tmp), 0));
 
-          /* A pointer to an array, call library function _gfor_associated.  */
-          arg1se.want_pointer = 1;
-          gfc_conv_expr_descriptor (&arg1se, arg1->expr);
+	  /* A pointer to an array, call library function _gfor_associated.  */
+	  arg1se.want_pointer = 1;
+	  gfc_conv_expr_descriptor (&arg1se, arg1->expr);
+	  gfc_add_block_to_block (&se->pre, &arg1se.pre);
+	  gfc_add_block_to_block (&se->post, &arg1se.post);
 
-          arg2se.want_pointer = 1;
-          gfc_conv_expr_descriptor (&arg2se, arg2->expr);
-          gfc_add_block_to_block (&se->pre, &arg2se.pre);
-          gfc_add_block_to_block (&se->post, &arg2se.post);
-          se->expr = build_call_expr_loc (input_location,
+	  arg2se.want_pointer = 1;
+	  gfc_conv_expr_descriptor (&arg2se, arg2->expr);
+	  gfc_add_block_to_block (&se->pre, &arg2se.pre);
+	  gfc_add_block_to_block (&se->post, &arg2se.post);
+	  se->expr = build_call_expr_loc (input_location,
 				      gfor_fndecl_associated, 2,
 				      arg1se.expr, arg2se.expr);
 	  se->expr = convert (logical_type_node, se->expr);

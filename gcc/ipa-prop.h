@@ -664,7 +664,6 @@ extern GTY(()) vec<ipcp_transformation_summary, va_gc> *ipcp_transformations;
 void ipa_create_all_node_params (void);
 void ipa_create_all_edge_args (void);
 void ipa_check_create_edge_args (void);
-void ipa_free_edge_args_substructures (struct ipa_edge_args *);
 void ipa_free_all_node_params (void);
 void ipa_free_all_edge_args (void);
 void ipa_free_all_structures_after_ipa_cp (void);

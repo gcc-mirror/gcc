@@ -2268,21 +2268,26 @@ break_alias_scc_partitions (struct graph *rdg,
 	  for (j = 0; partitions->iterate (j, &first); ++j)
 	    if (pg->vertices[j].component == i)
 	      break;
+
+	  bool same_type = true, all_builtins = partition_builtin_p (first);
 	  for (++j; partitions->iterate (j, &partition); ++j)
 	    {
 	      if (pg->vertices[j].component != i)
 		continue;
 
-	      /* Note we Merge partitions of parallel type on purpose, though
-		 the result partition is sequential.  The reason is vectorizer
-		 can do more accurate runtime alias check in this case.  Also
-		 it results in more conservative distribution.  */
 	      if (first->type != partition->type)
 		{
-		  bitmap_clear_bit (sccs_to_merge, i);
+		  same_type = false;
 		  break;
 		}
+	      all_builtins &= partition_builtin_p (partition);
 	    }
+	  /* Merge SCC if all partitions in SCC have the same type, though the
+	     result partition is sequential, because vectorizer can do better
+	     runtime alias check.  One expecption is all partitions in SCC are
+	     builtins.  */
+	  if (!same_type || all_builtins)
+	    bitmap_clear_bit (sccs_to_merge, i);
 	}
 
       /* Initialize callback data for traversing.  */
@@ -2458,7 +2463,8 @@ compute_alias_check_pairs (struct loop *loop, vec<ddr_p> *alias_ddrs,
    checks and version LOOP under condition of these runtime alias checks.  */
 
 static void
-version_loop_by_alias_check (struct loop *loop, vec<ddr_p> *alias_ddrs)
+version_loop_by_alias_check (vec<struct partition *> *partitions,
+			     struct loop *loop, vec<ddr_p> *alias_ddrs)
 {
   profile_probability prob;
   basic_block cond_bb;
@@ -2481,9 +2487,25 @@ version_loop_by_alias_check (struct loop *loop, vec<ddr_p> *alias_ddrs)
 				      is_gimple_val, NULL_TREE);
 
   /* Depend on vectorizer to fold IFN_LOOP_DIST_ALIAS.  */
-  if (flag_tree_loop_vectorize)
+  bool cancelable_p = flag_tree_loop_vectorize;
+  if (cancelable_p)
     {
-      /* Generate internal function call for loop distribution alias check.  */
+      unsigned i = 0;
+      struct partition *partition;
+      for (; partitions->iterate (i, &partition); ++i)
+	if (!partition_builtin_p (partition))
+	  break;
+
+     /* If all partitions are builtins, distributing it would be profitable and
+	we don't want to cancel the runtime alias checks.  */
+      if (i == partitions->length ())
+	cancelable_p = false;
+    }
+
+  /* Generate internal function call for loop distribution alias check if the
+     runtime alias check should be cancelable.  */
+  if (cancelable_p)
+    {
       call_stmt = gimple_build_call_internal (IFN_LOOP_DIST_ALIAS,
 					      2, NULL_TREE, cond_expr);
       lhs = make_ssa_name (boolean_type_node);
@@ -2883,7 +2905,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
     }
 
   if (version_for_distribution_p (&partitions, &alias_ddrs))
-    version_loop_by_alias_check (loop, &alias_ddrs);
+    version_loop_by_alias_check (&partitions, loop, &alias_ddrs);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

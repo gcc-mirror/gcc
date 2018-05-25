@@ -63,8 +63,6 @@ path::remove_filename()
     }
   else if (_M_type == _Type::_Filename)
     clear();
-  if (!empty() && _M_pathname.back() != '/')
-    throw 1;
   return *this;
 }
 
@@ -292,7 +290,7 @@ path::has_root_path() const
 bool
 path::has_relative_path() const
 {
-  if (_M_type == _Type::_Filename)
+  if (_M_type == _Type::_Filename && !_M_pathname.empty())
     return true;
   if (!_M_cmpts.empty())
     {
@@ -301,7 +299,7 @@ path::has_relative_path() const
         ++__it;
       if (__it != _M_cmpts.end() && __it->_M_type == _Type::_Root_dir)
         ++__it;
-      if (__it != _M_cmpts.end())
+      if (__it != _M_cmpts.end() && !__it->_M_pathname.empty())
         return true;
     }
   return false;
@@ -514,11 +512,13 @@ path::_M_find_extension() const
 void
 path::_M_split_cmpts()
 {
-  _M_type = _Type::_Multi;
   _M_cmpts.clear();
-
   if (_M_pathname.empty())
-    return;
+    {
+      _M_type = _Type::_Filename;
+      return;
+    }
+  _M_type = _Type::_Multi;
 
   size_t pos = 0;
   const size_t len = _M_pathname.size();
@@ -593,8 +593,7 @@ path::_M_split_cmpts()
       // An empty element, if trailing non-root directory-separator present.
       if (_M_cmpts.back()._M_type == _Type::_Filename)
 	{
-	  const auto& last = _M_cmpts.back();
-	  pos = last._M_pos + last._M_pathname.size();
+	  pos = _M_pathname.size();
 	  _M_cmpts.emplace_back(string_type(), _Type::_Filename, pos);
 	}
     }

@@ -1,5 +1,7 @@
 2018-05-25  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r260753.
+
 	Direct import lambda returns!
 	gcc/cp/
 	* module.c (depset::decl_key): Remove assert.

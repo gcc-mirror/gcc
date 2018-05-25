@@ -4595,7 +4595,7 @@ package body Exp_Ch4 is
       --  first argument to Init must be converted to the task record type.
 
       declare
-         T         : constant Entity_Id := Entity (Expression (N));
+         T         : constant Entity_Id := Etype (Expression (N));
          Args      : List_Id;
          Decls     : List_Id;
          Decl      : Node_Id;
@@ -4617,6 +4617,81 @@ package body Exp_Ch4 is
                  (N           => N,
                   Is_Allocate => True);
             end if;
+
+         --  Optimize the default allocation of an array object when pragma
+         --  Initialize_Scalars or Normalize_Scalars is in effect. Construct an
+         --  in-place initialization aggregate which may be convert into a fast
+         --  memset by the backend.
+
+         elsif Init_Or_Norm_Scalars
+           and then Is_Array_Type (T)
+
+           --  The array must lack atomic components because they are treated
+           --  as non-static, and as a result the backend will not initialize
+           --  the memory in one go.
+
+           and then not Has_Atomic_Components (T)
+
+           --  The array must not be packed because the invalid values in
+           --  System.Scalar_Values are multiples of Storage_Unit.
+
+           and then not Is_Packed (T)
+
+           --  The array must have static non-empty ranges, otherwise the
+           --  backend cannot initialize the memory in one go.
+
+           and then Has_Static_Non_Empty_Array_Bounds (T)
+
+           --  The optimization is only relevant for arrays of scalar types
+
+           and then Is_Scalar_Type (Component_Type (T))
+
+           --  Similar to regular array initialization using a type init proc,
+           --  predicate checks are not performed because the initialization
+           --  values are intentionally invalid, and may violate the predicate.
+
+           and then not Has_Predicates (Component_Type (T))
+
+           --  The component type must have a single initialization value
+
+           and then Needs_Simple_Initialization
+                      (Typ         => Component_Type (T),
+                       Consider_IS => True)
+         then
+            Set_Analyzed (N);
+            Temp := Make_Temporary (Loc, 'P');
+
+            --  Generate:
+            --    Temp : Ptr_Typ := new ...;
+
+            Insert_Action
+              (Assoc_Node => N,
+               Ins_Action =>
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Object_Definition   => New_Occurrence_Of (PtrT, Loc),
+                   Expression          => Relocate_Node (N)),
+               Suppress   => All_Checks);
+
+            --  Generate:
+            --    Temp.all := (others => ...);
+
+            Insert_Action
+              (Assoc_Node => N,
+               Ins_Action =>
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Explicit_Dereference (Loc,
+                       Prefix => New_Occurrence_Of (Temp, Loc)),
+                   Expression =>
+                     Get_Simple_Init_Val
+                       (Typ  => T,
+                        N    => N,
+                        Size => Esize (Component_Type (T)))),
+               Suppress   => All_Checks);
+
+            Rewrite (N, New_Occurrence_Of (Temp, Loc));
+            Analyze_And_Resolve (N, PtrT);
 
          --  Case of no initialization procedure present
 
@@ -10077,77 +10152,6 @@ package body Exp_Ch4 is
       Analyze_And_Resolve (N, Standard_Boolean);
    end Expand_N_Quantified_Expression;
 
-   -----------------------------------
-   -- Expand_N_Reduction_Expression --
-   -----------------------------------
-
-   procedure Expand_N_Reduction_Expression (N : Node_Id) is
-      Actions   : constant List_Id    := New_List;
-      Expr      : constant Node_Id    := Expression (N);
-      Iter_Spec : constant Node_Id    := Iterator_Specification (N);
-      Loc       : constant Source_Ptr := Sloc (N);
-      Loop_Spec : constant Node_Id    := Loop_Parameter_Specification (N);
-      Typ       : constant Entity_Id  := Etype (N);
-
-      Actual        : Node_Id;
-      New_Call      : Node_Id;
-      Reduction_Par : Node_Id;
-      Result        : Entity_Id;
-      Scheme        : Node_Id;
-
-   begin
-      Result   := Make_Temporary (Loc, 'R', N);
-      New_Call := New_Copy_Tree (Expr);
-
-      if Nkind (New_Call) = N_Function_Call then
-         Actual := First (Parameter_Associations (New_Call));
-
-         if Nkind (Actual) /= N_Reduction_Expression_Parameter then
-            Actual := Next_Actual (Actual);
-         end if;
-
-      elsif Nkind (New_Call) in N_Binary_Op then
-         Actual := Left_Opnd (New_Call);
-
-         if Nkind (Actual) /= N_Reduction_Expression_Parameter then
-            Actual := Right_Opnd (New_Call);
-         end if;
-      end if;
-
-      Reduction_Par := Expression (Actual);
-
-      Append_To (Actions,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Result,
-          Object_Definition   => New_Occurrence_Of (Typ, Loc),
-          Expression          => New_Copy_Tree (Reduction_Par)));
-
-      if Present (Iter_Spec) then
-         Scheme :=
-           Make_Iteration_Scheme (Loc,
-             Iterator_Specification => Iter_Spec);
-      else
-         Scheme :=
-           Make_Iteration_Scheme (Loc,
-             Loop_Parameter_Specification => Loop_Spec);
-      end if;
-
-      Replace (Actual, New_Occurrence_Of (Result, Loc));
-
-      Append_To (Actions,
-        Make_Loop_Statement (Loc,
-          Iteration_Scheme => Scheme,
-          Statements       => New_List (Make_Assignment_Statement (Loc,
-            New_Occurrence_Of (Result, Loc), New_Call)),
-          End_Label        => Empty));
-
-      Rewrite (N,
-        Make_Expression_With_Actions (Loc,
-          Expression => New_Occurrence_Of (Result, Loc),
-          Actions    => Actions));
-      Analyze_And_Resolve (N, Typ);
-   end Expand_N_Reduction_Expression;
-
    ---------------------------------
    -- Expand_N_Selected_Component --
    ---------------------------------
@@ -13887,7 +13891,7 @@ package body Exp_Ch4 is
           Selector_Name =>
             New_Occurrence_Of (First_Tag_Component (Left_Type), Loc));
 
-      if Is_Class_Wide_Type (Right_Type) then
+      if Is_Class_Wide_Type (Right_Type) or else Is_Interface (Left_Type) then
 
          --  No need to issue a run-time check if we statically know that the
          --  result of this membership test is always true. For example,

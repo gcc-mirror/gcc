@@ -90,7 +90,7 @@ build_lambda_object (tree lambda_expr)
 	val = build_array_copy (val);
       else if (DECL_NORMAL_CAPTURE_P (field)
 	       && !DECL_VLA_CAPTURE_P (field)
-	       && TREE_CODE (TREE_TYPE (field)) != REFERENCE_TYPE)
+	       && !TYPE_REF_P (TREE_TYPE (field)))
 	{
 	  /* "the entities that are captured by copy are used to
 	     direct-initialize each corresponding non-static data
@@ -411,7 +411,7 @@ build_capture_proxy (tree member, tree init)
 
   type = lambda_proxy_type (object);
 
-  if (name == this_identifier && !POINTER_TYPE_P (type))
+  if (name == this_identifier && !INDIRECT_TYPE_P (type))
     {
       type = build_pointer_type (type);
       type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
@@ -571,7 +571,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 
       if (id == this_identifier && !by_reference_p)
 	{
-	  gcc_assert (POINTER_TYPE_P (type));
+	  gcc_assert (INDIRECT_TYPE_P (type));
 	  type = TREE_TYPE (type);
 	  initializer = cp_build_fold_indirect_ref (initializer);
 	}
@@ -743,9 +743,7 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
     add_capture_p = false;
 
   /* Try to default capture 'this' if we can.  */
-  if (!this_capture
-      && (!add_capture_p
-          || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) != CPLD_NONE))
+  if (!this_capture)
     {
       tree lambda_stack = NULL_TREE;
       tree init = NULL_TREE;
@@ -756,9 +754,15 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
            3. a non-default capturing lambda function.  */
       for (tree tlambda = lambda; ;)
 	{
-          lambda_stack = tree_cons (NULL_TREE,
-                                    tlambda,
-                                    lambda_stack);
+	  if (add_capture_p
+	      && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (tlambda) == CPLD_NONE)
+	    /* tlambda won't let us capture 'this'.  */
+	    break;
+
+	  if (add_capture_p)
+	    lambda_stack = tree_cons (NULL_TREE,
+				      tlambda,
+				      lambda_stack);
 
 	  tree closure = LAMBDA_EXPR_CLOSURE (tlambda);
 	  tree containing_function
@@ -807,10 +811,6 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
 	      init = LAMBDA_EXPR_THIS_CAPTURE (tlambda);
 	      break;
 	    }
-
-	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (tlambda) == CPLD_NONE)
-	    /* An outer lambda won't let us capture 'this'.  */
-	    break;
 	}
 
       if (init)

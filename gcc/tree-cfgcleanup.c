@@ -146,12 +146,11 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 	{
 	case GIMPLE_COND:
 	  {
-	    code_helper rcode;
-	    tree ops[3] = {};
-	    if (gimple_simplify (stmt, &rcode, ops, NULL, no_follow_ssa_edges,
+	    gimple_match_op res_op;
+	    if (gimple_simplify (stmt, &res_op, NULL, no_follow_ssa_edges,
 				 no_follow_ssa_edges)
-		&& rcode == INTEGER_CST)
-	      val = ops[0];
+		&& res_op.code == INTEGER_CST)
+	      val = res_op.ops[0];
 	  }
 	  break;
 

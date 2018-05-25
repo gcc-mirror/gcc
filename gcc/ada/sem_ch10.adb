@@ -55,6 +55,7 @@ with Sem_Ch3;   use Sem_Ch3;
 with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch7;   use Sem_Ch7;
 with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch13;  use Sem_Ch13;
 with Sem_Dist;  use Sem_Dist;
 with Sem_Prag;  use Sem_Prag;
 with Sem_Util;  use Sem_Util;
@@ -149,18 +150,9 @@ package body Sem_Ch10 is
    --  Subsidiary to Install_Context. Process only limited with_clauses for
    --  current unit. Implements Ada 2005 (AI-50217).
 
-   procedure Install_Limited_Withed_Unit (N : Node_Id);
+   procedure Install_Limited_With_Clause (N : Node_Id);
    --  Place shadow entities for a limited_with package in the visibility
    --  structures for the current compilation. Implements Ada 2005 (AI-50217).
-
-   procedure Install_Withed_Unit
-     (With_Clause     : Node_Id;
-      Private_With_OK : Boolean := False);
-   --  If the unit is not a child unit, make unit immediately visible. The
-   --  caller ensures that the unit is not already currently installed. The
-   --  flag Private_With_OK is set true in Install_Private_With_Clauses, which
-   --  is called when compiling the private part of a package, or installing
-   --  the private declarations of a parent unit.
 
    procedure Install_Parents
      (Lib_Unit   : Node_Id;
@@ -184,6 +176,15 @@ package body Sem_Ch10 is
    --  an enclosing scope. Iterate over context to find child units of U_Name
    --  or of some ancestor of it.
 
+   procedure Install_With_Clause
+     (With_Clause     : Node_Id;
+      Private_With_OK : Boolean := False);
+   --  If the unit is not a child unit, make unit immediately visible. The
+   --  caller ensures that the unit is not already currently installed. The
+   --  flag Private_With_OK is set true in Install_Private_With_Clauses, which
+   --  is called when compiling the private part of a package, or installing
+   --  the private declarations of a parent unit.
+
    function Is_Ancestor_Unit (U1 : Node_Id; U2 : Node_Id) return Boolean;
    --  When compiling a unit Q descended from some parent unit P, a limited
    --  with_clause in the context of P that names some other ancestor of Q
@@ -203,8 +204,15 @@ package body Sem_Ch10 is
    --  Subsidiary of previous one. Remove use_ and with_clauses
 
    procedure Remove_Limited_With_Clause (N : Node_Id);
-   --  Remove from visibility the shadow entities introduced for a package
-   --  mentioned in a limited_with clause. Implements Ada 2005 (AI-50217).
+   --  Remove the shadow entities from visibility introduced for a package
+   --  mentioned in limited with clause N. Implements Ada 2005 (AI-50217).
+
+   procedure Remove_Limited_With_Unit
+     (Pack_Decl  : Node_Id;
+      Lim_Clause : Node_Id := Empty);
+   --  Remove the shadow entities from visibility introduced for a package
+   --  denoted by declaration Pack_Decl. Lim_Clause is the related limited
+   --  with clause, if any. Implements Ada 2005 (AI-50217).
 
    procedure Remove_Parents (Lib_Unit : Node_Id);
    --  Remove_Parents checks if Lib_Unit is a child spec. If so then the parent
@@ -247,7 +255,7 @@ package body Sem_Ch10 is
    --  of the package. Links between corresponding entities in both chains
    --  allow the compiler to select the proper view of a given type, depending
    --  on the context. Note that in contrast with the handling of private
-   --  types, the limited view and the non-limited view of a type are treated
+   --  types, the limited view and the nonlimited view of a type are treated
    --  as separate entities, and no entity exchange needs to take place, which
    --  makes the implementation much simpler than could be feared.
 
@@ -1386,7 +1394,7 @@ package body Sem_Ch10 is
 
       --  Loop through actual context items. This is done in two passes:
 
-      --  a) The first pass analyzes non-limited with-clauses and also any
+      --  a) The first pass analyzes nonlimited with clauses and also any
       --     configuration pragmas (we need to get the latter analyzed right
       --     away, since they can affect processing of subsequent items).
 
@@ -1594,7 +1602,7 @@ package body Sem_Ch10 is
    -------------------------------
 
    procedure Analyze_Package_Body_Stub (N : Node_Id) is
-      Id   : constant Entity_Id := Defining_Identifier (N);
+      Id   : constant Entity_Id := Defining_Entity (N);
       Nam  : Entity_Id;
       Opts : Config_Switches_Type;
 
@@ -1623,9 +1631,15 @@ package body Sem_Ch10 is
          --  generating code, the existence of the body will be confirmed
          --  when we load the proper body.
 
+         Set_Scope (Id, Current_Scope);
+         Set_Ekind (Id, E_Package_Body);
+         Set_Etype (Id, Standard_Void_Type);
+
+         if Has_Aspects (N) then
+            Analyze_Aspect_Specifications (N, Id);
+         end if;
+
          Set_Has_Completion (Nam);
-         Set_Scope (Defining_Entity (N), Current_Scope);
-         Set_Ekind (Defining_Entity (N), E_Package_Body);
          Set_Corresponding_Spec_Of_Stub (N, Nam);
          Generate_Reference (Nam, Id, 'b');
          Analyze_Proper_Body (N, Nam);
@@ -1951,7 +1965,9 @@ package body Sem_Ch10 is
    ----------------------------------
 
    procedure Analyze_Protected_Body_Stub (N : Node_Id) is
-      Nam : Entity_Id := Current_Entity_In_Scope (Defining_Identifier (N));
+      Id   : constant Entity_Id := Defining_Entity (N);
+      Nam  : Entity_Id          := Current_Entity_In_Scope (Id);
+      Opts : Config_Switches_Type;
 
    begin
       Check_Stub_Level (N);
@@ -1966,12 +1982,25 @@ package body Sem_Ch10 is
          Error_Msg_N ("missing specification for Protected body", N);
 
       else
-         Set_Scope (Defining_Entity (N), Current_Scope);
-         Set_Ekind (Defining_Entity (N), E_Protected_Body);
+         --  Retain and restore the configuration options of the enclosing
+         --  context as the proper body may introduce a set of its own.
+
+         Save_Opt_Config_Switches (Opts);
+
+         Set_Scope (Id, Current_Scope);
+         Set_Ekind (Id, E_Protected_Body);
+         Set_Etype (Id, Standard_Void_Type);
+
+         if Has_Aspects (N) then
+            Analyze_Aspect_Specifications (N, Id);
+         end if;
+
          Set_Has_Completion (Etype (Nam));
          Set_Corresponding_Spec_Of_Stub (N, Nam);
-         Generate_Reference (Nam, Defining_Identifier (N), 'b');
+         Generate_Reference (Nam, Id, 'b');
          Analyze_Proper_Body (N, Etype (Nam));
+
+         Restore_Opt_Config_Switches (Opts);
       end if;
    end Analyze_Protected_Body_Stub;
 
@@ -2390,6 +2419,12 @@ package body Sem_Ch10 is
 
       Install_SPARK_Mode (Saved_SM, Saved_SMP);
 
+      --  If the subunit is part of a compilation unit which is subject to
+      --  pragma Elaboration_Checks, set the model specified by the pragma
+      --  because it applies to all parts of the unit.
+
+      Install_Elaboration_Model (Par_Unit);
+
       Analyze (Proper_Body (Unit (N)));
       Remove_Context (N);
 
@@ -2421,8 +2456,9 @@ package body Sem_Ch10 is
    ----------------------------
 
    procedure Analyze_Task_Body_Stub (N : Node_Id) is
+      Id  : constant Entity_Id  := Defining_Entity (N);
       Loc : constant Source_Ptr := Sloc (N);
-      Nam : Entity_Id := Current_Entity_In_Scope (Defining_Identifier (N));
+      Nam : Entity_Id           := Current_Entity_In_Scope (Id);
 
    begin
       Check_Stub_Level (N);
@@ -2437,9 +2473,15 @@ package body Sem_Ch10 is
          Error_Msg_N ("missing specification for task body", N);
 
       else
-         Set_Scope (Defining_Entity (N), Current_Scope);
-         Set_Ekind (Defining_Entity (N), E_Task_Body);
-         Generate_Reference (Nam, Defining_Identifier (N), 'b');
+         Set_Scope (Id, Current_Scope);
+         Set_Ekind (Id, E_Task_Body);
+         Set_Etype (Id, Standard_Void_Type);
+
+         if Has_Aspects (N) then
+            Analyze_Aspect_Specifications (N, Id);
+         end if;
+
+         Generate_Reference (Nam, Id, 'b');
          Set_Corresponding_Spec_Of_Stub (N, Nam);
 
          --  Check for duplicate stub, if so give message and terminate
@@ -3147,7 +3189,8 @@ package body Sem_Ch10 is
 
       Prepend (Withn, Context_Items (N));
       Mark_Rewrite_Insertion (Withn);
-      Install_Withed_Unit (Withn);
+
+      Install_With_Clause (Withn);
 
       --  If we have "with X.Y;", we want to recurse on "X", except in the
       --  unusual case where X.Y is a renaming of X. In that case, the scope
@@ -3360,7 +3403,8 @@ package body Sem_Ch10 is
 
       Prepend (Withn, Context_Items (N));
       Mark_Rewrite_Insertion (Withn);
-      Install_Withed_Unit (Withn);
+
+      Install_With_Clause (Withn);
 
       if Is_Child_Spec (P_Unit) then
          Implicit_With_On_Parent (P_Unit, N);
@@ -3466,7 +3510,7 @@ package body Sem_Ch10 is
                Check_Private := True;
             end if;
 
-            Install_Withed_Unit (Item);
+            Install_With_Clause (Item);
 
             Decl_Node := Unit_Declaration_Node (Uname_Node);
 
@@ -3870,7 +3914,7 @@ package body Sem_Ch10 is
 
          function Previous_Withed_Unit (W : Node_Id) return Boolean;
          --  Returns true if the context already includes a with_clause for
-         --  this unit. If the with_clause is non-limited, the unit is fully
+         --  this unit. If the with_clause is nonlimited, the unit is fully
          --  visible and an implicit limited_with should not be created. If
          --  there is already a limited_with clause for W, a second one is
          --  simply redundant.
@@ -3957,7 +4001,7 @@ package body Sem_Ch10 is
             Analyze (Withn);
 
             if not Limited_View_Installed (Withn) then
-               Install_Limited_Withed_Unit (Withn);
+               Install_Limited_With_Clause (Withn);
             end if;
          end if;
       end Expand_Limited_With_Clause;
@@ -4004,7 +4048,7 @@ package body Sem_Ch10 is
                                              N_Subprogram_Body,
                                              N_Subunit)
                then
-                  Install_Limited_Withed_Unit (Item);
+                  Install_Limited_With_Clause (Item);
                end if;
             end if;
          end if;
@@ -4040,12 +4084,12 @@ package body Sem_Ch10 is
                   if not Is_Incomplete_Type (Non_Lim_View) then
 
                      --  Convert an incomplete subtype declaration into a
-                     --  corresponding non-limited view subtype declaration.
+                     --  corresponding nonlimited view subtype declaration.
                      --  This is usually the case when analyzing a body that
                      --  has regular with clauses,  when the spec has limited
                      --  ones.
 
-                     --  If the non-limited view is still incomplete, it is
+                     --  If the nonlimited view is still incomplete, it is
                      --  the dummy entry already created, and the declaration
                      --  cannot be reanalyzed. This is the case when installing
                      --  a parent unit that has limited with-clauses.
@@ -4227,10 +4271,10 @@ package body Sem_Ch10 is
                       not Is_Ancestor_Unit (Library_Unit (Item),
                                             Cunit (Current_Sem_Unit))
                   then
-                     Install_Limited_Withed_Unit (Item);
+                     Install_Limited_With_Clause (Item);
                   end if;
                else
-                  Install_Withed_Unit (Item, Private_With_OK => True);
+                  Install_With_Clause (Item, Private_With_OK => True);
                end if;
             end if;
 
@@ -4395,10 +4439,10 @@ package body Sem_Ch10 is
    end Install_Siblings;
 
    ---------------------------------
-   -- Install_Limited_Withed_Unit --
+   -- Install_Limited_With_Clause --
    ---------------------------------
 
-   procedure Install_Limited_Withed_Unit (N : Node_Id) is
+   procedure Install_Limited_With_Clause (N : Node_Id) is
       P_Unit           : constant Entity_Id := Unit (Library_Unit (N));
       E                : Entity_Id;
       P                : Entity_Id;
@@ -4855,7 +4899,7 @@ package body Sem_Ch10 is
          return False;
       end Is_Visible_Through_Renamings;
 
-   --  Start of processing for Install_Limited_Withed_Unit
+   --  Start of processing for Install_Limited_With_Clause
 
    begin
       pragma Assert (not Limited_View_Installed (N));
@@ -4916,7 +4960,7 @@ package body Sem_Ch10 is
       --  compilation of sibling Par.Sib forces the load of parent Par which
       --  tries to install the limited view of Lim_Pack [1]. However Par.Sib
       --  has a with clause for Lim_Pack [2] in its body, and thus needs the
-      --  non-limited views of all entities from Lim_Pack.
+      --  nonlimited views of all entities from Lim_Pack.
 
       --     limited with Lim_Pack;   --  [1]
       --     package Par is ...           package Lim_Pack is ...
@@ -5122,7 +5166,7 @@ package body Sem_Ch10 is
                   --  Replace E in the homonyms list, so that the limited view
                   --  becomes available.
 
-                  --  If the non-limited view is a record with an anonymous
+                  --  If the nonlimited view is a record with an anonymous
                   --  self-referential component, the analysis of the record
                   --  declaration creates an incomplete type with the same name
                   --  in order to define an internal access type. The visible
@@ -5224,13 +5268,13 @@ package body Sem_Ch10 is
 
       Set_Entity (Name (N), P);
       Set_From_Limited_With (P);
-   end Install_Limited_Withed_Unit;
+   end Install_Limited_With_Clause;
 
    -------------------------
-   -- Install_Withed_Unit --
+   -- Install_With_Clause --
    -------------------------
 
-   procedure Install_Withed_Unit
+   procedure Install_With_Clause
      (With_Clause     : Node_Id;
       Private_With_OK : Boolean := False)
    is
@@ -5343,11 +5387,21 @@ package body Sem_Ch10 is
          Set_Context_Installed (With_Clause);
       end if;
 
-      --   A with-clause overrides a with-type clause: there are no restric-
-      --   tions on the use of package entities.
+      --  A [private] with clause overrides a limited with clause. Restore the
+      --  proper view of the package by performing the following actions:
+      --
+      --    * Remove all shadow entities which hide their corresponding
+      --      entities from direct visibility by updating the entity and
+      --      homonym chains.
+      --
+      --    * Enter the corresponding entities back in direct visibility
+      --
+      --  Note that the original limited with clause which installed its view
+      --  is still marked as "active". This effect is undone when the clause
+      --  itself is removed, see Remove_Limited_With_Clause.
 
-      if Ekind (Uname) = E_Package then
-         Set_From_Limited_With (Uname, False);
+      if Ekind (Uname) = E_Package and then From_Limited_With (Uname) then
+         Remove_Limited_With_Unit (Unit_Declaration_Node (Uname));
       end if;
 
       --  Ada 2005 (AI-377): it is illegal for a with_clause to name a child
@@ -5419,7 +5473,7 @@ package body Sem_Ch10 is
             end loop;
          end;
       end if;
-   end Install_Withed_Unit;
+   end Install_With_Clause;
 
    -------------------
    -- Is_Child_Spec --
@@ -5959,9 +6013,10 @@ package body Sem_Ch10 is
                Build_Shadow_Entity (Def_Id, Scop, Shadow);
 
                Process_Declarations_And_States
-                 (Pack  => Def_Id,
-                  Decls => Visible_Declarations (Specification (Decl)),
-                  Scop  => Shadow,
+                 (Pack                  => Def_Id,
+                  Decls                 =>
+                    Visible_Declarations (Specification (Decl)),
+                  Scop                  => Shadow,
                   Create_Abstract_Views => Create_Abstract_Views);
 
             --  Types
@@ -6131,9 +6186,9 @@ package body Sem_Ch10 is
       --  variables and types.
 
       Process_Declarations_And_States
-        (Pack  => Pack,
-         Decls => Visible_Declarations (Spec),
-         Scop  => Pack,
+        (Pack                  => Pack,
+         Decls                 => Visible_Declarations (Spec),
+         Scop                  => Pack,
          Create_Abstract_Views => True);
 
       Last_Public_Shadow := Last_Shadow;
@@ -6142,9 +6197,9 @@ package body Sem_Ch10 is
       --  to accommodate limited private with clauses.
 
       Process_Declarations_And_States
-        (Pack  => Pack,
-         Decls => Private_Declarations (Spec),
-         Scop  => Pack,
+        (Pack                  => Pack,
+         Decls                 => Private_Declarations (Spec),
+         Scop                  => Pack,
          Create_Abstract_Views => False);
 
       if Present (Last_Public_Shadow) then
@@ -6388,149 +6443,268 @@ package body Sem_Ch10 is
    --------------------------------
 
    procedure Remove_Limited_With_Clause (N : Node_Id) is
-      P_Unit     : constant Entity_Id := Unit (Library_Unit (N));
-      E          : Entity_Id;
-      P          : Entity_Id;
-      Lim_Header : Entity_Id;
-      Lim_Typ    : Entity_Id;
-      Prev       : Entity_Id;
+      Pack_Decl : constant Entity_Id := Unit (Library_Unit (N));
 
    begin
       pragma Assert (Limited_View_Installed (N));
 
-      --  In case of limited with_clause on subprograms, generics, instances,
-      --  or renamings, the corresponding error was previously posted and we
-      --  have nothing to do here.
+      --  Limited with clauses that designate units other than packages are
+      --  illegal and are never installed.
 
-      if Nkind (P_Unit) /= N_Package_Declaration then
-         return;
+      if Nkind (Pack_Decl) = N_Package_Declaration then
+         Remove_Limited_With_Unit (Pack_Decl, N);
       end if;
 
-      P := Defining_Unit_Name (Specification (P_Unit));
+      --  Indicate that the limited views of the clause have been removed
 
-      --  Handle child packages
+      Set_Limited_View_Installed (N, False);
+   end Remove_Limited_With_Clause;
 
-      if Nkind (P) = N_Defining_Program_Unit_Name then
-         P := Defining_Identifier (P);
+   ------------------------------
+   -- Remove_Limited_With_Unit --
+   ------------------------------
+
+   procedure Remove_Limited_With_Unit
+     (Pack_Decl  : Node_Id;
+      Lim_Clause : Node_Id := Empty)
+   is
+      procedure Remove_Shadow_Entities_From_Visibility (Pack_Id : Entity_Id);
+      --  Remove the shadow entities of package Pack_Id from direct visibility
+
+      procedure Remove_Shadow_Entities_With_Restore (Pack_Id : Entity_Id);
+      --  Remove the shadow entities of package Pack_Id from direct visibility,
+      --  restore the corresponding entities they hide into direct visibility,
+      --  and update the entity and homonym chains.
+
+      --------------------------------------------
+      -- Remove_Shadow_Entities_From_Visibility --
+      --------------------------------------------
+
+      procedure Remove_Shadow_Entities_From_Visibility (Pack_Id : Entity_Id) is
+         Lim_Header : constant Entity_Id := Limited_View (Pack_Id);
+         Upto       : constant Entity_Id := First_Private_Entity (Lim_Header);
+
+         Shadow : Entity_Id;
+
+      begin
+         --  Remove the package from direct visibility
+
+         Unchain (Pack_Id);
+         Set_Is_Immediately_Visible (Pack_Id, False);
+
+         --  Remove all shadow entities from direct visibility
+
+         Shadow := First_Entity (Lim_Header);
+         while Present (Shadow) and then Shadow /= Upto loop
+            Unchain (Shadow);
+            Next_Entity (Shadow);
+         end loop;
+      end Remove_Shadow_Entities_From_Visibility;
+
+      -----------------------------------------
+      -- Remove_Shadow_Entities_With_Restore --
+      -----------------------------------------
+
+      procedure Remove_Shadow_Entities_With_Restore (Pack_Id : Entity_Id) is
+         procedure Restore_Chain_For_Shadow (Shadow : Entity_Id);
+         --  Remove shadow entity Shadow by updating the entity and homonym
+         --  chains.
+
+         procedure Restore_Chains
+           (From : Entity_Id;
+            Upto : Entity_Id);
+         --  Remove a sequence of shadow entities starting from From and ending
+         --  prior to Upto by updating the entity and homonym chains.
+
+         procedure Restore_Type_Visibility
+           (From : Entity_Id;
+            Upto : Entity_Id);
+         --  Restore a sequence of types starting from From and ending prior to
+         --  Upto back in direct visibility.
+
+         ------------------------------
+         -- Restore_Chain_For_Shadow --
+         ------------------------------
+
+         procedure Restore_Chain_For_Shadow (Shadow : Entity_Id) is
+            Prev : Entity_Id;
+            Typ  : Entity_Id;
+
+         begin
+            --  If the package has incomplete types, the limited view of the
+            --  incomplete type is in fact never visible (AI05-129) but we
+            --  have created a shadow entity E1 for it, that points to E2,
+            --  a nonlimited incomplete type. This in turn has a full view
+            --  E3 that is the full declaration. There is a corresponding
+            --  shadow entity E4. When reinstalling the nonlimited view,
+            --  E2 must become the current entity and E3 must be ignored.
+
+            Typ := Non_Limited_View (Shadow);
+
+            --  Shadow is the limited view of a full type declaration that has
+            --  a previous incomplete declaration, i.e. E3 from the previous
+            --  description. Nothing to insert.
+
+            if Present (Current_Entity (Typ))
+              and then Ekind (Current_Entity (Typ)) = E_Incomplete_Type
+              and then Full_View (Current_Entity (Typ)) = Typ
+            then
+               return;
+            end if;
+
+            pragma Assert (not In_Chain (Typ));
+
+            Prev := Current_Entity (Shadow);
+
+            if Prev = Shadow then
+               Set_Current_Entity (Typ);
+
+            else
+               while Present (Prev) and then Homonym (Prev) /= Shadow loop
+                  Prev := Homonym (Prev);
+               end loop;
+
+               if Present (Prev) then
+                  Set_Homonym (Prev, Typ);
+               end if;
+            end if;
+
+            Set_Homonym (Typ, Homonym (Shadow));
+         end Restore_Chain_For_Shadow;
+
+         --------------------
+         -- Restore_Chains --
+         --------------------
+
+         procedure Restore_Chains
+           (From : Entity_Id;
+            Upto : Entity_Id)
+         is
+            Shadow : Entity_Id;
+
+         begin
+            Shadow := From;
+            while Present (Shadow) and then Shadow /= Upto loop
+
+               --  Do not unchain nested packages and child units
+
+               if Ekind (Shadow) = E_Package then
+                  null;
+
+               elsif Is_Child_Unit (Non_Limited_View (Shadow)) then
+                  null;
+
+               else
+                  Restore_Chain_For_Shadow (Shadow);
+               end if;
+
+               Next_Entity (Shadow);
+            end loop;
+         end Restore_Chains;
+
+         -----------------------------
+         -- Restore_Type_Visibility --
+         -----------------------------
+
+         procedure Restore_Type_Visibility
+           (From : Entity_Id;
+            Upto : Entity_Id)
+         is
+            Typ : Entity_Id;
+
+         begin
+            Typ := From;
+            while Present (Typ) and then Typ /= Upto loop
+               if Is_Type (Typ) then
+                  Set_Is_Hidden (Typ, Was_Hidden (Typ));
+               end if;
+
+               Next_Entity (Typ);
+            end loop;
+         end Restore_Type_Visibility;
+
+         --  Local variables
+
+         Lim_Header : constant Entity_Id := Limited_View (Pack_Id);
+
+      --  Start of processing Remove_Shadow_Entities_With_Restore
+
+      begin
+         --  The limited view of a package is being uninstalled by removing
+         --  the effects of a limited with clause. If the clause appears in a
+         --  unit which is not part of the main unit closure, then the related
+         --  package must not be visible.
+
+         if Present (Lim_Clause)
+           and then not In_Extended_Main_Source_Unit (Lim_Clause)
+         then
+            Set_Is_Immediately_Visible (Pack_Id, False);
+
+         --  Otherwise a limited view is being overridden by a nonlimited view.
+         --  Leave the visibility of the package as is because the unit must be
+         --  visible when the nonlimited view is installed.
+
+         else
+            null;
+         end if;
+
+         --  Remove the shadow entities from visibility by updating the entity
+         --  and homonym chains.
+
+         Restore_Chains
+           (From => First_Entity (Lim_Header),
+            Upto => First_Private_Entity (Lim_Header));
+
+         --  Reinstate the types that were hidden by the shadow entities back
+         --  into direct visibility.
+
+         Restore_Type_Visibility
+           (From => First_Entity (Pack_Id),
+            Upto => First_Private_Entity (Pack_Id));
+      end Remove_Shadow_Entities_With_Restore;
+
+      --  Local variables
+
+      Pack_Id : constant Entity_Id := Defining_Entity (Pack_Decl);
+
+   --  Start of processing for Remove_Limited_With_Unit
+
+   begin
+      --  Nothing to do when the limited view of the package is not installed
+
+      if not From_Limited_With (Pack_Id) then
+         return;
       end if;
 
       if Debug_Flag_I then
          Write_Str ("remove limited view of ");
-         Write_Name (Chars (P));
+         Write_Name (Chars (Pack_Id));
          Write_Str (" from visibility");
          Write_Eol;
       end if;
 
-      --  Prepare the removal of the shadow entities from visibility. The first
-      --  element of the limited view is a header (an E_Package entity) that is
-      --  used to reference the first shadow entity in the private part of the
-      --  package
+      --  The package already appears in the compilation closure. As a result,
+      --  its shadow entities must be replaced by the real entities they hide
+      --  and the previously hidden entities must be entered back into direct
+      --  visibility.
 
-      Lim_Header := Limited_View (P);
-      Lim_Typ    := First_Entity (Lim_Header);
+      --  WARNING: This code must be kept synchronized with that of routine
+      --  Install_Limited_Withed_Clause.
 
-      --  Remove package and shadow entities from visibility if it has not
-      --  been analyzed
+      if Analyzed (Pack_Decl) then
+         Remove_Shadow_Entities_With_Restore (Pack_Id);
 
-      if not Analyzed (P_Unit) then
-         Unchain (P);
-         Set_Is_Immediately_Visible (P, False);
-
-         while Present (Lim_Typ) loop
-            Unchain (Lim_Typ);
-            Next_Entity (Lim_Typ);
-         end loop;
-
-      --  Otherwise this package has already appeared in the closure and its
-      --  shadow entities must be replaced by its real entities. This code
-      --  must be kept synchronized with the complementary code in Install
-      --  Limited_Withed_Unit.
+      --  Otherwise the package is not analyzed and its shadow entities must be
+      --  removed from direct visibility.
 
       else
-         --  If the limited_with_clause is in some other unit in the context
-         --  then it is not visible in the main unit.
-
-         if not In_Extended_Main_Source_Unit (N) then
-            Set_Is_Immediately_Visible (P, False);
-         end if;
-
-         --  Real entities that are type or subtype declarations were hidden
-         --  from visibility at the point of installation of the limited-view.
-         --  Now we recover the previous value of the hidden attribute.
-
-         E := First_Entity (P);
-         while Present (E) and then E /= First_Private_Entity (P) loop
-            if Is_Type (E) then
-               Set_Is_Hidden (E, Was_Hidden (E));
-            end if;
-
-            Next_Entity (E);
-         end loop;
-
-         while Present (Lim_Typ)
-           and then Lim_Typ /= First_Private_Entity (Lim_Header)
-         loop
-            --  Nested packages and child units were not unchained
-
-            if Ekind (Lim_Typ) /= E_Package
-              and then not Is_Child_Unit (Non_Limited_View (Lim_Typ))
-            then
-               --  If the package has incomplete types, the limited view of the
-               --  incomplete type is in fact never visible (AI05-129) but we
-               --  have created a shadow entity E1 for it, that points to E2,
-               --  a non-limited incomplete type. This in turn has a full view
-               --  E3 that is the full declaration. There is a corresponding
-               --  shadow entity E4. When reinstalling the non-limited view,
-               --  E2 must become the current entity and E3 must be ignored.
-
-               E := Non_Limited_View (Lim_Typ);
-
-               if Present (Current_Entity (E))
-                 and then Ekind (Current_Entity (E)) = E_Incomplete_Type
-                 and then Full_View (Current_Entity (E)) = E
-               then
-
-                  --  Lim_Typ is the limited view of a full type declaration
-                  --  that has a previous incomplete declaration, i.e. E3 from
-                  --  the previous description. Nothing to insert.
-
-                  null;
-
-               else
-                  pragma Assert (not In_Chain (E));
-
-                  Prev := Current_Entity (Lim_Typ);
-
-                  if Prev = Lim_Typ then
-                     Set_Current_Entity (E);
-
-                  else
-                     while Present (Prev)
-                       and then Homonym (Prev) /= Lim_Typ
-                     loop
-                        Prev := Homonym (Prev);
-                     end loop;
-
-                     if Present (Prev) then
-                        Set_Homonym (Prev, E);
-                     end if;
-                  end if;
-
-                  --  Preserve structure of homonym chain
-
-                  Set_Homonym (E, Homonym (Lim_Typ));
-               end if;
-            end if;
-
-            Next_Entity (Lim_Typ);
-         end loop;
+         Remove_Shadow_Entities_From_Visibility (Pack_Id);
       end if;
 
       --  Indicate that the limited view of the package is not installed
 
-      Set_From_Limited_With      (P, False);
-      Set_Limited_View_Installed (N, False);
-   end Remove_Limited_With_Clause;
+      Set_From_Limited_With (Pack_Id, False);
+   end Remove_Limited_With_Unit;
 
    --------------------
    -- Remove_Parents --

@@ -1037,6 +1037,187 @@
    (set_attr "length" "4")]
 )
 
+;; SATURATION
+
+(define_insn "unspec_kaddw"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ss_plus:SI (match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")))]
+  ""
+  "kaddw\t%0, %1, %2"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_ksubw"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ss_minus:SI (match_operand:SI 1 "register_operand" "r")
+		     (match_operand:SI 2 "register_operand" "r")))]
+  ""
+  "ksubw\t%0, %1, %2"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_kaddh"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_KADDH))]
+  ""
+  "kaddh\t%0, %1, %2"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_ksubh"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_KSUBH))]
+  ""
+  "ksubh\t%0, %1, %2"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_kaddh_dsp"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "r")
+			     (match_operand:SI 2 "register_operand" "r"))
+		    (const_int 15)] UNSPEC_CLIPS))]
+  "NDS32_EXT_DSP_P ()"
+  "kaddh\t%0, %1, %2"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_ksubh_dsp"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(minus:SI (match_operand:SI 1 "register_operand" "r")
+			      (match_operand:SI 2 "register_operand" "r"))
+		    (const_int 15)] UNSPEC_CLIPS))]
+  "NDS32_EXT_DSP_P ()"
+  "ksubh\t%0, %1, %2"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_kdmbb"
+  [(set (match_operand:V2HI 0 "register_operand" "=r")
+	(unspec:V2HI [(match_operand:V2HI 1 "register_operand" "r")
+		      (match_operand:V2HI 2 "register_operand" "r")] UNSPEC_KDMBB))]
+  ""
+  "kdmbb\t%0, %1, %2"
+  [(set_attr "type"    "mul")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_kdmbt"
+  [(set (match_operand:V2HI 0 "register_operand" "=r")
+	(unspec:V2HI [(match_operand:V2HI 1 "register_operand" "r")
+		      (match_operand:V2HI 2 "register_operand" "r")] UNSPEC_KDMBT))]
+  ""
+  "kdmbt\t%0, %1, %2"
+  [(set_attr "type"    "mul")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_kdmtb"
+  [(set (match_operand:V2HI 0 "register_operand" "=r")
+	(unspec:V2HI [(match_operand:V2HI 1 "register_operand" "r")
+		      (match_operand:V2HI 2 "register_operand" "r")] UNSPEC_KDMTB))]
+  ""
+  "kdmtb\t%0, %1, %2"
+  [(set_attr "type"    "mul")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_kdmtt"
+  [(set (match_operand:V2HI 0 "register_operand" "=r")
+	(unspec:V2HI [(match_operand:V2HI 1 "register_operand" "r")
+		      (match_operand:V2HI 2 "register_operand" "r")] UNSPEC_KDMTT))]
+  ""
+  "kdmtt\t%0, %1, %2"
+  [(set_attr "type"    "mul")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_khmbb"
+  [(set (match_operand:V2HI 0 "register_operand" "=r")
+	(unspec:V2HI [(match_operand:V2HI 1 "register_operand" "r")
+		      (match_operand:V2HI 2 "register_operand" "r")] UNSPEC_KHMBB))]
+  ""
+  "khmbb\t%0, %1, %2"
+  [(set_attr "type"    "mul")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_khmbt"
+  [(set (match_operand:V2HI 0 "register_operand" "=r")
+	(unspec:V2HI [(match_operand:V2HI 1 "register_operand" "r")
+		      (match_operand:V2HI 2 "register_operand" "r")] UNSPEC_KHMBT))]
+  ""
+  "khmbt\t%0, %1, %2"
+  [(set_attr "type"    "mul")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_khmtb"
+  [(set (match_operand:V2HI 0 "register_operand" "=r")
+	(unspec:V2HI [(match_operand:V2HI 1 "register_operand" "r")
+		      (match_operand:V2HI 2 "register_operand" "r")] UNSPEC_KHMTB))]
+  ""
+  "khmtb\t%0, %1, %2"
+  [(set_attr "type"    "mul")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_khmtt"
+  [(set (match_operand:V2HI 0 "register_operand" "=r")
+	(unspec:V2HI [(match_operand:V2HI 1 "register_operand" "r")
+		      (match_operand:V2HI 2 "register_operand" "r")] UNSPEC_KHMTT))]
+  ""
+  "khmtt\t%0, %1, %2"
+  [(set_attr "type"    "mul")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_kslraw"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_KSLRAW))]
+  ""
+  "kslraw\t%0, %1, %2"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_kslrawu"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_KSLRAWU))]
+  ""
+  "kslraw.u\t%0, %1, %2"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_volatile_rdov"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_RDOV))]
+  ""
+  "rdov\t%0"
+  [(set_attr "type"   "misc")
+   (set_attr "length"    "4")]
+)
+
+(define_insn "unspec_volatile_clrov"
+  [(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_CLROV)]
+  ""
+  "clrov"
+  [(set_attr "type"   "misc")
+   (set_attr "length"    "4")]
+)
+
 ;; System
 
 (define_insn "unspec_sva"
@@ -1494,5 +1675,16 @@
   emit_insn (gen_unspec_dsb ());
   DONE;
 })
+
+;; abs alias kabs
+
+(define_insn "unspec_kabs"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")] UNSPEC_KABS))]
+  ""
+  "kabs\t%0, %1"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")]
+)
 
 ;; ------------------------------------------------------------------------

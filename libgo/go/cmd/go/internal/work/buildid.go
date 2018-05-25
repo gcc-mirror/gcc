@@ -234,18 +234,9 @@ func (b *Builder) gccgoToolID(name, language string) (string, error) {
 	// compile an empty file on standard input.
 	cmdline := str.StringList(cfg.BuildToolexec, name, "-###", "-x", language, "-c", "-")
 	cmd := exec.Command(cmdline[0], cmdline[1:]...)
-
-	// Strip any LANG or LC_ environment variables, and force
-	// LANG=C, so that we get the untranslated output.
-	var env []string
-	for _, e := range os.Environ() {
-		if !strings.HasPrefix(e, "LANG=") && !strings.HasPrefix(e, "LC_") {
-			env = append(env, e)
-		}
-	}
-	env = append(env, "LANG=C")
-
-	cmd.Env = base.EnvForDir(cmd.Dir, env)
+	cmd.Env = base.EnvForDir(cmd.Dir, os.Environ())
+	// Force untranslated output so that we see the string "version".
+	cmd.Env = append(cmd.Env, "LC_ALL=C")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("%s: %v; output: %q", name, err, out)
@@ -303,16 +294,35 @@ func (b *Builder) gccgoToolID(name, language string) (string, error) {
 	return id, nil
 }
 
+// Check if assembler used by gccgo is GNU as.
+func assemblerIsGas() bool {
+	cmd := exec.Command(BuildToolchain.compiler(), "-print-prog-name=as")
+	assembler, err := cmd.Output()
+	if err == nil {
+		cmd := exec.Command(strings.TrimSpace(string(assembler)), "--version")
+		out, err := cmd.Output()
+		if err == nil && strings.Contains(string(out), "GNU") {
+			return true
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
+}
+
 // gccgoBuildIDELFFile creates an assembler file that records the
 // action's build ID in an SHF_EXCLUDE section.
 func (b *Builder) gccgoBuildIDELFFile(a *Action) (string, error) {
 	sfile := a.Objdir + "_buildid.s"
 
 	var buf bytes.Buffer
-	if cfg.Goos != "solaris" {
+	if cfg.Goos != "solaris" || assemblerIsGas() {
 		fmt.Fprintf(&buf, "\t"+`.section .go.buildid,"e"`+"\n")
-	} else {
+	} else if cfg.Goarch == "sparc" || cfg.Goarch == "sparc64" {
 		fmt.Fprintf(&buf, "\t"+`.section ".go.buildid",#exclude`+"\n")
+	} else { // cfg.Goarch == "386" || cfg.Goarch == "amd64"
+		fmt.Fprintf(&buf, "\t"+`.section .go.buildid,#exclude`+"\n")
 	}
 	fmt.Fprintf(&buf, "\t.byte ")
 	for i := 0; i < len(a.buildID); i++ {

@@ -875,6 +875,11 @@ be suppressed.  In the presence of this pragma, the Image attribute
 provides the image of the Pos of the literal, and Value accepts
 Pos values.
 
+For tagged types, when pragmas ``Discard_Names`` and ``No_Tagged_Streams``
+simultaneously apply, their Expanded_Name and External_Tag are initialized
+with empty strings. This is useful to avoid exposing entity names at binary
+level.
+
 *
   "The result of the ``Task_Identification.Image``
   attribute.  See C.7.1(7)."

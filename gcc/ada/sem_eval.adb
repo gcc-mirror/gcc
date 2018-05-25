@@ -3403,6 +3403,13 @@ package body Sem_Eval is
          if Nkind (Expr) = N_String_Literal then
             return UI_From_Int (String_Length (Strval (Expr)));
 
+         --  With frontend inlining as performed in GNATprove mode, a variable
+         --  may be inserted that has a string literal subtype. Deal with this
+         --  specially as for the previous case.
+
+         elsif Ekind (Etype (Expr)) = E_String_Literal_Subtype then
+            return String_Literal_Length (Etype (Expr));
+
          --  Second easy case, not constrained subtype, so no length
 
          elsif not Is_Constrained (Etype (Expr)) then
@@ -4760,8 +4767,7 @@ package body Sem_Eval is
         and then Compile_Time_Known_Value (Hi)
       then
          declare
-            Typ      :          Entity_Id := Etype (Lo);
-            Full_Typ : constant Entity_Id := Full_View (Typ);
+            Typ : Entity_Id := Etype (Lo);
          begin
             --  When called from the frontend, as part of the analysis of
             --  potentially static expressions, Typ will be the full view of a
@@ -4770,8 +4776,10 @@ package body Sem_Eval is
             --  is null, Typ might be a private type and we need to explicitly
             --  switch to its corresponding full view to access the same info.
 
-            if Present (Full_Typ) then
-               Typ := Full_Typ;
+            if Is_Incomplete_Or_Private_Type (Typ)
+              and then Present (Full_View (Typ))
+            then
+               Typ := Full_View (Typ);
             end if;
 
             if Is_Discrete_Type (Typ) then
@@ -5349,8 +5357,7 @@ package body Sem_Eval is
         and then Compile_Time_Known_Value (Hi)
       then
          declare
-            Typ      :          Entity_Id := Etype (Lo);
-            Full_Typ : constant Entity_Id := Full_View (Typ);
+            Typ : Entity_Id := Etype (Lo);
          begin
             --  When called from the frontend, as part of the analysis of
             --  potentially static expressions, Typ will be the full view of a
@@ -5359,8 +5366,10 @@ package body Sem_Eval is
             --  is null, Typ might be a private type and we need to explicitly
             --  switch to its corresponding full view to access the same info.
 
-            if Present (Full_Typ) then
-               Typ := Full_Typ;
+            if Is_Incomplete_Or_Private_Type (Typ)
+              and then Present (Full_View (Typ))
+            then
+               Typ := Full_View (Typ);
             end if;
 
             if Is_Discrete_Type (Typ) then

@@ -1,3 +1,25 @@
+2018-05-08  Andreas Schwab  <schwab@suse.de>
+
+	Backport of RISC-V support for libffi
+	* configure.host: Add RISC-V support.
+	* Makefile.am: Likewise.
+	* Makefile.in: Regenerate.
+	* src/riscv/ffi.c, src/riscv/ffitarget.h, src/riscv/sysv.S: New
+	files.
+
+2018-05-04  Alan Modra  <amodra@gmail.com>
+
+	Import from upstream
+	* src/powerpc/ffi_linux64.c (discover_homogeneous_aggregate):
+	Compile for ELFv1 too, handling single element aggregates.
+	(ffi_prep_cif_linux64_core): Call discover_homogeneous_aggregate
+	for ELFv1.  Set FLAG_RETURNS_64BITS for FFI_TYPE_POINTER return.
+	(ffi_prep_args64): Call discover_homogeneous_aggregate for ELFv1,
+	and handle single element structs containing float or double
+	as if the element wasn't wrapped in a struct.  Store floats in
+	second word of doubleword slot when big-endian.
+	(ffi_closure_helper_LINUX64): Similarly.
+
 2018-04-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/85384

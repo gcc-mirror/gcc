@@ -482,6 +482,7 @@ private
    overriding procedure Initialize (Object : in out Unbounded_String);
    overriding procedure Adjust     (Object : in out Unbounded_String);
    overriding procedure Finalize   (Object : in out Unbounded_String);
+   pragma Inline (Initialize, Adjust);
 
    Null_Unbounded_String : constant Unbounded_String :=
                              (AF.Controlled with

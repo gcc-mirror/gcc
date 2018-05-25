@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
   "%{mabi=ilp32d:}" \
   "%{mabi=lp64:-sf}" \
   "%{mabi=lp64f:-sp}" \
-  "%{mabi=lp64d:}" \
+  "%{mabi=lp64d:}"
 
 #undef MUSL_DYNAMIC_LINKER
 #define MUSL_DYNAMIC_LINKER "/lib/ld-musl-riscv" XLEN_SPEC MUSL_ABI_SUFFIX ".so.1"
@@ -49,8 +49,16 @@ along with GCC; see the file COPYING3.  If not see
 
 #define CPP_SPEC "%{pthread:-D_REENTRANT}"
 
+#define LD_EMUL_SUFFIX \
+  "%{mabi=lp64d:}" \
+  "%{mabi=lp64f:_lp64f}" \
+  "%{mabi=lp64:_lp64}" \
+  "%{mabi=ilp32d:}" \
+  "%{mabi=ilp32f:_ilp32f}" \
+  "%{mabi=ilp32:_ilp32}"
+
 #define LINK_SPEC "\
--melf" XLEN_SPEC "lriscv \
+-melf" XLEN_SPEC "lriscv" LD_EMUL_SUFFIX " \
 %{mno-relax:--no-relax} \
 %{shared} \
   %{!shared: \

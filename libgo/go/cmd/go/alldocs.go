@@ -1266,6 +1266,9 @@
 //
 // Special-purpose environment variables:
 //
+// 	GCCGOTOOLDIR
+// 		If set, where to find gccgo tools, such as cgo.
+// 		The default is based on how gccgo was configured.
 // 	GOROOT_FINAL
 // 		The root of the installed Go tree, when it is
 // 		installed in a location other than where it is built.
@@ -1279,9 +1282,6 @@
 // 		Defined by Git. A colon-separated list of schemes that are allowed to be used
 // 		with git fetch/clone. If set, any scheme not explicitly mentioned will be
 // 		considered insecure by 'go get'.
-//	GCCGOTOOLDIR
-//		If set, where to find gccgo tools, such as cgo.
-//		The default is based on how gccgo was configured.
 //
 //
 // Import path syntax

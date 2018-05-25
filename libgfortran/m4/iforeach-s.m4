@@ -30,10 +30,6 @@ name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray,
   index_type rank;
   index_type n;
 
-#ifdef HAVE_BACK_ARG
-  assert (back == 0);
-#endif
-
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -139,9 +135,6 @@ m'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray,
   index_type n;
   int mask_kind;
 
-#ifdef HAVE_BACK_ARG
-  assert (back == 0);
-#endif
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");

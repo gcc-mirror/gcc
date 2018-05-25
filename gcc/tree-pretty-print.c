@@ -2262,7 +2262,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       if (CALL_EXPR_FN (node) != NULL_TREE)
 	print_call_name (pp, CALL_EXPR_FN (node), flags);
       else
-	pp_string (pp, internal_fn_name (CALL_EXPR_IFN (node)));
+	{
+	  pp_dot (pp);
+	  pp_string (pp, internal_fn_name (CALL_EXPR_IFN (node)));
+	}
 
       /* Print parameters.  */
       pp_space (pp);
@@ -2893,16 +2896,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case WIDEN_MULT_MINUS_EXPR:
       pp_string (pp, " WIDEN_MULT_MINUS_EXPR < ");
-      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (pp, ", ");
-      dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (pp, ", ");
-      dump_generic_node (pp, TREE_OPERAND (node, 2), spc, flags, false);
-      pp_string (pp, " > ");
-      break;
-
-    case FMA_EXPR:
-      pp_string (pp, " FMA_EXPR < ");
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
       pp_string (pp, ", ");
       dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
@@ -3549,7 +3542,6 @@ op_code_prio (enum tree_code code)
     case CEIL_MOD_EXPR:
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
-    case FMA_EXPR:
       return 13;
 
     case TRUTH_NOT_EXPR:

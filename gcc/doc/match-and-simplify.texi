@@ -250,7 +250,9 @@ come second in commutative expressions.
 
 The second supported flag is @code{s} which tells the code
 generator to fail the pattern if the expression marked with
-@code{s} does have more than one use.  For example in
+@code{s} does have more than one use and the simplification
+results in an expression with more than one operator.
+For example in
 
 @smallexample
 (simplify
@@ -261,6 +263,14 @@ generator to fail the pattern if the expression marked with
 this avoids the association if @code{(pointer_plus @@0 @@1)} is
 used outside of the matched expression and thus it would stay
 live and not trivially removed by dead code elimination.
+Now consider @code{((x + 3) + -3)} with the temporary
+holding @code{(x + 3)} used elsewhere.  This simplifies down
+to @code{x} which is desirable and thus flagging with @code{s}
+does not prevent the transform.  Now consider @code{((x + 3) + 1)}
+which simplifies to @code{(x + 4)}.  Despite being flagged with
+@code{s} the simplification will be performed.  The
+simplification of @code{((x + a) + 1)} to @code{(x + (a + 1))} will
+not performed in this case though.
 
 More features exist to avoid too much repetition.
 

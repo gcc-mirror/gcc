@@ -1,9 +1,6 @@
-/* This code uses nvptx inline assembly guarded with acc_on_device, which is
-   not optimized away at -O0, and then confuses the target assembler.
-   { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
-
 #include <stdio.h>
 #include <openacc.h>
+#include <gomp-constants.h>
 
 #define NUM_WORKERS 16
 #define NUM_VECTORS 32
@@ -11,15 +8,13 @@
 #define HEIGHT 32
 
 #define WORK_ID(I,N)						\
-  (acc_on_device (acc_device_nvidia)				\
-   ? ({unsigned __r;						\
-       __asm__ volatile ("mov.u32 %0,%%tid.y;" : "=r" (__r));	\
-       __r; }) : (I % N))
+  (acc_on_device (acc_device_not_host)				\
+   ? __builtin_goacc_parlevel_id (GOMP_DIM_WORKER)				\
+   : (I % N))
 #define VEC_ID(I,N)						\
-  (acc_on_device (acc_device_nvidia)				\
-   ? ({unsigned __r;						\
-       __asm__ volatile ("mov.u32 %0,%%tid.x;" : "=r" (__r));	\
-       __r; }) : (I % N))
+  (acc_on_device (acc_device_not_host)				\
+   ? __builtin_goacc_parlevel_id (GOMP_DIM_VECTOR)				\
+   : (I % N))
 
 #pragma acc routine worker
 void __attribute__ ((noinline))

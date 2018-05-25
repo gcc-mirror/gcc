@@ -41,6 +41,7 @@ extern bool arith_overflowed_p (enum tree_code, const_tree, const_tree,
 				const_tree);
 extern tree no_follow_ssa_edges (tree);
 extern tree follow_single_use_edges (tree);
+extern tree follow_all_ssa_edges (tree);
 extern tree gimple_fold_stmt_to_constant_1 (gimple *, tree (*) (tree),
 					    tree (*) (tree) = no_follow_ssa_edges);
 extern tree gimple_fold_stmt_to_constant (gimple *, tree (*) (tree));
@@ -86,28 +87,25 @@ gimple_build (gimple_seq *seq,
 {
   return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0, op1, op2);
 }
-extern tree gimple_build (gimple_seq *, location_t,
-			  enum built_in_function, tree, tree);
+extern tree gimple_build (gimple_seq *, location_t, combined_fn, tree, tree);
 inline tree
-gimple_build (gimple_seq *seq,
-	      enum built_in_function fn, tree type, tree arg0)
+gimple_build (gimple_seq *seq, combined_fn fn, tree type, tree arg0)
 {
   return gimple_build (seq, UNKNOWN_LOCATION, fn, type, arg0);
 }
-extern tree gimple_build (gimple_seq *, location_t,
-			  enum built_in_function, tree, tree, tree);
+extern tree gimple_build (gimple_seq *, location_t, combined_fn,
+			  tree, tree, tree);
 inline tree
-gimple_build (gimple_seq *seq,
-	      enum built_in_function fn, tree type, tree arg0, tree arg1)
+gimple_build (gimple_seq *seq, combined_fn fn,
+	      tree type, tree arg0, tree arg1)
 {
   return gimple_build (seq, UNKNOWN_LOCATION, fn, type, arg0, arg1);
 }
-extern tree gimple_build (gimple_seq *, location_t,
-			  enum built_in_function, tree, tree, tree, tree);
+extern tree gimple_build (gimple_seq *, location_t, combined_fn,
+			  tree, tree, tree, tree);
 inline tree
-gimple_build (gimple_seq *seq,
-	      enum built_in_function fn, tree type,
-	      tree arg0, tree arg1, tree arg2)
+gimple_build (gimple_seq *seq, combined_fn fn,
+	      tree type, tree arg0, tree arg1, tree arg2)
 {
   return gimple_build (seq, UNKNOWN_LOCATION, fn, type, arg0, arg1, arg2);
 }
@@ -153,11 +151,11 @@ extern tree gimple_simplify (enum tree_code, tree, tree, tree,
 			     gimple_seq *, tree (*)(tree));
 extern tree gimple_simplify (enum tree_code, tree, tree, tree, tree,
 			     gimple_seq *, tree (*)(tree));
-extern tree gimple_simplify (enum built_in_function, tree, tree,
+extern tree gimple_simplify (combined_fn, tree, tree,
 			     gimple_seq *, tree (*)(tree));
-extern tree gimple_simplify (enum built_in_function, tree, tree, tree,
+extern tree gimple_simplify (combined_fn, tree, tree, tree,
 			     gimple_seq *, tree (*)(tree));
-extern tree gimple_simplify (enum built_in_function, tree, tree, tree, tree,
+extern tree gimple_simplify (combined_fn, tree, tree, tree, tree,
 			     gimple_seq *, tree (*)(tree));
 
 #endif  /* GCC_GIMPLE_FOLD_H */

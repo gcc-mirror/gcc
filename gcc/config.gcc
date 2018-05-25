@@ -384,7 +384,8 @@ i[34567]86-*-*)
 		       avx512vbmi2vlintrin.h avx512vnniintrin.h
 		       avx512vnnivlintrin.h vaesintrin.h vpclmulqdqintrin.h
 		       avx512vpopcntdqvlintrin.h avx512bitalgintrin.h
-		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h"
+		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h
+		       waitpkgintrin.h cldemoteintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -413,7 +414,8 @@ x86_64-*-*)
 		       avx512vbmi2vlintrin.h avx512vnniintrin.h
 		       avx512vnnivlintrin.h vaesintrin.h vpclmulqdqintrin.h
 		       avx512vpopcntdqvlintrin.h avx512bitalgintrin.h
-		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h"
+		       pconfigintrin.h wbnoinvdintrin.h movdirintrin.h
+		       waitpkgintrin.h cldemoteintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -473,7 +475,6 @@ powerpc*-*-*)
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
-	extra_headers="${extra_headers} paired.h"
 	extra_headers="${extra_headers} amo.h"
 	case x$with_cpu in
 	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
@@ -638,7 +639,8 @@ x86_64_archs="amdfam10 athlon64 athlon64-sse3 barcelona bdver1 bdver2 \
 bdver3 bdver4 znver1 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
 core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
 sandybridge ivybridge haswell broadwell bonnell silvermont knl knm \
-skylake-avx512 cannonlake icelake-client icelake-server skylake x86-64 native"
+skylake-avx512 cannonlake icelake-client icelake-server skylake goldmont \
+goldmont-plus x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -1059,7 +1061,7 @@ arc*-*-elf*)
 	;;
 arc*-*-linux*)
 	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arc/linux.h ${tm_file}"
-	tmake_file="${tmake_file} arc/t-arc"
+	tmake_file="${tmake_file} arc/t-multilib-linux arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
 	if test "x$with_cpu" != x; then
 		tm_defines="${tm_defines} TARGET_CPU_BUILD=PROCESSOR_$with_cpu"
@@ -2344,6 +2346,11 @@ nds32be-*-*)
 	tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/nds32_intrinsic.h"
 	tmake_file="nds32/t-nds32 nds32/t-mlibs"
+
+	# Handle --with-ext-dsp
+	if test x${with_ext_dsp} = xyes; then
+		tm_defines="${tm_defines} TARGET_DEFAULT_EXT_DSP=1"
+	fi
 	;;
 nios2-*-*)
 	tm_file="elfos.h ${tm_file}"
@@ -2452,12 +2459,6 @@ powerpc-*-eabialtivec*)
 	tmake_file="rs6000/t-fprules rs6000/t-ppcendian rs6000/t-ppccomm"
 	use_gcc_stdint=wrap
 	;;
-powerpc-xilinx-eabi*)
-	tm_file="${tm_file} dbxelf.h elfos.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/singlefp.h rs6000/xfpu.h rs6000/xilinx.h"
-	extra_options="${extra_options} rs6000/sysv4.opt rs6000/xilinx.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm rs6000/t-xilinx"
-	use_gcc_stdint=wrap
-	;;
 powerpc-*-eabi*)
 	tm_file="${tm_file} dbxelf.h elfos.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
@@ -2502,11 +2503,11 @@ powerpc*-*-linux*)
 	    all) maybe_biarch=yes ;;
 	esac
 	case ${target} in
-	    powerpc64*-*-linux*spe* | powerpc64*-*-linux*paired*)
+	    powerpc64*-*-linux*spe* | powerpc*-*-linux*paired*)
 		echo "*** Configuration ${target} not supported" 1>&2
 		exit 1
 		;;
-	    powerpc*-*-linux*spe* | powerpc*-*-linux*paired*)
+	    powerpc*-*-linux*spe*)
 		maybe_biarch=
 		;;
 	esac
@@ -2552,8 +2553,6 @@ powerpc*-*-linux*)
 		tm_file="${tm_file} rs6000/linuxaltivec.h" ;;
 	    powerpc*-*-linux*spe*)
 		tm_file="${tm_file} ${cpu_type}/linuxspe.h ${cpu_type}/e500.h" ;;
-	    powerpc*-*-linux*paired*)
-		tm_file="${tm_file} rs6000/750cl.h" ;;
 	esac
 	case ${target} in
 	    *-linux*-musl*)
@@ -4078,19 +4077,20 @@ case "${target}" in
 
 		# Infer arch from --with-arch, --target, and --with-abi.
 		case "${with_arch}" in
-		rv32i* | rv32g* | rv64i* | rv64g*)
+		rv32e* | rv32i* | rv32g* | rv64i* | rv64g*)
 			# OK.
 			;;
 		"")
 			# Infer XLEN, but otherwise assume GC.
 			case "${with_abi}" in
+			ilp32e) with_arch="rv32e" ;;
 			ilp32 | ilp32f | ilp32d) with_arch="rv32gc" ;;
 			lp64 | lp64f | lp64d) with_arch="rv64gc" ;;
 			*) with_arch="rv${xlen}gc" ;;
 			esac
 			;;
 		*)
-			echo "--with-arch=${with_arch} is not supported.  The argument must begin with rv32i, rv32g, rv64i, or rv64g." 1>&2
+			echo "--with-arch=${with_arch} is not supported.  The argument must begin with rv32e, rv32i, rv32g, rv64i, or rv64g." 1>&2
 			exit 1
 			;;
 		esac
@@ -4099,11 +4099,12 @@ case "${target}" in
 		# pick a default based on the ISA, preferring soft-float
 		# unless the D extension is present.
 		case "${with_abi}" in
-		ilp32 | ilp32f | ilp32d | lp64 | lp64f | lp64d)
+		ilp32 | ilp32e | ilp32f | ilp32d | lp64 | lp64f | lp64d)
 			;;
 		"")
 			case "${with_arch}" in
 			rv32*d* | rv32g*) with_abi=ilp32d ;;
+			rv32e*) with_abi=ilp32e ;;
 			rv32*) with_abi=ilp32 ;;
 			rv64*d* | rv64g*) with_abi=lp64d ;;
 			rv64*) with_abi=lp64 ;;
@@ -4117,7 +4118,7 @@ case "${target}" in
 
 		# Make sure ABI and ISA are compatible.
 		case "${with_abi},${with_arch}" in
-		ilp32,rv32* \
+		ilp32,rv32* | ilp32e,rv32e* \
 		| ilp32f,rv32*f* | ilp32f,rv32g* \
 		| ilp32d,rv32*d* | ilp32d,rv32g* \
 		| lp64,rv64* \
@@ -4129,6 +4130,58 @@ case "${target}" in
 			exit 1
 			;;
 		esac
+
+		# Handle --with-multilib-list.
+		if test "x${with_multilib_list}" != xdefault; then
+			tm_file="${tm_file} riscv/withmultilib.h"
+			tmake_file="${tmake_file} riscv/t-withmultilib"
+
+			case ${with_multilib_list} in
+			ilp32 | ilp32f | ilp32d \
+			| lp64 | lp64f | lp64d )
+				TM_MULTILIB_CONFIG="${with_arch},${with_multilib_list}"
+				;;
+			*)
+				echo "--with-multilib-list=${with_multilib_list} not supported."
+				exit 1
+			esac
+
+			# Define macros to select the default multilib.
+			case ${with_arch} in
+			rv32gc)
+				tm_defines="${tm_defines} TARGET_MLIB_ARCH=1"
+				;;
+			rv64gc)
+				tm_defines="${tm_defines} TARGET_MLIB_ARCH=2"
+				;;
+			*)
+				echo "unsupported --with-arch for --with-multilib-list"
+				exit 1
+			esac
+			case ${with_abi} in
+			ilp32)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=1"
+				;;
+			ilp32f)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=2"
+				;;
+			ilp32d)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=3"
+				;;
+			lp64)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=4"
+				;;
+			lp64f)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=5"
+				;;
+			lp64d)
+				tm_defines="${tm_defines} TARGET_MLIB_ABI=6"
+				;;
+			*)
+				echo "unsupported --with-abi for --with-multilib"
+				exit 1
+			esac
+		fi
 		;;
 
 	mips*-*-*)
@@ -4316,11 +4369,11 @@ case "${target}" in
 		"")
 			with_cpu=n9
 			;;
-		n6 | n7 | n8 | e8 | s8 | n9)
+		n6 | n7 |n8 | e8 | s8 | n9 | n10 | d10 | n12 | n13 | n15)
 			# OK
 			;;
 		*)
-			echo "Cannot accept --with-cpu=$with_cpu, available values are: n6 n7 n8 e8 s8 n9" 1>&2
+			echo "Cannot accept --with-cpu=$with_cpu, available values are: n6 n7 n8 e8 s8 n9 n10 d10 n12 n13 n15" 1>&2
 			exit 1
 			;;
 		esac

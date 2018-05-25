@@ -844,9 +844,9 @@ package body Lib.Writ is
          --  Write source file name Nam and ALI file name for unit index Idx.
          --  Possibly change Nam to lowercase (generating a new file name).
 
-         --------------------------
-         -- Write_With_File_Name --
-         --------------------------
+         ---------------------------
+         -- Write_With_File_Names --
+         ---------------------------
 
          procedure Write_With_File_Names
            (Nam : in out File_Name_Type;

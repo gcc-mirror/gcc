@@ -3580,6 +3580,11 @@ esac
 fi
 
 
+# If both --with-sysroot and --with-gxx-include-dir are passed, we interpolate
+# the former in the latter and, upon success, compute gcc_gxx_include_dir as
+# relative to the sysroot.
+gcc_gxx_include_dir_add_sysroot=0
+
 # This logic must match libstdc++-v3/acinclude.m4:GLIBCXX_EXPORT_INSTALL_INFO.
 if test x${gcc_gxx_include_dir} = x; then
   if test x${enable_version_specific_runtime_libs} = xyes; then
@@ -3591,15 +3596,10 @@ if test x${gcc_gxx_include_dir} = x; then
     fi
     gcc_gxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libstdcxx_incdir"
   fi
-fi
-
-gcc_gxx_include_dir_add_sysroot=0
-if test "${with_sysroot+set}" = set; then
+elif test "${with_sysroot+set}" = set; then
   gcc_gxx_without_sysroot=`expr "${gcc_gxx_include_dir}" : "${with_sysroot}"'\(.*\)'`
   if test "${gcc_gxx_without_sysroot}"; then
-    if test x${with_sysroot} != x/; then
-      gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
-    fi
+    gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
     gcc_gxx_include_dir_add_sysroot=1
   fi
 fi
@@ -23600,6 +23600,89 @@ $as_echo "#define USE_AS_TRADITIONAL_FORMAT 1" >>confdefs.h
 
 fi
 
+# Test if the assembler supports the section flag 'e' or #exclude for
+# specifying an excluded section.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section exclude flag" >&5
+$as_echo_n "checking assembler for section exclude flag... " >&6; }
+if test "${gcc_cv_as_section_exclude_e+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_section_exclude_e=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 22 \) \* 1000 + 51`
+  then gcc_cv_as_section_exclude_e=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.section foo1,"e"
+  .byte 0,0,0,0' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_section_exclude_e=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_section_exclude_e" >&5
+$as_echo "$gcc_cv_as_section_exclude_e" >&6; }
+
+
+if test $gcc_cv_as_section_exclude_e = no; then
+  case "${target}" in
+    # Solaris as uses #exclude instead.
+    *-*-solaris2*)
+      case "${target}" in
+	sparc*-*-solaris2*)
+	  conftest_s='.section "foo1", #exclude'
+	  ;;
+	i?86-*-solaris2* | x86_64-*-solaris2*)
+	  conftest_s='.section foo1, #exclude'
+	  ;;
+      esac
+      ;;
+    esac
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section exclude flag" >&5
+$as_echo_n "checking assembler for section exclude flag... " >&6; }
+if test "${gcc_cv_as_section_exclude_hash+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_section_exclude_hash=no
+  if test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s
+     .byte 0,0,0,0" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_section_exclude_hash=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_section_exclude_hash" >&5
+$as_echo "$gcc_cv_as_section_exclude_hash" >&6; }
+
+
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GAS_SECTION_EXCLUDE `if test $gcc_cv_as_section_exclude_e = yes || test $gcc_cv_as_section_exclude_hash = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for section merging support" >&5
 $as_echo_n "checking assembler for section merging support... " >&6; }
 if test "${gcc_cv_as_shf_merge+set}" = set; then :
@@ -25755,46 +25838,6 @@ if test $gcc_cv_as_ix86_xbrace_comment = yes; then
 $as_echo "#define HAVE_AS_XBRACE_COMMENT_OPTION 1" >>confdefs.h
 
 fi
-
-
-    # Test if the assembler supports the section flag 'e' for specifying
-    # an excluded section.
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .section with e" >&5
-$as_echo_n "checking assembler for .section with e... " >&6; }
-if test "${gcc_cv_as_section_has_e+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_section_has_e=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 22 \) \* 1000 + 51`
-  then gcc_cv_as_section_has_e=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo '.section foo1,"e"
-.byte 0,0,0,0' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_section_has_e=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_section_has_e" >&5
-$as_echo "$gcc_cv_as_section_has_e" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_GAS_SECTION_EXCLUDE `if test $gcc_cv_as_section_has_e = yes; then echo 1; else echo 0; fi`
-_ACEOF
 
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for filds and fists mnemonics" >&5
@@ -28819,11 +28862,25 @@ if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
     gcc_cv_ld_as_needed=yes
+    if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 28; then
+      gcc_cv_ld_as_needed_option='--push-state --as-needed'
+      gcc_cv_ld_no_as_needed_option='--pop-state'
+    fi
   fi
 elif test x$gcc_cv_ld != x; then
   # Check if linker supports --as-needed and --no-as-needed options
   if $gcc_cv_ld --help 2>&1 | grep as-needed > /dev/null; then
     gcc_cv_ld_as_needed=yes
+    if $gcc_cv_ld --help 2>&1 | grep push-state > /dev/null \
+       && $gcc_cv_ld --help 2>&1 | grep pop-state > /dev/null \
+       && echo "$ld_ver" | grep GNU > /dev/null \
+       && test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -ge 28; then
+      # Use these options only when both ld.bfd and ld.gold support
+      # --push-state/--pop-state, which unfortunately wasn't added
+      # at the same time.
+      gcc_cv_ld_as_needed_option='--push-state --as-needed'
+      gcc_cv_ld_no_as_needed_option='--pop-state'
+    fi
   fi
   case "$target:$gnu_ld" in
     *-*-solaris2*:no)

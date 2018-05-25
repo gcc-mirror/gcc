@@ -727,7 +727,7 @@ package Opt is
    --  Set True to activate inlining by front-end expansion (even on GCC
    --  targets, where inlining is normally handled by the back end). Set by
    --  the flag -gnatN (which is now considered obsolescent, since the GCC
-   --  back end can do a better job of inlining than the front end these days.
+   --  back end can do a better job of inlining than the front end these days).
 
    Full_Path_Name_For_Brief_Errors : Boolean := False;
    --  PROJECT MANAGER
@@ -786,7 +786,7 @@ package Opt is
 
    Ghost_Mode : Ghost_Mode_Type := None;
    --  GNAT
-   --  Current Ghost mode setting
+   --  The current Ghost mode in effect
 
    Global_Discard_Names : Boolean := False;
    --  GNAT, GNATBIND
@@ -847,6 +847,12 @@ package Opt is
    --  Set True to ignore unrecognized y, V, w switches. Can be set True by
    --  use of -gnateu, causing subsequent unrecognized switches to result in
    --  a warning rather than an error.
+
+   Ignored_Ghost_Region : Node_Id := Empty;
+   --  GNAT
+   --  The start of the current ignored Ghost region. This value must always
+   --  reflect the starting node of the outermost ignored Ghost region. If a
+   --  nested ignored Ghost region is entered, the value must remain unchanged.
 
    Implementation_Unit_Warnings : Boolean := True;
    --  GNAT

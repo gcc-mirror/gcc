@@ -127,38 +127,7 @@ package body System.OS_Primitives is
    procedure Timed_Delay
      (Time : Duration;
       Mode : Integer)
-   is
-      Request    : aliased timespec;
-      Remaind    : aliased timespec;
-      Rel_Time   : Duration;
-      Abs_Time   : Duration;
-      Base_Time  : constant Duration := Clock;
-      Check_Time : Duration := Base_Time;
-
-      Result : Integer;
-      pragma Unreferenced (Result);
-
-   begin
-      if Mode = Relative then
-         Rel_Time := Time;
-         Abs_Time := Time + Check_Time;
-      else
-         Rel_Time := Time - Check_Time;
-         Abs_Time := Time;
-      end if;
-
-      if Rel_Time > 0.0 then
-         loop
-            Request := To_Timespec (Rel_Time);
-            Result := nanosleep (Request'Access, Remaind'Access);
-            Check_Time := Clock;
-
-            exit when Abs_Time <= Check_Time or else Check_Time < Base_Time;
-
-            Rel_Time := Abs_Time - Check_Time;
-         end loop;
-      end if;
-   end Timed_Delay;
+   is separate;
 
    ----------------
    -- Initialize --

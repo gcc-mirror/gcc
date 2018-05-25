@@ -56,24 +56,29 @@
 ;; ------------------------------------------------------------------------
 
 ;; CPU pipeline model.
-(define_attr "pipeline_model" "n7,n8,e8,n9,simple"
+(define_attr "pipeline_model" "n7,n8,e8,n9,n10,graywolf,n13,simple"
   (const
     (cond [(match_test "nds32_cpu_option == CPU_N7")  (const_string "n7")
 	   (match_test "nds32_cpu_option == CPU_E8")  (const_string "e8")
 	   (match_test "nds32_cpu_option == CPU_N6 || nds32_cpu_option == CPU_N8")  (const_string "n8")
 	   (match_test "nds32_cpu_option == CPU_N9")  (const_string "n9")
+	   (match_test "nds32_cpu_option == CPU_N10") (const_string "n10")
+	   (match_test "nds32_cpu_option == CPU_GRAYWOLF") (const_string "graywolf")
+	   (match_test "nds32_cpu_option == CPU_N12") (const_string "n13")
+	   (match_test "nds32_cpu_option == CPU_N13") (const_string "n13")
 	   (match_test "nds32_cpu_option == CPU_SIMPLE") (const_string "simple")]
 	  (const_string "n9"))))
 
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
   "unknown,load,store,load_multiple,store_multiple,alu,alu_shift,pbsad,pbsada,mul,mac,div,branch,mmu,misc,\
-   falu,fmuls,fmuld,fmacs,fmacd,fdivs,fdivd,fsqrts,fsqrtd,fcmp,fabs,fcpy,fcmov,fmfsr,fmfdr,fmtsr,fmtdr,fload,fstore"
+   falu,fmuls,fmuld,fmacs,fmacd,fdivs,fdivd,fsqrts,fsqrtd,fcmp,fabs,fcpy,fcmov,fmfsr,fmfdr,fmtsr,fmtdr,fload,fstore,\
+   dalu,dalu64,daluround,dcmp,dclip,dmul,dmac,dinsb,dpack,dbpick,dwext"
   (const_string "unknown"))
 
 ;; Insn sub-type
 (define_attr "subtype"
-  "simple,shift"
+  "simple,shift,saturation"
   (const_string "simple"))
 
 ;; Length, in bytes, default is 4-bytes.
@@ -133,6 +138,7 @@
 
 ;; ----------------------------------------------------------------------------
 
+(include "nds32-dspext.md")
 
 ;; Move instructions.
 
@@ -209,6 +215,27 @@
 						  low12_int));
       DONE;
     }
+
+  if ((REG_P (operands[0]) || GET_CODE (operands[0]) == SUBREG)
+       && SYMBOLIC_CONST_P (operands[1]))
+    {
+      if (TARGET_ICT_MODEL_LARGE
+	  && nds32_indirect_call_referenced_p (operands[1]))
+	{
+	  nds32_expand_ict_move (operands);
+	  DONE;
+	}
+      else if (nds32_tls_referenced_p (operands [1]))
+	{
+	  nds32_expand_tls_move (operands);
+	  DONE;
+	}
+      else if (flag_pic)
+	{
+	  nds32_expand_pic_move (operands);
+	  DONE;
+	}
+    }
 })
 
 (define_insn "*mov<mode>"
@@ -271,8 +298,8 @@
 ;; We use nds32_symbolic_operand to limit that only CONST/SYMBOL_REF/LABEL_REF
 ;; are able to match such instruction template.
 (define_insn "move_addr"
-  [(set (match_operand:SI 0 "register_operand"       "=l, r")
-	(match_operand:SI 1 "nds32_symbolic_operand" " i, i"))]
+  [(set (match_operand:SI 0 "nds32_general_register_operand"   "=l, r")
+	(match_operand:SI 1 "nds32_nonunspec_symbolic_operand" " i, i"))]
   ""
   "la\t%0, %1"
   [(set_attr "type"  "alu")
@@ -351,13 +378,58 @@
 
 
 ;; ----------------------------------------------------------------------------
+(define_expand "extv"
+  [(set (match_operand 0 "register_operand" "")
+        (sign_extract (match_operand 1 "nonimmediate_operand" "")
+                      (match_operand 2 "const_int_operand" "")
+                      (match_operand 3 "const_int_operand" "")))]
+  ""
+{
+  enum nds32_expand_result_type result = nds32_expand_extv (operands);
+  switch (result)
+    {
+    case EXPAND_DONE:
+      DONE;
+      break;
+    case EXPAND_FAIL:
+      FAIL;
+      break;
+    case EXPAND_CREATE_TEMPLATE:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+})
+
+(define_expand "insv"
+  [(set (zero_extract (match_operand 0 "nonimmediate_operand" "")
+                      (match_operand 1 "const_int_operand" "")
+                      (match_operand 2 "const_int_operand" ""))
+        (match_operand 3 "register_operand" ""))]
+  ""
+{
+  enum nds32_expand_result_type result = nds32_expand_insv (operands);
+  switch (result)
+    {
+    case EXPAND_DONE:
+      DONE;
+      break;
+    case EXPAND_FAIL:
+      FAIL;
+      break;
+    case EXPAND_CREATE_TEMPLATE:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+})
 
 ;; Arithmetic instructions.
 
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand"               "=   d,   l,   d,   l, d, l,   k,   l,    r, r")
 	(plus:SI (match_operand:SI 1 "register_operand"      "%   0,   l,   0,   l, 0, l,   0,   k,    r, r")
-		 (match_operand:SI 2 "nds32_rimm15s_operand" " In05,In03,Iu05,Iu03, r, l,Is10,Iu06, Is15, r")))]
+		 (match_operand:SI 2 "nds32_rimm15s_operand" " In05,In03,Iu05,Iu03, r, l,Is10,IU06, Is15, r")))]
   ""
 {
   switch (which_alternative)
@@ -1428,11 +1500,30 @@
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
-  ""
+  {
+    rtx insn;
+    rtx sym = XEXP (operands[0], 0);
+
+    if (TARGET_ICT_MODEL_LARGE
+	&& nds32_indirect_call_referenced_p (sym))
+      {
+	rtx reg = gen_reg_rtx (Pmode);
+	emit_move_insn (reg, sym);
+	operands[0] = gen_const_mem (Pmode, reg);
+      }
+
+    if (flag_pic)
+      {
+	insn = emit_call_insn (gen_call_internal
+			       (XEXP (operands[0], 0), GEN_INT (0)));
+	use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
+	DONE;
+      }
+  }
 )
 
 (define_insn "call_internal"
-  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, i"))
+  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
 		    (match_operand 1))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
@@ -1474,9 +1565,11 @@
 		     (const_int 2)
 		     (const_int 4))
        ;; Alternative 1
-       (if_then_else (match_test "nds32_long_call_p (operands[0])")
-		     (const_int 12)
-		     (const_int 4))
+       (if_then_else (match_test "flag_pic")
+		     (const_int 16)
+		     (if_then_else (match_test "nds32_long_call_p (operands[0])")
+				   (const_int 12)
+				   (const_int 4)))
      ])]
 )
 
@@ -1492,11 +1585,33 @@
 		         (match_operand 2)))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
-  "")
+  ""
+  {
+    rtx insn;
+    rtx sym = XEXP (operands[1], 0);
+
+    if (TARGET_ICT_MODEL_LARGE
+	&& nds32_indirect_call_referenced_p (sym))
+      {
+	rtx reg = gen_reg_rtx (Pmode);
+	emit_move_insn (reg, sym);
+	operands[1] = gen_const_mem (Pmode, reg);
+      }
+
+    if (flag_pic)
+      {
+	insn =
+	  emit_call_insn (gen_call_value_internal
+			  (operands[0], XEXP (operands[1], 0), GEN_INT (0)));
+	use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
+	DONE;
+      }
+  }
+)
 
 (define_insn "call_value_internal"
   [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, i"))
+		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
 		         (match_operand 2)))
 	      (clobber (reg:SI LP_REGNUM))
 	      (clobber (reg:SI TA_REGNUM))])]
@@ -1538,9 +1653,11 @@
 		     (const_int 2)
 		     (const_int 4))
        ;; Alternative 1
-       (if_then_else (match_test "nds32_long_call_p (operands[1])")
-		     (const_int 12)
-		     (const_int 4))
+       (if_then_else (match_test "flag_pic")
+		     (const_int 16)
+		     (if_then_else (match_test "nds32_long_call_p (operands[1])")
+				   (const_int 12)
+				   (const_int 4)))
      ])]
 )
 
@@ -1583,10 +1700,21 @@
 		    (const_int 0))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
-  "")
+  ""
+{
+    rtx sym = XEXP (operands[0], 0);
+
+    if (TARGET_ICT_MODEL_LARGE
+	&& nds32_indirect_call_referenced_p (sym))
+      {
+	rtx reg = gen_reg_rtx (Pmode);
+	emit_move_insn (reg, sym);
+	operands[0] = gen_const_mem (Pmode, reg);
+      }
+})
 
 (define_insn "sibcall_internal"
-  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, i"))
+  [(parallel [(call (mem (match_operand:SI 0 "nds32_call_address_operand" "r, S"))
 		    (match_operand 1))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
@@ -1617,9 +1745,11 @@
 		     (const_int 2)
 		     (const_int 4))
        ;; Alternative 1
-       (if_then_else (match_test "nds32_long_call_p (operands[0])")
-		     (const_int 12)
-		     (const_int 4))
+       (if_then_else (match_test "flag_pic")
+		     (const_int 16)
+		     (if_then_else (match_test "nds32_long_call_p (operands[0])")
+				   (const_int 12)
+				   (const_int 4)))
      ])]
 )
 
@@ -1633,11 +1763,22 @@
 			 (const_int 0)))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
-  "")
+  ""
+{
+    rtx sym = XEXP (operands[1], 0);
+
+    if (TARGET_ICT_MODEL_LARGE
+	&& nds32_indirect_call_referenced_p (sym))
+      {
+	rtx reg = gen_reg_rtx (Pmode);
+	emit_move_insn (reg, sym);
+	operands[1] = gen_const_mem (Pmode, reg);
+      }
+})
 
 (define_insn "sibcall_value_internal"
   [(parallel [(set (match_operand 0)
-		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, i"))
+		   (call (mem (match_operand:SI 1 "nds32_call_address_operand" "r, S"))
 			 (match_operand 2)))
 	      (clobber (reg:SI TA_REGNUM))
 	      (return)])]
@@ -1668,9 +1809,11 @@
 		     (const_int 2)
 		     (const_int 4))
        ;; Alternative 1
-       (if_then_else (match_test "nds32_long_call_p (operands[1])")
-		     (const_int 12)
-		     (const_int 4))
+       (if_then_else (match_test "flag_pic")
+		     (const_int 16)
+		     (if_then_else (match_test "nds32_long_call_p (operands[1])")
+				   (const_int 12)
+				   (const_int 4)))
      ])]
 )
 
@@ -1868,6 +2011,7 @@
 {
   rtx add_tmp;
   rtx reg, test;
+  rtx tmp_reg;
 
   /* Step A: "k <-- (plus (operands[0]) (-operands[1]))".  */
   if (operands[1] != const0_rtx)
@@ -1889,9 +2033,14 @@
   emit_jump_insn (gen_cbranchsi4 (test, operands[0], operands[2],
 				  operands[4]));
 
-  /* Step C, D, E, and F, using another temporary register.  */
-  rtx tmp = gen_reg_rtx (SImode);
-  emit_jump_insn (gen_casesi_internal (operands[0], operands[3], tmp));
+  tmp_reg = gen_reg_rtx (SImode);
+  /* Step C, D, E, and F, using another temporary register tmp_reg.  */
+  if (flag_pic)
+    emit_use (pic_offset_table_rtx);
+
+  emit_jump_insn (gen_casesi_internal (operands[0],
+				       operands[3],
+				       tmp_reg));
   DONE;
 })
 
@@ -1927,12 +2076,29 @@
   else
     return nds32_output_casesi (operands);
 }
-  [(set_attr "length" "20")
-   (set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (match_test "flag_pic")
+		      (const_int 28)
+		      (const_int 20)))])
 
 ;; ----------------------------------------------------------------------------
 
 ;; Performance Extension
+
+; If -fwrapv option is issued, GCC expects there will be
+; signed overflow situation.  So the ABS(INT_MIN) is still INT_MIN
+; (e.g. ABS(0x80000000)=0x80000000).
+; However, the hardware ABS instruction of nds32 target
+; always performs saturation: abs 0x80000000 -> 0x7fffffff.
+; So that we can only enable abssi2 pattern if flag_wrapv is NOT presented.
+(define_insn "abssi2"
+  [(set (match_operand:SI 0 "register_operand"         "=r")
+	(abs:SI (match_operand:SI 1 "register_operand" " r")))]
+  "TARGET_EXT_PERF && TARGET_HW_ABS && !flag_wrapv"
+  "abs\t%0, %1"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")])
 
 (define_insn "clzsi2"
   [(set (match_operand:SI 0 "register_operand"         "=r")
@@ -2004,6 +2170,16 @@
   [(set_attr "length" "0")]
 )
 
+;; Add pc
+(define_insn "add_pc"
+  [(set (match_operand:SI 0 "register_operand"          "=r")
+	(plus:SI (match_operand:SI 1 "register_operand"  "0")
+		 (pc)))]
+  "flag_pic"
+  "add5.pc\t%0"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
 ;; ----------------------------------------------------------------------------
 
 ;; Patterns for exception handling
@@ -2066,5 +2242,59 @@
   emit_move_insn (place, operands[0]);
   DONE;
 })
+
+;; ----------------------------------------------------------------------------
+
+;; Patterns for TLS.
+;; The following two tls patterns don't be expanded directly because the
+;; intermediate value may be spilled into the stack.  As a result, it is
+;; hard to analyze the define-use chain in the relax_opt pass.
+
+
+;; There is a unspec operand to record RELAX_GROUP number because each
+;; emitted instruction need a relax_hint above it.
+(define_insn "tls_desc"
+  [(set (reg:SI 0)
+	(call (unspec_volatile:SI [(match_operand:SI 0 "nds32_symbolic_operand" "i")] UNSPEC_TLS_DESC)
+	      (const_int 1)))
+   (use (unspec [(match_operand:SI 1 "immediate_operand" "i")] UNSPEC_VOLATILE_RELAX_GROUP))
+   (use (reg:SI GP_REGNUM))
+   (clobber (reg:SI LP_REGNUM))
+   (clobber (reg:SI TA_REGNUM))]
+  ""
+  {
+    return nds32_output_tls_desc (operands);
+  }
+  [(set_attr "length" "20")
+   (set_attr "type" "branch")]
+)
+
+;; There is a unspec operand to record RELAX_GROUP number because each
+;; emitted instruction need a relax_hint above it.
+(define_insn "tls_ie"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "nds32_symbolic_operand" "i")] UNSPEC_TLS_IE))
+   (use (unspec [(match_operand:SI 2 "immediate_operand" "i")] UNSPEC_VOLATILE_RELAX_GROUP))
+   (use (reg:SI GP_REGNUM))]
+  ""
+  {
+    return nds32_output_tls_ie (operands);
+  }
+  [(set (attr "length") (if_then_else (match_test "flag_pic")
+				      (const_int 12)
+				      (const_int 8)))
+   (set_attr "type" "misc")]
+)
+
+;; The pattern is for some relaxation groups that have to keep addsi3 in 32-bit mode.
+(define_insn "addsi3_32bit"
+  [(set (match_operand:SI 0 "register_operand"             "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "%r")
+		    (match_operand:SI 2 "register_operand" " r")] UNSPEC_ADD32))]
+  ""
+  "add\t%0, %1, %2";
+  [(set_attr "type"    "alu")
+   (set_attr "length"  "4")
+   (set_attr "feature" "v1")])
 
 ;; ----------------------------------------------------------------------------

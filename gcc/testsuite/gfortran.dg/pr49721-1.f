@@ -1,6 +1,6 @@
 ! PR middle-end/49721
 ! { dg-do compile }
-! { dg-options "-O3 -funroll-loops" }
+! { dg-options "-O3 -funroll-loops -std=legacy" }
 
       subroutine midbloc6(c,a2,a2i,q)
       parameter (ndim2=6)

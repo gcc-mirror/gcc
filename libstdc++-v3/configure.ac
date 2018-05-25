@@ -263,6 +263,7 @@ if $GLIBCXX_IS_NATIVE; then
 
   AC_CHECK_FUNCS(__cxa_thread_atexit_impl __cxa_thread_atexit)
   AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
+  AC_CHECK_FUNCS(_wfopen)
 
   # For iconv support.
   AM_ICONV

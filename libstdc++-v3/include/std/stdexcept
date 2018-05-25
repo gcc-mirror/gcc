@@ -150,6 +150,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit domain_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
     explicit domain_error(const char*) _GLIBCXX_TXN_SAFE;
+    domain_error(const domain_error&) = default;
+    domain_error& operator=(const domain_error&) = default;
 #endif
     virtual ~domain_error() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -161,6 +163,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit invalid_argument(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
     explicit invalid_argument(const char*) _GLIBCXX_TXN_SAFE;
+    invalid_argument(const invalid_argument&) = default;
+    invalid_argument& operator=(const invalid_argument&) = default;
 #endif
     virtual ~invalid_argument() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -173,6 +177,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit length_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
     explicit length_error(const char*) _GLIBCXX_TXN_SAFE;
+    length_error(const length_error&) = default;
+    length_error& operator=(const length_error&) = default;
 #endif
     virtual ~length_error() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -185,6 +191,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit out_of_range(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
     explicit out_of_range(const char*) _GLIBCXX_TXN_SAFE;
+    out_of_range(const out_of_range&) = default;
+    out_of_range& operator=(const out_of_range&) = default;
 #endif
     virtual ~out_of_range() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -233,6 +241,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit range_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
     explicit range_error(const char*) _GLIBCXX_TXN_SAFE;
+    range_error(const range_error&) = default;
+    range_error& operator=(const range_error&) = default;
 #endif
     virtual ~range_error() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -244,6 +254,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit overflow_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
     explicit overflow_error(const char*) _GLIBCXX_TXN_SAFE;
+    overflow_error(const overflow_error&) = default;
+    overflow_error& operator=(const overflow_error&) = default;
 #endif
     virtual ~overflow_error() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -255,6 +267,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit underflow_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
     explicit underflow_error(const char*) _GLIBCXX_TXN_SAFE;
+    underflow_error(const underflow_error&) = default;
+    underflow_error& operator=(const underflow_error&) = default;
 #endif
     virtual ~underflow_error() _GLIBCXX_USE_NOEXCEPT;
   };

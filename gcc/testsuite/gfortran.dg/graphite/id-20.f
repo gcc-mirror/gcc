@@ -1,4 +1,4 @@
-! { dg-options "-O3 -ffast-math" }
+! { dg-options "-O3 -ffast-math -std=legacy" }
 
       DIMENSION FPQR(25,25,25)
       INTEGER P,Q,R

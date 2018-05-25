@@ -32,6 +32,7 @@ test01()
   std::error_code ec = make_error_code(std::errc::invalid_argument);
   s = std::filesystem::space("/", ec);
   VERIFY( !ec );
+
   s = std::filesystem::space(__gnu_test::nonexistent_path(), ec);
   VERIFY( ec );
   VERIFY( s.capacity ==  static_cast<uintmax_t>(-1) );
@@ -39,8 +40,16 @@ test01()
   VERIFY( s.available ==  static_cast<uintmax_t>(-1) );
 }
 
+void
+test02()
+{
+  std::filesystem::space_info s = std::filesystem::space(".");
+  VERIFY( s.capacity >= s.free );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

@@ -111,7 +111,7 @@ cxx_readonly_error (tree arg, enum lvalue_use errstring)
 			     "constant field %qD"),
 			  arg);
   else if (INDIRECT_REF_P (arg)
-	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 0))) == REFERENCE_TYPE
+	   && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (arg, 0)))
 	   && (VAR_P (TREE_OPERAND (arg, 0))
 	       || TREE_CODE (TREE_OPERAND (arg, 0)) == PARM_DECL))
     ERROR_FOR_ASSIGNMENT (G_("assignment of "
@@ -611,7 +611,7 @@ split_nonconstant_init_1 (tree dest, tree init)
       array_type_p = true;
       if ((TREE_SIDE_EFFECTS (init)
 	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-	  || array_of_runtime_bound_p (type))
+	  || vla_type_p (type))
 	{
 	  /* For an array, we only need/want a single cleanup region rather
 	     than one per element.  */
@@ -845,7 +845,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 		    || error_operand_p (value));
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = const_init;
       /* FIXME setting TREE_CONSTANT on refs breaks the back end.  */
-      if (TREE_CODE (type) != REFERENCE_TYPE)
+      if (!TYPE_REF_P (type))
 	TREE_CONSTANT (decl) = const_init && decl_maybe_constant_var_p (decl);
     }
   value = cp_fully_fold (value);
@@ -861,7 +861,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
      will perform the dynamic initialization.  */
   if (value != error_mark_node
       && (TREE_SIDE_EFFECTS (value)
-	  || array_of_runtime_bound_p (type)
+	  || vla_type_p (type)
 	  || ! reduced_constant_expression_p (value)))
     return split_nonconstant_init (decl, value);
   /* If the value is a constant, just put it in DECL_INITIAL.  If DECL
@@ -1498,7 +1498,7 @@ process_init_constructor_record (tree type, tree init, int nested,
       else
 	{
 	  const_tree fldtype = TREE_TYPE (field);
-	  if (TREE_CODE (fldtype) == REFERENCE_TYPE)
+	  if (TYPE_REF_P (fldtype))
 	    {
 	      if (complain & tf_error)
 		error ("member %qD is uninitialized reference", field);
@@ -1823,7 +1823,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 
   if (processing_template_decl)
     {
-      if (type && TREE_CODE (type) == POINTER_TYPE
+      if (type && TYPE_PTR_P (type)
 	  && !dependent_scope_p (TREE_TYPE (type)))
 	/* Pointer to current instantiation, don't treat as dependent.  */;
       else if (type_dependent_expression_p (expr))
@@ -1873,7 +1873,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 	  return error_mark_node;
 	}
 
-      if (TREE_CODE (TREE_TYPE (last_rval)) == REFERENCE_TYPE)
+      if (TYPE_REF_P (TREE_TYPE (last_rval)))
 	last_rval = convert_from_reference (last_rval);
     }
   else
@@ -1965,7 +1965,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 
   if (TYPE_PTRDATAMEM_P (ptrmem_type))
     {
-      cp_lvalue_kind kind = lvalue_kind (datum);
+      bool is_lval = real_lvalue_p (datum);
       tree ptype;
 
       /* Compute the type of the field, as described in [expr.ref].
@@ -1995,9 +1995,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 	return error_mark_node;
 
       /* If the object expression was an rvalue, return an rvalue.  */
-      if (kind & clk_class)
-	datum = rvalue (datum);
-      else if (kind & clk_rvalueref)
+      if (!is_lval)
 	datum = move (datum);
       return datum;
     }
@@ -2064,9 +2062,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
     {
       type = TREE_TYPE (exp);
 
-      if (complain & tf_warning
-	  && TREE_DEPRECATED (type)
-	  && DECL_ARTIFICIAL (exp))
+      if (DECL_ARTIFICIAL (exp))
 	cp_warn_deprecated_use (type);
     }
   else
@@ -2108,7 +2104,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
       /* Diagnose this even in a template.  We could also try harder
 	 to give all the usual errors when the type and args are
 	 non-dependent...  */
-      if (TREE_CODE (type) == REFERENCE_TYPE && !parms)
+      if (TYPE_REF_P (type) && !parms)
 	{
 	  if (complain & tf_error)
 	    error ("invalid value-initialization of reference type");
@@ -2206,7 +2202,7 @@ add_exception_specifier (tree list, tree spec, int complain)
      incomplete, or pointer or ref to incomplete other than pointer
      to cv void.  */
   is_ptr = TYPE_PTR_P (core);
-  if (is_ptr || TREE_CODE (core) == REFERENCE_TYPE)
+  if (is_ptr || TYPE_REF_P (core))
     core = TREE_TYPE (core);
   if (complain < 0)
     ok = true;

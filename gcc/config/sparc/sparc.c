@@ -10502,6 +10502,10 @@ sparc_solaris_elf_asm_named_section (const char *name, unsigned int flags,
 
   if (!(flags & SECTION_DEBUG))
     fputs (",#alloc", asm_out_file);
+#if HAVE_GAS_SECTION_EXCLUDE
+  if (flags & SECTION_EXCLUDE)
+    fputs (",#exclude", asm_out_file);
+#endif
   if (flags & SECTION_WRITE)
     fputs (",#write", asm_out_file);
   if (flags & SECTION_TLS)
@@ -11592,6 +11596,8 @@ sparc_expand_builtin (tree exp, rtx target,
       else
 	op[0] = target;
     }
+  else
+    op[0] = NULL_RTX;
 
   FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
     {

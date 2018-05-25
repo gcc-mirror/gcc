@@ -276,9 +276,7 @@ find_local_binding (cp_binding_level *b, tree name)
   if (cxx_binding *binding = IDENTIFIER_BINDING (name))
     for (;; b = b->level_chain)
       {
-	if (binding->scope == b
-	    && !(VAR_P (binding->value)
-		 && DECL_DEAD_FOR_LOCAL (binding->value)))
+	if (binding->scope == b)
 	  return binding;
 
 	/* Cleanup contours are transparent to the language.  */
@@ -2833,6 +2831,10 @@ check_extern_c_conflict (tree decl)
   if (DECL_ARTIFICIAL (decl) || DECL_IN_SYSTEM_HEADER (decl))
     return;
 
+  /* This only applies to decls at namespace scope.  */
+  if (!DECL_NAMESPACE_SCOPE_P (decl))
+    return;
+
   if (!extern_c_decls)
     extern_c_decls = hash_table<named_decl_hash>::create_ggc (127);
 
@@ -2934,8 +2936,6 @@ check_local_shadow (tree decl)
       old = binding->value;
       old_scope = binding->scope;
     }
-  while (old && VAR_P (old) && DECL_DEAD_FOR_LOCAL (old))
-    old = DECL_SHADOWED_FOR_VAR (old);
 
   tree shadowed = NULL_TREE;
   if (old
@@ -2944,6 +2944,7 @@ check_local_shadow (tree decl)
 	  || (TREE_CODE (old) == TYPE_DECL
 	      && (!DECL_ARTIFICIAL (old)
 		  || TREE_CODE (decl) == TYPE_DECL)))
+      && DECL_FUNCTION_SCOPE_P (old)
       && (!DECL_ARTIFICIAL (decl)
 	  || DECL_IMPLICIT_TYPEDEF_P (decl)
 	  || (VAR_P (decl) && DECL_ANON_UNION_VAR_P (decl))))
@@ -3256,8 +3257,7 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
 /* DECL has just been bound at LEVEL.  finish up the bookkeeping.  */
 
 static void
-newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level,
-			bool visible_injection = false)
+newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
 {
   if (TREE_CODE (decl) == TYPE_DECL)
     {
@@ -3284,9 +3284,6 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level,
     }
   else if (VAR_P (decl))
     maybe_register_incomplete_var (decl);
-  else if (visible_injection)
-    warning (0, "injected friend %qD is visible"
-	     " due to %<-ffriend-injection%>", decl);
 
   if ((VAR_P (decl) || TREE_CODE (decl) == FUNCTION_DECL)
       && DECL_EXTERN_C_P (decl))
@@ -3402,7 +3399,6 @@ do_pushdecl (tree decl, bool is_friend)
 	old = OVL_CHAIN (old);
 
       check_template_shadow (decl);
-      bool visible_injection = false;
 
       if (DECL_DECLARES_FUNCTION_P (decl))
 	{
@@ -3420,11 +3416,8 @@ do_pushdecl (tree decl, bool is_friend)
 		  /* Don't attempt to push it.  */
 		  return error_mark_node;
 		}
-	      if (!flag_friend_injection)
-		/* Hide it from ordinary lookup.  */
-		DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
-	      else
-		visible_injection = true;
+	      /* Hide it from ordinary lookup.  */
+	      DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
 	    }
 	}
 
@@ -3455,7 +3448,7 @@ do_pushdecl (tree decl, bool is_friend)
 	/* An existing decl matched, use it.  */
 	decl = old;
       else
-	newbinding_bookkeeping (name, decl, level, visible_injection);
+	newbinding_bookkeeping (name, decl, level);
     }
   else
     add_decl_to_level (level, decl);
@@ -3851,84 +3844,6 @@ push_local_binding (tree id, tree decl, bool is_using)
   add_decl_to_level (b, decl);
 }
 
-/* Check to see whether or not DECL is a variable that would have been
-   in scope under the ARM, but is not in scope under the ANSI/ISO
-   standard.  If so, issue an error message.  If name lookup would
-   work in both cases, but return a different result, this function
-   returns the result of ANSI/ISO lookup.  Otherwise, it returns
-   DECL.
-
-   FIXME: Scheduled for removal after GCC-8 is done.  */
-
-tree
-check_for_out_of_scope_variable (tree decl)
-{
-  tree shadowed;
-
-  /* We only care about out of scope variables.  */
-  if (!(VAR_P (decl) && DECL_DEAD_FOR_LOCAL (decl)))
-    return decl;
-
-  shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (decl)
-    ? DECL_SHADOWED_FOR_VAR (decl) : NULL_TREE ;
-  while (shadowed != NULL_TREE && VAR_P (shadowed)
-	 && DECL_DEAD_FOR_LOCAL (shadowed))
-    shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (shadowed)
-      ? DECL_SHADOWED_FOR_VAR (shadowed) : NULL_TREE;
-  if (!shadowed)
-    shadowed = find_namespace_value (current_namespace, DECL_NAME (decl));
-  if (shadowed)
-    {
-      if (!DECL_ERROR_REPORTED (decl)
-	  && flag_permissive
-	  && warning (0, "name lookup of %qD changed", DECL_NAME (decl)))
-	{
-	  inform (DECL_SOURCE_LOCATION (shadowed),
-		  "matches this %qD under ISO standard rules", shadowed);
-	  inform (DECL_SOURCE_LOCATION (decl),
-		  "  matches this %qD under old rules", decl);
-	}
-      DECL_ERROR_REPORTED (decl) = 1;
-      return shadowed;
-    }
-
-  /* If we have already complained about this declaration, there's no
-     need to do it again.  */
-  if (DECL_ERROR_REPORTED (decl))
-    return decl;
-
-  DECL_ERROR_REPORTED (decl) = 1;
-
-  if (TREE_TYPE (decl) == error_mark_node)
-    return decl;
-
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
-    {
-      error ("name lookup of %qD changed for ISO %<for%> scoping",
-	     DECL_NAME (decl));
-      inform (DECL_SOURCE_LOCATION (decl),
-	      "cannot use obsolete binding %qD because it has a destructor",
-	      decl);
-      return error_mark_node;
-    }
-  else
-    {
-      permerror (input_location,
-		 "name lookup of %qD changed for ISO %<for%> scoping",
-	         DECL_NAME (decl));
-      if (flag_permissive)
-        inform (DECL_SOURCE_LOCATION (decl),
-		"using obsolete binding %qD", decl);
-      static bool hint;
-      if (!hint)
-	inform (input_location, flag_permissive
-		? "this flexibility is deprecated and will be removed"
-		: "if you use %<-fpermissive%> G++ will accept your code");
-      hint = true;
-    }
-
-  return decl;
-}
 
 /* true means unconditionally make a BLOCK for the next level pushed.  */
 

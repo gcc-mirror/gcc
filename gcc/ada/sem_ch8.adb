@@ -3916,10 +3916,14 @@ package body Sem_Ch8 is
       --  manipulation of the scope stack so we much guard against those cases
       --  here, otherwise, we must add the new use_type_clause to the previous
       --  use_type_clause chain in order to mark redundant use_type_clauses as
-      --  used.
+      --  used. When the redundant use-type clauses appear in a parent unit and
+      --  a child unit we must prevent a circularity in the chain that would
+      --  otherwise result from the separate steps of analysis and installation
+      --  of the parent context.
 
       if Present (Current_Use_Clause (E))
         and then Current_Use_Clause (E) /= N
+        and then Prev_Use_Clause (Current_Use_Clause (E)) /= N
         and then No (Prev_Use_Clause (N))
       then
          Set_Prev_Use_Clause (N, Current_Use_Clause (E));
@@ -4322,7 +4326,10 @@ package body Sem_Ch8 is
                Analyze (B_Node);
             end if;
 
-            if Is_Intrinsic_Subprogram (Old_S) and then not In_Instance then
+            if Is_Intrinsic_Subprogram (Old_S)
+              and then not In_Instance
+              and then not Relaxed_RM_Semantics
+            then
                Error_Msg_N
                  ("subprogram used in renaming_as_body cannot be intrinsic",
                   Name (N));
@@ -8290,6 +8297,7 @@ package body Sem_Ch8 is
    ----------------------
 
    procedure Mark_Use_Clauses (Id : Node_Or_Entity_Id) is
+
       procedure Mark_Parameters (Call : Entity_Id);
       --  Perform use_type_clause marking for all parameters in a subprogram
       --  or operator call.
@@ -8521,7 +8529,8 @@ package body Sem_Ch8 is
      (Clause1 : Entity_Id;
       Clause2 : Entity_Id) return Entity_Id
    is
-      Scope1, Scope2 : Entity_Id;
+      Scope1 : Entity_Id;
+      Scope2 : Entity_Id;
 
    begin
       if Clause1 = Clause2 then

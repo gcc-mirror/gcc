@@ -810,7 +810,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     long&
     iword(int __ix)
     {
-      _Words& __word = (__ix < _M_word_size)
+      _Words& __word = ((unsigned)__ix < (unsigned)_M_word_size)
 			? _M_word[__ix] : _M_grow_words(__ix, true);
       return __word._M_iword;
     }
@@ -831,7 +831,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void*&
     pword(int __ix)
     {
-      _Words& __word = (__ix < _M_word_size)
+      _Words& __word = ((unsigned)__ix < (unsigned)_M_word_size)
 			? _M_word[__ix] : _M_grow_words(__ix, false);
       return __word._M_pword;
     }

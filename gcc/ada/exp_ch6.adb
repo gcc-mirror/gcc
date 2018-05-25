@@ -6759,7 +6759,13 @@ package body Exp_Ch6 is
       --  conversion or a formal parameter, because in that case the tag of
       --  the expression might differ from the tag of the specific result type.
 
-      if Is_Tagged_Type (Utyp)
+      --  We must also verify an underlying type exists for the return type in
+      --  case it is incomplete - in which case is not necessary to generate a
+      --  check anyway since an incomplete limited tagged return type would
+      --  qualify as a premature usage.
+
+      if Present (Utyp)
+        and then Is_Tagged_Type (Utyp)
         and then not Is_Class_Wide_Type (Utyp)
         and then (Nkind_In (Exp, N_Type_Conversion,
                                  N_Unchecked_Type_Conversion)
@@ -8439,7 +8445,7 @@ package body Exp_Ch6 is
 
             begin
                while Present (N)
-                 and then Nkind_In (N, N_Pragma, N_Attribute_Reference)
+                 and then Nkind_In (N, N_Attribute_Reference, N_Pragma)
                loop
                   Analyze (N);
                   D := N;
@@ -9201,8 +9207,8 @@ package body Exp_Ch6 is
       declare
          Next_Id : constant Entity_Id := Next_Entity (New_Id);
       begin
-         Set_Next_Entity (New_Id, Next_Entity (Orig_Id));
-         Set_Next_Entity (Orig_Id, Next_Id);
+         Link_Entities (New_Id, Next_Entity (Orig_Id));
+         Link_Entities (Orig_Id, Next_Id);
       end;
 
       Set_Homonym (New_Id, Homonym (Orig_Id));

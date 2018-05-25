@@ -519,6 +519,7 @@ static struct builtin_description bdesc_noarg[] =
 {
   NDS32_BUILTIN(unspec_fmfcfg, "fmfcfg", FMFCFG)
   NDS32_BUILTIN(unspec_fmfcsr, "fmfcsr", FMFCSR)
+  NDS32_BUILTIN(unspec_volatile_rdov, "rdov", RDOV)
   NDS32_BUILTIN(unspec_get_current_sp, "get_current_sp", GET_CURRENT_SP)
   NDS32_BUILTIN(unspec_return_address, "return_address", RETURN_ADDRESS)
   NDS32_BUILTIN(unspec_get_all_pending_int, "get_all_pending_int",
@@ -558,6 +559,31 @@ static struct builtin_description bdesc_1arg[] =
   NDS32_NO_TARGET_BUILTIN(unspec_ret_itoff, "ret_itoff", RET_ITOFF)
   NDS32_NO_TARGET_BUILTIN(unspec_set_current_sp,
 			  "set_current_sp", SET_CURRENT_SP)
+  NDS32_BUILTIN(kabsv2hi2, "kabs16", KABS16)
+  NDS32_BUILTIN(kabsv2hi2, "v_kabs16", V_KABS16)
+  NDS32_BUILTIN(kabsv4qi2, "kabs8", KABS8)
+  NDS32_BUILTIN(kabsv4qi2, "v_kabs8", V_KABS8)
+  NDS32_BUILTIN(sunpkd810, "sunpkd810", SUNPKD810)
+  NDS32_BUILTIN(sunpkd810, "v_sunpkd810", V_SUNPKD810)
+  NDS32_BUILTIN(sunpkd820, "sunpkd820", SUNPKD820)
+  NDS32_BUILTIN(sunpkd820, "v_sunpkd820", V_SUNPKD820)
+  NDS32_BUILTIN(sunpkd830, "sunpkd830", SUNPKD830)
+  NDS32_BUILTIN(sunpkd830, "v_sunpkd830", V_SUNPKD830)
+  NDS32_BUILTIN(sunpkd831, "sunpkd831", SUNPKD831)
+  NDS32_BUILTIN(sunpkd831, "v_sunpkd831", V_SUNPKD831)
+  NDS32_BUILTIN(zunpkd810, "zunpkd810", ZUNPKD810)
+  NDS32_BUILTIN(zunpkd810, "v_zunpkd810", V_ZUNPKD810)
+  NDS32_BUILTIN(zunpkd820, "zunpkd820", ZUNPKD820)
+  NDS32_BUILTIN(zunpkd820, "v_zunpkd820", V_ZUNPKD820)
+  NDS32_BUILTIN(zunpkd830, "zunpkd830", ZUNPKD830)
+  NDS32_BUILTIN(zunpkd830, "v_zunpkd830", V_ZUNPKD830)
+  NDS32_BUILTIN(zunpkd831, "zunpkd831", ZUNPKD831)
+  NDS32_BUILTIN(zunpkd831, "v_zunpkd831", V_ZUNPKD831)
+  NDS32_BUILTIN(unspec_kabs, "kabs", KABS)
+  NDS32_BUILTIN(unaligned_loadv2hi, "get_unaligned_u16x2", UALOAD_U16)
+  NDS32_BUILTIN(unaligned_loadv2hi, "get_unaligned_s16x2", UALOAD_S16)
+  NDS32_BUILTIN(unaligned_loadv4qi, "get_unaligned_u8x4", UALOAD_U8)
+  NDS32_BUILTIN(unaligned_loadv4qi, "get_unaligned_s8x4", UALOAD_S8)
 };
 
 /* Intrinsics that take just one argument. and the argument is immediate.  */
@@ -593,6 +619,28 @@ static struct builtin_description bdesc_2arg[] =
   NDS32_BUILTIN(unspec_ffb, "ffb", FFB)
   NDS32_BUILTIN(unspec_ffmism, "ffmsim", FFMISM)
   NDS32_BUILTIN(unspec_flmism, "flmism", FLMISM)
+  NDS32_BUILTIN(unspec_kaddw, "kaddw", KADDW)
+  NDS32_BUILTIN(unspec_kaddh, "kaddh", KADDH)
+  NDS32_BUILTIN(unspec_ksubw, "ksubw", KSUBW)
+  NDS32_BUILTIN(unspec_ksubh, "ksubh", KSUBH)
+  NDS32_BUILTIN(unspec_kdmbb, "kdmbb", KDMBB)
+  NDS32_BUILTIN(unspec_kdmbb, "v_kdmbb", V_KDMBB)
+  NDS32_BUILTIN(unspec_kdmbt, "kdmbt", KDMBT)
+  NDS32_BUILTIN(unspec_kdmbt, "v_kdmbt", V_KDMBT)
+  NDS32_BUILTIN(unspec_kdmtb, "kdmtb", KDMTB)
+  NDS32_BUILTIN(unspec_kdmtb, "v_kdmtb", V_KDMTB)
+  NDS32_BUILTIN(unspec_kdmtt, "kdmtt", KDMTT)
+  NDS32_BUILTIN(unspec_kdmtt, "v_kdmtt", V_KDMTT)
+  NDS32_BUILTIN(unspec_khmbb, "khmbb", KHMBB)
+  NDS32_BUILTIN(unspec_khmbb, "v_khmbb", V_KHMBB)
+  NDS32_BUILTIN(unspec_khmbt, "khmbt", KHMBT)
+  NDS32_BUILTIN(unspec_khmbt, "v_khmbt", V_KHMBT)
+  NDS32_BUILTIN(unspec_khmtb, "khmtb", KHMTB)
+  NDS32_BUILTIN(unspec_khmtb, "v_khmtb", V_KHMTB)
+  NDS32_BUILTIN(unspec_khmtt, "khmtt", KHMTT)
+  NDS32_BUILTIN(unspec_khmtt, "v_khmtt", V_KHMTT)
+  NDS32_BUILTIN(unspec_kslraw, "kslraw", KSLRAW)
+  NDS32_BUILTIN(unspec_kslrawu, "kslraw_u", KSLRAW_U)
   NDS32_BUILTIN(rotrsi3, "rotr", ROTR)
   NDS32_BUILTIN(unspec_sva, "sva", SVA)
   NDS32_BUILTIN(unspec_svs, "svs", SVS)
@@ -603,7 +651,202 @@ static struct builtin_description bdesc_2arg[] =
   NDS32_NO_TARGET_BUILTIN(unaligned_store_hw, "unaligned_store_hw", UASTORE_HW)
   NDS32_NO_TARGET_BUILTIN(unaligned_storesi, "unaligned_store_hw", UASTORE_W)
   NDS32_NO_TARGET_BUILTIN(unaligned_storedi, "unaligned_store_hw", UASTORE_DW)
-
+  NDS32_BUILTIN(addv2hi3, "add16", ADD16)
+  NDS32_BUILTIN(addv2hi3, "v_uadd16", V_UADD16)
+  NDS32_BUILTIN(addv2hi3, "v_sadd16", V_SADD16)
+  NDS32_BUILTIN(raddv2hi3, "radd16", RADD16)
+  NDS32_BUILTIN(raddv2hi3, "v_radd16", V_RADD16)
+  NDS32_BUILTIN(uraddv2hi3, "uradd16", URADD16)
+  NDS32_BUILTIN(uraddv2hi3, "v_uradd16", V_URADD16)
+  NDS32_BUILTIN(kaddv2hi3, "kadd16", KADD16)
+  NDS32_BUILTIN(kaddv2hi3, "v_kadd16", V_KADD16)
+  NDS32_BUILTIN(ukaddv2hi3, "ukadd16", UKADD16)
+  NDS32_BUILTIN(ukaddv2hi3, "v_ukadd16", V_UKADD16)
+  NDS32_BUILTIN(subv2hi3, "sub16", SUB16)
+  NDS32_BUILTIN(subv2hi3, "v_usub16", V_USUB16)
+  NDS32_BUILTIN(subv2hi3, "v_ssub16", V_SSUB16)
+  NDS32_BUILTIN(rsubv2hi3, "rsub16", RSUB16)
+  NDS32_BUILTIN(rsubv2hi3, "v_rsub16", V_RSUB16)
+  NDS32_BUILTIN(ursubv2hi3, "ursub16", URSUB16)
+  NDS32_BUILTIN(ursubv2hi3, "v_ursub16", V_URSUB16)
+  NDS32_BUILTIN(ksubv2hi3, "ksub16", KSUB16)
+  NDS32_BUILTIN(ksubv2hi3, "v_ksub16", V_KSUB16)
+  NDS32_BUILTIN(uksubv2hi3, "uksub16", UKSUB16)
+  NDS32_BUILTIN(uksubv2hi3, "v_uksub16", V_UKSUB16)
+  NDS32_BUILTIN(cras16_1, "cras16", CRAS16)
+  NDS32_BUILTIN(cras16_1, "v_ucras16", V_UCRAS16)
+  NDS32_BUILTIN(cras16_1, "v_scras16", V_SCRAS16)
+  NDS32_BUILTIN(rcras16_1, "rcras16", RCRAS16)
+  NDS32_BUILTIN(rcras16_1, "v_rcras16", V_RCRAS16)
+  NDS32_BUILTIN(urcras16_1, "urcras16", URCRAS16)
+  NDS32_BUILTIN(urcras16_1, "v_urcras16", V_URCRAS16)
+  NDS32_BUILTIN(kcras16_1, "kcras16", KCRAS16)
+  NDS32_BUILTIN(kcras16_1, "v_kcras16", V_KCRAS16)
+  NDS32_BUILTIN(ukcras16_1, "ukcras16", UKCRAS16)
+  NDS32_BUILTIN(ukcras16_1, "v_ukcras16", V_UKCRAS16)
+  NDS32_BUILTIN(crsa16_1, "crsa16", CRSA16)
+  NDS32_BUILTIN(crsa16_1, "v_ucrsa16", V_UCRSA16)
+  NDS32_BUILTIN(crsa16_1, "v_scrsa16", V_SCRSA16)
+  NDS32_BUILTIN(rcrsa16_1, "rcrsa16", RCRSA16)
+  NDS32_BUILTIN(rcrsa16_1, "v_rcrsa16", V_RCRSA16)
+  NDS32_BUILTIN(urcrsa16_1, "urcrsa16", URCRSA16)
+  NDS32_BUILTIN(urcrsa16_1, "v_urcrsa16", V_URCRSA16)
+  NDS32_BUILTIN(kcrsa16_1, "kcrsa16", KCRSA16)
+  NDS32_BUILTIN(kcrsa16_1, "v_kcrsa16", V_KCRSA16)
+  NDS32_BUILTIN(ukcrsa16_1, "ukcrsa16", UKCRSA16)
+  NDS32_BUILTIN(ukcrsa16_1, "v_ukcrsa16", V_UKCRSA16)
+  NDS32_BUILTIN(addv4qi3, "add8", ADD8)
+  NDS32_BUILTIN(addv4qi3, "v_uadd8", V_UADD8)
+  NDS32_BUILTIN(addv4qi3, "v_sadd8", V_SADD8)
+  NDS32_BUILTIN(raddv4qi3, "radd8", RADD8)
+  NDS32_BUILTIN(raddv4qi3, "v_radd8", V_RADD8)
+  NDS32_BUILTIN(uraddv4qi3, "uradd8", URADD8)
+  NDS32_BUILTIN(uraddv4qi3, "v_uradd8", V_URADD8)
+  NDS32_BUILTIN(kaddv4qi3, "kadd8", KADD8)
+  NDS32_BUILTIN(kaddv4qi3, "v_kadd8", V_KADD8)
+  NDS32_BUILTIN(ukaddv4qi3, "ukadd8", UKADD8)
+  NDS32_BUILTIN(ukaddv4qi3, "v_ukadd8", V_UKADD8)
+  NDS32_BUILTIN(subv4qi3, "sub8", SUB8)
+  NDS32_BUILTIN(subv4qi3, "v_usub8", V_USUB8)
+  NDS32_BUILTIN(subv4qi3, "v_ssub8", V_SSUB8)
+  NDS32_BUILTIN(rsubv4qi3, "rsub8", RSUB8)
+  NDS32_BUILTIN(rsubv4qi3, "v_rsub8", V_RSUB8)
+  NDS32_BUILTIN(ursubv4qi3, "ursub8", URSUB8)
+  NDS32_BUILTIN(ursubv4qi3, "v_ursub8", V_URSUB8)
+  NDS32_BUILTIN(ksubv4qi3, "ksub8", KSUB8)
+  NDS32_BUILTIN(ksubv4qi3, "v_ksub8", V_KSUB8)
+  NDS32_BUILTIN(uksubv4qi3, "uksub8", UKSUB8)
+  NDS32_BUILTIN(uksubv4qi3, "v_uksub8", V_UKSUB8)
+  NDS32_BUILTIN(ashrv2hi3, "sra16", SRA16)
+  NDS32_BUILTIN(ashrv2hi3, "v_sra16", V_SRA16)
+  NDS32_BUILTIN(sra16_round, "sra16_u", SRA16_U)
+  NDS32_BUILTIN(sra16_round, "v_sra16_u", V_SRA16_U)
+  NDS32_BUILTIN(lshrv2hi3, "srl16", SRL16)
+  NDS32_BUILTIN(lshrv2hi3, "v_srl16", V_SRL16)
+  NDS32_BUILTIN(srl16_round, "srl16_u", SRL16_U)
+  NDS32_BUILTIN(srl16_round, "v_srl16_u", V_SRL16_U)
+  NDS32_BUILTIN(ashlv2hi3, "sll16", SLL16)
+  NDS32_BUILTIN(ashlv2hi3, "v_sll16", V_SLL16)
+  NDS32_BUILTIN(kslli16, "ksll16", KSLL16)
+  NDS32_BUILTIN(kslli16, "v_ksll16", V_KSLL16)
+  NDS32_BUILTIN(kslra16, "kslra16", KSLRA16)
+  NDS32_BUILTIN(kslra16, "v_kslra16", V_KSLRA16)
+  NDS32_BUILTIN(kslra16_round, "kslra16_u", KSLRA16_U)
+  NDS32_BUILTIN(kslra16_round, "v_kslra16_u", V_KSLRA16_U)
+  NDS32_BUILTIN(cmpeq16, "cmpeq16", CMPEQ16)
+  NDS32_BUILTIN(cmpeq16, "v_scmpeq16", V_SCMPEQ16)
+  NDS32_BUILTIN(cmpeq16, "v_ucmpeq16", V_UCMPEQ16)
+  NDS32_BUILTIN(scmplt16, "scmplt16", SCMPLT16)
+  NDS32_BUILTIN(scmplt16, "v_scmplt16", V_SCMPLT16)
+  NDS32_BUILTIN(scmple16, "scmple16", SCMPLE16)
+  NDS32_BUILTIN(scmple16, "v_scmple16", V_SCMPLE16)
+  NDS32_BUILTIN(ucmplt16, "ucmplt16", UCMPLT16)
+  NDS32_BUILTIN(ucmplt16, "v_ucmplt16", V_UCMPLT16)
+  NDS32_BUILTIN(ucmplt16, "ucmple16", UCMPLE16)
+  NDS32_BUILTIN(ucmplt16, "v_ucmple16", V_UCMPLE16)
+  NDS32_BUILTIN(cmpeq8, "cmpeq8", CMPEQ8)
+  NDS32_BUILTIN(cmpeq8, "v_scmpeq8", V_SCMPEQ8)
+  NDS32_BUILTIN(cmpeq8, "v_ucmpeq8", V_UCMPEQ8)
+  NDS32_BUILTIN(scmplt8, "scmplt8", SCMPLT8)
+  NDS32_BUILTIN(scmplt8, "v_scmplt8", V_SCMPLT8)
+  NDS32_BUILTIN(scmple8, "scmple8", SCMPLE8)
+  NDS32_BUILTIN(scmple8, "v_scmple8", V_SCMPLE8)
+  NDS32_BUILTIN(ucmplt8, "ucmplt8", UCMPLT8)
+  NDS32_BUILTIN(ucmplt8, "v_ucmplt8", V_UCMPLT8)
+  NDS32_BUILTIN(ucmplt8, "ucmple8", UCMPLE8)
+  NDS32_BUILTIN(ucmplt8, "v_ucmple8", V_UCMPLE8)
+  NDS32_BUILTIN(sminv2hi3, "smin16", SMIN16)
+  NDS32_BUILTIN(sminv2hi3, "v_smin16", V_SMIN16)
+  NDS32_BUILTIN(uminv2hi3, "umin16", UMIN16)
+  NDS32_BUILTIN(uminv2hi3, "v_umin16", V_UMIN16)
+  NDS32_BUILTIN(smaxv2hi3, "smax16", SMAX16)
+  NDS32_BUILTIN(smaxv2hi3, "v_smax16", V_SMAX16)
+  NDS32_BUILTIN(umaxv2hi3, "umax16", UMAX16)
+  NDS32_BUILTIN(umaxv2hi3, "v_umax16", V_UMAX16)
+  NDS32_BUILTIN(khm16, "khm16", KHM16)
+  NDS32_BUILTIN(khm16, "v_khm16", V_KHM16)
+  NDS32_BUILTIN(khmx16, "khmx16", KHMX16)
+  NDS32_BUILTIN(khmx16, "v_khmx16", V_KHMX16)
+  NDS32_BUILTIN(sminv4qi3, "smin8", SMIN8)
+  NDS32_BUILTIN(sminv4qi3, "v_smin8", V_SMIN8)
+  NDS32_BUILTIN(uminv4qi3, "umin8", UMIN8)
+  NDS32_BUILTIN(uminv4qi3, "v_umin8", V_UMIN8)
+  NDS32_BUILTIN(smaxv4qi3, "smax8", SMAX8)
+  NDS32_BUILTIN(smaxv4qi3, "v_smax8", V_SMAX8)
+  NDS32_BUILTIN(umaxv4qi3, "umax8", UMAX8)
+  NDS32_BUILTIN(umaxv4qi3, "v_umax8", V_UMAX8)
+  NDS32_BUILTIN(raddsi3, "raddw", RADDW)
+  NDS32_BUILTIN(uraddsi3, "uraddw", URADDW)
+  NDS32_BUILTIN(rsubsi3, "rsubw", RSUBW)
+  NDS32_BUILTIN(ursubsi3, "ursubw", URSUBW)
+  NDS32_BUILTIN(sraiu, "sra_u", SRA_U)
+  NDS32_BUILTIN(kssl, "ksll", KSLL)
+  NDS32_BUILTIN(pkbb, "pkbb16", PKBB16)
+  NDS32_BUILTIN(pkbb, "v_pkbb16", V_PKBB16)
+  NDS32_BUILTIN(pkbt, "pkbt16", PKBT16)
+  NDS32_BUILTIN(pkbt, "v_pkbt16", V_PKBT16)
+  NDS32_BUILTIN(pktb, "pktb16", PKTB16)
+  NDS32_BUILTIN(pktb, "v_pktb16", V_PKTB16)
+  NDS32_BUILTIN(pktt, "pktt16", PKTT16)
+  NDS32_BUILTIN(pktt, "v_pktt16", V_PKTT16)
+  NDS32_BUILTIN(smulsi3_highpart, "smmul", SMMUL)
+  NDS32_BUILTIN(smmul_round, "smmul_u", SMMUL_U)
+  NDS32_BUILTIN(smmwb, "smmwb", SMMWB)
+  NDS32_BUILTIN(smmwb, "v_smmwb", V_SMMWB)
+  NDS32_BUILTIN(smmwb_round, "smmwb_u", SMMWB_U)
+  NDS32_BUILTIN(smmwb_round, "v_smmwb_u", V_SMMWB_U)
+  NDS32_BUILTIN(smmwt, "smmwt", SMMWT)
+  NDS32_BUILTIN(smmwt, "v_smmwt", V_SMMWT)
+  NDS32_BUILTIN(smmwt_round, "smmwt_u", SMMWT_U)
+  NDS32_BUILTIN(smmwt_round, "v_smmwt_u", V_SMMWT_U)
+  NDS32_BUILTIN(smbb, "smbb", SMBB)
+  NDS32_BUILTIN(smbb, "v_smbb", V_SMBB)
+  NDS32_BUILTIN(smbt, "smbt", SMBT)
+  NDS32_BUILTIN(smbt, "v_smbt", V_SMBT)
+  NDS32_BUILTIN(smtt, "smtt", SMTT)
+  NDS32_BUILTIN(smtt, "v_smtt", V_SMTT)
+  NDS32_BUILTIN(kmda, "kmda", KMDA)
+  NDS32_BUILTIN(kmda, "v_kmda", V_KMDA)
+  NDS32_BUILTIN(kmxda, "kmxda", KMXDA)
+  NDS32_BUILTIN(kmxda, "v_kmxda", V_KMXDA)
+  NDS32_BUILTIN(smds, "smds", SMDS)
+  NDS32_BUILTIN(smds, "v_smds", V_SMDS)
+  NDS32_BUILTIN(smdrs, "smdrs", SMDRS)
+  NDS32_BUILTIN(smdrs, "v_smdrs", V_SMDRS)
+  NDS32_BUILTIN(smxdsv, "smxds", SMXDS)
+  NDS32_BUILTIN(smxdsv, "v_smxds", V_SMXDS)
+  NDS32_BUILTIN(smal1, "smal", SMAL)
+  NDS32_BUILTIN(smal1, "v_smal", V_SMAL)
+  NDS32_BUILTIN(bitrev, "bitrev", BITREV)
+  NDS32_BUILTIN(wext, "wext", WEXT)
+  NDS32_BUILTIN(adddi3, "sadd64", SADD64)
+  NDS32_BUILTIN(adddi3, "uadd64", UADD64)
+  NDS32_BUILTIN(radddi3, "radd64", RADD64)
+  NDS32_BUILTIN(uradddi3, "uradd64", URADD64)
+  NDS32_BUILTIN(kadddi3, "kadd64", KADD64)
+  NDS32_BUILTIN(ukadddi3, "ukadd64", UKADD64)
+  NDS32_BUILTIN(subdi3, "ssub64", SSUB64)
+  NDS32_BUILTIN(subdi3, "usub64", USUB64)
+  NDS32_BUILTIN(rsubdi3, "rsub64", RSUB64)
+  NDS32_BUILTIN(ursubdi3, "ursub64", URSUB64)
+  NDS32_BUILTIN(ksubdi3, "ksub64", KSUB64)
+  NDS32_BUILTIN(uksubdi3, "uksub64", UKSUB64)
+  NDS32_BUILTIN(smul16, "smul16", SMUL16)
+  NDS32_BUILTIN(smul16, "v_smul16", V_SMUL16)
+  NDS32_BUILTIN(smulx16, "smulx16", SMULX16)
+  NDS32_BUILTIN(smulx16, "v_smulx16", V_SMULX16)
+  NDS32_BUILTIN(umul16, "umul16", UMUL16)
+  NDS32_BUILTIN(umul16, "v_umul16", V_UMUL16)
+  NDS32_BUILTIN(umulx16, "umulx16", UMULX16)
+  NDS32_BUILTIN(umulx16, "v_umulx16", V_UMULX16)
+  NDS32_BUILTIN(kwmmul, "kwmmul", KWMMUL)
+  NDS32_BUILTIN(kwmmul_round, "kwmmul_u", KWMMUL_U)
+  NDS32_NO_TARGET_BUILTIN(unaligned_storev2hi,
+			  "put_unaligned_u16x2", UASTORE_U16)
+  NDS32_NO_TARGET_BUILTIN(unaligned_storev2hi,
+			  "put_unaligned_s16x2", UASTORE_S16)
+  NDS32_NO_TARGET_BUILTIN(unaligned_storev4qi, "put_unaligned_u8x4", UASTORE_U8)
+  NDS32_NO_TARGET_BUILTIN(unaligned_storev4qi, "put_unaligned_s8x4", UASTORE_S8)
 };
 
 /* Two-argument intrinsics with an immediate second argument.  */
@@ -617,6 +860,22 @@ static struct builtin_description bdesc_2argimm[] =
   NDS32_BUILTIN(unspec_clips, "clips", CLIPS)
   NDS32_NO_TARGET_BUILTIN(unspec_teqz, "teqz", TEQZ)
   NDS32_NO_TARGET_BUILTIN(unspec_tnez, "tnez", TNEZ)
+  NDS32_BUILTIN(ashrv2hi3, "srl16", SRL16)
+  NDS32_BUILTIN(ashrv2hi3, "v_srl16", V_SRL16)
+  NDS32_BUILTIN(srl16_round, "srl16_u", SRL16_U)
+  NDS32_BUILTIN(srl16_round, "v_srl16_u", V_SRL16_U)
+  NDS32_BUILTIN(kslli16, "ksll16", KSLL16)
+  NDS32_BUILTIN(kslli16, "v_ksll16", V_KSLL16)
+  NDS32_BUILTIN(sclip16, "sclip16", SCLIP16)
+  NDS32_BUILTIN(sclip16, "v_sclip16", V_SCLIP16)
+  NDS32_BUILTIN(uclip16, "uclip16", UCLIP16)
+  NDS32_BUILTIN(uclip16, "v_uclip16", V_UCLIP16)
+  NDS32_BUILTIN(sraiu, "sra_u", SRA_U)
+  NDS32_BUILTIN(kssl, "ksll", KSLL)
+  NDS32_BUILTIN(bitrev, "bitrev", BITREV)
+  NDS32_BUILTIN(wext, "wext", WEXT)
+  NDS32_BUILTIN(uclip32, "uclip32", UCLIP32)
+  NDS32_BUILTIN(sclip32, "sclip32", SCLIP32)
 };
 
 /* Intrinsics that take three arguments.  */
@@ -625,6 +884,67 @@ static struct builtin_description bdesc_3arg[] =
   NDS32_BUILTIN(unspec_pbsada, "pbsada", PBSADA)
   NDS32_NO_TARGET_BUILTIN(bse, "bse", BSE)
   NDS32_NO_TARGET_BUILTIN(bsp, "bsp", BSP)
+  NDS32_BUILTIN(kmabb, "kmabb", KMABB)
+  NDS32_BUILTIN(kmabb, "v_kmabb", V_KMABB)
+  NDS32_BUILTIN(kmabt, "kmabt", KMABT)
+  NDS32_BUILTIN(kmabt, "v_kmabt", V_KMABT)
+  NDS32_BUILTIN(kmatt, "kmatt", KMATT)
+  NDS32_BUILTIN(kmatt, "v_kmatt", V_KMATT)
+  NDS32_BUILTIN(kmada, "kmada", KMADA)
+  NDS32_BUILTIN(kmada, "v_kmada", V_KMADA)
+  NDS32_BUILTIN(kmaxda, "kmaxda", KMAXDA)
+  NDS32_BUILTIN(kmaxda, "v_kmaxda", V_KMAXDA)
+  NDS32_BUILTIN(kmads, "kmads", KMADS)
+  NDS32_BUILTIN(kmads, "v_kmads", V_KMADS)
+  NDS32_BUILTIN(kmadrs, "kmadrs", KMADRS)
+  NDS32_BUILTIN(kmadrs, "v_kmadrs", V_KMADRS)
+  NDS32_BUILTIN(kmaxds, "kmaxds", KMAXDS)
+  NDS32_BUILTIN(kmaxds, "v_kmaxds", V_KMAXDS)
+  NDS32_BUILTIN(kmsda, "kmsda", KMSDA)
+  NDS32_BUILTIN(kmsda, "v_kmsda", V_KMSDA)
+  NDS32_BUILTIN(kmsxda, "kmsxda", KMSXDA)
+  NDS32_BUILTIN(kmsxda, "v_kmsxda", V_KMSXDA)
+  NDS32_BUILTIN(bpick1, "bpick", BPICK)
+  NDS32_BUILTIN(smar64_1, "smar64", SMAR64)
+  NDS32_BUILTIN(smsr64, "smsr64", SMSR64)
+  NDS32_BUILTIN(umar64_1, "umar64", UMAR64)
+  NDS32_BUILTIN(umsr64, "umsr64", UMSR64)
+  NDS32_BUILTIN(kmar64_1, "kmar64", KMAR64)
+  NDS32_BUILTIN(kmsr64, "kmsr64", KMSR64)
+  NDS32_BUILTIN(ukmar64_1, "ukmar64", UKMAR64)
+  NDS32_BUILTIN(ukmsr64, "ukmsr64", UKMSR64)
+  NDS32_BUILTIN(smalbb, "smalbb", SMALBB)
+  NDS32_BUILTIN(smalbb, "v_smalbb", V_SMALBB)
+  NDS32_BUILTIN(smalbt, "smalbt", SMALBT)
+  NDS32_BUILTIN(smalbt, "v_smalbt", V_SMALBT)
+  NDS32_BUILTIN(smaltt, "smaltt", SMALTT)
+  NDS32_BUILTIN(smaltt, "v_smaltt", V_SMALTT)
+  NDS32_BUILTIN(smalda1, "smalda", SMALDA)
+  NDS32_BUILTIN(smalda1, "v_smalda", V_SMALDA)
+  NDS32_BUILTIN(smalxda1, "smalxda", SMALXDA)
+  NDS32_BUILTIN(smalxda1, "v_smalxda", V_SMALXDA)
+  NDS32_BUILTIN(smalds1, "smalds", SMALDS)
+  NDS32_BUILTIN(smalds1, "v_smalds", V_SMALDS)
+  NDS32_BUILTIN(smaldrs3, "smaldrs", SMALDRS)
+  NDS32_BUILTIN(smaldrs3, "v_smaldrs", V_SMALDRS)
+  NDS32_BUILTIN(smalxds1, "smalxds", SMALXDS)
+  NDS32_BUILTIN(smalxds1, "v_smalxds", V_SMALXDS)
+  NDS32_BUILTIN(smslda1, "smslda", SMSLDA)
+  NDS32_BUILTIN(smslda1, "v_smslda", V_SMSLDA)
+  NDS32_BUILTIN(smslxda1, "smslxda", SMSLXDA)
+  NDS32_BUILTIN(smslxda1, "v_smslxda", V_SMSLXDA)
+  NDS32_BUILTIN(kmmawb, "kmmawb", KMMAWB)
+  NDS32_BUILTIN(kmmawb, "v_kmmawb", V_KMMAWB)
+  NDS32_BUILTIN(kmmawb_round, "kmmawb_u", KMMAWB_U)
+  NDS32_BUILTIN(kmmawb_round, "v_kmmawb_u", V_KMMAWB_U)
+  NDS32_BUILTIN(kmmawt, "kmmawt", KMMAWT)
+  NDS32_BUILTIN(kmmawt, "v_kmmawt", V_KMMAWT)
+  NDS32_BUILTIN(kmmawt_round, "kmmawt_u", KMMAWT_U)
+  NDS32_BUILTIN(kmmawt_round, "v_kmmawt_u", V_KMMAWT_U)
+  NDS32_BUILTIN(kmmac, "kmmac", KMMAC)
+  NDS32_BUILTIN(kmmac_round, "kmmac_u", KMMAC_U)
+  NDS32_BUILTIN(kmmsb, "kmmsb", KMMSB)
+  NDS32_BUILTIN(kmmsb_round, "kmmsb_u", KMMSB_U)
 };
 
 /* Three-argument intrinsics with an immediate third argument.  */
@@ -634,6 +954,7 @@ static struct builtin_description bdesc_3argimm[] =
   NDS32_NO_TARGET_BUILTIN(prefetch_hw, "prefetch_hw", DPREF_HW)
   NDS32_NO_TARGET_BUILTIN(prefetch_w, "prefetch_w", DPREF_W)
   NDS32_NO_TARGET_BUILTIN(prefetch_dw, "prefetch_dw", DPREF_DW)
+  NDS32_BUILTIN(insb, "insb", INSB)
 };
 
 /* Intrinsics that load a value.  */
@@ -675,6 +996,11 @@ nds32_expand_builtin_impl (tree exp,
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   unsigned i;
   struct builtin_description *d;
+
+  if (!NDS32_EXT_DSP_P ()
+      && fcode > NDS32_BUILTIN_DSP_BEGIN
+      && fcode < NDS32_BUILTIN_DSP_END)
+    error ("don't support DSP extension instructions");
 
   switch (fcode)
     {
@@ -812,6 +1138,9 @@ nds32_expand_builtin_impl (tree exp,
     case NDS32_BUILTIN_CCTL_L1D_WBALL_ONE_LVL:
       emit_insn (gen_cctl_l1d_wball_one_lvl());
       return target;
+    case NDS32_BUILTIN_CLROV:
+      emit_insn (gen_unspec_volatile_clrov ());
+      return target;
     case NDS32_BUILTIN_STANDBY_NO_WAKE_GRANT:
       emit_insn (gen_unspec_standby_no_wake_grant ());
       return target;
@@ -947,10 +1276,18 @@ nds32_init_builtins_impl (void)
 			NDS32_BUILTIN_ ## CODE, BUILT_IN_MD, NULL, NULL_TREE)
 
   /* Looking for return type and argument can be found in tree.h file.  */
+  tree ptr_char_type_node = build_pointer_type (char_type_node);
   tree ptr_uchar_type_node = build_pointer_type (unsigned_char_type_node);
   tree ptr_ushort_type_node = build_pointer_type (short_unsigned_type_node);
+  tree ptr_short_type_node = build_pointer_type (short_integer_type_node);
   tree ptr_uint_type_node = build_pointer_type (unsigned_type_node);
   tree ptr_ulong_type_node = build_pointer_type (long_long_unsigned_type_node);
+  tree v4qi_type_node = build_vector_type (intQI_type_node, 4);
+  tree u_v4qi_type_node = build_vector_type (unsigned_intQI_type_node, 4);
+  tree v2hi_type_node = build_vector_type (intHI_type_node, 2);
+  tree u_v2hi_type_node = build_vector_type (unsigned_intHI_type_node, 2);
+  tree v2si_type_node = build_vector_type (intSI_type_node, 2);
+  tree u_v2si_type_node = build_vector_type (unsigned_intSI_type_node, 2);
 
   /* Cache.  */
   ADD_NDS32_BUILTIN1 ("isync", void, ptr_uint, ISYNC);
@@ -1050,6 +1387,31 @@ nds32_init_builtins_impl (void)
   ADD_NDS32_BUILTIN2 ("se_ffmism", integer, unsigned, unsigned, FFMISM);
   ADD_NDS32_BUILTIN2 ("se_flmism", integer, unsigned, unsigned, FLMISM);
 
+  /* SATURATION  */
+  ADD_NDS32_BUILTIN2 ("kaddw", integer, integer, integer, KADDW);
+  ADD_NDS32_BUILTIN2 ("ksubw", integer, integer, integer, KSUBW);
+  ADD_NDS32_BUILTIN2 ("kaddh", integer, integer, integer, KADDH);
+  ADD_NDS32_BUILTIN2 ("ksubh", integer, integer, integer, KSUBH);
+  ADD_NDS32_BUILTIN2 ("kdmbb", integer, unsigned, unsigned, KDMBB);
+  ADD_NDS32_BUILTIN2 ("v_kdmbb", integer, v2hi, v2hi, V_KDMBB);
+  ADD_NDS32_BUILTIN2 ("kdmbt", integer, unsigned, unsigned, KDMBT);
+  ADD_NDS32_BUILTIN2 ("v_kdmbt", integer, v2hi, v2hi, V_KDMBT);
+  ADD_NDS32_BUILTIN2 ("kdmtb", integer, unsigned, unsigned, KDMTB);
+  ADD_NDS32_BUILTIN2 ("v_kdmtb", integer, v2hi, v2hi, V_KDMTB);
+  ADD_NDS32_BUILTIN2 ("kdmtt", integer, unsigned, unsigned, KDMTT);
+  ADD_NDS32_BUILTIN2 ("v_kdmtt", integer, v2hi, v2hi, V_KDMTT);
+  ADD_NDS32_BUILTIN2 ("khmbb", integer, unsigned, unsigned, KHMBB);
+  ADD_NDS32_BUILTIN2 ("v_khmbb", integer, v2hi, v2hi, V_KHMBB);
+  ADD_NDS32_BUILTIN2 ("khmbt", integer, unsigned, unsigned, KHMBT);
+  ADD_NDS32_BUILTIN2 ("v_khmbt", integer, v2hi, v2hi, V_KHMBT);
+  ADD_NDS32_BUILTIN2 ("khmtb", integer, unsigned, unsigned, KHMTB);
+  ADD_NDS32_BUILTIN2 ("v_khmtb", integer, v2hi, v2hi, V_KHMTB);
+  ADD_NDS32_BUILTIN2 ("khmtt", integer, unsigned, unsigned, KHMTT);
+  ADD_NDS32_BUILTIN2 ("v_khmtt", integer, v2hi, v2hi, V_KHMTT);
+  ADD_NDS32_BUILTIN2 ("kslraw", integer, integer, integer, KSLRAW);
+  ADD_NDS32_BUILTIN2 ("kslraw_u", integer, integer, integer, KSLRAW_U);
+  ADD_NDS32_BUILTIN0 ("rdov", unsigned, RDOV);
+  ADD_NDS32_BUILTIN0 ("clrov", void, CLROV);
 
   /* ROTR  */
   ADD_NDS32_BUILTIN2 ("rotr", unsigned, unsigned, unsigned, ROTR);
@@ -1109,4 +1471,384 @@ nds32_init_builtins_impl (void)
   ADD_NDS32_BUILTIN0 ("enable_unaligned", void, ENABLE_UNALIGNED);
   ADD_NDS32_BUILTIN0 ("disable_unaligned", void, DISABLE_UNALIGNED);
 
+  /* DSP Extension: SIMD 16bit Add and Subtract.  */
+  ADD_NDS32_BUILTIN2 ("add16", unsigned, unsigned, unsigned, ADD16);
+  ADD_NDS32_BUILTIN2 ("v_uadd16", u_v2hi, u_v2hi, u_v2hi, V_UADD16);
+  ADD_NDS32_BUILTIN2 ("v_sadd16", v2hi, v2hi, v2hi, V_SADD16);
+  ADD_NDS32_BUILTIN2 ("radd16", unsigned, unsigned, unsigned, RADD16);
+  ADD_NDS32_BUILTIN2 ("v_radd16", v2hi, v2hi, v2hi, V_RADD16);
+  ADD_NDS32_BUILTIN2 ("uradd16", unsigned, unsigned, unsigned, URADD16);
+  ADD_NDS32_BUILTIN2 ("v_uradd16", u_v2hi, u_v2hi, u_v2hi, V_URADD16);
+  ADD_NDS32_BUILTIN2 ("kadd16", unsigned, unsigned, unsigned, KADD16);
+  ADD_NDS32_BUILTIN2 ("v_kadd16", v2hi, v2hi, v2hi, V_KADD16);
+  ADD_NDS32_BUILTIN2 ("ukadd16", unsigned, unsigned, unsigned, UKADD16);
+  ADD_NDS32_BUILTIN2 ("v_ukadd16", u_v2hi, u_v2hi, u_v2hi, V_UKADD16);
+  ADD_NDS32_BUILTIN2 ("sub16", unsigned, unsigned, unsigned, SUB16);
+  ADD_NDS32_BUILTIN2 ("v_usub16", u_v2hi, u_v2hi, u_v2hi, V_USUB16);
+  ADD_NDS32_BUILTIN2 ("v_ssub16", v2hi, v2hi, v2hi, V_SSUB16);
+  ADD_NDS32_BUILTIN2 ("rsub16", unsigned, unsigned, unsigned, RSUB16);
+  ADD_NDS32_BUILTIN2 ("v_rsub16", v2hi, v2hi, v2hi, V_RSUB16);
+  ADD_NDS32_BUILTIN2 ("ursub16", unsigned, unsigned, unsigned, URSUB16);
+  ADD_NDS32_BUILTIN2 ("v_ursub16", u_v2hi, u_v2hi, u_v2hi, V_URSUB16);
+  ADD_NDS32_BUILTIN2 ("ksub16", unsigned, unsigned, unsigned, KSUB16);
+  ADD_NDS32_BUILTIN2 ("v_ksub16", v2hi, v2hi, v2hi, V_KSUB16);
+  ADD_NDS32_BUILTIN2 ("uksub16", unsigned, unsigned, unsigned, UKSUB16);
+  ADD_NDS32_BUILTIN2 ("v_uksub16", u_v2hi, u_v2hi, u_v2hi, V_UKSUB16);
+  ADD_NDS32_BUILTIN2 ("cras16", unsigned, unsigned, unsigned, CRAS16);
+  ADD_NDS32_BUILTIN2 ("v_ucras16", u_v2hi, u_v2hi, u_v2hi, V_UCRAS16);
+  ADD_NDS32_BUILTIN2 ("v_scras16", v2hi, v2hi, v2hi, V_SCRAS16);
+  ADD_NDS32_BUILTIN2 ("rcras16", unsigned, unsigned, unsigned, RCRAS16);
+  ADD_NDS32_BUILTIN2 ("v_rcras16", v2hi, v2hi, v2hi, V_RCRAS16);
+  ADD_NDS32_BUILTIN2 ("urcras16", unsigned, unsigned, unsigned, URCRAS16);
+  ADD_NDS32_BUILTIN2 ("v_urcras16", u_v2hi, u_v2hi, u_v2hi, V_URCRAS16);
+  ADD_NDS32_BUILTIN2 ("kcras16", unsigned, unsigned, unsigned, KCRAS16);
+  ADD_NDS32_BUILTIN2 ("v_kcras16", v2hi, v2hi, v2hi, V_KCRAS16);
+  ADD_NDS32_BUILTIN2 ("ukcras16", unsigned, unsigned, unsigned, UKCRAS16);
+  ADD_NDS32_BUILTIN2 ("v_ukcras16", u_v2hi, u_v2hi, u_v2hi, V_UKCRAS16);
+  ADD_NDS32_BUILTIN2 ("crsa16", unsigned, unsigned, unsigned, CRSA16);
+  ADD_NDS32_BUILTIN2 ("v_ucrsa16", u_v2hi, u_v2hi, u_v2hi, V_UCRSA16);
+  ADD_NDS32_BUILTIN2 ("v_scrsa16", v2hi, v2hi, v2hi, V_SCRSA16);
+  ADD_NDS32_BUILTIN2 ("rcrsa16", unsigned, unsigned, unsigned, RCRSA16);
+  ADD_NDS32_BUILTIN2 ("v_rcrsa16", v2hi, v2hi, v2hi, V_RCRSA16);
+  ADD_NDS32_BUILTIN2 ("urcrsa16", unsigned, unsigned, unsigned, URCRSA16);
+  ADD_NDS32_BUILTIN2 ("v_urcrsa16", u_v2hi, u_v2hi, u_v2hi, V_URCRSA16);
+  ADD_NDS32_BUILTIN2 ("kcrsa16", unsigned, unsigned, unsigned, KCRSA16);
+  ADD_NDS32_BUILTIN2 ("v_kcrsa16", v2hi, v2hi, v2hi, V_KCRSA16);
+  ADD_NDS32_BUILTIN2 ("ukcrsa16", unsigned, unsigned, unsigned, UKCRSA16);
+  ADD_NDS32_BUILTIN2 ("v_ukcrsa16", u_v2hi, u_v2hi, u_v2hi, V_UKCRSA16);
+
+  /* DSP Extension: SIMD 8bit Add and Subtract.  */
+  ADD_NDS32_BUILTIN2 ("add8", integer, integer, integer, ADD8);
+  ADD_NDS32_BUILTIN2 ("v_uadd8", u_v4qi, u_v4qi, u_v4qi, V_UADD8);
+  ADD_NDS32_BUILTIN2 ("v_sadd8", v4qi, v4qi, v4qi, V_SADD8);
+  ADD_NDS32_BUILTIN2 ("radd8", unsigned, unsigned, unsigned, RADD8);
+  ADD_NDS32_BUILTIN2 ("v_radd8", v4qi, v4qi, v4qi, V_RADD8);
+  ADD_NDS32_BUILTIN2 ("uradd8", unsigned, unsigned, unsigned, URADD8);
+  ADD_NDS32_BUILTIN2 ("v_uradd8", u_v4qi, u_v4qi, u_v4qi, V_URADD8);
+  ADD_NDS32_BUILTIN2 ("kadd8", unsigned, unsigned, unsigned, KADD8);
+  ADD_NDS32_BUILTIN2 ("v_kadd8", v4qi, v4qi, v4qi, V_KADD8);
+  ADD_NDS32_BUILTIN2 ("ukadd8", unsigned, unsigned, unsigned, UKADD8);
+  ADD_NDS32_BUILTIN2 ("v_ukadd8", u_v4qi, u_v4qi, u_v4qi, V_UKADD8);
+  ADD_NDS32_BUILTIN2 ("sub8", integer, integer, integer, SUB8);
+  ADD_NDS32_BUILTIN2 ("v_usub8", u_v4qi, u_v4qi, u_v4qi, V_USUB8);
+  ADD_NDS32_BUILTIN2 ("v_ssub8", v4qi, v4qi, v4qi, V_SSUB8);
+  ADD_NDS32_BUILTIN2 ("rsub8", unsigned, unsigned, unsigned, RSUB8);
+  ADD_NDS32_BUILTIN2 ("v_rsub8", v4qi, v4qi, v4qi, V_RSUB8);
+  ADD_NDS32_BUILTIN2 ("ursub8", unsigned, unsigned, unsigned, URSUB8);
+  ADD_NDS32_BUILTIN2 ("v_ursub8", u_v4qi, u_v4qi, u_v4qi, V_URSUB8);
+  ADD_NDS32_BUILTIN2 ("ksub8", unsigned, unsigned, unsigned, KSUB8);
+  ADD_NDS32_BUILTIN2 ("v_ksub8", v4qi, v4qi, v4qi, V_KSUB8);
+  ADD_NDS32_BUILTIN2 ("uksub8", unsigned, unsigned, unsigned, UKSUB8);
+  ADD_NDS32_BUILTIN2 ("v_uksub8", u_v4qi, u_v4qi, u_v4qi, V_UKSUB8);
+
+  /* DSP Extension: SIMD 16bit Shift.  */
+  ADD_NDS32_BUILTIN2 ("sra16", unsigned, unsigned, unsigned, SRA16);
+  ADD_NDS32_BUILTIN2 ("v_sra16", v2hi, v2hi, unsigned, V_SRA16);
+  ADD_NDS32_BUILTIN2 ("sra16_u", unsigned, unsigned, unsigned, SRA16_U);
+  ADD_NDS32_BUILTIN2 ("v_sra16_u", v2hi, v2hi, unsigned, V_SRA16_U);
+  ADD_NDS32_BUILTIN2 ("srl16", unsigned, unsigned, unsigned, SRL16);
+  ADD_NDS32_BUILTIN2 ("v_srl16", u_v2hi, u_v2hi, unsigned, V_SRL16);
+  ADD_NDS32_BUILTIN2 ("srl16_u", unsigned, unsigned, unsigned, SRL16_U);
+  ADD_NDS32_BUILTIN2 ("v_srl16_u", u_v2hi, u_v2hi, unsigned, V_SRL16_U);
+  ADD_NDS32_BUILTIN2 ("sll16", unsigned, unsigned, unsigned, SLL16);
+  ADD_NDS32_BUILTIN2 ("v_sll16", u_v2hi, u_v2hi, unsigned, V_SLL16);
+  ADD_NDS32_BUILTIN2 ("ksll16", unsigned, unsigned, unsigned, KSLL16);
+  ADD_NDS32_BUILTIN2 ("v_ksll16", v2hi, v2hi, unsigned, V_KSLL16);
+  ADD_NDS32_BUILTIN2 ("kslra16", unsigned, unsigned, unsigned, KSLRA16);
+  ADD_NDS32_BUILTIN2 ("v_kslra16", v2hi, v2hi, unsigned, V_KSLRA16);
+  ADD_NDS32_BUILTIN2 ("kslra16_u", unsigned, unsigned, unsigned, KSLRA16_U);
+  ADD_NDS32_BUILTIN2 ("v_kslra16_u", v2hi, v2hi, unsigned, V_KSLRA16_U);
+
+  /* DSP Extension: 16bit Compare.  */
+  ADD_NDS32_BUILTIN2 ("cmpeq16", unsigned, unsigned, unsigned, CMPEQ16);
+  ADD_NDS32_BUILTIN2 ("v_scmpeq16", u_v2hi, v2hi, v2hi, V_SCMPEQ16);
+  ADD_NDS32_BUILTIN2 ("v_ucmpeq16", u_v2hi, u_v2hi, u_v2hi, V_UCMPEQ16);
+  ADD_NDS32_BUILTIN2 ("scmplt16", unsigned, unsigned, unsigned, SCMPLT16);
+  ADD_NDS32_BUILTIN2 ("v_scmplt16", u_v2hi, v2hi, v2hi, V_SCMPLT16);
+  ADD_NDS32_BUILTIN2 ("scmple16", unsigned, unsigned, unsigned, SCMPLE16);
+  ADD_NDS32_BUILTIN2 ("v_scmple16", u_v2hi, v2hi, v2hi, V_SCMPLE16);
+  ADD_NDS32_BUILTIN2 ("ucmplt16", unsigned, unsigned, unsigned, UCMPLT16);
+  ADD_NDS32_BUILTIN2 ("v_ucmplt16", u_v2hi, u_v2hi, u_v2hi, V_UCMPLT16);
+  ADD_NDS32_BUILTIN2 ("ucmple16", unsigned, unsigned, unsigned, UCMPLE16);
+  ADD_NDS32_BUILTIN2 ("v_ucmple16", u_v2hi, u_v2hi, u_v2hi, V_UCMPLE16);
+
+  /* DSP Extension: 8bit Compare.  */
+  ADD_NDS32_BUILTIN2 ("cmpeq8", unsigned, unsigned, unsigned, CMPEQ8);
+  ADD_NDS32_BUILTIN2 ("v_scmpeq8", u_v4qi, v4qi, v4qi, V_SCMPEQ8);
+  ADD_NDS32_BUILTIN2 ("v_ucmpeq8", u_v4qi, u_v4qi, u_v4qi, V_UCMPEQ8);
+  ADD_NDS32_BUILTIN2 ("scmplt8", unsigned, unsigned, unsigned, SCMPLT8);
+  ADD_NDS32_BUILTIN2 ("v_scmplt8", u_v4qi, v4qi, v4qi, V_SCMPLT8);
+  ADD_NDS32_BUILTIN2 ("scmple8", unsigned, unsigned, unsigned, SCMPLE8);
+  ADD_NDS32_BUILTIN2 ("v_scmple8", u_v4qi, v4qi, v4qi, V_SCMPLE8);
+  ADD_NDS32_BUILTIN2 ("ucmplt8", unsigned, unsigned, unsigned, UCMPLT8);
+  ADD_NDS32_BUILTIN2 ("v_ucmplt8", u_v4qi, u_v4qi, u_v4qi, V_UCMPLT8);
+  ADD_NDS32_BUILTIN2 ("ucmple8", unsigned, unsigned, unsigned, UCMPLE8);
+  ADD_NDS32_BUILTIN2 ("v_ucmple8", u_v4qi, u_v4qi, u_v4qi, V_UCMPLE8);
+
+  /* DSP Extension: SIMD 16bit MISC.  */
+  ADD_NDS32_BUILTIN2 ("smin16", unsigned, unsigned, unsigned, SMIN16);
+  ADD_NDS32_BUILTIN2 ("v_smin16", v2hi, v2hi, v2hi, V_SMIN16);
+  ADD_NDS32_BUILTIN2 ("umin16", unsigned, unsigned, unsigned, UMIN16);
+  ADD_NDS32_BUILTIN2 ("v_umin16", u_v2hi, u_v2hi, u_v2hi, V_UMIN16);
+  ADD_NDS32_BUILTIN2 ("smax16", unsigned, unsigned, unsigned, SMAX16);
+  ADD_NDS32_BUILTIN2 ("v_smax16", v2hi, v2hi, v2hi, V_SMAX16);
+  ADD_NDS32_BUILTIN2 ("umax16", unsigned, unsigned, unsigned, UMAX16);
+  ADD_NDS32_BUILTIN2 ("v_umax16", u_v2hi, u_v2hi, u_v2hi, V_UMAX16);
+  ADD_NDS32_BUILTIN2 ("sclip16", unsigned, unsigned, unsigned, SCLIP16);
+  ADD_NDS32_BUILTIN2 ("v_sclip16", v2hi, v2hi, unsigned, V_SCLIP16);
+  ADD_NDS32_BUILTIN2 ("uclip16", unsigned, unsigned, unsigned, UCLIP16);
+  ADD_NDS32_BUILTIN2 ("v_uclip16", v2hi, v2hi, unsigned, V_UCLIP16);
+  ADD_NDS32_BUILTIN2 ("khm16", unsigned, unsigned, unsigned, KHM16);
+  ADD_NDS32_BUILTIN2 ("v_khm16", v2hi, v2hi, v2hi, V_KHM16);
+  ADD_NDS32_BUILTIN2 ("khmx16", unsigned, unsigned, unsigned, KHMX16);
+  ADD_NDS32_BUILTIN2 ("v_khmx16", v2hi, v2hi, v2hi, V_KHMX16);
+  ADD_NDS32_BUILTIN1 ("kabs16", unsigned, unsigned, KABS16);
+  ADD_NDS32_BUILTIN1 ("v_kabs16", v2hi, v2hi, V_KABS16);
+  ADD_NDS32_BUILTIN2 ("smul16", long_long_unsigned, unsigned, unsigned, SMUL16);
+  ADD_NDS32_BUILTIN2 ("v_smul16", v2si, v2hi, v2hi, V_SMUL16);
+  ADD_NDS32_BUILTIN2 ("smulx16",
+		      long_long_unsigned, unsigned, unsigned, SMULX16);
+  ADD_NDS32_BUILTIN2 ("v_smulx16", v2si, v2hi, v2hi, V_SMULX16);
+  ADD_NDS32_BUILTIN2 ("umul16", long_long_unsigned, unsigned, unsigned, UMUL16);
+  ADD_NDS32_BUILTIN2 ("v_umul16", u_v2si, u_v2hi, u_v2hi, V_UMUL16);
+  ADD_NDS32_BUILTIN2 ("umulx16",
+		      long_long_unsigned, unsigned, unsigned, UMULX16);
+  ADD_NDS32_BUILTIN2 ("v_umulx16", u_v2si, u_v2hi, u_v2hi, V_UMULX16);
+
+  /* DSP Extension: SIMD 8bit MISC.  */
+  ADD_NDS32_BUILTIN2 ("smin8", unsigned, unsigned, unsigned, SMIN8);
+  ADD_NDS32_BUILTIN2 ("v_smin8", v4qi, v4qi, v4qi, V_SMIN8);
+  ADD_NDS32_BUILTIN2 ("umin8", unsigned, unsigned, unsigned, UMIN8);
+  ADD_NDS32_BUILTIN2 ("v_umin8", u_v4qi, u_v4qi, u_v4qi, V_UMIN8);
+  ADD_NDS32_BUILTIN2 ("smax8", unsigned, unsigned, unsigned, SMAX8);
+  ADD_NDS32_BUILTIN2 ("v_smax8", v4qi, v4qi, v4qi, V_SMAX8);
+  ADD_NDS32_BUILTIN2 ("umax8", unsigned, unsigned, unsigned, UMAX8);
+  ADD_NDS32_BUILTIN2 ("v_umax8", u_v4qi, u_v4qi, u_v4qi, V_UMAX8);
+  ADD_NDS32_BUILTIN1 ("kabs8", unsigned, unsigned, KABS8);
+  ADD_NDS32_BUILTIN1 ("v_kabs8", v4qi, v4qi, V_KABS8);
+
+  /* DSP Extension: 8bit Unpacking.  */
+  ADD_NDS32_BUILTIN1 ("sunpkd810", unsigned, unsigned, SUNPKD810);
+  ADD_NDS32_BUILTIN1 ("v_sunpkd810", v2hi, v4qi, V_SUNPKD810);
+  ADD_NDS32_BUILTIN1 ("sunpkd820", unsigned, unsigned, SUNPKD820);
+  ADD_NDS32_BUILTIN1 ("v_sunpkd820", v2hi, v4qi, V_SUNPKD820);
+  ADD_NDS32_BUILTIN1 ("sunpkd830", unsigned, unsigned, SUNPKD830);
+  ADD_NDS32_BUILTIN1 ("v_sunpkd830", v2hi, v4qi, V_SUNPKD830);
+  ADD_NDS32_BUILTIN1 ("sunpkd831", unsigned, unsigned, SUNPKD831);
+  ADD_NDS32_BUILTIN1 ("v_sunpkd831", v2hi, v4qi, V_SUNPKD831);
+  ADD_NDS32_BUILTIN1 ("zunpkd810", unsigned, unsigned, ZUNPKD810);
+  ADD_NDS32_BUILTIN1 ("v_zunpkd810", u_v2hi, u_v4qi, V_ZUNPKD810);
+  ADD_NDS32_BUILTIN1 ("zunpkd820", unsigned, unsigned, ZUNPKD820);
+  ADD_NDS32_BUILTIN1 ("v_zunpkd820", u_v2hi, u_v4qi, V_ZUNPKD820);
+  ADD_NDS32_BUILTIN1 ("zunpkd830", unsigned, unsigned, ZUNPKD830);
+  ADD_NDS32_BUILTIN1 ("v_zunpkd830", u_v2hi, u_v4qi, V_ZUNPKD830);
+  ADD_NDS32_BUILTIN1 ("zunpkd831", unsigned, unsigned, ZUNPKD831);
+  ADD_NDS32_BUILTIN1 ("v_zunpkd831", u_v2hi, u_v4qi, V_ZUNPKD831);
+
+  /* DSP Extension: 32bit Add and Subtract.  */
+  ADD_NDS32_BUILTIN2 ("raddw", integer, integer, integer, RADDW);
+  ADD_NDS32_BUILTIN2 ("uraddw", unsigned, unsigned, unsigned, URADDW);
+  ADD_NDS32_BUILTIN2 ("rsubw", integer, integer, integer, RSUBW);
+  ADD_NDS32_BUILTIN2 ("ursubw", unsigned, unsigned, unsigned, URSUBW);
+
+  /* DSP Extension: 32bit Shift.  */
+  ADD_NDS32_BUILTIN2 ("sra_u", integer, integer, unsigned, SRA_U);
+  ADD_NDS32_BUILTIN2 ("ksll", integer, integer, unsigned, KSLL);
+
+  /* DSP Extension: 16bit Packing.  */
+  ADD_NDS32_BUILTIN2 ("pkbb16", unsigned, unsigned, unsigned, PKBB16);
+  ADD_NDS32_BUILTIN2 ("v_pkbb16", u_v2hi, u_v2hi, u_v2hi, V_PKBB16);
+  ADD_NDS32_BUILTIN2 ("pkbt16", unsigned, unsigned, unsigned, PKBT16);
+  ADD_NDS32_BUILTIN2 ("v_pkbt16", u_v2hi, u_v2hi, u_v2hi, V_PKBT16);
+  ADD_NDS32_BUILTIN2 ("pktb16", unsigned, unsigned, unsigned, PKTB16);
+  ADD_NDS32_BUILTIN2 ("v_pktb16", u_v2hi, u_v2hi, u_v2hi, V_PKTB16);
+  ADD_NDS32_BUILTIN2 ("pktt16", unsigned, unsigned, unsigned, PKTT16);
+  ADD_NDS32_BUILTIN2 ("v_pktt16", u_v2hi, u_v2hi, u_v2hi, V_PKTT16);
+
+  /* DSP Extension: Signed MSW 32x32 Multiply and ADD.  */
+  ADD_NDS32_BUILTIN2 ("smmul", integer, integer, integer, SMMUL);
+  ADD_NDS32_BUILTIN2 ("smmul_u", integer, integer, integer, SMMUL_U);
+  ADD_NDS32_BUILTIN3 ("kmmac", integer, integer, integer, integer, KMMAC);
+  ADD_NDS32_BUILTIN3 ("kmmac_u", integer, integer, integer, integer, KMMAC_U);
+  ADD_NDS32_BUILTIN3 ("kmmsb", integer, integer, integer, integer, KMMSB);
+  ADD_NDS32_BUILTIN3 ("kmmsb_u", integer, integer, integer, integer, KMMSB_U);
+  ADD_NDS32_BUILTIN2 ("kwmmul", integer, integer, integer, KWMMUL);
+  ADD_NDS32_BUILTIN2 ("kwmmul_u", integer, integer, integer, KWMMUL_U);
+
+  /* DSP Extension: Most Significant Word 32x16 Multiply and ADD.  */
+  ADD_NDS32_BUILTIN2 ("smmwb", integer, integer, unsigned, SMMWB);
+  ADD_NDS32_BUILTIN2 ("v_smmwb", integer, integer, v2hi, V_SMMWB);
+  ADD_NDS32_BUILTIN2 ("smmwb_u", integer, integer, unsigned, SMMWB_U);
+  ADD_NDS32_BUILTIN2 ("v_smmwb_u", integer, integer, v2hi, V_SMMWB_U);
+  ADD_NDS32_BUILTIN2 ("smmwt", integer, integer, unsigned, SMMWT);
+  ADD_NDS32_BUILTIN2 ("v_smmwt", integer, integer, v2hi, V_SMMWT);
+  ADD_NDS32_BUILTIN2 ("smmwt_u", integer, integer, unsigned, SMMWT_U);
+  ADD_NDS32_BUILTIN2 ("v_smmwt_u", integer, integer, v2hi, V_SMMWT_U);
+  ADD_NDS32_BUILTIN3 ("kmmawb", integer, integer, integer, unsigned, KMMAWB);
+  ADD_NDS32_BUILTIN3 ("v_kmmawb", integer, integer, integer, v2hi, V_KMMAWB);
+  ADD_NDS32_BUILTIN3 ("kmmawb_u",
+		      integer, integer, integer, unsigned, KMMAWB_U);
+  ADD_NDS32_BUILTIN3 ("v_kmmawb_u",
+		      integer, integer, integer, v2hi, V_KMMAWB_U);
+  ADD_NDS32_BUILTIN3 ("kmmawt", integer, integer, integer, unsigned, KMMAWT);
+  ADD_NDS32_BUILTIN3 ("v_kmmawt", integer, integer, integer, v2hi, V_KMMAWT);
+  ADD_NDS32_BUILTIN3 ("kmmawt_u",
+		      integer, integer, integer, unsigned, KMMAWT_U);
+  ADD_NDS32_BUILTIN3 ("v_kmmawt_u",
+		      integer, integer, integer, v2hi, V_KMMAWT_U);
+
+  /* DSP Extension: Signed 16bit Multiply with ADD/Subtract.  */
+  ADD_NDS32_BUILTIN2 ("smbb", integer, unsigned, unsigned, SMBB);
+  ADD_NDS32_BUILTIN2 ("v_smbb", integer, v2hi, v2hi, V_SMBB);
+  ADD_NDS32_BUILTIN2 ("smbt", integer, unsigned, unsigned, SMBT);
+  ADD_NDS32_BUILTIN2 ("v_smbt", integer, v2hi, v2hi, V_SMBT);
+  ADD_NDS32_BUILTIN2 ("smtt", integer, unsigned, unsigned, SMTT);
+  ADD_NDS32_BUILTIN2 ("v_smtt", integer, v2hi, v2hi, V_SMTT);
+  ADD_NDS32_BUILTIN2 ("kmda", integer, unsigned, unsigned, KMDA);
+  ADD_NDS32_BUILTIN2 ("v_kmda", integer, v2hi, v2hi, V_KMDA);
+  ADD_NDS32_BUILTIN2 ("kmxda", integer, unsigned, unsigned, KMXDA);
+  ADD_NDS32_BUILTIN2 ("v_kmxda", integer, v2hi, v2hi, V_KMXDA);
+  ADD_NDS32_BUILTIN2 ("smds", integer, unsigned, unsigned, SMDS);
+  ADD_NDS32_BUILTIN2 ("v_smds", integer, v2hi, v2hi, V_SMDS);
+  ADD_NDS32_BUILTIN2 ("smdrs", integer, unsigned, unsigned, SMDRS);
+  ADD_NDS32_BUILTIN2 ("v_smdrs", integer, v2hi, v2hi, V_SMDRS);
+  ADD_NDS32_BUILTIN2 ("smxds", integer, unsigned, unsigned, SMXDS);
+  ADD_NDS32_BUILTIN2 ("v_smxds", integer, v2hi, v2hi, V_SMXDS);
+  ADD_NDS32_BUILTIN3 ("kmabb", integer, integer, unsigned, unsigned, KMABB);
+  ADD_NDS32_BUILTIN3 ("v_kmabb", integer, integer, v2hi, v2hi, V_KMABB);
+  ADD_NDS32_BUILTIN3 ("kmabt", integer, integer, unsigned, unsigned, KMABT);
+  ADD_NDS32_BUILTIN3 ("v_kmabt", integer, integer, v2hi, v2hi, V_KMABT);
+  ADD_NDS32_BUILTIN3 ("kmatt", integer, integer, unsigned, unsigned, KMATT);
+  ADD_NDS32_BUILTIN3 ("v_kmatt", integer, integer, v2hi, v2hi, V_KMATT);
+  ADD_NDS32_BUILTIN3 ("kmada", integer, integer, unsigned, unsigned, KMADA);
+  ADD_NDS32_BUILTIN3 ("v_kmada", integer, integer, v2hi, v2hi, V_KMADA);
+  ADD_NDS32_BUILTIN3 ("kmaxda", integer, integer, unsigned, unsigned, KMAXDA);
+  ADD_NDS32_BUILTIN3 ("v_kmaxda", integer, integer, v2hi, v2hi, V_KMAXDA);
+  ADD_NDS32_BUILTIN3 ("kmads", integer, integer, unsigned, unsigned, KMADS);
+  ADD_NDS32_BUILTIN3 ("v_kmads", integer, integer, v2hi, v2hi, V_KMADS);
+  ADD_NDS32_BUILTIN3 ("kmadrs", integer, integer, unsigned, unsigned, KMADRS);
+  ADD_NDS32_BUILTIN3 ("v_kmadrs", integer, integer, v2hi, v2hi, V_KMADRS);
+  ADD_NDS32_BUILTIN3 ("kmaxds", integer, integer, unsigned, unsigned, KMAXDS);
+  ADD_NDS32_BUILTIN3 ("v_kmaxds", integer, integer, v2hi, v2hi, V_KMAXDS);
+  ADD_NDS32_BUILTIN3 ("kmsda", integer, integer, unsigned, unsigned, KMSDA);
+  ADD_NDS32_BUILTIN3 ("v_kmsda", integer, integer, v2hi, v2hi, V_KMSDA);
+  ADD_NDS32_BUILTIN3 ("kmsxda", integer, integer, unsigned, unsigned, KMSXDA);
+  ADD_NDS32_BUILTIN3 ("v_kmsxda", integer, integer, v2hi, v2hi, V_KMSXDA);
+
+  /* DSP Extension: Signed 16bit Multiply with 64bit ADD/Subtract.  */
+  ADD_NDS32_BUILTIN2 ("smal", long_long_integer,
+		      long_long_integer, unsigned, SMAL);
+  ADD_NDS32_BUILTIN2 ("v_smal", long_long_integer,
+		      long_long_integer, v2hi, V_SMAL);
+
+  /* DSP Extension: 32bit MISC.  */
+  ADD_NDS32_BUILTIN2 ("bitrev", unsigned, unsigned, unsigned, BITREV);
+  ADD_NDS32_BUILTIN2 ("wext", unsigned, long_long_integer, unsigned, WEXT);
+  ADD_NDS32_BUILTIN3 ("bpick", unsigned, unsigned, unsigned, unsigned, BPICK);
+  ADD_NDS32_BUILTIN3 ("insb", unsigned, unsigned, unsigned, unsigned, INSB);
+
+  /* DSP Extension: 64bit Add and Subtract.  */
+  ADD_NDS32_BUILTIN2 ("sadd64", long_long_integer,
+		      long_long_integer, long_long_integer, SADD64);
+  ADD_NDS32_BUILTIN2 ("uadd64", long_long_unsigned,
+		      long_long_unsigned, long_long_unsigned, UADD64);
+  ADD_NDS32_BUILTIN2 ("radd64", long_long_integer,
+		      long_long_integer, long_long_integer, RADD64);
+  ADD_NDS32_BUILTIN2 ("uradd64", long_long_unsigned,
+		      long_long_unsigned, long_long_unsigned, URADD64);
+  ADD_NDS32_BUILTIN2 ("kadd64", long_long_integer,
+		      long_long_integer, long_long_integer, KADD64);
+  ADD_NDS32_BUILTIN2 ("ukadd64", long_long_unsigned,
+		      long_long_unsigned, long_long_unsigned, UKADD64);
+  ADD_NDS32_BUILTIN2 ("ssub64", long_long_integer,
+		      long_long_integer, long_long_integer, SSUB64);
+  ADD_NDS32_BUILTIN2 ("usub64", long_long_unsigned,
+		      long_long_unsigned, long_long_unsigned, USUB64);
+  ADD_NDS32_BUILTIN2 ("rsub64", long_long_integer,
+		      long_long_integer, long_long_integer, RSUB64);
+  ADD_NDS32_BUILTIN2 ("ursub64", long_long_unsigned,
+		      long_long_unsigned, long_long_unsigned, URSUB64);
+  ADD_NDS32_BUILTIN2 ("ksub64", long_long_integer,
+		      long_long_integer, long_long_integer, KSUB64);
+  ADD_NDS32_BUILTIN2 ("uksub64", long_long_unsigned,
+		      long_long_unsigned, long_long_unsigned, UKSUB64);
+
+  /* DSP Extension: 32bit Multiply with 64bit Add/Subtract.  */
+  ADD_NDS32_BUILTIN3 ("smar64", long_long_integer,
+		      long_long_integer, integer, integer, SMAR64);
+  ADD_NDS32_BUILTIN3 ("smsr64", long_long_integer,
+		      long_long_integer, integer, integer, SMSR64);
+  ADD_NDS32_BUILTIN3 ("umar64", long_long_unsigned,
+		      long_long_unsigned, unsigned, unsigned, UMAR64);
+  ADD_NDS32_BUILTIN3 ("umsr64", long_long_unsigned,
+		      long_long_unsigned, unsigned, unsigned, UMSR64);
+  ADD_NDS32_BUILTIN3 ("kmar64", long_long_integer,
+		      long_long_integer, integer, integer, KMAR64);
+  ADD_NDS32_BUILTIN3 ("kmsr64", long_long_integer,
+		      long_long_integer, integer, integer, KMSR64);
+  ADD_NDS32_BUILTIN3 ("ukmar64", long_long_unsigned,
+		      long_long_unsigned, unsigned, unsigned, UKMAR64);
+  ADD_NDS32_BUILTIN3 ("ukmsr64", long_long_unsigned,
+		      long_long_unsigned, unsigned, unsigned, UKMSR64);
+
+  /* DSP Extension: Signed 16bit Multiply with 64bit Add/Subtract.  */
+  ADD_NDS32_BUILTIN3 ("smalbb", long_long_integer,
+		      long_long_integer, unsigned, unsigned, SMALBB);
+  ADD_NDS32_BUILTIN3 ("v_smalbb", long_long_integer,
+		      long_long_integer, v2hi, v2hi, V_SMALBB);
+  ADD_NDS32_BUILTIN3 ("smalbt", long_long_integer,
+		      long_long_integer, unsigned, unsigned, SMALBT);
+  ADD_NDS32_BUILTIN3 ("v_smalbt", long_long_integer,
+		      long_long_integer, v2hi, v2hi, V_SMALBT);
+  ADD_NDS32_BUILTIN3 ("smaltt", long_long_integer,
+		      long_long_integer, unsigned, unsigned, SMALTT);
+  ADD_NDS32_BUILTIN3 ("v_smaltt", long_long_integer,
+		      long_long_integer, v2hi, v2hi, V_SMALTT);
+  ADD_NDS32_BUILTIN3 ("smalda", long_long_integer,
+		      long_long_integer, unsigned, unsigned, SMALDA);
+  ADD_NDS32_BUILTIN3 ("v_smalda", long_long_integer,
+		      long_long_integer, v2hi, v2hi, V_SMALDA);
+  ADD_NDS32_BUILTIN3 ("smalxda", long_long_integer,
+		      long_long_integer, unsigned, unsigned, SMALXDA);
+  ADD_NDS32_BUILTIN3 ("v_smalxda", long_long_integer,
+		      long_long_integer, v2hi, v2hi, V_SMALXDA);
+  ADD_NDS32_BUILTIN3 ("smalds", long_long_integer,
+		      long_long_integer, unsigned, unsigned, SMALDS);
+  ADD_NDS32_BUILTIN3 ("v_smalds", long_long_integer,
+		      long_long_integer, v2hi, v2hi, V_SMALDS);
+  ADD_NDS32_BUILTIN3 ("smaldrs", long_long_integer,
+		      long_long_integer, unsigned, unsigned, SMALDRS);
+  ADD_NDS32_BUILTIN3 ("v_smaldrs", long_long_integer,
+		      long_long_integer, v2hi, v2hi, V_SMALDRS);
+  ADD_NDS32_BUILTIN3 ("smalxds", long_long_integer,
+		      long_long_integer, unsigned, unsigned, SMALXDS);
+  ADD_NDS32_BUILTIN3 ("v_smalxds", long_long_integer,
+		      long_long_integer, v2hi, v2hi, V_SMALXDS);
+  ADD_NDS32_BUILTIN3 ("smslda", long_long_integer,
+		      long_long_integer, unsigned, unsigned, SMSLDA);
+  ADD_NDS32_BUILTIN3 ("v_smslda", long_long_integer,
+		      long_long_integer, v2hi, v2hi, V_SMSLDA);
+  ADD_NDS32_BUILTIN3 ("smslxda", long_long_integer,
+		      long_long_integer, unsigned, unsigned, SMSLXDA);
+  ADD_NDS32_BUILTIN3 ("v_smslxda", long_long_integer,
+		      long_long_integer, v2hi, v2hi, V_SMSLXDA);
+
+  /* DSP Extension: augmented baseline.  */
+  ADD_NDS32_BUILTIN2 ("uclip32", unsigned, integer, unsigned, UCLIP32);
+  ADD_NDS32_BUILTIN2 ("sclip32", integer, integer, unsigned, SCLIP32);
+  ADD_NDS32_BUILTIN1 ("kabs", integer, integer, KABS);
+
+  /* DSP Extension: vector type unaligned Load/Store  */
+  ADD_NDS32_BUILTIN1 ("get_unaligned_u16x2", u_v2hi, ptr_ushort, UALOAD_U16);
+  ADD_NDS32_BUILTIN1 ("get_unaligned_s16x2", v2hi, ptr_short, UALOAD_S16);
+  ADD_NDS32_BUILTIN1 ("get_unaligned_u8x4", u_v4qi, ptr_uchar, UALOAD_U8);
+  ADD_NDS32_BUILTIN1 ("get_unaligned_s8x4", v4qi, ptr_char, UALOAD_S8);
+  ADD_NDS32_BUILTIN2 ("put_unaligned_u16x2", void, ptr_ushort,
+		      u_v2hi, UASTORE_U16);
+  ADD_NDS32_BUILTIN2 ("put_unaligned_s16x2", void, ptr_short,
+		      v2hi, UASTORE_S16);
+  ADD_NDS32_BUILTIN2 ("put_unaligned_u8x4", void, ptr_uchar,
+		      u_v4qi, UASTORE_U8);
+  ADD_NDS32_BUILTIN2 ("put_unaligned_s8x4", void, ptr_char,
+		      v4qi, UASTORE_S8);
 }

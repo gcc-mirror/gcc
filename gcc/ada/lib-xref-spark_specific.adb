@@ -168,9 +168,9 @@ package body SPARK_Specific is
       end loop;
    end Iterate_SPARK_Xrefs;
 
-   -------------------------------------
-   -- Enclosing_Subprogram_Or_Package --
-   -------------------------------------
+   ---------------------------------------------
+   -- Enclosing_Subprogram_Or_Library_Package --
+   ---------------------------------------------
 
    function Enclosing_Subprogram_Or_Library_Package
      (N : Node_Id) return Entity_Id

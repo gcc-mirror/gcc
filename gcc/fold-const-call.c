@@ -529,6 +529,48 @@ fold_const_pow (real_value *result, const real_value *arg0,
 
 /* Try to evaluate:
 
+      *RESULT = nextafter (*ARG0, *ARG1)
+
+   or
+
+      *RESULT = nexttoward (*ARG0, *ARG1)
+
+   in format FORMAT.  Return true on success.  */
+
+static bool
+fold_const_nextafter (real_value *result, const real_value *arg0,
+		      const real_value *arg1, const real_format *format)
+{
+  if (REAL_VALUE_ISSIGNALING_NAN (*arg0)
+      || REAL_VALUE_ISSIGNALING_NAN (*arg1))
+    return false;
+
+  /* Don't handle composite modes, nor decimal, nor modes without
+     inf or denorm at least for now.  */
+  if (format->pnan < format->p
+      || format->b == 10
+      || !format->has_inf
+      || !format->has_denorm)
+    return false;
+
+  if (real_nextafter (result, format, arg0, arg1)
+      /* If raising underflow or overflow and setting errno to ERANGE,
+	 fail if we care about those side-effects.  */
+      && (flag_trapping_math || flag_errno_math))
+    return false;
+  /* Similarly for nextafter (0, 1) raising underflow.  */
+  else if (flag_trapping_math
+	   && arg0->cl == rvc_zero
+	   && result->cl != rvc_zero)
+    return false;
+
+  real_convert (result, format, result);
+
+  return true;
+}
+
+/* Try to evaluate:
+
       *RESULT = ldexp (*ARG0, ARG1)
 
    in format FORMAT.  Return true on success.  */
@@ -1260,6 +1302,10 @@ fold_const_call_sss (real_value *result, combined_fn fn,
     CASE_CFN_POW:
       return fold_const_pow (result, arg0, arg1, format);
 
+    CASE_CFN_NEXTAFTER:
+    CASE_CFN_NEXTTOWARD:
+      return fold_const_nextafter (result, arg0, arg1, format);
+
     default:
       return false;
     }
@@ -1365,20 +1411,33 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1)
   machine_mode arg0_mode = TYPE_MODE (TREE_TYPE (arg0));
   machine_mode arg1_mode = TYPE_MODE (TREE_TYPE (arg1));
 
-  if (arg0_mode == arg1_mode
+  if (mode == arg0_mode
       && real_cst_p (arg0)
       && real_cst_p (arg1))
     {
       gcc_checking_assert (SCALAR_FLOAT_MODE_P (arg0_mode));
-      if (mode == arg0_mode)
+      REAL_VALUE_TYPE result;
+      if (arg0_mode == arg1_mode)
 	{
 	  /* real, real -> real.  */
-	  REAL_VALUE_TYPE result;
 	  if (fold_const_call_sss (&result, fn, TREE_REAL_CST_PTR (arg0),
 				   TREE_REAL_CST_PTR (arg1),
 				   REAL_MODE_FORMAT (mode)))
 	    return build_real (type, result);
 	}
+      else if (arg1_mode == TYPE_MODE (long_double_type_node))
+	switch (fn)
+	  {
+	  CASE_CFN_NEXTTOWARD:
+	    /* real, long double -> real.  */
+	    if (fold_const_call_sss (&result, fn, TREE_REAL_CST_PTR (arg0),
+				     TREE_REAL_CST_PTR (arg1),
+				     REAL_MODE_FORMAT (mode)))
+	      return build_real (type, result);
+	    break;
+	  default:
+	    break;
+	  }
       return NULL_TREE;
     }
 
@@ -1547,6 +1606,26 @@ fold_const_call_ssss (real_value *result, combined_fn fn,
     CASE_CFN_FMA_FN:
       return do_mpfr_arg3 (result, mpfr_fma, arg0, arg1, arg2, format);
 
+    case CFN_FMS:
+      {
+	real_value new_arg2 = real_value_negate (arg2);
+	return do_mpfr_arg3 (result, mpfr_fma, arg0, arg1, &new_arg2, format);
+      }
+
+    case CFN_FNMA:
+      {
+	real_value new_arg0 = real_value_negate (arg0);
+	return do_mpfr_arg3 (result, mpfr_fma, &new_arg0, arg1, arg2, format);
+      }
+
+    case CFN_FNMS:
+      {
+	real_value new_arg0 = real_value_negate (arg0);
+	real_value new_arg2 = real_value_negate (arg2);
+	return do_mpfr_arg3 (result, mpfr_fma, &new_arg0, arg1,
+			     &new_arg2, format);
+      }
+
     default:
       return false;
     }
@@ -1659,21 +1738,4 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
     default:
       return fold_const_call_1 (fn, type, arg0, arg1, arg2);
     }
-}
-
-/* Fold a fma operation with arguments ARG[012].  */
-
-tree
-fold_fma (location_t, tree type, tree arg0, tree arg1, tree arg2)
-{
-  REAL_VALUE_TYPE result;
-  if (real_cst_p (arg0)
-      && real_cst_p (arg1)
-      && real_cst_p (arg2)
-      && do_mpfr_arg3 (&result, mpfr_fma, TREE_REAL_CST_PTR (arg0),
-		       TREE_REAL_CST_PTR (arg1), TREE_REAL_CST_PTR (arg2),
-		       REAL_MODE_FORMAT (TYPE_MODE (type))))
-    return build_real (type, result);
-
-  return NULL_TREE;
 }

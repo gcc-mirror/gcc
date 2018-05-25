@@ -842,6 +842,38 @@ gfc_notification_std (int std)
 }
 
 
+/* Return a string describing the nature of a standard violation
+ * and/or the relevant version of the standard.  */
+
+char const*
+notify_std_msg(int std)
+{
+
+  if (std & GFC_STD_F2018_DEL)
+    return _("Fortran 2018 deleted feature:");
+  else if (std & GFC_STD_F2018_OBS)
+    return _("Fortran 2018 obsolescent feature:");
+  else if (std & GFC_STD_F2018)
+    return _("Fortran 2018:");
+  else if (std & GFC_STD_F2008_OBS)
+    return _("Fortran 2008 obsolescent feature:");
+  else if (std & GFC_STD_F2008)
+    return "Fortran 2008:";
+  else if (std & GFC_STD_F2003)
+    return "Fortran 2003:";
+  else if (std & GFC_STD_GNU)
+    return _("GNU Extension:");
+  else if (std & GFC_STD_LEGACY)
+    return _("Legacy Extension:");
+  else if (std & GFC_STD_F95_OBS)
+    return _("Obsolescent feature:");
+  else if (std & GFC_STD_F95_DEL)
+    return _("Deleted feature:");
+  else
+    gcc_unreachable ();
+}
+
+
 /* Possibly issue a warning/error about use of a nonstandard (or deleted)
    feature.  An error/warning will be issued if the currently selected
    standard does not contain the requested bits.  Return false if
@@ -851,55 +883,24 @@ bool
 gfc_notify_std (int std, const char *gmsgid, ...)
 {
   va_list argp;
-  bool warning;
   const char *msg, *msg2;
   char *buffer;
 
-  warning = ((gfc_option.warn_std & std) != 0) && !inhibit_warnings;
-  if ((gfc_option.allow_std & std) != 0 && !warning)
+  /* Determine whether an error or a warning is needed.  */
+  const int wstd = std & gfc_option.warn_std;    /* Standard to warn about.  */
+  const int estd = std & ~gfc_option.allow_std;  /* Standard to error about.  */
+  const bool warning = (wstd != 0) && !inhibit_warnings;
+  const bool error = (estd != 0);
+
+  if (!error && !warning)
     return true;
-
   if (suppress_errors)
-    return warning ? true : false;
+    return !error;
 
-  switch (std)
-  {
-    case GFC_STD_F2018_DEL:
-      msg = _("Fortran 2018 deleted feature:");
-      break;
-    case GFC_STD_F2018_OBS:
-      msg = _("Fortran 2018 obsolescent feature:");
-      break;
-    case GFC_STD_F2018:
-      msg = _("Fortran 2018:");
-      break;
-    case GFC_STD_F2008_TS:
-      msg = "TS 29113/TS 18508:";
-      break;
-    case GFC_STD_F2008_OBS:
-      msg = _("Fortran 2008 obsolescent feature:");
-      break;
-    case GFC_STD_F2008:
-      msg = "Fortran 2008:";
-      break;
-    case GFC_STD_F2003:
-      msg = "Fortran 2003:";
-      break;
-    case GFC_STD_GNU:
-      msg = _("GNU Extension:");
-      break;
-    case GFC_STD_LEGACY:
-      msg = _("Legacy Extension:");
-      break;
-    case GFC_STD_F95_OBS:
-      msg = _("Obsolescent feature:");
-      break;
-    case GFC_STD_F95_DEL:
-      msg = _("Deleted feature:");
-      break;
-    default:
-      gcc_unreachable ();
-  }
+  if (error)
+    msg = notify_std_msg (estd);
+  else
+    msg = notify_std_msg (wstd);
 
   msg2 = _(gmsgid);
   buffer = (char *) alloca (strlen (msg) + strlen (msg2) + 2);
@@ -908,13 +909,16 @@ gfc_notify_std (int std, const char *gmsgid, ...)
   strcat (buffer, msg2);
 
   va_start (argp, gmsgid);
-  if (warning)
-    gfc_warning (0, buffer, argp);
-  else
+  if (error)
     gfc_error_opt (0, buffer, argp);
+  else
+    gfc_warning (0, buffer, argp);
   va_end (argp);
 
-  return (warning && !warnings_are_errors) ? true : false;
+  if (error)
+    return false;
+  else
+    return (warning && !warnings_are_errors);
 }
 
 

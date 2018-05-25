@@ -27,7 +27,6 @@ with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Exp_Atag; use Exp_Atag;
-with Exp_Disp; use Exp_Disp;
 with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
@@ -933,9 +932,9 @@ package body Exp_Dist is
       procedure Visit_Nested_Pkg (Nested_Pkg_Decl : Node_Id);
       --  Recurse for the given nested package declaration
 
-      -----------------------
-      -- Visit_Nested_Spec --
-      -----------------------
+      ----------------------
+      -- Visit_Nested_Pkg --
+      ----------------------
 
       procedure Visit_Nested_Pkg (Nested_Pkg_Decl : Node_Id) is
          Nested_Pkg_Spec : constant Node_Id := Specification (Nested_Pkg_Decl);
@@ -9219,9 +9218,9 @@ package body Exp_Dist is
                 Idx));
          end Build_Get_Aggregate_Element;
 
-         -------------------------
-         -- Build_Reposiroty_Id --
-         -------------------------
+         ----------------------------------
+         -- Build_Name_And_Repository_Id --
+         ----------------------------------
 
          procedure Build_Name_And_Repository_Id
            (E           : Entity_Id;

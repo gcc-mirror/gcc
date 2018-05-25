@@ -1307,7 +1307,7 @@ maybe_diag_incompatible_alias (tree alias, tree target)
   tree altype = TREE_TYPE (alias);
   tree targtype = TREE_TYPE (target);
 
-  bool ifunc = lookup_attribute ("ifunc", DECL_ATTRIBUTES (alias));
+  bool ifunc = cgraph_node::get (alias)->ifunc_resolver;
   tree funcptr = altype;
 
   if (ifunc)

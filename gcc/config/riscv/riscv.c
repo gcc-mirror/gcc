@@ -2002,8 +2002,18 @@ riscv_extend_comparands (rtx_code code, rtx *op0, rtx *op1)
   /* Comparisons consider all XLEN bits, so extend sub-XLEN values.  */
   if (GET_MODE_SIZE (word_mode) > GET_MODE_SIZE (GET_MODE (*op0)))
     {
-      /* It is more profitable to zero-extend QImode values.  */
-      if (unsigned_condition (code) == code && GET_MODE (*op0) == QImode)
+      /* It is more profitable to zero-extend QImode values.  But not if the
+	 first operand has already been sign-extended, and the second one is
+	 is a constant or has already been sign-extended also.  */
+      if (unsigned_condition (code) == code
+	  && (GET_MODE (*op0) == QImode
+	      && ! (GET_CODE (*op0) == SUBREG
+		    && SUBREG_PROMOTED_VAR_P (*op0)
+		    && SUBREG_PROMOTED_SIGNED_P (*op0)
+		    && (CONST_INT_P (*op1)
+			|| (GET_CODE (*op1) == SUBREG
+			    && SUBREG_PROMOTED_VAR_P (*op1)
+			    && SUBREG_PROMOTED_SIGNED_P (*op1))))))
 	{
 	  *op0 = gen_rtx_ZERO_EXTEND (word_mode, *op0);
 	  if (CONST_INT_P (*op1))
@@ -3324,7 +3334,14 @@ riscv_compute_frame_info (void)
 
       /* Only use save/restore routines if they don't alter the stack size.  */
       if (RISCV_STACK_ALIGN (num_save_restore * UNITS_PER_WORD) == x_save_size)
-	frame->save_libcall_adjustment = x_save_size;
+	{
+	  /* Libcall saves/restores 3 registers at once, so we need to
+	     allocate 12 bytes for callee-saved register.  */
+	  if (TARGET_RVE)
+	    x_save_size = 3 * UNITS_PER_WORD;
+
+	  frame->save_libcall_adjustment = x_save_size;
+	}
 
       offset += x_save_size;
     }
@@ -4137,6 +4154,9 @@ riscv_option_override (void)
     error ("requested ABI requires -march to subsume the %qc extension",
 	   UNITS_PER_FP_ARG > 8 ? 'Q' : (UNITS_PER_FP_ARG > 4 ? 'D' : 'F'));
 
+  if (TARGET_RVE && riscv_abi != ABI_ILP32E)
+    error ("rv32e requires ilp32e ABI");
+
   /* We do not yet support ILP32 on RV64.  */
   if (BITS_PER_WORD != POINTER_SIZE)
     error ("ABI requires -march=rv%d", POINTER_SIZE);
@@ -4161,6 +4181,19 @@ riscv_option_override (void)
 static void
 riscv_conditional_register_usage (void)
 {
+  /* We have only x0~x15 on RV32E.  */
+  if (TARGET_RVE)
+    {
+      for (int r = 16; r <= 31; r++)
+	fixed_regs[r] = 1;
+    }
+
+  if (riscv_abi == ABI_ILP32E)
+    {
+      for (int r = 16; r <= 31; r++)
+	call_used_regs[r] = 1;
+    }
+
   if (!TARGET_HARD_FLOAT)
     {
       for (int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)

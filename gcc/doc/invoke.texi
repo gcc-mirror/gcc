@@ -194,10 +194,9 @@ in the following sections.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
 -faligned-new=@var{n}  -fargs-in-order=@var{n}  -fcheck-new @gol
 -fconstexpr-depth=@var{n}  -fconstexpr-loop-limit=@var{n} @gol
--ffriend-injection @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
--ffor-scope  -fno-for-scope  -fno-gnu-keywords @gol
+-fno-gnu-keywords @gol
 -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
 -fno-implement-inlines  -fms-extensions @gol
@@ -215,7 +214,8 @@ in the following sections.
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
 -Wabi=@var{n}  -Wabi-tag  -Wconversion-null  -Wctor-dtor-privacy @gol
--Wdelete-non-virtual-dtor  -Wliteral-suffix  -Wmultiple-inheritance @gol
+-Wdelete-non-virtual-dtor -Wdeprecated-copy  -Wliteral-suffix @gol
+-Wmultiple-inheritance @gol
 -Wnamespaces  -Wnarrowing @gol
 -Wnoexcept  -Wnoexcept-type  -Wclass-memaccess @gol
 -Wnon-virtual-dtor  -Wreorder  -Wregister @gol
@@ -598,7 +598,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mabi=@var{name}  -mbig-endian  -mlittle-endian @gol
 -mgeneral-regs-only @gol
 -mcmodel=tiny  -mcmodel=small  -mcmodel=large @gol
--mstrict-align @gol
+-mstrict-align -mno-strict-align @gol
 -momit-leaf-frame-pointer @gol
 -mtls-dialect=desc  -mtls-dialect=traditional @gol
 -mtls-size=@var{size} @gol
@@ -1068,7 +1068,6 @@ See RS/6000 and PowerPC Options.
 -m64  -m32  -mxl-compat  -mno-xl-compat  -mpe @gol
 -malign-power  -malign-natural @gol
 -msoft-float  -mhard-float  -mmultiple  -mno-multiple @gol
--msingle-float  -mdouble-float  -msimple-fpu @gol
 -mupdate  -mno-update @gol
 -mavoid-indexed-addresses  -mno-avoid-indexed-addresses @gol
 -mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align @gol
@@ -1091,7 +1090,6 @@ See RS/6000 and PowerPC Options.
 -mstring-compare-inline-limit=@var{num} @gol
 -misel  -mno-isel @gol
 -misel=yes  -misel=no @gol
--mpaired @gol
 -mvrsave  -mno-vrsave @gol
 -mmulhw  -mno-mulhw @gol
 -mdlmzb  -mno-dlmzb @gol
@@ -1263,9 +1261,10 @@ See RS/6000 and PowerPC Options.
 -mprefetchwt1  -mclflushopt  -mxsavec  -mxsaves @gol
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp  -mmpx  @gol
--mmwaitx  -mclzero  -mpku  -mthreads -mgfni  -mvaes  @gol
+-mmwaitx  -mclzero  -mpku  -mthreads -mgfni  -mvaes  -mwaitpkg @gol
 -mshstk -mforce-indirect-call -mavx512vbmi2 @gol
--mvpclmulqdq -mavx512bitalg -mmovdiri -mmovdir64b -mavx512vpopcntdq @gol
+-mvpclmulqdq -mavx512bitalg -mmovdiri -mmovdir64b -mavx512vpopcntdq
+-mcldemote @gol
 -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -2451,18 +2450,6 @@ originally proposed semantics for the C++11 standard, but was not part
 of the final standard, so it is disabled by default.  This option is
 deprecated, and may be removed in a future version of G++.
 
-@item -ffriend-injection
-@opindex ffriend-injection
-Inject friend functions into the enclosing namespace, so that they are
-visible outside the scope of the class in which they are declared.
-Friend functions were documented to work this way in the old Annotated
-C++ Reference Manual.  
-However, in ISO C++ a friend function that is not declared
-in an enclosing scope can only be found using argument dependent
-lookup.  GCC defaults to the standard behavior.
-
-This option is deprecated and will be removed.
-
 @item -fno-elide-constructors
 @opindex fno-elide-constructors
 The C++ standard allows an implementation to omit creating a temporary
@@ -2506,21 +2493,6 @@ another TU), they can avoid this overhead with the
 On targets that support symbol aliases, the default is
 @option{-fextern-tls-init}.  On targets that do not support symbol
 aliases, the default is @option{-fno-extern-tls-init}.
-
-@item -ffor-scope
-@itemx -fno-for-scope
-@opindex ffor-scope
-@opindex fno-for-scope
-If @option{-ffor-scope} is specified, the scope of variables declared in
-a @i{for-init-statement} is limited to the @code{for} loop itself,
-as specified by the C++ standard.
-If @option{-fno-for-scope} is specified, the scope of variables declared in
-a @i{for-init-statement} extends to the end of the enclosing scope,
-as was the case in old versions of G++, and other (traditional)
-implementations of C++.
-
-This option is deprecated and the associated non-standard
-functionality will be removed.
 
 @item -fno-gnu-keywords
 @opindex fno-gnu-keywords
@@ -2955,6 +2927,14 @@ has virtual functions and non-virtual destructor. It is unsafe to delete
 an instance of a derived class through a pointer to a base class if the
 base class does not have a virtual destructor.  This warning is enabled
 by @option{-Wall}.
+
+@item -Wdeprecated-copy @r{(C++ and Objective-C++ only)}
+@opindex Wdeprecated-copy
+@opindex Wno-deprecated-copy
+Warn that the implicit declaration of a copy constructor or copy
+assignment operator is deprecated if the class has a user-provided
+copy constructor, copy assignment operator, or destructor, in C++11
+and up.  This warning is enabled by @option{-Wall}.
 
 @item -Wliteral-suffix @r{(C++ and Objective-C++ only)}
 @opindex Wliteral-suffix
@@ -8894,6 +8874,13 @@ for (int i = 0; i < N; i++)
     for (int j = 0; j < N; j++)
       c[i][j] = c[i][j] + a[i][k]*b[k][j];
 @end smallexample
+This flag is enabled by default at @option{-O3}.
+
+@item -floop-unroll-and-jam
+@opindex floop-unroll-and-jam
+Apply unroll and jam transformations on feasible loops.  In a loop
+nest this unrolls the outer loop by some factor and fuses the resulting
+multiple inner loops.  This flag is enabled by default at @option{-O3}.
 
 @item -ftree-loop-im
 @opindex ftree-loop-im
@@ -10066,12 +10053,6 @@ for one side of the iteration space and false for the other.
 Move branches with loop invariant conditions out of the loop, with duplicates
 of the loop on both branches (modified according to result of the condition).
 
-@item -floop-unroll-and-jam
-@opindex floop-unroll-and-jam
-Apply unroll and jam transformations on feasible loops.  In a loop
-nest this unrolls the outer loop by some factor and fuses the resulting
-multiple inner loops.
-
 @item -ffunction-sections
 @itemx -fdata-sections
 @opindex ffunction-sections
@@ -10495,6 +10476,11 @@ Average number of iterations of a loop.
 Maximum size (in bytes) of objects tracked bytewise by dead store elimination.
 Larger values may result in larger compilation times.
 
+@item dse-max-alias-queries-per-store
+Maximum number of queries into the alias oracle per store.
+Larger values result in larger compilation times and may result in more
+removed dead stores.
+
 @item scev-max-expr-size
 Bound on size of expressions used in the scalar evolutions analyzer.
 Large expressions slow the analyzer.
@@ -10774,6 +10760,31 @@ The size of L1 cache, in kilobytes.
 
 @item l2-cache-size
 The size of L2 cache, in kilobytes.
+
+@item prefetch-dynamic-strides
+Whether the loop array prefetch pass should issue software prefetch hints
+for strides that are non-constant.  In some cases this may be
+beneficial, though the fact the stride is non-constant may make it
+hard to predict when there is clear benefit to issuing these hints.
+
+Set to 1, the default, if the prefetch hints should be issued for non-constant
+strides.  Set to 0 if prefetch hints should be issued only for strides that
+are known to be constant and below @option{prefetch-minimum-stride}.
+
+@item prefetch-minimum-stride
+Minimum constant stride, in bytes, to start using prefetch hints for.  If
+the stride is less than this threshold, prefetch hints will not be issued.
+
+This setting is useful for processors that have hardware prefetchers, in
+which case there may be conflicts between the hardware prefetchers and
+the software prefetchers.  If the hardware prefetchers have a maximum
+stride they can handle, it should be used here to improve the use of
+software prefetchers.
+
+A value of -1, the default, means we don't have a threshold and therefore
+prefetch hints can be issued for any constant stride.
+
+This setting is only useful for strides that are known and constant.
 
 @item loop-interchange-max-num-stmts
 The maximum number of stmts in a loop to be interchanged.
@@ -14390,14 +14401,17 @@ Print the name and the counter upper bound for all debug counters.
 
 @item -fdbg-cnt=@var{counter-value-list}
 @opindex fdbg-cnt
-Set the internal debug counter upper bound.  @var{counter-value-list}
-is a comma-separated list of @var{name}:@var{value} pairs
-which sets the upper bound of each debug counter @var{name} to @var{value}.
+Set the internal debug counter lower and upper bound.  @var{counter-value-list}
+is a comma-separated list of @var{name}:@var{lower_bound}:@var{upper_bound}
+tuples which sets the lower and the upper bound of each debug
+counter @var{name}.  The @var{lower_bound} is optional and is zero
+initialized if not set.
 All debug counters have the initial upper bound of @code{UINT_MAX};
 thus @code{dbg_cnt} returns true always unless the upper bound
 is set by this option.
-For example, with @option{-fdbg-cnt=dce:10,tail_call:0},
-@code{dbg_cnt(dce)} returns true only for first 10 invocations.
+For example, with @option{-fdbg-cnt=dce:2:4,tail_call:10},
+@code{dbg_cnt(dce)} returns true only for third and fourth invocation.
+For @code{dbg_cnt(tail_call)} true is returned for first 10 invocations.
 
 @item -print-file-name=@var{library}
 @opindex print-file-name
@@ -14640,9 +14654,11 @@ Generate code for the large code model.  This makes no assumptions about
 addresses and sizes of sections.  Programs can be statically linked only.
 
 @item -mstrict-align
+@itemx -mno-strict-align
 @opindex mstrict-align
-Avoid generating memory accesses that may not be aligned on a natural object
-boundary as described in the architecture specification.
+@opindex mno-strict-align
+Avoid or allow generating memory accesses that may not be aligned on a natural
+object boundary as described in the architecture specification.
 
 @item -momit-leaf-frame-pointer
 @itemx -mno-omit-leaf-frame-pointer
@@ -15959,9 +15975,7 @@ Permissible names are:
 @samp{iwmmxt} and @samp{iwmmxt2}.
 
 Additionally, the following architectures, which lack support for the
-Thumb execution state, are recognized but support is deprecated:
-@samp{armv2}, @samp{armv2a}, @samp{armv3}, @samp{armv3m},
-@samp{armv4}, @samp{armv5} and @samp{armv5e}.
+Thumb execution state, are recognized but support is deprecated: @samp{armv4}.
 
 Many of the architectures support extensions.  These can be added by
 appending @samp{+@var{extension}} to the architecture name.  Extension
@@ -15989,7 +16003,6 @@ The table below lists the supported extensions for each architecture.
 Architectures not mentioned do not support any extensions.
 
 @table @samp
-@item  armv5e
 @itemx armv5te
 @itemx armv6
 @itemx armv6j
@@ -23074,7 +23087,9 @@ conventions are: @samp{ilp32}, @samp{ilp32f}, @samp{ilp32d}, @samp{lp64},
 @samp{lp64f}, and @samp{lp64d}.  Some calling conventions are impossible to
 implement on some ISAs: for example, @samp{-march=rv32if -mabi=ilp32d} is
 invalid because the ABI requires 64-bit values be passed in F registers, but F
-registers are only 32 bits wide.
+registers are only 32 bits wide.  There is also the @samp{ilp32e} ABI that can
+only be used with the @samp{rv32e} architecture.  This ABI is not well
+specified at present, and is subject to change.
 
 @item -mfdiv
 @itemx -mno-fdiv
@@ -23093,7 +23108,8 @@ these instructions.
 @item -march=@var{ISA-string}
 @opindex march
 Generate code for given RISC-V ISA (e.g.@ @samp{rv64im}).  ISA strings must be
-lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, and @samp{rv32imaf}.
+lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
+@samp{rv32imaf}.
 
 @item -mtune=@var{processor-string}
 @opindex mtune
@@ -23389,8 +23405,8 @@ following options:
 
 @gccoptlist{-maltivec  -mfprnd  -mhard-float  -mmfcrf  -mmultiple @gol
 -mpopcntb -mpopcntd  -mpowerpc64 @gol
--mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
--msimple-fpu  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
+-mpowerpc-gpopt  -mpowerpc-gfxopt @gol
+-mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
 -mcrypto -mhtm -mpower8-fusion -mpower8-vector @gol
 -mquad-memory -mquad-memory-atomic -mfloat128 -mfloat128-hardware}
 
@@ -23509,13 +23525,6 @@ This switch enables or disables the generation of ISEL instructions.
 @item -misel=@var{yes/no}
 This switch has been deprecated.  Use @option{-misel} and
 @option{-mno-isel} instead.
-
-@item -mpaired
-@itemx -mno-paired
-@opindex mpaired
-@opindex mno-paired
-This switch enables or disables the generation of PAIRED simd
-instructions.
 
 @item -mvsx
 @itemx -mno-vsx
@@ -23715,30 +23724,6 @@ is not supported.
 Generate code that does not use (uses) the floating-point register set.
 Software floating-point emulation is provided if you use the
 @option{-msoft-float} option, and pass the option to GCC when linking.
-
-@item -msingle-float
-@itemx -mdouble-float
-@opindex msingle-float
-@opindex mdouble-float
-Generate code for single- or double-precision floating-point operations.
-@option{-mdouble-float} implies @option{-msingle-float}.
-
-@item -msimple-fpu
-@opindex msimple-fpu
-Do not generate @code{sqrt} and @code{div} instructions for hardware
-floating-point unit.
-
-@item -mfpu=@var{name}
-@opindex mfpu
-Specify type of floating-point unit.  Valid values for @var{name} are
-@samp{sp_lite} (equivalent to @option{-msingle-float -msimple-fpu}),
-@samp{dp_lite} (equivalent to @option{-mdouble-float -msimple-fpu}),
-@samp{sp_full} (equivalent to @option{-msingle-float}),
-and @samp{dp_full} (equivalent to @option{-mdouble-float}).
-
-@item -mxilinx-fpu
-@opindex mxilinx-fpu
-Perform optimizations for the floating-point unit on Xilinx PPC 405/440.
 
 @item -mmultiple
 @itemx -mno-multiple
@@ -24154,7 +24139,6 @@ in the @code{.data} section, and all uninitialized data in the
 @code{.bss} section.
 
 @item -mreadonly-in-sdata
-@itemx -mreadonly-in-sdata
 @opindex mreadonly-in-sdata
 @opindex mno-readonly-in-sdata
 Put read-only objects in the @code{.sdata} section as well.  This is the
@@ -26594,6 +26578,16 @@ instruction set support.
 Intel Silvermont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AES, PCLMUL and RDRND instruction set support.
 
+@item goldmont
+Intel Goldmont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT and FSGSBASE
+instruction set support.
+
+@item goldmont-plus
+Intel Goldmont Plus CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE,
+PTWRITE, RDPID, SGX and UMIP instruction set support.
+
 @item knl
 Intel Knight's Landing CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
@@ -27337,6 +27331,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mvaes
 @opindex mvaes
 @need 200
+@itemx -mwaitpkg
+@opindex -mwaitpkg
+@need 200
 @itemx -mvpclmulqdq
 @opindex mvpclmulqdq
 @need 200
@@ -27351,14 +27348,17 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mavx512vpopcntdq
 @opindex mavx512vpopcntdq
+@need 200
+@itemx -mcldemote
+@opindex mcldemote
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
-AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, BMI, BMI2, VAES,
+AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, BMI, BMI2, VAES, WAITPKG,
 FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX, PKU, IBT, SHSTK, AVX512VBMI2,
 GFNI, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B,
-AVX512VPOPCNTDQ3DNow!@: or enhanced 3DNow!@: extended instruction sets.
-Each has a corresponding @option{-mno-} option to disable use of these
+AVX512VPOPCNTDQ, CLDEMOTE, 3DNow!@: or enhanced 3DNow!@: extended instruction
+sets. Each has a corresponding @option{-mno-} option to disable use of these
 instructions.
 
 These extensions are also available as built-in functions: see

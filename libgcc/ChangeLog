@@ -1,3 +1,37 @@
+2018-05-23  Kalamatee  <kalamatee@gmail.com>
+
+	* config/m68k/lb1sf68.S (Laddsf$nf): Fix sign bit handling in
+	path to Lf$finfty.
+
+2018-05-18  Kito Cheng <kito.cheng@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+	    Jim Wilson <jimw@sifive.com>
+
+	* config/riscv/save-restore.S: Add support for rv32e.
+
+2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/libunwind.S: Update comment relating to armv5.
+
+2018-05-17  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/arm/cmse.c (cmse_check_address_range): Replace
+	UINTPTR_MAX with __UINTPTR_MAX__ and uintptr_t with __UINTPTR_TYPE__.
+
+2018-05-17  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_GOLDMONT_PLUS.
+	* config/i386/cpuinfo.c (get_intel_cpu): Detect Goldmont Plus.
+
+2018-05-08  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_GOLDMONT.
+	* config/i386/cpuinfo.c (get_intel_cpu): Detect Goldmont.
+
+2018-05-07  Amaan Cheval  <amaan.cheval@gmail.com>
+
+	* config.host (x86_64-*-rtems*): Build crti.o and crtn.o.
+
 2018-04-27  Andreas Tobler  <andreast@gcc.gnu.org>
 	    Maryse Levavasseur <maryse.levavasseur@stormshield.eu>
 

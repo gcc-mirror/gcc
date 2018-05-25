@@ -749,42 +749,44 @@ compile_offload_image (const char *target, const char *compiler_path,
 	break;
       }
 
-  if (compiler)
-    {
-      /* Generate temporary output file name.  */
-      filename = make_temp_file (".target.o");
+  if (!compiler)
+    fatal_error (input_location,
+		 "could not find %s in %s (consider using '-B')\n", suffix + 1,
+		 compiler_path);
 
-      struct obstack argv_obstack;
-      obstack_init (&argv_obstack);
-      obstack_ptr_grow (&argv_obstack, compiler);
-      if (save_temps)
-	obstack_ptr_grow (&argv_obstack, "-save-temps");
-      if (verbose)
-	obstack_ptr_grow (&argv_obstack, "-v");
-      obstack_ptr_grow (&argv_obstack, "-o");
-      obstack_ptr_grow (&argv_obstack, filename);
+  /* Generate temporary output file name.  */
+  filename = make_temp_file (".target.o");
 
-      /* Append names of input object files.  */
-      for (unsigned i = 0; i < in_argc; i++)
-	obstack_ptr_grow (&argv_obstack, in_argv[i]);
+  struct obstack argv_obstack;
+  obstack_init (&argv_obstack);
+  obstack_ptr_grow (&argv_obstack, compiler);
+  if (save_temps)
+    obstack_ptr_grow (&argv_obstack, "-save-temps");
+  if (verbose)
+    obstack_ptr_grow (&argv_obstack, "-v");
+  obstack_ptr_grow (&argv_obstack, "-o");
+  obstack_ptr_grow (&argv_obstack, filename);
 
-      /* Append options from offload_lto sections.  */
-      append_compiler_options (&argv_obstack, compiler_opts,
-			       compiler_opt_count);
-      append_diag_options (&argv_obstack, linker_opts, linker_opt_count);
+  /* Append names of input object files.  */
+  for (unsigned i = 0; i < in_argc; i++)
+    obstack_ptr_grow (&argv_obstack, in_argv[i]);
 
-      /* Append options specified by -foffload last.  In case of conflicting
-	 options we expect offload compiler to choose the latest.  */
-      append_offload_options (&argv_obstack, target, compiler_opts,
-			      compiler_opt_count);
-      append_offload_options (&argv_obstack, target, linker_opts,
-			      linker_opt_count);
+  /* Append options from offload_lto sections.  */
+  append_compiler_options (&argv_obstack, compiler_opts,
+			   compiler_opt_count);
+  append_diag_options (&argv_obstack, linker_opts, linker_opt_count);
 
-      obstack_ptr_grow (&argv_obstack, NULL);
-      argv = XOBFINISH (&argv_obstack, char **);
-      fork_execute (argv[0], argv, true);
-      obstack_free (&argv_obstack, NULL);
-    }
+  /* Append options specified by -foffload last.  In case of conflicting
+     options we expect offload compiler to choose the latest.  */
+  append_offload_options (&argv_obstack, target, compiler_opts,
+			  compiler_opt_count);
+  append_offload_options (&argv_obstack, target, linker_opts,
+			  linker_opt_count);
+
+  obstack_ptr_grow (&argv_obstack, NULL);
+  argv = XOBFINISH (&argv_obstack, char **);
+  fork_execute (argv[0], argv, true);
+  obstack_free (&argv_obstack, NULL);
 
   free_array_of_ptrs ((void **) paths, n_paths);
   return filename;

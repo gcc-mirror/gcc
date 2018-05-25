@@ -1,3 +1,34 @@
+2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Remove
+	__FMA_EXPR handlng.
+
+2018-05-17  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gimple-parser.c: Include internal-fn.h.
+	(c_parser_gimple_statement): Treat a leading CPP_DOT as a call.
+	(c_parser_gimple_call_internal): New function.
+	(c_parser_gimple_postfix_expression): Use it to handle CPP_DOT.
+	Fix typos in comment.
+
+2018-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85662
+	* c-fold.c (c_fully_fold_internal): Use fold_offsetof rather than
+	fold_offsetof_1, pass TREE_TYPE (expr) as TYPE to it and drop the
+	fold_convert_loc.
+	* c-typeck.c (build_unary_op): Use fold_offsetof rather than
+	fold_offsetof_1, pass argtype as TYPE to it and drop the
+	fold_convert_loc.
+
+2018-05-02  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/30552
+	* c-decl.c (old_style_parameter_scope): New function.
+	* c-parser.c (c_parser_postfix_expression): Check for statement
+	expressions in old-style function parameter list declarations.
+	* c-parser.h (old_style_parameter_scope): New extern declaration.
+
 2018-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/84307

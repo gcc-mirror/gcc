@@ -66,10 +66,6 @@ minloc1_16_s1 (gfc_array_i16 * const restrict retarray,
   index_type dim;
   int continue_loop;
 
-#ifdef HAVE_BACK_ARG
-  assert(back == 0);
-#endif
-
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
   dim = (*pdim) - 1;
@@ -165,8 +161,8 @@ minloc1_16_s1 (gfc_array_i16 * const restrict retarray,
       {
 
 	const GFC_INTEGER_1 *minval;
-	minval = base;
-	result = 1;
+	minval = NULL;
+	result = 0;
 	if (len <= 0)
 	  *dest = 0;
 	else
@@ -174,7 +170,8 @@ minloc1_16_s1 (gfc_array_i16 * const restrict retarray,
 	    for (n = 0; n < len; n++, src += delta)
 	      {
 
-		if (compare_fcn (src, minval, string_len) < 0)
+		if (minval == NULL || (back ? compare_fcn (src, minval, string_len) <= 0 :
+		   	      	      	      compare_fcn (src, minval, string_len) < 0))
 		  {
 		    minval = src;
 		    result = (GFC_INTEGER_16)n + 1;
@@ -244,9 +241,6 @@ mminloc1_16_s1 (gfc_array_i16 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
-#ifdef HAVE_BACK_ARG
-  assert (back == 0);
-#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -377,7 +371,8 @@ mminloc1_16_s1 (gfc_array_i16 * const restrict retarray,
             }
 	    for (; n < len; n++, src += delta, msrc += mdelta)
 	      {
-		if (*msrc && compare_fcn (src, minval, string_len) < 0)
+		if (*msrc && (back ? compare_fcn (src, minval, string_len) <= 0 :
+		   	     	     compare_fcn (src, minval, string_len) < 0))
 		  {
 		    minval = src;
 		    result = (GFC_INTEGER_16)n + 1;

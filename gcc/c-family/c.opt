@@ -464,6 +464,11 @@ Wdeprecated
 C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED) Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used.
 
+Wdeprecated-copy
+C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wall)
+Mark implicitly-declared copy operations as deprecated if the class has a
+user-provided copy operation or destructor.
+
 Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
 Warn about positional initialization of structs requiring designated initializers.
@@ -1441,8 +1446,7 @@ fexternal-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ffor-scope
-C++ ObjC++ Var(flag_new_for_scope) Init(1)
-Scope of for-init-statement variables is local to the loop.
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ffreestanding
 C ObjC C++ ObjC++
@@ -1494,8 +1498,7 @@ C++ ObjC++ Var(flag_new_inheriting_ctors) Init(1)
 Implement C++17 inheriting constructor semantics.
 
 ffriend-injection
-C++ ObjC++ Var(flag_friend_injection)
-Inject friend functions into enclosing namespace.
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fkeep-inline-dllexport
 C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)

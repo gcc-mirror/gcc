@@ -210,7 +210,7 @@ namespace __detail
     _M_sub_count() const
     { return _M_subexpr_count; }
 
-    std::vector<size_t>       _M_paren_stack;
+    _GLIBCXX_STD_C::vector<size_t> _M_paren_stack;
     _FlagT                    _M_flags;
     _StateIdT                 _M_start_state;
     _SizeT                    _M_subexpr_count;
@@ -219,7 +219,7 @@ namespace __detail
 
   template<typename _TraitsT>
     struct _NFA
-    : _NFA_base, std::vector<_State<typename _TraitsT::char_type>>
+    : _NFA_base, _GLIBCXX_STD_C::vector<_State<typename _TraitsT::char_type>>
     {
       typedef typename _TraitsT::char_type	_Char_type;
       typedef _State<_Char_type>		_StateT;
@@ -333,7 +333,7 @@ namespace __detail
 	    "Number of NFA states exceeds limit. Please use shorter regex "
 	    "string, or use smaller brace expression, or make "
 	    "_GLIBCXX_REGEX_STATE_LIMIT larger.");
-	return this->size()-1;
+	return this->size() - 1;
       }
 
       // Eliminate dummy node in this NFA to make it compact.

@@ -209,11 +209,11 @@ TESTFUNC (64, 16, p)
 
 OBSCURE_FUNC (64, 8, s)
 TESTFUNC (64, 8, s)
-/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.8b, w\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.8b, w\[0-9\]+" 1 } } */
 
 OBSCURE_FUNC (64, 16, s)
 TESTFUNC (64, 16, s)
-/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.4h, w\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.4h, w\[0-9\]+" 1 } } */
 
 OBSCURE_FUNC (64, 32, s)
 TESTFUNC (64, 32, s)
@@ -265,11 +265,11 @@ TESTFUNC (128, 16, p)
 
 OBSCURE_FUNC (128, 8, s)
 TESTFUNC (128, 8, s)
-/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.16b, w\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.16b, w\[0-9\]+" 1 } } */
 
 OBSCURE_FUNC (128, 16, s)
 TESTFUNC (128, 16, s)
-/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.8h, w\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "dup\\tv\[0-9\]+\.8h, w\[0-9\]+" 1 } } */
 
 OBSCURE_FUNC (128, 32, s)
 TESTFUNC (128, 32, s)

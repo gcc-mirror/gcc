@@ -220,6 +220,9 @@ unsigned long aarch64_tune_flags = 0;
 /* Global flag for PC relative loads.  */
 bool aarch64_pcrelative_literal_loads;
 
+/* Global flag for whether frame pointer is enabled.  */
+bool aarch64_use_frame_pointer;
+
 /* Support for command line parsing of boolean flags in the tuning
    structures.  */
 struct aarch64_flag_desc
@@ -312,6 +315,22 @@ static const struct cpu_addrcost_table thunderx2t99_addrcost_table =
   3, /* register_sextend  */
   3, /* register_zextend  */
   0, /* imm_offset  */
+};
+
+static const struct cpu_addrcost_table qdf24xx_addrcost_table =
+{
+    {
+      1, /* hi  */
+      1, /* si  */
+      1, /* di  */
+      2, /* ti  */
+    },
+  1, /* pre_modify  */
+  1, /* post_modify  */
+  3, /* register_offset  */
+  4, /* register_sextend  */
+  3, /* register_zextend  */
+  2, /* imm_offset  */
 };
 
 static const struct cpu_regmove_cost generic_regmove_cost =
@@ -547,6 +566,8 @@ static const cpu_prefetch_tune generic_prefetch_tune =
   -1,			/* l1_cache_size  */
   -1,			/* l1_cache_line_size  */
   -1,			/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
+  -1,			/* minimum_stride */
   -1			/* default_opt_level  */
 };
 
@@ -556,6 +577,8 @@ static const cpu_prefetch_tune exynosm1_prefetch_tune =
   -1,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
   -1,			/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
+  -1,			/* minimum_stride */
   -1			/* default_opt_level  */
 };
 
@@ -564,8 +587,10 @@ static const cpu_prefetch_tune qdf24xx_prefetch_tune =
   4,			/* num_slots  */
   32,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
-  1024,			/* l2_cache_size  */
-  -1			/* default_opt_level  */
+  512,			/* l2_cache_size  */
+  false,		/* prefetch_dynamic_strides */
+  2048,			/* minimum_stride */
+  3			/* default_opt_level  */
 };
 
 static const cpu_prefetch_tune thunderxt88_prefetch_tune =
@@ -574,6 +599,8 @@ static const cpu_prefetch_tune thunderxt88_prefetch_tune =
   32,			/* l1_cache_size  */
   128,			/* l1_cache_line_size  */
   16*1024,		/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
+  -1,			/* minimum_stride */
   3			/* default_opt_level  */
 };
 
@@ -583,6 +610,8 @@ static const cpu_prefetch_tune thunderx_prefetch_tune =
   32,			/* l1_cache_size  */
   128,			/* l1_cache_line_size  */
   -1,			/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
+  -1,			/* minimum_stride */
   -1			/* default_opt_level  */
 };
 
@@ -592,6 +621,8 @@ static const cpu_prefetch_tune thunderx2t99_prefetch_tune =
   32,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
   256,			/* l2_cache_size  */
+  true,			/* prefetch_dynamic_strides */
+  -1,			/* minimum_stride */
   -1			/* default_opt_level  */
 };
 
@@ -856,7 +887,7 @@ static const struct tune_params xgene1_tunings =
 static const struct tune_params qdf24xx_tunings =
 {
   &qdf24xx_extra_costs,
-  &generic_addrcost_table,
+  &qdf24xx_addrcost_table,
   &qdf24xx_regmove_cost,
   &generic_vector_cost,
   &generic_branch_cost,
@@ -1871,6 +1902,27 @@ aarch64_emit_move (rtx dest, rtx src)
   return (can_create_pseudo_p ()
 	  ? emit_move_insn (dest, src)
 	  : emit_move_insn_1 (dest, src));
+}
+
+/* Apply UNOPTAB to OP and store the result in DEST.  */
+
+static void
+aarch64_emit_unop (rtx dest, optab unoptab, rtx op)
+{
+  rtx tmp = expand_unop (GET_MODE (dest), unoptab, op, dest, 0);
+  if (dest != tmp)
+    emit_move_insn (dest, tmp);
+}
+
+/* Apply BINOPTAB to OP0 and OP1 and store the result in DEST.  */
+
+static void
+aarch64_emit_binop (rtx dest, optab binoptab, rtx op0, rtx op1)
+{
+  rtx tmp = expand_binop (GET_MODE (dest), binoptab, op0, op1, dest, 0,
+			  OPTAB_DIRECT);
+  if (dest != tmp)
+    emit_move_insn (dest, tmp);
 }
 
 /* Split a 128-bit move operation into two 64-bit move operations,
@@ -3929,6 +3981,25 @@ aarch64_output_probe_stack_range (rtx reg1, rtx reg2)
   return "";
 }
 
+/* Determine whether a frame chain needs to be generated.  */
+static bool
+aarch64_needs_frame_chain (void)
+{
+  /* Force a frame chain for EH returns so the return address is at FP+8.  */
+  if (frame_pointer_needed || crtl->calls_eh_return)
+    return true;
+
+  /* A leaf function cannot have calls or write LR.  */
+  bool is_leaf = crtl->is_leaf && !df_regs_ever_live_p (LR_REGNUM);
+
+  /* Don't use a frame chain in leaf functions if leaf frame pointers
+     are disabled.  */
+  if (flag_omit_leaf_frame_pointer && is_leaf)
+    return false;
+
+  return aarch64_use_frame_pointer;
+}
+
 /* Mark the registers that need to be saved by the callee and calculate
    the size of the callee-saved registers area and frame record (both FP
    and LR may be omitted).  */
@@ -3941,17 +4012,7 @@ aarch64_layout_frame (void)
   if (reload_completed && cfun->machine->frame.laid_out)
     return;
 
-  /* Force a frame chain for EH returns so the return address is at FP+8.  */
-  cfun->machine->frame.emit_frame_chain
-    = frame_pointer_needed || crtl->calls_eh_return;
-
-  /* Emit a frame chain if the frame pointer is enabled.
-     If -momit-leaf-frame-pointer is used, do not use a frame chain
-     in leaf functions which do not use LR.  */
-  if (flag_omit_frame_pointer == 2
-      && !(flag_omit_leaf_frame_pointer && crtl->is_leaf
-	   && !df_regs_ever_live_p (LR_REGNUM)))
-    cfun->machine->frame.emit_frame_chain = true;
+  cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
@@ -4258,10 +4319,10 @@ aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
   switch (mode)
     {
     case E_DImode:
-      return gen_store_pairdi (mem1, reg1, mem2, reg2);
+      return gen_store_pair_dw_didi (mem1, reg1, mem2, reg2);
 
     case E_DFmode:
-      return gen_store_pairdf (mem1, reg1, mem2, reg2);
+      return gen_store_pair_dw_dfdf (mem1, reg1, mem2, reg2);
 
     default:
       gcc_unreachable ();
@@ -4278,10 +4339,10 @@ aarch64_gen_load_pair (machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
   switch (mode)
     {
     case E_DImode:
-      return gen_load_pairdi (reg1, mem1, reg2, mem2);
+      return gen_load_pair_dw_didi (reg1, mem1, reg2, mem2);
 
     case E_DFmode:
-      return gen_load_pairdf (reg1, mem1, reg2, mem2);
+      return gen_load_pair_dw_dfdf (reg1, mem1, reg2, mem2);
 
     default:
       gcc_unreachable ();
@@ -10481,12 +10542,12 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
   /* PR 70044: We have to be careful about being called multiple times for the
      same function.  This means all changes should be repeatable.  */
 
-  /* If the frame pointer is enabled, set it to a special value that behaves
-     similar to frame pointer omission.  If we don't do this all leaf functions
-     will get a frame pointer even if flag_omit_leaf_frame_pointer is set.
-     If flag_omit_frame_pointer has this special value, we must force the
-     frame pointer if not in a leaf function.  We also need to force it in a
-     leaf function if flag_omit_frame_pointer is not set or if LR is used.  */
+  /* Set aarch64_use_frame_pointer based on -fno-omit-frame-pointer.
+     Disable the frame pointer flag so the mid-end will not use a frame
+     pointer in leaf functions in order to support -fomit-leaf-frame-pointer.
+     Set x_flag_omit_frame_pointer to the special value 2 to differentiate
+     between -fomit-frame-pointer (1) and -fno-omit-frame-pointer (2).  */
+  aarch64_use_frame_pointer = opts->x_flag_omit_frame_pointer != 1;
   if (opts->x_flag_omit_frame_pointer == 0)
     opts->x_flag_omit_frame_pointer = 2;
 
@@ -10594,6 +10655,16 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if (aarch64_tune_params.prefetch->l2_cache_size >= 0)
     maybe_set_param_value (PARAM_L2_CACHE_SIZE,
 			   aarch64_tune_params.prefetch->l2_cache_size,
+			   opts->x_param_values,
+			   global_options_set.x_param_values);
+  if (!aarch64_tune_params.prefetch->prefetch_dynamic_strides)
+    maybe_set_param_value (PARAM_PREFETCH_DYNAMIC_STRIDES,
+			   0,
+			   opts->x_param_values,
+			   global_options_set.x_param_values);
+  if (aarch64_tune_params.prefetch->minimum_stride >= 0)
+    maybe_set_param_value (PARAM_PREFETCH_MINIMUM_STRIDE,
+			   aarch64_tune_params.prefetch->minimum_stride,
 			   opts->x_param_values,
 			   global_options_set.x_param_values);
 
@@ -11277,7 +11348,7 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
   { "fix-cortex-a53-843419", aarch64_attr_bool, true, NULL,
      OPT_mfix_cortex_a53_843419 },
   { "cmodel", aarch64_attr_enum, false, NULL, OPT_mcmodel_ },
-  { "strict-align", aarch64_attr_mask, false, NULL, OPT_mstrict_align },
+  { "strict-align", aarch64_attr_mask, true, NULL, OPT_mstrict_align },
   { "omit-leaf-frame-pointer", aarch64_attr_bool, true, NULL,
      OPT_momit_leaf_frame_pointer },
   { "tls-dialect", aarch64_attr_enum, false, NULL, OPT_mtls_dialect_ },
@@ -11640,16 +11711,13 @@ aarch64_can_inline_p (tree caller, tree callee)
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
 
-  /* If callee has no option attributes, then it is ok to inline.  */
-  if (!callee_tree)
-    return true;
-
   struct cl_target_option *caller_opts
 	= TREE_TARGET_OPTION (caller_tree ? caller_tree
 					   : target_option_default_node);
 
-  struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
-
+  struct cl_target_option *callee_opts
+	= TREE_TARGET_OPTION (callee_tree ? callee_tree
+					   : target_option_default_node);
 
   /* Callee's ISA flags should be a subset of the caller's.  */
   if ((caller_opts->x_aarch64_isa_flags & callee_opts->x_aarch64_isa_flags)
@@ -13895,9 +13963,54 @@ aarch64_expand_vector_init (rtx target, rtx vals)
 	    maxv = matches[i][1];
 	  }
 
-      /* Create a duplicate of the most common element.  */
-      rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
-      aarch64_emit_move (target, gen_vec_duplicate (mode, x));
+      /* Create a duplicate of the most common element, unless all elements
+	 are equally useless to us, in which case just immediately set the
+	 vector register using the first element.  */
+
+      if (maxv == 1)
+	{
+	  /* For vectors of two 64-bit elements, we can do even better.  */
+	  if (n_elts == 2
+	      && (inner_mode == E_DImode
+		  || inner_mode == E_DFmode))
+
+	    {
+	      rtx x0 = XVECEXP (vals, 0, 0);
+	      rtx x1 = XVECEXP (vals, 0, 1);
+	      /* Combine can pick up this case, but handling it directly
+		 here leaves clearer RTL.
+
+		 This is load_pair_lanes<mode>, and also gives us a clean-up
+		 for store_pair_lanes<mode>.  */
+	      if (memory_operand (x0, inner_mode)
+		  && memory_operand (x1, inner_mode)
+		  && !STRICT_ALIGNMENT
+		  && rtx_equal_p (XEXP (x1, 0),
+				  plus_constant (Pmode,
+						 XEXP (x0, 0),
+						 GET_MODE_SIZE (inner_mode))))
+		{
+		  rtx t;
+		  if (inner_mode == DFmode)
+		    t = gen_load_pair_lanesdf (target, x0, x1);
+		  else
+		    t = gen_load_pair_lanesdi (target, x0, x1);
+		  emit_insn (t);
+		  return;
+		}
+	    }
+	  /* The subreg-move sequence below will move into lane zero of the
+	     vector register.  For big-endian we want that position to hold
+	     the last element of VALS.  */
+	  maxelement = BYTES_BIG_ENDIAN ? n_elts - 1 : 0;
+	  rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
+	  aarch64_emit_move (target, lowpart_subreg (mode, x, inner_mode));
+	}
+      else
+	{
+	  rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
+	  aarch64_emit_move (target, gen_vec_duplicate (mode, x));
+	}
 
       /* Insert the rest.  */
       for (int i = 0; i < n_elts; i++)
@@ -15675,6 +15788,34 @@ aarch64_sve_cmp_operand_p (rtx_code op_code, rtx x)
     }
 }
 
+/* Use predicated SVE instructions to implement the equivalent of:
+
+     (set TARGET OP)
+
+   given that PTRUE is an all-true predicate of the appropriate mode.  */
+
+static void
+aarch64_emit_sve_ptrue_op (rtx target, rtx ptrue, rtx op)
+{
+  rtx unspec = gen_rtx_UNSPEC (GET_MODE (target),
+			       gen_rtvec (2, ptrue, op),
+			       UNSPEC_MERGE_PTRUE);
+  rtx_insn *insn = emit_set_insn (target, unspec);
+  set_unique_reg_note (insn, REG_EQUAL, copy_rtx (op));
+}
+
+/* Likewise, but also clobber the condition codes.  */
+
+static void
+aarch64_emit_sve_ptrue_op_cc (rtx target, rtx ptrue, rtx op)
+{
+  rtx unspec = gen_rtx_UNSPEC (GET_MODE (target),
+			       gen_rtvec (2, ptrue, op),
+			       UNSPEC_MERGE_PTRUE);
+  rtx_insn *insn = emit_insn (gen_set_clobber_cc (target, unspec));
+  set_unique_reg_note (insn, REG_EQUAL, copy_rtx (op));
+}
+
 /* Return the UNSPEC_COND_* code for comparison CODE.  */
 
 static unsigned int
@@ -15694,35 +15835,33 @@ aarch64_unspec_cond_code (rtx_code code)
       return UNSPEC_COND_LE;
     case GE:
       return UNSPEC_COND_GE;
-    case LTU:
-      return UNSPEC_COND_LO;
-    case GTU:
-      return UNSPEC_COND_HI;
-    case LEU:
-      return UNSPEC_COND_LS;
-    case GEU:
-      return UNSPEC_COND_HS;
-    case UNORDERED:
-      return UNSPEC_COND_UO;
     default:
       gcc_unreachable ();
     }
 }
 
-/* Return an (unspec:PRED_MODE [PRED OP0 OP1] UNSPEC_COND_<X>) expression,
-   where <X> is the operation associated with comparison CODE.  */
+/* Emit:
 
-static rtx
-aarch64_gen_unspec_cond (rtx_code code, machine_mode pred_mode,
-			 rtx pred, rtx op0, rtx op1)
+      (set TARGET (unspec [PRED OP0 OP1] UNSPEC_COND_<X>))
+
+   where <X> is the operation associated with comparison CODE.  This form
+   of instruction is used when (and (CODE OP0 OP1) PRED) would have different
+   semantics, such as when PRED might not be all-true and when comparing
+   inactive lanes could have side effects.  */
+
+static void
+aarch64_emit_sve_predicated_cond (rtx target, rtx_code code,
+				  rtx pred, rtx op0, rtx op1)
 {
-  rtvec vec = gen_rtvec (3, pred, op0, op1);
-  return gen_rtx_UNSPEC (pred_mode, vec, aarch64_unspec_cond_code (code));
+  rtx unspec = gen_rtx_UNSPEC (GET_MODE (pred),
+			       gen_rtvec (3, pred, op0, op1),
+			       aarch64_unspec_cond_code (code));
+  emit_set_insn (target, unspec);
 }
 
-/* Expand an SVE integer comparison:
+/* Expand an SVE integer comparison using the SVE equivalent of:
 
-     TARGET = CODE (OP0, OP1).  */
+     (set TARGET (CODE OP0 OP1)).  */
 
 void
 aarch64_expand_sve_vec_cmp_int (rtx target, rtx_code code, rtx op0, rtx op1)
@@ -15734,78 +15873,53 @@ aarch64_expand_sve_vec_cmp_int (rtx target, rtx_code code, rtx op0, rtx op1)
     op1 = force_reg (data_mode, op1);
 
   rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
-  rtx unspec = aarch64_gen_unspec_cond (code, pred_mode, ptrue, op0, op1);
-  emit_insn (gen_set_clobber_cc (target, unspec));
+  rtx cond = gen_rtx_fmt_ee (code, pred_mode, op0, op1);
+  aarch64_emit_sve_ptrue_op_cc (target, ptrue, cond);
 }
 
-/* Emit an instruction:
+/* Emit the SVE equivalent of:
 
-      (set TARGET (unspec:PRED_MODE [PRED OP0 OP1] UNSPEC_COND_<X>))
+      (set TMP1 (CODE1 OP0 OP1))
+      (set TMP2 (CODE2 OP0 OP1))
+      (set TARGET (ior:PRED_MODE TMP1 TMP2))
 
-   where <X> is the operation associated with comparison CODE.  */
-
-static void
-aarch64_emit_unspec_cond (rtx target, rtx_code code, machine_mode pred_mode,
-			  rtx pred, rtx op0, rtx op1)
-{
-  rtx unspec = aarch64_gen_unspec_cond (code, pred_mode, pred, op0, op1);
-  emit_set_insn (target, unspec);
-}
-
-/* Emit:
-
-      (set TMP1 (unspec:PRED_MODE [PTRUE OP0 OP1] UNSPEC_COND_<X1>))
-      (set TMP2 (unspec:PRED_MODE [PTRUE OP0 OP1] UNSPEC_COND_<X2>))
-      (set TARGET (and:PRED_MODE (ior:PRED_MODE TMP1 TMP2) PTRUE))
-
-   where <Xi> is the operation associated with comparison CODEi.  */
+   PTRUE is an all-true predicate with the same mode as TARGET.  */
 
 static void
-aarch64_emit_unspec_cond_or (rtx target, rtx_code code1, rtx_code code2,
-			     machine_mode pred_mode, rtx ptrue,
-			     rtx op0, rtx op1)
+aarch64_emit_sve_or_conds (rtx target, rtx_code code1, rtx_code code2,
+			   rtx ptrue, rtx op0, rtx op1)
 {
+  machine_mode pred_mode = GET_MODE (ptrue);
   rtx tmp1 = gen_reg_rtx (pred_mode);
-  aarch64_emit_unspec_cond (tmp1, code1, pred_mode, ptrue, op0, op1);
+  aarch64_emit_sve_ptrue_op (tmp1, ptrue,
+			     gen_rtx_fmt_ee (code1, pred_mode, op0, op1));
   rtx tmp2 = gen_reg_rtx (pred_mode);
-  aarch64_emit_unspec_cond (tmp2, code2, pred_mode, ptrue, op0, op1);
-  emit_set_insn (target, gen_rtx_AND (pred_mode,
-				      gen_rtx_IOR (pred_mode, tmp1, tmp2),
-				      ptrue));
+  aarch64_emit_sve_ptrue_op (tmp2, ptrue,
+			     gen_rtx_fmt_ee (code2, pred_mode, op0, op1));
+  aarch64_emit_binop (target, ior_optab, tmp1, tmp2);
 }
 
-/* If CAN_INVERT_P, emit an instruction:
+/* Emit the SVE equivalent of:
 
-      (set TARGET (unspec:PRED_MODE [PRED OP0 OP1] UNSPEC_COND_<X>))
+      (set TMP (CODE OP0 OP1))
+      (set TARGET (not TMP))
 
-   where <X> is the operation associated with comparison CODE.  Otherwise
-   emit:
-
-      (set TMP (unspec:PRED_MODE [PRED OP0 OP1] UNSPEC_COND_<X>))
-      (set TARGET (and:PRED_MODE (not:PRED_MODE TMP) PTRUE))
-
-   where the second instructions sets TARGET to the inverse of TMP.  */
+   PTRUE is an all-true predicate with the same mode as TARGET.  */
 
 static void
-aarch64_emit_inverted_unspec_cond (rtx target, rtx_code code,
-				   machine_mode pred_mode, rtx ptrue, rtx pred,
-				   rtx op0, rtx op1, bool can_invert_p)
+aarch64_emit_sve_inverted_cond (rtx target, rtx ptrue, rtx_code code,
+				rtx op0, rtx op1)
 {
-  if (can_invert_p)
-    aarch64_emit_unspec_cond (target, code, pred_mode, pred, op0, op1);
-  else
-    {
-      rtx tmp = gen_reg_rtx (pred_mode);
-      aarch64_emit_unspec_cond (tmp, code, pred_mode, pred, op0, op1);
-      emit_set_insn (target, gen_rtx_AND (pred_mode,
-					  gen_rtx_NOT (pred_mode, tmp),
-					  ptrue));
-    }
+  machine_mode pred_mode = GET_MODE (ptrue);
+  rtx tmp = gen_reg_rtx (pred_mode);
+  aarch64_emit_sve_ptrue_op (tmp, ptrue,
+			     gen_rtx_fmt_ee (code, pred_mode, op0, op1));
+  aarch64_emit_unop (target, one_cmpl_optab, tmp);
 }
 
-/* Expand an SVE floating-point comparison:
+/* Expand an SVE floating-point comparison using the SVE equivalent of:
 
-     TARGET = CODE (OP0, OP1)
+     (set TARGET (CODE OP0 OP1))
 
    If CAN_INVERT_P is true, the caller can also handle inverted results;
    return true if the result is in fact inverted.  */
@@ -15823,30 +15937,23 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
     case UNORDERED:
       /* UNORDERED has no immediate form.  */
       op1 = force_reg (data_mode, op1);
-      aarch64_emit_unspec_cond (target, code, pred_mode, ptrue, op0, op1);
-      return false;
-
+      /* fall through */
     case LT:
     case LE:
     case GT:
     case GE:
     case EQ:
     case NE:
-      /* There is native support for the comparison.  */
-      aarch64_emit_unspec_cond (target, code, pred_mode, ptrue, op0, op1);
-      return false;
-
-    case ORDERED:
-      /* There is native support for the inverse comparison.  */
-      op1 = force_reg (data_mode, op1);
-      aarch64_emit_inverted_unspec_cond (target, UNORDERED,
-					 pred_mode, ptrue, ptrue, op0, op1,
-					 can_invert_p);
-      return can_invert_p;
+      {
+	/* There is native support for the comparison.  */
+	rtx cond = gen_rtx_fmt_ee (code, pred_mode, op0, op1);
+	aarch64_emit_sve_ptrue_op (target, ptrue, cond);
+	return false;
+      }
 
     case LTGT:
       /* This is a trapping operation (LT or GT).  */
-      aarch64_emit_unspec_cond_or (target, LT, GT, pred_mode, ptrue, op0, op1);
+      aarch64_emit_sve_or_conds (target, LT, GT, ptrue, op0, op1);
       return false;
 
     case UNEQ:
@@ -15854,38 +15961,59 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
 	{
 	  /* This would trap for signaling NaNs.  */
 	  op1 = force_reg (data_mode, op1);
-	  aarch64_emit_unspec_cond_or (target, UNORDERED, EQ,
-				       pred_mode, ptrue, op0, op1);
+	  aarch64_emit_sve_or_conds (target, UNORDERED, EQ, ptrue, op0, op1);
 	  return false;
 	}
       /* fall through */
-
     case UNLT:
     case UNLE:
     case UNGT:
     case UNGE:
-      {
-	rtx ordered = ptrue;
-	if (flag_trapping_math)
-	  {
-	    /* Only compare the elements that are known to be ordered.  */
-	    ordered = gen_reg_rtx (pred_mode);
-	    op1 = force_reg (data_mode, op1);
-	    aarch64_emit_inverted_unspec_cond (ordered, UNORDERED, pred_mode,
-					       ptrue, ptrue, op0, op1, false);
-	  }
-	if (code == UNEQ)
-	  code = NE;
-	else
-	  code = reverse_condition_maybe_unordered (code);
-	aarch64_emit_inverted_unspec_cond (target, code, pred_mode, ptrue,
-					   ordered, op0, op1, can_invert_p);
-	return can_invert_p;
-      }
+      if (flag_trapping_math)
+	{
+	  /* Work out which elements are ordered.  */
+	  rtx ordered = gen_reg_rtx (pred_mode);
+	  op1 = force_reg (data_mode, op1);
+	  aarch64_emit_sve_inverted_cond (ordered, ptrue, UNORDERED, op0, op1);
+
+	  /* Test the opposite condition for the ordered elements,
+	     then invert the result.  */
+	  if (code == UNEQ)
+	    code = NE;
+	  else
+	    code = reverse_condition_maybe_unordered (code);
+	  if (can_invert_p)
+	    {
+	      aarch64_emit_sve_predicated_cond (target, code,
+						ordered, op0, op1);
+	      return true;
+	    }
+	  rtx tmp = gen_reg_rtx (pred_mode);
+	  aarch64_emit_sve_predicated_cond (tmp, code, ordered, op0, op1);
+	  aarch64_emit_unop (target, one_cmpl_optab, tmp);
+	  return false;
+	}
+      break;
+
+    case ORDERED:
+      /* ORDERED has no immediate form.  */
+      op1 = force_reg (data_mode, op1);
+      break;
 
     default:
       gcc_unreachable ();
     }
+
+  /* There is native support for the inverse comparison.  */
+  code = reverse_condition_maybe_unordered (code);
+  if (can_invert_p)
+    {
+      rtx cond = gen_rtx_fmt_ee (code, pred_mode, op0, op1);
+      aarch64_emit_sve_ptrue_op (target, ptrue, cond);
+      return true;
+    }
+  aarch64_emit_sve_inverted_cond (target, ptrue, code, op0, op1);
+  return false;
 }
 
 /* Expand an SVE vcond pattern with operands OPS.  DATA_MODE is the mode
@@ -15911,6 +16039,54 @@ aarch64_expand_sve_vcond (machine_mode data_mode, machine_mode cmp_mode,
 
   rtvec vec = gen_rtvec (3, pred, ops[1], ops[2]);
   emit_set_insn (ops[0], gen_rtx_UNSPEC (data_mode, vec, UNSPEC_SEL));
+}
+
+/* Prepare a cond_<optab><mode> operation that has the operands
+   given by OPERANDS, where:
+
+   - operand 0 is the destination
+   - operand 1 is a predicate
+   - operands 2 to NOPS - 2 are the operands to an operation that is
+     performed for active lanes
+   - operand NOPS - 1 specifies the values to use for inactive lanes.
+
+   COMMUTATIVE_P is true if operands 2 and 3 are commutative.  In that case,
+   no pattern is provided for a tie between operands 3 and NOPS - 1.  */
+
+void
+aarch64_sve_prepare_conditional_op (rtx *operands, unsigned int nops,
+				    bool commutative_p)
+{
+  /* We can do the operation directly if the "else" value matches one
+     of the other inputs.  */
+  for (unsigned int i = 2; i < nops - 1; ++i)
+    if (rtx_equal_p (operands[i], operands[nops - 1]))
+      {
+	if (i == 3 && commutative_p)
+	  std::swap (operands[2], operands[3]);
+	return;
+      }
+
+  /* If the "else" value is different from the other operands, we have
+     the choice of doing a SEL on the output or a SEL on an input.
+     Neither choice is better in all cases, but one advantage of
+     selecting the input is that it can avoid a move when the output
+     needs to be distinct from the inputs.  E.g. if operand N maps to
+     register N, selecting the output would give:
+
+	MOVPRFX Z0.S, Z2.S
+	ADD Z0.S, P1/M, Z0.S, Z3.S
+	SEL Z0.S, P1, Z0.S, Z4.S
+
+     whereas selecting the input avoids the MOVPRFX:
+
+	SEL Z0.S, P1, Z2.S, Z4.S
+	ADD Z0.S, P1/M, Z0.S, Z3.S.  */
+  machine_mode mode = GET_MODE (operands[0]);
+  rtx temp = gen_reg_rtx (mode);
+  rtvec vec = gen_rtvec (3, operands[1], operands[2], operands[nops - 1]);
+  emit_set_insn (temp, gen_rtx_UNSPEC (mode, vec, UNSPEC_SEL));
+  operands[2] = operands[nops - 1] = temp;
 }
 
 /* Implement TARGET_MODES_TIEABLE_P.  In principle we should always return
@@ -16772,6 +16948,10 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
   if (!rtx_equal_p (base_1, base_2))
     return false;
 
+  /* The operands must be of the same size.  */
+  gcc_assert (known_eq (GET_MODE_SIZE (GET_MODE (mem_1)),
+			 GET_MODE_SIZE (GET_MODE (mem_2))));
+
   offval_1 = INTVAL (offset_1);
   offval_2 = INTVAL (offset_2);
   /* We should only be trying this for fixed-sized modes.  There is no
@@ -16789,8 +16969,15 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
 
       /* In increasing order, the last load can clobber the address.  */
       if (offval_1 > offval_2 && reg_mentioned_p (reg_2, mem_2))
-      return false;
+	return false;
     }
+
+  /* One of the memory accesses must be a mempair operand.
+     If it is not the first one, they need to be swapped by the
+     peephole.  */
+  if (!aarch64_mem_pair_operand (mem_1, GET_MODE (mem_1))
+       && !aarch64_mem_pair_operand (mem_2, GET_MODE (mem_2)))
+    return false;
 
   if (REG_P (reg_1) && FP_REGNUM_P (REGNO (reg_1)))
     rclass_1 = FP_REGS;
@@ -16807,6 +16994,40 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
     return false;
 
   return true;
+}
+
+/* Given OPERANDS of consecutive load/store that can be merged,
+   swap them if they are not in ascending order.  */
+void
+aarch64_swap_ldrstr_operands (rtx* operands, bool load)
+{
+  rtx mem_1, mem_2, base_1, base_2, offset_1, offset_2;
+  HOST_WIDE_INT offval_1, offval_2;
+
+  if (load)
+    {
+      mem_1 = operands[1];
+      mem_2 = operands[3];
+    }
+  else
+    {
+      mem_1 = operands[0];
+      mem_2 = operands[2];
+    }
+
+  extract_base_offset_in_addr (mem_1, &base_1, &offset_1);
+  extract_base_offset_in_addr (mem_2, &base_2, &offset_2);
+
+  offval_1 = INTVAL (offset_1);
+  offval_2 = INTVAL (offset_2);
+
+  if (offval_1 > offval_2)
+    {
+      /* Irrespective of whether this is a load or a store,
+	 we do the same swap.  */
+      std::swap (operands[0], operands[2]);
+      std::swap (operands[1], operands[3]);
+    }
 }
 
 /* Given OPERANDS of consecutive load/store, check if we can merge
@@ -16968,9 +17189,33 @@ bool
 aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 			     scalar_mode mode, RTX_CODE code)
 {
-  rtx base, offset, t1, t2;
+  rtx base, offset_1, offset_2, t1, t2;
   rtx mem_1, mem_2, mem_3, mem_4;
   HOST_WIDE_INT off_val, abs_off, adj_off, new_off, stp_off_limit, msize;
+
+  if (load)
+    {
+      mem_1 = operands[1];
+      mem_2 = operands[3];
+    }
+  else
+    {
+      mem_1 = operands[0];
+      mem_2 = operands[2];
+    }
+
+  extract_base_offset_in_addr (mem_1, &base, &offset_1);
+  extract_base_offset_in_addr (mem_2, &base, &offset_2);
+  gcc_assert (base != NULL_RTX && offset_1 != NULL_RTX
+	      && offset_2 != NULL_RTX);
+
+  if (INTVAL (offset_1) > INTVAL (offset_2))
+    {
+      std::swap (operands[0], operands[6]);
+      std::swap (operands[1], operands[7]);
+      std::swap (operands[2], operands[4]);
+      std::swap (operands[3], operands[5]);
+    }
 
   if (load)
     {
@@ -16988,13 +17233,14 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
       gcc_assert (code == UNKNOWN);
     }
 
-  extract_base_offset_in_addr (mem_1, &base, &offset);
-  gcc_assert (base != NULL_RTX && offset != NULL_RTX);
+  /* Extract the offset of the new first address.  */
+  extract_base_offset_in_addr (mem_1, &base, &offset_1);
+  extract_base_offset_in_addr (mem_2, &base, &offset_2);
 
   /* Adjust offset thus it can fit in ldp/stp instruction.  */
   msize = GET_MODE_SIZE (mode);
   stp_off_limit = msize * 0x40;
-  off_val = INTVAL (offset);
+  off_val = INTVAL (offset_1);
   abs_off = (off_val < 0) ? -off_val : off_val;
   new_off = abs_off % stp_off_limit;
   adj_off = abs_off - new_off;

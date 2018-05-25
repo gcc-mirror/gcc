@@ -2422,7 +2422,7 @@ check_inquiry (gfc_expr *e, int not_restricted)
 
 	/* Assumed character length will not reduce to a constant expression
 	   with LEN, as required by the standard.  */
-	if (i == 5 && not_restricted
+	if (i == 5 && not_restricted && ap->expr->symtree
 	    && ap->expr->symtree->n.sym->ts.type == BT_CHARACTER
 	    && (ap->expr->symtree->n.sym->ts.u.cl->length == NULL
 		|| ap->expr->symtree->n.sym->ts.deferred))

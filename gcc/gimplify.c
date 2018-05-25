@@ -5931,8 +5931,11 @@ gimplify_save_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	}
       else
 	/* The temporary may not be an SSA name as later abnormal and EH
-	   control flow may invalidate use/def domination.  */
-	val = get_initialized_tmp_var (val, pre_p, post_p, false);
+	   control flow may invalidate use/def domination.  When in SSA
+	   form then assume there are no such issues and SAVE_EXPRs only
+	   appear via GENERIC foldings.  */
+	val = get_initialized_tmp_var (val, pre_p, post_p,
+				       gimple_in_ssa_p (cfun));
 
       TREE_OPERAND (*expr_p, 0) = val;
       SAVE_EXPR_RESOLVED_P (*expr_p) = 1;
@@ -12083,7 +12086,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 	  break;
 
-	case FMA_EXPR:
 	case VEC_PERM_EXPR:
 	  /* Classified as tcc_expression.  */
 	  goto expr_3;

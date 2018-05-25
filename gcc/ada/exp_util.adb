@@ -1578,8 +1578,9 @@ package body Exp_Util is
 
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       DIC_Prag     : Node_Id;
       DIC_Typ      : Entity_Id;
@@ -1814,7 +1815,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_DIC_Procedure_Body;
 
    -------------------------------------
@@ -1828,8 +1829,9 @@ package body Exp_Util is
    procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       DIC_Prag  : Node_Id;
       DIC_Typ   : Entity_Id;
@@ -2015,7 +2017,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_DIC_Procedure_Declaration;
 
    ------------------------------------
@@ -2945,8 +2947,9 @@ package body Exp_Util is
 
       --  Local variables
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Dummy        : Entity_Id;
       Priv_Item    : Node_Id;
@@ -3286,7 +3289,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_Invariant_Procedure_Body;
 
    -------------------------------------------
@@ -3303,8 +3306,9 @@ package body Exp_Util is
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Proc_Decl : Node_Id;
       Proc_Id   : Entity_Id;
@@ -3519,7 +3523,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_Invariant_Procedure_Declaration;
 
    --------------------------
@@ -4995,6 +4999,8 @@ package body Exp_Util is
 
          Choice := Next_C;
       end loop;
+
+      Set_Has_SP_Choice (N, False);
    end Expand_Static_Predicates_In_Choices;
 
    ------------------------------
@@ -7349,8 +7355,6 @@ package body Exp_Util is
                | N_Real_Literal
                | N_Real_Range_Specification
                | N_Record_Definition
-               | N_Reduction_Expression
-               | N_Reduction_Expression_Parameter
                | N_Reference
                | N_SCIL_Dispatch_Table_Tag_Init
                | N_SCIL_Dispatching_Call
@@ -9256,14 +9260,16 @@ package body Exp_Util is
    is
       Loc : constant Source_Ptr := Sloc (Expr);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Call    : Node_Id;
       Func_Id : Entity_Id;
 
    begin
-      pragma Assert (Present (Predicate_Function (Typ)));
+      Func_Id := Predicate_Function (Typ);
+      pragma Assert (Present (Func_Id));
 
       --  The related type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the call is properly marked as Ghost.
@@ -9274,8 +9280,6 @@ package body Exp_Util is
 
       if Mem and then Present (Predicate_Function_M (Typ)) then
          Func_Id := Predicate_Function_M (Typ);
-      else
-         Func_Id := Predicate_Function (Typ);
       end if;
 
       --  Case of calling normal predicate function
@@ -9297,7 +9301,7 @@ package body Exp_Util is
              Parameter_Associations => New_List (Relocate_Node (Expr)));
       end if;
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
       return Call;
    end Make_Predicate_Call;
@@ -10576,26 +10580,45 @@ package body Exp_Util is
      (CW_Typ : Entity_Id;
       N      : Node_Id) return Entity_Id
    is
-      Res       : constant Entity_Id := Create_Itype (E_Void, N);
-      Res_Name  : constant Name_Id   := Chars (Res);
-      Res_Scope : constant Entity_Id := Scope (Res);
+      Res : constant Entity_Id := Create_Itype (E_Void, N);
+
+      --  Capture relevant attributes of the class-wide subtype which must be
+      --  restored after the copy.
+
+      Res_Chars  : constant Name_Id   := Chars (Res);
+      Res_Is_CGE : constant Boolean   := Is_Checked_Ghost_Entity (Res);
+      Res_Is_IGE : constant Boolean   := Is_Ignored_Ghost_Entity (Res);
+      Res_Is_IGN : constant Boolean   := Is_Ignored_Ghost_Node   (Res);
+      Res_Scope  : constant Entity_Id := Scope (Res);
 
    begin
       Copy_Node (CW_Typ, Res);
-      Set_Comes_From_Source (Res, False);
-      Set_Sloc (Res, Sloc (N));
-      Set_Is_Itype (Res);
+
+      --  Restore the relevant attributes of the class-wide subtype
+
+      Set_Chars                   (Res, Res_Chars);
+      Set_Is_Checked_Ghost_Entity (Res, Res_Is_CGE);
+      Set_Is_Ignored_Ghost_Entity (Res, Res_Is_IGE);
+      Set_Is_Ignored_Ghost_Node   (Res, Res_Is_IGN);
+      Set_Scope                   (Res, Res_Scope);
+
+      --  Decorate the class-wide subtype
+
       Set_Associated_Node_For_Itype (Res, N);
-      Set_Is_Public (Res, False);   --  By default, may be changed below.
+      Set_Comes_From_Source         (Res, False);
+      Set_Ekind                     (Res, E_Class_Wide_Subtype);
+      Set_Etype                     (Res, Base_Type (CW_Typ));
+      Set_Freeze_Node               (Res, Empty);
+      Set_Is_Frozen                 (Res, False);
+      Set_Is_Itype                  (Res);
+      Set_Is_Public                 (Res, False);
+      Set_Next_Entity               (Res, Empty);
+      Set_Prev_Entity               (Res, Empty);
+      Set_Sloc                      (Res, Sloc (N));
+
       Set_Public_Status (Res);
-      Set_Chars (Res, Res_Name);
-      Set_Scope (Res, Res_Scope);
-      Set_Ekind (Res, E_Class_Wide_Subtype);
-      Set_Next_Entity (Res, Empty);
-      Set_Etype (Res, Base_Type (CW_Typ));
-      Set_Is_Frozen (Res, False);
-      Set_Freeze_Node (Res, Empty);
-      return (Res);
+
+      return Res;
    end New_Class_Wide_Subtype;
 
    --------------------------------

@@ -198,7 +198,7 @@ func (gccgoToolchain) pack(b *Builder, a *Action, afile string, ofiles []string)
 			// AIX "ar" command does not know D option.
 			arArgs = append(arArgs, "-X64")
 		}
-		return b.run(a, p.Dir, p.ImportPath, nil, "ar", "rc", arArgs, absAfile, absOfiles)
+		return b.run(a, p.Dir, p.ImportPath, nil, "ar", arArgs, "rc", absAfile, absOfiles)
 	}
 	return nil
 }

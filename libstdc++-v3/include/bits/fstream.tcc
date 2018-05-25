@@ -207,6 +207,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __ret;
     }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+  template<typename _CharT, typename _Traits>
+    basic_filebuf<_CharT, _Traits>*
+    basic_filebuf<_CharT, _Traits>::
+    open(const wchar_t* __s, ios_base::openmode __mode)
+    {
+      __filebuf_type *__ret = 0;
+      if (!this->is_open())
+	{
+	  _M_file.open(__s, __mode);
+	  if (this->is_open())
+	    {
+	      _M_allocate_internal_buffer();
+	      _M_mode = __mode;
+
+	      // Setup initial buffer to 'uncommitted' mode.
+	      _M_reading = false;
+	      _M_writing = false;
+	      _M_set_buffer(-1);
+
+	      // Reset to initial state.
+	      _M_state_last = _M_state_cur = _M_state_beg;
+
+	      // 27.8.1.3,4
+	      if ((__mode & ios_base::ate)
+		  && this->seekoff(0, ios_base::end, __mode)
+		  == pos_type(off_type(-1)))
+		this->close();
+	      else
+		__ret = this;
+	    }
+	}
+      return __ret;
+    }
+#endif // HAVE__WFOPEN && USE_WCHAR_T
+
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::__filebuf_type*
     basic_filebuf<_CharT, _Traits>::
@@ -239,13 +275,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (!_M_terminate_output())
 	      __testfail = true;
 	  }
-	__catch(__cxxabiv1::__forced_unwind&)
+	__catch(...)
 	  {
 	    _M_file.close();
 	    __throw_exception_again;
 	  }
-	__catch(...)
-	  { __testfail = true; }
       }
 
       if (!_M_file.close())

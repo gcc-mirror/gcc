@@ -533,8 +533,7 @@ Specification @code{Further Interoperability of Fortran with C}
 (ISO/IEC TS 29113:2012).  Full support of those standards and future
 Fortran standards is planned.  The current status of the support is
 can be found in the @ref{Fortran 2003 status}, @ref{Fortran 2008
-status}, @ref{TS 29113 status}, @ref{TS 18508 status} and @ref{Fortran
-2018 status} sections of the documentation.
+status} and @ref{Fortran 2018 status} sections of the documentation.
 
 Additionally, the GNU Fortran compilers supports the OpenMP specification
 (version 4.0 and most of the features of the 4.5 version,
@@ -793,8 +792,6 @@ compile option was used.
 @menu
 * Fortran 2003 status::
 * Fortran 2008 status::
-* TS 29113 status::
-* TS 18508 status::
 * Fortran 2018 status::
 @end menu
 
@@ -1096,57 +1093,6 @@ arrays are supported for named constants (@code{PARAMETER}).
 
 
 
-@node TS 29113 status
-@section Technical Specification 29113 Status
-
-GNU Fortran supports some of the new features of the Technical
-Specification (TS) 29113 on Further Interoperability of Fortran with C.
-The @uref{https://gcc.gnu.org/wiki/TS29113Status, wiki} has some information
-about the current TS 29113 implementation status.  In particular, the
-following is implemented.
-
-See also @ref{Further Interoperability of Fortran with C}.
-
-@itemize
-@item The @option{-std=f2008ts} option.
-
-@item The @code{OPTIONAL} attribute is allowed for dummy arguments
-of @code{BIND(C) procedures.}
-
-@item The @code{RANK} intrinsic is supported.
-
-@item GNU Fortran's implementation for variables with @code{ASYNCHRONOUS}
-attribute is compatible with TS 29113.
-
-@item Assumed types (@code{TYPE(*)}).
-
-@item Assumed-rank (@code{DIMENSION(..)}). However, the array descriptor
-of the TS is not yet supported.
-@end itemize
-
-
-@node TS 18508 status
-@section Technical Specification 18508 Status
-
-GNU Fortran supports the following new features of the Technical
-Specification 18508 on Additional Parallel Features in Fortran:
-
-@itemize
-@item The new atomic ADD, CAS, FETCH and ADD/OR/XOR, OR and XOR intrinsics.
-
-@item The @code{CO_MIN} and @code{CO_MAX} and @code{SUM} reduction intrinsics.
-And the @code{CO_BROADCAST} and @code{CO_REDUCE} intrinsic, except that those
-do not support polymorphic types or types with allocatable, pointer or
-polymorphic components.
-
-@item Events (@code{EVENT POST}, @code{EVENT WAIT}, @code{EVENT_QUERY})
-
-@item Failed images (@code{FAIL IMAGE}, @code{IMAGE_STATUS},
-@code{FAILED_IMAGES}, @code{STOPPED_IMAGES})
-
-@end itemize
-
-
 @node Fortran 2018 status
 @section Status of Fortran 2018 support
 
@@ -1167,6 +1113,55 @@ The behavior of the @code{INQUIRE} statement with the @code{RECL=}
 specifier now conforms to Fortran 2018.
 
 @end itemize
+
+
+@subsection TS 29113 Status (Further Interoperability with C)
+
+GNU Fortran supports some of the new features of the Technical
+Specification (TS) 29113 on Further Interoperability of Fortran with C.
+The @uref{https://gcc.gnu.org/wiki/TS29113Status, wiki} has some information
+about the current TS 29113 implementation status.  In particular, the
+following is implemented.
+
+See also @ref{Further Interoperability of Fortran with C}.
+
+@itemize
+@item The @code{OPTIONAL} attribute is allowed for dummy arguments
+of @code{BIND(C) procedures.}
+
+@item The @code{RANK} intrinsic is supported.
+
+@item GNU Fortran's implementation for variables with @code{ASYNCHRONOUS}
+attribute is compatible with TS 29113.
+
+@item Assumed types (@code{TYPE(*)}).
+
+@item Assumed-rank (@code{DIMENSION(..)}). However, the array descriptor
+of the TS is not yet supported.
+@end itemize
+
+
+
+@subsection TS 18508 Status (Additional Parallel Features)
+
+GNU Fortran supports the following new features of the Technical
+Specification 18508 on Additional Parallel Features in Fortran:
+
+@itemize
+@item The new atomic ADD, CAS, FETCH and ADD/OR/XOR, OR and XOR intrinsics.
+
+@item The @code{CO_MIN} and @code{CO_MAX} and @code{SUM} reduction intrinsics.
+And the @code{CO_BROADCAST} and @code{CO_REDUCE} intrinsic, except that those
+do not support polymorphic types or types with allocatable, pointer or
+polymorphic components.
+
+@item Events (@code{EVENT POST}, @code{EVENT WAIT}, @code{EVENT_QUERY})
+
+@item Failed images (@code{FAIL IMAGE}, @code{IMAGE_STATUS},
+@code{FAILED_IMAGES}, @code{STOPPED_IMAGES})
+
+@end itemize
+
 
 @c ---------------------------------------------------------------------
 @c Compiler Characteristics
@@ -1906,10 +1901,12 @@ or,
         pointer ( <pointer1> , <pointee1> ), ( <pointer2> , <pointee2> ), ...
 @end smallexample
 The pointer is an integer that is intended to hold a memory address.
-The pointee may be an array or scalar.  A pointee can be an assumed
-size array---that is, the last dimension may be left unspecified by
-using a @code{*} in place of a value---but a pointee cannot be an
-assumed shape array.  No space is allocated for the pointee.
+The pointee may be an array or scalar.
+If an assumed-size array is permitted within the scoping unit, a
+pointee can be an assumed-size array.
+That is, the last dimension may be left unspecified by using a @code{*}
+in place of a value. A pointee cannot be an assumed shape array.
+No space is allocated for the pointee.
 
 The pointee may have its type declared before or after the pointer
 statement, and its array specification (if any) may be declared

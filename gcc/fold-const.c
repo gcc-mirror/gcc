@@ -474,12 +474,15 @@ negate_expr_p (tree t)
     case EXACT_DIV_EXPR:
       if (TYPE_UNSIGNED (type))
 	break;
-      if (negate_expr_p (TREE_OPERAND (t, 0)))
+      /* In general we can't negate A in A / B, because if A is INT_MIN and
+         B is not 1 we change the sign of the result.  */
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == INTEGER_CST
+	  && negate_expr_p (TREE_OPERAND (t, 0)))
 	return true;
       /* In general we can't negate B in A / B, because if A is INT_MIN and
 	 B is 1, we may turn this into INT_MIN / -1 which is undefined
 	 and actually traps on some architectures.  */
-      if (! INTEGRAL_TYPE_P (TREE_TYPE (t))
+      if (! ANY_INTEGRAL_TYPE_P (TREE_TYPE (t))
 	  || TYPE_OVERFLOW_WRAPS (TREE_TYPE (t))
 	  || (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST
 	      && ! integer_onep (TREE_OPERAND (t, 1))))
@@ -652,14 +655,17 @@ fold_negate_expr_1 (location_t loc, tree t)
     case EXACT_DIV_EXPR:
       if (TYPE_UNSIGNED (type))
 	break;
-      if (negate_expr_p (TREE_OPERAND (t, 0)))
+      /* In general we can't negate A in A / B, because if A is INT_MIN and
+	 B is not 1 we change the sign of the result.  */
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == INTEGER_CST
+	  && negate_expr_p (TREE_OPERAND (t, 0)))
 	return fold_build2_loc (loc, TREE_CODE (t), type,
 				negate_expr (TREE_OPERAND (t, 0)),
 				TREE_OPERAND (t, 1));
       /* In general we can't negate B in A / B, because if A is INT_MIN and
 	 B is 1, we may turn this into INT_MIN / -1 which is undefined
 	 and actually traps on some architectures.  */
-      if ((! INTEGRAL_TYPE_P (TREE_TYPE (t))
+      if ((! ANY_INTEGRAL_TYPE_P (TREE_TYPE (t))
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (t))
 	   || (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST
 	       && ! integer_onep (TREE_OPERAND (t, 1))))
@@ -3291,7 +3297,6 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case TRUTH_ORIF_EXPR:
 	  return OP_SAME (0) && OP_SAME (1);
 
-	case FMA_EXPR:
 	case WIDEN_MULT_PLUS_EXPR:
 	case WIDEN_MULT_MINUS_EXPR:
 	  if (!OP_SAME (2))
@@ -11702,17 +11707,6 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
       return NULL_TREE;
 
-    case FMA_EXPR:
-      /* For integers we can decompose the FMA if possible.  */
-      if (TREE_CODE (arg0) == INTEGER_CST
-	  && TREE_CODE (arg1) == INTEGER_CST)
-	return fold_build2_loc (loc, PLUS_EXPR, type,
-				const_binop (MULT_EXPR, arg0, arg1), arg2);
-      if (integer_zerop (arg2))
-	return fold_build2_loc (loc, MULT_EXPR, type, arg0, arg1);
-
-      return fold_fma (loc, type, arg0, arg1, arg2);
-
     case VEC_PERM_EXPR:
       if (TREE_CODE (arg2) == VECTOR_CST)
 	{
@@ -14575,6 +14569,74 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen)
   if (strlen)
     *strlen = string_length - offset;
   return string + offset;
+}
+
+/* Given a tree T, compute which bits in T may be nonzero.  */
+
+wide_int
+tree_nonzero_bits (const_tree t)
+{
+  switch (TREE_CODE (t))
+    {
+    case INTEGER_CST:
+      return wi::to_wide (t);
+    case SSA_NAME:
+      return get_nonzero_bits (t);
+    case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
+      return tree_nonzero_bits (TREE_OPERAND (t, 0));
+    case BIT_AND_EXPR:
+      return wi::bit_and (tree_nonzero_bits (TREE_OPERAND (t, 0)),
+			  tree_nonzero_bits (TREE_OPERAND (t, 1)));
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      return wi::bit_or (tree_nonzero_bits (TREE_OPERAND (t, 0)),
+			 tree_nonzero_bits (TREE_OPERAND (t, 1)));
+    case COND_EXPR:
+      return wi::bit_or (tree_nonzero_bits (TREE_OPERAND (t, 1)),
+			 tree_nonzero_bits (TREE_OPERAND (t, 2)));
+    CASE_CONVERT:
+      return wide_int::from (tree_nonzero_bits (TREE_OPERAND (t, 0)),
+			     TYPE_PRECISION (TREE_TYPE (t)),
+			     TYPE_SIGN (TREE_TYPE (TREE_OPERAND (t, 0))));
+    case PLUS_EXPR:
+      if (INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	{
+	  wide_int nzbits1 = tree_nonzero_bits (TREE_OPERAND (t, 0));
+	  wide_int nzbits2 = tree_nonzero_bits (TREE_OPERAND (t, 1));
+	  if (wi::bit_and (nzbits1, nzbits2) == 0)
+	    return wi::bit_or (nzbits1, nzbits2);
+	}
+      break;
+    case LSHIFT_EXPR:
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
+	{
+	  tree type = TREE_TYPE (t);
+	  wide_int nzbits = tree_nonzero_bits (TREE_OPERAND (t, 0));
+	  wide_int arg1 = wi::to_wide (TREE_OPERAND (t, 1),
+				       TYPE_PRECISION (type));
+	  return wi::neg_p (arg1)
+		 ? wi::rshift (nzbits, -arg1, TYPE_SIGN (type))
+		 : wi::lshift (nzbits, arg1);
+	}
+      break;
+    case RSHIFT_EXPR:
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
+        {
+	  tree type = TREE_TYPE (t);
+	  wide_int nzbits = tree_nonzero_bits (TREE_OPERAND (t, 0));
+	  wide_int arg1 = wi::to_wide (TREE_OPERAND (t, 1),
+				       TYPE_PRECISION (type));
+	  return wi::neg_p (arg1)
+		 ? wi::lshift (nzbits, -arg1)
+		 : wi::rshift (nzbits, arg1, TYPE_SIGN (type));
+        }
+      break;
+    default:
+      break;
+    }
+
+  return wi::shwi (-1, TYPE_PRECISION (TREE_TYPE (t)));
 }
 
 #if CHECKING_P

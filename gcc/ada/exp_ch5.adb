@@ -164,7 +164,7 @@ package body Exp_Ch5 is
    --  is the original Assignment node.
 
    --------------------------------------
-   -- Build_Formal_Container_iteration --
+   -- Build_Formal_Container_Iteration --
    --------------------------------------
 
    procedure Build_Formal_Container_Iteration
@@ -237,6 +237,15 @@ package body Exp_Ch5 is
                     New_Occurrence_Of (Cursor, Loc)))),
           Statements => Stats,
           End_Label  => Empty);
+
+      --  If the contruct has a specified loop name, preserve it in the new
+      --  loop, for possible use in exit statements.
+
+      if Present (Identifier (N))
+        and then Comes_From_Source (Identifier (N))
+      then
+         Set_Identifier (New_Loop, Identifier (N));
+      end if;
    end Build_Formal_Container_Iteration;
 
    ------------------------------
@@ -2458,12 +2467,19 @@ package body Exp_Ch5 is
                   --  extension of a limited interface, and the actual is
                   --  limited. This is an error according to AI05-0087, but
                   --  is not caught at the point of instantiation in earlier
-                  --  versions.
+                  --  versions. We also must verify that the limited type does
+                  --  not come from source as corner cases may exist where
+                  --  an assignment was not intended like the pathological case
+                  --  of a raise expression within a return statement.
 
                   --  This is wrong, error messages cannot be issued during
                   --  expansion, since they would be missed in -gnatc mode ???
 
-                  Error_Msg_N ("assignment not available on limited type", N);
+                  if Comes_From_Source (N) then
+                     Error_Msg_N
+                       ("assignment not available on limited type", N);
+                  end if;
+
                   return;
                end if;
 

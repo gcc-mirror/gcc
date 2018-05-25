@@ -516,6 +516,13 @@ struct layout
 #error Unhandled QNX architecture.
 #endif
 
+/*------------------- aarch64-linux ----------------------------------*/
+
+#elif (defined (__aarch64__) && defined (__linux__))
+
+#define USE_GCC_UNWINDER
+#define PC_ADJUST -4
+
 /*----------------------------- ia64 ---------------------------------*/
 
 #elif defined (__ia64__) && (defined (__linux__) || defined (__hpux__))

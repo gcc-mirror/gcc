@@ -490,27 +490,6 @@ dump_ternary_rhs (pretty_printer *buffer, gassign *gs, int spc,
       pp_greater (buffer);
       break;
 
-    case FMA_EXPR:
-      if (flags & TDF_GIMPLE)
-	{
-	  pp_string (buffer, "__FMA (");
-	  dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
-	  pp_comma (buffer);
-	  dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
-	  pp_comma (buffer);
-	  dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
-	  pp_right_paren (buffer);
-	}
-      else
-	{
-	  dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
-	  pp_string (buffer, " * ");
-	  dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
-	  pp_string (buffer, " + ");
-	  dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
-	}
-      break;
-
     case DOT_PROD_EXPR:
       pp_string (buffer, "DOT_PROD_EXPR <");
       dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
@@ -874,7 +853,7 @@ dump_gimple_call (pretty_printer *buffer, gcall *gs, int spc,
   if (flags & TDF_RAW)
     {
       if (gimple_call_internal_p (gs))
-	dump_gimple_fmt (buffer, spc, flags, "%G <%s, %T", gs,
+	dump_gimple_fmt (buffer, spc, flags, "%G <.%s, %T", gs,
 			 internal_fn_name (gimple_call_internal_fn (gs)), lhs);
       else
 	dump_gimple_fmt (buffer, spc, flags, "%G <%T, %T", gs, fn, lhs);
@@ -898,7 +877,10 @@ dump_gimple_call (pretty_printer *buffer, gcall *gs, int spc,
 	  pp_space (buffer);
         }
       if (gimple_call_internal_p (gs))
-	pp_string (buffer, internal_fn_name (gimple_call_internal_fn (gs)));
+	{
+	  pp_dot (buffer);
+	  pp_string (buffer, internal_fn_name (gimple_call_internal_fn (gs)));
+	}
       else
 	print_call_name (buffer, fn, flags);
       pp_string (buffer, " (");

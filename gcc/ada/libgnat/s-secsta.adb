@@ -33,16 +33,33 @@ pragma Compiler_Unit_Warning;
 
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with System.Soft_Links;
+
+with System.Parameters;       use System.Parameters;
+with System.Soft_Links;       use System.Soft_Links;
+with System.Storage_Elements; use System.Storage_Elements;
 
 package body System.Secondary_Stack is
 
-   package SSL renames System.Soft_Links;
-
-   use type System.Parameters.Size_Type;
-
    procedure Free is new Ada.Unchecked_Deallocation (Chunk_Id, Chunk_Ptr);
    --  Free a dynamically allocated chunk
+
+   procedure SS_Allocate_Dynamic
+     (Stack       : SS_Stack_Ptr;
+      Mem_Request : SS_Ptr;
+      Addr        : out Address);
+   pragma Inline (SS_Allocate_Dynamic);
+   --  Allocate enough space on dynamic secondary stack Stack to accommodate an
+   --  object of size Mem_Request. Addr denotes the address where the object is
+   --  to be placed.
+
+   procedure SS_Allocate_Static
+     (Stack       : SS_Stack_Ptr;
+      Mem_Request : SS_Ptr;
+      Addr        : out Address);
+   pragma Inline (SS_Allocate_Static);
+   --  Allocate enough space on static secondary stack Stack to accommodate an
+   --  object of size Mem_Request. Addr denotes the address where the object is
+   --  to be placed.
 
    -----------------
    -- SS_Allocate --
@@ -50,135 +67,324 @@ package body System.Secondary_Stack is
 
    procedure SS_Allocate
      (Addr         : out Address;
-      Storage_Size : SSE.Storage_Count)
+      Storage_Size : Storage_Count)
    is
-      use type System.Storage_Elements.Storage_Count;
+      function Round_Up (Size : Storage_Count) return SS_Ptr;
+      pragma Inline (Round_Up);
+      --  Round up Size to the nearest multiple of the maximum alignment on the
+      --  target.
 
-      Max_Align   : constant SS_Ptr := SS_Ptr (Standard'Maximum_Alignment);
+      function Round_Up_Overflows (Size : Storage_Count) return Boolean;
+      pragma Inline (Round_Up_Overflows);
+      --  Determine whether a round up of Size to the nearest multiple of the
+      --  maximum alignment will overflow the operation.
+
+      --------------
+      -- Round_Up --
+      --------------
+
+      function Round_Up (Size : Storage_Count) return SS_Ptr is
+         Max_Align : constant SS_Ptr := SS_Ptr (Standard'Maximum_Alignment);
+
+      begin
+         return ((SS_Ptr (Size) + Max_Align - 1) / Max_Align) * Max_Align;
+      end Round_Up;
+
+      ------------------------
+      -- Round_Up_Overflows --
+      ------------------------
+
+      function Round_Up_Overflows (Size : Storage_Count) return Boolean is
+         Max_Align : constant Storage_Count := Standard'Maximum_Alignment;
+
+      begin
+         return Storage_Count (SS_Ptr'Last) - Max_Align < Size;
+      end Round_Up_Overflows;
+
+      --  Local variables
+
+      Stack : constant SS_Stack_Ptr := Get_Sec_Stack.all;
+      --  The secondary stack of the current task
+
       Mem_Request : SS_Ptr;
 
-      Stack       : constant SS_Stack_Ptr := SSL.Get_Sec_Stack.all;
-   begin
-      --  Round up Storage_Size to the nearest multiple of the max alignment
-      --  value for the target. This ensures efficient stack access. First
-      --  perform a check to ensure that the rounding operation does not
-      --  overflow SS_Ptr.
+   --  Start of processing for SS_Allocate
 
-      if SSE.Storage_Count (SS_Ptr'Last) - Standard'Maximum_Alignment <
-        Storage_Size
-      then
+   begin
+      --  It should not be possible to allocate an object of size zero
+
+      pragma Assert (Storage_Size > 0);
+
+      --  Round up the requested allocation size to the nearest multiple of the
+      --  maximum alignment value for the target. This ensures efficient stack
+      --  access. Check that the rounding operation does not overflow SS_Ptr.
+
+      if Round_Up_Overflows (Storage_Size) then
          raise Storage_Error;
       end if;
 
-      Mem_Request := ((SS_Ptr (Storage_Size) + Max_Align - 1) / Max_Align) *
-                       Max_Align;
+      Mem_Request := Round_Up (Storage_Size);
 
-      --  Case of fixed secondary stack
-
-      if not SP.Sec_Stack_Dynamic then
-         --  Check if max stack usage is increasing
-
-         if Stack.Max - Stack.Top - Mem_Request < 0 then
-
-            --  If so, check if the stack is exceeded, noting Stack.Top points
-            --  to the first free byte (so the value of Stack.Top on a fully
-            --  allocated stack will be Stack.Size + 1). The comparison is
-            --  formed to prevent integer overflows.
-
-            if Stack.Size - Stack.Top - Mem_Request < -1 then
-               raise Storage_Error;
-            end if;
-
-            --  Record new max usage
-
-            Stack.Max := Stack.Top + Mem_Request;
-         end if;
-
-         --  Set resulting address and update top of stack pointer
-
-         Addr := Stack.Internal_Chunk.Mem (Stack.Top)'Address;
-         Stack.Top := Stack.Top + Mem_Request;
-
-      --  Case of dynamic secondary stack
+      if Sec_Stack_Dynamic then
+         SS_Allocate_Dynamic (Stack, Mem_Request, Addr);
 
       else
-         declare
-            Chunk                : Chunk_Ptr;
-            Chunk_Size           : SS_Ptr;
-            To_Be_Released_Chunk : Chunk_Ptr;
-
-         begin
-            Chunk := Stack.Current_Chunk;
-
-            --  The Current_Chunk may not be the best one if a lot of release
-            --  operations have taken place. Go down the stack if necessary.
-
-            while Chunk.First > Stack.Top loop
-               Chunk := Chunk.Prev;
-            end loop;
-
-            --  Find out if the available memory in the current chunk is
-            --  sufficient, if not, go to the next one and eventually create
-            --  the necessary room.
-
-            while Chunk.Last - Stack.Top - Mem_Request < -1 loop
-               if Chunk.Next /= null then
-                  --  Release unused non-first empty chunk
-
-                  if Chunk.Prev /= null and then Chunk.First = Stack.Top then
-                     To_Be_Released_Chunk := Chunk;
-                     Chunk := Chunk.Prev;
-                     Chunk.Next := To_Be_Released_Chunk.Next;
-                     To_Be_Released_Chunk.Next.Prev := Chunk;
-                     Free (To_Be_Released_Chunk);
-                  end if;
-
-               --  Create a new chunk
-
-               else
-                  --  The new chunk should be no smaller than the default
-                  --  chunk size to minimize the amount of secondary stack
-                  --  management.
-
-                  if Mem_Request <= Stack.Size then
-                     Chunk_Size := Stack.Size;
-                  else
-                     Chunk_Size := Mem_Request;
-                  end if;
-
-                  --  Check that the indexing limits are not exceeded
-
-                  if SS_Ptr'Last - Chunk.Last - Chunk_Size < 0 then
-                     raise Storage_Error;
-                  end if;
-
-                  Chunk.Next :=
-                    new Chunk_Id
-                      (First => Chunk.Last + 1,
-                       Last  => Chunk.Last + Chunk_Size);
-
-                  Chunk.Next.Prev := Chunk;
-               end if;
-
-               Chunk     := Chunk.Next;
-               Stack.Top := Chunk.First;
-            end loop;
-
-            --  Resulting address is the address pointed by Stack.Top
-
-            Addr                := Chunk.Mem (Stack.Top)'Address;
-            Stack.Top           := Stack.Top + Mem_Request;
-            Stack.Current_Chunk := Chunk;
-
-            --  Record new max usage
-
-            if Stack.Top > Stack.Max then
-               Stack.Max := Stack.Top;
-            end if;
-
-         end;
+         SS_Allocate_Static (Stack, Mem_Request, Addr);
       end if;
    end SS_Allocate;
+
+   -------------------------
+   -- SS_Allocate_Dynamic --
+   -------------------------
+
+   procedure SS_Allocate_Dynamic
+     (Stack       : SS_Stack_Ptr;
+      Mem_Request : SS_Ptr;
+      Addr        : out Address)
+   is
+      procedure Delete_Chunk (Chunk : in out Chunk_Ptr);
+      pragma Inline (Delete_Chunk);
+      --  Unchain chunk Chunk from the secondary stack and delete it
+
+      procedure Link_Chunks (First : Chunk_Ptr; Second : Chunk_Ptr);
+      pragma Inline (Link_Chunks);
+      --  Link chunk Second to chunk First
+
+      procedure Update_Max;
+      pragma Inline (Update_Max);
+      --  Raise the Max watermark if needed, based on Stack.Top
+
+      ------------------
+      -- Delete_Chunk --
+      ------------------
+
+      procedure Delete_Chunk (Chunk : in out Chunk_Ptr) is
+         Next : constant Chunk_Ptr := Chunk.Next;
+         Prev : constant Chunk_Ptr := Chunk.Prev;
+
+      begin
+         --  A chunk must always succeed another chunk. In the base case, that
+         --  chunk is the Internal_Chunk.
+
+         pragma Assert (Prev /= null);
+
+         Chunk.Next := null;    --        Chunk --> X
+         Chunk.Prev := null;    --  X <-- Chunk
+
+         --  The chunk being deleted is the last chunk
+
+         if Next = null then
+            Prev.Next := null;  --  Prev --> X
+
+         --  Otherwise link both the Prev and Next chunks
+
+         else
+            Link_Chunks (Prev, Next);
+         end if;
+
+         Free (Chunk);
+      end Delete_Chunk;
+
+      -----------------
+      -- Link_Chunks --
+      -----------------
+
+      procedure Link_Chunks (First : Chunk_Ptr; Second : Chunk_Ptr) is
+      begin
+         First.Next  := Second;  --  First --> Second
+         Second.Prev := First;   --  First <-- Second
+      end Link_Chunks;
+
+      ----------------
+      -- Update_Max --
+      ----------------
+
+      procedure Update_Max is
+      begin
+         if Stack.Top > Stack.Max then
+            Stack.Max := Stack.Top;
+         end if;
+      end Update_Max;
+
+      --  Local variables
+
+      Chunk      : Chunk_Ptr;
+      Chunk_Size : SS_Ptr;
+      Next_Chunk : Chunk_Ptr;
+      Top_Chunk  : Chunk_Ptr;
+
+   --  Start of processing for SS_Allocate_Dynamic
+
+   begin
+      --  Find the chunk where Top lives by going in reverse, starting from
+      --  Current_Chunk.
+      --
+      --          Top
+      --          |
+      --    +--------+ --> +----------+ --> +-----------------+
+      --    |#####|  |     |####      |     |###########      |
+      --    +--------+ <-- +----------+ <-- +-----------------+
+      --                                             ^
+      --                                        Current_Chunk
+
+      Top_Chunk := Stack.Current_Chunk;
+
+      while Top_Chunk.First > Stack.Top loop
+         Top_Chunk := Top_Chunk.Prev;
+      end loop;
+
+      --  Inspect Top_Chunk to determine whether the remaining space is big
+      --  enough to fit the object.
+      --
+      --      Addr Top
+      --      |    |
+      --    +--------+ ...
+      --    |######| |
+      --    +--------+ ...
+      --         ^
+      --     Top_Chunk
+
+      if Top_Chunk.Last - Stack.Top + 1 >= Mem_Request then
+         Addr      := Top_Chunk.Mem (Stack.Top)'Address;
+         Stack.Top := Stack.Top + Mem_Request;
+         Update_Max;
+
+         return;
+      end if;
+
+      --  At this point it is known that Top_Chunk is not big enough to fit
+      --  the object. Examine subsequent chunks using the following criteria:
+      --
+      --    * If a chunk is too small to fit the object, delete it
+      --
+      --    * If a chunk is big enough to fit the object, use that chunk
+
+      Chunk := Top_Chunk.Next;
+      while Chunk /= null loop
+
+         --  Capture the next chunk in case the current one is deleted
+
+         Next_Chunk := Chunk.Next;
+
+         --  The current chunk is too small to fit the object and must be
+         --  deleted to avoid creating a hole in the secondary stack. Note
+         --  that this may delete the Current_Chunk.
+
+         if Chunk.Last - Chunk.First + 1 < Mem_Request then
+            Delete_Chunk (Chunk);
+
+         --  Otherwise the chunk is big enough to fit the object. Use this
+         --  chunk to store the object.
+         --
+         --                    Addr   Top
+         --                    |      |
+         --    +--------+ --> +----------+ ... ...................
+         --    |#####   |     |#######|  |     :                 :
+         --    +--------+ <-- +----------+ ... ...................
+         --        ^               ^                    ^
+         --    Top_Chunk         Chunk             Current_Chunk
+
+         else
+            Addr      := Chunk.Mem (Chunk.First)'Address;
+            Stack.Top := Chunk.First + Mem_Request;
+            Update_Max;
+
+            return;
+         end if;
+
+         Chunk := Next_Chunk;
+      end loop;
+
+      --  At this point one of the following outcomes took place:
+      --
+      --    * Top_Chunk is the last chunk in the secondary stack
+      --
+      --    * Top_Chunk was not the last chunk originally. It was followed by
+      --      chunks which were too small to fit the object and as a result
+      --      were deleted, thus making Top_Chunk the last chunk.
+
+      pragma Assert (Top_Chunk.Next = null);
+
+      --  Create a new chunk big enough to fit the object. The size of the
+      --  chunk must be at least the minimum default size.
+
+      if Mem_Request <= Stack.Size then
+         Chunk_Size := Stack.Size;
+      else
+         Chunk_Size := Mem_Request;
+      end if;
+
+      --  Check that the indexing limits are not exceeded
+
+      if SS_Ptr'Last - Top_Chunk.Last < Chunk_Size then
+         raise Storage_Error;
+      end if;
+
+      Chunk :=
+        new Chunk_Id
+              (First => Top_Chunk.Last + 1,
+               Last  => Top_Chunk.Last + Chunk_Size);
+
+      --  Grow the secondary stack by adding the new chunk to Top_Chunk. The
+      --  new chunk also becomes the Current_Chunk because it is the last in
+      --  the list of chunks.
+      --
+      --                    Addr      Top
+      --                    |         |
+      --    +--------+ --> +-------------+
+      --    |#####   |     |##########|  |
+      --    +--------+ <-- +-------------+
+      --        ^                ^
+      --    Top_Chunk       Current_Chunk
+
+      Link_Chunks (Top_Chunk, Chunk);
+      Stack.Current_Chunk := Chunk;
+
+      Addr      := Chunk.Mem (Chunk.First)'Address;
+      Stack.Top := Chunk.First + Mem_Request;
+      Update_Max;
+   end SS_Allocate_Dynamic;
+
+   ------------------------
+   -- SS_Allocate_Static --
+   ------------------------
+
+   procedure SS_Allocate_Static
+     (Stack       : SS_Stack_Ptr;
+      Mem_Request : SS_Ptr;
+      Addr        : out Address)
+   is
+   begin
+      --  Check if the max stack usage is increasing
+
+      if Stack.Max - Stack.Top < Mem_Request then
+
+         --  Check if the stack will be exceeded. Note that Stack.Top points to
+         --  the first free byte, therefore the Stack.Top of a fully allocated
+         --  stack is equal to Stack.Size + 1. This check prevents overflow.
+
+         if Stack.Size - Stack.Top + 1 < Mem_Request then
+            raise Storage_Error;
+         end if;
+
+         --  Record new max usage
+
+         Stack.Max := Stack.Top + Mem_Request;
+      end if;
+
+      --  Set resulting address and update top of stack pointer
+      --
+      --        Addr   Top
+      --        |      |
+      --    +-------------------+
+      --    |##########|        |
+      --    +-------------------+
+      --              ^
+      --        Internal_Chunk
+
+      Addr      := Stack.Internal_Chunk.Mem (Stack.Top)'Address;
+      Stack.Top := Stack.Top + Mem_Request;
+   end SS_Allocate_Static;
 
    -------------
    -- SS_Free --
@@ -186,32 +392,27 @@ package body System.Secondary_Stack is
 
    procedure SS_Free (Stack : in out SS_Stack_Ptr) is
       procedure Free is
-         new Ada.Unchecked_Deallocation (SS_Stack, SS_Stack_Ptr);
+        new Ada.Unchecked_Deallocation (SS_Stack, SS_Stack_Ptr);
+
+      Chunk : Chunk_Ptr;
+
    begin
       --  If using dynamic secondary stack, free any external chunks
 
       if SP.Sec_Stack_Dynamic then
-         declare
-            Chunk : Chunk_Ptr;
+         Chunk := Stack.Current_Chunk;
 
-            procedure Free is
-              new Ada.Unchecked_Deallocation (Chunk_Id, Chunk_Ptr);
+         --  Go to top of linked list and free backwards. Do not free the
+         --  internal chunk as it is part of SS_Stack.
 
-         begin
-            Chunk := Stack.Current_Chunk;
+         while Chunk.Next /= null loop
+            Chunk := Chunk.Next;
+         end loop;
 
-            --  Go to top of linked list and free backwards. Do not free the
-            --  internal chunk as it is part of SS_Stack.
-
-            while Chunk.Next /= null loop
-               Chunk := Chunk.Next;
-            end loop;
-
-            while Chunk.Prev /= null loop
-               Chunk := Chunk.Prev;
-               Free (Chunk.Next);
-            end loop;
-         end;
+         while Chunk.Prev /= null loop
+            Chunk := Chunk.Prev;
+            Free (Chunk.Next);
+         end loop;
       end if;
 
       if Stack.Freeable then
@@ -224,7 +425,8 @@ package body System.Secondary_Stack is
    ----------------
 
    function SS_Get_Max return Long_Long_Integer is
-      Stack : constant SS_Stack_Ptr := SSL.Get_Sec_Stack.all;
+      Stack : constant SS_Stack_Ptr := Get_Sec_Stack.all;
+
    begin
       --  Stack.Max points to the first untouched byte in the stack, thus the
       --  maximum number of bytes that have been allocated on the stack is one
@@ -238,7 +440,7 @@ package body System.Secondary_Stack is
    -------------
 
    procedure SS_Info is
-      Stack : constant SS_Stack_Ptr := SSL.Get_Sec_Stack.all;
+      Stack : constant SS_Stack_Ptr := Get_Sec_Stack.all;
    begin
       Put_Line ("Secondary Stack information:");
 
@@ -257,8 +459,8 @@ package body System.Secondary_Stack is
 
       else
          declare
-            Nb_Chunks : Integer   := 1;
             Chunk     : Chunk_Ptr := Stack.Current_Chunk;
+            Nb_Chunks : Integer   := 1;
 
          begin
             while Chunk.Prev /= null loop
@@ -273,8 +475,9 @@ package body System.Secondary_Stack is
             --  Current Chunk information
 
             --  Note that First of each chunk is one more than Last of the
-            --  previous one, so Chunk.Last is the total size of all chunks; we
-            --  don't need to walk all the chunks to compute the total size.
+            --  previous one, so Chunk.Last is the total size of all chunks;
+            --  we do not need to walk all the chunks to compute the total
+            --  size.
 
             Put_Line ("  Total size              : "
                       & SS_Ptr'Image (Chunk.Last)
@@ -301,9 +504,8 @@ package body System.Secondary_Stack is
      (Stack : in out SS_Stack_Ptr;
       Size  : SP.Size_Type := SP.Unspecified_Size)
    is
-      use Parameters;
-
       Stack_Size : Size_Type;
+
    begin
       --  If Stack is not null then the stack has been allocated outside the
       --  package (by the compiler or the user) and all that is left to do is
@@ -317,6 +519,7 @@ package body System.Secondary_Stack is
 
       if Stack = null then
          if Size = Unspecified_Size then
+
             --  Cover the case when bootstraping with an old compiler that does
             --  not set Default_SS_Size.
 
@@ -393,7 +596,8 @@ package body System.Secondary_Stack is
    -------------
 
    function SS_Mark return Mark_Id is
-      Stack : constant SS_Stack_Ptr := SSL.Get_Sec_Stack.all;
+      Stack : constant SS_Stack_Ptr := Get_Sec_Stack.all;
+
    begin
       return (Sec_Stack => Stack, Sptr => Stack.Top);
    end SS_Mark;

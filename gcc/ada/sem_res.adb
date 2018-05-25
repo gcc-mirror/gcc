@@ -2904,13 +2904,6 @@ package body Sem_Res is
             when N_Real_Literal =>
                Resolve_Real_Literal              (N, Ctx_Type);
 
-            when N_Reduction_Expression =>
-               null;
-               --  Resolve (Expression (N),              Ctx_Type);
-
-            when N_Reduction_Expression_Parameter =>
-               null;
-
             when N_Reference =>
                Resolve_Reference                 (N, Ctx_Type);
 
@@ -5290,9 +5283,19 @@ package body Sem_Res is
          elsif Etype (N) = T
            and then B_Typ /= Universal_Fixed
          then
-            --  Not a mixed-mode operation, resolve with context
 
-            Resolve (N, B_Typ);
+            --  if the operand is part of a fixed multiplication operation,
+            --  a conversion will be applied to each operand, so resolve it
+            --  with its own type.
+
+            if Nkind_In (Parent (N), N_Op_Multiply, N_Op_Divide)  then
+               Resolve (N);
+
+            else
+               --  Not a mixed-mode operation, resolve with context
+
+               Resolve (N, B_Typ);
+            end if;
 
          elsif Etype (N) = Any_Fixed then
 
@@ -7300,7 +7303,13 @@ package body Sem_Res is
          end if;
       end if;
 
-      Mark_Use_Clauses (E);
+      --  We may be resolving an entity within expanded code, so a reference to
+      --  an entity should be ignored when calculating effective use clauses to
+      --  avoid inappropriate marking.
+
+      if Comes_From_Source (N) then
+         Mark_Use_Clauses (E);
+      end if;
    end Resolve_Entity_Name;
 
    -------------------
@@ -9033,7 +9042,6 @@ package body Sem_Res is
       elsif Ada_Version >= Ada_2005
         and then Is_Class_Wide_Type (Etype (L))
         and then Is_Interface (Etype (L))
-        and then Is_Class_Wide_Type (Etype (R))
         and then not Is_Interface (Etype (R))
       then
          return;
@@ -13011,8 +13019,31 @@ package body Sem_Res is
       --  Here we have a real conversion error
 
       else
-         Conversion_Error_NE
-           ("invalid conversion, not compatible with }", N, Opnd_Type);
+         --  Check for missing regular with_clause when only a limited view of
+         --  target is available.
+
+         if From_Limited_With (Opnd_Type) and then In_Package_Body then
+            Conversion_Error_NE
+              ("invalid conversion, not compatible with limited view of }",
+               N, Opnd_Type);
+            Conversion_Error_NE
+              ("\add with_clause for& to current unit!", N, Scope (Opnd_Type));
+
+         elsif Is_Access_Type (Opnd_Type)
+           and then From_Limited_With (Designated_Type (Opnd_Type))
+           and then In_Package_Body
+         then
+            Conversion_Error_NE
+              ("invalid conversion, not compatible with }", N, Opnd_Type);
+            Conversion_Error_NE
+              ("\add with_clause for& to current unit!",
+               N, Scope (Designated_Type (Opnd_Type)));
+
+         else
+            Conversion_Error_NE
+              ("invalid conversion, not compatible with }", N, Opnd_Type);
+         end if;
+
          return False;
       end if;
    end Valid_Conversion;

@@ -1,3 +1,10 @@
+2018-05-18  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/85583
+	* lto-partition.c (account_reference_p): Do not account
+	references from aliases; do not account refernces from
+	external initializers.
+
 2018-04-30  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (cmp_partitions_size): Remove.

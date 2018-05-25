@@ -1401,7 +1401,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	     not have the allocatable, pointer, or optional attributes,
 	     according to J3/04-007, section 5.1.  */
 	  if (sym->attr.allocatable == 1
-	      && !gfc_notify_std (GFC_STD_F2008_TS, "Variable %qs at %L with "
+	      && !gfc_notify_std (GFC_STD_F2018, "Variable %qs at %L with "
 				  "ALLOCATABLE attribute in procedure %qs "
 				  "with BIND(C)", sym->name,
 				  &(sym->declared_at),
@@ -1409,7 +1409,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	    retval = false;
 
 	  if (sym->attr.pointer == 1
-	      && !gfc_notify_std (GFC_STD_F2008_TS, "Variable %qs at %L with "
+	      && !gfc_notify_std (GFC_STD_F2018, "Variable %qs at %L with "
 				  "POINTER attribute in procedure %qs "
 				  "with BIND(C)", sym->name,
 				  &(sym->declared_at),
@@ -1434,7 +1434,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	      retval = false;
 	    }
 	  else if (sym->attr.optional == 1
-		   && !gfc_notify_std (GFC_STD_F2008_TS, "Variable %qs "
+		   && !gfc_notify_std (GFC_STD_F2018, "Variable %qs "
 				       "at %L with OPTIONAL attribute in "
 				       "procedure %qs which is BIND(C)",
 				       sym->name, &(sym->declared_at),
@@ -1445,7 +1445,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	     either assumed size or explicit shape. Deferred shape is already
 	     covered by the pointer/allocatable attribute.  */
 	  if (sym->as != NULL && sym->as->type == AS_ASSUMED_SHAPE
-	      && !gfc_notify_std (GFC_STD_F2008_TS, "Assumed-shape array %qs "
+	      && !gfc_notify_std (GFC_STD_F2018, "Assumed-shape array %qs "
 				  "at %L as dummy argument to the BIND(C) "
 				  "procedure %qs at %L", sym->name,
 				  &(sym->declared_at),
@@ -3846,8 +3846,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	      gfc_error ("Assumed type at %C is not allowed for components");
 	      return MATCH_ERROR;
 	    }
-	  if (!gfc_notify_std (GFC_STD_F2008_TS, "Assumed type "
-			       "at %C"))
+	  if (!gfc_notify_std (GFC_STD_F2018, "Assumed type at %C"))
 	    return MATCH_ERROR;
 	  ts->type = BT_ASSUMED;
 	  return MATCH_YES;
@@ -9961,8 +9960,12 @@ gfc_match_derived_decl (void)
 
   if (!gensym->attr.generic && gensym->ts.type != BT_UNKNOWN)
     {
-      gfc_error ("Derived type name %qs at %C already has a basic type "
-		 "of %s", gensym->name, gfc_typename (&gensym->ts));
+      if (gensym->ts.u.derived)
+	gfc_error ("Derived type name %qs at %C already has a basic type "
+		   "of %s", gensym->name, gfc_typename (&gensym->ts));
+      else
+	gfc_error ("Derived type name %qs at %C already has a basic type",
+		   gensym->name);
       return MATCH_ERROR;
     }
 

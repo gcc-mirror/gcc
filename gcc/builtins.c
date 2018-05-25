@@ -71,6 +71,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "intl.h"
 #include "file-prefix-map.h" /* remap_macro_filename()  */
+#include "gomp-constants.h"
+#include "omp-general.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -3781,7 +3783,17 @@ expand_builtin_strcpy (tree exp, rtx target)
 		    src, destsize);
     }
 
-  return expand_builtin_strcpy_args (dest, src, target);
+  if (rtx ret = expand_builtin_strcpy_args (dest, src, target))
+    {
+      /* Check to see if the argument was declared attribute nonstring
+	 and if so, issue a warning since at this point it's not known
+	 to be nul-terminated.  */
+      tree fndecl = get_callee_fndecl (exp);
+      maybe_warn_nonstring_arg (fndecl, exp);
+      return ret;
+    }
+
+  return NULL_RTX;
 }
 
 /* Helper function to do the actual work for expand_builtin_strcpy.  The
@@ -4574,14 +4586,14 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
 	}
     }
 
-  /* Check to see if the argument was declared attribute nonstring
-     and if so, issue a warning since at this point it's not known
-     to be nul-terminated.  */
   tree fndecl = get_callee_fndecl (exp);
-  maybe_warn_nonstring_arg (fndecl, exp);
-
   if (result)
     {
+      /* Check to see if the argument was declared attribute nonstring
+	 and if so, issue a warning since at this point it's not known
+	 to be nul-terminated.  */
+      maybe_warn_nonstring_arg (fndecl, exp);
+
       /* Return the value in the proper mode for this function.  */
       machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
       if (GET_MODE (result) == mode)
@@ -4678,14 +4690,14 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 					 arg2_rtx, TREE_TYPE (len), arg3_rtx,
 					 MIN (arg1_align, arg2_align));
 
-  /* Check to see if the argument was declared attribute nonstring
-     and if so, issue a warning since at this point it's not known
-     to be nul-terminated.  */
   tree fndecl = get_callee_fndecl (exp);
-  maybe_warn_nonstring_arg (fndecl, exp);
-
   if (result)
     {
+      /* Check to see if the argument was declared attribute nonstring
+	 and if so, issue a warning since at this point it's not known
+	 to be nul-terminated.  */
+      maybe_warn_nonstring_arg (fndecl, exp);
+
       /* Return the value in the proper mode for this function.  */
       mode = TYPE_MODE (TREE_TYPE (exp));
       if (GET_MODE (result) == mode)
@@ -6628,6 +6640,74 @@ expand_stack_save (void)
   return ret;
 }
 
+/* Emit code to get the openacc gang, worker or vector id or size.  */
+
+static rtx
+expand_builtin_goacc_parlevel_id_size (tree exp, rtx target, int ignore)
+{
+  const char *name;
+  rtx fallback_retval;
+  rtx_insn *(*gen_fn) (rtx, rtx);
+  switch (DECL_FUNCTION_CODE (get_callee_fndecl (exp)))
+    {
+    case BUILT_IN_GOACC_PARLEVEL_ID:
+      name = "__builtin_goacc_parlevel_id";
+      fallback_retval = const0_rtx;
+      gen_fn = targetm.gen_oacc_dim_pos;
+      break;
+    case BUILT_IN_GOACC_PARLEVEL_SIZE:
+      name = "__builtin_goacc_parlevel_size";
+      fallback_retval = const1_rtx;
+      gen_fn = targetm.gen_oacc_dim_size;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (oacc_get_fn_attrib (current_function_decl) == NULL_TREE)
+    {
+      error ("%qs only supported in OpenACC code", name);
+      return const0_rtx;
+    }
+
+  tree arg = CALL_EXPR_ARG (exp, 0);
+  if (TREE_CODE (arg) != INTEGER_CST)
+    {
+      error ("non-constant argument 0 to %qs", name);
+      return const0_rtx;
+    }
+
+  int dim = TREE_INT_CST_LOW (arg);
+  switch (dim)
+    {
+    case GOMP_DIM_GANG:
+    case GOMP_DIM_WORKER:
+    case GOMP_DIM_VECTOR:
+      break;
+    default:
+      error ("illegal argument 0 to %qs", name);
+      return const0_rtx;
+    }
+
+  if (ignore)
+    return target;
+
+  if (target == NULL_RTX)
+    target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+
+  if (!targetm.have_oacc_dim_size ())
+    {
+      emit_move_insn (target, fallback_retval);
+      return target;
+    }
+
+  rtx reg = MEM_P (target) ? gen_reg_rtx (GET_MODE (target)) : target;
+  emit_insn (gen_fn (reg, GEN_INT (dim)));
+  if (reg != target)
+    emit_move_insn (target, reg);
+
+  return target;
+}
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -7758,6 +7838,10 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	 folding.  */
       break;
 
+    case BUILT_IN_GOACC_PARLEVEL_ID:
+    case BUILT_IN_GOACC_PARLEVEL_SIZE:
+      return expand_builtin_goacc_parlevel_id_size (exp, target, ignore);
+
     default:	/* just do library call, if unknown builtin */
       break;
     }
@@ -8264,21 +8348,6 @@ fold_builtin_abs (location_t loc, tree arg, tree type)
 
   arg = fold_convert_loc (loc, type, arg);
   return fold_build1_loc (loc, ABS_EXPR, type, arg);
-}
-
-/* Fold a call to fma, fmaf, or fmal with arguments ARG[012].  */
-
-static tree
-fold_builtin_fma (location_t loc, tree arg0, tree arg1, tree arg2, tree type)
-{
-  /* ??? Only expand to FMA_EXPR if it's directly supported.  */
-  if (validate_arg (arg0, REAL_TYPE)
-      && validate_arg (arg1, REAL_TYPE)
-      && validate_arg (arg2, REAL_TYPE)
-      && optab_handler (fma_optab, TYPE_MODE (type)) != CODE_FOR_nothing)
-    return fold_build3_loc (loc, FMA_EXPR, type, arg0, arg1, arg2);
-
-  return NULL_TREE;
 }
 
 /* Fold a call to builtin carg(a+bi) -> atan2(b,a).  */
@@ -9185,10 +9254,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
 
     CASE_FLT_FN (BUILT_IN_SINCOS):
       return fold_builtin_sincos (loc, arg0, arg1, arg2);
-
-    CASE_FLT_FN (BUILT_IN_FMA):
-    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
-      return fold_builtin_fma (loc, arg0, arg1, arg2, type);
 
     CASE_FLT_FN (BUILT_IN_REMQUO):
       if (validate_arg (arg0, REAL_TYPE)

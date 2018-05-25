@@ -906,8 +906,8 @@ expr_hash_elt::print (FILE *stream)
 
           fn_from = m_expr.ops.call.fn_from;
           if (gimple_call_internal_p (fn_from))
-            fputs (internal_fn_name (gimple_call_internal_fn (fn_from)),
-                   stream);
+	    fprintf (stream, ".%s",
+		     internal_fn_name (gimple_call_internal_fn (fn_from)));
           else
 	    print_generic_expr (stream, gimple_call_fn (fn_from));
           fprintf (stream, " (");

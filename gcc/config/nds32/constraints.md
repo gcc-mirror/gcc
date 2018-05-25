@@ -127,6 +127,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, -31, 0)")))
 
+(define_constraint "Iu06"
+  "Unsigned immediate 6-bit value"
+  (and (match_code "const_int")
+       (match_test "ival < (1 << 6) && ival >= 0")))
+
 ;; Ip05 is special and dedicated for v3 movpi45 instruction.
 ;; movpi45 has imm5u field but the range is 16 ~ 47.
 (define_constraint "Ip05"
@@ -136,10 +141,10 @@
 		    && ival >= (0 + 16)
 		    && (TARGET_ISA_V3 || TARGET_ISA_V3M)")))
 
-(define_constraint "Iu06"
+(define_constraint "IU06"
   "Unsigned immediate 6-bit value constraint for addri36.sp instruction"
   (and (match_code "const_int")
-       (match_test "ival < (1 << 6)
+       (match_test "ival < (1 << 8)
 		    && ival >= 0
 		    && (ival % 4 == 0)
 		    && (TARGET_ISA_V3 || TARGET_ISA_V3M)")))
@@ -302,6 +307,25 @@
        (match_test "(TARGET_ISA_V3 || TARGET_ISA_V3M)
 		    && (IN_RANGE (exact_log2 (ival + 1), 1, 8))")))
 
+(define_constraint "CVp5"
+  "Unsigned immediate 5-bit value for movpi45 instruction with range 16-47"
+  (and (match_code "const_vector")
+       (match_test "nds32_valid_CVp5_p (op)")))
+
+(define_constraint "CVs5"
+  "Signed immediate 5-bit value"
+  (and (match_code "const_vector")
+       (match_test "nds32_valid_CVs5_p (op)")))
+
+(define_constraint "CVs2"
+  "Signed immediate 20-bit value"
+  (and (match_code "const_vector")
+       (match_test "nds32_valid_CVs2_p (op)")))
+
+(define_constraint "CVhi"
+  "The immediate value that can be simply set high 20-bit"
+  (and (match_code "const_vector")
+       (match_test "nds32_valid_CVhi_p (op)")))
 
 (define_memory_constraint "U33"
   "Memory constraint for 333 format"
@@ -348,5 +372,10 @@
   (and (match_code "mem")
        (match_test "(TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
 		     && nds32_float_mem_operand_p (op)")))
+
+(define_constraint "S"
+  "@internal
+   A constant call address."
+  (match_operand 0 "nds32_symbolic_operand"))
 
 ;; ------------------------------------------------------------------------

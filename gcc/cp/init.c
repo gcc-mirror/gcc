@@ -287,7 +287,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
     init = build_zero_cst (type);
   else
     {
-      gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+      gcc_assert (TYPE_REF_P (type));
       init = build_zero_cst (type);
     }
 
@@ -502,7 +502,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 	error ("value-initialization of function type %qT", type);
       return error_mark_node;
     }
-  else if (TREE_CODE (type) == REFERENCE_TYPE)
+  else if (TYPE_REF_P (type))
     {
       if (complain & tf_error)
 	error ("value-initialization of reference type %qT", type);
@@ -751,7 +751,7 @@ perform_member_init (tree member, tree init)
 	}
     }
   else if (init
-	   && (TREE_CODE (type) == REFERENCE_TYPE
+	   && (TYPE_REF_P (type)
 	       /* Pre-digested NSDMI.  */
 	       || (((TREE_CODE (init) == CONSTRUCTOR
 		     && TREE_TYPE (init) == type)
@@ -856,7 +856,7 @@ perform_member_init (tree member, tree init)
 	{
 	  tree core_type;
 	  /* member traversal: note it leaves init NULL */
-	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	  if (TYPE_REF_P (type))
 	    {
 	      if (permerror (DECL_SOURCE_LOCATION (current_function_decl),
 			     "uninitialized reference member in %q#T", type))
@@ -1733,11 +1733,6 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       && !DIRECT_LIST_INIT_P (init))
     flags |= LOOKUP_ONLYCONVERTING;
 
-  if ((VAR_P (exp) || TREE_CODE (exp) == PARM_DECL)
-      && !lookup_attribute ("warn_unused", TYPE_ATTRIBUTES (type)))
-    /* Just know that we've seen something for this node.  */
-    TREE_USED (exp) = 1;
-
   is_global = begin_init_stmts (&stmt_expr, &compound_stmt);
   destroy_temps = stmts_are_full_exprs_p ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 0;
@@ -1747,6 +1742,12 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
   current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
   TREE_READONLY (exp) = was_const;
   TREE_THIS_VOLATILE (exp) = was_volatile;
+
+  if ((VAR_P (exp) || TREE_CODE (exp) == PARM_DECL)
+      && TREE_SIDE_EFFECTS (stmt_expr)
+      && !lookup_attribute ("warn_unused", TYPE_ATTRIBUTES (type)))
+    /* Just know that we've seen something for this node.  */
+    TREE_USED (exp) = 1;
 
   return stmt_expr;
 }
@@ -2368,7 +2369,7 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
       if (type_has_user_provided_constructor (field_type))
 	continue;
 
-      if (TREE_CODE (field_type) == REFERENCE_TYPE)
+      if (TYPE_REF_P (field_type))
 	{
 	  ++ error_count;
 	  if (complain)
@@ -2599,7 +2600,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
     }
 
   tree opertype = TREE_TYPE (oper);
-  if ((addr_expr || !POINTER_TYPE_P (opertype))
+  if ((addr_expr || !INDIRECT_TYPE_P (opertype))
       && (VAR_P (oper)
 	  || TREE_CODE (oper) == FIELD_DECL
 	  || TREE_CODE (oper) == PARM_DECL))
@@ -2856,10 +2857,9 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       outer_nelts_from_type = true;
     }
 
-  /* Lots of logic below. depends on whether we have a constant number of
+  /* Lots of logic below depends on whether we have a constant number of
      elements, so go ahead and fold it now.  */
-  if (outer_nelts)
-    outer_nelts = maybe_constant_value (outer_nelts);
+  const_tree cst_outer_nelts = fold_non_dependent_expr (outer_nelts);
 
   /* If our base type is an array, then make sure we know how many elements
      it has.  */
@@ -2911,7 +2911,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   /* Warn if we performed the (T[N]) to T[N] transformation and N is
      variable.  */
   if (outer_nelts_from_type
-      && !TREE_CONSTANT (outer_nelts))
+      && !TREE_CONSTANT (cst_outer_nelts))
     {
       if (complain & tf_warning_or_error)
 	{
@@ -3010,9 +3010,9 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
       size = size_binop (MULT_EXPR, size, fold_convert (sizetype, nelts));
 
-      if (INTEGER_CST == TREE_CODE (outer_nelts))
+      if (TREE_CODE (cst_outer_nelts) == INTEGER_CST)
 	{
-	  if (tree_int_cst_lt (max_outer_nelts_tree, outer_nelts))
+	  if (tree_int_cst_lt (max_outer_nelts_tree, cst_outer_nelts))
 	    {
 	      /* When the array size is constant, check it at compile time
 		 to make sure it doesn't exceed the implementation-defined
@@ -3638,13 +3638,13 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Try to determine the constant value only for the purposes
 	 of the diagnostic below but continue to use the original
 	 value and handle const folding later.  */
-      const_tree cst_nelts = maybe_constant_value (nelts);
+      const_tree cst_nelts = fold_non_dependent_expr (nelts);
 
       /* The expression in a noptr-new-declarator is erroneous if it's of
 	 non-class type and its value before converting to std::size_t is
 	 less than zero. ... If the expression is a constant expression,
 	 the program is ill-fomed.  */
-      if (INTEGER_CST == TREE_CODE (cst_nelts)
+      if (TREE_CODE (cst_nelts) == INTEGER_CST
 	  && tree_int_cst_sgn (cst_nelts) == -1)
 	{
 	  if (complain & tf_error)
@@ -3659,7 +3659,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
   /* ``A reference cannot be created by the new operator.  A reference
      is not an object (8.2.2, 8.4.3), so a pointer to it could not be
      returned by new.'' ARM 5.3.3 */
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_REF_P (type))
     {
       if (complain & tf_error)
         error ("new cannot be applied to a reference type");
@@ -4586,7 +4586,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (type) == POINTER_TYPE)
+  if (TYPE_PTR_P (type))
     type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 
   if (TREE_CODE (type) == ARRAY_TYPE)
@@ -4600,6 +4600,9 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       return build_vec_delete (addr, array_type_nelts (type),
 			       auto_delete, use_global_delete, complain);
     }
+
+  bool deleting = (auto_delete == sfk_deleting_destructor);
+  gcc_assert (deleting == !(flags & LOOKUP_DESTRUCTOR));
 
   if (TYPE_PTR_P (otype))
     {
@@ -4628,7 +4631,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 			  "declared when the class is defined");
 		}
 	    }
-	  else if (auto_delete == sfk_deleting_destructor && warn_delnonvdtor
+	  else if (deleting && warn_delnonvdtor
 	           && MAYBE_CLASS_TYPE_P (type) && !CLASSTYPE_FINAL (type)
 		   && TYPE_POLYMORPHIC_P (type))
 	    {
@@ -4664,9 +4667,9 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       addr = convert_force (build_pointer_type (type), addr, 0, complain);
     }
 
-  tree head = NULL_TREE;
-  tree do_delete = NULL_TREE;
-  tree ifexp;
+  if (deleting)
+    /* We will use ADDR multiple times so we must save it.  */
+    addr = save_expr (addr);
 
   bool virtual_p = false;
   if (type_build_dtor_call (type))
@@ -4676,13 +4679,18 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       virtual_p = DECL_VIRTUAL_P (CLASSTYPE_DESTRUCTOR (type));
     }
 
+  tree head = NULL_TREE;
+  tree do_delete = NULL_TREE;
+
+  if (!deleting)
+    {
+      /* Leave do_delete null.  */
+    }
   /* For `::delete x', we must not use the deleting destructor
      since then we would not be sure to get the global `operator
      delete'.  */
-  if (use_global_delete && auto_delete == sfk_deleting_destructor)
+  else if (use_global_delete)
     {
-      /* We will use ADDR multiple times so we must save it.  */
-      addr = save_expr (addr);
       head = get_target_expr (build_headof (addr));
       /* Delete the object.  */
       do_delete = build_op_delete_call (DELETE_EXPR,
@@ -4699,11 +4707,8 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
   /* If the destructor is non-virtual, there is no deleting
      variant.  Instead, we must explicitly call the appropriate
      `operator delete' here.  */
-  else if (!virtual_p
-	   && auto_delete == sfk_deleting_destructor)
+  else if (!virtual_p)
     {
-      /* We will use ADDR multiple times so we must save it.  */
-      addr = save_expr (addr);
       /* Build the call.  */
       do_delete = build_op_delete_call (DELETE_EXPR,
 					addr,
@@ -4715,8 +4720,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       /* Call the complete object destructor.  */
       auto_delete = sfk_complete_destructor;
     }
-  else if (auto_delete == sfk_deleting_destructor
-	   && TYPE_GETS_REG_DELETE (type))
+  else if (TYPE_GETS_REG_DELETE (type))
     {
       /* Make sure we have access to the member op delete, even though
 	 we'll actually be calling it from the destructor.  */
@@ -4735,6 +4739,9 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
   if (expr == error_mark_node)
     return error_mark_node;
 
+  if (!deleting)
+    return expr;
+
   if (do_delete && !TREE_SIDE_EFFECTS (expr))
     expr = do_delete;
   else if (do_delete)
@@ -4750,24 +4757,20 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
   if (head)
     expr = build2 (COMPOUND_EXPR, void_type_node, head, expr);
 
-  if (flags & LOOKUP_DESTRUCTOR)
-    /* Explicit destructor call; don't check for null pointer.  */
-    ifexp = integer_one_node;
-  else
-    {
-      /* Handle deleting a null pointer.  */
-      warning_sentinel s (warn_address);
-      ifexp = cp_build_binary_op (input_location, NE_EXPR, addr,
-				  nullptr_node, complain);
-      if (ifexp == error_mark_node)
-	return error_mark_node;
-      /* This is a compiler generated comparison, don't emit
-	 e.g. -Wnonnull-compare warning for it.  */
-      else if (TREE_CODE (ifexp) == NE_EXPR)
-	TREE_NO_WARNING (ifexp) = 1;
-    }
+  /* Handle deleting a null pointer.  */
+  warning_sentinel s (warn_address);
+  tree ifexp = cp_build_binary_op (input_location, NE_EXPR, addr,
+				   nullptr_node, complain);
+  ifexp = cp_fully_fold (ifexp);
 
-  if (ifexp != integer_one_node)
+  if (ifexp == error_mark_node)
+    return error_mark_node;
+  /* This is a compiler generated comparison, don't emit
+     e.g. -Wnonnull-compare warning for it.  */
+  else if (TREE_CODE (ifexp) == NE_EXPR)
+    TREE_NO_WARNING (ifexp) = 1;
+
+  if (!integer_nonzerop (ifexp))
     expr = build3 (COND_EXPR, void_type_node, ifexp, expr, void_node);
 
   return expr;

@@ -312,7 +312,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         iterator __first1 = begin();
         iterator __last1 = end();
         for (; __first1 != __last1 && __first2 != __last2;
-	     ++__first1, ++__first2)
+	     ++__first1, (void)++__first2)
           *__first1 = *__first2;
         if (__first2 == __last2)
           erase(__first1, __last1);

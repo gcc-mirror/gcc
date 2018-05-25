@@ -638,6 +638,7 @@ package body Sem_Ch7 is
       --  Local variables
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       --  Save the Ghost and SPARK mode-related data to restore on exit
@@ -748,6 +749,12 @@ package body Sem_Ch7 is
       --  expansion are properly flagged as ignored Ghost.
 
       Mark_And_Set_Ghost_Body (N, Spec_Id);
+
+      --  If the body completes the initial declaration of a compilation unit
+      --  which is subject to pragma Elaboration_Checks, set the model of the
+      --  pragma because it applies to all parts of the unit.
+
+      Install_Elaboration_Model (Spec_Id);
 
       Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
       Style.Check_Identifier (Body_Id, Spec_Id);
@@ -1039,7 +1046,7 @@ package body Sem_Ch7 is
       end if;
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Package_Body_Helper;
 
    ---------------------------------
@@ -1399,10 +1406,13 @@ package body Sem_Ch7 is
 
             --  We are looking at an incomplete or private type declaration
             --  with a known_discriminant_part whose full view is an
-            --  Unchecked_Union.
+            --  Unchecked_Union. The seemingly useless check with Is_Type
+            --  prevents cascaded errors when routines defined only for type
+            --  entities are called with non-type entities.
 
             if Nkind_In (Decl, N_Incomplete_Type_Declaration,
                                N_Private_Type_Declaration)
+              and then Is_Type (Defining_Identifier (Decl))
               and then Has_Discriminants (Defining_Identifier (Decl))
               and then Present (Full_View (Defining_Identifier (Decl)))
               and then
@@ -2149,12 +2159,12 @@ package body Sem_Ch7 is
 
       Exchange_Entities (Id, Full_Id);
 
-      Set_Next_Entity (Id, Next1);
-      Set_Homonym     (Id, H1);
+      Link_Entities (Id, Next1);
+      Set_Homonym   (Id, H1);
 
-      Set_Full_View   (Full_Id, Id);
-      Set_Next_Entity (Full_Id, Next2);
-      Set_Homonym     (Full_Id, H2);
+      Set_Full_View (Full_Id, Id);
+      Link_Entities (Full_Id, Next2);
+      Set_Homonym   (Full_Id, H2);
    end Exchange_Declarations;
 
    ----------------------------

@@ -40,7 +40,15 @@
   (match_code "mult,and,ior,xor"))
 
 (define_predicate "nds32_symbolic_operand"
-  (match_code "const,symbol_ref,label_ref"))
+  (and (match_code "const,symbol_ref,label_ref")
+       (match_test "!(TARGET_ICT_MODEL_LARGE
+		      && nds32_indirect_call_referenced_p (op))")))
+
+(define_predicate "nds32_nonunspec_symbolic_operand"
+  (and (match_code "const,symbol_ref,label_ref")
+       (match_test "!flag_pic && nds32_const_unspec_p (op)
+		    && !(TARGET_ICT_MODEL_LARGE
+			 && nds32_indirect_call_referenced_p (op))")))
 
 (define_predicate "nds32_reg_constant_operand"
   (ior (match_operand 0 "register_operand")
@@ -56,13 +64,50 @@
        (and (match_operand 0 "const_int_operand")
 	    (match_test "satisfies_constraint_Is11 (op)"))))
 
+(define_predicate "nds32_imm_0_1_operand"
+  (and (match_operand 0 "const_int_operand")
+       (ior (match_test "satisfies_constraint_Iv00 (op)")
+	    (match_test "satisfies_constraint_Iv01 (op)"))))
+
+(define_predicate "nds32_imm_1_2_operand"
+  (and (match_operand 0 "const_int_operand")
+       (ior (match_test "satisfies_constraint_Iv01 (op)")
+	    (match_test "satisfies_constraint_Iv02 (op)"))))
+
+(define_predicate "nds32_imm_1_2_4_8_operand"
+  (and (match_operand 0 "const_int_operand")
+       (ior (ior (match_test "satisfies_constraint_Iv01 (op)")
+		 (match_test "satisfies_constraint_Iv02 (op)"))
+	    (ior (match_test "satisfies_constraint_Iv04 (op)")
+		 (match_test "satisfies_constraint_Iv08 (op)")))))
+
+(define_predicate "nds32_imm2u_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "satisfies_constraint_Iu02 (op)")))
+
+(define_predicate "nds32_imm4u_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "satisfies_constraint_Iu04 (op)")))
+
 (define_predicate "nds32_imm5u_operand"
   (and (match_operand 0 "const_int_operand")
        (match_test "satisfies_constraint_Iu05 (op)")))
 
+(define_predicate "nds32_imm6u_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "satisfies_constraint_Iu06 (op)")))
+
+(define_predicate "nds32_rimm4u_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "nds32_imm4u_operand")))
+
 (define_predicate "nds32_rimm5u_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "nds32_imm5u_operand")))
+
+(define_predicate "nds32_rimm6u_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "nds32_imm6u_operand")))
 
 (define_predicate "nds32_move_operand"
   (and (match_operand 0 "general_operand")
@@ -73,6 +118,20 @@
   if (CONST_INT_P (op)
       && !satisfies_constraint_Is20 (op)
       && !satisfies_constraint_Ihig (op))
+    return false;
+
+  return true;
+})
+
+(define_predicate "nds32_vmove_operand"
+  (and (match_operand 0 "general_operand")
+       (not (match_code "high,const,symbol_ref,label_ref")))
+{
+  /* If the constant op does NOT satisfy Is20 nor Ihig,
+     we can not perform move behavior by a single instruction.  */
+  if (GET_CODE (op) == CONST_VECTOR
+      && !satisfies_constraint_CVs2 (op)
+      && !satisfies_constraint_CVhi (op))
     return false;
 
   return true;
@@ -126,6 +185,15 @@
 (define_predicate "nds32_call_address_operand"
   (ior (match_operand 0 "nds32_symbolic_operand")
        (match_operand 0 "nds32_general_register_operand")))
+
+(define_predicate "nds32_insv_operand"
+  (match_code "const_int")
+{
+  return INTVAL (op) == 0
+	 || INTVAL (op) == 8
+	 || INTVAL (op) == 16
+	 || INTVAL (op) == 24;
+})
 
 (define_predicate "nds32_lmw_smw_base_operand"
   (and (match_code "mem")

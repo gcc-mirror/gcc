@@ -46,7 +46,7 @@ package body System.Exceptions_Debug is
    end Debug_Raise_Exception;
 
    -------------------------------
-   -- Debug_unhandled_Exception --
+   -- Debug_Unhandled_Exception --
    -------------------------------
 
    procedure Debug_Unhandled_Exception (E : SSL.Exception_Data_Ptr) is

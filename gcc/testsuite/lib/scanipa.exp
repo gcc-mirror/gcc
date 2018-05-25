@@ -36,9 +36,11 @@ proc scan-ipa-dump { args } {
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump "ipa" [lindex $args 0] "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" [lindex $args 2]
+	scan-dump "ipa" [lindex $args 0] \
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" "" [lindex $args 2]
     } else {
-	scan-dump "ipa" [lindex $args 0] "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]"
+	scan-dump "ipa" [lindex $args 0] \
+		  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ""
     }
 }
 
@@ -59,10 +61,11 @@ proc scan-ipa-dump-times { args } {
     }
     if { [llength $args] >= 4 } {
 	scan-dump-times "ipa" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" [lindex $args 3]
+			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" "" \
+			[lindex $args 3]
     } else {
 	scan-dump-times "ipa" [lindex $args 0] [lindex $args 1] \
-			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]"
+			"\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 2]" ""
     }
 }
 
@@ -83,10 +86,11 @@ proc scan-ipa-dump-not { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-not "ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" [lindex $args 2]
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" "" \
+		      [lindex $args 2]
     } else {
 	scan-dump-not "ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]"
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ""
     }
 }
 
@@ -108,10 +112,11 @@ proc scan-ipa-dump-dem { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-dem "ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" [lindex $args 2]
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" "" \
+		      [lindex $args 2]
     } else {
 	scan-dump-dem "ipa" [lindex $args 0] \
-		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]"
+		      "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ""
     }
 }
 
@@ -132,10 +137,10 @@ proc scan-ipa-dump-dem-not { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-dem-not "ipa" [lindex $args 0] \
-			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" \
+			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" "" \
 			  [lindex $args 2]
     } else {
 	scan-dump-dem-not "ipa" [lindex $args 0] \
-			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]"
+			  "\[0-9\]\[0-9\]\[0-9\]i.[lindex $args 1]" ""
     }
 }

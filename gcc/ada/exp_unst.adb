@@ -312,9 +312,9 @@ package body Exp_Unst is
          return;
       end if;
 
-      --  At least for now, do not unnest anything but main source unit
+      --  Only unnest when generating code for the main source unit
 
-      if not In_Extended_Main_Source_Unit (Subp_Body) then
+      if not In_Extended_Main_Code_Unit (Subp_Body) then
          return;
       end if;
 
@@ -400,10 +400,14 @@ package body Exp_Unst is
 
                procedure Note_Uplevel_Bound (N : Node_Id) is
                begin
-                  --  Entity name case
+                  --  Entity name case. Make sure that the entity is declared
+                  --  in a subprogram. This may not be the case for for a type
+                  --  in a loop appearing in a precondition.
 
                   if Is_Entity_Name (N) then
-                     if Present (Entity (N)) then
+                     if Present (Entity (N))
+                       and then Present (Enclosing_Subprogram (Entity (N)))
+                     then
                         Note_Uplevel_Ref
                           (E      => Entity (N),
                            Caller => Current_Subprogram,
@@ -611,6 +615,30 @@ package body Exp_Unst is
                                    ((N, Current_Subprogram, Ent));
                               end if;
                            end if;
+                        end if;
+
+                     when Attribute_First
+                        | Attribute_Last
+                        | Attribute_Length
+                     =>
+                        --  Special-case attributes of array objects whose
+                        --  bounds may be uplevel references. More complex
+                        --  prefixes are handled during full traversal. Note
+                        --  that if the nominal subtype of the prefix is
+                        --  unconstrained, the bound must be obtained from
+                        --  the object, not from the (possibly) uplevel
+                        --  reference.
+
+                        if Is_Entity_Name (Prefix (N))
+                          and then Is_Constrained (Etype (Prefix (N)))
+                        then
+                           declare
+                              DT : Boolean := False;
+                           begin
+                              Check_Static_Type (Etype (Prefix (N)), DT);
+                           end;
+
+                           return OK;
                         end if;
 
                      when others =>
@@ -1178,13 +1206,14 @@ package body Exp_Unst is
                   begin
                      --  Decorate the new formal entity
 
-                     Set_Scope               (Form, STJ.Ent);
-                     Set_Ekind               (Form, E_In_Parameter);
-                     Set_Etype               (Form, STJE.ARECnPT);
-                     Set_Mechanism           (Form, By_Copy);
-                     Set_Never_Set_In_Source (Form, True);
-                     Set_Analyzed            (Form, True);
-                     Set_Comes_From_Source   (Form, False);
+                     Set_Scope                (Form, STJ.Ent);
+                     Set_Ekind                (Form, E_In_Parameter);
+                     Set_Etype                (Form, STJE.ARECnPT);
+                     Set_Mechanism            (Form, By_Copy);
+                     Set_Never_Set_In_Source  (Form, True);
+                     Set_Analyzed             (Form, True);
+                     Set_Comes_From_Source    (Form, False);
+                     Set_Is_Activation_Record (Form, True);
 
                      --  Case of only body present
 
@@ -1556,7 +1585,7 @@ package body Exp_Unst is
                --  from level STJR.Lev to level STJE.Lev. The general form of
                --  the rewritten reference for entity X is:
 
-               --    Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X)
+               --    Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECmU.X)
 
                --  where a,b,c,d .. m =
                --    STJR.Lev - 1,  STJR.Lev - 2, .. STJE.Lev

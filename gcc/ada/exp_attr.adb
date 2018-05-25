@@ -75,23 +75,41 @@ package body Exp_Attr is
    -----------------------
 
    function Build_Array_VS_Func
-     (A_Type : Entity_Id;
-      Nod    : Node_Id) return Entity_Id;
-   --  Build function to test Valid_Scalars for array type A_Type. Nod is the
-   --  Valid_Scalars attribute node, used to insert the function body, and the
-   --  value returned is the entity of the constructed function body. We do not
-   --  bother to generate a separate spec for this subprogram.
+     (Attr       : Node_Id;
+      Formal_Typ : Entity_Id;
+      Array_Typ  : Entity_Id;
+      Comp_Typ   : Entity_Id) return Entity_Id;
+   --  Validate the components of an array type by means of a function. Return
+   --  the entity of the validation function. The parameters are as follows:
+   --
+   --    * Attr - the 'Valid_Scalars attribute for which the function is
+   --      generated.
+   --
+   --    * Formal_Typ - the type of the generated function's only formal
+   --      parameter.
+   --
+   --    * Array_Typ - the array type whose components are to be validated
+   --
+   --    * Comp_Typ - the component type of the array
 
    function Build_Disp_Get_Task_Id_Call (Actual : Node_Id) return Node_Id;
    --  Build a call to Disp_Get_Task_Id, passing Actual as actual parameter
 
    function Build_Record_VS_Func
-     (R_Type : Entity_Id;
-      Nod    : Node_Id) return Entity_Id;
-   --  Build function to test Valid_Scalars for record type A_Type. Nod is the
-   --  Valid_Scalars attribute node, used to insert the function body, and the
-   --  value returned is the entity of the constructed function body. We do not
-   --  bother to generate a separate spec for this subprogram.
+     (Attr       : Node_Id;
+      Formal_Typ : Entity_Id;
+      Rec_Typ    : Entity_Id) return Entity_Id;
+   --  Validate the components, discriminants, and variants of a record type by
+   --  means of a function. Return the entity of the validation function. The
+   --  parameters are as follows:
+   --
+   --    * Attr - the 'Valid_Scalars attribute for which the function is
+   --      generated.
+   --
+   --    * Formal_Typ - the type of the generated function's only formal
+   --      parameter.
+   --
+   --    * Rec_Typ - the record type whose internals are to be validated
 
    procedure Compile_Stream_Body_In_Scope
      (N     : Node_Id;
@@ -219,140 +237,178 @@ package body Exp_Attr is
    -------------------------
 
    function Build_Array_VS_Func
-     (A_Type : Entity_Id;
-      Nod    : Node_Id) return Entity_Id
+     (Attr       : Node_Id;
+      Formal_Typ : Entity_Id;
+      Array_Typ  : Entity_Id;
+      Comp_Typ   : Entity_Id) return Entity_Id
    is
-      Loc        : constant Source_Ptr := Sloc (Nod);
-      Func_Id    : constant Entity_Id  := Make_Temporary (Loc, 'V');
-      Comp_Type  : constant Entity_Id  := Component_Type (A_Type);
-      Body_Stmts : List_Id;
-      Index_List : List_Id;
-      Formals    : List_Id;
+      Loc : constant Source_Ptr := Sloc (Attr);
 
-      function Test_Component return List_Id;
-      --  Create one statement to test validity of one component designated by
-      --  a full set of indexes. Returns statement list containing test.
+      function Validate_Component
+        (Obj_Id  : Entity_Id;
+         Indexes : List_Id) return Node_Id;
+      --  Process a single component denoted by indexes Indexes. Obj_Id denotes
+      --  the entity of the validation parameter. Return the check associated
+      --  with the component.
 
-      function Test_One_Dimension (N : Int) return List_Id;
-      --  Create loop to test one dimension of the array. The single statement
-      --  in the loop body tests the inner dimensions if any, or else the
-      --  single component. Note that this procedure is called recursively,
-      --  with N being the dimension to be initialized. A call with N greater
-      --  than the number of dimensions simply generates the component test,
-      --  terminating the recursion. Returns statement list containing tests.
+      function Validate_Dimension
+        (Obj_Id  : Entity_Id;
+         Dim     : Int;
+         Indexes : List_Id) return Node_Id;
+      --  Process dimension Dim of the array type. Obj_Id denotes the entity
+      --  of the validation parameter. Indexes is a list where each dimension
+      --  deposits its loop variable, which will later identify a component.
+      --  Return the loop associated with the current dimension.
 
-      --------------------
-      -- Test_Component --
-      --------------------
+      ------------------------
+      -- Validate_Component --
+      ------------------------
 
-      function Test_Component return List_Id is
-         Comp : Node_Id;
-         Anam : Name_Id;
+      function Validate_Component
+        (Obj_Id  : Entity_Id;
+         Indexes : List_Id) return Node_Id
+      is
+         Attr_Nam : Name_Id;
 
       begin
-         Comp :=
-           Make_Indexed_Component (Loc,
-             Prefix      => Make_Identifier (Loc, Name_uA),
-             Expressions => Index_List);
-
-         if Is_Scalar_Type (Comp_Type) then
-            Anam := Name_Valid;
+         if Is_Scalar_Type (Comp_Typ) then
+            Attr_Nam := Name_Valid;
          else
-            Anam := Name_Valid_Scalars;
+            Attr_Nam := Name_Valid_Scalars;
          end if;
 
-         return New_List (
+         --  Generate:
+         --    if not Array_Typ (Obj_Id) (Indexes)'Valid[_Scalars] then
+         --       return False;
+         --    end if;
+
+         return
            Make_If_Statement (Loc,
              Condition =>
                Make_Op_Not (Loc,
                  Right_Opnd =>
                    Make_Attribute_Reference (Loc,
-                     Attribute_Name => Anam,
-                     Prefix         => Comp)),
+                     Prefix         =>
+                       Make_Indexed_Component (Loc,
+                         Prefix      =>
+                           Unchecked_Convert_To (Array_Typ,
+                             New_Occurrence_Of (Obj_Id, Loc)),
+                         Expressions => Indexes),
+                     Attribute_Name => Attr_Nam)),
+
              Then_Statements => New_List (
                Make_Simple_Return_Statement (Loc,
-                 Expression => New_Occurrence_Of (Standard_False, Loc)))));
-      end Test_Component;
+                 Expression => New_Occurrence_Of (Standard_False, Loc))));
+      end Validate_Component;
 
       ------------------------
-      -- Test_One_Dimension --
+      -- Validate_Dimension --
       ------------------------
 
-      function Test_One_Dimension (N : Int) return List_Id is
+      function Validate_Dimension
+        (Obj_Id  : Entity_Id;
+         Dim     : Int;
+         Indexes : List_Id) return Node_Id
+      is
          Index : Entity_Id;
 
       begin
-         --  If all dimensions dealt with, we simply test the component
+         --  Validate the component once all dimensions have produced their
+         --  individual loops.
 
-         if N > Number_Dimensions (A_Type) then
-            return Test_Component;
+         if Dim > Number_Dimensions (Array_Typ) then
+            return Validate_Component (Obj_Id, Indexes);
 
-         --  Here we generate the required loop
+         --  Process the current dimension
 
          else
             Index :=
-              Make_Defining_Identifier (Loc, New_External_Name ('J', N));
+              Make_Defining_Identifier (Loc, New_External_Name ('J', Dim));
 
-            Append (New_Occurrence_Of (Index, Loc), Index_List);
+            Append_To (Indexes, New_Occurrence_Of (Index, Loc));
 
-            return New_List (
-              Make_Implicit_Loop_Statement (Nod,
-                Identifier => Empty,
+            --  Generate:
+            --    for J1 in Array_Typ (Obj_Id)'Range (1) loop
+            --       for JN in Array_Typ (Obj_Id)'Range (N) loop
+            --          if not Array_Typ (Obj_Id) (Indexes)'Valid[_Scalars]
+            --          then
+            --             return False;
+            --          end if;
+            --       end loop;
+            --    end loop;
+
+            return
+              Make_Implicit_Loop_Statement (Attr,
+                Identifier       => Empty,
                 Iteration_Scheme =>
                   Make_Iteration_Scheme (Loc,
                     Loop_Parameter_Specification =>
                       Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier => Index,
+                        Defining_Identifier         => Index,
                         Discrete_Subtype_Definition =>
                           Make_Attribute_Reference (Loc,
-                            Prefix => Make_Identifier (Loc, Name_uA),
+                            Prefix          =>
+                              Unchecked_Convert_To (Array_Typ,
+                                New_Occurrence_Of (Obj_Id, Loc)),
                             Attribute_Name  => Name_Range,
                             Expressions     => New_List (
-                              Make_Integer_Literal (Loc, N))))),
-                Statements =>  Test_One_Dimension (N + 1)),
-              Make_Simple_Return_Statement (Loc,
-                Expression => New_Occurrence_Of (Standard_True, Loc)));
+                              Make_Integer_Literal (Loc, Dim))))),
+                Statements       => New_List (
+                  Validate_Dimension (Obj_Id, Dim + 1, Indexes)));
          end if;
-      end Test_One_Dimension;
+      end Validate_Dimension;
+
+      --  Local variables
+
+      Func_Id : constant Entity_Id := Make_Temporary (Loc, 'V');
+      Indexes : constant List_Id   := New_List;
+      Obj_Id  : constant Entity_Id := Make_Temporary (Loc, 'A');
+      Stmts   : List_Id;
 
    --  Start of processing for Build_Array_VS_Func
 
    begin
-      Index_List := New_List;
-      Body_Stmts := Test_One_Dimension (1);
+      Stmts := New_List (Validate_Dimension (Obj_Id, 1, Indexes));
 
-      --  Parameter is always (A : A_Typ)
+      --  Generate:
+      --    return True;
 
-      Formals := New_List (
-        Make_Parameter_Specification (Loc,
-          Defining_Identifier => Make_Defining_Identifier (Loc, Name_uA),
-          In_Present          => True,
-          Out_Present         => False,
-          Parameter_Type      => New_Occurrence_Of (A_Type, Loc)));
+      Append_To (Stmts,
+        Make_Simple_Return_Statement (Loc,
+          Expression => New_Occurrence_Of (Standard_True, Loc)));
 
-      --  Build body
+      --  Generate:
+      --    function Func_Id (Obj_Id : Formal_Typ) return Boolean is
+      --    begin
+      --       Stmts
+      --    end Func_Id;
 
       Set_Ekind       (Func_Id, E_Function);
       Set_Is_Internal (Func_Id);
-
-      Insert_Action (Nod,
-        Make_Subprogram_Body (Loc,
-          Specification              =>
-            Make_Function_Specification (Loc,
-              Defining_Unit_Name       => Func_Id,
-              Parameter_Specifications => Formals,
-                Result_Definition        =>
-                  New_Occurrence_Of (Standard_Boolean, Loc)),
-          Declarations               => New_List,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => Body_Stmts)));
+      Set_Is_Pure     (Func_Id);
 
       if not Debug_Generated_Code then
          Set_Debug_Info_Off (Func_Id);
       end if;
 
-      Set_Is_Pure (Func_Id);
+      Insert_Action (Attr,
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Make_Function_Specification (Loc,
+              Defining_Unit_Name       => Func_Id,
+              Parameter_Specifications => New_List (
+                Make_Parameter_Specification (Loc,
+                  Defining_Identifier => Obj_Id,
+                  In_Present          => True,
+                  Out_Present         => False,
+                  Parameter_Type      => New_Occurrence_Of (Formal_Typ, Loc))),
+              Result_Definition        =>
+                New_Occurrence_Of (Standard_Boolean, Loc)),
+          Declarations               => New_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => Stmts)));
+
       return Func_Id;
    end Build_Array_VS_Func;
 
@@ -379,281 +435,394 @@ package body Exp_Attr is
    -- Build_Record_VS_Func --
    --------------------------
 
-   --  Generates:
-
-   --    function _Valid_Scalars (X : T) return Boolean is
-   --    begin
-   --       --  Check discriminants
-
-   --       if not X.D1'Valid_Scalars or else
-   --          not X.D2'Valid_Scalars or else
-   --         ...
-   --       then
-   --          return False;
-   --       end if;
-
-   --       --  Check components
-
-   --       if not X.C1'Valid_Scalars or else
-   --          not X.C2'Valid_Scalars or else
-   --          ...
-   --       then
-   --          return False;
-   --       end if;
-
-   --       --  Check variant part
-
-   --       case X.D1 is
-   --          when V1 =>
-   --             if not X.C2'Valid_Scalars or else
-   --                not X.C3'Valid_Scalars or else
-   --               ...
-   --             then
-   --                return False;
-   --             end if;
-   --          ...
-   --          when Vn =>
-   --             if not X.Cn'Valid_Scalars or else
-   --               ...
-   --             then
-   --                return False;
-   --             end if;
-   --       end case;
-
-   --       return True;
-   --    end _Valid_Scalars;
-
-   --  If the record type is an unchecked union, we can only check components
-   --  in the invariant part, given that there are no discriminant values to
-   --  select a variant.
-
    function Build_Record_VS_Func
-     (R_Type : Entity_Id;
-      Nod    : Node_Id) return Entity_Id
+     (Attr       : Node_Id;
+      Formal_Typ : Entity_Id;
+      Rec_Typ    : Entity_Id) return Entity_Id
    is
-      Loc     : constant Source_Ptr := Sloc (R_Type);
-      Func_Id : constant Entity_Id  := Make_Temporary (Loc, 'V');
-      X       : constant Entity_Id  := Make_Defining_Identifier (Loc, Name_X);
+      --  NOTE: The logic of Build_Record_VS_Func is intentionally passive.
+      --  It generates code only when there are components, discriminants,
+      --  or variant parts to validate.
 
-      function Make_VS_Case
-        (E      : Entity_Id;
-         CL     : Node_Id;
-         Discrs : Elist_Id := New_Elmt_List) return List_Id;
-      --  Building block for variant valid scalars. Given a Component_List node
-      --  CL, it generates an 'if' followed by a 'case' statement that compares
-      --  all components of local temporaries named X and Y (that are declared
-      --  as formals at some upper level). E provides the Sloc to be used for
-      --  the generated code.
+      --  NOTE: The routines within Build_Record_VS_Func are intentionally
+      --  unnested to avoid deep indentation of code.
 
-      function Make_VS_If
-        (E : Entity_Id;
-         L : List_Id) return Node_Id;
-      --  Building block for variant validate scalars. Given the list, L, of
-      --  components (or discriminants) L, it generates a return statement that
-      --  compares all components of local temporaries named X and Y (that are
-      --  declared as formals at some upper level). E provides the Sloc to be
-      --  used for the generated code.
+      Loc : constant Source_Ptr := Sloc (Attr);
 
-      ------------------
-      -- Make_VS_Case --
-      ------------------
+      procedure Validate_Component_List
+        (Obj_Id    : Entity_Id;
+         Comp_List : Node_Id;
+         Stmts     : in out List_Id);
+      --  Process all components and variant parts of component list Comp_List.
+      --  Obj_Id denotes the entity of the validation parameter. All new code
+      --  is added to list Stmts.
 
-      --  <Make_VS_If on shared components>
+      procedure Validate_Field
+        (Obj_Id : Entity_Id;
+         Field  : Node_Id;
+         Cond   : in out Node_Id);
+      --  Process component declaration or discriminant specification Field.
+      --  Obj_Id denotes the entity of the validation parameter. Cond denotes
+      --  an "or else" conditional expression which contains the new code (if
+      --  any).
 
-      --  case X.D1 is
-      --     when V1 => <Make_VS_Case> on subcomponents
-      --     ...
-      --     when Vn => <Make_VS_Case> on subcomponents
-      --  end case;
+      procedure Validate_Fields
+        (Obj_Id : Entity_Id;
+         Fields : List_Id;
+         Stmts  : in out List_Id);
+      --  Process component declarations or discriminant specifications in list
+      --  Fields. Obj_Id denotes the entity of the validation parameter. All
+      --  new code is added to list Stmts.
 
-      function Make_VS_Case
-        (E      : Entity_Id;
-         CL     : Node_Id;
-         Discrs : Elist_Id := New_Elmt_List) return List_Id
+      procedure Validate_Variant
+        (Obj_Id : Entity_Id;
+         Var    : Node_Id;
+         Alts   : in out List_Id);
+      --  Process variant Var. Obj_Id denotes the entity of the validation
+      --  parameter. Alts denotes a list of case statement alternatives which
+      --  contains the new code (if any).
+
+      procedure Validate_Variant_Part
+        (Obj_Id   : Entity_Id;
+         Var_Part : Node_Id;
+         Stmts    : in out List_Id);
+      --  Process variant part Var_Part. Obj_Id denotes the entity of the
+      --  validation parameter. All new code is added to list Stmts.
+
+      -----------------------------
+      -- Validate_Component_List --
+      -----------------------------
+
+      procedure Validate_Component_List
+        (Obj_Id    : Entity_Id;
+         Comp_List : Node_Id;
+         Stmts     : in out List_Id)
       is
-         Loc      : constant Source_Ptr := Sloc (E);
-         Result   : constant List_Id    := New_List;
-         Variant  : Node_Id;
-         Alt_List : List_Id;
+         Var_Part : constant Node_Id := Variant_Part (Comp_List);
 
       begin
-         Append_To (Result, Make_VS_If (E, Component_Items (CL)));
+         --  Validate all components
 
-         if No (Variant_Part (CL))
-           or else Is_Unchecked_Union (R_Type)
+         Validate_Fields
+           (Obj_Id => Obj_Id,
+            Fields => Component_Items (Comp_List),
+            Stmts  => Stmts);
+
+         --  Validate the variant part
+
+         if Present (Var_Part) then
+            Validate_Variant_Part
+              (Obj_Id   => Obj_Id,
+               Var_Part => Var_Part,
+               Stmts    => Stmts);
+         end if;
+      end Validate_Component_List;
+
+      --------------------
+      -- Validate_Field --
+      --------------------
+
+      procedure Validate_Field
+        (Obj_Id : Entity_Id;
+         Field  : Node_Id;
+         Cond   : in out Node_Id)
+      is
+         Field_Id  : constant Entity_Id := Defining_Entity (Field);
+         Field_Nam : constant Name_Id   := Chars (Field_Id);
+         Field_Typ : constant Entity_Id := Validated_View (Etype (Field_Id));
+         Attr_Nam  : Name_Id;
+
+      begin
+         --  Do not process internally-generated fields. Note that checking for
+         --  Comes_From_Source is not correct because this will eliminate the
+         --  components within the corresponding record of a protected type.
+
+         if Nam_In (Field_Nam, Name_uObject,
+                               Name_uParent,
+                               Name_uTag)
          then
-            return Result;
+            null;
+
+         --  Do not process fields without any scalar components
+
+         elsif not Scalar_Part_Present (Field_Typ) then
+            null;
+
+         --  Otherwise the field needs to be validated. Use Make_Identifier
+         --  rather than New_Occurrence_Of to identify the field because the
+         --  wrong entity may be picked up when private types are involved.
+
+         --  Generate:
+         --    [or else] not Rec_Typ (Obj_Id).Item_Nam'Valid[_Scalars]
+
+         else
+            if Is_Scalar_Type (Field_Typ) then
+               Attr_Nam := Name_Valid;
+            else
+               Attr_Nam := Name_Valid_Scalars;
+            end if;
+
+            Evolve_Or_Else (Cond,
+              Make_Op_Not (Loc,
+                Right_Opnd =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix         =>
+                      Make_Selected_Component (Loc,
+                        Prefix        =>
+                          Unchecked_Convert_To (Rec_Typ,
+                            New_Occurrence_Of (Obj_Id, Loc)),
+                        Selector_Name => Make_Identifier (Loc, Field_Nam)),
+                    Attribute_Name => Attr_Nam)));
          end if;
+      end Validate_Field;
 
-         Variant := First_Non_Pragma (Variants (Variant_Part (CL)));
+      ---------------------
+      -- Validate_Fields --
+      ---------------------
 
-         if No (Variant) then
-            return Result;
-         end if;
+      procedure Validate_Fields
+        (Obj_Id : Entity_Id;
+         Fields : List_Id;
+         Stmts  : in out List_Id)
+      is
+         Cond  : Node_Id;
+         Field : Node_Id;
 
-         Alt_List := New_List;
-         while Present (Variant) loop
-            Append_To (Alt_List,
-              Make_Case_Statement_Alternative (Loc,
-                Discrete_Choices => New_Copy_List (Discrete_Choices (Variant)),
-                Statements       =>
-                  Make_VS_Case (E, Component_List (Variant), Discrs)));
-            Next_Non_Pragma (Variant);
+      begin
+         --  Assume that none of the fields are eligible for verification
+
+         Cond := Empty;
+
+         --  Validate all fields
+
+         Field := First_Non_Pragma (Fields);
+         while Present (Field) loop
+            Validate_Field
+              (Obj_Id => Obj_Id,
+               Field  => Field,
+               Cond   => Cond);
+
+            Next_Non_Pragma (Field);
          end loop;
 
-         Append_To (Result,
+         --  Generate:
+         --    if        not Rec_Typ (Obj_Id).Item_Nam_1'Valid[_Scalars]
+         --      or else not Rec_Typ (Obj_Id).Item_Nam_N'Valid[_Scalars]
+         --    then
+         --       return False;
+         --    end if;
+
+         if Present (Cond) then
+            Append_New_To (Stmts,
+              Make_Implicit_If_Statement (Attr,
+                Condition       => Cond,
+                Then_Statements => New_List (
+                  Make_Simple_Return_Statement (Loc,
+                    Expression => New_Occurrence_Of (Standard_False, Loc)))));
+         end if;
+      end Validate_Fields;
+
+      ----------------------
+      -- Validate_Variant --
+      ----------------------
+
+      procedure Validate_Variant
+        (Obj_Id : Entity_Id;
+         Var    : Node_Id;
+         Alts   : in out List_Id)
+      is
+         Stmts : List_Id;
+
+      begin
+         --  Assume that none of the components and variants are eligible for
+         --  verification.
+
+         Stmts := No_List;
+
+         --  Validate componants
+
+         Validate_Component_List
+           (Obj_Id    => Obj_Id,
+            Comp_List => Component_List (Var),
+            Stmts     => Stmts);
+
+         --  Generate a null statement in case none of the components were
+         --  verified because this will otherwise eliminate an alternative
+         --  from the variant case statement and render the generated code
+         --  illegal.
+
+         if No (Stmts) then
+            Append_New_To (Stmts, Make_Null_Statement (Loc));
+         end if;
+
+         --  Generate:
+         --    when Discrete_Choices =>
+         --       Stmts
+
+         Append_New_To (Alts,
+           Make_Case_Statement_Alternative (Loc,
+             Discrete_Choices =>
+               New_Copy_List_Tree (Discrete_Choices (Var)),
+             Statements       => Stmts));
+      end Validate_Variant;
+
+      ---------------------------
+      -- Validate_Variant_Part --
+      ---------------------------
+
+      procedure Validate_Variant_Part
+        (Obj_Id   : Entity_Id;
+         Var_Part : Node_Id;
+         Stmts    : in out List_Id)
+      is
+         Vars : constant List_Id := Variants (Var_Part);
+         Alts : List_Id;
+         Var  : Node_Id;
+
+      begin
+         --  Assume that none of the variants are eligible for verification
+
+         Alts := No_List;
+
+         --  Validate variants
+
+         Var := First_Non_Pragma (Vars);
+         while Present (Var) loop
+            Validate_Variant
+              (Obj_Id => Obj_Id,
+               Var    => Var,
+               Alts   => Alts);
+
+            Next_Non_Pragma (Var);
+         end loop;
+
+         --  Even though individual variants may lack eligible components, the
+         --  alternatives must still be generated.
+
+         pragma Assert (Present (Alts));
+
+         --  Generate:
+         --    case Rec_Typ (Obj_Id).Discriminant is
+         --       when Discrete_Choices_1 =>
+         --          Stmts_1
+         --       when Discrete_Choices_N =>
+         --          Stmts_N
+         --    end case;
+
+         Append_New_To (Stmts,
            Make_Case_Statement (Loc,
              Expression   =>
                Make_Selected_Component (Loc,
-                 Prefix        => Make_Identifier (Loc, Name_X),
-                 Selector_Name => New_Copy (Name (Variant_Part (CL)))),
-             Alternatives => Alt_List));
-
-         return Result;
-      end Make_VS_Case;
-
-      ----------------
-      -- Make_VS_If --
-      ----------------
-
-      --  Generates:
-
-      --    if
-      --      not X.C1'Valid_Scalars
-      --        or else
-      --      not X.C2'Valid_Scalars
-      --        ...
-      --    then
-      --       return False;
-      --    end if;
-
-      --  or a null statement if the list L is empty
-
-      function Make_VS_If
-        (E : Entity_Id;
-         L : List_Id) return Node_Id
-      is
-         Loc        : constant Source_Ptr := Sloc (E);
-         C          : Node_Id;
-         Def_Id     : Entity_Id;
-         Field_Name : Name_Id;
-         Cond       : Node_Id;
-
-      begin
-         if No (L) then
-            return Make_Null_Statement (Loc);
-
-         else
-            Cond := Empty;
-
-            C := First_Non_Pragma (L);
-            while Present (C) loop
-               Def_Id := Defining_Identifier (C);
-               Field_Name := Chars (Def_Id);
-
-               --  The tags need not be checked since they will always be valid
-
-               --  Note also that in the following, we use Make_Identifier for
-               --  the component names. Use of New_Occurrence_Of to identify
-               --  the components would be incorrect because wrong entities for
-               --  discriminants could be picked up in the private type case.
-
-               --  Don't bother with abstract parent in interface case
-
-               if Field_Name = Name_uParent
-                 and then Is_Interface (Etype (Def_Id))
-               then
-                  null;
-
-               --  Don't bother with tag, always valid, and not scalar anyway
-
-               elsif Field_Name = Name_uTag then
-                  null;
-
-               elsif Ekind (Def_Id) = E_Discriminant
-                 and then Is_Unchecked_Union (R_Type)
-               then
-                  null;
-
-               --  Don't bother with component with no scalar components
-
-               elsif not Scalar_Part_Present (Etype (Def_Id)) then
-                  null;
-
-               --  Normal case, generate Valid_Scalars attribute reference
-
-               else
-                  Evolve_Or_Else (Cond,
-                    Make_Op_Not (Loc,
-                      Right_Opnd =>
-                        Make_Attribute_Reference (Loc,
-                          Prefix =>
-                            Make_Selected_Component (Loc,
-                              Prefix        =>
-                                Make_Identifier (Loc, Name_X),
-                              Selector_Name =>
-                                Make_Identifier (Loc, Field_Name)),
-                          Attribute_Name => Name_Valid_Scalars)));
-               end if;
-
-               Next_Non_Pragma (C);
-            end loop;
-
-            if No (Cond) then
-               return Make_Null_Statement (Loc);
-
-            else
-               return
-                 Make_Implicit_If_Statement (E,
-                   Condition       => Cond,
-                   Then_Statements => New_List (
-                     Make_Simple_Return_Statement (Loc,
-                       Expression =>
-                         New_Occurrence_Of (Standard_False, Loc))));
-            end if;
-         end if;
-      end Make_VS_If;
+                 Prefix        =>
+                   Unchecked_Convert_To (Rec_Typ,
+                     New_Occurrence_Of (Obj_Id, Loc)),
+                 Selector_Name => New_Copy_Tree (Name (Var_Part))),
+             Alternatives => Alts));
+      end Validate_Variant_Part;
 
       --  Local variables
 
-      Def    : constant Node_Id := Parent (R_Type);
-      Comps  : constant Node_Id := Component_List (Type_Definition (Def));
-      Stmts  : constant List_Id := New_List;
-      Pspecs : constant List_Id := New_List;
+      Func_Id  : constant Entity_Id := Make_Temporary (Loc, 'V');
+      Obj_Id   : constant Entity_Id := Make_Temporary (Loc, 'R');
+      Rec_Decl : constant Node_Id   := Declaration_Node (Rec_Typ);
+      Rec_Def  : constant Node_Id   := Type_Definition (Rec_Decl);
+      Stmts    : List_Id;
 
    --  Start of processing for Build_Record_VS_Func
 
    begin
-      Append_To (Pspecs,
-        Make_Parameter_Specification (Loc,
-          Defining_Identifier => X,
-          Parameter_Type      => New_Occurrence_Of (R_Type, Loc)));
+      --  The code generated by this routine is as follows:
+      --
+      --    function Func_Id (Obj_Id : Formal_Typ) return Boolean is
+      --    begin
+      --       if not        Rec_Typ (Obj_Id).Discriminant_1'Valid[_Scalars]
+      --         or else not Rec_Typ (Obj_Id).Discriminant_N'Valid[_Scalars]
+      --       then
+      --          return False;
+      --       end if;
+      --
+      --       if not        Rec_Typ (Obj_Id).Component_1'Valid[_Scalars]
+      --         or else not Rec_Typ (Obj_Id).Component_N'Valid[_Scalars]
+      --       then
+      --          return False;
+      --       end if;
+      --
+      --       case Discriminant_1 is
+      --          when Choice_1 =>
+      --             if not        Rec_Typ (Obj_Id).Component_1'Valid[_Scalars]
+      --               or else not Rec_Typ (Obj_Id).Component_N'Valid[_Scalars]
+      --             then
+      --                return False;
+      --             end if;
+      --
+      --             case Discriminant_N is
+      --                ...
+      --          when Choice_N =>
+      --             ...
+      --       end case;
+      --
+      --       return True;
+      --    end Func_Id;
 
-      Append_To (Stmts,
-        Make_VS_If (R_Type, Discriminant_Specifications (Def)));
-      Append_List_To (Stmts, Make_VS_Case (R_Type, Comps));
+      --  Assume that the record type lacks eligible components, discriminants,
+      --  and variant parts.
 
-      Append_To (Stmts,
+      Stmts := No_List;
+
+      --  Validate the discriminants
+
+      if not Is_Unchecked_Union (Rec_Typ) then
+         Validate_Fields
+           (Obj_Id => Obj_Id,
+            Fields => Discriminant_Specifications (Rec_Decl),
+            Stmts  => Stmts);
+      end if;
+
+      --  Validate the components and variant parts
+
+      Validate_Component_List
+        (Obj_Id    => Obj_Id,
+         Comp_List => Component_List (Rec_Def),
+         Stmts     => Stmts);
+
+      --  Generate:
+      --    return True;
+
+      Append_New_To (Stmts,
         Make_Simple_Return_Statement (Loc,
           Expression => New_Occurrence_Of (Standard_True, Loc)));
 
-      Insert_Action (Nod,
-        Make_Subprogram_Body (Loc,
-          Specification =>
-            Make_Function_Specification (Loc,
-              Defining_Unit_Name       => Func_Id,
-              Parameter_Specifications => Pspecs,
-              Result_Definition => New_Occurrence_Of (Standard_Boolean, Loc)),
-          Declarations               => New_List,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts)),
-        Suppress => Discriminant_Check);
+      --  Generate:
+      --    function Func_Id (Obj_Id : Formal_Typ) return Boolean is
+      --    begin
+      --       Stmts
+      --    end Func_Id;
+
+      Set_Ekind       (Func_Id, E_Function);
+      Set_Is_Internal (Func_Id);
+      Set_Is_Pure     (Func_Id);
 
       if not Debug_Generated_Code then
          Set_Debug_Info_Off (Func_Id);
       end if;
 
-      Set_Is_Pure (Func_Id);
+      Insert_Action (Attr,
+        Make_Subprogram_Body (Loc,
+          Specification =>
+            Make_Function_Specification (Loc,
+              Defining_Unit_Name       => Func_Id,
+              Parameter_Specifications => New_List (
+                Make_Parameter_Specification (Loc,
+                  Defining_Identifier => Obj_Id,
+                  Parameter_Type      => New_Occurrence_Of (Formal_Typ, Loc))),
+              Result_Definition        =>
+                New_Occurrence_Of (Standard_Boolean, Loc)),
+          Declarations               => New_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => Stmts)),
+        Suppress => Discriminant_Check);
+
       return Func_Id;
    end Build_Record_VS_Func;
 
@@ -1941,12 +2110,11 @@ package body Exp_Attr is
                            Next_Formal (Old_Formal);
                            exit when No (Old_Formal);
 
-                           Set_Next_Entity (New_Formal,
-                             New_Copy (Old_Formal));
-                           Next_Entity (New_Formal);
+                           Link_Entities (New_Formal, New_Copy (Old_Formal));
+                           Next_Entity   (New_Formal);
                         end loop;
 
-                        Set_Next_Entity (New_Formal, Empty);
+                        Unlink_Next_Entity (New_Formal);
                         Set_Last_Entity (Subp_Typ, Extra);
                      end if;
 
@@ -6501,12 +6669,11 @@ package body Exp_Attr is
 
       when Attribute_Valid => Valid : declare
          Btyp : Entity_Id := Base_Type (Ptyp);
-         Tst  : Node_Id;
 
          Save_Validity_Checks_On : constant Boolean := Validity_Checks_On;
          --  Save the validity checking mode. We always turn off validity
          --  checking during process of 'Valid since this is one place
-         --  where we do not want the implicit validity checks to intefere
+         --  where we do not want the implicit validity checks to interfere
          --  with the explicit validity check that the programmer is doing.
 
          function Make_Range_Test return Node_Id;
@@ -6564,6 +6731,10 @@ package body Exp_Attr is
                           Prefix         => New_Occurrence_Of (Ptyp, Loc),
                           Attribute_Name => Name_Last))));
          end Make_Range_Test;
+
+         --  Local variables
+
+         Tst : Node_Id;
 
       --  Start of processing for Attribute_Valid
 
@@ -6893,105 +7064,82 @@ package body Exp_Attr is
       -------------------
 
       when Attribute_Valid_Scalars => Valid_Scalars : declare
-         Ftyp : Entity_Id;
+         Val_Typ  : constant Entity_Id := Validated_View (Ptyp);
+         Comp_Typ : Entity_Id;
+         Expr     : Node_Id;
 
       begin
-         if Present (Underlying_Type (Ptyp)) then
-            Ftyp := Underlying_Type (Ptyp);
-         else
-            Ftyp := Ptyp;
-         end if;
+         --  Assume that the prefix does not need validation
 
-         --  Replace by True if no scalar parts
+         Expr := Empty;
 
-         if not Scalar_Part_Present (Ftyp) then
-            Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+         --  Attribute 'Valid_Scalars is not supported on private tagged types
 
-         --  For scalar types, Valid_Scalars is the same as Valid
+         if Is_Private_Type (Ptyp) and then Is_Tagged_Type (Ptyp) then
+            null;
 
-         elsif Is_Scalar_Type (Ftyp) then
-            Rewrite (N,
+         --  Attribute 'Valid_Scalars evaluates to True when the type lacks
+         --  scalars.
+
+         elsif not Scalar_Part_Present (Val_Typ) then
+            null;
+
+         --  Attribute 'Valid_Scalars is the same as attribute 'Valid when the
+         --  validated type is a scalar type. Generate:
+
+         --    Val_Typ (Pref)'Valid
+
+         elsif Is_Scalar_Type (Val_Typ) then
+            Expr :=
               Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Valid,
-                Prefix         => Pref));
+                Prefix         =>
+                  Unchecked_Convert_To (Val_Typ, New_Copy_Tree (Pref)),
+                Attribute_Name => Name_Valid);
 
-         --  For array types, we construct a function that determines if there
-         --  are any non-valid scalar subcomponents, and call the function.
-         --  We only do this for arrays whose component type needs checking
+         --  Validate the scalar components of an array by iterating over all
+         --  dimensions of the array while checking individual components.
 
-         elsif Is_Array_Type (Ftyp)
-           and then Scalar_Part_Present (Component_Type (Ftyp))
-         then
-            Rewrite (N,
+         elsif Is_Array_Type (Val_Typ) then
+            Comp_Typ := Validated_View (Component_Type (Val_Typ));
+
+            if Scalar_Part_Present (Comp_Typ) then
+               Expr :=
+                 Make_Function_Call (Loc,
+                   Name                   =>
+                     New_Occurrence_Of
+                       (Build_Array_VS_Func
+                         (Attr       => N,
+                          Formal_Typ => Ptyp,
+                          Array_Typ  => Val_Typ,
+                          Comp_Typ   => Comp_Typ),
+                       Loc),
+                   Parameter_Associations => New_List (Pref));
+            end if;
+
+         --  Validate the scalar components, discriminants of a record type by
+         --  examining the structure of a record type.
+
+         elsif Is_Record_Type (Val_Typ) then
+            Expr :=
               Make_Function_Call (Loc,
                 Name                   =>
-                  New_Occurrence_Of (Build_Array_VS_Func (Ftyp, N), Loc),
-                Parameter_Associations => New_List (Pref)));
-
-         --  For record types, we construct a function that determines if there
-         --  are any non-valid scalar subcomponents, and call the function.
-
-         elsif Is_Record_Type (Ftyp)
-           and then Present (Declaration_Node (Ftyp))
-           and then Nkind (Type_Definition (Declaration_Node (Ftyp))) =
-                      N_Record_Definition
-         then
-            Rewrite (N,
-              Make_Function_Call (Loc,
-                Name                   =>
-                  New_Occurrence_Of (Build_Record_VS_Func (Ftyp, N), Loc),
-                Parameter_Associations => New_List (Pref)));
-
-         --  Other record types or types with discriminants
-
-         elsif Is_Record_Type (Ftyp) or else Has_Discriminants (Ptyp) then
-
-            --  Build expression with list of equality tests
-
-            declare
-               C : Entity_Id;
-               X : Node_Id;
-               A : Name_Id;
-
-            begin
-               X := New_Occurrence_Of (Standard_True, Loc);
-               C := First_Component_Or_Discriminant (Ptyp);
-               while Present (C) loop
-                  if not Scalar_Part_Present (Etype (C)) then
-                     goto Continue;
-                  elsif Is_Scalar_Type (Etype (C)) then
-                     A := Name_Valid;
-                  else
-                     A := Name_Valid_Scalars;
-                  end if;
-
-                  X :=
-                    Make_And_Then (Loc,
-                      Left_Opnd   => X,
-                      Right_Opnd  =>
-                        Make_Attribute_Reference (Loc,
-                          Attribute_Name => A,
-                          Prefix         =>
-                            Make_Selected_Component (Loc,
-                              Prefix        =>
-                                Duplicate_Subexpr (Pref, Name_Req => True),
-                              Selector_Name =>
-                                New_Occurrence_Of (C, Loc))));
-               <<Continue>>
-                  Next_Component_Or_Discriminant (C);
-               end loop;
-
-               Rewrite (N, X);
-            end;
-
-         --  For all other types, result is True
-
-         else
-            Rewrite (N, New_Occurrence_Of (Standard_Boolean, Loc));
+                  New_Occurrence_Of
+                    (Build_Record_VS_Func
+                      (Attr       => N,
+                       Formal_Typ => Ptyp,
+                       Rec_Typ    => Val_Typ),
+                    Loc),
+                Parameter_Associations => New_List (Pref));
          end if;
 
-         --  Result is always boolean, but never static
+         --  Default the attribute to True when the type of the prefix does not
+         --  need validation.
 
+         if No (Expr) then
+            Expr := New_Occurrence_Of (Standard_True, Loc);
+         end if;
+
+         Rewrite (N, Expr);
          Analyze_And_Resolve (N, Standard_Boolean);
          Set_Is_Static_Expression (N, False);
       end Valid_Scalars;

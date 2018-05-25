@@ -101,8 +101,9 @@ package body Sem is
    --  Ghost mode.
 
    procedure Analyze (N : Node_Id) is
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
    begin
       Debug_A_Entry ("analyzing  ", N);
@@ -515,12 +516,6 @@ package body Sem is
          when N_Record_Representation_Clause =>
             Analyze_Record_Representation_Clause (N);
 
-         when N_Reduction_Expression =>
-            Analyze_Reduction_Expression (N);
-
-         when N_Reduction_Expression_Parameter =>
-            Analyze_Reduction_Expression_Parameter (N);
-
          when N_Reference =>
             Analyze_Reference (N);
 
@@ -809,7 +804,7 @@ package body Sem is
          Expand_SPARK_Potential_Renaming (N);
       end if;
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze;
 
    --  Version with check(s) suppressed
@@ -1357,14 +1352,16 @@ package body Sem is
       --  the Ghost mode.
 
       procedure Do_Analyze is
-         Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+         Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+         Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+         --  Save the Ghost-related attributes to restore on exit
 
          --  Generally style checks are preserved across compilations, with
          --  one exception: s-oscons.ads, which allows arbitrary long lines
          --  unconditionally, and has no restore mechanism, because it is
          --  intended as a lowest-level Pure package.
 
-         Save_Max_Line : constant Int := Style_Max_Line_Length;
+         Saved_ML : constant Int := Style_Max_Line_Length;
 
          List : Elist_Id;
 
@@ -1374,7 +1371,8 @@ package body Sem is
 
          --  Set up a clean environment before analyzing
 
-         Install_Ghost_Mode (None);
+         Install_Ghost_Region (None, Empty);
+
          Outer_Generic_Scope := Empty;
          Scope_Suppress      := Suppress_Options;
          Scope_Stack.Table
@@ -1395,9 +1393,9 @@ package body Sem is
          --  Then pop entry for Standard, and pop implicit types
 
          Pop_Scope;
-         Restore_Scope_Stack (List);
-         Restore_Ghost_Mode (Save_Ghost_Mode);
-         Style_Max_Line_Length := Save_Max_Line;
+         Restore_Scope_Stack  (List);
+         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Style_Max_Line_Length := Saved_ML;
       end Do_Analyze;
 
       --  Local variables

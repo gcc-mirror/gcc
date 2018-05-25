@@ -66,10 +66,6 @@ maxloc1_16_s4 (gfc_array_i16 * const restrict retarray,
   index_type dim;
   int continue_loop;
 
-#ifdef HAVE_BACK_ARG
-  assert(back == 0);
-#endif
-
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
   dim = (*pdim) - 1;
@@ -165,8 +161,8 @@ maxloc1_16_s4 (gfc_array_i16 * const restrict retarray,
       {
 
 	const GFC_INTEGER_4 *maxval;
-	maxval = base;
-	result = 1;
+	maxval = NULL;
+	result = 0;
 	if (len <= 0)
 	  *dest = 0;
 	else
@@ -174,7 +170,8 @@ maxloc1_16_s4 (gfc_array_i16 * const restrict retarray,
 	    for (n = 0; n < len; n++, src += delta)
 	      {
 
-		if (compare_fcn (src, maxval, string_len) > 0)
+		if (maxval == NULL || (back ? compare_fcn (src, maxval, string_len) >= 0 :
+		   	      	      	      compare_fcn (src, maxval, string_len) > 0))
 		  {
 		    maxval = src;
 		    result = (GFC_INTEGER_16)n + 1;
@@ -244,9 +241,6 @@ mmaxloc1_16_s4 (gfc_array_i16 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
-#ifdef HAVE_BACK_ARG
-  assert (back == 0);
-#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -377,7 +371,8 @@ mmaxloc1_16_s4 (gfc_array_i16 * const restrict retarray,
 	    }
 	    for (; n < len; n++, src += delta, msrc += mdelta)
 	      {
-		if (*msrc && compare_fcn (src, maxval, string_len) > 0)
+		if (*msrc && (back ? compare_fcn (src, maxval, string_len) >= 0 :
+		   	     	     compare_fcn (src, maxval, string_len) > 0))
 		  {
 		    maxval = src;
 		    result = (GFC_INTEGER_16)n + 1;

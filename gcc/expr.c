@@ -8853,67 +8853,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
       return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1, target, unsignedp));
 
-    case FMA_EXPR:
-      {
-	optab opt = fma_optab;
-	gimple *def0, *def2;
-
-	/* If there is no insn for FMA, emit it as __builtin_fma{,f,l}
-	   call.  */
-	if (optab_handler (fma_optab, mode) == CODE_FOR_nothing)
-	  {
-	    tree fn = mathfn_built_in (TREE_TYPE (treeop0), BUILT_IN_FMA);
-	    tree call_expr;
-
-	    gcc_assert (fn != NULL_TREE);
-	    call_expr = build_call_expr (fn, 3, treeop0, treeop1, treeop2);
-	    return expand_builtin (call_expr, target, subtarget, mode, false);
-	  }
-
-	def0 = get_def_for_expr (treeop0, NEGATE_EXPR);
-	/* The multiplication is commutative - look at its 2nd operand
-	   if the first isn't fed by a negate.  */
-	if (!def0)
-	  {
-	    def0 = get_def_for_expr (treeop1, NEGATE_EXPR);
-	    /* Swap operands if the 2nd operand is fed by a negate.  */
-	    if (def0)
-	      std::swap (treeop0, treeop1);
-	  }
-	def2 = get_def_for_expr (treeop2, NEGATE_EXPR);
-
-	op0 = op2 = NULL;
-
-	if (def0 && def2
-	    && optab_handler (fnms_optab, mode) != CODE_FOR_nothing)
-	  {
-	    opt = fnms_optab;
-	    op0 = expand_normal (gimple_assign_rhs1 (def0));
-	    op2 = expand_normal (gimple_assign_rhs1 (def2));
-	  }
-	else if (def0
-		 && optab_handler (fnma_optab, mode) != CODE_FOR_nothing)
-	  {
-	    opt = fnma_optab;
-	    op0 = expand_normal (gimple_assign_rhs1 (def0));
-	  }
-	else if (def2
-		 && optab_handler (fms_optab, mode) != CODE_FOR_nothing)
-	  {
-	    opt = fms_optab;
-	    op2 = expand_normal (gimple_assign_rhs1 (def2));
-	  }
-
-	if (op0 == NULL)
-	  op0 = expand_expr (treeop0, subtarget, VOIDmode, EXPAND_NORMAL);
-	if (op2 == NULL)
-	  op2 = expand_normal (treeop2);
-	op1 = expand_normal (treeop1);
-
-	return expand_ternary_op (TYPE_MODE (type), opt,
-				  op0, op1, op2, target, 0);
-      }
-
     case MULT_EXPR:
       /* If this is a fixed-point operation, then we cannot use the code
 	 below because "expand_mult" doesn't support sat/no-sat fixed-point
@@ -11782,11 +11721,26 @@ do_tablejump (rtx index, machine_mode mode, rtx range, rtx table_label,
     emit_cmp_and_jump_insns (index, range, GTU, NULL_RTX, mode, 1,
 			     default_label, default_probability);
 
-
   /* If index is in range, it must fit in Pmode.
      Convert to Pmode so we can index with it.  */
   if (mode != Pmode)
-    index = convert_to_mode (Pmode, index, 1);
+    {
+      unsigned int width;
+
+      /* We know the value of INDEX is between 0 and RANGE.  If we have a
+	 sign-extended subreg, and RANGE does not have the sign bit set, then
+	 we have a value that is valid for both sign and zero extension.  In
+	 this case, we get better code if we sign extend.  */
+      if (GET_CODE (index) == SUBREG
+	  && SUBREG_PROMOTED_VAR_P (index)
+	  && SUBREG_PROMOTED_SIGNED_P (index)
+	  && ((width = GET_MODE_PRECISION (as_a <scalar_int_mode> (mode)))
+	      <= HOST_BITS_PER_WIDE_INT)
+	  && ! (UINTVAL (range) & (HOST_WIDE_INT_1U << (width - 1))))
+	index = convert_to_mode (Pmode, index, 0);
+      else
+	index = convert_to_mode (Pmode, index, 1);
+    }
 
   /* Don't let a MEM slip through, because then INDEX that comes
      out of PIC_CASE_VECTOR_ADDRESS won't be a valid address,

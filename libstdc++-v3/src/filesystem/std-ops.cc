@@ -84,13 +84,20 @@ fs::absolute(const path& p)
 fs::path
 fs::absolute(const path& p, error_code& ec)
 {
+  path ret;
+  if (p.empty())
+    {
+      ec = make_error_code(std::errc::no_such_file_or_directory);
+      return ret;
+    }
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
   ec = std::make_error_code(errc::not_supported);
-  return {};
 #else
   ec.clear();
-  return current_path() / p;
+  ret = current_path();
+  ret /= p;
 #endif
+  return ret;
 }
 
 namespace
@@ -1378,10 +1385,11 @@ fs::space(const path& p, error_code& ec) noexcept
       ec.assign(errno, std::generic_category());
   else
     {
+      uintmax_t fragment_size = f.f_frsize;
       info = space_info{
-	f.f_blocks * f.f_frsize,
-	f.f_bfree * f.f_frsize,
-	f.f_bavail * f.f_frsize
+	f.f_blocks * fragment_size,
+	f.f_bfree * fragment_size,
+	f.f_bavail * fragment_size
       };
       ec.clear();
     }
@@ -1512,7 +1520,8 @@ fs::weakly_canonical(const path& p)
       ++iter;
     }
   // canonicalize:
-  result = canonical(result);
+  if (!result.empty())
+    result = canonical(result);
   // append the non-existing elements:
   while (iter != end)
     result /= *iter++;
@@ -1550,7 +1559,7 @@ fs::weakly_canonical(const path& p, error_code& ec)
       ++iter;
     }
   // canonicalize:
-  if (!ec)
+  if (!ec && !result.empty())
     result = canonical(result, ec);
   if (ec)
     result.clear();

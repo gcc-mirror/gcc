@@ -364,6 +364,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : runtime_error(__what + ": " + error_code(__v, __ecat).message()),
       _M_code(__v, __ecat) { }
 
+#if __cplusplus >= 201103L
+    system_error (const system_error &) = default;
+    system_error &operator= (const system_error &) = default;
+#endif
+
     virtual ~system_error() noexcept;
 
     const error_code&

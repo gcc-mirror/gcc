@@ -1,3 +1,211 @@
+2018-05-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85839
+	* match.c (gfc_match_block_data): Call gfc_notify_std to warn about
+	an obsolescent feature in Fortran 2018.
+	(gfc_match_equivalence): Ditto.
+	* resolve.c (resolve_common_blocks): Ditto.
+	(gfc_resolve_forall): Ditto.
+	* symbol.c (gfc_define_st_label): Ditto.
+
+2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85543
+	* resolve.c (update_current_proc_array_outer_dependency): Avoid NULL
+	pointer dereference.
+
+2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85780
+	* resolve.c (resolve_fl_procedure): Avoid NULL dereference.
+
+2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85779
+	* decl.c (gfc_match_derived_decl): Fix NULL point dereference.
+
+2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85895
+	* resolve.c (resolve_sync): Resolve expression before checking for
+	an error.
+
+2018-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85841
+	* libgfortran.h: Remove the macros GFC_STD_F2008_TS and
+	GFC_STD_OPT_F08TS.
+	* error.c (notify_std_msg): Remove GFC_STD_F2008_TS.
+	* options.c (set_default_std_flags): Ditto.
+	(gfc_handle_option): Make -std=f2008ts an alias for -std=f2018.
+	* array.c (gfc_match_array_spec): Replace GFC_STD_F2008_TS by
+	GFC_STD_F2018.
+	* check.c (gfc_check_atomic, gfc_check_event_query,
+	gfc_check_c_f_pointer, gfc_check_c_f_procpointer, gfc_check_c_funloc,
+	gfc_check_c_loc, gfc_check_num_images, gfc_check_this_image): Ditto.
+	* decl.c (gfc_verify_c_interop_param, gfc_match_decl_type_spec): Ditto.
+	* intrinsic.c (add_functions, add_subroutines,
+	gfc_check_intrinsic_standard): Ditto.
+	* iso-c-binding.def: Ditto.
+	* iso-fortran-env.def: Ditto.
+	* match.c (gfc_match_event_post, gfc_match_event_wait,
+	gfc_match_fail_image, gfc_match_form_team, gfc_match_change_team,
+	gfc_match_end_team, gfc_match_sync_team): Ditto.
+	* gfortran.texi: Remove mention of -std=f2008ts.
+	Move TSs into F2018 section.
+	* invoke.texi: Update documentation of -std=f2008ts.
+
+2018-05-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85841
+	* libgfortran.h: New macros GFC_STD_OPT_*.
+	* error.c (notify_std_msg): New function.
+	(gfc_notify_std): Adjust such that it can handle combinations of
+	GFC_STD_* flags in the 'std' argument, not just a single one.
+	* match.c (match_arithmetic_if, gfc_match_if): Reject arithmetic if
+	in Fortran 2018.
+	(gfc_match_stopcode): Use GFC_STD_OPT_* macros.
+	* options.c (set_default_std_flags): Warn for F2018 deleted features
+	by default.
+	(gfc_handle_option): F2018 deleted features are allowed in earlier
+	standards.
+	* symbol.c (gfc_define_st_label, gfc_reference_st_label): Reject
+	nonblock do constructs in Fortran 2018.
+
+2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80657
+	* resolve.c (flag_fn_result_spec): Use the 'sym' argument to
+	test for self refs to the function result in the character len
+	expression. If a self reference is found, emit an error and
+	return true.
+	(resolve_fntype): Use the function symbol in the calls to the
+	above.
+
+2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/49636
+	* trans-array.c (gfc_get_array_span): Renamed from
+	'get_array_span'.
+	(gfc_conv_expr_descriptor): Change references to above.
+	* trans-array.h : Add prototype for 'gfc_get_array_span'.
+	* trans-intrinsic.c (gfc_conv_associated): Add pre and post
+	blocks for 'arg1'.
+	* trans-stmt.c (trans_associate_var): If the associate name is
+	a subref array pointer, use gfc_get_array_span for the span.
+
+2018-05-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82275
+	* match.c (gfc_match_type_spec): Go through the array ref and
+	decrement 'rank' for every dimension that is an element.
+
+2018-05-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82923
+	PR fortran/66694
+	PR fortran/82617
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Set the
+	charlen backend_decl of the rhs expr to ss->info->string_length
+	so that the value in the current scope is used.
+
+2018-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/63529
+	* gfortran.texi: Clarify documentation for Cray pointer and
+	assumed-sized array.
+
+2018-05-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85742
+	* trans-types.c (gfc_get_dtype_rank_type): Reorder evaluation
+	of 'size'. If the element type is a pointer use the size of the
+	TREE_TYPE of the type, unless it is VOID_TYPE. In this latter
+	case, set the size to zero.
+
+2018-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.h: Remove prototype.
+	* symbol.c (gfc_new_undo_checkpoint): Remove unused function.
+
+2018-05-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85542
+	* expr.c (check_inquiry): Avoid NULL pointer dereference.
+
+2018-05-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85687
+	* check.c (gfc_check_rank): Check that the argument is a data object.
+
+2018-05-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85521
+	* array.c (gfc_resolve_character_array_constructor): Substrings
+	with upper bound smaller than lower bound are zero length strings.
+
+2018-05-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/70870
+	* data.c (gfc_assign_data_value): Check that a data object does
+	not also have default initialization.
+
+2018-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR fortran/85735
+	* options.c (gfc_post_options): Set main_input_filename.
+
+2018-05-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* intrinsic.texi: Document BACK for MINLOC and MAXLOC.
+
+2018-05-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68846
+	PR fortran/70864
+	* resolve.c (get_temp_from_expr): The temporary must not have
+	dummy or intent attributes.
+
+2018-05-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* check.c (gfc_check_minmaxloc): Remove error for BACK not being
+	implemented.  Use gfc_logical_4_kind for BACK.
+	* simplify.c (min_max_choose): Add optional argument back_val.
+	Handle it.
+	(simplify_minmaxloc_to_scalar): Add argument back_val. Pass
+	back_val to min_max_choose.
+	(simplify_minmaxloc_to_nodim): Likewise.
+	(simplify_minmaxloc_to_array): Likewise.
+	(gfc_simplify_minmaxloc): Add argument back, handle it.
+	Pass back_val to specific simplification functions.
+	(gfc_simplify_minloc): Remove ATTRIBUTE_UNUSED from argument back,
+	pass it on to gfc_simplify_minmaxloc.
+	(gfc_simplify_maxloc): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Adjust
+	comment. If BACK is true, use greater or equal (or lesser or
+	equal) insteal of greater (or lesser). Mark the condition of
+	having found a value which exceeds the limit as unlikely.
+
+2018-05-07  Jeff Law  <law@redhat.comg>
+
+	* scanner.c (preprocessor_line): Call linemap_add after a line
+	directive that changes the current filename.
+
+2018-05-06  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/85507
+	* dependency.c (gfc_dep_resolver): Revert looking at coarray dimension
+	introduced by r259385.
+	* trans-intrinsic.c (conv_caf_send): Always report a dependency for
+	same variables in coarray assignments.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/82428
+	* f95-lang.c (DEF_GOACC_BUILTIN_ONLY): Define.
+
 2018-04-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85520

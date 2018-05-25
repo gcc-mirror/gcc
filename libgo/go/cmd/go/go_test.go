@@ -1034,7 +1034,6 @@ func TestGoInstallRebuildsStalePackagesInOtherGOPATH(t *testing.T) {
 }
 
 func TestGoInstallDetectsRemovedFiles(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not yet support package build IDs")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.parallel()
@@ -1104,7 +1103,6 @@ func TestGoInstallErrorOnCrossCompileToBin(t *testing.T) {
 }
 
 func TestGoInstallDetectsRemovedFilesInPackageMain(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not yet support package build IDs")
 	tooSlow(t)
 	tg := testgo(t)
 	defer tg.cleanup()
@@ -3223,7 +3221,6 @@ func TestGoGetInternalWildcard(t *testing.T) {
 }
 
 func TestGoVetWithExternalTests(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not have vet")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.makeTempdir()
@@ -3233,7 +3230,6 @@ func TestGoVetWithExternalTests(t *testing.T) {
 }
 
 func TestGoVetWithTags(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not have vet")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.makeTempdir()
@@ -3243,7 +3239,6 @@ func TestGoVetWithTags(t *testing.T) {
 }
 
 func TestGoVetWithFlagsOn(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not have vet")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.makeTempdir()
@@ -3253,7 +3248,6 @@ func TestGoVetWithFlagsOn(t *testing.T) {
 }
 
 func TestGoVetWithFlagsOff(t *testing.T) {
-	skipIfGccgo(t, "gccgo does not have vet")
 	tg := testgo(t)
 	defer tg.cleanup()
 	tg.makeTempdir()

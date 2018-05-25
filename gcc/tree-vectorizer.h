@@ -94,6 +94,7 @@ enum vect_reduction_type {
 struct stmt_info_for_cost {
   int count;
   enum vect_cost_for_stmt kind;
+  enum vect_cost_model_location where;
   gimple *stmt;
   int misalign;
 };
@@ -950,13 +951,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_SAME_ALIGN_REFS(S)      (S)->same_align_refs
 #define STMT_VINFO_SIMD_CLONE_INFO(S)	   (S)->simd_clone_info
 #define STMT_VINFO_DEF_TYPE(S)             (S)->def_type
-#define STMT_VINFO_GROUP_FIRST_ELEMENT(S)  (S)->first_element
-#define STMT_VINFO_GROUP_NEXT_ELEMENT(S)   (S)->next_element
-#define STMT_VINFO_GROUP_SIZE(S)           (S)->size
-#define STMT_VINFO_GROUP_STORE_COUNT(S)    (S)->store_count
-#define STMT_VINFO_GROUP_GAP(S)            (S)->gap
-#define STMT_VINFO_GROUP_SAME_DR_STMT(S)   (S)->same_dr_stmt
-#define STMT_VINFO_GROUPED_ACCESS(S)      ((S)->first_element != NULL && (S)->data_ref_info)
+#define STMT_VINFO_GROUPED_ACCESS(S)      ((S)->data_ref_info && DR_GROUP_FIRST_ELEMENT(S))
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED(S) (S)->loop_phi_evolution_base_unchanged
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_PART(S) (S)->loop_phi_evolution_part
 #define STMT_VINFO_MIN_NEG_DIST(S)	(S)->min_neg_dist
@@ -964,12 +959,16 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_REDUC_TYPE(S)	(S)->reduc_type
 #define STMT_VINFO_REDUC_DEF(S)		(S)->reduc_def
 
-#define GROUP_FIRST_ELEMENT(S)          (S)->first_element
-#define GROUP_NEXT_ELEMENT(S)           (S)->next_element
-#define GROUP_SIZE(S)                   (S)->size
-#define GROUP_STORE_COUNT(S)            (S)->store_count
-#define GROUP_GAP(S)                    (S)->gap
-#define GROUP_SAME_DR_STMT(S)           (S)->same_dr_stmt
+#define DR_GROUP_FIRST_ELEMENT(S)  (gcc_checking_assert ((S)->data_ref_info), (S)->first_element)
+#define DR_GROUP_NEXT_ELEMENT(S)   (gcc_checking_assert ((S)->data_ref_info), (S)->next_element)
+#define DR_GROUP_SIZE(S)           (gcc_checking_assert ((S)->data_ref_info), (S)->size)
+#define DR_GROUP_STORE_COUNT(S)    (gcc_checking_assert ((S)->data_ref_info), (S)->store_count)
+#define DR_GROUP_GAP(S)            (gcc_checking_assert ((S)->data_ref_info), (S)->gap)
+#define DR_GROUP_SAME_DR_STMT(S)   (gcc_checking_assert ((S)->data_ref_info), (S)->same_dr_stmt)
+
+#define REDUC_GROUP_FIRST_ELEMENT(S)	(gcc_checking_assert (!(S)->data_ref_info), (S)->first_element)
+#define REDUC_GROUP_NEXT_ELEMENT(S)	(gcc_checking_assert (!(S)->data_ref_info), (S)->next_element)
+#define REDUC_GROUP_SIZE(S)		(gcc_checking_assert (!(S)->data_ref_info), (S)->size)
 
 #define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_scope)
 
@@ -1171,6 +1170,9 @@ init_cost (struct loop *loop_info)
   return targetm.vectorize.init_cost (loop_info);
 }
 
+extern void dump_stmt_cost (FILE *, void *, int, enum vect_cost_for_stmt,
+			    stmt_vec_info, int, enum vect_cost_model_location);
+
 /* Alias targetm.vectorize.add_stmt_cost.  */
 
 static inline unsigned
@@ -1178,6 +1180,8 @@ add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	       stmt_vec_info stmt_info, int misalign,
 	       enum vect_cost_model_location where)
 {
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    dump_stmt_cost (dump_file, data, count, kind, stmt_info, misalign, where);
   return targetm.vectorize.add_stmt_cost (data, count, kind,
 					  stmt_info, misalign, where);
 }
@@ -1197,6 +1201,17 @@ static inline void
 destroy_cost_data (void *data)
 {
   targetm.vectorize.destroy_cost_data (data);
+}
+
+inline void
+add_stmt_costs (void *data, stmt_vector_for_cost *cost_vec)
+{
+  stmt_info_for_cost *cost;
+  unsigned i;
+  FOR_EACH_VEC_ELT (*cost_vec, i, cost)
+    add_stmt_cost (data, cost->count, cost->kind,
+		   cost->stmt ? vinfo_for_stmt (cost->stmt) : NULL,
+		   cost->misalign, cost->where);
 }
 
 /*-----------------------------------------------------------------*/
@@ -1422,16 +1437,6 @@ extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
 					     int *, vec<tree> *);
 extern stmt_vec_info new_stmt_vec_info (gimple *stmt, vec_info *);
 extern void free_stmt_vec_info (gimple *stmt);
-extern void vect_model_simple_cost (stmt_vec_info, int, enum vect_def_type *,
-				    int, stmt_vector_for_cost *,
-				    stmt_vector_for_cost *);
-extern void vect_model_store_cost (stmt_vec_info, int, vect_memory_access_type,
-				   vec_load_store_type, slp_tree,
-				   stmt_vector_for_cost *,
-				   stmt_vector_for_cost *);
-extern void vect_model_load_cost (stmt_vec_info, int, vect_memory_access_type,
-				  slp_tree, stmt_vector_for_cost *,
-				  stmt_vector_for_cost *);
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
 				  int, enum vect_cost_model_location);
@@ -1452,9 +1457,11 @@ extern tree vect_get_vec_def_for_stmt_copy (enum vect_def_type, tree);
 extern bool vect_transform_stmt (gimple *, gimple_stmt_iterator *,
                                  bool *, slp_tree, slp_instance);
 extern void vect_remove_stores (gimple *);
-extern bool vect_analyze_stmt (gimple *, bool *, slp_tree, slp_instance);
+extern bool vect_analyze_stmt (gimple *, bool *, slp_tree, slp_instance,
+			       stmt_vector_for_cost *);
 extern bool vectorizable_condition (gimple *, gimple_stmt_iterator *,
-				    gimple **, tree, int, slp_tree);
+				    gimple **, tree, int, slp_tree,
+				    stmt_vector_for_cost *);
 extern void vect_get_load_cost (struct data_reference *, int, bool,
 				unsigned int *, unsigned int *,
 				stmt_vector_for_cost *,
@@ -1467,6 +1474,8 @@ extern tree vect_gen_perm_mask_checked (tree, const vec_perm_indices &);
 extern void optimize_mask_stores (struct loop*);
 extern gcall *vect_gen_while (tree, tree, tree);
 extern tree vect_gen_while_not (gimple_seq *, tree, tree, tree);
+extern bool vect_get_vector_types_for_stmt (stmt_vec_info, tree *, tree *);
+extern tree vect_get_mask_type_for_stmt (stmt_vec_info);
 
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
@@ -1537,11 +1546,14 @@ extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,
 extern struct loop *vect_transform_loop (loop_vec_info);
 extern loop_vec_info vect_analyze_loop_form (struct loop *);
 extern bool vectorizable_live_operation (gimple *, gimple_stmt_iterator *,
-					 slp_tree, int, gimple **);
+					 slp_tree, int, gimple **,
+					 stmt_vector_for_cost *);
 extern bool vectorizable_reduction (gimple *, gimple_stmt_iterator *,
-				    gimple **, slp_tree, slp_instance);
+				    gimple **, slp_tree, slp_instance,
+				    stmt_vector_for_cost *);
 extern bool vectorizable_induction (gimple *, gimple_stmt_iterator *,
-				    gimple **, slp_tree);
+				    gimple **, slp_tree,
+				    stmt_vector_for_cost *);
 extern tree get_initial_def_for_reduction (gimple *, tree, tree *);
 extern bool vect_worthwhile_without_simd_p (vec_info *, tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,

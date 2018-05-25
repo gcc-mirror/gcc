@@ -3747,9 +3747,9 @@ package body Checks is
 
       function Aggregate_Discriminant_Val (Disc : Entity_Id) return Node_Id;
 
-      ----------------------------------
-      -- Aggregate_Discriminant_Value --
-      ----------------------------------
+      --------------------------------
+      -- Aggregate_Discriminant_Val --
+      --------------------------------
 
       function Aggregate_Discriminant_Val (Disc : Entity_Id) return Node_Id is
          Assoc : Node_Id;
@@ -8379,6 +8379,12 @@ package body Checks is
    --  Start of processing for Minimize_Eliminate_Overflows
 
    begin
+      --  Default initialize Lo and Hi since these are not guaranteed to be
+      --  set otherwise.
+
+      Lo := No_Uint;
+      Hi := No_Uint;
+
       --  Case where we do not have a signed integer arithmetic operation
 
       if not Is_Signed_Integer_Arithmetic_Op (N) then

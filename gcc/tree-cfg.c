@@ -4109,20 +4109,6 @@ verify_gimple_assign_ternary (gassign *stmt)
 	}
       break;
 
-    case FMA_EXPR:
-      if (!useless_type_conversion_p (lhs_type, rhs1_type)
-	  || !useless_type_conversion_p (lhs_type, rhs2_type)
-	  || !useless_type_conversion_p (lhs_type, rhs3_type))
-	{
-	  error ("type mismatch in fused multiply-add expression");
-	  debug_generic_expr (lhs_type);
-	  debug_generic_expr (rhs1_type);
-	  debug_generic_expr (rhs2_type);
-	  debug_generic_expr (rhs3_type);
-	  return true;
-	}
-      break;
-
     case VEC_COND_EXPR:
       if (!VECTOR_BOOLEAN_TYPE_P (rhs1_type)
 	  || maybe_ne (TYPE_VECTOR_SUBPARTS (rhs1_type),
@@ -4137,6 +4123,12 @@ verify_gimple_assign_ternary (gassign *stmt)
 	}
       /* Fallthrough.  */
     case COND_EXPR:
+      if (!is_gimple_val (rhs1)
+	  && verify_gimple_comparison (TREE_TYPE (rhs1),
+				       TREE_OPERAND (rhs1, 0),
+				       TREE_OPERAND (rhs1, 1),
+				       TREE_CODE (rhs1)))
+	return true;
       if (!useless_type_conversion_p (lhs_type, rhs2_type)
 	  || !useless_type_conversion_p (lhs_type, rhs3_type))
 	{

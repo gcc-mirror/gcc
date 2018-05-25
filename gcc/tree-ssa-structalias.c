@@ -5935,11 +5935,14 @@ check_for_overlaps (vec<fieldoff_s> fieldstack)
    This will also create any varinfo structures necessary for fields
    of DECL.  DECL is a function parameter if HANDLE_PARAM is set.
    HANDLED_STRUCT_TYPE is used to register struct types reached by following
-   restrict pointers.  This is needed to prevent infinite recursion.  */
+   restrict pointers.  This is needed to prevent infinite recursion.
+   If ADD_RESTRICT, pretend that the pointer NAME is restrict even if DECL
+   does not advertise it.  */
 
 static varinfo_t
 create_variable_info_for_1 (tree decl, const char *name, bool add_id,
-			    bool handle_param, bitmap handled_struct_type)
+			    bool handle_param, bitmap handled_struct_type,
+			    bool add_restrict = false)
 {
   varinfo_t vi, newvi;
   tree decl_type = TREE_TYPE (decl);
@@ -6013,7 +6016,7 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
       vi->size = vi->fullsize;
       vi->is_full_var = true;
       if (POINTER_TYPE_P (decl_type)
-	  && TYPE_RESTRICT (decl_type))
+	  && (TYPE_RESTRICT (decl_type) || add_restrict))
 	vi->only_restrict_pointers = 1;
       if (vi->only_restrict_pointers
 	  && !type_contains_placeholder_p (TREE_TYPE (decl_type))
@@ -6242,6 +6245,7 @@ intra_create_variable_infos (struct function *fn)
 {
   tree t;
   bitmap handled_struct_type = NULL;
+  bool this_parm_in_ctor = DECL_CXX_CONSTRUCTOR_P (fn->decl);
 
   /* For each incoming pointer argument arg, create the constraint ARG
      = NONLOCAL or a dummy variable if it is a restrict qualified
@@ -6253,10 +6257,12 @@ intra_create_variable_infos (struct function *fn)
 
       varinfo_t p
 	= create_variable_info_for_1 (t, alias_get_name (t), false, true,
-				      handled_struct_type);
+				      handled_struct_type, this_parm_in_ctor);
       insert_vi_for_tree (t, p);
 
       make_param_constraints (p);
+
+      this_parm_in_ctor = false;
     }
 
   if (handled_struct_type != NULL)

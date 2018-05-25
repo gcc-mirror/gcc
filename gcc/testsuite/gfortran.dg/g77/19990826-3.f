@@ -1,4 +1,5 @@
 c { dg-do compile }
+c { dg-options "-std=legacy" }
 * Date: Thu, 19 Aug 1999 10:02:32 +0200
 * From: Frederic Devernay <devernay@istar.fr>
 * Organization: ISTAR
@@ -64,7 +65,7 @@ C
       IF(M2.LT.64)INDE=5
       IF(M2.LT.32)INDE=4
       DO 3 NUN =3,INUN
-      DO 3 NDE=3,INDE ! { dg-warning "Obsolescent feature: Shared DO termination" }
+      DO 3 NDE=3,INDE
       N10=2**NUN
       N20=2**NDE
       NDIF=(N10-N20)

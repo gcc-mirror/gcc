@@ -1345,12 +1345,6 @@ DEFTREECODE (WIDEN_MULT_MINUS_EXPR, "widen_mult_minus_expr", tcc_expression, 3)
    by the second argument.  */
 DEFTREECODE (WIDEN_LSHIFT_EXPR, "widen_lshift_expr", tcc_binary, 2)
 
-/* Fused multiply-add.
-   All operands and the result are of the same type.  No intermediate
-   rounding is performed after multiplying operand one with operand two
-   before adding operand three.  */
-DEFTREECODE (FMA_EXPR, "fma_expr", tcc_expression, 3)
-
 /* Widening vector multiplication.
    The two operands are vectors with N elements of size S. Multiplying the
    elements of the two vectors will result in N products of size 2*S.

@@ -152,14 +152,6 @@ maltivec
 Target Report Mask(ALTIVEC) Var(rs6000_isa_flags)
 Use AltiVec instructions.
 
-maltivec=le
-Target Report RejectNegative Var(rs6000_altivec_element_order, 1) Save
-Generate AltiVec instructions using little-endian element order.
-
-maltivec=be
-Target Report RejectNegative Var(rs6000_altivec_element_order, 2)
-Generate AltiVec instructions using big-endian element order.
-
 mfold-gimple
 Target Report Var(rs6000_fold_gimple) Init(1)
 Enable early gimple folding of builtins.
@@ -357,10 +349,6 @@ misel=yes
 Target RejectNegative Alias(misel) Warn(%<-misel=yes%> is deprecated; use %<-misel%> instead)
 Deprecated option.  Use -misel instead.
 
-mpaired
-Target Var(rs6000_paired_float) Save
-Generate PPC750CL paired-single instructions.
-
 mdebug=
 Target RejectNegative Joined
 -mdebug=	Enable debug output.
@@ -466,44 +454,6 @@ Enum(rs6000_alignment_flags) String(natural) Value(MASK_ALIGN_NATURAL)
 mprioritize-restricted-insns=
 Target RejectNegative Joined UInteger Var(rs6000_sched_restricted_insns_priority) Save
 Specify scheduling priority for dispatch slot restricted insns.
-
-msingle-float
-Target RejectNegative Var(rs6000_single_float) Save
-Single-precision floating point unit.
-
-mdouble-float
-Target RejectNegative Var(rs6000_double_float) Save
-Double-precision floating point unit.
-
-msimple-fpu
-Target RejectNegative Var(rs6000_simple_fpu) Save
-Floating point unit does not support divide & sqrt.
-
-mfpu=
-Target RejectNegative Joined Enum(fpu_type_t) Var(rs6000_fpu_type) Init(FPU_NONE)
--mfpu=	Specify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu).
-
-Enum
-Name(fpu_type_t) Type(enum fpu_type_t)
-
-EnumValue
-Enum(fpu_type_t) String(none) Value(FPU_NONE)
-
-EnumValue
-Enum(fpu_type_t) String(sp_lite) Value(FPU_SF_LITE)
-
-EnumValue
-Enum(fpu_type_t) String(dp_lite) Value(FPU_DF_LITE)
-
-EnumValue
-Enum(fpu_type_t) String(sp_full) Value(FPU_SF_FULL)
-
-EnumValue
-Enum(fpu_type_t) String(dp_full) Value(FPU_DF_FULL)
-
-mxilinx-fpu
-Target Var(rs6000_xilinx_fpu) Save
-Specify Xilinx FPU.
 
 mpointers-to-nested-functions
 Target Report Var(TARGET_POINTERS_TO_NESTED_FUNCTIONS) Init(1) Save

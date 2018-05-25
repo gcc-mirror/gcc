@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "cgraph.h"
 #include "omp-simd-clone.h"
+#include "predict.h"
 
 /* Pattern recognition functions  */
 static gimple *vect_recog_widen_sum_pattern (vec<gimple *> *, tree *,
@@ -231,7 +232,7 @@ vect_reassociating_reduction_p (stmt_vec_info stmt_vinfo)
 {
   return (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
 	  ? STMT_VINFO_REDUC_TYPE (stmt_vinfo) != FOLD_LEFT_REDUCTION
-	  : GROUP_FIRST_ELEMENT (stmt_vinfo) != NULL);
+	  : REDUC_GROUP_FIRST_ELEMENT (stmt_vinfo) != NULL);
 }
 
 /* Function vect_recog_dot_prod_pattern
@@ -2674,15 +2675,19 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
   if (vectype == NULL_TREE)
     return NULL;
 
-  /* If the target can handle vectorized division or modulo natively,
-     don't attempt to optimize this.  */
-  optab = optab_for_tree_code (rhs_code, vectype, optab_default);
-  if (optab != unknown_optab)
+  if (optimize_bb_for_size_p (gimple_bb (last_stmt)))
     {
-      machine_mode vec_mode = TYPE_MODE (vectype);
-      int icode = (int) optab_handler (optab, vec_mode);
-      if (icode != CODE_FOR_nothing)
-	return NULL;
+      /* If the target can handle vectorized division or modulo natively,
+	 don't attempt to optimize this, since native division is likely
+	 to give smaller code.  */
+      optab = optab_for_tree_code (rhs_code, vectype, optab_default);
+      if (optab != unknown_optab)
+	{
+	  machine_mode vec_mode = TYPE_MODE (vectype);
+	  int icode = (int) optab_handler (optab, vec_mode);
+	  if (icode != CODE_FOR_nothing)
+	    return NULL;
+	}
     }
 
   prec = TYPE_PRECISION (itype);
@@ -4483,7 +4488,6 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
   tree type_in, type_out;
   enum tree_code code;
   int i;
-  gimple *next;
 
   stmts_to_replace->truncate (0);
   stmts_to_replace->quick_push (stmt);
@@ -4545,9 +4549,12 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
   /* Patterns cannot be vectorized using SLP, because they change the order of
      computation.  */
   if (loop_vinfo)
-    FOR_EACH_VEC_ELT (LOOP_VINFO_REDUCTIONS (loop_vinfo), i, next)
-      if (next == stmt)
-        LOOP_VINFO_REDUCTIONS (loop_vinfo).ordered_remove (i);
+    {
+      unsigned ix, ix2;
+      gimple **elem_ptr;
+      VEC_ORDERED_REMOVE_IF (LOOP_VINFO_REDUCTIONS (loop_vinfo), ix, ix2,
+			     elem_ptr, *elem_ptr == stmt);
+    }
 
   /* It is possible that additional pattern stmts are created and inserted in
      STMTS_TO_REPLACE.  We create a stmt_info for each of them, and mark the

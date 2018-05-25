@@ -533,7 +533,7 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
       as->type = AS_ASSUMED_RANK;
       as->rank = -1;
 
-      if (!gfc_notify_std (GFC_STD_F2008_TS, "Assumed-rank array at %C"))
+      if (!gfc_notify_std (GFC_STD_F2018, "Assumed-rank array at %C"))
 	goto cleanup;
 
       if (!match_codim)
@@ -2046,7 +2046,8 @@ got_charlen:
 	  else
 	    return true;
 
-	  gcc_assert (current_length != -1);
+	  if (current_length < 0)
+	    current_length = 0;
 
 	  if (found_length == -1)
 	    found_length = current_length;

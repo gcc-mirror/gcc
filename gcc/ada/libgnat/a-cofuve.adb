@@ -119,7 +119,7 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    end Contains;
 
    ------------------
-   -- Range_Except --
+   -- Equal_Except --
    ------------------
 
    function Equal_Except

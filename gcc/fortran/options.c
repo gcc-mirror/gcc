@@ -42,9 +42,9 @@ set_default_std_flags (void)
 {
   gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
     | GFC_STD_F2003 | GFC_STD_F2008 | GFC_STD_F95 | GFC_STD_F77
-    | GFC_STD_F2008_OBS | GFC_STD_F2008_TS | GFC_STD_GNU | GFC_STD_LEGACY
+    | GFC_STD_F2008_OBS | GFC_STD_GNU | GFC_STD_LEGACY
     | GFC_STD_F2018 | GFC_STD_F2018_DEL | GFC_STD_F2018_OBS;
-  gfc_option.warn_std = GFC_STD_F95_DEL | GFC_STD_LEGACY;
+  gfc_option.warn_std = GFC_STD_F2018_DEL | GFC_STD_F95_DEL | GFC_STD_LEGACY;
 }
 
 
@@ -313,6 +313,7 @@ gfc_post_options (const char **pfilename)
       if (gfc_current_form == FORM_UNKNOWN)
 	{
 	  gfc_current_form = FORM_FREE;
+	  main_input_filename = filename;
 	  gfc_warning_now (0, "Reading file %qs as free form", 
 			   (filename[0] == '\0') ? "<stdin>" : filename);
 	}
@@ -704,8 +705,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_std_f95:
-      gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77
-			     | GFC_STD_F2008_OBS;
+      gfc_option.allow_std = GFC_STD_OPT_F95;
       gfc_option.warn_std = GFC_STD_F95_OBS;
       gfc_option.max_continue_fixed = 19;
       gfc_option.max_continue_free = 39;
@@ -715,8 +715,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_std_f2003:
-      gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F77 
-	| GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F2008_OBS;
+      gfc_option.allow_std = GFC_STD_OPT_F03;
       gfc_option.warn_std = GFC_STD_F95_OBS;
       gfc_option.max_identifier_length = 63;
       warn_ampersand = 1;
@@ -724,8 +723,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_std_f2008:
-      gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F77 
-	| GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F2008 | GFC_STD_F2008_OBS;
+      gfc_option.allow_std = GFC_STD_OPT_F08;
       gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F2008_OBS;
       gfc_option.max_identifier_length = 63;
       warn_ampersand = 1;
@@ -733,19 +731,8 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_std_f2008ts:
-      gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F77 
-	| GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F2008 | GFC_STD_F2008_OBS
-	| GFC_STD_F2008_TS;
-      gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F2008_OBS;
-      gfc_option.max_identifier_length = 63;
-      warn_ampersand = 1;
-      warn_tabs = 1;
-      break;
-
     case OPT_std_f2018:
-      gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F77
-	| GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F2008 | GFC_STD_F2008_OBS
-	| GFC_STD_F2008_TS | GFC_STD_F2018 | GFC_STD_F2018_OBS;
+      gfc_option.allow_std = GFC_STD_OPT_F18;
       gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F2008_OBS
 	| GFC_STD_F2018_OBS;
       gfc_option.max_identifier_length = 63;
