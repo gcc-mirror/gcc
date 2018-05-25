@@ -28542,8 +28542,20 @@ package body Sem_Prag is
                   when Name_Ignore
                      | Name_Off
                   =>
-                     Set_Is_Ignored (N, True);
-                     Set_Is_Checked (N, False);
+                     --  In CodePeer mode and GNATprove mode, we need to
+                     --  consider all assertions, unless they are
+                     --  disabled. Force Is_Checked on ignored assertions, in
+                     --  particular because transformations of the AST may
+                     --  depend on assertions being checked (e.g. the
+                     --  translation of attribute 'Loop_Entry).
+
+                     if CodePeer_Mode or GNATprove_Mode then
+                        Set_Is_Checked (N, True);
+                        Set_Is_Ignored (N, False);
+                     else
+                        Set_Is_Ignored (N, True);
+                        Set_Is_Checked (N, False);
+                     end if;
 
                   when Name_Check
                      | Name_On
@@ -28573,7 +28585,8 @@ package body Sem_Prag is
       --  If there are no specific entries that matched, then we let the
       --  setting of assertions govern. Note that this provides the needed
       --  compatibility with the RM for the cases of assertion, invariant,
-      --  precondition, predicate, and postcondition.
+      --  precondition, predicate, and postcondition. Note also that
+      --  Assertions_Enabled is forced in CodePeer mode and GNATprove mode.
 
       if Assertions_Enabled then
          Set_Is_Checked (N, True);
