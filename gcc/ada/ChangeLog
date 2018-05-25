@@ -1,3 +1,21 @@
+2018-05-25  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-osinte__aix.ads, libgnarl/s-osinte__android.ads,
+	libgnarl/s-osinte__darwin.ads, libgnarl/s-osinte__freebsd.ads,
+	libgnarl/s-osinte__hpux.ads, libgnarl/s-osinte__kfreebsd-gnu.ads,
+	libgnarl/s-osinte__linux.ads, libgnarl/s-osinte__lynxos178e.ads,
+	libgnarl/s-osinte__qnx.ads, libgnarl/s-osinte__rtems.ads
+	(Relative_Timed_Wait): Remove.
+	* libgnarl/s-tpopmo.adb (Timed_Sleep, Timed_Delay): Rewrite to allow
+	for incremental looping. Remove references to Rel_Time and
+	Relative_Timed_Wait.
+	* libgnat/s-osprim__posix.adb, libgnat/s-osprim__posix2008.adb
+	(Timed_Delay): Make separate.
+	* libgnat/s-optide.adb: New separate procedure.
+	* libgnat/s-osprim.ads (Max_System_Delay): New constant.
+	* libgnat/s-osprim__lynxos.ads (Max_Sensible_Delay): Set to 6 months.
+	(Max_System_Delay): New constant.
+
 2018-05-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Validate_Derived_Type_Instance): Verify that the actual
