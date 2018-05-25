@@ -951,13 +951,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_SAME_ALIGN_REFS(S)      (S)->same_align_refs
 #define STMT_VINFO_SIMD_CLONE_INFO(S)	   (S)->simd_clone_info
 #define STMT_VINFO_DEF_TYPE(S)             (S)->def_type
-#define STMT_VINFO_GROUP_FIRST_ELEMENT(S)  (S)->first_element
-#define STMT_VINFO_GROUP_NEXT_ELEMENT(S)   (S)->next_element
-#define STMT_VINFO_GROUP_SIZE(S)           (S)->size
-#define STMT_VINFO_GROUP_STORE_COUNT(S)    (S)->store_count
-#define STMT_VINFO_GROUP_GAP(S)            (S)->gap
-#define STMT_VINFO_GROUP_SAME_DR_STMT(S)   (S)->same_dr_stmt
-#define STMT_VINFO_GROUPED_ACCESS(S)      ((S)->first_element != NULL && (S)->data_ref_info)
+#define STMT_VINFO_GROUPED_ACCESS(S)      ((S)->data_ref_info && DR_GROUP_FIRST_ELEMENT(S))
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED(S) (S)->loop_phi_evolution_base_unchanged
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_PART(S) (S)->loop_phi_evolution_part
 #define STMT_VINFO_MIN_NEG_DIST(S)	(S)->min_neg_dist
@@ -965,12 +959,16 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_REDUC_TYPE(S)	(S)->reduc_type
 #define STMT_VINFO_REDUC_DEF(S)		(S)->reduc_def
 
-#define GROUP_FIRST_ELEMENT(S)          (S)->first_element
-#define GROUP_NEXT_ELEMENT(S)           (S)->next_element
-#define GROUP_SIZE(S)                   (S)->size
-#define GROUP_STORE_COUNT(S)            (S)->store_count
-#define GROUP_GAP(S)                    (S)->gap
-#define GROUP_SAME_DR_STMT(S)           (S)->same_dr_stmt
+#define DR_GROUP_FIRST_ELEMENT(S)  (gcc_checking_assert ((S)->data_ref_info), (S)->first_element)
+#define DR_GROUP_NEXT_ELEMENT(S)   (gcc_checking_assert ((S)->data_ref_info), (S)->next_element)
+#define DR_GROUP_SIZE(S)           (gcc_checking_assert ((S)->data_ref_info), (S)->size)
+#define DR_GROUP_STORE_COUNT(S)    (gcc_checking_assert ((S)->data_ref_info), (S)->store_count)
+#define DR_GROUP_GAP(S)            (gcc_checking_assert ((S)->data_ref_info), (S)->gap)
+#define DR_GROUP_SAME_DR_STMT(S)   (gcc_checking_assert ((S)->data_ref_info), (S)->same_dr_stmt)
+
+#define REDUC_GROUP_FIRST_ELEMENT(S)	(gcc_checking_assert (!(S)->data_ref_info), (S)->first_element)
+#define REDUC_GROUP_NEXT_ELEMENT(S)	(gcc_checking_assert (!(S)->data_ref_info), (S)->next_element)
+#define REDUC_GROUP_SIZE(S)		(gcc_checking_assert (!(S)->data_ref_info), (S)->size)
 
 #define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_scope)
 
