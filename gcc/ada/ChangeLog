@@ -1,3 +1,17 @@
+2018-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Enumeration_Type): Do not give integer size to a
+	boolean type with convention C.
+	* libgnat/i-cexten.ads (bool): Change to boolean with convention C.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Add new local variable
+	FOREIGN and use it throughout the function.
+	<E_Enumeration_Type>: Set precision 1 on boolean types with foreign
+	convention.
+	<E_Enumeration_Subtype>: Likewise for subtypes.
+	<E_Record_Type>: Force the size of a storage unit on empty classes.
+	* gcc-interface/utils.c (make_type_from_size) <BOOLEAN_TYPE>: Skip
+	boolean types with precision 1 if the size is the expected one.
+
 2018-05-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* pprint.adb (Expression_Name): Do not print non ASCII characters.

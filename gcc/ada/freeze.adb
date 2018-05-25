@@ -6877,12 +6877,15 @@ package body Freeze is
    procedure Freeze_Enumeration_Type (Typ : Entity_Id) is
    begin
       --  By default, if no size clause is present, an enumeration type with
-      --  Convention C is assumed to interface to a C enum, and has integer
-      --  size. This applies to types. For subtypes, verify that its base
-      --  type has no size clause either. Treat other foreign conventions
-      --  in the same way, and also make sure alignment is set right.
+      --  Convention C is assumed to interface to a C enum and has integer
+      --  size, except for a boolean type because it is assumed to interface
+      --  to _Bool introduced in C99. This applies to types. For subtypes,
+      --  verify that its base type has no size clause either. Treat other
+      --  foreign conventions in the same way, and also make sure alignment
+      --  is set right.
 
       if Has_Foreign_Convention (Typ)
+        and then not Is_Boolean_Type (Typ)
         and then not Has_Size_Clause (Typ)
         and then not Has_Size_Clause (Base_Type (Typ))
         and then Esize (Typ) < Standard_Integer_Size
