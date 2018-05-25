@@ -4373,6 +4373,7 @@ package body Exp_Aggr is
                  or else not Compile_Time_Known_Aggregate (Expression (Expr))
                  or else Expansion_Delayed (Expression (Expr))
                  or else Nkind (Expr) = N_Iterated_Component_Association
+                 or else Nkind (Expr) = N_Quantified_Expression
                then
                   Static_Components := False;
                   exit;
@@ -4523,9 +4524,19 @@ package body Exp_Aggr is
 
                   --  If we have an others choice, fill in the missing elements
                   --  subject to the limit established by Max_Others_Replicate.
+                  --  If the expression involves a construct that generates
+                  --  a loop, we must generate individual assignmentw and
+                  --  no flattening is possible.
 
                   if Nkind (Choice) = N_Others_Choice then
                      Rep_Count := 0;
+
+                     if Nkind_In  (Expression (Elmt),
+                         N_Quantified_Expression,
+                         N_Iterated_Component_Association)
+                     then
+                        return False;
+                     end if;
 
                      for J in Vals'Range loop
                         if No (Vals (J)) then
@@ -7232,6 +7243,10 @@ package body Exp_Aggr is
                return False;
 
             elsif Is_Delayed_Aggregate (Expr_Q) then
+               Static_Components := False;
+               return False;
+
+            elsif Nkind (Expr_Q) = N_Quantified_Expression then
                Static_Components := False;
                return False;
 
