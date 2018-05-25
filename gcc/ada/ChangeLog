@@ -1,3 +1,10 @@
+2018-05-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): Ensure that the analysis of
+	the in-place initialization aggregate created for pragmas
+	Initialize_Scalars or Normalize_Scalars is performed with checks
+	suppressed.
+
 2018-05-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_aggr.adb (Convert_To_Positional): Bump default for

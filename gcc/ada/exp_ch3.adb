@@ -6109,7 +6109,8 @@ package body Exp_Ch3 is
                        N    => Obj_Def,
                        Size => Esize (Def_Id)));
 
-                  Analyze_And_Resolve (Expression (N), Typ);
+                  Analyze_And_Resolve
+                    (Expression (N), Typ, Suppress => All_Checks);
 
                --  Otherwise invoke the type init proc, generate:
                --    Type_Init_Proc (Obj);
