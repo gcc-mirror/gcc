@@ -1,3 +1,7 @@
+2018-05-25  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads: Minor comment fix.
+
 2018-05-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Visit_Node): Restrict check for uplevel references in
