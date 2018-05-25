@@ -1,3 +1,14 @@
+2018-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (cvtusi2<ssescalarmodesuffix>64<round_name>):
+	Add {q} suffix to insn mnemonic.
+
+2018-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85903
+	* config/i386/sse.md (movdi_to_sse): Do not generate pseudo
+	when memory input operand is handled.
+
 2018-05-21  Pat Haugen  <pthaugen@us.ibm.com>
 
 	Backport from mainline
@@ -5,7 +16,8 @@
 		    Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/85698
-	* config/rs6000/rs6000.c (rs6000_output_move_128bit): Check dest operand.
+	* config/rs6000/rs6000.c (rs6000_output_move_128bit): Check
+	dest operand.
 
 2018-05-17  Martin Jambor  <mjambor@suse.cz>
 
