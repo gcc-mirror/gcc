@@ -2543,21 +2543,22 @@ GTY((deletable)) vec<module_state *, va_gc_atomic> *module_state::importing;
 /* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
 GTY(()) vec<module_state *, va_gc> *module_state::modules;
 
-/* Has of module state, findable by NAME. */
+/* Hash of module state, findable by NAME. */
 hash_table<module_state_hash> *module_state::hash;
 
 /* Server to query and inform of modular compilations.  This is a
    singleton.  */
 class module_server {
   char *name;
-  FILE *from;  /* Read from server.  */
+  FILE *from;   /* Read from server.  */
   FILE *to;	/* Write to server.  */
   pex_obj *pex; /* If it's a subprocess.  */
 
   char *buffer; /* Line buffer.  */
   size_t size;  /* Allocated size of buffer.  */
-  char *pos;	/* Read point in buffer.  */
+  char *pos;	/* Read/Write point in buffer.  */
   char *end;	/* Ending NUL byte.  */
+  char *start;  /* Start of current response line.  */
 
 private:
   /* Construction always succeeds, but may result in a dead server.  */
@@ -2590,15 +2591,21 @@ public:
 public:
   char *import_query (tree name, location_t from);
   char *export_query (tree name);
-  void peek_import_query (tree name, location_t from);
   bool export_done (tree name);
 
 private:
   void reset ();
   bool handshake (const char *main_src);
   char *import_export_query (const char *, tree name, const char *);
-  void send_command (const char *, ...) ATTRIBUTE_PRINTF_2;
-  void get_response ();
+  void send_command (bool, const char * = NULL, ...);
+  bool get_response (bool = false);
+  bool next_line (bool more)
+  {
+    if (!more)
+      end = buffer;
+    pos = end;
+    return more;
+  }
   char *response_token ();
   int response_word (const char *, ...);
   void response_error ();
@@ -6641,7 +6648,7 @@ module_server::module_server (const char *option)
   /* We have a live server.  Say Hello.  */
   dump () && dump ("Initialized server");
 
-  buffer = XNEWVEC (char, size);
+  pos = end = buffer = XNEWVEC (char, size);
 
   if (!handshake (main_input_filename))
     kill ();
@@ -6695,68 +6702,118 @@ module_server::make (const char *option)
 /* Send a command to the server.  */
 
 void
-module_server::send_command (const char *format, ...)
+module_server::send_command (bool more, const char *format, ...)
 {
- again:
-  va_list args;
-  va_start (args, format);
-  size_t actual = vsnprintf (buffer, size - 1, format, args);
-  va_end (args);
-  if (actual > size - 1)
-    {
-      size = actual + 20;
-      buffer = XRESIZEVEC (char, buffer, size);
-      goto again;
-    }
+  gcc_checking_assert (more || format);
 
-  dump () && dump ("Server request:%s", buffer);
-  buffer[actual++] = '\n';
-  fwrite (buffer, 1, actual, to);
+  size_t actual = 0;
+  if (more)
+    *end++ = format ? '+' : '-';
+ again:
+  if (format)
+    {
+      va_list args;
+      va_start (args, format);
+      size_t available = (buffer + size) - end;
+      gcc_checking_assert (available);
+      actual = vsnprintf (end, available - 1, format, args);
+      va_end (args);
+      if (actual > available - 1)
+	{
+	  size = actual + 20;
+	  char *next = XRESIZEVEC (char, buffer, size);
+	  end = next + (end - buffer);
+	  buffer = end;
+	  goto again;
+	}
+    }
+  if (more)
+    dump () && dump ("Server pending request:%s", end);
+  else
+    dump () && dump ("Server request:%s", buffer);
+  end += actual;
+  *end++ = '\n';
+  if (!more)
+    {
+      fwrite (buffer, 1, end - buffer, to);
+      end = pos = buffer;
+    }
 }
 
 /* Read a response from the server.   Server may die.  */
 
-void
-module_server::get_response ()
+bool
+module_server::get_response (bool pending)
 {
-  size_t off = 0;
-
- more:
-  if (!fgets (buffer + off, size - off, from))
-    {
-      const char *err = ferror (from) ? "error" : "end of file";
-      error ("unexpected %s from module server %qs", err, name);
-      kill ();
-      off = 0;
-    }
+  if (pending)
+    pos = end + 1;
   else
     {
-      off += strlen (buffer + off);
-      if (buffer[off - 1] != '\n')
+      gcc_assert (end == buffer && pos == end);
+      size_t off = 0;
+
+    more:
+      if (!fgets (buffer + off, size - off, from))
 	{
-	  size *= 2;
-	  buffer = XRESIZEVEC (char, buffer, size);
-	  goto more;
+	  const char *err = ferror (from) ? "error" : "end of file";
+	  error ("unexpected %s from module server %qs", err, name);
+	  kill ();
+	  off = 0;
 	}
-      off--;
+      else
+	{
+	  off += strlen (buffer + off);
+	  if (buffer[off - 1] != '\n')
+	    {
+	      size *= 2;
+	      char *next = XRESIZEVEC (char, buffer, size);
+	      pos = (pos - buffer) + next;
+	      buffer = next;
+	      goto more;
+	    }
+	  if (pos[0] == '+')
+	    {
+	      pos = buffer + off;
+	      goto more;
+	    }
+	  off--;
+	}
+
+      buffer[off] = 0;
+      end = buffer + off;
+      pos = buffer;
+      dump () && dump ("Server response:%s", buffer);
     }
 
-  buffer[off] = 0;
-  end = buffer + off;
-  while (ISSPACE (*buffer))
-    buffer++;
-  pos = buffer;
-  dump () && dump ("Server response:%s", pos);
+  start = pos;
+  bool more = *pos == '+';
+  bool done = *pos == '-';
+  if (more | done)
+    pos++;
+
+  while (*pos != '\n' && ISSPACE (*pos))
+    pos++;
+
+  if (more)
+    {
+      end = strchr (pos, '\n');
+      if (end)
+	*end = 0;
+      else
+	end = pos + strlen (pos);
+    }
+
+  return more;
 }
 
 void
 module_server::response_unexpected ()
 {
   /* Restore the whitespace we zapped tokenizing.  */
-  for (char *ptr = buffer; ptr != pos; ptr++)
+  for (char *ptr = start; ptr != pos; ptr++)
     if (!*ptr)
       *ptr = ' ';
-  error ("unexpected server response %qs", buffer);
+  error ("unexpected server response %qs", start);
 }
 
 void
@@ -6844,7 +6901,7 @@ module_server::response_word (const char *option, ...)
 void
 module_server::reset ()
 {
-  send_command ("RESET");
+  send_command (false, "RESET");
 }
 
 /* Start handshake.  */
@@ -6852,29 +6909,33 @@ module_server::reset ()
 bool
 module_server::handshake (const char *main_file)
 {
-  send_command ("HELLO %d %s", SERVER_VERSION, main_file);
+  send_command (false, "HELLO %d %s", SERVER_VERSION, main_file);
 
   get_response ();
+  bool ok = false;
   switch (response_word ("HELLO", "ERROR", NULL))
     {
     default:
-      return false;
+      break;
 
     case 0: /* HELLO $ver */
       if (char *ver = response_token ())
 	dump () && dump ("Connected to server version %s", ver);
+      ok = true;
       break;
 
     case 1: /* ERROR $msg */
       response_error ();
-      return false;
+      break;
     }
 
-  return true;
+  next_line (false);
+  return ok;
 }
 
 char *
-module_server::import_export_query (const char *query, tree name, const char *loc)
+module_server::import_export_query (const char *query, tree name,
+				    const char *loc)
 {
   if (noisy_p ())
     {
@@ -6882,7 +6943,7 @@ module_server::import_export_query (const char *query, tree name, const char *lo
       fflush (stderr);
     }
 
-  send_command ("%s %s %s", query, IDENTIFIER_POINTER (name), loc);
+  send_command (false, "%s %s %s", query, IDENTIFIER_POINTER (name), loc);
   get_response ();
   char *filename = NULL;
 
@@ -6900,17 +6961,8 @@ module_server::import_export_query (const char *query, tree name, const char *lo
 	response_error ();
       break;
     }
+  next_line (false);
   return filename;
-}
-
-/* Peek import query.  */
-
-void
-module_server::peek_import_query (tree name, location_t loc)
-{
-  send_command ("PEEK BMI %s %s", IDENTIFIER_POINTER (name),
-		LOCATION_FILE (loc));
-  get_response ();
 }
 
 /* Import query.  */
@@ -6935,9 +6987,11 @@ bool
 module_server::export_done (tree name)
 {
   dump () && dump ("Completed server");
-  send_command ("DONE %s", IDENTIFIER_POINTER (name));
+  send_command (false, "DONE %s", IDENTIFIER_POINTER (name));
   get_response ();
-  return response_word ("OK", NULL) == 0;
+  bool ok = response_word ("OK", NULL) == 0;
+  next_line (false);
+  return ok;
 }
 
 /* Set VEC_NAME fields from incoming VNAME, which may be a regular
@@ -9491,21 +9545,6 @@ finish_module ()
     }
 
   module_server::fini ();
-}
-
-/* Peek a module name, so we may issue a PEEK to the server.  */
-
-void
-maybe_peek_import (tree name, location_t from)
-{
-  dump.push (NULL);
-  if (module_server *server = module_server::get ())
-    {
-      if (TREE_CODE (name) == TREE_VEC)
-	name = make_flat_name (name);
-      server->peek_import_query (name, from);
-    }
-  dump.pop (0);
 }
 
 /* Try and exec ourselves to repeat the preamble scan with

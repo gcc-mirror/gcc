@@ -1,5 +1,19 @@
 2018-05-25  Nathan Sidwell  <nathan@acm.org>
 
+	Server protocol batching
+	gcc/
+	* doc/invoke.texi (C++ Modules): Document protocol batching.
+	gcc/cp/
+	* cp-tree.h (maybe_peek_import): Delete.
+	* lex.c (atom_preamble_prefix_peek): Drop import peeking.
+	* parser.c (cp_parser_module_preamble): Likewise.
+	* module.c (module_server::{send_command,get_response}): Deal with
+	batching.
+	(module_state::peek_import_query, maybe_peek_import): Delete.
+	(module_state::next_line): New.
+	gcc/tesutsuite/
+	* g++.dg/modules/atom-peek-1_[abc].C: Delete.
+
 	Merge trunk r260753.
 
 	Direct import lambda returns!

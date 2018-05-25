@@ -29220,7 +29220,7 @@ and respond to the following commands:
 @item @var{$query} @var{$module} [@var{$from}]
 A query for an import (including for a module implementation unit).
 The @var{$query} may be a combination of @samp{BMI}, @samp{SEARCH} or
-@samp{PATH}, concatentated with @samp{|}.  The response should be one
+@samp{PATH}, concatentated with @samp{,}.  The response should be one
 of `@samp{BMI} @var{$bmipath}', `@samp{SEARCH} @var{$srcbase}' or
 ``@samp{PATH} @var{$srcpath}' respectively.  If the request is not
 fulfilable, the response is `@samp{ERROR} [@var{msg}]'.  Usually an
@@ -29251,10 +29251,10 @@ interface unit.
 The compilation is of a module interface unit, and will generate a BMI
 for @var{module-name}.  The response should be `@samp{BMI} @var{bmifile}'.
 
-@item @samp{HELLO} @var{$ver} @var{$srcname}
+@item @samp{HELLO} @var{$ver} @var{$flags} @var{$srcname}
 This is the first command.  It informs the server of the name of the
 source being compiled.  Response is either `@samp{OK}
-@var{$ver}', or `@samp{ERROR} @var{$errormsg}'.
+@var{$ver} @var{$flags}', or `@samp{ERROR} @var{$errormsg}'.
 
 @item @samp{HELLO} @var{$ver} @var{$srcbase} @var{$srcpath}
 FIXME
@@ -29270,13 +29270,6 @@ informs the compiler how to treat the inclusion.  A response of
 `@samp{IMPORT}' causes importation.  (A subsequent import query will
 be forthcoming.)  (This is not implemented.)
 
-@item @samp{PEEK} @var{$query}
-Advance notice of a query that may be presented in the future.  The
-response is either `@samp{OK}', or `@samp{ERROR} [@var{msg}]'.  The
-message may be ignored, or might initiate asynchronous build of the
-desired object.  `@samp{OK}' does not mean the desired entity is
-available.
-
 @item @samp{RESET}
 This command resets the server.  There is no response.  It is used
 if a preamble rescan is needed.
@@ -29286,8 +29279,23 @@ if a preamble rescan is needed.
 It is recommended that any unrecognized command causes an @samp{ERROR}
 response with a suitable message.
 
+Requests and responses may be batched.  If a request line begins with
+a @code{+} character, before waiting for a response another request
+should be made.  That too may begin with @code{+}.  The final request
+of the batch should begin with @code{-}, and may be empty.  Similarly
+responses may be batched, both in response to a set of batched
+requtests, or as a result of the @code{ASYNC} request.  Each
+non-ultimate line of a batched response begins with a @code{+}.  The
+final line should begin with @code{-}, and may otherwise be empty.
+Response to a batched request are in request order, except that a
+batch of @code{ASYNC} requests that are deferred provides only a
+single @code{DEFERRED} response.  Servers should not commence
+responses until all requests of a batch have been received.  There may
+be a fixed-capacity pipe between client and server, and sending
+responses before the client has started reading could result in
+deadlock.
+
 FIXME: Character encodings are not yet considered.
-FIXME: Consider some kind of batching mechanism.
 
 The following metavariables were used:
 
@@ -29295,6 +29303,9 @@ The following metavariables were used:
 
 @item @var{$bmipath}
 Pathname of a BMI file.
+
+@item @var{$flags}
+A comma-separated set of words indicating capabilities.
 
 @item @var{$from}
 The source path of the file containing the import or include.

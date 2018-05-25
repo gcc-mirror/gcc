@@ -12931,12 +12931,11 @@ cp_parser_module_preamble (cp_parser *parser)
 	break;
 
       only_import = state & 0x10;
-      unsigned peek = (state & 0x20
-		       ? lexer->buffer->length () + (state & 0xf) - 2 : 0);
       state &= 0xf;
-      cp_token tok;
       while (state)
 	{
+	  cp_token tok;
+
 	  /* This will swallow comments for us.  */
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
 					   | ((state == 2)
@@ -12945,15 +12944,6 @@ cp_parser_module_preamble (cp_parser *parser)
 	  state = atom_preamble_prefix_next (state, parse_in, tok.type,
 					     tok.location);
 	  vec_safe_push (lexer->buffer, tok);
-	}
-
-      /* Peek an import name.  */
-      if (peek && lexer->buffer->length () > peek)
-	{
-	  size_t length = lexer->buffer->length () - peek;
-	  if (tree name = cp_parser_peek_module_name (&(*lexer->buffer)[peek],
-						      length))
-	    maybe_peek_import (name, (*lexer->buffer)[peek].location);
 	}
     }
 

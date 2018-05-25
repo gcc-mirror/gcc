@@ -6676,7 +6676,6 @@ extern void import_module (const cp_expr &, bool, tree);
 extern tree module_name (unsigned);
 extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
-extern void maybe_peek_import (tree name, location_t from);
 extern void maybe_repeat_preamble (location_t, int count, cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
