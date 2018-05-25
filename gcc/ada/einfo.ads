@@ -2303,7 +2303,7 @@ package Einfo is
 --       Applies to all entities, true for access types and subtypes
 
 --    Is_Activation_Record (Flag305)
---       Applies to In_Parameters generated in Exp_Unst for nested
+--       Applies to E_In_Parameters generated in Exp_Unst for nested
 --       subprograms, to mark the added formal that carries the activation
 --       record created in the enclosing subprogram.
 

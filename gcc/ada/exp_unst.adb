@@ -400,14 +400,13 @@ package body Exp_Unst is
 
                procedure Note_Uplevel_Bound (N : Node_Id) is
                begin
-                  --  Entity name case
-                  --  Make sure that that the entity is declared in a
-                  --  subprogram. THis may not be the case for an type
+                  --  Entity name case. Make sure that the entity is declared
+                  --  in a subprogram. This may not be the case for for a type
                   --  in a loop appearing in a precondition.
 
                   if Is_Entity_Name (N) then
                      if Present (Entity (N))
-                        and then Present (Enclosing_Subprogram (Entity (N)))
+                       and then Present (Enclosing_Subprogram (Entity (N)))
                      then
                         Note_Uplevel_Ref
                           (E      => Entity (N),
@@ -617,17 +616,18 @@ package body Exp_Unst is
                               end if;
                            end if;
                         end if;
+
                      when Attribute_First
                         | Attribute_Last
                         | Attribute_Length
                      =>
-                        --  Special-case attributes of array objects
-                        --  whose bounds may be uplevel references.
-                        --  More complex prefixes are handled during
-                        --  full traversal. Note that if the nominal
-                        --  subtype of the prefix is unconstrained, the
-                        --  bound must be obtained from the object, not
-                        --  from the (possibly) uplevel reference,
+                        --  Special-case attributes of array objects whose
+                        --  bounds may be uplevel references. More complex
+                        --  prefixes are handled during full traversal. Note
+                        --  that if the nominal subtype of the prefix is
+                        --  unconstrained, the bound must be obtained from
+                        --  the object, not from the (possibly) uplevel
+                        --  reference.
 
                         if Is_Entity_Name (Prefix (N))
                           and then Is_Constrained (Etype (Prefix (N)))

@@ -28543,18 +28543,18 @@ package body Sem_Prag is
                      | Name_Off
                   =>
                      --  In CodePeer mode and GNATprove mode, we need to
-                     --  consider all assertions, unless they are
-                     --  disabled. Force Is_Checked on ignored assertions, in
-                     --  particular because transformations of the AST may
-                     --  depend on assertions being checked (e.g. the
-                     --  translation of attribute 'Loop_Entry).
+                     --  consider all assertions, unless they are disabled.
+                     --  Force Is_Checked on ignored assertions, in particular
+                     --  because transformations of the AST may depend on
+                     --  assertions being checked (e.g. the translation of
+                     --  attribute 'Loop_Entry).
 
                      if CodePeer_Mode or GNATprove_Mode then
                         Set_Is_Checked (N, True);
                         Set_Is_Ignored (N, False);
                      else
-                        Set_Is_Ignored (N, True);
                         Set_Is_Checked (N, False);
+                        Set_Is_Ignored (N, True);
                      end if;
 
                   when Name_Check
@@ -29787,9 +29787,8 @@ package body Sem_Prag is
       --  Follow subprogram renaming chain
 
       if Is_Subprogram (Def_Id)
-        and then
-          Nkind (Parent (Declaration_Node (Def_Id))) =
-                                         N_Subprogram_Renaming_Declaration
+        and then Nkind (Parent (Declaration_Node (Def_Id))) =
+                   N_Subprogram_Renaming_Declaration
         and then Present (Alias (Def_Id))
       then
          return Alias (Def_Id);

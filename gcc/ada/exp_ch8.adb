@@ -294,12 +294,12 @@ package body Exp_Ch8 is
                  Body_Id     => Body_Id,
                  Param_Specs => Copy_Parameter_List (Id));
 
-         --  Build body for renamed equality, to capture its current
-         --  meaning. It may be redefined later, but the renaming is
-         --  elaborated where it occurs. This is technically known as
-         --  Squirreling semantics. Renaming is rewritten as a subprogram
-         --  declaration, and the generated  body is inserted into the
-         --  freeze actions for the subprogram.
+         --  Build body for renamed equality, to capture its current meaning.
+         --  It may be redefined later, but the renaming is elaborated where
+         --  it occurs. This is technically known as Squirreling semantics.
+         --  Renaming is rewritten as a subprogram declaration, and the
+         --  generated body is inserted into the freeze actions for the
+         --  subprogram.
 
          else
             Decl :=

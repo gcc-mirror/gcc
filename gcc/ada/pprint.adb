@@ -765,8 +765,8 @@ package body Pprint is
                --  If argument does not already account for a closing
                --  parenthesis, count one here.
 
-               if not Nkind_In (Right, N_Quantified_Expression,
-                                       N_Aggregate)
+               if not Nkind_In (Right, N_Aggregate,
+                                       N_Quantified_Expression)
                then
                   Append_Paren := Append_Paren + 1;
                end if;
@@ -831,19 +831,21 @@ package body Pprint is
                end if;
 
             when N_Quantified_Expression =>
-               Right := Original_Node (Condition (Right));
+               Right        := Original_Node (Condition (Right));
                Append_Paren := Append_Paren + 1;
 
             when N_Aggregate =>
                declare
                   Aggr : constant Node_Id := Right;
                   Sub  : Node_Id;
+
                begin
                   Sub := First (Expressions (Aggr));
                   while Present (Sub) loop
                      if Sloc (Sub) > Sloc (Right) then
                         Right := Sub;
                      end if;
+
                      Next (Sub);
                   end loop;
 
@@ -852,6 +854,7 @@ package body Pprint is
                      if Sloc (Sub) > Sloc (Right) then
                         Right := Sub;
                      end if;
+
                      Next (Sub);
                   end loop;
 
@@ -948,8 +951,10 @@ package body Pprint is
                end;
 
             else
-               return Buffer (1 .. Index) & Expr_Name (Right, False)
-                 & (1 .. Append_Paren => ')');
+               return
+                 Buffer (1 .. Index)
+                   & Expr_Name (Right, False)
+                   & (1 .. Append_Paren => ')');
             end if;
          end;
       end;

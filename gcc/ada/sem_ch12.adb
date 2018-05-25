@@ -12371,9 +12371,9 @@ package body Sem_Ch12 is
 
             else
                declare
+                  Act_Iface_List : Elist_Id;
                   Iface          : Node_Id;
                   Iface_Ent      : Entity_Id;
-                  Act_Iface_List : Elist_Id;
 
                   function Instance_Exists (I : Entity_Id) return Boolean;
                   --  If the interface entity is declared in a generic unit,
@@ -12413,8 +12413,8 @@ package body Sem_Ch12 is
                   while Present (Iface) loop
                      Iface_Ent := Get_Instance_Of (Entity (Iface));
 
-                     if  Is_Ancestor (Iface_Ent, Act_T)
-                      or else  Is_Progenitor (Iface_Ent, Act_T)
+                     if Is_Ancestor (Iface_Ent, Act_T)
+                      or else Is_Progenitor (Iface_Ent, Act_T)
                      then
                         null;
 
@@ -12427,7 +12427,7 @@ package body Sem_Ch12 is
                         Error_Msg_Name_1 := Chars (Act_T);
                         Error_Msg_NE
                           ("Actual% must implement interface&",
-                            Actual,  Etype (Iface));
+                           Actual, Etype (Iface));
                      end if;
 
                      Next (Iface);

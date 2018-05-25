@@ -275,8 +275,6 @@ package body Einfo is
    --    Entry_Max_Queue_Lengths_Array   Node35
    --    Import_Pragma                   Node35
 
-   --    Prev_Entity                     Node36
-
    --    Validated_Object                Node38
    --    Predicated_Parent               Node38
    --    Class_Wide_Clone                Node38
