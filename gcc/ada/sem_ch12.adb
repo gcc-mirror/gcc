@@ -12356,6 +12356,48 @@ package body Sem_Ch12 is
          Ancestor_Discr : Entity_Id;
 
       begin
+         --  Verify that the actual includes the progenitors of the formal,
+         --  if any. The formal may depend on previous formals and their
+         --  instance, so we must examine instance of interfaces if present.
+         --  The actual may be an extension of an interface, in which case
+         --  it does not appear in the interface list, so this must be
+         --  checked separately.
+         --  We omit the check if the interface is declared in an (enclosing)
+         --  generic because the interface implemented by the actual may have
+         --  the same name but a different entity. A small remaining gap ???
+
+         if Present (Interface_List (Def)) then
+            if not Has_Interfaces (Act_T) then
+               Error_Msg_NE
+                 ("actual must implement all interfaces of formal&",
+                   Actual, A_Gen_T);
+
+            else
+               declare
+                  Iface : Node_Id;
+                  Iface_Ent : Entity_Id;
+
+               begin
+                  Iface := First (Abstract_Interface_List (A_Gen_T));
+
+                  while Present (Iface) loop
+                     Iface_Ent := Get_Instance_Of (Entity (Iface));
+                     if not Is_Progenitor (Iface_Ent, Act_T)
+                     and then not Is_Ancestor (Iface_Ent, Act_T)
+                     and then Ekind (Scope (Iface_Ent)) /= E_Generic_Package
+                     then
+                        Error_Msg_Name_1 := Chars (Act_T);
+                        Error_Msg_NE
+                          ("Actual% must implement interface&",
+                            Actual,  Etype (Iface));
+                     end if;
+
+                     Next (Iface);
+                  end loop;
+               end;
+            end if;
+         end if;
+
          --  If the parent type in the generic declaration is itself a previous
          --  formal type, then it is local to the generic and absent from the
          --  analyzed generic definition. In that case the ancestor is the
