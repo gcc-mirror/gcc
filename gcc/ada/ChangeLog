@@ -1,3 +1,8 @@
+2018-05-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* pprint.adb (Expression_Name): Strip too long expressions to avoid
+	carrying very large strings.
+
 2018-05-25  Patrick Bernardi  <bernardi@adacore.com>
 
 	* switch-b.adb (Scan_Binder_Switches): binder switch -Q accepts Natural

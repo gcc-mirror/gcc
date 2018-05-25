@@ -883,6 +883,7 @@ package body Pprint is
          end if;
 
          declare
+            Threshold        : constant := 256;
             Buffer           : String (1 .. Natural (End_Sloc - Scn));
             Index            : Natural := 0;
             Skipping_Comment : Boolean := False;
@@ -934,6 +935,12 @@ package body Pprint is
                            end if;
                         end if;
                   end case;
+
+                  --  Give up on too long strings
+
+                  if Index >= Threshold then
+                     return Buffer (1 .. Index) & "...";
+                  end if;
 
                   Scn := Scn + 1;
                end loop;
