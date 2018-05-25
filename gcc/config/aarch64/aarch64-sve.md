@@ -1803,6 +1803,21 @@
   aarch64_sve_prepare_conditional_op (operands, 5, commutative_p);
 })
 
+(define_expand "cond_<optab><mode>"
+  [(set (match_operand:SVE_SDI 0 "register_operand")
+	(unspec:SVE_SDI
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (SVE_INT_BINARY_SD:SVE_SDI
+	     (match_operand:SVE_SDI 2 "register_operand")
+	     (match_operand:SVE_SDI 3 "register_operand"))
+	   (match_operand:SVE_SDI 4 "register_operand")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+{
+  bool commutative_p = (GET_RTX_CLASS (<CODE>) == RTX_COMM_ARITH);
+  aarch64_sve_prepare_conditional_op (operands, 5, commutative_p);
+})
+
 ;; Predicated integer operations.
 (define_insn "*cond_<optab><mode>"
   [(set (match_operand:SVE_I 0 "register_operand" "=w")
@@ -1817,6 +1832,19 @@
   "<sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
 )
 
+(define_insn "*cond_<optab><mode>"
+  [(set (match_operand:SVE_SDI 0 "register_operand" "=w")
+	(unspec:SVE_SDI
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (SVE_INT_BINARY_SD:SVE_SDI
+	     (match_operand:SVE_SDI 2 "register_operand" "0")
+	     (match_operand:SVE_SDI 3 "register_operand" "w"))
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "<sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+)
+
 ;; Predicated integer operations with the operands reversed.
 (define_insn "*cond_<optab><mode>"
   [(set (match_operand:SVE_I 0 "register_operand" "=w")
@@ -1825,6 +1853,19 @@
 	   (SVE_INT_BINARY_REV:SVE_I
 	     (match_operand:SVE_I 2 "register_operand" "w")
 	     (match_operand:SVE_I 3 "register_operand" "0"))
+	   (match_dup 3)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "<sve_int_op>r\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>"
+)
+
+(define_insn "*cond_<optab><mode>"
+  [(set (match_operand:SVE_SDI 0 "register_operand" "=w")
+	(unspec:SVE_SDI
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (SVE_INT_BINARY_SD:SVE_SDI
+	     (match_operand:SVE_SDI 2 "register_operand" "w")
+	     (match_operand:SVE_SDI 3 "register_operand" "0"))
 	   (match_dup 3)]
 	  UNSPEC_SEL))]
   "TARGET_SVE"

@@ -6,6 +6,8 @@
 
 #define add(A, B) ((A) + (B))
 #define sub(A, B) ((A) - (B))
+#define mul(A, B) ((A) * (B))
+#define div(A, B) ((A) / (B))
 
 #define DEF(OP)							\
   void __attribute__ ((noipa))					\
@@ -34,6 +36,8 @@
 #define FOR_EACH_OP(T)				\
   T (add)					\
   T (sub)					\
+  T (mul)					\
+  T (div)					\
   T (__builtin_fmax)				\
   T (__builtin_fmin)
 
@@ -54,5 +58,7 @@ main (void)
 
 /* { dg-final { scan-tree-dump { = \.COND_ADD} "optimized" { target vect_double_cond_arith } } } */
 /* { dg-final { scan-tree-dump { = \.COND_SUB} "optimized" { target vect_double_cond_arith } } } */
+/* { dg-final { scan-tree-dump { = \.COND_MUL} "optimized" { target vect_double_cond_arith } } } */
+/* { dg-final { scan-tree-dump { = \.COND_RDIV} "optimized" { target vect_double_cond_arith } } } */
 /* { dg-final { scan-tree-dump { = \.COND_MAX} "optimized" { target vect_double_cond_arith } } } */
 /* { dg-final { scan-tree-dump { = \.COND_MIN} "optimized" { target vect_double_cond_arith } } } */

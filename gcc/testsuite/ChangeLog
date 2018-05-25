@@ -1,5 +1,18 @@
 2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* lib/target-supports.exp
+	(check_effective_target_vect_double_cond_arith): Include
+	multiplication and division.
+	* gcc.dg/vect/pr53773.c: Do not expect a scalar tail when using
+	fully-masked loops with a fixed vector length.
+	* gcc.dg/vect/vect-cond-arith-1.c: Add multiplication and division
+	tests.
+	* gcc.target/aarch64/sve/vcond_8.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_9.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_12.c: Add multiplication tests.
+
+2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* gcc.target/aarch64/sve/div_1.c: New test.
 	* gcc.target/aarch64/sve/div_1_run.c: Likewise.
 	* gcc.target/aarch64/sve/mul_highpart_2.c: Likewise.

@@ -5590,8 +5590,9 @@ proc check_effective_target_vect_double { } {
     return $et_vect_double_saved($et_index)
 }
 
-# Return 1 if the target supports conditional addition, subtraction, minimum
-# and maximum on vectors of double, via the cond_ optabs.  Return 0 otherwise.
+# Return 1 if the target supports conditional addition, subtraction,
+# multiplication, division, minimum and maximum on vectors of double,
+# via the cond_ optabs.  Return 0 otherwise.
 
 proc check_effective_target_vect_double_cond_arith { } {
     return [check_effective_target_aarch64_sve]

@@ -5,6 +5,8 @@
 
 #define add(A, B) ((A) + (B))
 #define sub(A, B) ((A) - (B))
+#define mul(A, B) ((A) * (B))
+#define div(A, B) ((A) / (B))
 #define max(A, B) ((A) > (B) ? (A) : (B))
 #define min(A, B) ((A) < (B) ? (A) : (B))
 #define and(A, B) ((A) & (B))
@@ -29,6 +31,7 @@
 #define FOR_EACH_INT_TYPE(T, TYPE) \
   T (TYPE, TYPE, add) \
   T (TYPE, TYPE, sub) \
+  T (TYPE, TYPE, mul) \
   T (TYPE, TYPE, max) \
   T (TYPE, TYPE, min) \
   T (TYPE, TYPE, and) \
@@ -38,6 +41,8 @@
 #define FOR_EACH_FP_TYPE(T, TYPE, CMPTYPE, SUFFIX) \
   T (TYPE, CMPTYPE, add) \
   T (TYPE, CMPTYPE, sub) \
+  T (TYPE, CMPTYPE, mul) \
+  /* No div because that gets converted into a mul anyway.  */ \
   T (TYPE, CMPTYPE, __builtin_fmax##SUFFIX) \
   T (TYPE, CMPTYPE, __builtin_fmin##SUFFIX)
 
@@ -58,10 +63,10 @@ FOR_EACH_LOOP (DEF_LOOP)
 
 /* { dg-final { scan-assembler-not {\tmov\tz[0-9]+\.., z[0-9]+} } } */
 
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.b,} 14 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h,} 18 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.s,} 18 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.d,} 18 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.b,} 16 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h,} 21 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.s,} 21 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.d,} 21 } } */
 
 /* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.b, p[0-7]/m,} 2 } } */
 /* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.h, p[0-7]/m,} 2 } } */
@@ -72,6 +77,11 @@ FOR_EACH_LOOP (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\tsub\tz[0-9]+\.h, p[0-7]/m,} 2 } } */
 /* { dg-final { scan-assembler-times {\tsub\tz[0-9]+\.s, p[0-7]/m,} 2 } } */
 /* { dg-final { scan-assembler-times {\tsub\tz[0-9]+\.d, p[0-7]/m,} 2 } } */
+
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.b, p[0-7]/m,} 2 } } */
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.h, p[0-7]/m,} 2 } } */
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.s, p[0-7]/m,} 2 } } */
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.d, p[0-7]/m,} 2 } } */
 
 /* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.b, p[0-7]/m,} 1 } } */
 /* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
@@ -115,6 +125,10 @@ FOR_EACH_LOOP (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\tfsub\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
 /* { dg-final { scan-assembler-times {\tfsub\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
 /* { dg-final { scan-assembler-times {\tfsub\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
+
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
 
 /* { dg-final { scan-assembler-times {\tfmaxnm\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmaxnm\tz[0-9]+\.s, p[0-7]/m,} 1 } } */

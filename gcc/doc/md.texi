@@ -6333,6 +6333,11 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 
 @cindex @code{cond_add@var{mode}} instruction pattern
 @cindex @code{cond_sub@var{mode}} instruction pattern
+@cindex @code{cond_mul@var{mode}} instruction pattern
+@cindex @code{cond_div@var{mode}} instruction pattern
+@cindex @code{cond_udiv@var{mode}} instruction pattern
+@cindex @code{cond_mod@var{mode}} instruction pattern
+@cindex @code{cond_umod@var{mode}} instruction pattern
 @cindex @code{cond_and@var{mode}} instruction pattern
 @cindex @code{cond_ior@var{mode}} instruction pattern
 @cindex @code{cond_xor@var{mode}} instruction pattern
@@ -6342,6 +6347,11 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @cindex @code{cond_umax@var{mode}} instruction pattern
 @item @samp{cond_add@var{mode}}
 @itemx @samp{cond_sub@var{mode}}
+@itemx @samp{cond_mul@var{mode}}
+@itemx @samp{cond_div@var{mode}}
+@itemx @samp{cond_udiv@var{mode}}
+@itemx @samp{cond_mod@var{mode}}
+@itemx @samp{cond_umod@var{mode}}
 @itemx @samp{cond_and@var{mode}}
 @itemx @samp{cond_ior@var{mode}}
 @itemx @samp{cond_xor@var{mode}}

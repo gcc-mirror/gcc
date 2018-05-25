@@ -5,6 +5,8 @@
 
 #define add(A, B) ((A) + (B))
 #define sub(A, B) ((A) - (B))
+#define mul(A, B) ((A) * (B))
+#define div(A, B) ((A) / (B))
 #define max(A, B) ((A) > (B) ? (A) : (B))
 #define min(A, B) ((A) < (B) ? (A) : (B))
 #define and(A, B) ((A) & (B))
@@ -27,6 +29,7 @@
 #define FOR_EACH_INT_TYPE(T, TYPE) \
   T (TYPE, TYPE, add) \
   T (TYPE, TYPE, sub) \
+  T (TYPE, TYPE, mul) \
   T (TYPE, TYPE, max) \
   T (TYPE, TYPE, min) \
   T (TYPE, TYPE, and) \
@@ -36,6 +39,8 @@
 #define FOR_EACH_FP_TYPE(T, TYPE, CMPTYPE, SUFFIX) \
   T (TYPE, CMPTYPE, add) \
   T (TYPE, CMPTYPE, sub) \
+  T (TYPE, CMPTYPE, mul) \
+  T (TYPE, CMPTYPE, div) \
   T (TYPE, CMPTYPE, __builtin_fmax##SUFFIX) \
   T (TYPE, CMPTYPE, __builtin_fmin##SUFFIX)
 
@@ -66,6 +71,11 @@ FOR_EACH_LOOP (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\tsubr\tz[0-9]+\.h, p[0-7]/m,} 2 } } */
 /* { dg-final { scan-assembler-times {\tsubr\tz[0-9]+\.s, p[0-7]/m,} 2 } } */
 /* { dg-final { scan-assembler-times {\tsubr\tz[0-9]+\.d, p[0-7]/m,} 2 } } */
+
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.b, p[0-7]/m,} 2 } } */
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.h, p[0-7]/m,} 2 } } */
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.s, p[0-7]/m,} 2 } } */
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.d, p[0-7]/m,} 2 } } */
 
 /* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.b, p[0-7]/m,} 1 } } */
 /* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
@@ -109,6 +119,14 @@ FOR_EACH_LOOP (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\tfsubr\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
 /* { dg-final { scan-assembler-times {\tfsubr\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
 /* { dg-final { scan-assembler-times {\tfsubr\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
+
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\tfmul\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
+
+/* { dg-final { scan-assembler-times {\tfdivr\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\tfdivr\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
+/* { dg-final { scan-assembler-times {\tfdivr\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
 
 /* { dg-final { scan-assembler-times {\tfmaxnm\tz[0-9]+\.h, p[0-7]/m,} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmaxnm\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
