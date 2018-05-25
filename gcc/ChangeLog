@@ -1,3 +1,29 @@
+2018-05-25  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_epilogue_uses): New.
+	* config/riscv/riscv.c (struct machine_function): Add
+	interrupt_handler_p and attribute_checked_p fields.
+	(riscv_attribute_table): Add interrupt.
+	(riscv_interrupt_type_p): New.
+	(riscv_save_reg_p): Save extra regs for interrupt handler.
+	(riscv_use_save_libcall): Return false  for interrupt handler.
+	(riscv_first_stack_step): Add forward declaration.
+	(riscv_compute_frame_info): New local interrupt_save_t1.  Set it
+	for interrupt handler with large frame.  Use it for saved reg list.
+	(riscv_expand_prologue): Move flag_stack_usage_info support to
+	eliminate duplication.
+	(riscv_expand_epilogue): Generate mret for interrupt handler.
+	(riscv_epilogue_uses): New.
+	(riscv_can_use_return_insn): Return false for interrupt handler.
+	(riscv_function_ok_for_sibcall): Likewise.
+	(riscv_set_current_function): Add interrupt handler support.
+	* config/riscv/riscv.h (EPILOGUE_USES): Call riscv_epilogue_uses.
+	* config/riscv/riscv.md (UNSPECV_MRET): New.
+	(GP_REGNUM): New.
+	(riscv_frflags, riscv_fsflags): Use tab after opcode.
+	(riscv_mret): New.
+	* doc/extend.texi (RISC-V Function Attributes) <interrupt>: New.
+
 2018-05-25  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/85712
