@@ -1,3 +1,8 @@
+2018-05-25  Jason Merrill  <jason@redhat.com>
+
+	CWG 616, 1213 - value category of subobject references.
+	* tree.c (lvalue_kind): Fix handling of ARRAY_REF of pointer.
+
 2018-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85842 - -Wreturn-type, constexpr if and generic lambda.
