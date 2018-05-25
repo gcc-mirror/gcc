@@ -1,3 +1,8 @@
+2018-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx512f-vcvtusi2sd64-1.c: Update scan string.
+	* gcc.target/i386/avx512f-vcvtusi2ss64-1.c: Ditto.
+
 2017-05-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82814
