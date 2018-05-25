@@ -74,6 +74,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (FLOOR)
 DEFINE_INT_AND_FLOAT_ROUND_FN (CEIL)
 DEFINE_INT_AND_FLOAT_ROUND_FN (ROUND)
 DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
+
+/* Binary operations and their associated IFN_COND_* function.  */
+(define_operator_list UNCOND_BINARY
+  plus minus
+  min max
+  bit_and bit_ior bit_xor)
+(define_operator_list COND_BINARY
+  IFN_COND_ADD IFN_COND_SUB
+  IFN_COND_MIN IFN_COND_MAX
+  IFN_COND_AND IFN_COND_IOR IFN_COND_XOR)
     
 /* As opposed to convert?, this still creates a single pattern, so
    it is not a suitable replacement for convert? in all cases.  */
@@ -4780,3 +4790,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (simplify
       (cmp (popcount @0) integer_zerop)
       (rep @0 { build_zero_cst (TREE_TYPE (@0)); }))))
+
+/* Simplify:
+
+     a = a1 op a2
+     r = c ? a : b;
+
+   to:
+
+     r = c ? a1 op a2 : b;
+
+   if the target can do it in one go.  This makes the operation conditional
+   on c, so could drop potentially-trapping arithmetic, but that's a valid
+   simplification if the result of the operation isn't needed.  */
+(for uncond_op (UNCOND_BINARY)
+     cond_op (COND_BINARY)
+ (simplify
+  (vec_cond @0 (view_convert? (uncond_op@4 @1 @2)) @3)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_op @0 @1 @2 (view_convert:op_type @3))))))
+ (simplify
+  (vec_cond @0 @1 (view_convert? (uncond_op@4 @2 @3)))
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1)))))))

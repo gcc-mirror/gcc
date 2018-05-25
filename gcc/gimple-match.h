@@ -49,17 +49,19 @@ struct gimple_match_op
   gimple_match_op (code_helper, tree, tree);
   gimple_match_op (code_helper, tree, tree, tree);
   gimple_match_op (code_helper, tree, tree, tree, tree);
+  gimple_match_op (code_helper, tree, tree, tree, tree, tree);
 
   void set_op (code_helper, tree, unsigned int);
   void set_op (code_helper, tree, tree);
   void set_op (code_helper, tree, tree, tree);
   void set_op (code_helper, tree, tree, tree, tree);
+  void set_op (code_helper, tree, tree, tree, tree, tree);
   void set_value (tree);
 
   tree op_or_null (unsigned int) const;
 
   /* The maximum value of NUM_OPS.  */
-  static const unsigned int MAX_NUM_OPS = 3;
+  static const unsigned int MAX_NUM_OPS = 4;
 
   /* The operation being performed.  */
   code_helper code;
@@ -113,6 +115,17 @@ gimple_match_op::gimple_match_op (code_helper code_in, tree type_in,
   ops[2] = op2;
 }
 
+inline
+gimple_match_op::gimple_match_op (code_helper code_in, tree type_in,
+				  tree op0, tree op1, tree op2, tree op3)
+  : code (code_in), type (type_in), num_ops (4)
+{
+  ops[0] = op0;
+  ops[1] = op1;
+  ops[2] = op2;
+  ops[3] = op3;
+}
+
 /* Change the operation performed to CODE_IN, the type of the result to
    TYPE_IN, and the number of operands to NUM_OPS_IN.  The caller needs
    to set the operands itself.  */
@@ -160,6 +173,19 @@ gimple_match_op::set_op (code_helper code_in, tree type_in,
   ops[2] = op2;
 }
 
+inline void
+gimple_match_op::set_op (code_helper code_in, tree type_in,
+			 tree op0, tree op1, tree op2, tree op3)
+{
+  code = code_in;
+  type = type_in;
+  num_ops = 4;
+  ops[0] = op0;
+  ops[1] = op1;
+  ops[2] = op2;
+  ops[3] = op3;
+}
+
 /* Set the "operation" to be the single value VALUE, such as a constant
    or SSA_NAME.  */
 
@@ -196,6 +222,7 @@ bool gimple_simplify (gimple *, gimple_match_op *, gimple_seq *,
 bool gimple_resimplify1 (gimple_seq *, gimple_match_op *, tree (*)(tree));
 bool gimple_resimplify2 (gimple_seq *, gimple_match_op *, tree (*)(tree));
 bool gimple_resimplify3 (gimple_seq *, gimple_match_op *, tree (*)(tree));
+bool gimple_resimplify4 (gimple_seq *, gimple_match_op *, tree (*)(tree));
 tree maybe_push_res_to_seq (gimple_match_op *, gimple_seq *,
 			    tree res = NULL_TREE);
 void maybe_build_generic_op (gimple_match_op *);

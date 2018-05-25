@@ -16041,6 +16041,54 @@ aarch64_expand_sve_vcond (machine_mode data_mode, machine_mode cmp_mode,
   emit_set_insn (ops[0], gen_rtx_UNSPEC (data_mode, vec, UNSPEC_SEL));
 }
 
+/* Prepare a cond_<optab><mode> operation that has the operands
+   given by OPERANDS, where:
+
+   - operand 0 is the destination
+   - operand 1 is a predicate
+   - operands 2 to NOPS - 2 are the operands to an operation that is
+     performed for active lanes
+   - operand NOPS - 1 specifies the values to use for inactive lanes.
+
+   COMMUTATIVE_P is true if operands 2 and 3 are commutative.  In that case,
+   no pattern is provided for a tie between operands 3 and NOPS - 1.  */
+
+void
+aarch64_sve_prepare_conditional_op (rtx *operands, unsigned int nops,
+				    bool commutative_p)
+{
+  /* We can do the operation directly if the "else" value matches one
+     of the other inputs.  */
+  for (unsigned int i = 2; i < nops - 1; ++i)
+    if (rtx_equal_p (operands[i], operands[nops - 1]))
+      {
+	if (i == 3 && commutative_p)
+	  std::swap (operands[2], operands[3]);
+	return;
+      }
+
+  /* If the "else" value is different from the other operands, we have
+     the choice of doing a SEL on the output or a SEL on an input.
+     Neither choice is better in all cases, but one advantage of
+     selecting the input is that it can avoid a move when the output
+     needs to be distinct from the inputs.  E.g. if operand N maps to
+     register N, selecting the output would give:
+
+	MOVPRFX Z0.S, Z2.S
+	ADD Z0.S, P1/M, Z0.S, Z3.S
+	SEL Z0.S, P1, Z0.S, Z4.S
+
+     whereas selecting the input avoids the MOVPRFX:
+
+	SEL Z0.S, P1, Z2.S, Z4.S
+	ADD Z0.S, P1/M, Z0.S, Z3.S.  */
+  machine_mode mode = GET_MODE (operands[0]);
+  rtx temp = gen_reg_rtx (mode);
+  rtvec vec = gen_rtvec (3, operands[1], operands[2], operands[nops - 1]);
+  emit_set_insn (temp, gen_rtx_UNSPEC (mode, vec, UNSPEC_SEL));
+  operands[2] = operands[nops - 1] = temp;
+}
+
 /* Implement TARGET_MODES_TIEABLE_P.  In principle we should always return
    true.  However due to issues with register allocation it is preferable
    to avoid tieing integer scalar and FP scalar modes.  Executing integer

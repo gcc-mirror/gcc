@@ -51,6 +51,8 @@ static bool gimple_simplify (gimple_match_op *, gimple_seq *, tree (*)(tree),
 			     code_helper, tree, tree, tree);
 static bool gimple_simplify (gimple_match_op *, gimple_seq *, tree (*)(tree),
 			     code_helper, tree, tree, tree, tree);
+static bool gimple_simplify (gimple_match_op *, gimple_seq *, tree (*)(tree),
+			     code_helper, tree, tree, tree, tree, tree);
 
 const unsigned int gimple_match_op::MAX_NUM_OPS;
 
@@ -215,6 +217,30 @@ gimple_resimplify3 (gimple_seq *seq, gimple_match_op *res_op,
   return canonicalized;
 }
 
+/* Helper that matches and simplifies the toplevel result from
+   a gimple_simplify run (where we don't want to build
+   a stmt in case it's used in in-place folding).  Replaces
+   RES_OP with a simplified and/or canonicalized result and
+   returns whether any change was made.  */
+
+bool
+gimple_resimplify4 (gimple_seq *seq, gimple_match_op *res_op,
+		    tree (*valueize)(tree))
+{
+  /* No constant folding is defined for four-operand functions.  */
+
+  gimple_match_op res_op2 (*res_op);
+  if (gimple_simplify (&res_op2, seq, valueize,
+		       res_op->code, res_op->type,
+		       res_op->ops[0], res_op->ops[1], res_op->ops[2],
+		       res_op->ops[3]))
+    {
+      *res_op = res_op2;
+      return true;
+    }
+
+  return false;
+}
 
 /* If in GIMPLE the operation described by RES_OP should be single-rhs,
    build a GENERIC tree for that expression and update RES_OP accordingly.  */
@@ -256,7 +282,8 @@ build_call_internal (internal_fn fn, gimple_match_op *res_op)
   return gimple_build_call_internal (fn, res_op->num_ops,
 				     res_op->op_or_null (0),
 				     res_op->op_or_null (1),
-				     res_op->op_or_null (2));
+				     res_op->op_or_null (2),
+				     res_op->op_or_null (3));
 }
 
 /* Push the exploded expression described by RES_OP as a statement to
@@ -343,7 +370,8 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
 	  new_stmt = gimple_build_call (decl, num_ops,
 					res_op->op_or_null (0),
 					res_op->op_or_null (1),
-					res_op->op_or_null (2));
+					res_op->op_or_null (2),
+					res_op->op_or_null (3));
 	}
       if (!res)
 	{
@@ -654,7 +682,7 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
       /* ???  This way we can't simplify calls with side-effects.  */
       if (gimple_call_lhs (stmt) != NULL_TREE
 	  && gimple_call_num_args (stmt) >= 1
-	  && gimple_call_num_args (stmt) <= 3)
+	  && gimple_call_num_args (stmt) <= 4)
 	{
 	  bool valueized = false;
 	  combined_fn cfn;
@@ -696,6 +724,9 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 		      || valueized);
 	    case 3:
 	      return (gimple_resimplify3 (seq, res_op, valueize)
+		      || valueized);
+	    case 4:
+	      return (gimple_resimplify4 (seq, res_op, valueize)
 		      || valueized);
 	    default:
 	     gcc_unreachable ();
