@@ -13,7 +13,7 @@ end critical fkl ! { dg-error "Expecting END PROGRAM" }
 
 sync all (stat=1) ! { dg-error "Syntax error in SYNC ALL" }
 sync all ( stat = n,stat=k) ! { dg-error "Redundant STAT" }
-sync memory (errmsg=str)
+sync memory (errmsg=str) ! { dg-error "must be a scalar CHARACTER variable" }
 sync memory (errmsg=n) ! { dg-error "must be a scalar CHARACTER variable" }
 sync images (*, stat=1.0) ! { dg-error "Syntax error in SYNC IMAGES" }
 sync images (-1) ! { dg-error "must between 1 and num_images" }
