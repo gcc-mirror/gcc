@@ -1,5 +1,9 @@
 2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* gcc.dg/vect/bb-slp-div-1.c: New XFAILed test.
+
+2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* lib/target-supports.exp
 	(check_effective_target_vect_double_cond_arith): New proc.
 	* gcc.dg/vect/vect-cond-arith-1.c: New test.
