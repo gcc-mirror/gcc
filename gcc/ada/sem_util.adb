@@ -17882,13 +17882,14 @@ package body Sem_Util is
       Formal : Entity_Id := First_Formal (Get_Called_Entity (Call));
 
    begin
-      while Present (Formal) loop
-         pragma Assert (Present (Formal));
+      while Present (Formal) and then Present (Actual) loop
          Handle_Parameter (Formal, Actual);
+
          Next_Formal (Formal);
          Next_Actual (Actual);
       end loop;
 
+      pragma Assert (No (Formal));
       pragma Assert (No (Actual));
    end Iterate_Call_Parameters;
 
