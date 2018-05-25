@@ -1,3 +1,11 @@
+2018-05-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Positional): Bump default for
+	Max_Others_Replicate to 32. Update comments.
+	* osint.ads (Unknown_Attributes): No longer pretend this is a constant.
+	(No_File_Info_Cache): Initialize separately.
+	* osint.adb (No_File_Info_Cache): Update initializer.
+
 2018-05-25  Javier Miranda  <miranda@adacore.com>
 
 	* sem_res.adb (Resolve_Membership_Op): Allow the use of the membership
