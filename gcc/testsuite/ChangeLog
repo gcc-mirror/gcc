@@ -1,3 +1,10 @@
+2018-05-25  Paul Koning  <ni1d@arrl.net>
+
+	* gcc.c-torture/compile/20151204.c: Skip if pdp11.
+	* gcc.c-torture/compile/pr55921.c: Ditto.
+	* gcc.c-torture/compile/pr60655-1.c: Ditto.
+	* gcc.c-torture/compile/vector-align-1.c: Add max alignment if pdp11.
+
 2018-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85832
