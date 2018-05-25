@@ -1,5 +1,11 @@
 2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/85543
+	* resolve.c (update_current_proc_array_outer_dependency): Avoid NULL
+	pointer dereference.
+
+2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/85780
 	* resolve.c (resolve_fl_procedure): Avoid NULL dereference.
 
