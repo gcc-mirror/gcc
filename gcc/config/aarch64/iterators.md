@@ -464,13 +464,6 @@
     UNSPEC_UMUL_HIGHPART ; Used in aarch64-sve.md.
     UNSPEC_COND_ADD	; Used in aarch64-sve.md.
     UNSPEC_COND_SUB	; Used in aarch64-sve.md.
-    UNSPEC_COND_SMAX	; Used in aarch64-sve.md.
-    UNSPEC_COND_UMAX	; Used in aarch64-sve.md.
-    UNSPEC_COND_SMIN	; Used in aarch64-sve.md.
-    UNSPEC_COND_UMIN	; Used in aarch64-sve.md.
-    UNSPEC_COND_AND	; Used in aarch64-sve.md.
-    UNSPEC_COND_ORR	; Used in aarch64-sve.md.
-    UNSPEC_COND_EOR	; Used in aarch64-sve.md.
     UNSPEC_COND_LT	; Used in aarch64-sve.md.
     UNSPEC_COND_LE	; Used in aarch64-sve.md.
     UNSPEC_COND_EQ	; Used in aarch64-sve.md.
@@ -1207,6 +1200,9 @@
 ;; SVE floating-point unary operations.
 (define_code_iterator SVE_FP_UNARY [neg abs sqrt])
 
+(define_code_iterator SVE_INT_BINARY [plus minus smax umax smin umin
+				      and ior xor])
+
 ;; SVE integer comparisons.
 (define_code_iterator SVE_INT_CMP [lt le eq ne ge gt ltu leu geu gtu])
 
@@ -1377,6 +1373,7 @@
 
 ;; The integer SVE instruction that implements an rtx code.
 (define_code_attr sve_int_op [(plus "add")
+			      (minus "sub")
 			      (neg "neg")
 			      (smin "smin")
 			      (smax "smax")
@@ -1532,14 +1529,7 @@
 
 (define_int_iterator MUL_HIGHPART [UNSPEC_SMUL_HIGHPART UNSPEC_UMUL_HIGHPART])
 
-(define_int_iterator SVE_COND_INT_OP [UNSPEC_COND_ADD UNSPEC_COND_SUB
-				      UNSPEC_COND_SMAX UNSPEC_COND_UMAX
-				      UNSPEC_COND_SMIN UNSPEC_COND_UMIN
-				      UNSPEC_COND_AND
-				      UNSPEC_COND_ORR
-				      UNSPEC_COND_EOR])
-
-(define_int_iterator SVE_COND_FP_OP [UNSPEC_COND_ADD UNSPEC_COND_SUB])
+(define_int_iterator SVE_COND_FP_BINARY [UNSPEC_COND_ADD UNSPEC_COND_SUB])
 
 (define_int_iterator SVE_COND_FP_CMP [UNSPEC_COND_LT UNSPEC_COND_LE
 				      UNSPEC_COND_EQ UNSPEC_COND_NE
@@ -1569,14 +1559,7 @@
 			(UNSPEC_IORV "ior")
 			(UNSPEC_XORV "xor")
 			(UNSPEC_COND_ADD "add")
-			(UNSPEC_COND_SUB "sub")
-			(UNSPEC_COND_SMAX "smax")
-			(UNSPEC_COND_UMAX "umax")
-			(UNSPEC_COND_SMIN "smin")
-			(UNSPEC_COND_UMIN "umin")
-			(UNSPEC_COND_AND "and")
-			(UNSPEC_COND_ORR "ior")
-			(UNSPEC_COND_EOR "xor")])
+			(UNSPEC_COND_SUB "sub")])
 
 (define_int_attr  maxmin_uns [(UNSPEC_UMAXV "umax")
 			      (UNSPEC_UMINV "umin")
@@ -1786,16 +1769,6 @@
 			 (UNSPEC_COND_NE "ne")
 			 (UNSPEC_COND_GE "ge")
 			 (UNSPEC_COND_GT "gt")])
-
-(define_int_attr sve_int_op [(UNSPEC_COND_ADD "add")
-			     (UNSPEC_COND_SUB "sub")
-			     (UNSPEC_COND_SMAX "smax")
-			     (UNSPEC_COND_UMAX "umax")
-			     (UNSPEC_COND_SMIN "smin")
-			     (UNSPEC_COND_UMIN "umin")
-			     (UNSPEC_COND_AND "and")
-			     (UNSPEC_COND_ORR "orr")
-			     (UNSPEC_COND_EOR "eor")])
 
 (define_int_attr sve_fp_op [(UNSPEC_COND_ADD "fadd")
 			    (UNSPEC_COND_SUB "fsub")])

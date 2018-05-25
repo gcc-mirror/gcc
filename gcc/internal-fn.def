@@ -173,7 +173,7 @@ DEF_INTERNAL_OPTAB_FN (REDUC_XOR, ECF_CONST | ECF_NOTHROW,
 
 /* Extract the last active element from a vector.  */
 DEF_INTERNAL_OPTAB_FN (EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
-		       extract_last, cond_unary)
+		       extract_last, fold_left)
 
 /* Same, but return the first argument if no elements are active.  */
 DEF_INTERNAL_OPTAB_FN (FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,

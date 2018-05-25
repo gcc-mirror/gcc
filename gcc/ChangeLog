@@ -1,5 +1,33 @@
 2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* doc/md.texi: Update the documentation of the cond_* optabs
+	to mention the new final operand.  Fix GET_MODE_NUNITS call.
+	Describe the scalar case too.
+	* internal-fn.def (IFN_EXTRACT_LAST): Change type to fold_left.
+	* internal-fn.c (expand_cond_unary_optab_fn): Expect 3 operands
+	instead of 2.
+	(expand_cond_binary_optab_fn): Expect 4 operands instead of 3.
+	(get_conditional_internal_fn): Update comment.
+	* tree-vect-loop.c (vectorizable_reduction): Pass the original
+	accumulator value as a final argument to conditional functions.
+	* config/aarch64/aarch64-sve.md (cond_<optab><mode>): Turn into
+	a define_expand and add an "else" operand.  Assert for now that
+	the else operand is equal to operand 2.  Use SVE_INT_BINARY and
+	SVE_COND_FP_BINARY instead of SVE_COND_INT_OP and SVE_COND_FP_OP.
+	(*cond_<optab><mode>): New patterns.
+	* config/aarch64/iterators.md (UNSPEC_COND_SMAX, UNSPEC_COND_UMAX)
+	(UNSPEC_COND_SMIN, UNSPEC_COND_UMIN, UNSPEC_COND_AND, UNSPEC_COND_ORR)
+	(UNSPEC_COND_EOR): Delete.
+	(optab): Remove associated mappings.
+	(SVE_INT_BINARY): New code iterator.
+	(sve_int_op): Remove int attribute and add "minus" to the code
+	attribute.
+	(SVE_COND_INT_OP): Delete.
+	(SVE_COND_FP_OP): Rename to...
+	(SVE_COND_FP_BINARY): ...this.
+
+2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* optabs.c (can_reuse_operands_p): New function.
 	(maybe_legitimize_operands): Try to reuse the results for
 	earlier operands.
