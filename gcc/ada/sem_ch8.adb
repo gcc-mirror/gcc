@@ -8297,6 +8297,7 @@ package body Sem_Ch8 is
    ----------------------
 
    procedure Mark_Use_Clauses (Id : Node_Or_Entity_Id) is
+
       procedure Mark_Parameters (Call : Entity_Id);
       --  Perform use_type_clause marking for all parameters in a subprogram
       --  or operator call.
@@ -8528,7 +8529,8 @@ package body Sem_Ch8 is
      (Clause1 : Entity_Id;
       Clause2 : Entity_Id) return Entity_Id
    is
-      Scope1, Scope2 : Entity_Id;
+      Scope1 : Entity_Id;
+      Scope2 : Entity_Id;
 
    begin
       if Clause1 = Clause2 then
