@@ -17882,11 +17882,14 @@ package body Sem_Util is
       Actual : Node_Id   := First_Actual (Call);
 
    begin
-      while Present (Formal) and then Present (Actual) loop
+      while Present (Formal) loop
+         pragma Assert (Present (Formal));
          Handle_Parameter (Formal, Actual);
-         Formal := Next_Formal (Formal);
-         Actual := Next_Actual (Actual);
+         Next_Formal (Formal);
+         Next_Actual (Actual);
       end loop;
+
+      pragma Assert (No (Actual));
    end Iterate_Call_Parameters;
 
    ---------------------------
