@@ -71,10 +71,12 @@ var_map_base_fini (var_map map)
       map->num_basevars = 0;
     }
 }
-/* Create a variable partition map of SIZE, initialize and return it.  */
+/* Create a variable partition map of SIZE for region, initialize and return
+   it.  Region is a loop if LOOP is non-NULL, otherwise is the current
+   function.  */
 
 var_map
-init_var_map (int size)
+init_var_map (int size, struct loop *loop)
 {
   var_map map;
 
@@ -87,6 +89,27 @@ init_var_map (int size)
   map->partition_size = size;
   map->num_basevars = 0;
   map->partition_to_base_index = NULL;
+  map->vec_bbs = vNULL;
+  if (loop)
+    {
+      map->bmp_bbs = BITMAP_ALLOC (NULL);
+      map->outofssa_p = false;
+      basic_block *bbs = get_loop_body_in_dom_order (loop);
+      for (unsigned i = 0; i < loop->num_nodes; ++i)
+	{
+	  bitmap_set_bit (map->bmp_bbs, bbs[i]->index);
+	  map->vec_bbs.safe_push (bbs[i]);
+	}
+      free (bbs);
+    }
+  else
+    {
+      map->bmp_bbs = NULL;
+      map->outofssa_p = true;
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, cfun)
+	map->vec_bbs.safe_push (bb);
+    }
   return map;
 }
 
@@ -100,6 +123,9 @@ delete_var_map (var_map map)
   partition_delete (map->var_partition);
   free (map->partition_to_view);
   free (map->view_to_partition);
+  if (map->bmp_bbs)
+    BITMAP_FREE (map->bmp_bbs);
+  map->vec_bbs.release ();
   free (map);
 }
 
@@ -901,13 +927,14 @@ new_tree_live_info (var_map map)
 
   bitmap_obstack_initialize (&live->livein_obstack);
   bitmap_obstack_initialize (&live->liveout_obstack);
-  live->livein = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
-  FOR_EACH_BB_FN (bb, cfun)
-    bitmap_initialize (&live->livein[bb->index], &live->livein_obstack);
 
-  live->liveout = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
-  FOR_EACH_BB_FN (bb, cfun)
-    bitmap_initialize (&live->liveout[bb->index], &live->liveout_obstack);
+  live->livein = XCNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
+  live->liveout = XCNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
+  for (unsigned i = 0; map->vec_bbs.iterate (i, &bb); ++i)
+    {
+      bitmap_initialize (&live->livein[bb->index], &live->livein_obstack);
+      bitmap_initialize (&live->liveout[bb->index], &live->liveout_obstack);
+    }
 
   live->work_stack = XNEWVEC (int, last_basic_block_for_fn (cfun));
   live->stack_top = live->work_stack;
@@ -960,7 +987,7 @@ loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited)
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
       pred_bb = e->src;
-      if (pred_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+      if (!region_contains_p (live->map, pred_bb))
 	continue;
       /* Variables live-on-entry from BB that aren't defined in the
 	 predecessor block.  This should be the live on entry vars to pred.
@@ -993,9 +1020,10 @@ live_worklist (tree_live_info_p live)
 
   bitmap_clear (visited);
 
-  /* Visit all the blocks in reverse order and propagate live on entry values
+  /* Visit region's blocks in reverse order and propagate live on entry values
      into the predecessors blocks.  */
-  FOR_EACH_BB_REVERSE_FN (bb, cfun)
+  for (unsigned i = live->map->vec_bbs.length () - 1;
+       live->map->vec_bbs.iterate (i, &bb); --i)
     loe_visit_block (live, bb, visited);
 
   /* Process any blocks which require further iteration.  */
@@ -1030,7 +1058,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
     {
       def_bb = gimple_bb (stmt);
       /* Mark defs in liveout bitmap temporarily.  */
-      if (def_bb)
+      if (def_bb && region_contains_p (live->map, def_bb))
 	bitmap_set_bit (&live->liveout[def_bb->index], p);
     }
   else
@@ -1054,11 +1082,8 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 	     defined in that block, or whether its live on entry.  */
 	  int index = PHI_ARG_INDEX_FROM_USE (use);
 	  edge e = gimple_phi_arg_edge (as_a <gphi *> (use_stmt), index);
-	  if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
-	    {
-	      if (e->src != def_bb)
-		add_block = e->src;
-	    }
+	  if (e->src != def_bb && region_contains_p (live->map, e->src))
+	    add_block = e->src;
 	}
       else if (is_gimple_debug (use_stmt))
 	continue;
@@ -1066,7 +1091,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
         {
 	  /* If its not defined in this block, its live on entry.  */
 	  basic_block use_bb = gimple_bb (use_stmt);
-	  if (use_bb != def_bb)
+	  if (use_bb != def_bb && region_contains_p (live->map, use_bb))
 	    add_block = use_bb;
 	}
 
@@ -1095,7 +1120,7 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
   edge_iterator ei;
 
   /* live on entry calculations used liveout vectors for defs, clear them.  */
-  FOR_EACH_BB_FN (bb, cfun)
+  for (unsigned i = 0; liveinfo->map->vec_bbs.iterate (i, &bb); ++i)
     bitmap_clear (&liveinfo->liveout[bb->index]);
 
   /* Set all the live-on-exit bits for uses in PHIs.  */
@@ -1108,6 +1133,8 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gphi *phi = gsi.phi ();
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    continue;
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)
 	    {
 	      tree t = PHI_ARG_DEF (phi, i);
@@ -1120,14 +1147,17 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
 	      if (p == NO_PARTITION)
 		continue;
 	      e = gimple_phi_arg_edge (phi, i);
-	      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	      if (region_contains_p (liveinfo->map, e->src))
 		bitmap_set_bit (&liveinfo->liveout[e->src->index], p);
 	    }
 	}
 
+      if (!region_contains_p (liveinfo->map, bb))
+	continue;
+
       /* Add each successors live on entry to this bock live on exit.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
+	if (region_contains_p (liveinfo->map, e->dest))
 	  bitmap_ior_into (&liveinfo->liveout[bb->index],
 			   live_on_entry (liveinfo, e->dest));
     }
@@ -1314,7 +1344,7 @@ verify_live_on_entry (tree_live_info_p live)
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       int entry_block = e->dest->index;
-      if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
+      if (!region_contains_p (live->map, e->dest))
         continue;
       for (i = 0; i < (unsigned)num_var_partitions (map); i++)
 	{
@@ -1380,6 +1410,8 @@ verify_live_on_entry (tree_live_info_p live)
 		     gsi_next (&gsi))
 		  {
 		    gphi *phi = gsi.phi ();
+		    if (virtual_operand_p (gimple_phi_result (phi)))
+		      continue;
 		    for (z = 0; z < gimple_phi_num_args (phi); z++)
 		      if (var == gimple_phi_arg_def (phi, z))
 			{
