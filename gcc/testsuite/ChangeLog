@@ -1,5 +1,10 @@
 2018-05-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/85786
+	* gfortran.dg/pr85786.f90: New test.
+
+2018-05-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/85895
 	Backport from trunk
 	* gfortran.dg/coarray_3.f90: Fix invalid testcase.

@@ -7834,6 +7834,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
           /* A pointer to an array, call library function _gfor_associated.  */
           arg1se.want_pointer = 1;
           gfc_conv_expr_descriptor (&arg1se, arg1->expr);
+	  gfc_add_block_to_block (&se->pre, &arg1se.pre);
+	  gfc_add_block_to_block (&se->post, &arg1se.post);
 
           arg2se.want_pointer = 1;
           gfc_conv_expr_descriptor (&arg2se, arg2->expr);
