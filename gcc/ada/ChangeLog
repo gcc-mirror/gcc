@@ -1,3 +1,10 @@
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): The predicate function
+	declaration is inserted into the tree and analyzed at that point, so
+	should not be reinserted when the body is constructed. Inside a
+	generic, ensure that the body is not inserted twice in the tree.
+
 2018-05-25  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Check_Grouping): Modify test to ignore statements and

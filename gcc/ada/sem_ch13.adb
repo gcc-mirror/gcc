@@ -8832,14 +8832,19 @@ package body Sem_Ch13 is
                       Make_Simple_Return_Statement (Loc,
                         Expression => Expr))));
 
-            --  If declaration has not been analyzed yet, Insert declaration
-            --  before freeze node. Insert body itself after freeze node.
-
-            if not Analyzed (FDecl) then
-               Insert_Before_And_Analyze (N, FDecl);
-            end if;
+            --  The declaration has been analyzed when created, and placed
+            --  after type declaration. Insert body itself after freeze node.
 
             Insert_After_And_Analyze (N, FBody);
+
+            --  within a generic unit, prevent a double analysis of the body
+            --  which will not be marked analyzed yet. This will happen when
+            --  the freeze node is created during the pre-analysis of an
+            --  expression function.
+
+            if Inside_A_Generic then
+               Set_Analyzed (FBody);
+            end if;
 
             --  Static predicate functions are always side-effect free, and
             --  in most cases dynamic predicate functions are as well. Mark
