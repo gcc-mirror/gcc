@@ -1,3 +1,9 @@
+2018-05-25  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/85911
+	* gcc.dg/tree-prof/update-loopch.c: Do not scan
+	for 'Removing basic block'.
+
 2018-05-25  Patrick Bernardi  <bernardi@adacore.com>
 
 	* gnat.dg/sec_stack1.adb: New testcase.
