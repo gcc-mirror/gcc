@@ -12362,9 +12362,6 @@ package body Sem_Ch12 is
          --  The actual may be an extension of an interface, in which case
          --  it does not appear in the interface list, so this must be
          --  checked separately.
-         --  We omit the check if the interface is declared in an (enclosing)
-         --  generic because the interface implemented by the actual may have
-         --  the same name but a different entity. A small remaining gap ???
 
          if Present (Interface_List (Def)) then
             if not Has_Interfaces (Act_T) then
@@ -12374,18 +12371,59 @@ package body Sem_Ch12 is
 
             else
                declare
-                  Iface : Node_Id;
-                  Iface_Ent : Entity_Id;
+                  Iface          : Node_Id;
+                  Iface_Ent      : Entity_Id;
+                  Act_Iface_List : Elist_Id;
+
+                  function Instance_Exists (I : Entity_Id) return Boolean;
+                  --  If the interface entity is declared in a generic unit,
+                  --  this can only be legal if we are within an instantiation
+                  --  of a child of that generic. There is currently no
+                  --  mechanism to relate an interface declared within a
+                  --  generic to the corresponding interface in an instance,
+                  --  so we traverse the list of interfaces of the actual,
+                  --  looking for a name match.
+
+                  ---------------------
+                  -- Instance_Exists --
+                  ---------------------
+
+                  function Instance_Exists (I : Entity_Id) return Boolean is
+                     Iface_Elmt : Elmt_Id;
+
+                  begin
+                     Iface_Elmt := First_Elmt (Act_Iface_List);
+                     while Present (Iface_Elmt) loop
+                        if Is_Generic_Instance (Scope (Node (Iface_Elmt)))
+                          and then Chars (Node (Iface_Elmt)) = Chars (I)
+                        then
+                           return True;
+                        end if;
+
+                        Next_Elmt (Iface_Elmt);
+                     end loop;
+
+                     return False;
+                  end Instance_Exists;
 
                begin
                   Iface := First (Abstract_Interface_List (A_Gen_T));
+                  Collect_Interfaces (Act_T, Act_Iface_List);
 
                   while Present (Iface) loop
                      Iface_Ent := Get_Instance_Of (Entity (Iface));
-                     if not Is_Progenitor (Iface_Ent, Act_T)
-                     and then not Is_Ancestor (Iface_Ent, Act_T)
-                     and then Ekind (Scope (Iface_Ent)) /= E_Generic_Package
+
+                     if  Is_Ancestor (Iface_Ent, Act_T)
+                      or else  Is_Progenitor (Iface_Ent, Act_T)
                      then
+                        null;
+
+                     elsif Ekind (Scope (Iface_Ent)) = E_Generic_Package
+                       and then Instance_Exists (Iface_Ent)
+                     then
+                        null;
+
+                     else
                         Error_Msg_Name_1 := Chars (Act_T);
                         Error_Msg_NE
                           ("Actual% must implement interface&",
