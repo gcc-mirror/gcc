@@ -4274,15 +4274,15 @@ package body Exp_Ch3 is
       Body_Id     : Entity_Id;
       Param_Specs : List_Id) return Node_Id
    is
-      Loc       : constant Source_Ptr := Sloc (Typ);
-      Def       : constant Node_Id := Parent (Typ);
-      Comps     : constant Node_Id := Component_List (Type_Definition (Def));
-      Left      : constant Entity_Id := Defining_Identifier
-                                          (First (Param_Specs));
-      Right     : constant Entity_Id := Defining_Identifier
-                                          (Next (First (Param_Specs)));
-      Decls     : constant List_Id := New_List;
-      Stmts     : constant List_Id := New_List;
+      Loc   : constant Source_Ptr := Sloc (Typ);
+      Def   : constant Node_Id    := Parent (Typ);
+      Comps : constant Node_Id    := Component_List (Type_Definition (Def));
+      Left  : constant Entity_Id  := Defining_Identifier (First (Param_Specs));
+      Right : constant Entity_Id  :=
+                    Defining_Identifier (Next (First (Param_Specs)));
+      Decls : constant List_Id    := New_List;
+      Stmts : constant List_Id    := New_List;
+
       Subp_Body : Node_Id;
 
    begin
@@ -4317,9 +4317,10 @@ package body Exp_Ch3 is
 
       if Is_Unchecked_Union (Typ) then
          declare
+            A          : Entity_Id;
+            B          : Entity_Id;
             Discr      : Entity_Id;
             Discr_Type : Entity_Id;
-            A, B       : Entity_Id;
             New_Discrs : Elist_Id;
 
          begin
@@ -4328,11 +4329,14 @@ package body Exp_Ch3 is
             Discr := First_Discriminant (Typ);
             while Present (Discr) loop
                Discr_Type := Etype (Discr);
-               A := Make_Defining_Identifier (Loc,
-                      Chars => New_External_Name (Chars (Discr), 'A'));
 
-               B := Make_Defining_Identifier (Loc,
-                      Chars => New_External_Name (Chars (Discr), 'B'));
+               A :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (Discr), 'A'));
+
+               B :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (Discr), 'B'));
 
                --  Add new parameters to the parameter list
 
@@ -4371,9 +4375,9 @@ package body Exp_Ch3 is
             end loop;
 
             --  Generate component-by-component comparison. Note that we must
-            --  propagate the inferred discriminants formals to act as
-            --  the case statement switch. Their value is added when an
-            --  equality call on unchecked unions is expanded.
+            --  propagate the inferred discriminants formals to act as the case
+            --  statement switch. Their value is added when an equality call on
+            --  unchecked unions is expanded.
 
             Append_List_To (Stmts, Make_Eq_Case (Typ, Comps, New_Discrs));
          end;
@@ -4392,7 +4396,7 @@ package body Exp_Ch3 is
 
       Subp_Body :=
         Make_Subprogram_Body (Loc,
-          Specification =>
+          Specification              =>
             Make_Function_Specification (Loc,
               Defining_Unit_Name       => Body_Id,
               Parameter_Specifications => Param_Specs,
@@ -4952,9 +4956,13 @@ package body Exp_Ch3 is
       --  Create An Equality function for the untagged variant record Typ and
       --  attach it to the TSS list.
 
+      -----------------------------------
+      -- Build_Variant_Record_Equality --
+      -----------------------------------
+
       procedure Build_Variant_Record_Equality (Typ : Entity_Id) is
          Loc : constant Source_Ptr := Sloc (Typ);
-         F   : constant Entity_Id :=
+         F   : constant Entity_Id  :=
                  Make_Defining_Identifier (Loc,
                    Chars => Make_TSS_Name (Typ, TSS_Composite_Equality));
       begin
@@ -4992,12 +5000,13 @@ package body Exp_Ch3 is
               Body_Id     => F,
               Param_Specs => New_List (
                 Make_Parameter_Specification (Loc,
-                  Defining_Identifier => Make_Defining_Identifier (Loc,
-                                           Name_X),
+                  Defining_Identifier =>
+                    Make_Defining_Identifier (Loc, Name_X),
                   Parameter_Type      => New_Occurrence_Of (Typ, Loc)),
+
                 Make_Parameter_Specification (Loc,
-                  Defining_Identifier => Make_Defining_Identifier (Loc,
-                                           Name_Y),
+                  Defining_Identifier =>
+                    Make_Defining_Identifier (Loc, Name_Y),
                   Parameter_Type      => New_Occurrence_Of (Typ, Loc)))));
 
          Set_TSS (Typ, F);

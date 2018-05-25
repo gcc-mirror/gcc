@@ -17878,8 +17878,8 @@ package body Sem_Util is
    -----------------------------
 
    procedure Iterate_Call_Parameters (Call : Node_Id) is
-      Formal : Entity_Id := First_Formal (Get_Called_Entity (Call));
       Actual : Node_Id   := First_Actual (Call);
+      Formal : Entity_Id := First_Formal (Get_Called_Entity (Call));
 
    begin
       while Present (Formal) loop

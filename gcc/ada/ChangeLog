@@ -1,3 +1,9 @@
+2018-05-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb, einfo.ads, exp_ch3.adb, exp_ch8.adb, exp_unst.adb,
+	pprint.adb, sem_ch12.adb, sem_ch3.adb, sem_prag.adb, sem_util.adb:
+	Minor reformatting.
+
 2018-05-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Instance_Exists): New function, subsidiary of

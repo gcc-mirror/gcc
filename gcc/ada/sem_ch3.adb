@@ -18804,8 +18804,9 @@ package body Sem_Ch3 is
          --  (for example see the expansion of Deep_Adjust).
 
          if Ekind (C) = E_Discriminant and then Present (N) then
-            return not Comes_From_Source (N)
-              or else not Is_Completely_Hidden (C);
+            return
+              not Comes_From_Source (N)
+                or else not Is_Completely_Hidden (C);
          else
             return True;
          end if;
