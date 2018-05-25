@@ -664,6 +664,8 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
       if (access == last_access)
 	continue;
       data_reference *dr_a = STMT_VINFO_DATA_REF (vinfo_for_stmt (access));
+      ao_ref ref;
+      bool ref_initialized_p = false;
       for (gimple_stmt_iterator gsi = gsi_for_stmt (access);
 	   gsi_stmt (gsi) != last_access; gsi_next (&gsi))
 	{
@@ -673,12 +675,19 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 	    continue;
 
 	  /* If we couldn't record a (single) data reference for this
-	     stmt we have to give up.  */
-	  /* ???  Here and below if dependence analysis fails we can resort
-	     to the alias oracle which can handle more kinds of stmts.  */
+	     stmt we have to resort to the alias oracle.  */
 	  data_reference *dr_b = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt));
 	  if (!dr_b)
-	    return false;
+	    {
+	      /* We are moving a store or sinking a load - this means
+	         we cannot use TBAA for disambiguation.  */
+	      if (!ref_initialized_p)
+		ao_ref_init (&ref, DR_REF (dr_a));
+	      if (stmt_may_clobber_ref_p_1 (stmt, &ref, false)
+		  || ref_maybe_used_by_stmt_p (stmt, &ref, false))
+		return false;
+	      continue;
+	    }
 
 	  bool dependent = false;
 	  /* If we run into a store of this same instance (we've just
@@ -4183,10 +4192,13 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
                                    "failed ");
 		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
 		}
-
 	      if (is_a <bb_vec_info> (vinfo))
-		break;
-
+		{
+		  /* In BB vectorization the ref can still participate
+		     in dependence analysis, we just can't vectorize it.  */
+		  STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+		  continue;
+		}
 	      return false;
 	    }
         }
@@ -4379,21 +4391,9 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	}
     }
 
-  /* If we stopped analysis at the first dataref we could not analyze
-     when trying to vectorize a basic-block mark the rest of the datarefs
-     as not vectorizable and truncate the vector of datarefs.  That
-     avoids spending useless time in analyzing their dependence.  */
-  if (i != datarefs.length ())
-    {
-      gcc_assert (is_a <bb_vec_info> (vinfo));
-      for (unsigned j = i; j < datarefs.length (); ++j)
-	{
-	  data_reference_p dr = datarefs[j];
-          STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) = false;
-	  free_data_ref (dr);
-	}
-      datarefs.truncate (i);
-    }
+  /* We used to stop processing and prune the list here.  Verify we no
+     longer need to.  */
+  gcc_assert (i == datarefs.length ());
 
   return true;
 }
