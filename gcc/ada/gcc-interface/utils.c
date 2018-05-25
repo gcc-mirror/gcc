@@ -1133,9 +1133,15 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 
   switch (TREE_CODE (type))
     {
+    case BOOLEAN_TYPE:
+      /* Do not mess with boolean types that have foreign convention.  */
+      if (TYPE_PRECISION (type) == 1 && TYPE_SIZE (type) == size_tree)
+	break;
+
+      /* ... fall through ... */
+
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-    case BOOLEAN_TYPE:
       biased_p = (TREE_CODE (type) == INTEGER_TYPE
 		  && TYPE_BIASED_REPRESENTATION_P (type));
 

@@ -282,6 +282,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
   /* True if this entity is to be considered as imported.  */
   const bool imported_p
     = (Is_Imported (gnat_entity) && No (Address_Clause (gnat_entity)));
+  /* True if this entity has a foreign convention.  */
+  const bool foreign = Has_Foreign_Convention (gnat_entity);
   /* For a type, contains the equivalent GNAT node to be used in gigi.  */
   Entity_Id gnat_equiv_type = Empty;
   /* Temporary used to walk the GNAT tree.  */
@@ -658,8 +660,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* Get the type after elaborating the renamed object.  */
-	if (Has_Foreign_Convention (gnat_entity)
-	    && Is_Descendant_Of_Address (Underlying_Type (gnat_type)))
+	if (foreign && Is_Descendant_Of_Address (Underlying_Type (gnat_type)))
 	  gnu_type = ptr_type_node;
 	else
 	  {
@@ -1594,6 +1595,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  tree gnu_list = NULL_TREE;
 	  Entity_Id gnat_literal;
 
+	  /* Boolean types with foreign convention have precision 1.  */
+	  if (is_boolean && foreign)
+	    esize = 1;
+
 	  gnu_type = make_node (is_boolean ? BOOLEAN_TYPE : ENUMERAL_TYPE);
 	  TYPE_PRECISION (gnu_type) = esize;
 	  TYPE_UNSIGNED (gnu_type) = is_unsigned;
@@ -1774,6 +1779,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	esize = UI_To_Int (RM_Size (gnat_entity));
 
+      /* Boolean types with foreign convention have precision 1.  */
+      if (Is_Boolean_Type (gnat_entity) && foreign)
+	{
+	  gnu_type = make_node (BOOLEAN_TYPE);
+	  TYPE_PRECISION (gnu_type) = 1;
+	  TYPE_UNSIGNED (gnu_type) = 1;
+	  set_min_and_max_values_for_integral_type (gnu_type, 1, UNSIGNED);
+	  layout_type (gnu_type);
+	}
       /* First subtypes of Character are treated as Character; otherwise
 	 this should be an unsigned type if the base type is unsigned or
 	 if the lower bound is constant and non-negative or if the type
@@ -1783,7 +1797,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 conversions to it and gives more leeway to the optimizer; but
 	 this means that we will need to explicitly test for this case
 	 when we change the representation based on the RM size.  */
-      if (kind == E_Enumeration_Subtype
+      else if (kind == E_Enumeration_Subtype
 	  && No (First_Literal (Etype (gnat_entity)))
 	  && Esize (gnat_entity) == RM_Size (gnat_entity)
 	  && esize == CHAR_TYPE_SIZE
@@ -1808,8 +1822,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					 gnat_entity, "U", definition, true,
 					 debug_info_p));
 
-      TYPE_BIASED_REPRESENTATION_P (gnu_type)
-	= Has_Biased_Representation (gnat_entity);
+      if (TREE_CODE (gnu_type) == INTEGER_TYPE)
+	TYPE_BIASED_REPRESENTATION_P (gnu_type)
+	  = Has_Biased_Representation (gnat_entity);
 
       /* Do the same processing for Character subtypes as for types.  */
       if (TYPE_STRING_FLAG (TREE_TYPE (gnu_type)))
@@ -3300,6 +3315,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				  all_rep ? NULL_TREE : bitsize_zero_node,
 				  NULL);
 
+	    /* Empty classes have the size of a storage unit in C++.  */
+	    if (TYPE_SIZE (gnu_type) == bitsize_zero_node
+		&& Convention (gnat_entity) == Convention_CPP)
+	      {
+		TYPE_SIZE (gnu_type) = bitsize_unit_node;
+		TYPE_SIZE_UNIT (gnu_type) = size_one_node;
+		compute_record_mode (gnu_type);
+	      }
+
 	    /* If there are entities in the chain corresponding to components
 	       that we did not elaborate, ensure we elaborate their types if
 	       they are Itypes.  */
@@ -3966,8 +3990,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* If we should request stack realignment for a foreign convention
 	   subprogram, do so.  Note that this applies to task entry points
 	   in particular.  */
-	if (FOREIGN_FORCE_REALIGN_STACK
-	    && Has_Foreign_Convention (gnat_entity))
+	if (FOREIGN_FORCE_REALIGN_STACK && foreign)
 	  prepend_one_attribute
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("force_align_arg_pointer"), NULL_TREE,
