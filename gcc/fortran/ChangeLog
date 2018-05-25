@@ -1,3 +1,13 @@
+2018-05-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85839
+	* match.c (gfc_match_block_data): Call gfc_notify_std to warn about
+	an obsolescent feature in Fortran 2018.
+	(gfc_match_equivalence): Ditto.
+	* resolve.c (resolve_common_blocks): Ditto.
+	(gfc_resolve_forall): Ditto.
+	* symbol.c (gfc_define_st_label): Ditto.
+
 2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85543

@@ -1,3 +1,8 @@
+2018-05-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85839
+	* gfortran.dg/f2018_obs.f90: New test case.
+
 2018-05-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85543

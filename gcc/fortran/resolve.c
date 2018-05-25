@@ -997,6 +997,10 @@ resolve_common_blocks (gfc_symtree *common_root)
 
   resolve_common_vars (common_root->n.common, true);
 
+  if (!gfc_notify_std (GFC_STD_F2018_OBS, "COMMON block at %L",
+		       &common_root->n.common->where))
+    return;
+
   /* The common name is a global name - in Fortran 2003 also if it has a
      C binding name, since Fortran 2008 only the C binding name is a global
      identifier.  */
@@ -9929,6 +9933,9 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
   gfc_forall_iterator *fa;
 
   old_nvar = nvar;
+
+  if (!gfc_notify_std (GFC_STD_F2018_OBS, "FORALL construct at %L", &code->loc))
+    return;
 
   /* Start to resolve a FORALL construct   */
   if (forall_save == 0)
