@@ -1,3 +1,7 @@
+2018-05-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/sec_stack2.adb: New testcase.
+
 2018-05-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/interface6.adb: New testcase.

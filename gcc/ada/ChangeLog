@@ -1,3 +1,16 @@
+2018-05-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/s-secsta.adb (SS_Allocate): Reimplemented.
+	(SS_Allocate_Dynamic): New routine. The allocation logic is now split
+	into three distring cases rather than in one loop which attempts to
+	handle all three cases. This rewrite eliminates an issue where the last
+	frame of the stack cannot be freed, thus causing the memory range of a
+	new frame to approach the overflow point of the memory index type.
+	Since the overflow is logically treated as a
+	too-much-memory-on-the-stack scenario, it causes a bogus Storage_Error.
+	(SS_Allocate_Static): New routine. The routine factorizes the static
+	secondary stack-related code from the former SS_Allocate.
+
 2018-05-25  Sergey Rybin  <rybin@adacore.com>
 
 	* doc/gnat_ugn/gnat_and_program_execution.rst: Add description of '-U'
