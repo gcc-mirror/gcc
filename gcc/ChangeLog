@@ -1,5 +1,42 @@
 2018-05-25  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-outof-ssa.c (tree-ssa.h, tree-dfa.h): Include header files.
+	(create_default_def, for_all_parms): Moved from tree-ssa-coalesce.c.
+	(parm_default_def_partition_arg): Ditto.
+	(set_parm_default_def_partition): Ditto.
+	(get_parm_default_def_partitions): Ditto and make it static.
+	(get_undefined_value_partitions): Ditto and make it static.
+	(remove_ssa_form): Refactor call to init_var_map here.
+	* tree-ssa-coalesce.c (build_ssa_conflict_graph): Support live range
+	computation for loop region.
+	(coalesce_partitions, compute_optimized_partition_bases): Ditto.
+	(register_default_def): Delete.
+	(for_all_parms, create_default_def): Move to tree-outof-ssa.c.
+	(parm_default_def_partition_arg): Ditto.
+	(set_parm_default_def_partition): Ditto.
+	(get_parm_default_def_partitions): Ditto and make it static.
+	(get_undefined_value_partitions): Ditto and make it static.
+	(coalesce_with_default, coalesce_with_default): Update comment.
+	(create_coalesce_list_for_region): New func factored out from
+	create_outofssa_var_map.
+	(populate_coalesce_list_for_outofssa): New func factored out from
+	create_outofssa_var_map and coalesce_ssa_name.
+	(create_outofssa_var_map): Delete.
+	(coalesce_ssa_name): Refactor to support live range computation.
+	* tree-ssa-coalesce.h (coalesce_ssa_name): Change decl.
+	(get_parm_default_def_partitions): Delete.
+	(get_undefined_value_partitions): Ditto.
+	* tree-ssa-live.c (init_var_map, delete_var_map): Support live range
+	computation for loop region.
+	(new_tree_live_info, loe_visit_block): Ditto.
+	(live_worklist, set_var_live_on_entry): Ditto.
+	(calculate_live_on_exit, verify_live_on_entry): Ditto.
+	* tree-ssa-live.h (struct _var_map): New fields.
+	(init_var_map): Change decl.
+	(region_contains_p): New.
+
+2018-05-25  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-live.h (live_merge_and_clear): Delete.
 
 2018-05-25  Richard Biener  <rguenther@suse.de>
