@@ -5283,9 +5283,19 @@ package body Sem_Res is
          elsif Etype (N) = T
            and then B_Typ /= Universal_Fixed
          then
-            --  Not a mixed-mode operation, resolve with context
 
-            Resolve (N, B_Typ);
+            --  if the operand is part of a fixed multiplication operation,
+            --  a conversion will be applied to each operand, so resolve it
+            --  with its own type.
+
+            if Nkind_In (Parent (N), N_Op_Multiply, N_Op_Divide)  then
+               Resolve (N);
+
+            else
+               --  Not a mixed-mode operation, resolve with context
+
+               Resolve (N, B_Typ);
+            end if;
 
          elsif Etype (N) = Any_Fixed then
 
