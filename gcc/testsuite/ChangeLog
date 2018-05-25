@@ -1,3 +1,9 @@
+2018-05-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85543
+	Backport from trunk
+	* gfortran.dg/pr85543.f90: New test.
+
 2018-05-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/avx512f-vcvtusi2sd64-1.c: Update scan string.
