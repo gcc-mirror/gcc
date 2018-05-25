@@ -5259,6 +5259,10 @@ gfc_match_block_data (void)
   gfc_symbol *sym;
   match m;
 
+  if (!gfc_notify_std (GFC_STD_F2018_OBS, "BLOCK DATA construct at %L",
+      &gfc_current_locus))
+    return MATCH_ERROR;
+
   if (gfc_match_eos () == MATCH_YES)
     {
       gfc_new_block = NULL;
@@ -5574,6 +5578,9 @@ gfc_match_equivalence (void)
 	  goto cleanup;
 	}
     }
+
+  if (!gfc_notify_std (GFC_STD_F2018_OBS, "EQUIVALENCE statement at %C"))
+    return MATCH_ERROR;
 
   return MATCH_YES;
 
