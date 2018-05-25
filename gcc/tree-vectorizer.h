@@ -1495,6 +1495,8 @@ extern bool vect_gather_scatter_fn_p (bool, bool, tree, tree, unsigned int,
 				      signop, int, internal_fn *, tree *);
 extern bool vect_check_gather_scatter (gimple *, loop_vec_info,
 				       gather_scatter_info *);
+extern bool vect_find_stmt_data_reference (loop_p, gimple *,
+					   vec<data_reference_p> *);
 extern bool vect_analyze_data_refs (vec_info *, poly_uint64 *);
 extern void vect_record_base_alignments (vec_info *);
 extern tree vect_create_data_ref_ptr (gimple *, tree, struct loop *, tree,

@@ -3936,6 +3936,104 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
   return true;
 }
 
+/* Find the data references in STMT, analyze them with respect to LOOP and
+   append them to DATAREFS.  Return false if datarefs in this stmt cannot
+   be handled.  */
+
+bool
+vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
+			       vec<data_reference_p> *datarefs)
+{
+  /* We can ignore clobbers for dataref analysis - they are removed during
+     loop vectorization and BB vectorization checks dependences with a
+     stmt walk.  */
+  if (gimple_clobber_p (stmt))
+    return true;
+
+  if (gimple_has_volatile_ops (stmt))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "not vectorized: volatile type ");
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	}
+      return false;
+    }
+
+  if (stmt_can_throw_internal (stmt))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "not vectorized: statement can throw an "
+			   "exception ");
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	}
+      return false;
+    }
+
+  auto_vec<data_reference_p, 2> refs;
+  if (!find_data_references_in_stmt (loop, stmt, &refs))
+    return false;
+
+  if (refs.is_empty ())
+    return true;
+
+  if (refs.length () > 1)
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "not vectorized: more than one data ref "
+			   "in stmt: ");
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	}
+      return false;
+    }
+
+  if (gcall *call = dyn_cast <gcall *> (stmt))
+    if (!gimple_call_internal_p (call)
+	|| (gimple_call_internal_fn (call) != IFN_MASK_LOAD
+	    && gimple_call_internal_fn (call) != IFN_MASK_STORE))
+      {
+	if (dump_enabled_p ())
+	  {
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION,  vect_location,
+			     "not vectorized: dr in a call ");
+	    dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	  }
+	return false;
+      }
+
+  data_reference_p dr = refs.pop ();
+  if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "not vectorized: statement is bitfield "
+			   "access ");
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	}
+      return false;
+    }
+
+  if (DR_BASE_ADDRESS (dr)
+      && TREE_CODE (DR_BASE_ADDRESS (dr)) == INTEGER_CST)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: base addr of dr is a "
+			 "constant\n");
+      return false;
+    }
+
+  datarefs->safe_push (dr);
+  return true;
+}
+
 /* Function vect_analyze_data_refs.
 
   Find all the data references in the loop or basic block.
@@ -3974,37 +4072,13 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
     {
       gimple *stmt;
       stmt_vec_info stmt_info;
-      tree base, offset, init;
       enum { SG_NONE, GATHER, SCATTER } gatherscatter = SG_NONE;
       bool simd_lane_access = false;
       poly_uint64 vf;
 
-again:
-      if (!dr || !DR_REF (dr))
-        {
-          if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-	                     "not vectorized: unhandled data-ref\n");
-          return false;
-        }
-
+      gcc_assert (DR_REF (dr));
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
-
-      /* Discard clobbers from the dataref vector.  We will remove
-         clobber stmts during vectorization.  */
-      if (gimple_clobber_p (stmt))
-	{
-	  free_data_ref (dr);
-	  if (i == datarefs.length () - 1)
-	    {
-	      datarefs.pop ();
-	      break;
-	    }
-	  datarefs.ordered_remove (i);
-	  dr = datarefs[i];
-	  goto again;
-	}
 
       /* Check that analysis of the data-ref succeeded.  */
       if (!DR_BASE_ADDRESS (dr) || !DR_OFFSET (dr) || !DR_INIT (dr)
@@ -4117,95 +4191,42 @@ again:
 	    }
         }
 
-      if (TREE_CODE (DR_BASE_ADDRESS (dr)) == INTEGER_CST)
-        {
-          if (dump_enabled_p ())
-            dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "not vectorized: base addr of dr is a "
-                             "constant\n");
-
-          if (is_a <bb_vec_info> (vinfo))
-	    break;
-
-	  if (gatherscatter != SG_NONE || simd_lane_access)
-	    free_data_ref (dr);
-	  return false;
-        }
-
-      if (TREE_THIS_VOLATILE (DR_REF (dr)))
-        {
-          if (dump_enabled_p ())
-            {
-              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                               "not vectorized: volatile type ");
-              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-            }
-
-          if (is_a <bb_vec_info> (vinfo))
-	    break;
-
-          return false;
-        }
-
-      if (stmt_can_throw_internal (stmt))
-        {
-          if (dump_enabled_p ())
-            {
-              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                               "not vectorized: statement can throw an "
-                               "exception ");
-              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-            }
-
-          if (is_a <bb_vec_info> (vinfo))
-	    break;
-
-	  if (gatherscatter != SG_NONE || simd_lane_access)
-	    free_data_ref (dr);
-          return false;
-        }
-
-      if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
-	  && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
+      if (TREE_CODE (DR_BASE_ADDRESS (dr)) == ADDR_EXPR
+	  && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (dr), 0))
+	  && DECL_NONALIASED (TREE_OPERAND (DR_BASE_ADDRESS (dr), 0)))
 	{
           if (dump_enabled_p ())
             {
               dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                               "not vectorized: statement is bitfield "
-                               "access ");
+                               "not vectorized: base object not addressable "
+			       "for stmt: ");
               dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
             }
-
           if (is_a <bb_vec_info> (vinfo))
-	    break;
-
-	  if (gatherscatter != SG_NONE || simd_lane_access)
-	    free_data_ref (dr);
-          return false;
+	    {
+	      /* In BB vectorization the ref can still participate
+	         in dependence analysis, we just can't vectorize it.  */
+	      STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+	      continue;
+	    }
+	  return false;
 	}
 
-      base = unshare_expr (DR_BASE_ADDRESS (dr));
-      offset = unshare_expr (DR_OFFSET (dr));
-      init = unshare_expr (DR_INIT (dr));
-
-      if (is_gimple_call (stmt)
-	  && (!gimple_call_internal_p (stmt)
-	      || (gimple_call_internal_fn (stmt) != IFN_MASK_LOAD
-		  && gimple_call_internal_fn (stmt) != IFN_MASK_STORE)))
+      if (is_a <loop_vec_info> (vinfo)
+	  && TREE_CODE (DR_STEP (dr)) != INTEGER_CST)
 	{
-	  if (dump_enabled_p ())
+	  if (nested_in_vect_loop_p (loop, stmt))
 	    {
-	      dump_printf_loc (MSG_MISSED_OPTIMIZATION,  vect_location,
-	                       "not vectorized: dr in a call ");
-	      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                   "not vectorized: not suitable for strided "
+                                   "load ");
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+		}
+	      return false;
 	    }
-
-	  if (is_a <bb_vec_info> (vinfo))
-	    break;
-
-	  if (gatherscatter != SG_NONE || simd_lane_access)
-	    free_data_ref (dr);
-	  return false;
+	  STMT_VINFO_STRIDED_P (stmt_info) = true;
 	}
 
       /* Update DR field in stmt_vec_info struct.  */
@@ -4222,6 +4243,9 @@ again:
 	     inner loop: *(BASE + INIT + OFFSET).  By construction,
 	     this address must be invariant in the inner loop, so we
 	     can consider it as being used in the outer loop.  */
+	  tree base = unshare_expr (DR_BASE_ADDRESS (dr));
+	  tree offset = unshare_expr (DR_OFFSET (dr));
+	  tree init = unshare_expr (DR_INIT (dr));
 	  tree init_offset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset),
 					  init, offset);
 	  tree init_addr = fold_build_pointer_plus (base, init_offset);
@@ -4267,51 +4291,13 @@ again:
 	    }
 	}
 
-      if (STMT_VINFO_DATA_REF (stmt_info))
-        {
-          if (dump_enabled_p ())
-            {
-              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                               "not vectorized: more than one data ref "
-                               "in stmt: ");
-              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-            }
-
-          if (is_a <bb_vec_info> (vinfo))
-	    break;
-
-	  if (gatherscatter != SG_NONE || simd_lane_access)
-	    free_data_ref (dr);
-          return false;
-        }
-
+      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
       STMT_VINFO_DATA_REF (stmt_info) = dr;
       if (simd_lane_access)
 	{
 	  STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) = true;
 	  free_data_ref (datarefs[i]);
 	  datarefs[i] = dr;
-	}
-
-      if (TREE_CODE (DR_BASE_ADDRESS (dr)) == ADDR_EXPR
-	  && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (dr), 0))
-	  && DECL_NONALIASED (TREE_OPERAND (DR_BASE_ADDRESS (dr), 0)))
-	{
-          if (dump_enabled_p ())
-            {
-              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                               "not vectorized: base object not addressable "
-			       "for stmt: ");
-              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-            }
-          if (is_a <bb_vec_info> (vinfo))
-	    {
-	      /* In BB vectorization the ref can still participate
-	         in dependence analysis, we just can't vectorize it.  */
-	      STMT_VINFO_VECTORIZABLE (stmt_info) = false;
-	      continue;
-	    }
-	  return false;
 	}
 
       /* Set vectype for STMT.  */
@@ -4390,23 +4376,6 @@ again:
 	  free_data_ref (datarefs[i]);
 	  datarefs[i] = dr;
 	  STMT_VINFO_GATHER_SCATTER_P (stmt_info) = gatherscatter;
-	}
-
-      else if (is_a <loop_vec_info> (vinfo)
-	       && TREE_CODE (DR_STEP (dr)) != INTEGER_CST)
-	{
-	  if (nested_in_vect_loop_p (loop, stmt))
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
-                                   "not vectorized: not suitable for strided "
-                                   "load ");
-		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-		}
-	      return false;
-	    }
-	  STMT_VINFO_STRIDED_P (stmt_info) = true;
 	}
     }
 

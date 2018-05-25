@@ -1,3 +1,14 @@
+2018-05-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_find_stmt_data_reference): New
+	function, combining stmt data ref gathering and fatal analysis
+	parts.
+	(vect_analyze_data_refs): Remove now redudnant code and simplify.
+	* tree-vect-loop.c (vect_get_datarefs_in_loop): Factor out from
+	vect_analyze_loop_2 and use vect_find_stmt_data_reference.
+	* tree-vect-slp.c (vect_slp_bb): Use vect_find_stmt_data_reference.
+	* tree-vectorizer.h (vect_find_stmt_data_reference): Declare.
+
 2018-05-25  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/85720
