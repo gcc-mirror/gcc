@@ -1,3 +1,12 @@
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not create
+	Class_Wide_Clone_Body when analyzing a subprogram_body_stub: the clone
+	is created when the proper body of the stub is analyzed.
+	* sem_util.adb (ZBuild_Class_Wide_Clone_Body): If the subprogram body
+	is the proper body of a subunit, the cloned body must be inserted in
+	the declarative list that contains the stub.
+
 2018-05-25  Justin Squirek  <squirek@adacore.com>
 
 	* exp_ch6.adb (Expand_Simple_Function_Return): Add guard in check to

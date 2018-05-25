@@ -3844,10 +3844,13 @@ package body Sem_Ch6 is
       --  If the subprogram has a class-wide clone, build its body as a copy
       --  of the original body, and rewrite body of original subprogram as a
       --  wrapper that calls the clone.
+      --  If N is a stub, this construction will take place when the proper
+      --  body is analyzed.
 
       if Present (Spec_Id)
         and then Present (Class_Wide_Clone (Spec_Id))
         and then (Comes_From_Source (N) or else Was_Expression_Function (N))
+        and then Nkind (N) /= N_Subprogram_Body_Stub
       then
          Build_Class_Wide_Clone_Body (Spec_Id, N);
 
