@@ -1,3 +1,7 @@
+2018-05-25  Patrick Bernardi  <bernardi@adacore.com>
+
+	* gnat.dg/sec_stack1.adb: New testcase.
+
 2018-05-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/fixedpnt4.adb: New testcase.

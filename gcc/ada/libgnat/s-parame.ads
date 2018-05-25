@@ -55,11 +55,14 @@ package System.Parameters is
    -- Task And Stack Allocation Control --
    ---------------------------------------
 
-   type Task_Storage_Size is new Integer;
-   --  Type used in tasking units for task storage size
-
-   type Size_Type is new Task_Storage_Size;
-   --  Type used to provide task storage size to runtime
+   type Size_Type is range
+     -(2 ** (Integer'(Standard'Address_Size) - 1)) ..
+     +(2 ** (Integer'(Standard'Address_Size) - 1)) - 1;
+   --  Type used to provide task stack sizes to the runtime. Sized to permit
+   --  stack sizes of up to half the total addressable memory space. This may
+   --  seem excessively large (even for 32-bit systems), however there are many
+   --  instances of users requiring large stack sizes (for example string
+   --  processing).
 
    Unspecified_Size : constant Size_Type := Size_Type'First;
    --  Value used to indicate that no size type is set
