@@ -1,3 +1,7 @@
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/fixedpnt4.adb: New testcase.
+
 2018-05-25  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/interface7.adb: New testcase.

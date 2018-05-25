@@ -1,3 +1,11 @@
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Set_Mixed_Mode_Operand): If the operand is an expression
+	of a fixed point type and the parent is a multiplying operation,
+	resolve the operand with its own type because the context will impose a
+	resulting type on the result of the multiplication by means of
+	approriate conversion.
+
 2018-05-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Default_Initialize_Object): Ensure that the analysis of
