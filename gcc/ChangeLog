@@ -1,3 +1,7 @@
+2018-05-25  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-live.h (live_merge_and_clear): Delete.
+
 2018-05-25  Richard Biener  <rguenther@suse.de>
 
 	PR c++/85912
