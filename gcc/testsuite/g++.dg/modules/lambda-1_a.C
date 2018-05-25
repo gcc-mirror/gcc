@@ -1,0 +1,15 @@
+// { dg-module-do run }
+
+export module tom.riddle;
+// { dg-module-bmi tom.riddle }
+
+export inline auto One (int a)
+{
+  return [=] (int b) { return a + b; };
+}
+
+// Look Ma! this isn't inline!
+export auto Two (int a)
+{
+  return [=] (int b) { return a * b; };
+}

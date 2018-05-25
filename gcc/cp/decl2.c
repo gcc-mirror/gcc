@@ -4292,6 +4292,11 @@ no_linkage_error (tree decl)
   if (cxx_dialect >= cxx11 && decl_defined_p (decl))
     /* In C++11 it's ok if the decl is defined.  */
     return;
+
+  if (MAYBE_DECL_MODULE_OWNER (decl) >= MODULE_IMPORT_BASE)
+    /* An imported decl is ok.  */
+    return;
+
   tree t = no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false);
   if (t == NULL_TREE)
     /* The type that got us on no_linkage_decls must have gotten a name for

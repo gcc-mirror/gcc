@@ -1953,13 +1953,6 @@ public:
   /* A declaration key -- namespace-scope DECL.  */
   inline static key_type decl_key (tree decl)
   {
-    gcc_checking_assert (TREE_CODE
-			 (CP_DECL_CONTEXT
-			  (TREE_CODE (decl) == CONST_DECL
-			   && UNSCOPED_ENUM_P (TREE_TYPE (decl))
-			   && DECL_CONTEXT (decl) == TREE_TYPE (decl)
-			   ? TYPE_NAME (TREE_TYPE (decl)) : decl))
-			 == NAMESPACE_DECL);
     return key_type (decl, NULL_TREE);
   }
   /* A definition key -- namespace-scope DECL.  */
@@ -4033,7 +4026,7 @@ trees_out::core_vals (tree t)
     {
       /* Likewise, stream the name first.  */
       WT (t->type_common.name);
-      /* type_common.context is reconstructed by finish_type.  */
+      tree_ctx (t->type_common.context, true, MODULE_PURVIEW);
 
       /* By construction we want to make sure we have the canonical
 	 and main variants already in the type table, so emit them
@@ -4121,6 +4114,7 @@ trees_out::core_vals (tree t)
 	  WU (t->decl_common.align);
 	}
 
+      WT (t->decl_common.size);
       WT (t->decl_common.size_unit);
       WT (t->decl_common.attributes);
       switch (code)
@@ -4134,8 +4128,11 @@ trees_out::core_vals (tree t)
 	  if (DECL_CONTEXT (t)
 	      && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
 	    break;
-	  /* FALLTHROUGH */
+	  /* FALLTHROUGH  */
 	case PARM_DECL:
+	  if (DECL_HAS_VALUE_EXPR_P (t))
+	    WT (DECL_VALUE_EXPR (t));
+	  /* FALLTHROUGH  */
 	case CONST_DECL:
 	  WT (t->decl_common.initial);
 	  break;
@@ -4250,8 +4247,8 @@ trees_out::core_vals (tree t)
     for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
       WT (TREE_OPERAND (t, ix));
   else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-	   /* FIXME:For some reason, some tcc_expression nodes do not claim
-	      to contain TS_EXP.  I think this is a bug. */
+	   // FIXME:For some reason, some tcc_expression nodes do not claim
+	   //  to contain TS_EXP.  I think this is a bug. */
 	   || TREE_CODE_CLASS (code) == tcc_expression
 	   || TREE_CODE_CLASS (code) == tcc_binary
 	   || TREE_CODE_CLASS (code) == tcc_unary)
@@ -4374,7 +4371,16 @@ trees_out::core_vals (tree t)
       break;
 
     case TS_CP_LAMBDA_EXPR:
-      gcc_unreachable (); // FIXME
+      WT (((lang_tree_node *)t)->lambda_expression.capture_list);
+      WT (((lang_tree_node *)t)->lambda_expression.this_capture);
+      WT (((lang_tree_node *)t)->lambda_expression.extra_scope);
+      /* pending_proxies is a parse-time thing.  */
+      gcc_assert (!((lang_tree_node *)t)->lambda_expression.pending_proxies);
+      if (streaming_p ())
+	{
+	  WU (((lang_tree_node *)t)->lambda_expression.default_capture_mode);
+	  WU (((lang_tree_node *)t)->lambda_expression.discriminator);
+	}
       break;
 
     case TS_CP_TEMPLATE_INFO:
@@ -4441,6 +4447,7 @@ trees_in::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
       RT (t->type_common.name);
+      RT (t->type_common.context);
 
       RT (t->type_common.main_variant);
       RT (t->type_common.canonical);
@@ -4524,6 +4531,7 @@ trees_in::core_vals (tree t)
       RU (t->decl_common.off_align);
       RU (t->decl_common.align);
 
+      RT (t->decl_common.size);
       RT (t->decl_common.size_unit);
       RT (t->decl_common.attributes);
       switch (code)
@@ -4538,6 +4546,12 @@ trees_in::core_vals (tree t)
 	    break;
 	  /* FALLTHROUGH */
 	case PARM_DECL:
+	  if (DECL_HAS_VALUE_EXPR_P (t))
+	    {
+	      tree val = tree_node ();
+	      SET_DECL_VALUE_EXPR (t, val);
+	    }
+	  /* FALLTHROUGH  */
 	case CONST_DECL:
 	  RT (t->decl_common.initial);
 	  break;
@@ -4759,7 +4773,13 @@ trees_in::core_vals (tree t)
       break;
 
     case TS_CP_LAMBDA_EXPR:
-      gcc_unreachable (); // FIXME
+      RT (((lang_tree_node *)t)->lambda_expression.capture_list);
+      RT (((lang_tree_node *)t)->lambda_expression.this_capture);
+      RT (((lang_tree_node *)t)->lambda_expression.extra_scope);
+      /* lambda_expression.pending_proxies is NULL  */
+      RUC (cp_lambda_default_capture_mode_type,
+	   ((lang_tree_node *)t)->lambda_expression.default_capture_mode);
+      RU (((lang_tree_node *)t)->lambda_expression.discriminator);
       break;
 
     case TS_CP_TEMPLATE_INFO:
@@ -5160,8 +5180,6 @@ trees_out::tree_ref (tree t)
 void
 trees_out::tree_ctx (tree ctx, bool looking_inside, unsigned module)
 {
-  // FIXME: If we met this before but !need_body, we need to do
-  // something to record that we now need the body.
   int ref = tree_ref (ctx);
   if (ref)
     {
@@ -5281,9 +5299,6 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 		|| DECL_TEMPLATE_RESULT (decl) != owner_decl))
 	  {
 	    /* We cannot look up inside a function by name.  */
-	    // FIXME:think about fns local types such as lambdas.
-	    // probably needs special mapping, similar to how to deal
-	    // with internal-linkage decls we reference?
 	    gcc_assert (owner < MODULE_IMPORT_BASE);
 
 	    return true;
@@ -5299,11 +5314,30 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 	if (!DECL_IMPLICIT_TYPEDEF_P (decl))
 	  return true;
 
-	if (depending_p () && dep_hash->sneakoscope)
+	if (depending_p ())
 	  {
-	    /* The sneakoscope is whistling.  We've found a voldemort type.  */
-	    gcc_unreachable ();
-	    // FIXME: Something Must Be Done
+	    bool unnameable = dep_hash->sneakoscope || is_import;
+	    if (!unnameable)
+	      {
+		/* If the owning function is not within
+		   dep_hash->current, it is also a voldemort.  */
+
+		// FIXME: for now, not nested of nested.  Here it'd be
+		// nice to just call the context dumper and get some
+		// kind of result back 'hey, you're voldemorty'
+		gcc_assert (TREE_CODE (CP_DECL_CONTEXT (ctx)) == NAMESPACE_DECL);
+		if (dep_hash->current->get_decl () != ctx)
+		  unnameable = true;
+	      }
+
+	    if (unnameable)
+	      {
+		/* We've found a voldemort type.  Add it as a
+		   dependency.  */
+		dep_hash->add_dependency (decl, looking_inside);
+		kind = "unnamed";
+		goto insert;
+	      }
 	  }
       }
 
@@ -5311,7 +5345,6 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
     if (streaming_p ())
       {
 	i (tt_named_decl);
-	u (TREE_CODE (decl));
 	u (owner);
 	tree_ctx (ctx, true, owner);
       }
@@ -5326,11 +5359,13 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 
     tree name = DECL_NAME (decl);
     tree_node (name);
-    tree type = DECL_DECLARES_FUNCTION_P (decl) ? TREE_TYPE (decl) : NULL_TREE;
-    tree_node (type);
-    /* Make sure we can find it by name.  */
-    gcc_checking_assert (decl == lookup_by_ident (ctx, owner, name, type,
-						  TREE_CODE (decl)));
+    if (streaming_p ())
+      {
+	int ident = get_lookup_ident (ctx, owner, name, decl);
+	i (ident);
+	/* Make sure we can find it by name.  */
+	gcc_checking_assert (decl == lookup_by_ident (ctx, owner, name, ident));
+      }
     kind = is_import ? "import" : "named decl";
   }
 
@@ -5703,15 +5738,14 @@ trees_in::tree_node ()
     case tt_named_decl:
       {
 	/* A named decl.  */
-	unsigned code = u ();
 	owner = u ();
 	tree ctx = tree_node ();
 	tree name = tree_node ();
 	owner = (owner < state->remap->length ()
 		 ? (*state->remap)[owner] : MODULE_NONE);
-	tree type = tree_node ();
+	int ident = i ();
 	if (owner != MODULE_NONE && !get_overrun ())
-	  res = lookup_by_ident (ctx, owner, name, type, code);
+	  res = lookup_by_ident (ctx, owner, name, ident);
 
 	if (!res)
 	  {
@@ -5848,9 +5882,6 @@ trees_in::finish_type (tree type)
 {
   tree main = TYPE_MAIN_VARIANT (type);
 
-  if (TYPE_NAME (type))
-    TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_NAME (type));
-
   if (main != type)
     {
       /* See if we have this type already on the variant
@@ -5861,10 +5892,16 @@ trees_in::finish_type (tree type)
 	 chain.  */
       for (tree probe = main; probe; probe = TYPE_NEXT_VARIANT (probe))
 	{
-	  if (!check_base_type (type, probe))
+	  if (!check_base_type (probe, type))
 	    continue;
 
-	  if (TYPE_QUALS (type) != TYPE_QUALS (probe))
+	  if (!check_lang_type (probe, type))
+	    continue;
+
+	  if (TYPE_ALIGN (probe) != TYPE_ALIGN (type))
+	    continue;
+
+	  if (TYPE_QUALS (probe) != TYPE_QUALS (type))
 	    continue;
 
 	  if (FUNC_OR_METHOD_TYPE_P (type))
@@ -6028,15 +6065,14 @@ depset::hash::add_dependency (tree decl, int kind)
   depset **slot = maybe_insert (key);
   depset *dep = *slot;
 
-  gcc_assert (kind <= 0 || has_def
-	      || (TREE_CODE (decl) == NAMESPACE_DECL
-		  && !DECL_NAMESPACE_ALIAS (decl)));
   if (!dep)
     {
       *slot = dep = new depset (key);
       worklist.safe_push (dep);
 
-      if (kind >= 0)
+      if (kind >= 0
+	  && !(TREE_CODE (decl) == NAMESPACE_DECL
+	       && !DECL_NAMESPACE_ALIAS (decl)))
 	/* Any not-for-binding depset is not found by name.  */
 	dep->is_unnamed = true;
     }
@@ -6265,10 +6301,9 @@ module_state::init ()
     dump () && dump ("Preamble ends after %d", flag_module_preamble);
 
   /* Construct the global tree array.  This is an array of unique
-     global trees (& types).  */
-  // FIXME:Some slots are lazily allocated, we must move them to
-  // the end and not stream them here.  They must be locatable via
-  // some other means.
+     global trees (& types).  Do this now, rather than lazily, as
+     some global trees are lazily created and we don't want that to
+     mess with our syndrome of fixed trees.  */
   unsigned crc = 0;
   vec_alloc (global_vec, 200);
 
@@ -8091,6 +8126,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		  tree u_decl = d->get_decl ();
 		  if (!TREE_VISITED (u_decl))
 		    {
+		      gcc_checking_assert (d->cluster);
 		      sec.u (ct_horcrux);
 		      sec.u (d->cluster - 1);
 		      sec.insert (u_decl);

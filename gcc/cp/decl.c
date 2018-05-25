@@ -16416,6 +16416,9 @@ fndecl_declared_return_type (tree fn)
 	f = DECL_STRUCT_FUNCTION (fn)->language;
       if (f == NULL)
 	f = DECL_SAVED_FUNCTION_DATA (fn);
+      // FIXME: preserve auto_return pattern in BMI
+      if (!f)
+	return make_auto ();
       return f->x_auto_return_pattern;
     }
   return TREE_TYPE (TREE_TYPE (fn));

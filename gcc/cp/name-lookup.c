@@ -3649,15 +3649,10 @@ set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
   return true;
 }
 
-/* CTX contains a module MOD binding for NAME.  Use TYPE & CODE to
-   find the binding we want.  Return NULL if nothing found (that would
-   be an error).  */
-
-tree
-lookup_by_ident (tree ctx, unsigned mod, tree name, tree type, unsigned code)
+static tree
+get_binding_or_decl (tree ctx, unsigned mod, tree name)
 {
   tree binding = NULL_TREE;
-  tree decl = NULL_TREE;
 
   switch (TREE_CODE (ctx))
     {
@@ -3692,16 +3687,15 @@ lookup_by_ident (tree ctx, unsigned mod, tree name, tree type, unsigned code)
 	  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx))
 	    binding = member_vec_binary_search (member_vec, name);
 	  else
-	    for (decl = TYPE_FIELDS (ctx); decl; decl = DECL_CHAIN (decl))
-	      if (name == DECL_NAME (decl)
-		  && TREE_CODE (decl) == code
-		  && (!type || same_type_p (type, TREE_TYPE (decl))))
+	    // FIXME:Force such classes to have a member vec
+	    for (tree decl = TYPE_FIELDS (ctx); decl; decl = DECL_CHAIN (decl))
+	      if (name == DECL_NAME (decl))
 		return decl;
 	}
       break;
 
     case ENUMERAL_TYPE:
-      if (COMPLETE_TYPE_P (ctx) && code == CONST_DECL && !type)
+      if (COMPLETE_TYPE_P (ctx))
 	for (tree values = TYPE_VALUES (ctx);
 	     values; values = TREE_CHAIN (values))
 	  {
@@ -3715,61 +3709,82 @@ lookup_by_ident (tree ctx, unsigned mod, tree name, tree type, unsigned code)
       break;
     }
 
-  if (binding)
+  return binding;
+}
+
+/* CTX contains a module MOD binding for NAME.  Use ident to find the
+   binding we want.  Return NULL if nothing found (that would be an
+   error).  */
+
+tree
+lookup_by_ident (tree ctx, unsigned mod, tree name, int ident)
+{
+  tree binding = get_binding_or_decl (ctx, mod, name);
+
+  if (!binding)
+    return binding;
+
+  if (TREE_CODE (binding) != OVERLOAD)
+    return binding;
+
+  if (ident < 0)
+    return MAYBE_STAT_TYPE (binding);
+
+  bool skip_local = TREE_CODE (ctx) == NAMESPACE_DECL;
+  binding = MAYBE_STAT_DECL (binding);
+  for (ovl_iterator iter (binding); iter; ++iter)
     {
-      for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
+      tree d = *iter;
+
+      if (skip_local)
 	{
-	  decl = *iter;
-	  if (TREE_CODE (decl) == code
-	      && (!type || same_type_p (type, TREE_TYPE (decl))))
-	    return decl;
+	  tree not_tpl = STRIP_TEMPLATE (d);
+	  if (!TREE_PUBLIC (not_tpl) && TREE_CODE (not_tpl) != TYPE_DECL)
+	    continue;
 	}
 
-      if (code == TYPE_DECL)
-	{
-	  decl = MAYBE_STAT_TYPE (binding);
-	  if (decl && TREE_CODE (decl) == code)
-	    return decl;
-	}
+      if (!ident--)
+	return d;
     }
 
   return NULL_TREE;
 }
 
-/* CTX contains DECL binding for NAME.  Determine a distinguishing KEY
-   so we can find it again upon import.  */
-
-tree
-find_by_ident_in_class (tree klass, tree name, unsigned key)
+int
+get_lookup_ident (tree ctx, unsigned mod, tree name, tree decl)
 {
-  tree lookup = IDENTIFIER_CONV_OP_P (name) ? conv_op_identifier : name;
-  tree decl = NULL_TREE;
+  tree binding = get_binding_or_decl (ctx, mod, name);
 
-  gcc_assert (COMPLETE_TYPE_P (klass));
-  /* The originating module might not have lazily declared members,
-     but the referencing module will have done so.  We need to repeat
-     that declaration at this point.  */
-  maybe_lazily_declare (klass, name);
-  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass))
+  gcc_checking_assert (binding);
+  
+  if (binding == decl)
+    return 0;
+
+  gcc_checking_assert (TREE_CODE (binding) == OVERLOAD);
+  if (decl == MAYBE_STAT_TYPE (binding))
+    return -1;
+
+  bool skip_local = TREE_CODE (ctx) == NAMESPACE_DECL;
+  binding = MAYBE_STAT_DECL (binding);
+  int ident = 0;
+
+  for (ovl_iterator iter (binding); ; ++iter)
     {
-      if (tree binding = member_vec_binary_search (member_vec, lookup))
-	{
-	  if (!key)
-	    decl = MAYBE_STAT_TYPE (binding);
-	  else
-	    for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
-	      if (!--key)
-		{
-		  decl = *iter;
-		  break;
-		}
-	}
-    }
-  else
-    for (decl = TYPE_FIELDS (klass); decl && key--; decl = DECL_CHAIN (decl))
-      continue;
+      tree d = *iter;
 
-  return decl;
+      if (skip_local)
+	{
+	  tree not_tpl = STRIP_TEMPLATE (d);
+	  if (!TREE_PUBLIC (not_tpl) && TREE_CODE (not_tpl) != TYPE_DECL)
+	    continue;
+	}
+
+      if (d == decl)
+	return ident;
+      ident++;
+    }
+
+  gcc_unreachable ();
 }
 
 /* Enter DECL into the symbol table, if that's appropriate.  Returns

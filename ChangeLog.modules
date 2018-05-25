@@ -1,3 +1,25 @@
+2018-05-25  Nathan Sidwell  <nathan@acm.org>
+
+	Direct import lambda returns!
+	gcc/cp/
+	* module.c (depset::decl_key): Remove assert.
+	(trees_{in,out}::core_vals): Serialize type context, lambda expr and
+	decl size & value.
+	(trees_out::tree_decl): Spot voldemort returns. Ident by index.
+	(trees_in::tree_node): Ident by index.
+	(trees_in::finish_type): Don't set type context here.
+	(depset::hash::add_dependency): Namespaces are also ok.
+	* decl.c (fndecl_declared_return_type): Default to auto.
+	* decl2.c (no_linkage_error): Ignore imported decls.
+	* name-lookup.h (lookup_by_ident): Ident is index.
+	(get_lookup_ident): Declare.
+	* name-lookup.c (get_binding_or_decl): New.
+	(lookup_by_ident): Use it.  Ident is index.
+	(get_lookup_ident): New.
+	gcc/testsuite/
+	* g++.dg/modules/vmort-1_[ab].C: New.
+	* g++.dg/modules/lambda-1_[ab].C: New.
+
 2018-05-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
