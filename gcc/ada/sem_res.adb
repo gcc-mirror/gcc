@@ -9032,7 +9032,6 @@ package body Sem_Res is
       elsif Ada_Version >= Ada_2005
         and then Is_Class_Wide_Type (Etype (L))
         and then Is_Interface (Etype (L))
-        and then Is_Class_Wide_Type (Etype (R))
         and then not Is_Interface (Etype (R))
       then
          return;

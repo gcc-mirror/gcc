@@ -1,3 +1,11 @@
+2018-05-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Membership_Op): Allow the use of the membership
+	test when the left operand is a class-wide interface and the right
+	operand is not a class-wide type.
+	* exp_ch4.adb (Tagged_Membership): Adding support for interface as the
+	left operand.
+
 2018-05-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_aggr.adb (Flatten): A quantified expression cannot be duplicated
