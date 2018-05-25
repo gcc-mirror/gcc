@@ -213,8 +213,7 @@ package body Pprint is
 
             when N_Character_Literal =>
                declare
-                  Char : constant Int :=
-                           UI_To_Int (Char_Literal_Value (Expr));
+                  Char : constant Int := UI_To_Int (Char_Literal_Value (Expr));
                begin
                   if Char in 32 .. 127 then
                      return "'" & Character'Val (Char) & "'";
@@ -890,6 +889,15 @@ package body Pprint is
             if Right /= Expr then
                while Scn < End_Sloc loop
                   case Src (Scn) is
+
+                     --  Give up on non ASCII characters
+
+                     when Character'Val (128) .. Character'Last =>
+                        Append_Paren := 0;
+                        Index := 0;
+                        Right := Expr;
+                        exit;
+
                      when ' '
                         | ASCII.HT
                      =>

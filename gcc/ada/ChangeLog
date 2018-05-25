@@ -1,3 +1,7 @@
+2018-05-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* pprint.adb (Expression_Name): Do not print non ASCII characters.
+
 2018-05-25  Bob Duff  <duff@adacore.com>
 
 	* libgnat/a-strunb__shared.ads, libgnat/a-stwiun__shared.ads,
