@@ -1,3 +1,9 @@
+2018-05-25  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): Add guard in check to
+	generate code for 6.5(8-10) so that we don't get an assertion error
+	when dealing with an incomplete return type.
+
 2018-05-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* pprint.adb (Expression_Name): Strip too long expressions to avoid
