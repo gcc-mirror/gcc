@@ -683,10 +683,6 @@ dequeue_and_dump (dump_info_p di)
     case SWITCH_EXPR:
       dump_child ("cond", TREE_OPERAND (t, 0));
       dump_child ("body", TREE_OPERAND (t, 1));
-      if (TREE_OPERAND (t, 2))
-        {
-      	  dump_child ("labl", TREE_OPERAND (t,2));
-        }
       break;
     case OMP_CLAUSE:
       {
