@@ -3662,6 +3662,11 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
   orig_rhs2 = gimple_assign_rhs2 (c->cand_stmt);
   cand_incr = cand_increment (c);
 
+  /* If orig_rhs2 is NULL, we have already replaced this in situ with
+     a copy statement under another interpretation.  */
+  if (!orig_rhs2)
+    return;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fputs ("Replacing: ", dump_file);
