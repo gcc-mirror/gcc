@@ -206,7 +206,35 @@ range_negatives (irange *r, tree type)
 {
   r->set_range (type, TYPE_MIN_VALUE (type), build_int_cst (type, -1));
 }
-enum value_range_type irange_to_value_range (wide_int &, wide_int &);
+
+/* Convert a value_range to an irange and store it in R.
+   TYPE is the SSA type.
+   KIND, MIN, and MAX are as in a value_range.  */
+
+static inline void
+value_range_to_irange (irange &r,
+		       tree type, enum value_range_type kind,
+		       const wide_int &min, const wide_int &max)
+{
+  gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
+  if (kind == VR_VARYING || kind == VR_UNDEFINED)
+    r.set_range_for_type (type);
+  else
+    r.set_range (type, min, max,
+		 kind == VR_ANTI_RANGE ? irange::INVERSE : irange::PLAIN);
+}
+
+/* Same as above, but takes an entire value_range instead of piecemeal.  */
+
+static inline void
+value_range_to_irange (irange &r, const value_range &vr)
+{
+  return value_range_to_irange (r, TREE_TYPE (vr.min), vr.type,
+				wi::to_wide (vr.min),
+				wi::to_wide (vr.max));
+}
+
+void irange_to_value_range (value_range &vr, const irange &);
 
 /* An irange is inefficient when it comes to memory, so this class is
    used to store iranges in memory (off of an SSA_NAME likely).  It is
@@ -324,23 +352,6 @@ tree valid_irange_ssa (tree t)
       && valid_irange_type (TREE_TYPE (t)))
     return t;
   return NULL_TREE;
-}
-
-/* Convert a value_range to an irange and store it in R.
-   TYPE is the SSA type.
-   KIND, MIN, and MAX are as in a value_range.  */
-
-static inline void
-value_range_to_irange (irange &r,
-		       tree type, enum value_range_type kind,
-		       const wide_int &min, const wide_int &max)
-{
-  gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
-  if (kind == VR_VARYING || kind == VR_UNDEFINED)
-    r.set_range_for_type (type);
-  else
-    r.set_range (type, min, max,
-		 kind == VR_ANTI_RANGE ? irange::INVERSE : irange::PLAIN);
 }
 
 #endif // GCC_RANGE_H

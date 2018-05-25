@@ -1031,9 +1031,15 @@ range_non_zero (irange *r, tree type)
 
 /* Convert irange  to a value_range_type.  */
 
-enum value_range_type
-irange_to_value_range (const irange &r, wide_int &min, wide_int &max)
+void
+irange_to_value_range (value_range &vr, const irange &r)
 {
+  vr.equiv = NULL;
+  if (r.range_for_type_p ())
+    {
+      vr.type = VR_VARYING;
+      return;
+    }
   tree type = r.get_type ();
   unsigned int precision = TYPE_PRECISION (type);
   if (r.num_pairs () == 2
@@ -1041,13 +1047,16 @@ irange_to_value_range (const irange &r, wide_int &min, wide_int &max)
       && r.upper_bound () == wi::max_value (precision, TYPE_SIGN (type)))
     {
       irange tmp = irange_invert (r);
-      min = tmp.lower_bound ();
-      max = tmp.upper_bound ();
-      return VR_ANTI_RANGE;
+      vr.min = wide_int_to_tree (type, tmp.lower_bound ());
+      vr.max = wide_int_to_tree (type, tmp.upper_bound ());
+      vr.type = VR_ANTI_RANGE;
     }
-  min = r.lower_bound ();
-  max = r.upper_bound ();
-  return VR_RANGE;
+  else
+    {
+      vr.min = wide_int_to_tree (type, r.lower_bound ());
+      vr.max = wide_int_to_tree (type, r.upper_bound ());
+      vr.type = VR_RANGE;
+    }
 }
 
 #ifdef CHECKING_P
@@ -1551,11 +1560,13 @@ irange_tests ()
   ASSERT_TRUE (r0.non_zero_p ());
 
   /* Test irange / value_range conversion functions.  */
-  wide_int min, max;
   r0.set_range (integer_type_node, 10, 20, irange::INVERSE);
-  ASSERT_TRUE (irange_to_value_range (r0, min, max) == VR_ANTI_RANGE);
-  ASSERT_TRUE (wi::eq_p (10, min) && wi::eq_p (20, max));
-  value_range_to_irange (r1, integer_type_node, VR_ANTI_RANGE, min, max);
+  value_range vr;
+  irange_to_value_range (vr, r0);
+  ASSERT_TRUE (vr.type == VR_ANTI_RANGE);
+  ASSERT_TRUE (wi::eq_p (10, wi::to_wide (vr.min))
+	       && wi::eq_p (20, wi::to_wide (vr.max)));
+  value_range_to_irange (r1, vr);
   ASSERT_TRUE (r0 == r1);
 }
 
