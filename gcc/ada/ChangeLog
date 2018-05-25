@@ -1,3 +1,7 @@
+2018-05-25  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb: Minor reformatting.
+
 2018-05-25  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_util.adb (Iterate_Call_Parameters): Fix code convention and
