@@ -4759,6 +4759,13 @@ Alternatively, you may run the script using the following command line:
     Runs ``n`` tests in parallel (default is 1).
 
 
+    .. index:: --copy-environment (gnattest)
+
+  :switch:`--copy-environment={dir}`
+    Contents of ``dir`` directory will be copied to temporary directories
+    created by gnattest in which individual test drivers are spawned.
+
+
   .. _Project_Attributes_for_gnattest:
 
   Project Attributes for ``gnattest``
