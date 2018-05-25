@@ -1,3 +1,8 @@
+2018-05-25  Jason Merrill  <jason@redhat.com>
+
+        PR c++/80485 - inline function non-zero address.
+        * symtab.c (nonzero_address): Check DECL_COMDAT.
+
 2018-05-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/83628
