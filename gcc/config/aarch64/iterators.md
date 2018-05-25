@@ -1207,6 +1207,8 @@
 
 (define_code_iterator SVE_INT_BINARY_REV [minus])
 
+(define_code_iterator SVE_INT_BINARY_SD [div udiv])
+
 ;; SVE integer comparisons.
 (define_code_iterator SVE_INT_CMP [lt le eq ne ge gt ltu leu geu gtu])
 
@@ -1237,6 +1239,8 @@
 			 (neg "neg")
 			 (plus "add")
 			 (minus "sub")
+			 (div "div")
+			 (udiv "udiv")
 			 (ss_plus "qadd")
 			 (us_plus "qadd")
 			 (ss_minus "qsub")
@@ -1378,6 +1382,8 @@
 ;; The integer SVE instruction that implements an rtx code.
 (define_code_attr sve_int_op [(plus "add")
 			      (minus "sub")
+			      (div "sdiv")
+			      (udiv "udiv")
 			      (neg "neg")
 			      (smin "smin")
 			      (smax "smax")

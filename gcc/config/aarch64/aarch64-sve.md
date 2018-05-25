@@ -1008,6 +1008,36 @@
   "<su>mulh\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
 )
 
+;; Unpredicated division.
+(define_expand "<optab><mode>3"
+  [(set (match_operand:SVE_SDI 0 "register_operand")
+	(unspec:SVE_SDI
+	  [(match_dup 3)
+	   (SVE_INT_BINARY_SD:SVE_SDI
+	     (match_operand:SVE_SDI 1 "register_operand")
+	     (match_operand:SVE_SDI 2 "register_operand"))]
+	  UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE"
+  {
+    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+  }
+)
+
+;; Division predicated with a PTRUE.
+(define_insn "*<optab><mode>3"
+  [(set (match_operand:SVE_SDI 0 "register_operand" "=w, w")
+	(unspec:SVE_SDI
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (SVE_INT_BINARY_SD:SVE_SDI
+	     (match_operand:SVE_SDI 2 "register_operand" "0, w")
+	     (match_operand:SVE_SDI 3 "aarch64_sve_mul_operand" "w, 0"))]
+	  UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE"
+  "@
+   <sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   <sve_int_op>r\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>"
+)
+
 ;; Unpredicated NEG, NOT and POPCOUNT.
 (define_expand "<optab><mode>2"
   [(set (match_operand:SVE_I 0 "register_operand")
