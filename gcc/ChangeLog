@@ -1,3 +1,9 @@
+2018-05-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* optabs.c (can_reuse_operands_p): New function.
+	(maybe_legitimize_operands): Try to reuse the results for
+	earlier operands.
+
 2018-05-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (cvtusi2<ssescalarmodesuffix>64<round_name>):
