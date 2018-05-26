@@ -1348,6 +1348,7 @@ write_integer (st_parameter_dt *dtp, const char *source, int kind)
     }
   f.u.integer.w = width;
   f.u.integer.m = -1;
+  f.format = FMT_NONE;
   write_decimal (dtp, &f, source, kind, (void *) gfc_itoa);
 }
 
@@ -1465,7 +1466,7 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, size_t leng
 
 /* Floating point helper functions.  */
 
-#define BUF_STACK_SZ 256
+#define BUF_STACK_SZ 384
 
 static int
 get_precision (st_parameter_dt *dtp, const fnode *f, const char *source, int kind)
