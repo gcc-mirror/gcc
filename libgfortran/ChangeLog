@@ -1,6 +1,6 @@
 2018-05-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/89506
+	PR libgfortran/85906
 	* io/write.c (write_integer): Initialise the fnode format to
 	FMT_NONE, used for list directed write.
 	(BUF_STACK_SZ): Bump default buffer size up to avoid allocs on
