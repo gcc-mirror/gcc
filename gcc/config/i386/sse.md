@@ -4853,7 +4853,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "<floatsuffix>float<sseintvecmodelower><mode>2<mask_name><round_name>"
+(define_insn "float<floatunssuffix><sseintvecmodelower><mode>2<mask_name><round_name>"
   [(set (match_operand:VF2_AVX512VL 0 "register_operand" "=v")
 	(any_float:VF2_AVX512VL
 	  (match_operand:<sseintvecmode> 1 "nonimmediate_operand" "<round_constraint>")))]
@@ -4863,7 +4863,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
-;; For <floatsuffix>float<sselondveclower><mode> insn patterns
+;; For float<floatunssuffix><sselondveclower><mode> insn patterns
 (define_mode_attr qq2pssuff
   [(V8SF "") (V4SF "{y}")])
 
@@ -4877,7 +4877,7 @@
   [(V8SF "XI") (V4SF "OI")
    (V8DF "OI") (V4DF "TI")])
 
-(define_insn "<floatsuffix>float<sselongvecmodelower><mode>2<mask_name><round_name>"
+(define_insn "float<floatunssuffix><sselongvecmodelower><mode>2<mask_name><round_name>"
   [(set (match_operand:VF1_128_256VL 0 "register_operand" "=v")
 	 (any_float:VF1_128_256VL
 	   (match_operand:<sselongvecmode> 1 "nonimmediate_operand" "<round_constraint>")))]
@@ -4887,7 +4887,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*<floatsuffix>floatv2div2sf2"
+(define_insn "*float<floatunssuffix>v2div2sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
     (vec_concat:V4SF
 	    (any_float:V2SF (match_operand:V2DI 1 "nonimmediate_operand" "vm"))
@@ -4898,7 +4898,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "<floatsuffix>floatv2div2sf2_mask"
+(define_insn "float<floatunssuffix>v2div2sf2_mask"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
     (vec_concat:V4SF
         (vec_merge:V2SF
@@ -4914,7 +4914,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "*<floatsuffix>floatv2div2sf2_mask_1"
+(define_insn "*float<floatunssuffix>v2div2sf2_mask_1"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
     (vec_concat:V4SF
 	(vec_merge:V2SF
@@ -5084,7 +5084,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
-(define_insn "<fixsuffix>fix_truncv8dfv8si2<mask_name><round_saeonly_name>"
+(define_insn "fix<fixunssuffix>_truncv8dfv8si2<mask_name><round_saeonly_name>"
   [(set (match_operand:V8SI 0 "register_operand" "=v")
 	(any_fix:V8SI
 	  (match_operand:V8DF 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")))]
@@ -5123,7 +5123,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn "<fixsuffix>fix_trunc<mode><sseintvecmodelower>2<mask_name><round_saeonly_name>"
+(define_insn "fix<fixunssuffix>_trunc<mode><sseintvecmodelower>2<mask_name><round_saeonly_name>"
   [(set (match_operand:<sseintvecmode> 0 "register_operand" "=v")
 	(any_fix:<sseintvecmode>
 	  (match_operand:VF2_AVX512VL 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")))]
@@ -5155,7 +5155,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseintvecmode2>")])
 
-(define_insn "<fixsuffix>fix_trunc<mode><sselongvecmodelower>2<mask_name><round_saeonly_name>"
+(define_insn "fix<fixunssuffix>_trunc<mode><sselongvecmodelower>2<mask_name><round_saeonly_name>"
   [(set (match_operand:<sselongvecmode> 0 "register_operand" "=v")
 	(any_fix:<sselongvecmode>
 	  (match_operand:VF1_128_256VL 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")))]
@@ -5165,7 +5165,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseintvecmode3>")])
 
-(define_insn "<fixsuffix>fix_truncv2sfv2di2<mask_name>"
+(define_insn "fix<fixunssuffix>_truncv2sfv2di2<mask_name>"
   [(set (match_operand:V2DI 0 "register_operand" "=v")
 	(any_fix:V2DI
 	  (vec_select:V2SF
@@ -5961,8 +5961,8 @@
       r1 = gen_reg_rtx (V8SImode);
       r2 = gen_reg_rtx (V8SImode);
 
-      emit_insn (gen_ufix_truncv8dfv8si2 (r1, operands[1]));
-      emit_insn (gen_ufix_truncv8dfv8si2 (r2, operands[2]));
+      emit_insn (gen_fixuns_truncv8dfv8si2 (r1, operands[1]));
+      emit_insn (gen_fixuns_truncv8dfv8si2 (r2, operands[2]));
       emit_insn (gen_avx_vec_concatv16si (operands[0], r1, r2));
     }
   else

@@ -1,3 +1,48 @@
+2018-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85918
+	* config/i386/i386.md (fixunssuffix, floatunssuffix): New code
+	attributes.
+	* config/i386/sse.md
+	(<floatsuffix>float<sseintvecmodelower><mode>2<mask_name><round_name>):
+	Rename to ...
+	(float<floatunssuffix><sseintvecmodelower><mode>2<mask_name><round_name>):
+	... this.
+	(<floatsuffix>float<sselongvecmodelower><mode>2<mask_name><round_name>):
+	Rename to ...
+	(float<floatunssuffix><sselongvecmodelower><mode>2<mask_name><round_name>):
+	... this.
+	(*<floatsuffix>floatv2div2sf2): Rename to ...
+	(*float<floatunssuffix>v2div2sf2): ... this.
+	(<floatsuffix>floatv2div2sf2_mask): Rename to ...
+	(float<floatunssuffix>v2div2sf2_mask): ... this.
+	(*<floatsuffix>floatv2div2sf2_mask_1): Rename to ...
+	(*float<floatunssuffix>v2div2sf2_mask_1): ... this.
+	(<fixsuffix>fix_truncv8dfv8si2<mask_name><round_saeonly_name>): Rename
+	to ...
+	(fix<fixunssuffix>_truncv8dfv8si2<mask_name><round_saeonly_name>):
+	... this.
+	(<fixsuffix>fix_trunc<mode><sseintvecmodelower>2<mask_name><round_saeonly_name>):
+	Rename to ...
+	(fix<fixunssuffix>_trunc<mode><sseintvecmodelower>2<mask_name><round_saeonly_name>):
+	... this.
+	(<fixsuffix>fix_trunc<mode><sselongvecmodelower>2<mask_name><round_saeonly_name>):
+	Rename to ...
+	(fix<fixunssuffix>_trunc<mode><sselongvecmodelower>2<mask_name><round_saeonly_name>):
+	... this.
+	(<fixsuffix>fix_truncv2sfv2di2<mask_name>): Rename to ...
+	(fix<fixunssuffix>_truncv2sfv2di2<mask_name>): ... this.
+	(vec_pack_ufix_trunc_<mode>): Use gen_fixuns_truncv8dfv8si2 instead of
+	gen_ufix_truncv8dfv8si2.
+	* config/i386/i386-builtin.def (__builtin_ia32_cvttpd2uqq256_mask,
+	__builtin_ia32_cvttpd2uqq128_mask, __builtin_ia32_cvttps2uqq256_mask,
+	__builtin_ia32_cvttps2uqq128_mask, __builtin_ia32_cvtuqq2ps256_mask,
+	__builtin_ia32_cvtuqq2ps128_mask, __builtin_ia32_cvtuqq2pd256_mask,
+	__builtin_ia32_cvtuqq2pd128_mask, __builtin_ia32_cvttpd2udq512_mask,
+	__builtin_ia32_cvtuqq2ps512_mask, __builtin_ia32_cvtuqq2pd512_mask,
+	__builtin_ia32_cvttps2uqq512_mask, __builtin_ia32_cvttpd2uqq512_mask):
+	Use fixuns instead ufix or floatuns instead ufloat in CODE_FOR_ names.
+
 2018-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85900
