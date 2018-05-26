@@ -1,3 +1,8 @@
+2018-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85918
+	* gcc.target/i386/avx512dq-pr85918.c: New test.
+
 2018-05-25  Jim Wilson  <jimw@sifive.com>
 
 	* gcc.target/riscv/interrupt-1.c: New.
