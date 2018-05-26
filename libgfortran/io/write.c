@@ -1566,19 +1566,19 @@ write_float_0 (st_parameter_dt *dtp, const fnode *f, const char *source, int kin
   char buf_stack[BUF_STACK_SZ];
   char str_buf[BUF_STACK_SZ];
   char *buffer, *result;
-  size_t buf_size, res_len;
+  size_t buf_size, res_len, flt_str_len;
 
   /* Precision for snprintf call.  */
   int precision = get_precision (dtp, f, source, kind);
 
   /* String buffer to hold final result.  */
   result = select_string (dtp, f, str_buf, &res_len, kind);
-  
+
   buffer = select_buffer (dtp, f, precision, buf_stack, &buf_size, kind);
-  
+
   get_float_string (dtp, f, source , kind, 0, buffer,
-                           precision, buf_size, result, &res_len);
-  write_float_string (dtp, result, res_len);
+                           precision, buf_size, result, &flt_str_len);
+  write_float_string (dtp, result, flt_str_len);
 
   if (buf_size > BUF_STACK_SZ)
     free (buffer);
