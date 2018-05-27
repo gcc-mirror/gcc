@@ -1596,22 +1596,17 @@
   if (TARGET_ISA_V3M)
     nds32_expand_unaligned_store (operands, DImode);
   else
-    emit_insn (gen_unaligned_store_dw (operands[0], operands[1]));
+    emit_insn (gen_unaligned_store_dw (gen_rtx_MEM (DImode, operands[0]),
+				       operands[1]));
   DONE;
 })
 
 (define_insn "unaligned_store_dw"
-  [(set (mem:DI (match_operand:SI 0 "register_operand" "r"))
-	(unspec:DI [(match_operand:DI 1 "register_operand" "r")] UNSPEC_UASTORE_DW))]
+  [(set (match_operand:DI 0 "nds32_lmw_smw_base_operand"   "=Umw")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "   r")] UNSPEC_UASTORE_DW))]
   ""
 {
-  rtx otherops[3];
-  otherops[0] = gen_rtx_REG (SImode, REGNO (operands[1]));
-  otherops[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
-  otherops[2] = operands[0];
-
-  output_asm_insn ("smw.bi\t%0, [%2], %1, 0", otherops);
-  return "";
+  return nds32_output_smw_double_word (operands);
 }
   [(set_attr "type"   "store")
    (set_attr "length"     "4")]
