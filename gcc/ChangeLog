@@ -1,3 +1,7 @@
+2018-05-27  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.md (truncsihi2): Remove.
+
 2018-05-27  Monk Chiang  <sh.chiang04@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
