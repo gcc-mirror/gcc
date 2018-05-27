@@ -318,6 +318,10 @@ struct GTY(()) machine_function
        2. The rtl lowering and optimization are close to target code.
 	  For this case we need address to be strictly aligned.  */
   int strict_aligned_p;
+
+  /* Record two similar attributes status.  */
+  int attr_naked_p;
+  int attr_no_prologue_p;
 };
 
 /* A C structure that contains the arguments information.  */
