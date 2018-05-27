@@ -1,3 +1,7 @@
+2018-05-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-linux.h (NEED_INDICATE_EXEC_STACK): Define to 0.
+
 2018-05-27  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md (truncsihi2): Remove.
