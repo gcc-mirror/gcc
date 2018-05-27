@@ -715,6 +715,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
 	  _Rb_tree_impl(_Rb_tree_impl&&) = default;
 
+	  explicit
+	  _Rb_tree_impl(_Node_allocator&& __a)
+	  : _Node_allocator(std::move(__a))
+	  { }
+
 	  _Rb_tree_impl(_Rb_tree_impl&& __x, _Node_allocator&& __a)
 	  : _Node_allocator(std::move(__a)),
 	    _Base_key_compare(std::move(__x)),
@@ -948,7 +953,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
       _Rb_tree(const allocator_type& __a)
-      : _M_impl(_Compare(), _Node_allocator(__a))
+      : _M_impl(_Node_allocator(__a))
       { }
 
       _Rb_tree(const _Rb_tree& __x, const allocator_type& __a)

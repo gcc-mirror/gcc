@@ -1,3 +1,26 @@
+2018-05-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h (_Rb_tree_impl(_Node_allocator&&)): New.
+	(_Rb_tree(const allocator_type&)): Use latter.
+	* include/bits/stl_map.h (map(const allocator_type&)): Likewise.
+	(map(initializer_list<value_type>, const allocator_type&)): Likewise.
+	(map(_InputIterator, _InputIterator, const allocator_type&)): Likewise.
+	* include/bits/stl_multimap.h
+	(multimap(const allocator_type&)): Likewise.
+	(multimap(initializer_list<value_type>, const allocator_type&)):
+	Likewise.
+	(multimap(_InputIterator, _InputIterator, const allocator_type&)):
+	Likewise.
+	* include/bits/stl_set.h (set(const allocator_type&)): Likewise.
+	(set(initializer_list<value_type>, const allocator_type&)): Likewise.
+	(set(_InputIterator, _InputIterator, const allocator_type&)): Likewise.
+	* include/bits/stl_multiset.h
+	(multiset(const allocator_type&)): Likewise.
+	(multiset(initializer_list<value_type>, const allocator_type&)):
+	Likewise.
+	(multiset(_InputIterator, _InputIterator, const allocator_type&)):
+	Likewise.
+
 2018-05-25  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/85768

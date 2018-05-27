@@ -232,7 +232,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Allocator-extended default constructor.
       explicit
       map(const allocator_type& __a)
-      : _M_t(_Compare(), _Pair_alloc_type(__a)) { }
+      : _M_t(_Pair_alloc_type(__a)) { }
 
       /// Allocator-extended copy constructor.
       map(const map& __m, const allocator_type& __a)
@@ -246,14 +246,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Allocator-extended initialier-list constructor.
       map(initializer_list<value_type> __l, const allocator_type& __a)
-      : _M_t(_Compare(), _Pair_alloc_type(__a))
+      : _M_t(_Pair_alloc_type(__a))
       { _M_t._M_insert_unique(__l.begin(), __l.end()); }
 
       /// Allocator-extended range constructor.
       template<typename _InputIterator>
 	map(_InputIterator __first, _InputIterator __last,
 	    const allocator_type& __a)
-	: _M_t(_Compare(), _Pair_alloc_type(__a))
+	: _M_t(_Pair_alloc_type(__a))
 	{ _M_t._M_insert_unique(__first, __last); }
 #endif
 
