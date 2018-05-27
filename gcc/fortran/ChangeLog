@@ -1,3 +1,8 @@
+2018-05-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c (match_data_constant):  Fortran 2018 allows pointer
+	initialization in a data statement.
+
 2018-05-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85839

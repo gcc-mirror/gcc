@@ -387,7 +387,20 @@ match_data_constant (gfc_expr **result)
       return m;
     }
   else if (m == MATCH_YES)
-    gfc_free_expr (*result);
+    {
+      /* F2018:R845 data-stmt-constant is initial-data-target.
+	 A data-stmt-constant shall be ... initial-data-target if and
+	 only if the corresponding data-stmt-object has the POINTER
+	 attribute. ...  If data-stmt-constant is initial-data-target
+	 the corresponding data statement object shall be
+	 data-pointer-initialization compatible (7.5.4.6) with the initial
+	 data target; the data statement object is initially associated
+	 with the target.  */
+      if ((*result)->symtree->n.sym->attr.save
+	  && (*result)->symtree->n.sym->attr.target)
+	return m;
+      gfc_free_expr (*result);
+    }
 
   gfc_current_locus = old_loc;
 
