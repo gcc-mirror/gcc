@@ -1,5 +1,9 @@
 2018-05-27  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.md (bswapsi2, bswaphi2): New patterns.
+
+2018-05-27  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_attribute_table): Add "no_prologue".
 	(nds32_init_machine_status): Initialize machine->attr_naked_p and
 	machine->attr_no_prologue_p.
