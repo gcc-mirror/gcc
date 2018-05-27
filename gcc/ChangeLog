@@ -1,3 +1,7 @@
+2018-05-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-linux.h (NEED_INDICATE_EXEC_STACK): Define to 0.
+
 2018-05-25  Richard Biener  <rguenther@suse.de>
 
 	PR c++/85912
