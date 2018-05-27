@@ -1,3 +1,22 @@
+2018-05-27  Monk Chiang  <sh.chiang04@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-intrinsic.md (unaligned_storedi): Modify patterns
+	implementation.
+	(unaligned_store_dw): Ditto.
+	* config/nds32/nds32-memory-manipulation.c
+	(nds32_expand_movmemsi_loop_known_size): Refactoring implementation.
+	(nds32_gen_dup_4_byte_to_word_value): Rename to ...
+	(nds32_gen_dup_4_byte_to_word_value_aux): ... this.
+	(emit_setmem_word_loop): Rename to ...
+	(emit_setmem_doubleword_loop): ... this.
+	(nds32_gen_dup_4_byte_to_word_value): New function.
+	(nds32_gen_dup_8_byte_to_double_word_value): New function.
+	(nds32_expand_setmem_loop): Refine implementation.
+	(nds32_expand_setmem_loop_v3m): Ditto.
+	* config/nds32/nds32-multiple.md (unaligned_store_update_base_dw): New
+	pattern.
+
 2018-05-27  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.md (bswapsi2, bswaphi2): New patterns.
