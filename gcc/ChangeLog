@@ -1,3 +1,17 @@
+2018-05-27  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_attribute_table): Add "no_prologue".
+	(nds32_init_machine_status): Initialize machine->attr_naked_p and
+	machine->attr_no_prologue_p.
+	(nds32_compute_stack_frame): Check "naked" and "no_prologue" attributes.
+	(nds32_naked_function_p): Handle "naked" and "no_prologue" attributes.
+	(nds32_expand_epilogue): Consider attr_naked_p.
+	(nds32_expand_epilogue_v3pop): Likewise.
+	(nds32_can_use_return_insn): Likewise.
+	* config/nds32/nds32.h (machine_function): Add attr_naked_p and
+	attr_no_prologue_p fields.
+	* config/nds32/nds32.opt (mret-in-naked-func): New option.
+
 2018-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85918

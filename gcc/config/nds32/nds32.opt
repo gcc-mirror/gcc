@@ -439,6 +439,10 @@ mforce-no-ext-dsp
 Target Undocumented Report Mask(FORCE_NO_EXT_DSP)
 Force disable hardware loop, even use -mext-dsp.
 
+mret-in-naked-func
+Target Var(flag_ret_in_naked_func) Init(1)
+Generate return instruction in naked function.
+
 malways-save-lp
 Target Var(flag_always_save_lp) Init(0)
 Always save $lp in the stack.
