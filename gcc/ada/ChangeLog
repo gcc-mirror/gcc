@@ -1,5 +1,12 @@
 2018-05-28  Ed Schonberg  <schonberg@adacore.com>
 
+	* einfo.ads, einfo.adb (Needs_Activation_Record): New flag on
+	access-to-subprogram types, to indicate that an indirect call through
+	such a type requires an activation record when compiling for LLVM.
+	* sem_ch3.adb (Access_Subprogram_Declaration): Set new flag as needed.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch4.adb (Real_Range_Check): Specialize float-to-fixed conversions
 	when bounds of fixed type are static, to remove some spuerfluous
 	implicit conversions and provide an accurate result when converting

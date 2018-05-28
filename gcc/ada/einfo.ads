@@ -3534,6 +3534,11 @@ package Einfo is
 --       preelaborable initialization at freeze time (this has to be deferred
 --       to the freeze point because of the rule about overriding Initialize).
 
+--    Needs_Activation_Record (Flag306)
+--       Defined on access_to_subprogram types. Indicates that a call through
+--       a named or anonymous access to subprogram requires an activation
+--       record when compiling with unnesting for C or LLVM.
+
 --    Needs_Debug_Info (Flag147)
 --       Defined in all entities. Set if the entity requires normal debugging
 --       information to be generated. This is true of all entities that have
@@ -5814,6 +5819,7 @@ package Einfo is
    --    Needs_No_Actuals                    (Flag22)
    --    Original_Access_Type                (Node28)
    --    Can_Use_Internal_Rep                (Flag229)
+   --    Needs_Activation_Record             (Flag306)
    --    (plus type attributes)
 
    --  E_Access_Type
@@ -5846,6 +5852,7 @@ package Einfo is
    --    Directly_Designated_Type            (Node20)
    --    Storage_Size_Variable               (Node26)   ??? is this needed ???
    --    Can_Use_Internal_Rep                (Flag229)
+   --    Needs_Activation_Record             (Flag306)
    --    (plus type attributes)
 
    --  E_Anonymous_Access_Type
@@ -7405,6 +7412,7 @@ package Einfo is
    function Modulus                             (Id : E) return U;
    function Must_Be_On_Byte_Boundary            (Id : E) return B;
    function Must_Have_Preelab_Init              (Id : E) return B;
+   function Needs_Activation_Record             (Id : E) return B;
    function Needs_Debug_Info                    (Id : E) return B;
    function Needs_No_Actuals                    (Id : E) return B;
    function Never_Set_In_Source                 (Id : E) return B;
@@ -8110,6 +8118,7 @@ package Einfo is
    procedure Set_Modulus                         (Id : E; V : U);
    procedure Set_Must_Be_On_Byte_Boundary        (Id : E; V : B := True);
    procedure Set_Must_Have_Preelab_Init          (Id : E; V : B := True);
+   procedure Set_Needs_Activation_Record         (Id : E; V : B := True);
    procedure Set_Needs_Debug_Info                (Id : E; V : B := True);
    procedure Set_Needs_No_Actuals                (Id : E; V : B := True);
    procedure Set_Never_Set_In_Source             (Id : E; V : B := True);
@@ -8980,6 +8989,7 @@ package Einfo is
    pragma Inline (Modulus);
    pragma Inline (Must_Be_On_Byte_Boundary);
    pragma Inline (Must_Have_Preelab_Init);
+   pragma Inline (Needs_Activation_Record);
    pragma Inline (Needs_Debug_Info);
    pragma Inline (Needs_No_Actuals);
    pragma Inline (Never_Set_In_Source);
@@ -9474,6 +9484,7 @@ package Einfo is
    pragma Inline (Set_Modulus);
    pragma Inline (Set_Must_Be_On_Byte_Boundary);
    pragma Inline (Set_Must_Have_Preelab_Init);
+   pragma Inline (Set_Needs_Activation_Record);
    pragma Inline (Set_Needs_Debug_Info);
    pragma Inline (Set_Needs_No_Actuals);
    pragma Inline (Set_Never_Set_In_Source);
