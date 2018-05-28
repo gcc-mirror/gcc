@@ -5280,15 +5280,13 @@ package body Sem_Res is
 
             Resolve (N, Universal_Integer);
 
-         elsif Etype (N) = T
-           and then B_Typ /= Universal_Fixed
-         then
+         elsif Etype (N) = T and then B_Typ /= Universal_Fixed then
 
-            --  if the operand is part of a fixed multiplication operation,
+            --  If the operand is part of a fixed multiplication operation,
             --  a conversion will be applied to each operand, so resolve it
             --  with its own type.
 
-            if Nkind_In (Parent (N), N_Op_Multiply, N_Op_Divide)  then
+            if Nkind_In (Parent (N), N_Op_Divide, N_Op_Multiply) then
                Resolve (N);
 
             else

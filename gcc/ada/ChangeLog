@@ -1,5 +1,10 @@
 2018-05-28  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_aggr.adb, gnatlink.adb, sem_ch6.adb, sem_res.adb, sem_util.adb:
+	Minor reformatting.
+
+2018-05-28  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_prag.adb (Process_Atomic_Independent_Shared_Volatile): Include
 	the declarations of single concurrent types because they fall in the
 	category of full type and object declarations.
