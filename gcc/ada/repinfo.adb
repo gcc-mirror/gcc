@@ -302,7 +302,9 @@ package body Repinfo is
 
    procedure List_Array_Info (Ent : Entity_Id; Bytes_Big_Endian : Boolean) is
    begin
+      Blank_Line;
       List_Type_Info (Ent);
+
       Write_Str ("for ");
       List_Name (Ent);
       Write_Str ("'Component_Size use ");
@@ -310,6 +312,8 @@ package body Repinfo is
       Write_Line (";");
 
       List_Scalar_Storage_Order (Ent, Bytes_Big_Endian);
+
+      List_Linker_Section (Ent);
    end List_Array_Info;
 
    -------------------
@@ -415,17 +419,14 @@ package body Repinfo is
                      List_Record_Info (E, Bytes_Big_Endian);
                   end if;
 
-                  List_Linker_Section (E);
-
                elsif Is_Array_Type (E) then
                   if List_Representation_Info >= 1 then
                      List_Array_Info (E, Bytes_Big_Endian);
                   end if;
 
-                  List_Linker_Section (E);
-
                elsif Is_Type (E) then
                   if List_Representation_Info >= 2 then
+                     Blank_Line;
                      List_Type_Info (E);
                      List_Linker_Section (E);
                   end if;
@@ -433,7 +434,6 @@ package body Repinfo is
                elsif Ekind_In (E, E_Variable, E_Constant) then
                   if List_Representation_Info >= 2 then
                      List_Object_Info (E);
-                     List_Linker_Section (E);
                   end if;
 
                elsif Ekind (E) = E_Loop_Parameter or else Is_Formal (E) then
@@ -524,8 +524,24 @@ package body Repinfo is
             declare
                Node : Exp_Node renames Rep_Table.Table (-UI_To_Int (Val));
 
+               procedure Unop (S : String);
+               --  Output text for unary operator with S being operator name
+
                procedure Binop (S : String);
                --  Output text for binary operator with S being operator name
+
+               procedure Valop (S : String);
+               --  Output text for special value with S being value symbol
+
+               ----------
+               -- Unop --
+               ----------
+
+               procedure Unop (S : String) is
+               begin
+                  Write_Str (S);
+                  Print_Expr (Node.Op1);
+               end Unop;
 
                -----------
                -- Binop --
@@ -539,6 +555,16 @@ package body Repinfo is
                   Print_Expr (Node.Op2);
                   Write_Char (')');
                end Binop;
+
+               -----------
+               -- Valop --
+               -----------
+
+               procedure Valop (S : String) is
+               begin
+                  Write_Str (S);
+                  UI_Write (Node.Op1);
+               end Valop;
 
             --  Start of processing for Print_Expr
 
@@ -574,18 +600,17 @@ package body Repinfo is
                   when Trunc_Mod_Expr =>
                      Binop (" modt ");
 
-                  when Floor_Mod_Expr =>
-                     Binop (" modf ");
-
                   when Ceil_Mod_Expr =>
                      Binop (" modc ");
+
+                  when Floor_Mod_Expr =>
+                     Binop (" modf ");
 
                   when Exact_Div_Expr =>
                      Binop (" /e ");
 
                   when Negate_Expr =>
-                     Write_Char ('-');
-                     Print_Expr (Node.Op1);
+                     Unop ("-");
 
                   when Min_Expr =>
                      Binop (" min ");
@@ -594,8 +619,7 @@ package body Repinfo is
                      Binop (" max ");
 
                   when Abs_Expr =>
-                     Write_Str ("abs ");
-                     Print_Expr (Node.Op1);
+                     Unop ("abs ");
 
                   when Truth_Andif_Expr =>
                      Binop (" and if ");
@@ -613,11 +637,7 @@ package body Repinfo is
                      Binop (" xor ");
 
                   when Truth_Not_Expr =>
-                     Write_Str ("not ");
-                     Print_Expr (Node.Op1);
-
-                  when Bit_And_Expr =>
-                     Binop (" & ");
+                     Unop ("not ");
 
                   when Lt_Expr =>
                      Binop (" < ");
@@ -637,13 +657,14 @@ package body Repinfo is
                   when Ne_Expr =>
                      Binop (" != ");
 
+                  when Bit_And_Expr =>
+                     Binop (" & ");
+
                   when Discrim_Val =>
-                     Write_Char ('#');
-                     UI_Write (Node.Op1);
+                     Valop ("#");
 
                   when Dynamic_Val =>
-                     Write_Str ("Var");
-                     UI_Write (Node.Op1);
+                     Valop ("var");
                end case;
             end;
          end if;
@@ -844,6 +865,8 @@ package body Repinfo is
       Write_Str ("'Alignment use ");
       Write_Val (Alignment (Ent));
       Write_Line (";");
+
+      List_Linker_Section (Ent);
    end List_Object_Info;
 
    ----------------------
@@ -1168,6 +1191,8 @@ package body Repinfo is
       Write_Line ("end record;");
 
       List_Scalar_Storage_Order (Ent, Bytes_Big_Endian);
+
+      List_Linker_Section (Ent);
    end List_Record_Info;
 
    -------------------
@@ -1283,8 +1308,6 @@ package body Repinfo is
 
    procedure List_Type_Info (Ent : Entity_Id) is
    begin
-      Blank_Line;
-
       --  Do not list size info for unconstrained arrays, not meaningful
 
       if Is_Array_Type (Ent) and then not Is_Constrained (Ent) then
