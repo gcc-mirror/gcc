@@ -1,3 +1,8 @@
+2018-05-28  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2asm.c (dw2_asm_output_delta_uleb128): Add brackets around lab2
+	if it is an expression containing a minus sign.
+
 2018-05-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-linux.h (NEED_INDICATE_EXEC_STACK): Define to 0.
