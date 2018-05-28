@@ -1,3 +1,8 @@
+2018-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85934
+	* gcc.target/i386/pr85934.c: New testcase.
+
 2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/renaming12.adb, gnat.dg/renaming12.ads: New testcase.
