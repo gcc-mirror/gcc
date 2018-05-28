@@ -1,3 +1,19 @@
+2018-05-28  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch3.adb
+	(Build_Initialization_Call): Add logic to pass the appropriate actual to match
+	 new formal.
+	(Init_Formals): Add new formal *_skip_null_excluding_check
+	* exp_util.adb, exp_util.ads
+	(Enclosing_Init_Proc): Added to fetch the enclosing Init_Proc from the current
+	 scope.
+	(Inside_Init_Proc): Refactored to use Enclosing_Init_Proc
+	(Needs_Conditional_Null_Excluding_Check): Added to factorize the predicate
+	 used to determine how to generate an Init_Proc for a given type.
+	(Needs_Constant_Address): Minor reformatting
+	* sem_res.adb
+	(Resolve_Null): Add logic to generate a conditional check in certain cases
+
 2018-05-28  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_aggr.adb, gnatlink.adb, sem_ch6.adb, sem_res.adb, sem_util.adb:
