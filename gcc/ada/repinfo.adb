@@ -530,9 +530,6 @@ package body Repinfo is
                procedure Binop (S : String);
                --  Output text for binary operator with S being operator name
 
-               procedure Valop (S : String);
-               --  Output text for special value with S being value symbol
-
                ----------
                -- Unop --
                ----------
@@ -555,16 +552,6 @@ package body Repinfo is
                   Print_Expr (Node.Op2);
                   Write_Char (')');
                end Binop;
-
-               -----------
-               -- Valop --
-               -----------
-
-               procedure Valop (S : String) is
-               begin
-                  Write_Str (S);
-                  UI_Write (Node.Op1);
-               end Valop;
 
             --  Start of processing for Print_Expr
 
@@ -655,10 +642,10 @@ package body Repinfo is
                      Binop (" & ");
 
                   when Discrim_Val =>
-                     Valop ("#");
+                     Unop ("#");
 
                   when Dynamic_Val =>
-                     Valop ("var");
+                     Unop ("var");
                end case;
             end;
          end if;
