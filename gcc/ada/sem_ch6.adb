@@ -794,8 +794,8 @@ package body Sem_Ch6 is
             Form_New_Spec : Entity_Id;
             Form_Old_Def  : Entity_Id;
             Form_Old_Spec : Entity_Id;
-         begin
 
+         begin
             Form_New_Spec := First (Parameter_Specifications (New_Spec));
             Form_Old_Spec := First (Parameter_Specifications (Spec));
 
@@ -809,13 +809,10 @@ package body Sem_Ch6 is
                --  formals we exempt them from unreferenced warnings by marking
                --  them as always referenced.
 
-               Set_Referenced
-                 (Form_Old_Def,
-                  (Is_Formal (Form_Old_Def)
-                     and then Is_Controlling_Formal (Form_Old_Def))
-                   or else Referenced (Form_Old_Def));
-                   --  or else Is_Dispatching_Operation
-                   --          (Corresponding_Spec (New_Body)));
+               Set_Referenced (Form_Old_Def,
+                 (Is_Formal (Form_Old_Def)
+                    and then Is_Controlling_Formal (Form_Old_Def))
+                  or else Referenced (Form_Old_Def));
 
                Next (Form_New_Spec);
                Next (Form_Old_Spec);
@@ -3843,9 +3840,8 @@ package body Sem_Ch6 is
 
       --  If the subprogram has a class-wide clone, build its body as a copy
       --  of the original body, and rewrite body of original subprogram as a
-      --  wrapper that calls the clone.
-      --  If N is a stub, this construction will take place when the proper
-      --  body is analyzed.
+      --  wrapper that calls the clone. If N is a stub, this construction will
+      --  take place when the proper body is analyzed.
 
       if Present (Spec_Id)
         and then Present (Class_Wide_Clone (Spec_Id))

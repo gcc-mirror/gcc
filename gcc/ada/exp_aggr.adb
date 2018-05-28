@@ -4367,8 +4367,8 @@ package body Exp_Aggr is
                elsif Nkind (Expression (Expr)) /= N_Aggregate
                  or else not Compile_Time_Known_Aggregate (Expression (Expr))
                  or else Expansion_Delayed (Expression (Expr))
-                 or else Nkind (Expr) = N_Iterated_Component_Association
-                 or else Nkind (Expr) = N_Quantified_Expression
+                 or else Nkind_In (Expr, N_Iterated_Component_Association,
+                                         N_Quantified_Expression)
                then
                   Static_Components := False;
                   exit;
@@ -4520,22 +4520,22 @@ package body Exp_Aggr is
                   --  If we have an others choice, fill in the missing elements
                   --  subject to the limit established by Max_Others_Replicate.
                   --  If the expression involves a construct that generates
-                  --  a loop, we must generate individual assignmentw and
+                  --  a loop, we must generate individual assignments and
                   --  no flattening is possible.
 
                   if Nkind (Choice) = N_Others_Choice then
                      Rep_Count := 0;
 
-                     if Nkind_In  (Expression (Elmt),
-                         N_Quantified_Expression,
-                         N_Iterated_Component_Association)
+                     if Nkind_In (Expression (Elmt),
+                                  N_Iterated_Component_Association,
+                                  N_Quantified_Expression)
                      then
                         return False;
                      end if;
 
                      for J in Vals'Range loop
                         if No (Vals (J)) then
-                           Vals (J) := New_Copy_Tree (Expression (Elmt));
+                           Vals (J)  := New_Copy_Tree (Expression (Elmt));
                            Rep_Count := Rep_Count + 1;
 
                            --  Check for maximum others replication. Note that
