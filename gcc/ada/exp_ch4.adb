@@ -10937,8 +10937,13 @@ package body Exp_Ch4 is
          Lo   : constant Node_Id   := Type_Low_Bound  (Target_Type);
          Hi   : constant Node_Id   := Type_High_Bound (Target_Type);
          Xtyp : constant Entity_Id := Etype (Operand);
-         Conv : Node_Id;
-         Tnn  : Entity_Id;
+
+         Conv   : Node_Id;
+         Lo_Arg : Node_Id;
+         Lo_Val : Node_Id;
+         Hi_Arg : Node_Id;
+         Hi_Val : Node_Id;
+         Tnn    : Entity_Id;
 
       begin
          --  Nothing to do if conversion was rewritten
@@ -11041,34 +11046,108 @@ package body Exp_Ch4 is
 
          Tnn := Make_Temporary (Loc, 'T', Conv);
 
+         --  For a conversion from Float to Fixed where the bounds of the
+         --  fixed-point type are static, we can obtain a more accurate
+         --  fixed-point value by converting the result of the floating-
+         --  point expression to an appropriate integer type, and then
+         --  performing an unchecked conversion to the target fixed-point
+         --  type. The range check can then use the corresponding integer
+         --  value of the bounds instead of requiring further conversions.
+         --  This preserves the identity:
+
+         --        Fix_Val = Fixed_Type (Float_Type (Fix_Val))
+
+         --  which used to fail when Fix_Val was a bound of the type and
+         --  the 'Small was not a representable number.
+         --  This transformation requires an integer type large enough to
+         --  accommodate a fixed-point value. This will not be the case
+         --  in systems where Duration is larger than Long_Integer.
+
+         if Is_Ordinary_Fixed_Point_Type (Target_Type)
+           and then Is_Floating_Point_Type (Operand_Type)
+           and then RM_Size (Base_Type (Target_Type)) <=
+             RM_Size (Standard_Long_Integer)
+           and then Nkind (Lo) = N_Real_Literal
+           and then Nkind (Hi) = N_Real_Literal
+         then
+            --  Find the integer type of the right size to perform an unchecked
+            --  conversion to the target fixed-point type.
+
+            declare
+               Int_Type : Entity_Id;
+               Bfx_Type : constant Entity_Id := Base_Type (Target_Type);
+
+            begin
+               if RM_Size (Bfx_Type) > RM_Size (Standard_Integer) then
+                  Int_Type := Standard_Long_Integer;
+
+               elsif
+                 RM_Size (Bfx_Type) > RM_Size (Standard_Short_Integer)
+               then
+                  Int_Type := Standard_Integer;
+
+               else
+                  Int_Type := Standard_Short_Integer;
+               end if;
+
+               --  Create integer objects for range checking of result.
+
+               Lo_Arg := Unchecked_Convert_To (Int_Type,
+                           New_Occurrence_Of (Tnn, Loc));
+               Lo_Val := Make_Integer_Literal (Loc,
+                           Corresponding_Integer_Value (Lo));
+
+               Hi_Arg := Unchecked_Convert_To (Int_Type,
+                           New_Occurrence_Of (Tnn, Loc));
+               Hi_Val := Make_Integer_Literal (Loc,
+                           Corresponding_Integer_Value (Hi));
+
+               --  Rewrite conversion as an integer conversion of the
+               --  original floating-point expression, followed by an
+               --  unchecked conversion to the target fixed-point type.
+
+               Conv   := Make_Unchecked_Type_Conversion (Loc,
+                           Subtype_Mark =>
+                             New_Occurrence_Of (Target_Type, Loc),
+                           Expression   =>
+                             Convert_To (Int_Type, Expression (Conv)));
+            end;
+
+         else  -- For all other conversions
+
+            Lo_Arg := New_Occurrence_Of (Tnn, Loc);
+            Lo_Val := Make_Attribute_Reference (Loc,
+                       Attribute_Name => Name_First,
+                         Prefix =>
+                           New_Occurrence_Of (Target_Type, Loc));
+
+            Hi_Arg := New_Occurrence_Of (Tnn, Loc);
+            Hi_Val := Make_Attribute_Reference (Loc,
+                       Attribute_Name => Name_Last,
+                         Prefix =>
+                           New_Occurrence_Of (Target_Type, Loc));
+         end if;
+
+         --  Build code for range checking
+
          Insert_Actions (N, New_List (
            Make_Object_Declaration (Loc,
              Defining_Identifier => Tnn,
              Object_Definition   => New_Occurrence_Of (Btyp, Loc),
              Constant_Present    => True,
              Expression          => Conv),
-
            Make_Raise_Constraint_Error (Loc,
-             Condition =>
+              Condition =>
               Make_Or_Else (Loc,
-                Left_Opnd =>
                   Make_Op_Lt (Loc,
-                    Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
-                    Right_Opnd =>
-                      Make_Attribute_Reference (Loc,
-                        Attribute_Name => Name_First,
-                        Prefix =>
-                          New_Occurrence_Of (Target_Type, Loc))),
+                    Left_Opnd  => Lo_Arg,
+                    Right_Opnd => Lo_Val),
 
                 Right_Opnd =>
                   Make_Op_Gt (Loc,
-                    Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
-                    Right_Opnd =>
-                      Make_Attribute_Reference (Loc,
-                        Attribute_Name => Name_Last,
-                        Prefix =>
-                          New_Occurrence_Of (Target_Type, Loc)))),
-             Reason => CE_Range_Check_Failed)));
+                    Left_Opnd  => Hi_Arg,
+                    Right_Opnd => Hi_Val)),
+              Reason => CE_Range_Check_Failed)));
 
          Rewrite (N, New_Occurrence_Of (Tnn, Loc));
          Analyze_And_Resolve (N, Btyp);

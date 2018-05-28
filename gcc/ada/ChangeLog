@@ -1,5 +1,12 @@
 2018-05-28  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch4.adb (Real_Range_Check): Specialize float-to-fixed conversions
+	when bounds of fixed type are static, to remove some spuerfluous
+	implicit conversions and provide an accurate result when converting
+	back and forth between the fixed point type and a floating point type.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_unst.adb (Unnest_Subprogram): Prevent creation of empty
 	activation records.
 
