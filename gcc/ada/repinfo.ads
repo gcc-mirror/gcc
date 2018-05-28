@@ -136,7 +136,7 @@ package Repinfo is
    --  Subtype used for values that can either be a Node_Ref (negative)
    --  or a value (non-negative)
 
-   type TCode is range 0 .. 29;
+   type TCode is range 0 .. 27;
    --  Type used on Ada side to represent DEFTREECODE values defined in
    --  tree.def. Only a subset of these tree codes can actually appear.
    --  The names are the names from tree.def in Ada casing.
@@ -153,24 +153,22 @@ package Repinfo is
    Trunc_Mod_Expr   : constant TCode :=  8; -- mod for trunc_div        2
    Ceil_Mod_Expr    : constant TCode :=  9; -- mod for ceil_div         2
    Floor_Mod_Expr   : constant TCode := 10; -- mod for floor_div        2
-   Exact_Div_Expr   : constant TCode := 11; -- exact div                2
+   Exact_Div_Expr   : constant TCode := 11; -- exact division           2
    Negate_Expr      : constant TCode := 12; -- negation                 1
    Min_Expr         : constant TCode := 13; -- minimum                  2
    Max_Expr         : constant TCode := 14; -- maximum                  2
    Abs_Expr         : constant TCode := 15; -- absolute value           1
-   Truth_Andif_Expr : constant TCode := 16; -- Boolean and then         2
-   Truth_Orif_Expr  : constant TCode := 17; -- Boolean or else          2
-   Truth_And_Expr   : constant TCode := 18; -- Boolean and              2
-   Truth_Or_Expr    : constant TCode := 19; -- Boolean or               2
-   Truth_Xor_Expr   : constant TCode := 20; -- Boolean xor              2
-   Truth_Not_Expr   : constant TCode := 21; -- Boolean not              1
-   Lt_Expr          : constant TCode := 22; -- comparison <             2
-   Le_Expr          : constant TCode := 23; -- comparison <=            2
-   Gt_Expr          : constant TCode := 24; -- comparison >             2
-   Ge_Expr          : constant TCode := 25; -- comparison >=            2
-   Eq_Expr          : constant TCode := 26; -- comparison =             2
-   Ne_Expr          : constant TCode := 27; -- comparison /=            2
-   Bit_And_Expr     : constant TCode := 28; -- Binary and               2
+   Truth_And_Expr   : constant TCode := 16; -- boolean and              2
+   Truth_Or_Expr    : constant TCode := 17; -- boolean or               2
+   Truth_Xor_Expr   : constant TCode := 18; -- boolean xor              2
+   Truth_Not_Expr   : constant TCode := 19; -- boolean not              1
+   Lt_Expr          : constant TCode := 20; -- comparison <             2
+   Le_Expr          : constant TCode := 21; -- comparison <=            2
+   Gt_Expr          : constant TCode := 22; -- comparison >             2
+   Ge_Expr          : constant TCode := 23; -- comparison >=            2
+   Eq_Expr          : constant TCode := 24; -- comparison =             2
+   Ne_Expr          : constant TCode := 25; -- comparison /=            2
+   Bit_And_Expr     : constant TCode := 26; -- bitwise and              2
 
    --  The following entry is used to represent a discriminant value in
    --  the tree. It has a special tree code that does not correspond
@@ -184,7 +182,7 @@ package Repinfo is
    --  has a special tree code that does not correspond directly to
    --  a GCC node. The single operand is an arbitrary index number.
 
-   Dynamic_Val      : constant TCode := 29;  -- dynamic value           1
+   Dynamic_Val      : constant TCode := 27;  -- dynamic value           1
 
    ------------------------
    -- The gigi Interface --

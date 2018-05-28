@@ -1,3 +1,18 @@
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.ads (TCode): Adjust range.
+	(Truth_Andif_Expr): Remove.
+	(Truth_Orif_Expr): Likewise.
+	(Truth_And_Expr .. Dynamic_Val): Adjust value.
+	* repinfo.adb (Print_Expr): Remove handling of Truth_{And,Or}if_Expr.
+	(Rep_Value): Likewise.
+	* repinfo.h (Truth_Andif_Expr): Remove.
+	(Truth_Orif_Expr): Likewise.
+	(Truth_And_Expr .. Dynamic_Val): Adjust value.
+	* gcc-interface/decl.c (annotate_value) <TRUTH_ANDIF_EXPR>: Fall
+	through to TRUTH_AND_EXPR case.
+	<TRUTH_ORIF_EXPR>: Fall through to TRUTH_OR_EXPR case.
+
 2018-05-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Visit_Node): For indexed components and attribute
