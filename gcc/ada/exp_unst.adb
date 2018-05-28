@@ -1721,7 +1721,7 @@ package body Exp_Unst is
                   --  have to find the activation record needed by the
                   --  callee. This is as follows:
 
-                  --    ARECaF.ARECbU.ARECcU....ARECm
+                  --    ARECaF.ARECbU.ARECcU....ARECmU
 
                   --  where a,b,c .. m =
                   --    STF.Lev - 1,  STF.Lev - 2, STF.Lev - 3 .. STT.Lev
