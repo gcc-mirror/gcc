@@ -1,3 +1,7 @@
+2018-05-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb: Fix typo.
+
 2018-05-28  Bob Duff  <duff@adacore.com>
 
 	* libgnat/a-convec.adb (Query_Element): Minor cleanup: remove an
