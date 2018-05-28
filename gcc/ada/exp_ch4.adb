@@ -11096,8 +11096,10 @@ package body Exp_Ch4 is
             --  conversion to the target fixed-point type.
 
             declare
-               Int_Type : Entity_Id;
                Bfx_Type : constant Entity_Id := Base_Type (Target_Type);
+               Expr_Id  : constant Entity_Id :=
+                            Make_Temporary (Loc, 'T', Conv);
+               Int_Type : Entity_Id;
 
             begin
                if RM_Size (Bfx_Type) > RM_Size (Standard_Integer) then
@@ -11112,15 +11114,29 @@ package body Exp_Ch4 is
                   Int_Type := Standard_Short_Integer;
                end if;
 
+               --  Generate a temporary with the integer value. Required in the
+               --  CCG compiler to ensure that runtime checks reference this
+               --  integer expression (instead of the resulting fixed-point
+               --  value) because fixed-point values are handled by means of
+               --  unsigned integer types).
+
+               Insert_Action (N,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Expr_Id,
+                   Object_Definition   => New_Occurrence_Of (Int_Type, Loc),
+                   Constant_Present    => True,
+                   Expression          =>
+                     Convert_To (Int_Type, Expression (Conv))));
+
                --  Create integer objects for range checking of result.
 
                Lo_Arg := Unchecked_Convert_To (Int_Type,
-                           New_Occurrence_Of (Tnn, Loc));
+                           New_Occurrence_Of (Expr_Id, Loc));
                Lo_Val := Make_Integer_Literal (Loc,
                            Corresponding_Integer_Value (Lo));
 
                Hi_Arg := Unchecked_Convert_To (Int_Type,
-                           New_Occurrence_Of (Tnn, Loc));
+                           New_Occurrence_Of (Expr_Id, Loc));
                Hi_Val := Make_Integer_Literal (Loc,
                            Corresponding_Integer_Value (Hi));
 
@@ -11132,7 +11148,7 @@ package body Exp_Ch4 is
                            Subtype_Mark =>
                              New_Occurrence_Of (Target_Type, Loc),
                            Expression   =>
-                             Convert_To (Int_Type, Expression (Conv)));
+                             New_Occurrence_Of (Expr_Id, Loc));
             end;
 
          else  -- For all other conversions
