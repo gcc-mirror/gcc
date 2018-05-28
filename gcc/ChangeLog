@@ -1,3 +1,41 @@
+2018-05-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-05-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85900
+	PR target/85345
+	* varasm.c (assemble_alias): Lookup ifunc attribute on error.
+
+	2018-05-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85900
+	PR target/85345
+	* varasm.c (assemble_alias): Check ifunc_resolver only on
+	FUNCTION_DECL.
+
+	2018-05-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85345
+	* cgraph.h (cgraph_node::create): Set ifunc_resolver for ifunc
+	attribute.
+	(cgraph_node::create_alias): Likewise.
+	(cgraph_node::get_availability): Check ifunc_resolver instead
+	of looking up ifunc attribute.
+	* cgraphunit.c (maybe_diag_incompatible_alias): Likewise.
+	* varasm.c (do_assemble_alias): Likewise.
+	(assemble_alias): Likewise.
+	(default_binds_local_p_3): Likewise.
+	* cgraph.h (cgraph_node): Add ifunc_resolver.
+	(cgraph_node::only_called_directly_or_aliased_p): Return false
+	for IFUNC resolver.
+	* lto-cgraph.c (input_node): Set ifunc_resolver for ifunc
+	attribute.
+	* symtab.c (symtab_node::verify_base): Verify that ifunc_resolver
+	is equivalent to lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)).
+	(symtab_node::binds_to_current_def_p): Check ifunc_resolver
+	instead of looking up ifunc attribute.
+
 2018-05-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-linux.h (NEED_INDICATE_EXEC_STACK): Define to 0.
