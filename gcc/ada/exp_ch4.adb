@@ -2435,6 +2435,10 @@ package body Exp_Ch4 is
          else
             declare
                Comp_Typ : Entity_Id;
+               Indx     : Node_Id;
+               Ityp     : Entity_Id;
+               Lo       : Node_Id;
+               Hi       : Node_Id;
 
             begin
                --  Do the comparison in the type (or its full view) and not in
@@ -2450,9 +2454,25 @@ package body Exp_Ch4 is
                --  Except for the case where the bounds of the type depend on a
                --  discriminant, or else we would run into scoping issues.
 
-               if Size_Depends_On_Discriminant (Comp_Typ) then
-                  Comp_Typ := Full_Type;
-               end if;
+               Indx := First_Index (Comp_Typ);
+               while Present (Indx) loop
+                  Ityp := Etype (Indx);
+
+                  Lo := Type_Low_Bound (Ityp);
+                  Hi := Type_High_Bound (Ityp);
+
+                  if (Nkind (Lo) = N_Identifier
+                       and then Ekind (Entity (Lo)) = E_Discriminant)
+                    or else
+                     (Nkind (Hi) = N_Identifier
+                       and then Ekind (Entity (Hi)) = E_Discriminant)
+                  then
+                     Comp_Typ := Full_Type;
+                     exit;
+                  end if;
+
+                  Next_Index (Indx);
+               end loop;
 
                return Expand_Array_Equality (Nod, Lhs, Rhs, Bodies, Comp_Typ);
             end;

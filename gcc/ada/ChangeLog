@@ -1,3 +1,9 @@
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Composite_Equality): Compute whether the size
+	depends on a discriminant manually instead of using the predicate
+	Size_Depends_On_Discriminant in the array type case.
+
 2018-05-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Check_Static_Type): For a record subtype, check
