@@ -1,3 +1,10 @@
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Composite_Equality): For a composite (or FP)
+	component type, do not expand array equality using the unconstrained
+	base type, except for the case where the bounds of the type depend on a
+	discriminant.
+
 2018-05-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads, einfo.adb (Needs_Activation_Record): New flag on

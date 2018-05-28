@@ -1,3 +1,7 @@
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/rep_clause6.adb, gnat.dg/rep_clause6.ads: New testcase.
+
 2018-05-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/fixedpnt5.adb: New testcase.
