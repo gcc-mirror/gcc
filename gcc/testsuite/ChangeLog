@@ -1,3 +1,7 @@
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/fixedpnt5.adb: New testcase.
+
 2018-05-28  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/array31.adb: New testcase.
