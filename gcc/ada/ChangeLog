@@ -1,3 +1,8 @@
+2018-05-28  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-convec.adb (Query_Element): Minor cleanup: remove an
+	unnecessary use of 'Unrestricted_Access.
+
 2018-05-28  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* repinfo.adb (Expr_Value_S): New routine.
