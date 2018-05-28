@@ -1682,7 +1682,7 @@ write_real (st_parameter_dt *dtp, const char *source, int kind)
   char buf_stack[BUF_STACK_SZ];
   char str_buf[BUF_STACK_SZ];
   char *buffer, *result;
-  size_t buf_size, res_len;
+  size_t buf_size, res_len, flt_str_len;
   int orig_scale = dtp->u.p.scale_factor;
   dtp->u.p.scale_factor = 1;
   set_fnode_default (dtp, &f, kind);
@@ -1697,8 +1697,8 @@ write_real (st_parameter_dt *dtp, const char *source, int kind)
   buffer = select_buffer (dtp, &f, precision, buf_stack, &buf_size, kind);
   
   get_float_string (dtp, &f, source , kind, 1, buffer,
-                           precision, buf_size, result, &res_len);
-  write_float_string (dtp, result, res_len);
+                           precision, buf_size, result, &flt_str_len);
+  write_float_string (dtp, result, flt_str_len);
 
   dtp->u.p.scale_factor = orig_scale;
   if (buf_size > BUF_STACK_SZ)
@@ -1717,7 +1717,7 @@ write_real_g0 (st_parameter_dt *dtp, const char *source, int kind, int d)
   char buf_stack[BUF_STACK_SZ];
   char str_buf[BUF_STACK_SZ];
   char *buffer, *result;
-  size_t buf_size, res_len;
+  size_t buf_size, res_len, flt_str_len;
   int comp_d;
   set_fnode_default (dtp, &f, kind);
 
@@ -1741,8 +1741,8 @@ write_real_g0 (st_parameter_dt *dtp, const char *source, int kind, int d)
   buffer = select_buffer (dtp, &f, precision, buf_stack, &buf_size, kind);
 
   get_float_string (dtp, &f, source , kind, comp_d, buffer,
-                           precision, buf_size, result, &res_len);
-  write_float_string (dtp, result, res_len);
+                           precision, buf_size, result, &flt_str_len);
+  write_float_string (dtp, result, flt_str_len);
 
   dtp->u.p.g0_no_blanks = 0;
   if (buf_size > BUF_STACK_SZ)
@@ -1767,7 +1767,7 @@ write_complex (st_parameter_dt *dtp, const char *source, int kind, size_t size)
   char str1_buf[BUF_STACK_SZ];
   char str2_buf[BUF_STACK_SZ];
   char *buffer, *result1, *result2;
-  size_t buf_size, res_len1, res_len2;
+  size_t buf_size, res_len1, res_len2, flt_str_len1, flt_str_len2;
   int width, lblanks, orig_scale = dtp->u.p.scale_factor;
 
   dtp->u.p.scale_factor = 1;
@@ -1790,18 +1790,18 @@ write_complex (st_parameter_dt *dtp, const char *source, int kind, size_t size)
   buffer = select_buffer (dtp, &f, precision, buf_stack, &buf_size, kind);
 
   get_float_string (dtp, &f, source , kind, 0, buffer,
-                           precision, buf_size, result1, &res_len1);
+                           precision, buf_size, result1, &flt_str_len1);
   get_float_string (dtp, &f, source + size / 2 , kind, 0, buffer,
-                           precision, buf_size, result2, &res_len2);
+                           precision, buf_size, result2, &flt_str_len2);
   if (!dtp->u.p.namelist_mode)
     {
-      lblanks = width - res_len1 - res_len2 - 3;
+      lblanks = width - flt_str_len1 - flt_str_len2 - 3;
       write_x (dtp, lblanks, lblanks);
     }
   write_char (dtp, '(');
-  write_float_string (dtp, result1, res_len1);
+  write_float_string (dtp, result1, flt_str_len1);
   write_char (dtp, semi_comma);
-  write_float_string (dtp, result2, res_len2);
+  write_float_string (dtp, result2, flt_str_len2);
   write_char (dtp, ')');
 
   dtp->u.p.scale_factor = orig_scale;
