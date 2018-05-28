@@ -433,6 +433,21 @@ package body Exp_Unst is
                   then
                      Note_Uplevel_Bound (Prefix (N), Ref);
 
+                     --  The indices of the indexed components, or the
+                     --  associated expressions of an attribute reference,
+                     --  may also involve uplevel references.
+
+                     declare
+                        Expr : Node_Id;
+
+                     begin
+                        Expr := First (Expressions (N));
+                        while Present (Expr) loop
+                           Note_Uplevel_Bound (Expr, Ref);
+                           Next (Expr);
+                        end loop;
+                     end;
+
                   --  Conversion case
 
                   elsif Nkind (N) = N_Type_Conversion then
@@ -599,38 +614,69 @@ package body Exp_Unst is
          begin
             --  Record a call
 
-            if Nkind_In (N, N_Procedure_Call_Statement, N_Function_Call)
+            if Nkind_In (N, N_Procedure_Call_Statement, N_Function_Call) then
 
               --  We are only interested in direct calls, not indirect calls
               --  (where Name (N) is an explicit dereference) at least for now!
 
-              and then Nkind (Name (N)) in N_Has_Entity
-            then
-               Ent := Entity (Name (N));
+               if Nkind (Name (N)) in N_Has_Entity then
+                  Ent := Entity (Name (N));
 
-               --  We are only interested in calls to subprograms nested
-               --  within Subp. Calls to Subp itself or to subprograms
-               --  that are outside the nested structure do not affect us.
+                  --  We are only interested in calls to subprograms nested
+                  --  within Subp. Calls to Subp itself or to subprograms
+                  --  that are outside the nested structure do not affect us.
 
-               if Scope_Within (Ent, Subp) then
+                  if Scope_Within (Ent, Subp) then
 
-                  --  Ignore calls to imported routines
+                     --  Ignore calls to imported routines
 
-                  if Is_Imported (Ent) then
-                     null;
+                     if Is_Imported (Ent) then
+                        null;
 
-                  --  Here we have a call to keep and analyze
+                     --  Here we have a call to keep and analyze
 
-                  else
-                     --  Both caller and callee must be subprograms
+                     else
+                        --  Both caller and callee must be subprograms
 
-                     if Is_Subprogram (Ent) then
-                        Append_Unique_Call ((N, Current_Subprogram, Ent));
+                        if Is_Subprogram (Ent) then
+                           Append_Unique_Call ((N, Current_Subprogram, Ent));
+                        end if;
                      end if;
                   end if;
                end if;
 
-            --  Record a 'Access as a (potential) call
+               --  for all calls where the formal is an unconstrained array
+               --  and the actual is constrained we need to check the bounds.
+
+               declare
+                  Subp   : Entity_Id;
+                  Actual : Entity_Id;
+                  Formal : Node_Id;
+                  DT     : Boolean := False;
+
+               begin
+                  if Nkind (Name (N)) = N_Explicit_Dereference then
+                     Subp := Etype (Name (N));
+                  else
+                     Subp := Entity (Name (N));
+                  end if;
+
+                  Actual := First_Actual (N);
+                  Formal := First_Formal_With_Extras (Subp);
+                  while Present (Actual) loop
+                     if Is_Array_Type (Etype (Formal))
+                       and then not Is_Constrained (Etype (Formal))
+                       and then Is_Constrained (Etype (Actual))
+                     then
+                        Check_Static_Type (Etype (Actual), Empty, DT);
+                     end if;
+
+                     Next_Actual (Actual);
+                     Next_Formal_With_Extras (Formal);
+                  end loop;
+               end;
+
+            --  Handle a 'Access as a (potential) call
 
             elsif Nkind (N) = N_Attribute_Reference then
                declare
