@@ -1,3 +1,9 @@
+2018-05-28  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Process_Atomic_Independent_Shared_Volatile): Include
+	the declarations of single concurrent types because they fall in the
+	category of full type and object declarations.
+
 2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (Compute_Max_Length): Skip _Parent component.

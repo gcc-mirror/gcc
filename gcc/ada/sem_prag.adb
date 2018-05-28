@@ -7399,9 +7399,11 @@ package body Sem_Prag is
 
          if SPARK_Mode = On
            and then Prag_Id = Pragma_Volatile
-           and then
-             not Nkind_In (Original_Node (Decl), N_Full_Type_Declaration,
-                                                 N_Object_Declaration)
+           and then not Nkind_In (Original_Node (Decl),
+                                  N_Full_Type_Declaration,
+                                  N_Object_Declaration,
+                                  N_Single_Protected_Declaration,
+                                  N_Single_Task_Declaration)
          then
             Error_Pragma_Arg
               ("argument of pragma % must denote a full type or object "
