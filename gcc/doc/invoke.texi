@@ -15968,7 +15968,7 @@ The table below lists the supported extensions for each architecture.
 Architectures not mentioned do not support any extensions.
 
 @table @samp
-@itemx armv5te
+@item armv5te
 @itemx armv6
 @itemx armv6j
 @itemx armv6k

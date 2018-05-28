@@ -1,3 +1,8 @@
+2018-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (ARM Options): Use @item instead of @itemx
+	for armv5te.
+
 2018-05-28  Mark Wielaard  <mark@klomp.org>
 
 	* dwarf2asm.c (dw2_asm_output_delta_uleb128): Add brackets around lab2
