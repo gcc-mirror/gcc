@@ -8132,9 +8132,9 @@ annotate_value (tree gnu_size)
     case MIN_EXPR:		tcode = Min_Expr; break;
     case MAX_EXPR:		tcode = Max_Expr; break;
     case ABS_EXPR:		tcode = Abs_Expr; break;
-    case TRUTH_ANDIF_EXPR:	tcode = Truth_Andif_Expr; break;
-    case TRUTH_ORIF_EXPR:	tcode = Truth_Orif_Expr; break;
+    case TRUTH_ANDIF_EXPR:
     case TRUTH_AND_EXPR:	tcode = Truth_And_Expr; break;
+    case TRUTH_ORIF_EXPR:
     case TRUTH_OR_EXPR:		tcode = Truth_Or_Expr; break;
     case TRUTH_XOR_EXPR:	tcode = Truth_Xor_Expr; break;
     case TRUTH_NOT_EXPR:	tcode = Truth_Not_Expr; break;

@@ -621,12 +621,6 @@ package body Repinfo is
                   when Abs_Expr =>
                      Unop ("abs ");
 
-                  when Truth_Andif_Expr =>
-                     Binop (" and if ");
-
-                  when Truth_Orif_Expr =>
-                     Binop (" or if ");
-
                   when Truth_And_Expr =>
                      Binop (" and ");
 
@@ -1553,12 +1547,6 @@ package body Repinfo is
 
                   when Abs_Expr =>
                      return UI_Abs (V (Node.Op1));
-
-                  when Truth_Andif_Expr =>
-                     return B (T (Node.Op1) and then T (Node.Op2));
-
-                  when Truth_Orif_Expr =>
-                     return B (T (Node.Op1) or else T (Node.Op2));
 
                   when Truth_And_Expr =>
                      return B (T (Node.Op1) and then T (Node.Op2));
