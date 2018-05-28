@@ -1,3 +1,10 @@
+2018-05-28  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Range): Re-resolve the low bound of a range in
+	GNATprove mode, as the order of resolution (low then high) means that
+	all the information is not available when resolving the low bound the
+	first time.
+
 2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Array_Info): Start with an explicit blank line and
