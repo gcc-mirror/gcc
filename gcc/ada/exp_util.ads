@@ -505,6 +505,11 @@ package Exp_Util is
    --  elaborated before the original expression Exp, so that there is no need
    --  to repeat the checks.
 
+   function Enclosing_Init_Proc return Entity_Id;
+   --  Obtain the entity associated with the enclosing type Init_Proc by
+   --  examining the current scope. If not inside an Init_Proc at the point of
+   --  call Empty will be returned.
+
    procedure Ensure_Defined (Typ : Entity_Id; N : Node_Id);
    --  This procedure ensures that type referenced by Typ is defined. For the
    --  case of a type other than an Itype, nothing needs to be done, since
@@ -915,6 +920,11 @@ package Exp_Util is
    --  temporaries that interfere with stack checking mechanism. Note that the
    --  caller has to check whether stack checking is actually enabled in order
    --  to guide the expansion (typically of a function call).
+
+   function Needs_Conditional_Null_Excluding_Check
+     (Typ : Entity_Id) return Boolean;
+   --  Check if a type meets certain properties that require it to have a
+   --  conditional null-excluding check within its Init_Proc.
 
    function Needs_Constant_Address
      (Decl : Node_Id;
