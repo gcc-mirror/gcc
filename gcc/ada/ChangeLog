@@ -1,3 +1,10 @@
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Check_Static_Type): For a record subtype, check
+	discriminant constraints as well.
+	(Visit_Node): For a selected component, check type of prefix, as is
+	done for indexed components and slices.
+
 2018-05-28  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch4.adb (Real_Range_Check): Add a temporary to store the integer
