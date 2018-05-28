@@ -481,17 +481,34 @@ package body Exp_Unst is
                      end if;
                   end;
 
-               --  For record type, check all components
+               --  For record type, check all components and discriminant
+               --  constraints if present.
 
                elsif Is_Record_Type (T) then
                   declare
                      C : Entity_Id;
+                     D : Elmt_Id;
+
                   begin
                      C := First_Component_Or_Discriminant (T);
                      while Present (C) loop
                         Check_Static_Type (Etype (C), N, DT);
                         Next_Component_Or_Discriminant (C);
                      end loop;
+
+                     if Has_Discriminants (T)
+                       and then Present (Discriminant_Constraint (T))
+                     then
+                        D := First_Elmt (Discriminant_Constraint (T));
+                        while Present (D) loop
+                           if not Is_Static_Expression (Node (D)) then
+                              Note_Uplevel_Bound (Node (D), N);
+                              DT := True;
+                           end if;
+
+                           Next_Elmt (D);
+                        end loop;
+                     end if;
                   end;
 
                --  For array type, check index types and component type
@@ -679,6 +696,18 @@ package body Exp_Unst is
             elsif Nkind_In (N, N_Indexed_Component, N_Slice)
               and then Is_Constrained (Etype (Prefix (N)))
             then
+               declare
+                  DT : Boolean := False;
+               begin
+                  Check_Static_Type (Etype (Prefix (N)), Empty, DT);
+               end;
+
+            --  A selected component can have an implicit up-level reference
+            --  due to the bounds of previous fields in the record. We
+            --  simplify the processing here by examining all components
+            --  of the record.
+
+            elsif Nkind (N) = N_Selected_Component then
                declare
                   DT : Boolean := False;
                begin
