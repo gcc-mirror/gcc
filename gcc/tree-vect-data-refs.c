@@ -829,7 +829,10 @@ vect_record_base_alignments (vec_info *vinfo)
   data_reference *dr;
   unsigned int i;
   FOR_EACH_VEC_ELT (vinfo->datarefs, i, dr)
-    if (!DR_IS_CONDITIONAL_IN_STMT (dr))
+    {
+      gimple *stmt = DR_STMT (dr);
+    if (!DR_IS_CONDITIONAL_IN_STMT (dr)
+	&& STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)))
       {
 	gimple *stmt = DR_STMT (dr);
 	vect_record_base_alignment (vinfo, stmt, &DR_INNERMOST (dr));
@@ -843,6 +846,7 @@ vect_record_base_alignments (vec_info *vinfo)
 	      (vinfo, stmt, &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info));
 	  }
       }
+    }
 }
 
 /* Return the target alignment for the vectorized form of DR.  */
