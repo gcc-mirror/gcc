@@ -1,3 +1,15 @@
+2018-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85933
+	* tree-vect-data-refs.c (vect_record_base_alignments): Only
+	look at stmts marked as vectorizable.
+
+2018-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85934
+	* tree-vect-generic.c (expand_vector_operations_1): Hoist
+	vector boolean check before scalar optimization.
+
 2018-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/invoke.texi (ARM Options): Use @item instead of @itemx
