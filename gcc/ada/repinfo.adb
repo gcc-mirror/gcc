@@ -685,23 +685,47 @@ package body Repinfo is
    -------------------------
 
    procedure List_Linker_Section (Ent : Entity_Id) is
-      Arg : Node_Id;
+      function Expr_Value_S (N : Node_Id) return Node_Id;
+      --  Returns the folded value of the expression. This function is called
+      --  in instances where it has already been determined that the expression
+      --  is static or its value is known at compile time. This version is used
+      --  for string types and returns the corresponding N_String_Literal node.
+      --  NOTE: This is an exact copy of Sem_Eval.Expr_Value_S. Licensing stops
+      --  Repinfo from within Sem_Eval. Once ASIS is removed, and the licenses
+      --  are modified, Repinfo should be able to rely on Sem_Eval.
+
+      ------------------
+      -- Expr_Value_S --
+      ------------------
+
+      function Expr_Value_S (N : Node_Id) return Node_Id is
+      begin
+         if Nkind (N) = N_String_Literal then
+            return N;
+         else
+            pragma Assert (Ekind (Entity (N)) = E_Constant);
+            return Expr_Value_S (Constant_Value (Entity (N)));
+         end if;
+      end Expr_Value_S;
+
+      --  Local variables
+
+      Args : List_Id;
+      Sect : Node_Id;
+
+   --  Start of processing for List_Linker_Section
 
    begin
       if Present (Linker_Section_Pragma (Ent)) then
+         Args := Pragma_Argument_Associations (Linker_Section_Pragma (Ent));
+         Sect := Expr_Value_S (Get_Pragma_Arg (Last (Args)));
+
          Write_Str ("pragma Linker_Section (");
          List_Name (Ent);
          Write_Str (", """);
 
-         Arg :=
-           Last (Pragma_Argument_Associations (Linker_Section_Pragma (Ent)));
-
-         if Nkind (Arg) = N_Pragma_Argument_Association then
-            Arg := Expression (Arg);
-         end if;
-
-         pragma Assert (Nkind (Arg) = N_String_Literal);
-         String_To_Name_Buffer (Strval (Arg));
+         pragma Assert (Nkind (Sect) = N_String_Literal);
+         String_To_Name_Buffer (Strval (Sect));
          Write_Str (Name_Buffer (1 .. Name_Len));
          Write_Str (""");");
          Write_Eol;
