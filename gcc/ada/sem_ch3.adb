@@ -1305,6 +1305,16 @@ package body Sem_Ch3 is
       Init_Size_Align              (T_Name);
       Set_Directly_Designated_Type (T_Name, Desig_Type);
 
+      --  If the access_to_subprogram is not declared at the library level,
+      --  it can only point to subprograms that are at the same or deeper
+      --  accessibility level. All such might require an activation record
+      --  when compiling for C.
+
+      Set_Needs_Activation_Record  (T_Name,
+                                      not Is_Library_Level_Entity (T_Name));
+      Set_Needs_Activation_Record  (Desig_Type,
+                                      not Is_Library_Level_Entity (T_Name));
+
       Generate_Reference_To_Formals (T_Name);
 
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute
