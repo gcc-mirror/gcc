@@ -3880,6 +3880,17 @@ package body Sem_Util is
                Result_Seen := True;
                return Abandon;
 
+            --  Warn on infinite recursion if call is to current function.
+
+            elsif Nkind (N) = N_Function_Call
+              and then Is_Entity_Name (Name (N))
+              and then Entity (Name (N)) = Subp_Id
+              and then not Is_Potentially_Unevaluated (N)
+            then
+               Error_Msg_NE ("call to & within its postcondition "
+                 & "will lead to infinite recursion?", N, Subp_Id);
+               return OK;
+
             --  Continue the traversal
 
             else
