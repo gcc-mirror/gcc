@@ -1,3 +1,8 @@
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (Compute_Max_Length): Skip _Parent component.
+	(List_Record_Layout): Likewise.
+
 2018-05-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Is_Function_Result): Add a warning if a postcondition
