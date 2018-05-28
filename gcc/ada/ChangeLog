@@ -1,5 +1,14 @@
 2018-05-28  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.adb (Visit_Node): For indexed components and attribute
+	references, examine index expressions or associated expressions as well
+	to record uplevel references.
+	(Vist_Node): For function and procedure calls, if a formal is an
+	unconstrained array and the actual is constrained, check whether bounds
+	of actual have uplevel references.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
 	* einfo.ads, einfo.adb: Exceptions can be uplevel references, and thus
 	they can appear as components of activation records.
 	* exp_unst.adb (Visit_Node): A reference to an exception may be an
