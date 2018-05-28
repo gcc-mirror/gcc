@@ -6198,28 +6198,25 @@ be presented in subsequent sections.
 .. index:: -D  (gnatbind)
 
 :switch:`-D{nn}[k|m]`
-  This switch can be used to change the default secondary stack size value
-  to a specified size ``nn``, which is expressed in bytes by default, or
-  in kilobytes when suffixed with ``k`` or in megabytes when suffixed
-  with ``m``.
+  Set the default secondary stack size to ``nn``. The suffix indicates whether
+  the size is in bytes (no suffix), kilobytes (``k`` suffix) or megabytes
+  (``m`` suffix).
 
-  The secondary stack is used to deal with functions that return a variable
-  sized result, for example a function returning an unconstrained
-  String. There are two ways in which this secondary stack is allocated.
+  The secondary stack holds objects of unconstrained types that are returned by
+  functions, for example unconstrained Strings. The size of the secondary stack
+  can be dynamic or fixed depending on the target.
 
-  For most targets, the secondary stack grows on demand and is allocated
-  as a chain of blocks in the heap. The -D option is not very
-  relevant. It only give some control over the size of the allocated
-  blocks (whose size is the minimum of the default secondary stack size value,
-  and the actual size needed for the current allocation request).
+  For most targets, the secondary stack grows on demand and is implemented as
+  a chain of blocks in the heap. In this case, the default secondary stack size
+  determines the initial size of the secondary stack for each task and the
+  smallest amount the secondary stack can grow by.
 
-  For certain targets, notably VxWorks 653 and bare board targets,
-  the secondary stack is allocated by carving off a chunk of the primary task
-  stack. By default this is a fixed percentage of the primary task stack as
-  defined by System.Parameter.Sec_Stack_Percentage. This can be overridden per
-  task using the Secondary_Stack_Size pragma/aspect. The -D option is used to
-  define the size of the environment task's secondary stack.
-
+  For Ravenscar, ZFP, and Cert run-times the size of the secondary stack is
+  fixed. This switch can be used to change the default size of these stacks.
+  The default secondary stack size can be overridden on a per-task basis if
+  individual tasks have different secondary stack requirements. This is
+  achieved through the Secondary_Stack_Size aspect that takes the size of the
+  secondary stack in bytes.
 
 .. index:: -e  (gnatbind)
 
