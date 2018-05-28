@@ -915,6 +915,12 @@ package body Repinfo is
                goto Continue;
             end if;
 
+            --  Skip _Parent component in extension (to avoid overlap)
+
+            if Chars (Comp) = Name_uParent then
+               goto Continue;
+            end if;
+
             --  All other cases
 
             declare
@@ -1007,6 +1013,12 @@ package body Repinfo is
             if Ekind (Comp) = E_Discriminant
               and then Is_Unchecked_Union (Ent)
             then
+               goto Continue;
+            end if;
+
+            --  Skip _Parent component in extension (to avoid overlap)
+
+            if Chars (Comp) = Name_uParent then
                goto Continue;
             end if;
 
