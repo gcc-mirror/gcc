@@ -2201,6 +2201,172 @@ package body Sem_Disp is
    end Find_Primitive_Covering_Interface;
 
    ---------------------------
+   -- Inheritance_Utilities --
+   ---------------------------
+
+   package body Inheritance_Utilities is
+
+      ---------------------------
+      -- Inherited_Subprograms --
+      ---------------------------
+
+      function Inherited_Subprograms
+        (S               : Entity_Id;
+         No_Interfaces   : Boolean := False;
+         Interfaces_Only : Boolean := False;
+         One_Only        : Boolean := False) return Subprogram_List
+      is
+         Result : Subprogram_List (1 .. 6000);
+         --  6000 here is intended to be infinity. We could use an expandable
+         --  table, but it would be awfully heavy, and there is no way that we
+         --  could reasonably exceed this value.
+
+         N      : Nat := 0;
+         --  Number of entries in Result
+
+         Parent_Op : Entity_Id;
+         --  Traverses the Overridden_Operation chain
+
+         procedure Store_IS (E : Entity_Id);
+         --  Stores E in Result if not already stored
+
+         --------------
+         -- Store_IS --
+         --------------
+
+         procedure Store_IS (E : Entity_Id) is
+         begin
+            for J in 1 .. N loop
+               if E = Result (J) then
+                  return;
+               end if;
+            end loop;
+
+            N := N + 1;
+            Result (N) := E;
+         end Store_IS;
+
+         --  Start of processing for Inherited_Subprograms
+
+      begin
+         pragma Assert (not (No_Interfaces and Interfaces_Only));
+
+         --  When used from backends, visibility can be handled differently
+         --  resulting in no dispatching type being found.
+
+         if Present (S)
+           and then Is_Dispatching_Operation (S)
+           and then Present (Find_DT (S))
+         then
+
+            --  Deal with direct inheritance
+
+            if not Interfaces_Only then
+               Parent_Op := S;
+               loop
+                  Parent_Op := Overridden_Operation (Parent_Op);
+                  exit when No (Parent_Op)
+                    or else
+                      (No_Interfaces
+                       and then
+                       Is_Interface (Find_DT (Parent_Op)));
+
+                  if Is_Subprogram_Or_Generic_Subprogram (Parent_Op) then
+                     Store_IS (Parent_Op);
+
+                     if One_Only then
+                        goto Done;
+                     end if;
+                  end if;
+               end loop;
+            end if;
+
+            --  Now deal with interfaces
+
+            if not No_Interfaces then
+               declare
+                  Tag_Typ : Entity_Id;
+                  Prim    : Entity_Id;
+                  Elmt    : Elmt_Id;
+
+               begin
+                  Tag_Typ := Find_DT (S);
+
+                  --  In the presence of limited views there may be no visible
+                  --  dispatching type. Primitives will be inherited when non-
+                  --  limited view is frozen.
+
+                  if No (Tag_Typ) then
+                     return Result (1 .. 0);
+                  end if;
+
+                  if Is_Concurrent_Type (Tag_Typ) then
+                     Tag_Typ := Corresponding_Record_Type (Tag_Typ);
+                  end if;
+
+                  --  Search primitive operations of dispatching type
+
+                  if Present (Tag_Typ)
+                    and then Present (Primitive_Operations (Tag_Typ))
+                  then
+                     Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
+                     while Present (Elmt) loop
+                        Prim := Node (Elmt);
+
+                        --  The following test eliminates some odd cases in
+                        --  which Ekind (Prim) is Void, to be investigated
+                        --  further ???
+
+                        if not Is_Subprogram_Or_Generic_Subprogram (Prim) then
+                           null;
+
+                           --  For [generic] subprogram, look at interface
+                           --  alias.
+
+                        elsif Present (Interface_Alias (Prim))
+                          and then Alias (Prim) = S
+                        then
+                           --  We have found a primitive covered by S
+
+                           Store_IS (Interface_Alias (Prim));
+
+                           if One_Only then
+                              goto Done;
+                           end if;
+                        end if;
+
+                        Next_Elmt (Elmt);
+                     end loop;
+                  end if;
+               end;
+            end if;
+         end if;
+
+         <<Done>>
+
+         return Result (1 .. N);
+      end Inherited_Subprograms;
+
+      ------------------------------
+      -- Is_Overriding_Subprogram --
+      ------------------------------
+
+      function Is_Overriding_Subprogram (E : Entity_Id) return Boolean is
+         Inherited : constant Subprogram_List :=
+           Inherited_Subprograms (E, One_Only => True);
+      begin
+         return Inherited'Length > 0;
+      end Is_Overriding_Subprogram;
+   end Inheritance_Utilities;
+
+   --------------------------------
+   -- Inheritance_Utilities_Inst --
+   --------------------------------
+
+   package Inheritance_Utilities_Inst is new
+     Inheritance_Utilities (Find_Dispatching_Type);
+
+   ---------------------------
    -- Inherited_Subprograms --
    ---------------------------
 
@@ -2208,130 +2374,8 @@ package body Sem_Disp is
      (S               : Entity_Id;
       No_Interfaces   : Boolean := False;
       Interfaces_Only : Boolean := False;
-      One_Only        : Boolean := False) return Subprogram_List
-   is
-      Result : Subprogram_List (1 .. 6000);
-      --  6000 here is intended to be infinity. We could use an expandable
-      --  table, but it would be awfully heavy, and there is no way that we
-      --  could reasonably exceed this value.
-
-      N : Nat := 0;
-      --  Number of entries in Result
-
-      Parent_Op : Entity_Id;
-      --  Traverses the Overridden_Operation chain
-
-      procedure Store_IS (E : Entity_Id);
-      --  Stores E in Result if not already stored
-
-      --------------
-      -- Store_IS --
-      --------------
-
-      procedure Store_IS (E : Entity_Id) is
-      begin
-         for J in 1 .. N loop
-            if E = Result (J) then
-               return;
-            end if;
-         end loop;
-
-         N := N + 1;
-         Result (N) := E;
-      end Store_IS;
-
-   --  Start of processing for Inherited_Subprograms
-
-   begin
-      pragma Assert (not (No_Interfaces and Interfaces_Only));
-
-      if Present (S) and then Is_Dispatching_Operation (S) then
-
-         --  Deal with direct inheritance
-
-         if not Interfaces_Only then
-            Parent_Op := S;
-            loop
-               Parent_Op := Overridden_Operation (Parent_Op);
-               exit when No (Parent_Op)
-                 or else
-                   (No_Interfaces
-                     and then
-                       Is_Interface (Find_Dispatching_Type (Parent_Op)));
-
-               if Is_Subprogram_Or_Generic_Subprogram (Parent_Op) then
-                  Store_IS (Parent_Op);
-
-                  if One_Only then
-                     goto Done;
-                  end if;
-               end if;
-            end loop;
-         end if;
-
-         --  Now deal with interfaces
-
-         if not No_Interfaces then
-            declare
-               Tag_Typ : Entity_Id;
-               Prim    : Entity_Id;
-               Elmt    : Elmt_Id;
-
-            begin
-               Tag_Typ := Find_Dispatching_Type (S);
-
-               --  In the presence of limited views there may be no visible
-               --  dispatching type. Primitives will be inherited when non-
-               --  limited view is frozen.
-
-               if No (Tag_Typ) then
-                  return Result (1 .. 0);
-               end if;
-
-               if Is_Concurrent_Type (Tag_Typ) then
-                  Tag_Typ := Corresponding_Record_Type (Tag_Typ);
-               end if;
-
-               --  Search primitive operations of dispatching type
-
-               if Present (Tag_Typ)
-                 and then Present (Primitive_Operations (Tag_Typ))
-               then
-                  Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
-                  while Present (Elmt) loop
-                     Prim := Node (Elmt);
-
-                     --  The following test eliminates some odd cases in which
-                     --  Ekind (Prim) is Void, to be investigated further ???
-
-                     if not Is_Subprogram_Or_Generic_Subprogram (Prim) then
-                        null;
-
-                     --  For [generic] subprogram, look at interface alias
-
-                     elsif Present (Interface_Alias (Prim))
-                       and then Alias (Prim) = S
-                     then
-                        --  We have found a primitive covered by S
-
-                        Store_IS (Interface_Alias (Prim));
-
-                        if One_Only then
-                           goto Done;
-                        end if;
-                     end if;
-
-                     Next_Elmt (Elmt);
-                  end loop;
-               end if;
-            end;
-         end if;
-      end if;
-
-      <<Done>>
-
-      return Result (1 .. N);
-   end Inherited_Subprograms;
+      One_Only        : Boolean := False) return Subprogram_List renames
+     Inheritance_Utilities_Inst.Inherited_Subprograms;
 
    ---------------------------
    -- Is_Dynamically_Tagged --
@@ -2410,12 +2454,8 @@ package body Sem_Disp is
    -- Is_Overriding_Subprogram --
    ------------------------------
 
-   function Is_Overriding_Subprogram (E : Entity_Id) return Boolean is
-      Inherited : constant Subprogram_List :=
-                    Inherited_Subprograms (E, One_Only => True);
-   begin
-      return Inherited'Length > 0;
-   end Is_Overriding_Subprogram;
+   function Is_Overriding_Subprogram (E : Entity_Id) return Boolean renames
+     Inheritance_Utilities_Inst.Is_Overriding_Subprogram;
 
    --------------------------
    -- Is_Tag_Indeterminate --

@@ -1,3 +1,18 @@
+2018-05-28  Claire Dross  <dross@adacore.com>
+
+	* sem_disp.ads, sem_disp.adb (Inheritance_Utilities): Package for
+	generic inheritance utilities.
+	(Generic_Inherited_Subprograms): Generic version of
+	Inherited_Subprograms, generic in Find_Dispatching_Type function.
+	(Generic_Is_Overriding_Subprogram): Generic version of
+	Is_Overriding_Subprogram, generic in Find_Dispatching_Type function.
+	(Inherited_Subprograms): Instance of Generic_Inherited_Subprograms with
+	Sem_Disp.Find_Dispatching_Type.
+	(Is_Overriding_Subprogram): Instance of
+	Generic_Is_Overriding_Subprogram with Sem_Disp.Find_Dispatching_Type.
+	(Inheritance_Utilities_Inst): Instance of Inheritance_Utilities
+	with Sem_Disp.Find_Dispatching_Type.
+
 2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Expand_Composite_Equality): For a composite (or FP)
