@@ -1,3 +1,8 @@
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Prevent creation of empty
+	activation records.
+
 2018-05-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* exp_unst.adb (Check_Static_Type): Add argument to indicate node to be
