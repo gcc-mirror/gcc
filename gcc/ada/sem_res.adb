@@ -9800,6 +9800,17 @@ package body Sem_Res is
       Resolve (L, Typ);
       Resolve (H, Base_Type (Typ));
 
+      --  Reanalyze the lower bound after both bounds have been analyzed, so
+      --  that the range is known to be static or not by now. This may trigger
+      --  more compile-time evaluation, which is useful for static analysis
+      --  with GNATprove. This is not needed for compilation or static analysis
+      --  with CodePeer, as full expansion does that evaluation then.
+
+      if GNATprove_Mode then
+         Set_Analyzed (L, False);
+         Resolve (L, Typ);
+      end if;
+
       --  Check for inappropriate range on unordered enumeration type
 
       if Bad_Unordered_Enumeration_Reference (N, Typ)
