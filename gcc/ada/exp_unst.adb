@@ -798,9 +798,10 @@ package body Exp_Unst is
                  and then Chars (Enclosing_Subprogram (Ent)) /= Name_uParent
                  and then
 
-                   --  Constants and variables are interesting
+                   --  Constants, variables and exceptions are potentially
+                   --  uplevel references to global declarations.
 
-                   (Ekind_In (Ent, E_Constant, E_Variable)
+                   (Ekind_In (Ent, E_Constant, E_Exception, E_Variable)
 
                      --  Formals are interesting, but not if being used as mere
                      --  names of parameters for name notation calls.

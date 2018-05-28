@@ -6106,6 +6106,7 @@ package Einfo is
    --    Renamed_Entity                      (Node18)
    --    Register_Exception_Call             (Node20)
    --    Interface_Name                      (Node21)
+   --    Activation_Record_Component         (Node31)
    --    Discard_Names                       (Flag88)
    --    Is_Raised                           (Flag224)
 
