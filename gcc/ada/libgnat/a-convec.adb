@@ -2307,14 +2307,12 @@ package body Ada.Containers.Vectors is
       Process   : not null access procedure (Element : Element_Type))
    is
       Lock : With_Lock (Container.TC'Unrestricted_Access);
-      V : Vector renames Container'Unrestricted_Access.all;
-
    begin
       if Checks and then Index > Container.Last then
          raise Constraint_Error with "Index is out of range";
       end if;
 
-      Process (V.Elements.EA (Index));
+      Process (Container.Elements.EA (Index));
    end Query_Element;
 
    procedure Query_Element
