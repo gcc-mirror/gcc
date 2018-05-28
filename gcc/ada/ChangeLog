@@ -1,3 +1,10 @@
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Flatten): Copy tree of expression in a component
+	association with a range or a set of discrete choices, rather than
+	relocating the node. This avoids inconsistencies in the tree when
+	handling nested subprograms with uplevel references for LLVM.
+
 2018-05-28  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_util.adb (Possible_Bit_Aligned_Component): Always return False in
