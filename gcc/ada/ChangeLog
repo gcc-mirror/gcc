@@ -1,5 +1,10 @@
 2018-05-28  Arnaud Charlet  <charlet@adacore.com>
 
+	* exp_util.adb (Possible_Bit_Aligned_Component): Always return False in
+	codepeer mode.
+
+2018-05-28  Arnaud Charlet  <charlet@adacore.com>
+
 	* exp_unst.adb: Fix typo.
 
 2018-05-28  Bob Duff  <duff@adacore.com>

@@ -10738,6 +10738,12 @@ package body Exp_Util is
          return False;
       end if;
 
+      --  There are never alignment issues in CodePeer mode
+
+      if CodePeer_Mode then
+         return False;
+      end if;
+
       case Nkind (N) is
 
          --  Case of indexed component
