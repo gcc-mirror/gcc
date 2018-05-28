@@ -366,16 +366,20 @@ package body Exp_Unst is
             Caller : Entity_Id;
             Callee : Entity_Id;
 
-            procedure Check_Static_Type (T : Entity_Id; DT : in out Boolean);
+            procedure Check_Static_Type
+              (T : Entity_Id; N : Node_Id; DT : in out Boolean);
             --  Given a type T, checks if it is a static type defined as a type
             --  with no dynamic bounds in sight. If so, the only action is to
             --  set Is_Static_Type True for T. If T is not a static type, then
             --  all types with dynamic bounds associated with T are detected,
             --  and their bounds are marked as uplevel referenced if not at the
-            --  library level, and DT is set True.
+            --  library level, and DT is set True. If N is specified, it's the
+            --  node that will need to be replaced. If not specified, it means
+            --  we can't do a replacement because the bound is implicit.
 
             procedure Note_Uplevel_Ref
               (E      : Entity_Id;
+               N      : Node_Id;
                Caller : Entity_Id;
                Callee : Entity_Id);
             --  Called when we detect an explicit or implicit uplevel reference
@@ -386,19 +390,23 @@ package body Exp_Unst is
             -- Check_Static_Type --
             -----------------------
 
-            procedure Check_Static_Type (T : Entity_Id; DT : in out Boolean) is
-               procedure Note_Uplevel_Bound (N : Node_Id);
+            procedure Check_Static_Type
+              (T : Entity_Id; N : Node_Id; DT : in out Boolean)
+            is
+               procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id);
                --  N is the bound of a dynamic type. This procedure notes that
                --  this bound is uplevel referenced, it can handle references
                --  to entities (typically _FIRST and _LAST entities), and also
                --  attribute references of the form T'name (name is typically
                --  FIRST or LAST) where T is the uplevel referenced bound.
+               --  Ref, if Present, is the location of the reference to
+               --  replace.
 
                ------------------------
                -- Note_Uplevel_Bound --
                ------------------------
 
-               procedure Note_Uplevel_Bound (N : Node_Id) is
+               procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id) is
                begin
                   --  Entity name case. Make sure that the entity is declared
                   --  in a subprogram. This may not be the case for for a type
@@ -410,14 +418,22 @@ package body Exp_Unst is
                      then
                         Note_Uplevel_Ref
                           (E      => Entity (N),
+                           N      => Ref,
                            Caller => Current_Subprogram,
                            Callee => Enclosing_Subprogram (Entity (N)));
                      end if;
 
-                  --  Attribute case
+                  --  Attribute or indexed component case
 
-                  elsif Nkind (N) = N_Attribute_Reference then
-                     Note_Uplevel_Bound (Prefix (N));
+                  elsif Nkind_In (N, N_Attribute_Reference,
+                                     N_Indexed_Component)
+                  then
+                     Note_Uplevel_Bound (Prefix (N), Ref);
+
+                  --  Conversion case
+
+                  elsif Nkind (N) = N_Type_Conversion then
+                     Note_Uplevel_Bound (Expression (N), Ref);
                   end if;
                end Note_Uplevel_Bound;
 
@@ -452,12 +468,12 @@ package body Exp_Unst is
 
                   begin
                      if not Is_Static_Expression (LB) then
-                        Note_Uplevel_Bound (LB);
+                        Note_Uplevel_Bound (LB, N);
                         DT := True;
                      end if;
 
                      if not Is_Static_Expression (UB) then
-                        Note_Uplevel_Bound (UB);
+                        Note_Uplevel_Bound (UB, N);
                         DT := True;
                      end if;
                   end;
@@ -470,7 +486,7 @@ package body Exp_Unst is
                   begin
                      C := First_Component_Or_Discriminant (T);
                      while Present (C) loop
-                        Check_Static_Type (Etype (C), DT);
+                        Check_Static_Type (Etype (C), N, DT);
                         Next_Component_Or_Discriminant (C);
                      end loop;
                   end;
@@ -481,11 +497,11 @@ package body Exp_Unst is
                   declare
                      IX : Node_Id;
                   begin
-                     Check_Static_Type (Component_Type (T), DT);
+                     Check_Static_Type (Component_Type (T), N, DT);
 
                      IX := First_Index (T);
                      while Present (IX) loop
-                        Check_Static_Type (Etype (IX), DT);
+                        Check_Static_Type (Etype (IX), N, DT);
                         Next_Index (IX);
                      end loop;
                   end;
@@ -493,7 +509,7 @@ package body Exp_Unst is
                --  For private type, examine whether full view is static
 
                elsif Is_Private_Type (T) and then Present (Full_View (T)) then
-                  Check_Static_Type (Full_View (T), DT);
+                  Check_Static_Type (Full_View (T), N, DT);
 
                   if Is_Static_Type (Full_View (T)) then
                      Set_Is_Static_Type (T);
@@ -516,9 +532,11 @@ package body Exp_Unst is
 
             procedure Note_Uplevel_Ref
               (E      : Entity_Id;
+               N      : Node_Id;
                Caller : Entity_Id;
                Callee : Entity_Id)
             is
+               Full_E : Entity_Id := E;
             begin
                --  Nothing to do for static type
 
@@ -544,12 +562,16 @@ package body Exp_Unst is
 
                --  We have a new uplevel referenced entity
 
+               if Ekind (E) = E_Constant and then Present (Full_View (E)) then
+                  Full_E := Full_View (E);
+               end if;
+
                --  All we do at this stage is to add the uplevel reference to
                --  the table. It's too early to do anything else, since this
                --  uplevel reference may come from an unreachable subprogram
                --  in which case the entry will be deleted.
 
-               Urefs.Append ((N, E, Caller, Callee));
+               Urefs.Append ((N, Full_E, Caller, Callee));
             end Note_Uplevel_Ref;
 
          --  Start of processing for Visit_Node
@@ -617,25 +639,26 @@ package body Exp_Unst is
                            end if;
                         end if;
 
+                     --  References to bounds can be uplevel references if
+                     --  the type isn't static.
+
                      when Attribute_First
                         | Attribute_Last
                         | Attribute_Length
                      =>
-                        --  Special-case attributes of array objects whose
-                        --  bounds may be uplevel references. More complex
-                        --  prefixes are handled during full traversal. Note
-                        --  that if the nominal subtype of the prefix is
-                        --  unconstrained, the bound must be obtained from
-                        --  the object, not from the (possibly) uplevel
-                        --  reference.
+                        --  Special-case attributes of objects whose bounds
+                        --  may be uplevel references. More complex prefixes
+                        --  handled during full traversal. Note that if the
+                        --  nominal subtype of the prefix is unconstrained,
+                        --  the bound must be obtained from the object, not
+                        --  from the (possibly) uplevel reference.
 
-                        if Is_Entity_Name (Prefix (N))
-                          and then Is_Constrained (Etype (Prefix (N)))
-                        then
+                        if Is_Constrained (Etype (Prefix (N))) then
                            declare
                               DT : Boolean := False;
                            begin
-                              Check_Static_Type (Etype (Prefix (N)), DT);
+                              Check_Static_Type (Etype (Prefix (N)),
+                                                 Empty, DT);
                            end;
 
                            return OK;
@@ -644,6 +667,19 @@ package body Exp_Unst is
                      when others =>
                         null;
                   end case;
+               end;
+
+            --  Indexed references can be uplevel if the type isn't static and
+            --  if the lower bound (or an inner bound for a multidimensional
+            --  array) is uplevel.
+
+            elsif Nkind_In (N, N_Indexed_Component, N_Slice)
+              and then Is_Constrained (Etype (Prefix (N)))
+            then
+               declare
+                  DT : Boolean := False;
+               begin
+                  Check_Static_Type (Etype (Prefix (N)), Empty, DT);
                end;
 
             --  Record a subprogram. We record a subprogram body that acts as
@@ -755,7 +791,7 @@ package body Exp_Unst is
                         DT : Boolean := False;
 
                      begin
-                        Check_Static_Type (Ent, DT);
+                        Check_Static_Type (Ent, N, DT);
 
                         if Is_Static_Type (Ent) then
                            return OK;
@@ -767,7 +803,7 @@ package body Exp_Unst is
                   Callee := Enclosing_Subprogram (Ent);
 
                   if Callee /= Caller and then not Is_Static_Type (Ent) then
-                     Note_Uplevel_Ref (Ent, Caller, Callee);
+                     Note_Uplevel_Ref (Ent, N, Caller, Callee);
                   end if;
                end if;
 
@@ -925,8 +961,12 @@ package body Exp_Unst is
                   --  to objects that will be referenced uplevel, and we use
                   --  the flag Is_Uplevel_Referenced_Entity to avoid making
                   --  duplicate entries in the list.
+                  --  Discriminants are also excluded, only the enclosing
+                  --  object can appear in the list.
 
-                  if not Is_Uplevel_Referenced_Entity (URJ.Ent) then
+                  if not Is_Uplevel_Referenced_Entity (URJ.Ent)
+                    and then Ekind (URJ.Ent) /= E_Discriminant
+                  then
                      Set_Is_Uplevel_Referenced_Entity (URJ.Ent);
 
                      if not Is_Type (URJ.Ent) then
@@ -1520,8 +1560,9 @@ package body Exp_Unst is
          begin
             --  Ignore type references, these are implicit references that do
             --  not need rewriting (e.g. the appearence in a conversion).
+            --  Also ignore if no reference was specified.
 
-            if Is_Type (UPJ.Ent) then
+            if Is_Type (UPJ.Ent) or else No (UPJ.Ref) then
                goto Continue;
             end if;
 
@@ -1764,6 +1805,13 @@ package body Exp_Unst is
 
                if No (Act) then
                   Set_First_Named_Actual (CTJ.N, Extra);
+
+                  --  If call has been relocated (as with an expression in
+                  --  an aggregate), set First_Named pointer in original node
+                  --  as well, because that's the parent of the parameter list.
+
+                  Set_First_Named_Actual
+                    (Parent (List_Containing (ExtraP)), Extra);
 
                --  Here we must follow the chain and append the new entry
 
