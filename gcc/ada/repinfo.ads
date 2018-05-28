@@ -30,10 +30,10 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines to handle back annotation of the
---  tree to fill in representation information, and also the routine used
---  by -gnatR to print this information. This unit is used both in the
+--  tree to fill in representation information, and also the routines used
+--  by -gnatR to output this information. This unit is used both in the
 --  compiler and in ASIS (it is used in ASIS as part of the implementation
---  of the data decomposition annex).
+--  of the Data Decomposition Annex).
 
 with Types; use Types;
 with Uintp; use Uintp;
@@ -68,7 +68,7 @@ package Repinfo is
    --       needed in the case of sizes not known till runtime.
 
    -----------------------------
-   -- Back-Annotation by Gigi --
+   -- Back Annotation by Gigi --
    -----------------------------
 
    --  The following interface is used by gigi if Frontend_Layout is False
@@ -82,13 +82,13 @@ package Repinfo is
 
    --    For E_Array_Type entities, the Component_Size field
 
-   --    For all record and array types and subtypes, the Esize field,
-   --    which contains the Size (more accurately the Object_Size) value
-   --    for the type or subtype.
+   --    For all record and array types and subtypes, the Esize and RM_Size
+   --    fields, which respectively contain the Object_Size and Value_Size
+   --    values for the type or subtype.
 
    --    For E_Component and E_Discriminant entities, the Esize (size
    --    of component) and Component_Bit_Offset fields. Note that gigi
-   --    does not back annotate Normalized_Position/First_Bit.
+   --    does not generally back annotate Normalized_Position/First_Bit.
 
    --  There are three cases to consider:
 
@@ -111,7 +111,7 @@ package Repinfo is
    --  Note: the extended back annotation for the dynamic case is needed only
    --  for -gnatR3 output, and for proper operation of the ASIS DDA. Since it
    --  can be expensive to do this back annotation (for discriminated records
-   --  with many variable length arrays), we only do the full back annotation
+   --  with many variable-length arrays), we only do the full back annotation
    --  in -gnatR3 mode, or ASIS mode. In any other mode, the back-end just sets
    --  the value to Uint_Minus_1, indicating that the value of the attribute
    --  depends on discriminant information, but not giving further details.

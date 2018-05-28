@@ -1,5 +1,9 @@
 2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* repinfo.ads: Minor fixes and tweaks in comments.
+
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* repinfo.adb (List_GCC_Expression): Remove Valop and replace calls to
 	it with calls to Unop.
 
