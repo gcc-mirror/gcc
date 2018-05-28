@@ -1,3 +1,8 @@
+2018-05-28  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Is_OK_Volatile_Context): Add attributes First, Last and
+	Length as valid non-interfering contexts for SPARK.
+
 2018-05-28  Claire Dross  <dross@adacore.com>
 
 	* sem_disp.ads, sem_disp.adb (Inheritance_Utilities): Package for
