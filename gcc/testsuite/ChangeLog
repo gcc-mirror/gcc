@@ -1,3 +1,8 @@
+2018-05-28  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/warn15-core-main.adb, gnat.dg/warn15-core.ads,
+	gnat.dg/warn15-interfaces.ads, gnat.dg/warn15.ads: New testcase.
+
 2018-05-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/data_stmt_pointer.f90: new test.
