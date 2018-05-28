@@ -1,3 +1,10 @@
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb: Exceptions can be uplevel references, and thus
+	they can appear as components of activation records.
+	* exp_unst.adb (Visit_Node): A reference to an exception may be an
+	uplevel reference.
+
 2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Expand_Composite_Equality): Compute whether the size

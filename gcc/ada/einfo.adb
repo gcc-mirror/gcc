@@ -744,6 +744,7 @@ package body Einfo is
    begin
       pragma Assert (Ekind_In (Id, E_Constant,
                                    E_Discriminant,
+                                   E_Exception,
                                    E_In_Parameter,
                                    E_In_Out_Parameter,
                                    E_Loop_Parameter,
@@ -3958,6 +3959,7 @@ package body Einfo is
    begin
       pragma Assert (Ekind_In (Id, E_Constant,
                                    E_Discriminant,
+                                   E_Exception,
                                    E_In_Parameter,
                                    E_In_Out_Parameter,
                                    E_Loop_Parameter,
