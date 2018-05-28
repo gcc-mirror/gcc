@@ -1565,7 +1565,7 @@ package body Exp_Ch3 is
             Append_To (Args,
               New_Occurrence_Of (Standard_True, Loc));
 
-         --  Otherwise, we pass False to perform null excluding checks
+         --  Otherwise, we pass False to perform null-excluding checks
 
          else
             Append_To (Args,
@@ -8666,10 +8666,10 @@ package body Exp_Ch3 is
              Parameter_Type      => New_Occurrence_Of (Standard_String, Loc)));
       end if;
 
-      --  Due to certain edge cases such as arrays with null excluding
+      --  Due to certain edge cases such as arrays with null-excluding
       --  components being built with the secondary stack it becomes necessary
       --  to add a formal to the Init_Proc which controls whether we raise
-      --  constraint errors on generated calls for internal object
+      --  Constraint_Errors on generated calls for internal object
       --  declarations.
 
       if Needs_Conditional_Null_Excluding_Check (Typ) then
