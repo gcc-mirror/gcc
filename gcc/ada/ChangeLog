@@ -1,3 +1,17 @@
+2018-05-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* exp_unst.adb (Check_Static_Type): Add argument to indicate node to be
+	replaced, if any; all callers changed.
+	(Note_Uplevel_Ref): Likewise.  Also replace reference to deferred
+	constant with private view so we take the address of that entity.
+	(Note_Uplevel_Bound): Add argument to indicate node to be replaced, if
+	any; all callers changed.  Handle N_Indexed_Component like
+	N_Attribute_Reference.  Add N_Type_Conversion case.
+	(Visit_Node): Indexed references can be uplevel if the type isn't
+	static.
+	(Unnest_Subprograms): Don't rewrite if no reference given.  If call has
+	been relocated, set first_named pointer in original node as well.
+
 2018-05-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_aggr.adb (Flatten): Copy tree of expression in a component
