@@ -1,3 +1,8 @@
+2018-05-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-calend.ads, libgnat/a-calend.adb (Epoch_Offset): Make it a
+	function.
+
 2018-05-29  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/system-vxworks7-ppc-rtp.ads: New file.

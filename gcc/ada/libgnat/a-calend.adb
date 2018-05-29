@@ -500,6 +500,15 @@ is
       return D;
    end Day;
 
+   ------------------
+   -- Epoch_Offset --
+   ------------------
+
+   function Epoch_Offset return Time_Rep is
+   begin
+      return (136 * 365 + 44 * 366) * Nanos_In_Day;
+   end Epoch_Offset;
+
    -------------
    -- Is_Leap --
    -------------
