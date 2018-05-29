@@ -14630,9 +14630,12 @@ package body Sem_Ch3 is
          Set_Comes_From_Source (New_Compon, False);
 
          --  But it is a real entity, and a birth certificate must be properly
-         --  registered by entering it into the entity list.
+         --  registered by entering it into the entity list, and setting its
+         --  scope to the  given subtype. This turns out to be useful for the
+         --  LLVM code generator, but that scope is not used otherwise.
 
          Enter_Name (New_Compon);
+         Set_Scope (New_Compon, Subt);
 
          return New_Compon;
       end Create_Component;

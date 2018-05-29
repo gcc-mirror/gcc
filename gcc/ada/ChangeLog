@@ -1,5 +1,9 @@
 2018-05-29  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch3.adb: Set scope of component of subtype.
+
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_unst.adb (Visit_Node): Exclude selected components whose prefix
 	carry no type. Such selected components appear in unit names that are
 	child units, both in the specification and possibly in an end label for
