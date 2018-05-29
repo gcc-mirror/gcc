@@ -1,5 +1,15 @@
 2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* repinfo.ads (JSON format): Document new pair for components.
+	* repinfo.adb (Derived_Discriminant): New function.
+	(List_Structural_Record_Layout): Add Outer_Ent parameter and pass it
+	in recursive calls. If the record type is the parent of an extension,
+	find and list the derived discriminant from the extension, if any.
+	(List_Component_Layout): List the Discriminant_Number in JSON mode.
+	(List_Record_Info): Adjust call to List_Structural_Record_Layout.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (Alphabetical
 	List of All Switches): Document -gnatRj.
 	(Debugging Control): Likewise.

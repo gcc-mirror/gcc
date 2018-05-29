@@ -207,8 +207,8 @@ package body Repinfo is
 
    function Back_End_Layout return Boolean is
    begin
-      --  We have back end layout if the back end has made any entries in the
-      --  table of GCC expressions, otherwise we have front end layout.
+      --  We have back-end layout if the back end has made any entries in the
+      --  table of GCC expressions, otherwise we have front-end layout.
 
       return Rep_Table.Last > 0;
    end Back_End_Layout;
@@ -1069,9 +1069,10 @@ package body Repinfo is
       --  Internal recursive procedure to display the layout
 
       procedure List_Structural_Record_Layout
-        (Ent     : Entity_Id;
-         Variant : Node_Id := Empty;
-         Indent  : Natural := 0);
+        (Ent       : Entity_Id;
+         Outer_Ent : Entity_Id;
+         Variant   : Node_Id := Empty;
+         Indent    : Natural := 0);
       --  Internal recursive procedure to display the structural layout
 
       Max_Name_Length : Natural := 0;
@@ -1205,6 +1206,12 @@ package body Repinfo is
             Write_Str (Prefix);
             Write_Str (Name_Buffer (1 .. Name_Len));
             Write_Line (""",");
+            if Ekind (Ent) = E_Discriminant then
+               Spaces (Indent);
+               Write_Str ("      ""discriminant"": ");
+               UI_Write (Discriminant_Number (Ent));
+               Write_Line (",");
+            end if;
             Spaces (Indent);
             Write_Str ("      ""Position"": ");
          else
@@ -1304,8 +1311,8 @@ package body Repinfo is
          else
             Write_Val (Esiz, Paren => not List_Representation_Info_To_JSON);
 
-            --  If in front end layout mode, then dynamic size is stored
-            --  in storage units, so renormalize for output
+            --  If in front-end layout mode, then dynamic size is stored
+            --  in storage units, so renormalize for output.
 
             if not Back_End_Layout then
                Write_Str (" * ");
@@ -1416,14 +1423,66 @@ package body Repinfo is
       -----------------------------------
 
       procedure List_Structural_Record_Layout
-        (Ent     : Entity_Id;
-         Variant : Node_Id := Empty;
-         Indent  : Natural := 0)
+        (Ent       : Entity_Id;
+         Outer_Ent : Entity_Id;
+         Variant   : Node_Id := Empty;
+         Indent    : Natural := 0)
       is
+
+         function Derived_Discriminant (Disc : Entity_Id) return Entity_Id;
+         --  This function assumes that Outer_Ent is an extension of Ent.
+         --  Disc is a discriminant of Ent that does not itself constrain a
+         --  discriminant of the parent type of Ent. Return the discriminant
+         --  of Outer_Ent that ultimately constrains Disc, if any.
+
+         ----------------------------
+         --  Derived_Discriminant  --
+         ----------------------------
+
+         function Derived_Discriminant (Disc : Entity_Id) return Entity_Id is
+            Corr_Disc, Derived_Disc : Entity_Id;
+
+         begin
+            Derived_Disc := First_Stored_Discriminant (Outer_Ent);
+
+            --  Loop over the discriminants of the extension
+
+            while Present (Derived_Disc) loop
+
+               --  Check if this discriminant constrains another discriminant.
+               --  If so, find the ultimately constrained discriminant and
+               --  compare with the original components in the base type.
+
+               if Present (Corresponding_Discriminant (Derived_Disc)) then
+                  Corr_Disc := Corresponding_Discriminant (Derived_Disc);
+
+                  while Present (Corresponding_Discriminant (Corr_Disc)) loop
+                     Corr_Disc := Corresponding_Discriminant (Corr_Disc);
+                  end loop;
+
+                  if Original_Record_Component (Corr_Disc)
+                                             = Original_Record_Component (Disc)
+                  then
+                     return Derived_Disc;
+                  end if;
+               end if;
+
+               Next_Stored_Discriminant (Derived_Disc);
+            end loop;
+
+            --  Disc is not constrained by a discriminant of Outer_Ent
+
+            return Empty;
+         end Derived_Discriminant;
+
+         --  Local declarations
+
          Comp       : Node_Id;
          Comp_List  : Node_Id;
          Var        : Node_Id;
          First      : Boolean := True;
+
+      --  Start of processing for List_Structural_Record_Layout
 
       begin
          --  If we are dealing with a variant, just process the components
@@ -1442,14 +1501,15 @@ package body Repinfo is
                  Is_Tagged_Type (Ent)
                    and then
                  Nkind (Definition) = N_Derived_Type_Definition;
-               Disc : Entity_Id;
+               Disc, Listed_Disc : Entity_Id;
+
             begin
                --  If this is an extension, first list the layout of the parent
                --  and then proceed to the extension part, if any.
 
                if Is_Extension then
                   List_Structural_Record_Layout
-                    (Base_Type (Parent_Subtype (Ent)), Variant, Indent);
+                    (Base_Type (Parent_Subtype (Ent)), Outer_Ent);
 
                   if Present (Record_Extension_Part (Definition)) then
                      Definition := Record_Extension_Part (Definition);
@@ -1474,7 +1534,20 @@ package body Repinfo is
                         goto Continue_Disc;
                      end if;
 
-                     Get_Decoded_Name_String (Chars (Disc));
+                     --  If this is the parent type of an extension, retrieve
+                     --  the derived discriminant from the extension, if any.
+
+                     if Ent /= Outer_Ent then
+                        Listed_Disc := Derived_Discriminant (Disc);
+
+                        if No (Listed_Disc) then
+                           goto Continue_Disc;
+                        end if;
+                     else
+                        Listed_Disc := Disc;
+                     end if;
+
+                     Get_Decoded_Name_String (Chars (Listed_Disc));
                      Set_Casing (Unit_Casing);
 
                      if First then
@@ -1484,7 +1557,7 @@ package body Repinfo is
                         Write_Line (",");
                      end if;
 
-                     List_Component_Layout (Disc, Indent => Indent);
+                     List_Component_Layout (Listed_Disc, Indent => Indent);
 
                   <<Continue_Disc>>
                      Next_Stored_Discriminant (Disc);
@@ -1564,7 +1637,7 @@ package body Repinfo is
             Spaces (Indent);
             Write_Str ("      ""record"": [");
 
-            List_Structural_Record_Layout (Ent, Var, Indent + 4);
+            List_Structural_Record_Layout (Ent, Outer_Ent, Var, Indent + 4);
 
             Write_Eol;
             Spaces (Indent);
@@ -1597,7 +1670,7 @@ package body Repinfo is
          Write_Line (",");
          Write_Str ("  ""record"": [");
 
-         List_Structural_Record_Layout (Ent);
+         List_Structural_Record_Layout (Ent, Ent);
 
          Write_Eol;
          Write_Str ("  ]");
