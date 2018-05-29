@@ -1,3 +1,10 @@
+2018-05-29  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cxx-module-server.sh: Add batching and ASYNC support.
+	gcc/
+	* doc/invoke.texi (C++ Modules): More protocol explanation
+
 2018-05-25  Nathan Sidwell  <nathan@acm.org>
 
 	Server protocol batching

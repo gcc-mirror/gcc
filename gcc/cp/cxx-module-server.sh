@@ -85,13 +85,29 @@ search () {
     echo "$(echo $1 | tr . -).cc"
 }
 
+# outstanding async requests
+async_ix=0
+
 cmd () {
     resp=
     case "$1" in
+	(AWAIT)
+	    # process an ASYNC
+	    if test $async_ix -ne 0 ; then
+		((async_ix--))
+		eval echo cmd '"${'async$async_ix'[@]}"'
+		eval cmd '"${'async$async_ix'[@]}"'
+		eval resp='"OK ${'async$async_ix'[1]} $line"'
+	    else
+		resp="ERROR No async request"
+	    fi
+	    ;;
 	(ASYNC)
-    	    # We respond to async requests immediately
+    	    # Append ASYNC request
 	    shift
-	    cmd "$@"
+	    eval async$async_ix='("$@")'
+	    ((async_ix++))
+	    resp=OK
 	    ;;
 	(BMI)
 	    # We try and build a BMI from source
@@ -115,14 +131,10 @@ cmd () {
 	(DONE)
 	    resp="OK"
 	    ;;
-	(PEEK)
-	    # we don't do anything with a peek
-	    resp=OK
-	    ;;
 	(HELLO)
 	    if test "$2" = $VERSION ; then
 		main="$3"
-		resp="HELLO $VERSION"
+		resp="HELLO $VERSION 0"
 	    else
 		resp="ERROR Bad version (expect $VERSION)"
 	    fi
@@ -131,14 +143,15 @@ cmd () {
 	    case "$2" in
 		(query) resp="BMI|SEARCH|PATH" ;;
 		(ASYNC) resp="ASYNC query" ;;
+		(AWAIT) resp="AWAIT" ;;
 		(BMI) resp="BMI <module> [<from>]" ;;
 		(DONE) resp="DONE <module>" ;;
 		(EXPORT) resp="EXPORT <module>" ;;
-		(FUTURE) resp="FUTURE query" ;;
 		(HELLO) resp="HELLO <ver> <src>" ;;
+		(INCLUDE) resp="INCLUDE <header> [<from>]" ;;
 		(PATH) resp="PATH <module> [<from>]" ;;
 		(SEARCH) resp="SEARCH <module> [<from>]" ;;
-		(*) resp="HELP HELLO, BMI, EXPORT, DONE" ;;
+		(*) resp="HELP, HELLO, ASYNC, AWAIT, BMI, DONE, EXPORT, INCLUDE, PATH, RESET, SEARCH" ;;
 	    esac
 	    ;;
 	(INCLUDE)
@@ -159,10 +172,7 @@ cmd () {
 	    resp="ERROR Bad Request"
 	    ;;
     esac
-    if test "$resp" ; then
-	$verbose && echo "$progname> $resp" >&2
-	echo "$resp"
-    fi
+    line="$resp"
 }
 
 while test "$#" != 0 ; do
@@ -182,9 +192,80 @@ while test "$#" != 0 ; do
     shift
 done
 
-
+ix=0
+is_batch=false
 # module oracle -> modacle
 while read -a args -p "modacle>" ; do
     $verbose && echo "$progname< ${args[@]}" >&2
-    cmd "${args[@]}"
+    # read is 0-based
+    first=${args[0]}
+    # deal with batching
+    more=false
+    case "$first" in
+	(+*) args[0]=${first#+}
+	     is_batch=true
+	     more=true ;;
+	(-*) args[0]=${first#-}
+	     ;;
+	(*)  ;;
+    esac
+    eval args$ix='("${args[@]}")'
+    if $more ; then
+	((ix++))
+    else
+	# process the batch
+	resp_ix=0
+	done_async=false
+	for jx in $(seq 0 $ix) ; do
+	    again=true
+	    while $again ; do
+		again=false
+		eval first='${'args$jx'[0]}'
+		line=""
+		append=false
+		if test "$first" ; then
+		    eval cmd '"${'args$jx'[@]}"'
+		    $verbose && echo "$progname> $line" >&2
+		    append=true
+		fi
+		if $is_batch ; then
+		    case "$first" in
+			("") append=false ;;
+			(AWAIT)
+			    if test $async_ix -ne 0 ; then
+				again=true
+			    fi
+			    done_async=false
+			    ;;
+			(ASYNC)
+			    if $done_async; then
+				append=false
+			    else
+				done_async=true
+			    fi
+			    ;;
+			(*) done_async=false ;;
+		    esac
+		fi
+		if $append ; then
+		    eval resp$resp_ix'="$line"'
+		    ((resp_ix++))
+		fi
+	    done
+	done
+	if test "$resp_ix" -eq 1 ; then
+	    echo "$resp0"
+	else
+	    eval resp$resp_ix=""
+	    pfx=+
+	    for jx in $(seq 0 $resp_ix) ; do
+		if test $jx -eq $resp_ix ; then
+		    pfx=-
+		fi
+		eval echo '"$pfx$'resp$jx'"'
+	    done
+	fi
+	is_batch=false
+	ix=0
+    fi
 done

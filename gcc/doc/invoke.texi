@@ -16003,7 +16003,7 @@ The table below lists the supported extensions for each architecture.
 Architectures not mentioned do not support any extensions.
 
 @table @samp
-@itemx armv5te
+@item armv5te
 @itemx armv6
 @itemx armv6j
 @itemx armv6k
@@ -29227,19 +29227,17 @@ fulfilable, the response is `@samp{ERROR} [@var{msg}]'.  Usually an
 error response will cause compilation to terminate.  When the query is
 multiplicative, the first possible response should be give.
 
-@item @samp{ASYNC}
-Request for an asynchronous response.  There must be at least one
-outstanding import query.  The response is as for a non-asynchronous
-query, except it is prefixed by `@samp{ASYNC} @var{$module}', so it
-may be linked to the orignal request.  [Note. as above, format is
-maleable.]
+@item @samp{AWAIT}
+Request for an asynchronous response.  The response is as for a
+non-asynchronous query, except it is prefixed by `@samp{OK}
+@var{$module}', so it may be linked to the orignal request.   If there
+is no outstanding ASYNC query, an error response of @samp{ERROR
+$errormsg} should be given.
 
 @item @samp{ASYNC} @var{$query}
-An asynchronous query.  As above, but the response may be deferred and
-`@samp{DEFERRED}' is the immediate response.  If deferred responses
-are not supported, an immediate response may be given.  [Note.
-Deferred queries have not been implemented.  Perhaps a response should
-provide a numeric async cookie?]
+An asynchronous query.  The @var{$query} is as above, but the response
+may be either @samp{OK} or @samp{ERROR $errormsg}.  A later response
+to an @samp{AWAIT} query will provide response data.
 
 @item @samp{DONE} @var{$module}
 The compilation has succesfully produced a BMI file for
@@ -29255,6 +29253,9 @@ for @var{module-name}.  The response should be `@samp{BMI} @var{bmifile}'.
 This is the first command.  It informs the server of the name of the
 source being compiled.  Response is either `@samp{OK}
 @var{$ver} @var{$flags}', or `@samp{ERROR} @var{$errormsg}'.
+FIXME: Perhaps there should be some kind of cookie in this request, so
+the server can be confident it is talking to who it expects to.  But
+I'm not a cryptographer, so therefore not competent to do this correctly.
 
 @item @samp{HELLO} @var{$ver} @var{$srcbase} @var{$srcpath}
 FIXME
@@ -29272,7 +29273,8 @@ be forthcoming.)  (This is not implemented.)
 
 @item @samp{RESET}
 This command resets the server.  There is no response.  It is used
-if a preamble rescan is needed.
+if a preamble rescan is needed.  Any unresponded @samp{ASYNC} requests
+are dropped.
 
 @end itemize
 
@@ -29284,18 +29286,21 @@ a @code{+} character, before waiting for a response another request
 should be made.  That too may begin with @code{+}.  The final request
 of the batch should begin with @code{-}, and may be empty.  Similarly
 responses may be batched, both in response to a set of batched
-requtests, or as a result of the @code{ASYNC} request.  Each
-non-ultimate line of a batched response begins with a @code{+}.  The
-final line should begin with @code{-}, and may otherwise be empty.
-Response to a batched request are in request order, except that a
-batch of @code{ASYNC} requests that are deferred provides only a
-single @code{DEFERRED} response.  Servers should not commence
+requests, or as a result of a batched @samp{AWAIT} request (including
+a batch consisting of solely an @code{AWAIT}).  Each non-ultimate line
+of a batched response begins with a @code{+}.  The final line should
+begin with @code{-}, and may otherwise be empty.  Response to a
+batched request are in request order, except that a batch of
+@samp{ASYNC} requests that are deferred provides only a single
+@samp{OK} or @samp{ERROR} response.  Servers should not commence
 responses until all requests of a batch have been received.  There may
 be a fixed-capacity pipe between client and server, and sending
 responses before the client has started reading could result in
 deadlock.
 
-FIXME: Character encodings are not yet considered.
+FIXME: Character encodings are not yet considered.  Perhaps URL
+encoding for filename elements.  There does not seem difficulty with
+module names themselves.
 
 The following metavariables were used:
 
@@ -29305,7 +29310,8 @@ The following metavariables were used:
 Pathname of a BMI file.
 
 @item @var{$flags}
-A comma-separated set of words indicating capabilities.
+A comma-separated set of words indicating capabilities.  If there are
+no flags, a placeholder of @samp{0} should be used.  FIXME:Not very baked
 
 @item @var{$from}
 The source path of the file containing the import or include.
