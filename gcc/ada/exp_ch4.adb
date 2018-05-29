@@ -6977,6 +6977,8 @@ package body Exp_Ch4 is
                        New_Occurrence_Of (Base_Type (Etype (Expr)), Loc),
                      Attribute_Name => Name_First)),
              Reason => CE_Overflow_Check_Failed));
+
+         Set_Do_Overflow_Check (N, False);
       end if;
    end Expand_N_Op_Abs;
 

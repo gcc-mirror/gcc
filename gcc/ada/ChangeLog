@@ -1,3 +1,8 @@
+2018-05-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* exp_ch4.adb (Expand_N_Op_Abs): Clear Do_Overflow_Check when inserting
+	code to do check.
+
 2018-05-29  Arnaud Charlet  <charlet@adacore.com>
 
 	* lib-writ.adb (Write_ALI): Do not use new function from s-casuti yet.
