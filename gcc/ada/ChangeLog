@@ -1,5 +1,10 @@
 2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* repinfo.adb (List_Component_Layout): New procedure extracted from...
+	(List_Record_Layout): ...here.  Invoke it.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* repinfo.adb (Write_Unknown_Val): New procedure.
 	(List_GCC_Expression): Call it.
 	(List_Record_Layout): Likewise.
