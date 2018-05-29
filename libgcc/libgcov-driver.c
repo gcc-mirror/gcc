@@ -372,8 +372,12 @@ merge_one_data (const char *filename,
 
   length = gcov_read_unsigned ();
   if (length != gi_ptr->stamp)
-    /* Read from a different compilation. Overwrite the file.  */
-    return 0;
+    {
+      /* Read from a different compilation.  Overwrite the file.  */
+      gcov_error ("profiling:%s:overwriting an existing profile data "
+		  "with a different timestamp\n", filename);
+      return 0;
+    }
 
   /* Look for program summary.  */
   for (f_ix = 0;;)

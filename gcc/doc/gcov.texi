@@ -801,6 +801,14 @@ as well as handlers registered with @code{atexit}.
 If an executable loads a dynamic shared object via dlopen functionality,
 @option{-Wl,--dynamic-list-data} is needed to dump all profile data.
 
+Profiling run-time library reports various errors related to profile
+manipulation and profile saving.  Errors are printed into standard error output
+or @samp{GCOV_ERROR_FILE} file, if environment variable is used.
+In order to terminate immediately after an errors occurs
+set @samp{GCOV_EXIT_AT_ERROR} environment variable.
+That can help users to find profile clashing which leads
+to a misleading profile.
+
 @c man end
 
 @node Gcov Data Files
