@@ -1,5 +1,8 @@
 2018-05-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/85952
+	* g++.dg/warn/Wunused-var-33.C: New test.
+
 	PR target/85918
 	* gcc.target/i386/avx512dq-pr85918.c: Add -mprefer-vector-width=512
 	and -fno-vect-cost-model options.  Add aligned(64) attribute to the
