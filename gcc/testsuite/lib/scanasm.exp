@@ -229,11 +229,11 @@ proc scan-ada-spec-not { args } {
 # Call pass if pattern is present given number of times, otherwise fail.
 proc scan-assembler-times { args } {
     if { [llength $args] < 2 } {
-	error "scan-assembler: too few arguments"
+	error "scan-assembler-times: too few arguments"
         return
     }
     if { [llength $args] > 3 } {
-	error "scan-assembler: too many arguments"
+	error "scan-assembler-times: too many arguments"
 	return
     }
     if { [llength $args] >= 3 } {
