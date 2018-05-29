@@ -52,11 +52,11 @@ proc scan-ipa-dump { args } {
 proc scan-ipa-dump-times { args } {
 
     if { [llength $args] < 3 } {
-	error "scan-ipa-dump: too few arguments"
+	error "scan-ipa-dump-times: too few arguments"
 	return
     }
     if { [llength $args] > 4 } {
-	error "scan-ipa-dump: too many arguments"
+	error "scan-ipa-dump-times: too many arguments"
 	return
     }
     if { [llength $args] >= 4 } {

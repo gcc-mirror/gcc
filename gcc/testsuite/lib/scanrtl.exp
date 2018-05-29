@@ -54,11 +54,11 @@ force_conventional_output_for scan-rtl-dump
 proc scan-rtl-dump-times { args } {
 
     if { [llength $args] < 3 } {
-	error "scan-rtl-dump: too few arguments"
+	error "scan-rtl-dump-times: too few arguments"
 	return
     }
     if { [llength $args] > 4 } {
-	error "scan-rtl-dump: too many arguments"
+	error "scan-rtl-dump-times: too many arguments"
 	return
     }
     if { [llength $args] >= 4 } {
