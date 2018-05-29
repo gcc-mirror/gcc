@@ -1,5 +1,11 @@
 2018-05-29  Tom de Vries  <tom@codesourcery.com>
 
+	* lib/scanasm.exp (scan-stack-usage, scan-stack-usage-not)
+	(scan-ada-spec, scan-ada-spec-not, scan-lto-assembler):
+	Use proc name as first argument to dg-scan.
+
+2018-05-29  Tom de Vries  <tom@codesourcery.com>
+
 	* lib/scanasm.exp (scan-hidden, scan-not-hidden): Handle being called
 	with no arguments.
 
