@@ -5371,6 +5371,14 @@ of two vectors.  Operands 1 and 2 are vectors of the same mode having N
 floating point elements of size S@.  Operand 0 is the resulting vector
 in which 2*N elements of size N/2 are concatenated.
 
+@cindex @code{vec_packs_float_@var{m}} instruction pattern
+@cindex @code{vec_packu_float_@var{m}} instruction pattern
+@item @samp{vec_packs_float_@var{m}}, @samp{vec_packu_float_@var{m}}
+Narrow, convert to floating point type and merge the elements
+of two vectors.  Operands 1 and 2 are vectors of the same mode having N
+signed/unsigned integral elements of size S@.  Operand 0 is the resulting vector
+in which 2*N elements of size N/2 are concatenated.
+
 @cindex @code{vec_unpacks_hi_@var{m}} instruction pattern
 @cindex @code{vec_unpacks_lo_@var{m}} instruction pattern
 @item @samp{vec_unpacks_hi_@var{m}}, @samp{vec_unpacks_lo_@var{m}}
@@ -5398,6 +5406,20 @@ Extract, convert to floating point type and widen the high/low part of a
 vector of signed/unsigned integral elements.  The input vector (operand 1)
 has N elements of size S@.  Convert the high/low elements of the vector using
 floating point conversion and place the resulting N/2 values of size 2*S in
+the output vector (operand 0).
+
+@cindex @code{vec_unpack_sfix_trunc_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpack_sfix_trunc_lo_@var{m}} instruction pattern
+@cindex @code{vec_unpack_ufix_trunc_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpack_ufix_trunc_lo_@var{m}} instruction pattern
+@item @samp{vec_unpack_sfix_trunc_hi_@var{m}},
+@itemx @samp{vec_unpack_sfix_trunc_lo_@var{m}}
+@itemx @samp{vec_unpack_ufix_trunc_hi_@var{m}}
+@itemx @samp{vec_unpack_ufix_trunc_lo_@var{m}}
+Extract, convert to signed/unsigned integer type and widen the high/low part of a
+vector of floating point elements.  The input vector (operand 1)
+has N elements of size S@.  Convert the high/low elements of the vector
+to integers and place the resulting N/2 values of size 2*S in
 the output vector (operand 0).
 
 @cindex @code{vec_widen_umult_hi_@var{m}} instruction pattern

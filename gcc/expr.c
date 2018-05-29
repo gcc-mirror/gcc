@@ -9458,6 +9458,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
       {
 	op0 = expand_normal (treeop0);
 	temp = expand_widen_pattern_expr (ops, op0, NULL_RTX, NULL_RTX,
@@ -9496,6 +9498,18 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case VEC_PACK_FIX_TRUNC_EXPR:
       mode = TYPE_MODE (TREE_TYPE (treeop0));
       goto binop;
+
+    case VEC_PACK_FLOAT_EXPR:
+      mode = TYPE_MODE (TREE_TYPE (treeop0));
+      expand_operands (treeop0, treeop1,
+		       subtarget, &op0, &op1, EXPAND_NORMAL);
+      this_optab = optab_for_tree_code (code, TREE_TYPE (treeop0),
+					optab_default);
+      target = expand_binop (mode, this_optab, op0, op1, target,
+			     TYPE_UNSIGNED (TREE_TYPE (treeop0)),
+			     OPTAB_LIB_WIDEN);
+      gcc_assert (target);
+      return target;
 
     case VEC_PERM_EXPR:
       {

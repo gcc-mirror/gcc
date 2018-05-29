@@ -10249,10 +10249,10 @@ vect_is_simple_use (tree operand, vec_info *vinfo,
    vector form (i.e., when operating on arguments of type VECTYPE_IN
    producing a result of type VECTYPE_OUT).
 
-   Widening operations we currently support are NOP (CONVERT), FLOAT
-   and WIDEN_MULT.  This function checks if these operations are supported
-   by the target platform either directly (via vector tree-codes), or via
-   target builtins.
+   Widening operations we currently support are NOP (CONVERT), FLOAT,
+   FIX_TRUNC and WIDEN_MULT.  This function checks if these operations
+   are supported by the target platform either directly (via vector
+   tree-codes), or via target builtins.
 
    Output:
    - CODE1 and CODE2 are codes of vector operations to be used when
@@ -10382,10 +10382,9 @@ supportable_widening_operation (enum tree_code code, gimple *stmt,
       break;
 
     case FIX_TRUNC_EXPR:
-      /* ??? Not yet implemented due to missing VEC_UNPACK_FIX_TRUNC_HI_EXPR/
-	 VEC_UNPACK_FIX_TRUNC_LO_EXPR tree codes and optabs used for
-	 computing the operation.  */
-      return false;
+      c1 = VEC_UNPACK_FIX_TRUNC_LO_EXPR;
+      c2 = VEC_UNPACK_FIX_TRUNC_HI_EXPR;
+      break;
 
     default:
       gcc_unreachable ();
@@ -10493,8 +10492,8 @@ supportable_widening_operation (enum tree_code code, gimple *stmt,
    vector form (i.e., when operating on arguments of type VECTYPE_IN
    and producing a result of type VECTYPE_OUT).
 
-   Narrowing operations we currently support are NOP (CONVERT) and
-   FIX_TRUNC.  This function checks if these operations are supported by
+   Narrowing operations we currently support are NOP (CONVERT), FIX_TRUNC
+   and FLOAT.  This function checks if these operations are supported by
    the target platform directly via vector tree-codes.
 
    Output:
@@ -10535,9 +10534,8 @@ supportable_narrowing_operation (enum tree_code code,
       break;
 
     case FLOAT_EXPR:
-      /* ??? Not yet implemented due to missing VEC_PACK_FLOAT_EXPR
-	 tree code and optabs used for computing the operation.  */
-      return false;
+      c1 = VEC_PACK_FLOAT_EXPR;
+      break;
 
     default:
       gcc_unreachable ();
@@ -10565,6 +10563,9 @@ supportable_narrowing_operation (enum tree_code code,
     return (!VECTOR_BOOLEAN_TYPE_P (vectype)
 	    || known_eq (TYPE_VECTOR_SUBPARTS (vectype) * 2,
 			 TYPE_VECTOR_SUBPARTS (narrow_vectype)));
+
+  if (code == FLOAT_EXPR)
+    return false;
 
   /* Check if it's a multi-step conversion that can be done using intermediate
      types.  */

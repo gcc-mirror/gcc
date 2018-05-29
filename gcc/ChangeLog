@@ -1,3 +1,60 @@
+2018-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85918
+	* tree.def (VEC_UNPACK_FIX_TRUNC_HI_EXPR, VEC_UNPACK_FIX_TRUNC_LO_EXPR,
+	VEC_PACK_FLOAT_EXPR): New tree codes.
+	* tree-pretty-print.c (op_code_prio): Handle
+	VEC_UNPACK_FIX_TRUNC_HI_EXPR and VEC_UNPACK_FIX_TRUNC_LO_EXPR.
+	(dump_generic_node): Handle VEC_UNPACK_FIX_TRUNC_HI_EXPR,
+	VEC_UNPACK_FIX_TRUNC_LO_EXPR and VEC_PACK_FLOAT_EXPR.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* gimple-pretty-print.c (dump_binary_rhs): Handle VEC_PACK_FLOAT_EXPR.
+	* fold-const.c (const_binop): Likewise.
+	(const_unop): Handle VEC_UNPACK_FIX_TRUNC_HI_EXPR and
+	VEC_UNPACK_FIX_TRUNC_LO_EXPR.
+	* tree-cfg.c (verify_gimple_assign_unary): Likewise.
+	(verify_gimple_assign_binary): Handle VEC_PACK_FLOAT_EXPR.
+	* cfgexpand.c (expand_debug_expr): Handle VEC_UNPACK_FIX_TRUNC_HI_EXPR,
+	VEC_UNPACK_FIX_TRUNC_LO_EXPR and VEC_PACK_FLOAT_EXPR.
+	* expr.c (expand_expr_real_2): Likewise.
+	* optabs.def (vec_packs_float_optab, vec_packu_float_optab,
+	vec_unpack_sfix_trunc_hi_optab, vec_unpack_sfix_trunc_lo_optab,
+	vec_unpack_ufix_trunc_hi_optab, vec_unpack_ufix_trunc_lo_optab): New
+	optabs.
+	* optabs.c (expand_widen_pattern_expr): For
+	VEC_UNPACK_FIX_TRUNC_HI_EXPR and VEC_UNPACK_FIX_TRUNC_LO_EXPR use
+	sign from result type rather than operand's type.
+	(expand_binop_directly): For vec_packu_float_optab and
+	vec_packs_float_optab allow result type to be different from operand's
+	type.
+	* optabs-tree.c (optab_for_tree_code): Handle
+	VEC_UNPACK_FIX_TRUNC_HI_EXPR, VEC_UNPACK_FIX_TRUNC_LO_EXPR and
+	VEC_PACK_FLOAT_EXPR.  Formatting fixes.
+	* tree-vect-generic.c (expand_vector_operations_1):  Handle
+	VEC_UNPACK_FIX_TRUNC_HI_EXPR, VEC_UNPACK_FIX_TRUNC_LO_EXPR and
+	VEC_PACK_FLOAT_EXPR.
+	* tree-vect-stmts.c (supportable_widening_operation): Handle
+	FIX_TRUNC_EXPR.
+	(supportable_narrowing_operation): Handle FLOAT_EXPR.
+	* config/i386/i386.md (fixprefix, floatprefix): New code attributes.
+	* config/i386/sse.md (*float<floatunssuffix>v2div2sf2): Rename to ...
+	(float<floatunssuffix>v2div2sf2): ... this.  Formatting fix.
+	(vpckfloat_concat_mode, vpckfloat_temp_mode, vpckfloat_op_mode): New
+	mode attributes.
+	(vec_pack<floatprefix>_float_<mode>): New expander.
+	(vunpckfixt_mode, vunpckfixt_model, vunpckfixt_extract_mode): New mode
+	attributes.
+	(vec_unpack_<fixprefix>fix_trunc_lo_<mode>,
+	vec_unpack_<fixprefix>fix_trunc_hi_<mode>): New expanders.
+	* doc/md.texi (vec_packs_float_@var{m}, vec_packu_float_@var{m},
+	vec_unpack_sfix_trunc_hi_@var{m}, vec_unpack_sfix_trunc_lo_@var{m},
+	vec_unpack_ufix_trunc_hi_@var{m}, vec_unpack_ufix_trunc_lo_@var{m}):
+	Document.
+	* doc/generic.texi (VEC_UNPACK_FLOAT_HI_EXPR,
+	VEC_UNPACK_FLOAT_LO_EXPR): Fix pasto in description.
+	(VEC_UNPACK_FIX_TRUNC_HI_EXPR, VEC_UNPACK_FIX_TRUNC_LO_EXPR,
+	VEC_PACK_FLOAT_EXPR): Document.
+
 2018-05-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (struct vec_info): Add stmt_vec_infos

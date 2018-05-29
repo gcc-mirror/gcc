@@ -1622,6 +1622,7 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_FLOAT_EXPR:
       {
 	unsigned int HOST_WIDE_INT out_nelts, in_nelts, i;
 
@@ -1643,7 +1644,9 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 			? VECTOR_CST_ELT (arg1, i)
 			: VECTOR_CST_ELT (arg2, i - in_nelts));
 	    elt = fold_convert_const (code == VEC_PACK_TRUNC_EXPR
-				      ? NOP_EXPR : FIX_TRUNC_EXPR,
+				      ? NOP_EXPR
+				      : code == VEC_PACK_FLOAT_EXPR
+				      ? FLOAT_EXPR : FIX_TRUNC_EXPR,
 				      TREE_TYPE (type), elt);
 	    if (elt == NULL_TREE || !CONSTANT_CLASS_P (elt))
 	      return NULL_TREE;
@@ -1817,6 +1820,8 @@ const_unop (enum tree_code code, tree type, tree arg0)
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_FLOAT_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
       {
 	unsigned HOST_WIDE_INT out_nelts, in_nelts, i;
 	enum tree_code subcode;
@@ -1831,13 +1836,17 @@ const_unop (enum tree_code code, tree type, tree arg0)
 
 	unsigned int offset = 0;
 	if ((!BYTES_BIG_ENDIAN) ^ (code == VEC_UNPACK_LO_EXPR
-				   || code == VEC_UNPACK_FLOAT_LO_EXPR))
+				   || code == VEC_UNPACK_FLOAT_LO_EXPR
+				   || code == VEC_UNPACK_FIX_TRUNC_LO_EXPR))
 	  offset = out_nelts;
 
 	if (code == VEC_UNPACK_LO_EXPR || code == VEC_UNPACK_HI_EXPR)
 	  subcode = NOP_EXPR;
-	else
+	else if (code == VEC_UNPACK_FLOAT_LO_EXPR
+		 || code == VEC_UNPACK_FLOAT_HI_EXPR)
 	  subcode = FLOAT_EXPR;
+	else
+	  subcode = FIX_TRUNC_EXPR;
 
 	tree_vector_builder elts (type, out_nelts, 1);
 	for (i = 0; i < out_nelts; i++)
