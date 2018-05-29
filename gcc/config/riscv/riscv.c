@@ -2721,7 +2721,7 @@ riscv_handle_fndecl_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
-/* Return true if funcion TYPE is an interrupt function.  */
+/* Return true if function TYPE is an interrupt function.  */
 static bool
 riscv_interrupt_type_p (tree type)
 {

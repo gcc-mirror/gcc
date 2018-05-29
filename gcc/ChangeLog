@@ -1,3 +1,7 @@
+2018-05-29  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_interrupt_type): Fix comment typo.
+
 2018-05-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/85950
