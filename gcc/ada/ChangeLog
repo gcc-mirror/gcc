@@ -1,3 +1,7 @@
+2018-05-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* exp_ch4.adb (Expand_N_Op_Abs): Always do range check against 'First.
+
 2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Entities): Do not list the Linker_Section for

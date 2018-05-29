@@ -6956,8 +6956,7 @@ package body Exp_Ch4 is
 
       --  Deal with software overflow checking
 
-      if not Backend_Overflow_Checks_On_Target
-        and then Is_Signed_Integer_Type (Etype (N))
+      if Is_Signed_Integer_Type (Etype (N))
         and then Do_Overflow_Check (N)
       then
          --  The only case to worry about is when the argument is equal to the
