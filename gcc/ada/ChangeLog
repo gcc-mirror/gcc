@@ -1,3 +1,10 @@
+2018-05-29  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/a-calend.adb (Epoch_Offset): Move from body to ...
+	* libgnat/a-calend.ads (Epoch_Offset): to private part of spec
+	* libgnat/a-calcon.ads (To_Unix_Nano_Time): New function spec.
+	* libgnat/a-calcon.adb (To_Unix_Nano_Time): New function body.
+
 2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.ads (JSON format): Document new pair for components.
