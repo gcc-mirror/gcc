@@ -1,3 +1,9 @@
+2018-05-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Do not use new function from s-casuti yet.
+	This breaks build of cross compilers with older versions of GNAT, so
+	better avoid it.
+
 2018-05-29  Doug Rupp  <rupp@adacore.com>
 
 	* libgnarl/s-taprop.ads (Monotonic_Clock): Refine documentation to
