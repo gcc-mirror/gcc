@@ -1,3 +1,9 @@
+2018-05-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85883
+	* init.c (build_new): Handle deducing a class with new
+	with more than one argument.
+
 2018-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85952
