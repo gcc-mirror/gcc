@@ -676,6 +676,16 @@ package body Exp_Unst is
                   end loop;
                end;
 
+            elsif Nkind (N) = N_Handled_Sequence_Of_Statements
+              and then Present (At_End_Proc (N))
+            then
+
+               --  An At_End_Proc means there's a call from this block
+               --  to that subprogram.
+
+               Append_Unique_Call ((N, Current_Subprogram,
+                                     Entity (At_End_Proc (N))));
+
             --  Handle a 'Access as a (potential) call
 
             elsif Nkind (N) = N_Attribute_Reference then
@@ -850,10 +860,10 @@ package body Exp_Unst is
                  and then Chars (Enclosing_Subprogram (Ent)) /= Name_uParent
                  and then
 
-                   --  Constants, variables and exceptions are potentially
+                   --  Constants and variables are potentially
                    --  uplevel references to global declarations.
 
-                   (Ekind_In (Ent, E_Constant, E_Exception, E_Variable)
+                   (Ekind_In (Ent, E_Constant, E_Variable)
 
                      --  Formals are interesting, but not if being used as mere
                      --  names of parameters for name notation calls.
@@ -1817,6 +1827,7 @@ package body Exp_Unst is
          begin
             if Present (STT.ARECnF)
               and then Nkind (CTJ.N) /= N_Attribute_Reference
+              and then Nkind (CTJ.N) /= N_Handled_Sequence_Of_Statements
             then
                --  CTJ.N is a call to a subprogram which may require a pointer
                --  to an activation record. The subprogram containing the call
