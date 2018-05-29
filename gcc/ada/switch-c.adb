@@ -1227,12 +1227,10 @@ package body Switch.C is
                   Ptr := Ptr + 1;
                end loop;
 
-               if List_Representation_Info_To_JSON then
-                  if List_Representation_Info_To_File then
-                     Osint.Fail ("-gnatRs is incompatible with -gnatRj");
-                  elsif List_Representation_Info_Extended then
-                     Osint.Fail ("-gnatRe is incompatible with -gnatRj");
-                  end if;
+               if List_Representation_Info_To_JSON
+                 and then List_Representation_Info_Extended
+               then
+                  Osint.Fail ("-gnatRe is incompatible with -gnatRj");
                end if;
 
             --  -gnats (syntax check only)

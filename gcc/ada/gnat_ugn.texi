@@ -15041,16 +15041,16 @@ If the switch is followed by an @code{m} (e.g. @code{-gnatRm}), then
 subprogram conventions and parameter passing mechanisms for all the
 subprograms are included.
 
+If the switch is followed by a @code{j} (e.g., @code{-gnatRj}), then
+the output is in the JSON data interchange format specified by the
+ECMA-404 standard. The semantic description of this JSON output is
+available in the specification of the Repinfo unit present in the
+compiler sources.
+
 If the switch is followed by an @code{s} (e.g., @code{-gnatR3s}), then
 the output is to a file with the name @code{file.rep} where file is
-the name of the corresponding source file.
-
-If the switch is followed by a @code{j} (e.g., @code{-gnatR3j}), then
-the output is to a file with the name @code{file.json} where file is
-the name of the corresponding source file, and it uses the JSON data
-interchange format specified by the ECMA-404 standard. The semantic
-description of this JSON output is available in the specification of
-the Repinfo unit present in the compiler sources.
+the name of the corresponding source file, except if @cite{j`} is also
+specified, in which case the file name is @code{file.json}.
 
 Note that it is possible for record components to have zero size. In
 this case, the component clause uses an obvious extension of permitted
