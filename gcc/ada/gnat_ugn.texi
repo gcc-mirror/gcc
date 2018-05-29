@@ -23820,20 +23820,20 @@ Debian, Ubuntu: @code{libc6-dev} (normally installed by default).
 @end itemize
 
 If using the 32-bit version of GNAT on a 64-bit version of GNU/Linux,
-you'll need the 32-bit version of the glibc and glibc-devel packages:
+you'll need the 32-bit version of the following packages:
 
 
 @itemize *
 
 @item 
-RedHat, SUSE: @code{glibc.i686}, @code{glibc-devel.i686}
+RedHat, SUSE: @code{glibc.i686}, @code{glibc-devel.i686}, @code{ncurses-libs.i686}
 
 @item 
-Debian, Ubuntu: @code{libc6:i386}, @code{libc6-dev:i386}
+Debian, Ubuntu: @code{libc6:i386}, @code{libc6-dev:i386}, @code{lib32ncursesw5}
 @end itemize
 
 Other GNU/Linux distributions might be choosing a different name
-for that package.
+for those packages.
 
 @geindex Windows
 
