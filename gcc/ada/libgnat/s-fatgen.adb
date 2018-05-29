@@ -415,16 +415,7 @@ package body System.Fat_Gen is
 
       elsif X = T'First then
 
-         --  If not generating infinities, we raise a constraint error
-
-         if T'Machine_Overflows then
-            raise Constraint_Error with "Pred of largest negative number";
-
-         --  Otherwise generate a negative infinity
-
-         else
-            return X / (X - X);
-         end if;
+         raise Constraint_Error with "Pred of largest negative number";
 
       --  For infinities, return unchanged
 
@@ -671,14 +662,9 @@ package body System.Fat_Gen is
 
          --  If not generating infinities, we raise a constraint error
 
-         if T'Machine_Overflows then
-            raise Constraint_Error with "Succ of largest negative number";
+         raise Constraint_Error with "Succ of largest positive number";
 
          --  Otherwise generate a positive infinity
-
-         else
-            return X / (X - X);
-         end if;
 
       --  For infinities, return unchanged
 

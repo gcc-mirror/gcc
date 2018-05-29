@@ -1,3 +1,7 @@
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/float_attributes_overflows.adb: New testcase.
+
 2018-05-29  Pascal Obry  <obry@adacore.com>
 
 	* gnat.dg/normalize_pathname.adb: New testcase.
