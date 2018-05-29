@@ -8217,6 +8217,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree type = TREE_TYPE (to);
       tree as_base = CLASSTYPE_AS_BASE (type);
       tree arg = argarray[1];
+      location_t loc = EXPR_LOC_OR_LOC (arg, input_location);
 
       if (is_really_empty_class (type))
 	{
@@ -8226,6 +8227,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else if (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (as_base)))
 	{
+	  if (is_std_init_list (type)
+	      && conv_binds_ref_to_prvalue (convs[1]))
+	    warning_at (loc, OPT_Winit_list_lifetime,
+			"assignment from temporary initializer_list does not "
+			"extend the lifetime of the underlying array");
 	  arg = cp_build_fold_indirect_ref (arg);
 	  val = build2 (MODIFY_EXPR, TREE_TYPE (to), to, arg);
 	}

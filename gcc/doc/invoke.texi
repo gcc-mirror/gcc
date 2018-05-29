@@ -2909,6 +2909,51 @@ assignment operator is deprecated if the class has a user-provided
 copy constructor, copy assignment operator, or destructor, in C++11
 and up.  This warning is enabled by @option{-Wall}.
 
+@item -Wno-init-list-lifetime @r{(C++ and Objective-C++ only)}
+@opindex Winit-list-lifetime
+@opindex Wno-init-list-lifetime
+Do not warn about uses of @code{std::initializer_list} that are likely
+to result in dangling pointers.  Since the underlying array for an
+@code{initializer_list} is handled like a normal C++ temporary object,
+it is easy to inadvertently keep a pointer to the array past the end
+of the array's lifetime.  For example:
+
+@itemize @bullet
+@item
+If a function returns a temporary @code{initializer_list}, or a local
+@code{initializer_list} variable, the array's lifetime ends at the end
+of the return statement, so the value returned has a dangling pointer.
+
+@item
+If a new-expression creates an @code{initializer_list}, the array only
+lives until the end of the enclosing full-expression, so the
+@code{initializer_list} in the heap has a dangling pointer.
+
+@item
+When an @code{initializer_list} variable is assigned from a
+brace-enclosed initializer list, the temporary array created for the
+right side of the assignment only lives until the end of the
+full-expression, so at the next statement the @code{initializer_list}
+variable has a dangling pointer.
+
+@smallexample
+// li's initial underlying array lives as long as li
+std::initializer_list<int> li = @{ 1,2,3 @};
+// assignment changes li to point to a temporary array
+li = @{ 4, 5 @};
+// now the temporary is gone and li has a dangling pointer
+int i = li.begin()[0] // undefined behavior
+@end smallexample
+
+@item
+When a list constructor stores the @code{begin} pointer from the
+@code{initializer_list} argument, this doesn't extend the lifetime of
+the array, so if a class variable is constructed from a temporary
+@code{initializer_list}, the pointer is left dangling by the end of
+the variable declaration statement.
+
+@end itemize
+
 @item -Wliteral-suffix @r{(C++ and Objective-C++ only)}
 @opindex Wliteral-suffix
 @opindex Wno-literal-suffix
