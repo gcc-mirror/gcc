@@ -1789,9 +1789,12 @@ a value from @code{enum annot_expr_kind}, the third is an @code{INTEGER_CST}.
 @tindex VEC_UNPACK_LO_EXPR
 @tindex VEC_UNPACK_FLOAT_HI_EXPR
 @tindex VEC_UNPACK_FLOAT_LO_EXPR
+@tindex VEC_UNPACK_FIX_TRUNC_HI_EXPR
+@tindex VEC_UNPACK_FIX_TRUNC_LO_EXPR
 @tindex VEC_PACK_TRUNC_EXPR
 @tindex VEC_PACK_SAT_EXPR
 @tindex VEC_PACK_FIX_TRUNC_EXPR
+@tindex VEC_PACK_FLOAT_EXPR
 @tindex VEC_COND_EXPR
 @tindex SAD_EXPR
 
@@ -1846,9 +1849,21 @@ where the values are converted from fixed point to floating point.  The
 single operand is a vector that contains @code{N} elements of the same
 integral type.  The result is a vector that contains half as many elements
 of a floating point type whose size is twice as wide.  In the case of
-@code{VEC_UNPACK_HI_EXPR} the high @code{N/2} elements of the vector are
-extracted, converted and widened.  In the case of @code{VEC_UNPACK_LO_EXPR}
+@code{VEC_UNPACK_FLOAT_HI_EXPR} the high @code{N/2} elements of the vector are
+extracted, converted and widened.  In the case of @code{VEC_UNPACK_FLOAT_LO_EXPR}
 the low @code{N/2} elements of the vector are extracted, converted and widened.
+
+@item VEC_UNPACK_FIX_TRUNC_HI_EXPR
+@itemx VEC_UNPACK_FIX_TRUNC_LO_EXPR
+These nodes represent unpacking of the high and low parts of the input vector,
+where the values are truncated from floating point to fixed point.  The
+single operand is a vector that contains @code{N} elements of the same
+floating point type.  The result is a vector that contains half as many
+elements of an integral type whose size is twice as wide.  In the case of
+@code{VEC_UNPACK_FIX_TRUNC_HI_EXPR} the high @code{N/2} elements of the
+vector are extracted and converted with truncation.  In the case of
+@code{VEC_UNPACK_FIX_TRUNC_LO_EXPR} the low @code{N/2} elements of the
+vector are extracted and converted with truncation.
 
 @item VEC_PACK_TRUNC_EXPR
 This node represents packing of truncated elements of the two input vectors
@@ -1874,6 +1889,14 @@ of elements of a floating point type.  The result is a vector that contains
 twice as many elements of an integral type whose size is half as wide.  The
 elements of the two vectors are merged (concatenated) to form the output
 vector.
+
+@item VEC_PACK_FLOAT_EXPR
+This node represents packing of elements of the two input vectors into the
+output vector, where the values are converted from fixed point to floating
+point.  Input operands are vectors that contain the same number of elements
+of an integral type.  The result is a vector that contains twice as many
+elements of floating point type whose size is half as wide.  The elements of
+the two vectors are merged (concatenated) to form the output vector.
 
 @item VEC_COND_EXPR
 These nodes represent @code{?:} expressions.  The three operands must be

@@ -429,6 +429,7 @@ dump_binary_rhs (pretty_printer *buffer, gassign *gs, int spc,
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_FLOAT_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
     case VEC_SERIES_EXPR:

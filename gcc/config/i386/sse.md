@@ -4887,9 +4887,9 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*float<floatunssuffix>v2div2sf2"
+(define_insn "float<floatunssuffix>v2div2sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
-    (vec_concat:V4SF
+	(vec_concat:V4SF
 	    (any_float:V2SF (match_operand:V2DI 1 "nonimmediate_operand" "vm"))
 	    (const_vector:V2SF [(const_int 0) (const_int 0)])))]
   "TARGET_AVX512DQ && TARGET_AVX512VL"
@@ -4897,6 +4897,33 @@
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "V4SF")])
+
+(define_mode_attr vpckfloat_concat_mode
+  [(V8DI "v16sf") (V4DI "v8sf") (V2DI "v8sf")])
+(define_mode_attr vpckfloat_temp_mode
+  [(V8DI "V8SF") (V4DI "V4SF") (V2DI "V4SF")])
+(define_mode_attr vpckfloat_op_mode
+  [(V8DI "v8sf") (V4DI "v4sf") (V2DI "v2sf")])
+
+(define_expand "vec_pack<floatprefix>_float_<mode>"
+  [(match_operand:<ssePSmode> 0 "register_operand")
+   (any_float:<ssePSmode>
+     (match_operand:VI8_AVX512VL 1 "register_operand"))
+   (match_operand:VI8_AVX512VL 2 "register_operand")]
+  "TARGET_AVX512DQ"
+{
+  rtx r1 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
+  rtx r2 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
+  rtx (*gen) (rtx, rtx) = gen_float<floatunssuffix><mode><vpckfloat_op_mode>2;
+  emit_insn (gen (r1, operands[1]));
+  emit_insn (gen (r2, operands[2]));
+  if (<MODE>mode == V2DImode)
+    emit_insn (gen_sse_movlhps (operands[0], r1, r2));
+  else
+    emit_insn (gen_avx_vec_concat<vpckfloat_concat_mode> (operands[0],
+							  r1, r2));
+  DONE;
+})
 
 (define_insn "float<floatunssuffix>v2div2sf2_mask"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
@@ -5176,6 +5203,56 @@
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
+
+(define_mode_attr vunpckfixt_mode
+  [(V16SF "V8DI") (V8SF "V4DI") (V4SF "V2DI")])
+(define_mode_attr vunpckfixt_model
+  [(V16SF "v8di") (V8SF "v4di") (V4SF "v2di")])
+(define_mode_attr vunpckfixt_extract_mode
+  [(V16SF "v16sf") (V8SF "v8sf") (V4SF "v8sf")])
+
+(define_expand "vec_unpack_<fixprefix>fix_trunc_lo_<mode>"
+  [(match_operand:<vunpckfixt_mode> 0 "register_operand")
+   (any_fix:<vunpckfixt_mode>
+     (match_operand:VF1_AVX512VL 1 "register_operand"))]
+  "TARGET_AVX512DQ"
+{
+  rtx tem = operands[1];
+  if (<MODE>mode != V4SFmode)
+    {
+      tem = gen_reg_rtx (<ssehalfvecmode>mode);
+      emit_insn (gen_vec_extract_lo_<vunpckfixt_extract_mode> (tem,
+							       operands[1]));
+    }
+  rtx (*gen) (rtx, rtx)
+    = gen_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
+  emit_insn (gen (operands[0], tem));
+  DONE;
+})
+
+(define_expand "vec_unpack_<fixprefix>fix_trunc_hi_<mode>"
+  [(match_operand:<vunpckfixt_mode> 0 "register_operand")
+   (any_fix:<vunpckfixt_mode>
+     (match_operand:VF1_AVX512VL 1 "register_operand"))]
+  "TARGET_AVX512DQ"
+{
+  rtx tem;
+  if (<MODE>mode != V4SFmode)
+    {
+      tem = gen_reg_rtx (<ssehalfvecmode>mode);
+      emit_insn (gen_vec_extract_hi_<vunpckfixt_extract_mode> (tem,
+							       operands[1]));
+    }
+  else
+    {
+      tem = gen_reg_rtx (V4SFmode);
+      emit_insn (gen_avx_vpermilv4sf (tem, operands[1], GEN_INT (0x4e)));
+    }
+  rtx (*gen) (rtx, rtx)
+    = gen_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
+  emit_insn (gen (operands[0], tem));
+  DONE;
+})
 
 (define_insn "ufix_trunc<mode><sseintvecmodelower>2<mask_name>"
   [(set (match_operand:<sseintvecmode> 0 "register_operand" "=v")

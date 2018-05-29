@@ -3924,9 +3924,12 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
     case VEC_UNPACK_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
     case VEC_UNPACK_FLOAT_LO_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_FLOAT_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
     case VEC_DUPLICATE_EXPR:

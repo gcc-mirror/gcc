@@ -1,3 +1,14 @@
+2018-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85918
+	* gcc.target/i386/avx512dq-pr85918.c: Add -mprefer-vector-width=512
+	and -fno-vect-cost-model options.  Add aligned(64) attribute to the
+	arrays.  Add suffix 1 to all functions and use 4 iterations rather
+	than N.  Add functions with conversions to and from float.
+	Add new set of functions with 8 iterations and another one
+	with 16 iterations, expect 24 vectorized loops instead of just 4.
+	* gcc.target/i386/avx512dq-pr85918-2.c: New test.
+
 2018-05-29  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/equal2.adb: New testcase.
