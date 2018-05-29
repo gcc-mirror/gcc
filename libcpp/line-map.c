@@ -357,17 +357,25 @@ linemap_init (struct line_maps *set,
   set->builtin_location = builtin_location;
 }
 
+/* Return the ordinary line map from whence MAP was included.  Returns
+   NULL if MAP was not an included.  */
+
+const line_map_ordinary *
+linemap_included_at (line_maps *set, const line_map_ordinary *map)
+{
+  return linemap_ordinary_map_lookup (set, INCLUDED_AT (map));
+}
+
 /* Check for and warn about line_maps entered but not exited.  */
 
 void
 linemap_check_files_exited (struct line_maps *set)
 {
-  const line_map_ordinary *map;
   /* Depending upon whether we are handling preprocessed input or
      not, this can be a user error or an ICE.  */
-  for (map = LINEMAPS_LAST_ORDINARY_MAP (set);
+  for (const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (set);
        ! MAIN_FILE_P (map);
-       map = INCLUDED_FROM (set, map))
+       map = linemap_included_at (set, map))
     fprintf (stderr, "line-map.c: file \"%s\" entered but not left\n",
 	     ORDINARY_MAP_FILE_NAME (map));
 }
@@ -461,6 +469,17 @@ new_linemap (struct line_maps *set,
   return result;
 }
 
+/* Return the location of the last source line within an ordinary
+   map.  */
+inline source_location
+LAST_SOURCE_LINE_LOCATION (const line_map_ordinary *map)
+{
+  return (((map[1].start_location - 1
+	    - map->start_location)
+	   & ~((1 << map->m_column_and_range_bits) - 1))
+	  + map->start_location);
+}
+
 /* Add a mapping of logical source line to physical source file and
    line number.
 
@@ -518,19 +537,19 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   if (reason == LC_RENAME_VERBATIM)
     reason = LC_RENAME;
 
+  const line_map_ordinary *from = NULL;
   if (reason == LC_LEAVE)
     {
       /* When we are just leaving an "included" file, and jump to the next
 	 location inside the "includer" right after the #include
 	 "included", this variable points the map in use right before the
 	 #include "included", inside the same "includer" file.  */
-      line_map_ordinary *from;
 
       linemap_assert (!MAIN_FILE_P (map - 1));
       /* (MAP - 1) points to the map we are leaving. The
 	 map from which (MAP - 1) got included should be the map
 	 that comes right before MAP in the same file.  */
-      from = INCLUDED_FROM (set, map - 1);
+      from = linemap_included_at (set, map - 1);
 
       /* A TO_FILE of NULL is special - we use the natural values.  */
       if (to_file == NULL)
@@ -563,19 +582,20 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 
   if (reason == LC_ENTER)
     {
-      map->included_from =
-	set->depth == 0 ? -1 : (int) (LINEMAPS_ORDINARY_USED (set) - 2);
+      if (set->depth == 0)
+	map->included_at = 0;
+      else
+	map->included_at = LAST_SOURCE_LINE_LOCATION (map - 1);
       set->depth++;
       if (set->trace_includes)
 	trace_include (set, map);
     }
   else if (reason == LC_RENAME)
-    map->included_from = ORDINARY_MAP_INCLUDER_FILE_INDEX (&map[-1]);
+    map->included_at = INCLUDED_AT (&map[-1]);
   else if (reason == LC_LEAVE)
     {
       set->depth--;
-      map->included_from =
-	ORDINARY_MAP_INCLUDER_FILE_INDEX (INCLUDED_FROM (set, map - 1));
+      map->included_at = INCLUDED_AT (from);
     }
 
   return map;
@@ -1794,17 +1814,12 @@ linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
   if (!is_macro)
     {
       const line_map_ordinary *ord_map = linemap_check_ordinary (map);
-      unsigned includer_ix;
-      const line_map_ordinary *includer_map;
-
-      includer_ix = ORDINARY_MAP_INCLUDER_FILE_INDEX (ord_map);
-      includer_map = includer_ix < LINEMAPS_ORDINARY_USED (set)
-		     ? LINEMAPS_ORDINARY_MAP_AT (set, includer_ix)
-		     : NULL;
+      const line_map_ordinary *includer_map = linemap_included_at (set, ord_map);
 
       fprintf (stream, "File: %s:%d\n", ORDINARY_MAP_FILE_NAME (ord_map),
 	       ORDINARY_MAP_STARTING_LINE_NUMBER (ord_map));
-      fprintf (stream, "Included from: [%d] %s\n", includer_ix,
+      fprintf (stream, "Included from: [%d] %s\n",
+	       includer_map ? int (includer_map - set->info_ordinary.maps) : -1,
 	       includer_map ? ORDINARY_MAP_FILE_NAME (includer_map) : "None");
     }
   else
@@ -1854,9 +1869,10 @@ linemap_dump_location (struct line_maps *set,
       if (e)
 	from = "N/A";
       else
-	from = (INCLUDED_FROM (set, map))
-	  ? LINEMAP_FILE (INCLUDED_FROM (set, map))
-	  : "<NULL>";
+	{
+	  const line_map_ordinary *from_map = linemap_included_at (set, map);
+	  from = from_map ? LINEMAP_FILE (from_map) : "<NULL>";
+	}
     }
 
   /* P: path, L: line, C: column, S: in-system-header, M: map address,

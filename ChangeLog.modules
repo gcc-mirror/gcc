@@ -1,5 +1,28 @@
 2018-05-29  Nathan Sidwell  <nathan@acm.org>
 
+	Included from index becomes included_at location
+	libcpp/
+	* include/line-map.h (line_map_ordinary): Replace included_from
+	index with included_at source_location.
+	(ORDINARY_MAP_INCLUDER_FILE_INDEX, LAST_SOURCE_LINE_LOCATION)
+	(LAST_SOURCE_LINE, LAST_SOURCE_COLUMN): Delete.
+	(INCUDED_FROM): Delete.
+	(INCLUDED_AT, linemap_included_at): New.
+	(MAIN_FILE_P): Adjust.
+	* directives.c (do_linemarker): Use linemap_included_at.
+	* line-map.c (include_at_map): New.
+	(line_check_files_exited): Use it.
+	(LAST_SOURCE_LINE_LOCATION): New (moved from header).
+	(linemap_add, linemap_dump, linemap_dump_location): Adjust.
+	gcc/
+	* diagnostic.c (diagnostic_report_current_module): Use
+	linemap_included_at.  Adjust line & col discovery.
+	gcc/c-family/
+	* c-common.c (try_to_locate_new_include_insertion_point): Use
+	linemap_included_at.
+	* c-lex.c (fe_file_change): Use INCLUDED_AT.
+	* c-ppoutput.c (pp_file_change): Likewise.
+
 	libcpp/
 	* include/line-map.h (enum lc_reason): Add LC_HWM, LC_CXX_MODULE.
 	* line-map.c (linemap_dump): Adjust.

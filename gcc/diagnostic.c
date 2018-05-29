@@ -596,11 +596,12 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 	  bool first = true;
 	  do
 	    {
-	      map = INCLUDED_FROM (line_table, map);
+	      where = INCLUDED_AT (map);
+	      map = linemap_included_at (line_table, map);
 	      const char *line_col
-		= maybe_line_and_column (LAST_SOURCE_LINE (map),
+		= maybe_line_and_column (SOURCE_LINE (map, where),
 					 first && context->show_column
-					 ? LAST_SOURCE_COLUMN (map) : 0);
+					 ? SOURCE_COLUMN (map, where) : 0);
 	      pp_verbatim (context->printer, "%s %r%s%s%R",
 			   first ? "In file included from"
 			      : ",\n                 from",
