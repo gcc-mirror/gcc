@@ -743,8 +743,6 @@ package body Einfo is
    function Activation_Record_Component (Id : E) return E is
    begin
       pragma Assert (Ekind_In (Id, E_Constant,
-                                   E_Discriminant,
-                                   E_Exception,
                                    E_In_Parameter,
                                    E_In_Out_Parameter,
                                    E_Loop_Parameter,
@@ -3958,8 +3956,6 @@ package body Einfo is
    procedure Set_Activation_Record_Component (Id : E; V : E) is
    begin
       pragma Assert (Ekind_In (Id, E_Constant,
-                                   E_Discriminant,
-                                   E_Exception,
                                    E_In_Parameter,
                                    E_In_Out_Parameter,
                                    E_Loop_Parameter,

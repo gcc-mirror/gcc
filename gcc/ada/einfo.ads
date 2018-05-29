@@ -364,12 +364,10 @@ package Einfo is
 --       the IP routine to avoid performing this elaboration twice.
 
 --    Activation_Record_Component (Node31)
---       Defined in E_Variable, E_Constant, E_Discriminant, E_Loop_Parameter,
---       E_In_Parameter, E_Out_Parameter, E_In_Out_Parameter nodes. Used only
---       if we are in Opt.Unnest_Subprogram_Mode, in which case for the case of
---       an uplevel referenced entity, this field contains the entity for the
---       component in the generated ARECnT activation record (Exp_Unst for
---       details).
+--       Defined for E_Variable, E_Constant, E_Loop_Parameter, and formal
+--       parameter entities. Used in Opt.Unnest_Subprogram_Mode, in which case
+--       a reference to an uplevel entity produces a corresponding component
+--       in the generated ARECnT activation record (Exp_Unst for details).
 
 --    Actual_Subtype (Node17)
 --       Defined in variables, constants, and formal parameters. This is the
@@ -3535,7 +3533,7 @@ package Einfo is
 --       to the freeze point because of the rule about overriding Initialize).
 
 --    Needs_Activation_Record (Flag306)
---       Defined on access_to_subprogram types. Indicates that a call through
+--       Defined on generated subprogram types. Indicates that a call through
 --       a named or anonymous access to subprogram requires an activation
 --       record when compiling with unnesting for C or LLVM.
 
