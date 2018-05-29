@@ -125,11 +125,13 @@ proc scan-hidden { args } {
     set filename [lindex $testcase 0]
     set output_file "[file rootname [file tail $filename]].s"
 
-    set symbol [lindex $args 0]
+    if { [llength $args] > 0 } {
+	set symbol [lindex $args 0]
 
-    set hidden_scan [hidden-scan-for $symbol]
+	set hidden_scan [hidden-scan-for $symbol]
 
-    set args [lreplace $args 0 0 "$hidden_scan"]
+	set args [lreplace $args 0 0 "$hidden_scan"]
+    }
 
     dg-scan "scan-hidden" 1 $testcase $output_file $args
 }
@@ -143,10 +145,12 @@ proc scan-not-hidden { args } {
     set filename [lindex $testcase 0]
     set output_file "[file rootname [file tail $filename]].s"
 
-    set symbol [lindex $args 0]
-    set hidden_scan [hidden-scan-for $symbol]
+    if { [llength $args] > 0 } {
+	set symbol [lindex $args 0]
+	set hidden_scan [hidden-scan-for $symbol]
 
-    set args [lreplace $args 0 0 "$hidden_scan"]
+	set args [lreplace $args 0 0 "$hidden_scan"]
+    }
 
     dg-scan "scan-not-hidden" 0 $testcase $output_file $args
 }

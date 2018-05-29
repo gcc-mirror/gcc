@@ -1,3 +1,8 @@
+2018-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/scanasm.exp (scan-hidden, scan-not-hidden): Handle being called
+	with no arguments.
+
 2018-05-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85934
