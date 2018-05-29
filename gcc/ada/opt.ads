@@ -1003,6 +1003,12 @@ package Opt is
    --  of stdout. For example, if file x.adb is compiled using -gnatR2s then
    --  representation info is written to x.adb.ref.
 
+   List_Representation_Info_To_JSON : Boolean := False;
+   --  GNAT
+   --  Set true by -gnatRj switch. Causes information from -gnatR/1/2/3/m to be
+   --  written to file.json (where file is the name of the source file) in the
+   --  JSON data interchange format.
+
    List_Representation_Info_Mechanisms : Boolean := False;
    --  GNAT
    --  Set true by -gnatRm switch. Causes information on mechanisms to be

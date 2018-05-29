@@ -1,5 +1,34 @@
 2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (Alphabetical
+	List of All Switches): Document -gnatRj.
+	(Debugging Control): Likewise.
+	* gnat_ugn.texi: Regenerate.
+	* opt.ads (List_Representation_Info_To_JSON): New boolean variable.
+	* osint-c.adb (Create_Repinfo_File): Use the .json instead of .rep
+	extension if List_Representation_Info_To_JSON is true.
+	* repinfo.ads: Document the JSON output format.
+	* repinfo.adb (List_Location): New procedure.
+	(List_Array_Info): Add support for JSON output.
+	(List_Entities): Likewise.
+	(Unop): Likewise.
+	(Binop): Likewise.
+	(Print_Expr): Likewise.
+	(List_Linker_Section): Likewise.
+	(List_Mechanisms): Likewise.
+	(List_Name): Likewise.
+	(List_Object_Info): Likewise.
+	(List_Record_Info): Likewise.
+	(List_Component_Layout): Likewise.  Add Indent parameter.
+	(List_Structural_Record_Layout): New procedure.
+	(List_Attr): Add support for JSON output.
+	(List_Type_Info): Likewise.
+	(Write_Unknown_Val): Likewise.
+	* switch-c.adb (Scan_Front_End_Switches) <R>: Deal with 'j'.
+	* usage.adb (Usage): List -gnatRj.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* repinfo.adb (List_Component_Layout): New procedure extracted from...
 	(List_Record_Layout): ...here.  Invoke it.
 

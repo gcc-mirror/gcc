@@ -2024,7 +2024,7 @@ Alphabetical List of All Switches
 
 .. index:: -gnatR  (gcc)
 
-:switch:`-gnatR[0/1/2/3][e][m][s]`
+:switch:`-gnatR[0|1|2|3][e][j][m][s]`
   Output representation information for declared types, objects and
   subprograms. Note that this switch is not allowed if a previous
   :switch:`-gnatD` switch has been given, since these two switches
@@ -5786,7 +5786,7 @@ Debugging Control
 
 .. index:: -gnatR  (gcc)
 
-:switch:`-gnatR[0|1|2|3][e][m][s]`
+:switch:`-gnatR[0|1|2|3][e][j][m][s]`
   This switch controls output from the compiler of a listing showing
   representation information for declared types, objects and subprograms.
   For :switch:`-gnatR0`, no information is output (equivalent to omitting
@@ -5816,6 +5816,13 @@ Debugging Control
   If the switch is followed by an ``s`` (e.g., :switch:`-gnatR3s`), then
   the output is to a file with the name :file:`file.rep` where file is
   the name of the corresponding source file.
+
+  If the switch is followed by a ``j`` (e.g., :switch:`-gnatR3j`), then
+  the output is to a file with the name :file:`file.json` where file is
+  the name of the corresponding source file, and it uses the JSON data
+  interchange format specified by the ECMA-404 standard. The semantic
+  description of this JSON output is available in the specification of
+  the Repinfo unit present in the compiler sources.
 
   Note that it is possible for record components to have zero size. In
   this case, the component clause uses an obvious extension of permitted
