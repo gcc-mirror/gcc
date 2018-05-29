@@ -1,3 +1,9 @@
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer_Call): Attach to tree the reference to
+	the finalizer procedure in the At_End handler, for use in LLVM
+	generation.
+
 2018-05-29  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Op_Eq, Expand_Composite_Equality): Use the new
