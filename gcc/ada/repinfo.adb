@@ -408,7 +408,12 @@ package body Repinfo is
             --  info for the full view). If debug flag A is set, then all
             --  entities are listed
 
-            if (Comes_From_Source (E)
+            if ((Comes_From_Source (E)
+                   or else (Ekind (E) = E_Block
+                              and then
+                            Nkind (Parent (E)) = N_Implicit_Label_Declaration
+                              and then
+                            Comes_From_Source (Label_Construct (Parent (E)))))
               and then not Is_Incomplete_Or_Private_Type (E)
               and then not (Ekind (E) = E_Constant
                               and then Present (Full_View (E))))
