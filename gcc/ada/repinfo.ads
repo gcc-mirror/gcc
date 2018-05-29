@@ -141,48 +141,143 @@ package Repinfo is
    --  tree.def. Only a subset of these tree codes can actually appear.
    --  The names are the names from tree.def in Ada casing.
 
-   --  name                             code   description           operands
+   --  name                             code   description     operands  symbol
 
-   Cond_Expr        : constant TCode :=  1; -- conditional              3
-   Plus_Expr        : constant TCode :=  2; -- addition                 2
-   Minus_Expr       : constant TCode :=  3; -- subtraction              2
-   Mult_Expr        : constant TCode :=  4; -- multiplication           2
-   Trunc_Div_Expr   : constant TCode :=  5; -- truncating division      2
-   Ceil_Div_Expr    : constant TCode :=  6; -- division rounding up     2
-   Floor_Div_Expr   : constant TCode :=  7; -- division rounding down   2
-   Trunc_Mod_Expr   : constant TCode :=  8; -- mod for trunc_div        2
-   Ceil_Mod_Expr    : constant TCode :=  9; -- mod for ceil_div         2
-   Floor_Mod_Expr   : constant TCode := 10; -- mod for floor_div        2
-   Exact_Div_Expr   : constant TCode := 11; -- exact division           2
-   Negate_Expr      : constant TCode := 12; -- negation                 1
-   Min_Expr         : constant TCode := 13; -- minimum                  2
-   Max_Expr         : constant TCode := 14; -- maximum                  2
-   Abs_Expr         : constant TCode := 15; -- absolute value           1
-   Truth_And_Expr   : constant TCode := 16; -- boolean and              2
-   Truth_Or_Expr    : constant TCode := 17; -- boolean or               2
-   Truth_Xor_Expr   : constant TCode := 18; -- boolean xor              2
-   Truth_Not_Expr   : constant TCode := 19; -- boolean not              1
-   Lt_Expr          : constant TCode := 20; -- comparison <             2
-   Le_Expr          : constant TCode := 21; -- comparison <=            2
-   Gt_Expr          : constant TCode := 22; -- comparison >             2
-   Ge_Expr          : constant TCode := 23; -- comparison >=            2
-   Eq_Expr          : constant TCode := 24; -- comparison =             2
-   Ne_Expr          : constant TCode := 25; -- comparison /=            2
-   Bit_And_Expr     : constant TCode := 26; -- bitwise and              2
+   Cond_Expr        : constant TCode :=  1; -- conditional          3      ?<>
+   Plus_Expr        : constant TCode :=  2; -- addition             2        +
+   Minus_Expr       : constant TCode :=  3; -- subtraction          2        -
+   Mult_Expr        : constant TCode :=  4; -- multiplication       2        *
+   Trunc_Div_Expr   : constant TCode :=  5; -- truncating div       2       /t
+   Ceil_Div_Expr    : constant TCode :=  6; -- div rounding up      2       /c
+   Floor_Div_Expr   : constant TCode :=  7; -- div rounding down    2       /f
+   Trunc_Mod_Expr   : constant TCode :=  8; -- mod for trunc_div    2     modt
+   Ceil_Mod_Expr    : constant TCode :=  9; -- mod for ceil_div     2     modc
+   Floor_Mod_Expr   : constant TCode := 10; -- mod for floor_div    2     modf
+   Exact_Div_Expr   : constant TCode := 11; -- exact div            2       /e
+   Negate_Expr      : constant TCode := 12; -- negation             1        -
+   Min_Expr         : constant TCode := 13; -- minimum              2      min
+   Max_Expr         : constant TCode := 14; -- maximum              2      max
+   Abs_Expr         : constant TCode := 15; -- absolute value       1      abs
+   Truth_And_Expr   : constant TCode := 16; -- boolean and          2      and
+   Truth_Or_Expr    : constant TCode := 17; -- boolean or           2       or
+   Truth_Xor_Expr   : constant TCode := 18; -- boolean xor          2      xor
+   Truth_Not_Expr   : constant TCode := 19; -- boolean not          1      not
+   Lt_Expr          : constant TCode := 20; -- comparison <         2        <
+   Le_Expr          : constant TCode := 21; -- comparison <=        2       <=
+   Gt_Expr          : constant TCode := 22; -- comparison >         2        >
+   Ge_Expr          : constant TCode := 23; -- comparison >=        2       >=
+   Eq_Expr          : constant TCode := 24; -- comparison =         2       ==
+   Ne_Expr          : constant TCode := 25; -- comparison /=        2       !=
+   Bit_And_Expr     : constant TCode := 26; -- bitwise and          2        &
 
    --  The following entry is used to represent a discriminant value in
    --  the tree. It has a special tree code that does not correspond
    --  directly to a GCC node. The single operand is the index number
    --  of the discriminant in the record (1 = first discriminant).
 
-   Discrim_Val      : constant TCode :=  0;  -- discriminant value      1
+   Discrim_Val      : constant TCode :=  0;  -- discriminant value  1        #
 
    --  The following entry is used to represent a value not known at
    --  compile time in the tree, other than a discriminant value. It
    --  has a special tree code that does not correspond directly to
    --  a GCC node. The single operand is an arbitrary index number.
 
-   Dynamic_Val      : constant TCode := 27;  -- dynamic value           1
+   Dynamic_Val      : constant TCode := 27;  -- dynamic value       1      var
+
+   ----------------------------
+   -- The JSON output format --
+   ----------------------------
+
+   --  The representation information can be output to a file in the JSON
+   --  data interchange format specified by the ECMA-404 standard. In the
+   --  following description, the terminology is that of the JSON syntax
+   --  from the ECMA document and of the JSON grammar from www.json.org.
+
+   --  The output is a concatenation of entities
+
+   --  An entity is an object whose members are pairs taken from:
+
+   --    "name"                 :  string
+   --    "location"             :  string
+   --    "record"               :  array of components
+   --    "variant"              :  array of variants
+   --    "formal"               :  array of formal parameters
+   --    "mechanism"            :  string
+   --    "Size"                 :  numerical expression
+   --    "Object_Size"          :  numerical expression
+   --    "Value_Size"           :  numerical expression
+   --    "Component_Size"       :  numerical expression
+   --    "Range"                :  array of numbers
+   --    "Small"                :  number
+   --    "Alignment"            :  number
+   --    "Convention"           :  string
+   --    "Linker_Section"       :  string
+   --    "Bit_Order"            :  string
+   --    "Scalar_Storage_Order" :  string
+
+   --    "name" and "location" are present for every entity and come from the
+   --    declaration of the associated Ada entity. The value of "name" is the
+   --    fully qualified Ada name. The value of "location" is the expanded
+   --    chain of instantiation locations that contains the entity.
+   --    "record" is present for every record type and its value is the list of
+   --    components. "variant" is present only if the record type has a variant
+   --    part and its value is the list of variants.
+   --    "formal" is present for every subprogram and entry, and its value is
+   --    the list of formal parameters. "mechanism" is present for functions
+   --    only and its value is the return mechanim.
+   --    The other pairs may be present when the eponymous aspect/attribute is
+   --    defined for the Ada entity, and their value is set by the language.
+
+   --  A component is an object whose members are pairs taken from:
+
+   --    "name"                 :  string
+   --    "Position"             :  numerical expression
+   --    "First_Bit"            :  number
+   --    "Size"                 :  numerical expression
+
+   --    The four pairs are present for every component. "name" comes from the
+   --    declaration of the component in the record type and its value is the
+   --    unqualified Ada name. The other three pairs come from the layout of
+   --    the type and their value is that of the eponymous attribute set by
+   --    the language.
+
+   --  A variant is an object whose members are pairs taken from:
+
+   --    "present"              :  numerical expression
+   --    "record"               :  array of components
+   --    "variant"              :  array of variants
+
+   --    "present" and "record" are present for every variant. The value of
+   --    "present" is a boolean expression that evaluates to true when the
+   --    components of the variant are contained in the record type and to
+   --    false when they are not. The value of "record" is the list of
+   --    components in the variant. "variant" is present only if the variant
+   --    itself has a variant part and its value is the list of (sub)variants.
+
+   --  A formal parameter is an object whose members are pairs taken from:
+
+   --    "name"                 :  string
+   --    "mechanism"            :  string
+
+   --    The two pairs are present for every formal parameter. "name" comes
+   --    from the declaration of the parameter in the subprogram or entry
+   --    and its value is the unqualified Ada name. The value of "mechanism"
+   --    is the passing mechanism for the parameter set by the language.
+
+   --  A numerical expression is either a number or an object whose members
+   --  are pairs taken from:
+
+   --    "code"                 :  string
+   --    "operands"             :  array of numerical expressions
+
+   --    The two pairs are present for every such object. The value of "code"
+   --    is a symbol taken from the table defining the TCode type above. The
+   --    number of elements of the value of "operands" is specified by the
+   --    operands column in the line associated with the symbol in the table.
+
+   --    As documented above, the full back annotation is only done in -gnatR3
+   --    or ASIS mode. In the other cases, if the numerical expression is not
+   --    a number, then it is replaced with the "??" string.
 
    ------------------------
    -- The gigi Interface --

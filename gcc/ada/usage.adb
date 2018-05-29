@@ -405,6 +405,8 @@ begin
      ("List rep info (?=0/1/2/3/e/m for none/types/all/symbolic/ext/mech)");
    Write_Switch_Char ("R?s");
    Write_Line ("List rep info to file.rep instead of standard output");
+   Write_Switch_Char ("R?j");
+   Write_Line ("List rep info to file.json instead of standard output");
 
    --  Line for -gnats switch
 
