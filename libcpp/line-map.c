@@ -1770,9 +1770,9 @@ linemap_expand_location (struct line_maps *set,
 void
 linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
 {
-  const char *lc_reasons_v[LC_ENTER_MACRO + 1]
+  const char *lc_reasons_v[LC_HWM]
       = { "LC_ENTER", "LC_LEAVE", "LC_RENAME", "LC_RENAME_VERBATIM",
-	  "LC_ENTER_MACRO" };
+	  "LC_ENTER_MACRO", "LC_CXX_MODULE" };
   const char *reason;
   const line_map *map;
 
@@ -1784,7 +1784,7 @@ linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
   else
     map = LINEMAPS_MACRO_MAP_AT (set, ix);
 
-  reason = (map->reason <= LC_ENTER_MACRO) ? lc_reasons_v[map->reason] : "???";
+  reason = (map->reason < LC_HWM) ? lc_reasons_v[map->reason] : "???";
 
   fprintf (stream, "Map #%u [%p] - LOC: %u - REASON: %s - SYSP: %s\n",
 	   ix, (void *) map, map->start_location, reason,

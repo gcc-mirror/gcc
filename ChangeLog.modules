@@ -1,5 +1,11 @@
 2018-05-29  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/line-map.h (enum lc_reason): Add LC_HWM, LC_CXX_MODULE.
+	* line-map.c (linemap_dump): Adjust.
+	gcc/
+	* diagnostic.c (diagnostic_report_current_module): Reroll loop.
+
 	gcc/cp/
 	* cxx-module-server.sh: Add batching and ASYNC support.
 	gcc/

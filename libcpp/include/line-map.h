@@ -61,20 +61,16 @@ inline int compare (linenum_type lhs, linenum_type rhs)
   return 0;
 }
 
-/* Reason for creating a new line map with linemap_add.  LC_ENTER is
-   when including a new file, e.g. a #include directive in C.
-   LC_LEAVE is when reaching a file's end.  LC_RENAME is when a file
-   name or line number changes for neither of the above reasons
-   (e.g. a #line directive in C); LC_RENAME_VERBATIM is like LC_RENAME
-   but a filename of "" is not specially interpreted as standard
-   input. LC_ENTER_MACRO is when a macro expansion is about to start.  */
+/* Reason for creating a new line map with linemap_add.  */
 enum lc_reason
 {
-  LC_ENTER = 0,
-  LC_LEAVE,
-  LC_RENAME,
-  LC_RENAME_VERBATIM,
-  LC_ENTER_MACRO
+  LC_ENTER = 0,		/* Begin #include.  */
+  LC_LEAVE,		/* Return to including file.  */
+  LC_RENAME,		/* Other reason for name change.  */
+  LC_RENAME_VERBATIM,	/* Likewise, but "" != stdin.  */
+  LC_ENTER_MACRO,	/* Begin macro expansion.  */
+  LC_CXX_MODULE,	/* A C++ Module.  */
+  LC_HWM
   /* FIXME: add support for stringize and paste.  */
 };
 
