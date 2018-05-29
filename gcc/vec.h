@@ -1389,6 +1389,7 @@ public:
   T *bsearch (const void *key, int (*compar)(const void *, const void *));
   unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
   bool contains (const T &search) const;
+  void reverse (void);
 
   bool using_auto_storage () const;
 
@@ -1898,6 +1899,19 @@ inline bool
 vec<T, va_heap, vl_ptr>::contains (const T &search) const
 {
   return m_vec ? m_vec->contains (search) : false;
+}
+
+/* Reverse content of the vector.  */
+
+template<typename T>
+inline void
+vec<T, va_heap, vl_ptr>::reverse (void)
+{
+  unsigned l = length ();
+  T *ptr = address ();
+
+  for (unsigned i = 0; i < l / 2; i++)
+    std::swap (ptr[i], ptr[l - i - 1]);
 }
 
 template<typename T>

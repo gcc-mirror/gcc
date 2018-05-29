@@ -1,3 +1,10 @@
+2018-05-29  Martin Liska  <mliska@suse.cz>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	* vec.c (test_reverse): New.
+	(vec_c_tests): Add new test.
+	* vec.h (vl_ptr>::reverse): New function.
+
 2018-05-29  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config.gcc: Identify FreeBSD 3.x and 4.x as unsupported.
