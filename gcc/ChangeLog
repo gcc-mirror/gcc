@@ -1,5 +1,34 @@
 2018-05-29  Richard Biener  <rguenther@suse.de>
 
+	* tree-vectorizer.h (struct vec_info): Add stmt_vec_infos
+	member.
+	(stmt_vec_info_vec): Make pointer.
+	(init_stmt_vec_info_vec): Remove.
+	(free_stmt_vec_info_vec): Likewise.
+	(set_stmt_vec_info_vec): New function.
+	(free_stmt_vec_infos): Likewise.
+	(vinfo_for_stmt): Adjust for stmt_vec_info_vec indirection.
+	(set_vinfo_for_stmt): Likewise.
+	(get_earlier_stmt): Likewise.
+	(get_later_stmt): Likewise.
+	* tree-vectorizer.c (stmt_vec_info_vec): Make pointer.
+	(vec_info::vec_info): Allocate stmt_vec_infos and set the global.
+	(vec_info::~vec_info): Free stmt_vec_infos.
+	(vectorize_loops): Set the global stmt_vec_info_vec to NULL.
+	Remove old init_stmt_vec_info_vec/free_stmt_vec_info_vec calls.
+	(pass_slp_vectorize::execute): Likewise.
+	* tree-vect-stmts.c (init_stmt_vec_info_vec): Remove.
+	(free_stmt_vec_info_vec): Likewise.
+	(set_stmt_vec_info_vec): New function.
+	(free_stmt_vec_infos): Likewise.
+	* tree-vect-loop.c (_loop_vec_info::~_loop_vec_info): Set
+	the global stmt_vec_info_vec.
+	* tree-parloops.c (gather_scalar_reductions): Use
+	set_stmt_vec_info_vec/free_stmt_vec_infos and maintain a local
+	vector.
+
+2018-05-29  Richard Biener  <rguenther@suse.de>
+
 	* dominance.c (iterate_fix_dominators): Push/pop TV_DOMINANCE.
 
 2018-05-29  Martin Liska  <mliska@suse.cz>
