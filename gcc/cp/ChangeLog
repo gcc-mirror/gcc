@@ -1,3 +1,17 @@
+2018-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67445 - returning temporary initializer_list.
+	PR c++/67711 - assigning from temporary initializer_list.
+	PR c++/48562 - new initializer_list.
+	* typeck.c (maybe_warn_about_returning_address_of_local): Also warn
+	about returning local initializer_list.
+	* cp-tree.h (AUTO_TEMP_NAME, TEMP_NAME_P): Remove.
+	* call.c (build_over_call): Warn about assignment from temporary
+	init_list.
+	* init.c (build_new_1): Warn about 'new std::initializer_list'.
+	(find_list_begin, maybe_warn_list_ctor): New.
+	(perform_member_init): Use maybe_warn_list_ctor.
+
 2018-05-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85883

@@ -9012,6 +9012,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 {
   tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
   tree whats_returned = fold_for_warn (retval);
+  location_t loc = EXPR_LOC_OR_LOC (retval, input_location);
 
   for (;;)
     {
@@ -9024,6 +9025,21 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	break;
     }
 
+  if (TREE_CODE (whats_returned) == TARGET_EXPR
+      && is_std_init_list (TREE_TYPE (whats_returned)))
+    {
+      tree init = TARGET_EXPR_INITIAL (whats_returned);
+      if (TREE_CODE (init) == CONSTRUCTOR)
+	/* Pull out the array address.  */
+	whats_returned = CONSTRUCTOR_ELT (init, 0)->value;
+      else if (TREE_CODE (init) == INDIRECT_REF)
+	/* The source of a trivial copy looks like *(T*)&var.  */
+	whats_returned = TREE_OPERAND (init, 0);
+      else
+	return false;
+      STRIP_NOPS (whats_returned);
+    }
+
   if (TREE_CODE (whats_returned) != ADDR_EXPR)
     return false;
   whats_returned = TREE_OPERAND (whats_returned, 0);
@@ -9032,21 +9048,17 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	 || TREE_CODE (whats_returned) == ARRAY_REF)
     whats_returned = TREE_OPERAND (whats_returned, 0);
 
-  if (TYPE_REF_P (valtype))
+  if (TREE_CODE (whats_returned) == AGGR_INIT_EXPR
+      || TREE_CODE (whats_returned) == TARGET_EXPR)
     {
-      if (TREE_CODE (whats_returned) == AGGR_INIT_EXPR
-	  || TREE_CODE (whats_returned) == TARGET_EXPR)
-	{
-	  warning (OPT_Wreturn_local_addr, "returning reference to temporary");
-	  return true;
-	}
-      if (VAR_P (whats_returned)
-	  && DECL_NAME (whats_returned)
-	  && TEMP_NAME_P (DECL_NAME (whats_returned)))
-	{
-	  warning (OPT_Wreturn_local_addr, "reference to non-lvalue returned");
-	  return true;
-	}
+      if (TYPE_REF_P (valtype))
+	warning_at (loc, OPT_Wreturn_local_addr,
+		    "returning reference to temporary");
+      else if (is_std_init_list (valtype))
+	warning_at (loc, OPT_Winit_list_lifetime,
+		    "returning temporary initializer_list does not extend "
+		    "the lifetime of the underlying array");
+      return true;
     }
 
   if (DECL_P (whats_returned)
@@ -9056,19 +9068,27 @@ maybe_warn_about_returning_address_of_local (tree retval)
       && !(TREE_STATIC (whats_returned)
 	   || TREE_PUBLIC (whats_returned)))
     {
+      bool w = false;
       if (TYPE_REF_P (valtype))
-	warning_at (DECL_SOURCE_LOCATION (whats_returned),
-		    OPT_Wreturn_local_addr,
-		    "reference to local variable %qD returned",
-		    whats_returned);
+	w = warning_at (loc, OPT_Wreturn_local_addr,
+			"reference to local variable %qD returned",
+			whats_returned);
+      else if (is_std_init_list (valtype))
+	w = warning_at (loc, OPT_Winit_list_lifetime,
+			"returning local initializer_list variable %qD "
+			"does not extend the lifetime of the underlying array",
+			whats_returned);
       else if (TREE_CODE (whats_returned) == LABEL_DECL)
-	warning_at (DECL_SOURCE_LOCATION (whats_returned),
-		    OPT_Wreturn_local_addr, "address of label %qD returned",
-		    whats_returned);
+	w = warning_at (loc, OPT_Wreturn_local_addr,
+			"address of label %qD returned",
+			whats_returned);
       else
-	warning_at (DECL_SOURCE_LOCATION (whats_returned),
-		    OPT_Wreturn_local_addr, "address of local variable %qD "
-		    "returned", whats_returned);
+	w = warning_at (loc, OPT_Wreturn_local_addr,
+			"address of local variable %qD returned",
+			whats_returned);
+      if (w)
+	inform (DECL_SOURCE_LOCATION (whats_returned),
+		"declared here");
       return true;
     }
 
@@ -9402,7 +9422,8 @@ check_return_expr (tree retval, bool *no_warning)
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 TREE_OPERAND (retval, 0));
       else if (!processing_template_decl
-	       && maybe_warn_about_returning_address_of_local (retval))
+	       && maybe_warn_about_returning_address_of_local (retval)
+	       && INDIRECT_TYPE_P (valtype))
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 build_zero_cst (TREE_TYPE (retval)));
     }
