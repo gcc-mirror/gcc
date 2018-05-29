@@ -393,8 +393,6 @@ package body Repinfo is
               or else Debug_Flag_AA
             then
                if Is_Subprogram (E) then
-                  List_Linker_Section (E);
-
                   if List_Representation_Info_Mechanisms then
                      List_Mechanisms (E);
                   end if;
@@ -746,13 +744,12 @@ package body Repinfo is
             raise Program_Error;
       end case;
 
-      Get_Unqualified_Decoded_Name_String (Chars (Ent));
-      Write_Str (Name_Buffer (1 .. Name_Len));
+      List_Name (Ent);
       Write_Str (" declared at ");
       Write_Location (Sloc (Ent));
       Write_Eol;
 
-      Write_Str ("  convention : ");
+      Write_Str ("convention : ");
 
       case Convention (Ent) is
          when Convention_Ada =>
@@ -814,12 +811,13 @@ package body Repinfo is
       Form := First_Formal (Ent);
       while Present (Form) loop
          Get_Unqualified_Decoded_Name_String (Chars (Form));
+         Set_Casing (Unit_Casing);
          while Name_Len <= Plen loop
             Name_Len := Name_Len + 1;
             Name_Buffer (Name_Len) := ' ';
          end loop;
 
-         Write_Str ("  ");
+         Write_Str ("   ");
          Write_Str (Name_Buffer (1 .. Plen + 1));
          Write_Str (": passed by ");
 
@@ -829,9 +827,13 @@ package body Repinfo is
       end loop;
 
       if Etype (Ent) /= Standard_Void_Type then
-         Write_Str ("  returns by ");
+         Write_Str ("returns by ");
          Write_Mechanism (Mechanism (Ent));
          Write_Eol;
+      end if;
+
+      if not Is_Entry (Ent) then
+         List_Linker_Section (Ent);
       end if;
    end List_Mechanisms;
 

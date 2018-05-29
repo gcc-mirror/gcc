@@ -1,3 +1,10 @@
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Entities): Do not list the Linker_Section for
+	subprograms here...
+	(List_Mechanisms): ...but here instead.  Use consistent name output
+	and formatting conventions.
+
 2018-05-29  Bob Duff  <duff@adacore.com>
 
 	* lib-writ.adb (Write_ALI): Cleanup: avoid use of global var; call new
