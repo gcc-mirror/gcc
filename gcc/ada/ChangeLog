@@ -1,3 +1,11 @@
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (Alphabetical
+	List of All Switches): Replace "modules" with "units".
+	(Subprogram Inlining Control): Likewise.
+	* gnat_ugn.texi: Regenerate.
+	* usage.adb (Usage): Fix description of -gnatn switch.
+
 2018-05-29  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in: Fix typos.
