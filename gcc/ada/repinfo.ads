@@ -231,15 +231,19 @@ package Repinfo is
    --  A component is an object whose members are pairs taken from:
 
    --    "name"                 :  string
+   --    "discriminant"         :  number
    --    "Position"             :  numerical expression
    --    "First_Bit"            :  number
    --    "Size"                 :  numerical expression
 
-   --    The four pairs are present for every component. "name" comes from the
-   --    declaration of the component in the record type and its value is the
-   --    unqualified Ada name. The other three pairs come from the layout of
-   --    the type and their value is that of the eponymous attribute set by
-   --    the language.
+   --    "name" is present for every component and comes from the declaration
+   --    of the type; its value is the unqualified Ada name. "discriminant" is
+   --    present only if the component is a discriminant, and its value is the
+   --    ranking of the discriminant in the list of discriminants of the type,
+   --    i.e. an integer index ranging from 1 to the number of discriminants.
+   --    The other three pairs are present for every component and come from
+   --    the layout of the type; their value is the value of the eponymous
+   --    attribute set by the language.
 
    --  A variant is an object whose members are pairs taken from:
 
