@@ -451,18 +451,18 @@ TRASYM_DWARF_MINGW_OBJS = $(TRASYM_DWARF_COMMON_OBJS)
 # Shared library version
 LIB_VERSION = $(strip $(shell grep ' Library_Version :' $(fsrcpfx)ada/gnatvsn.ads | sed -e 's/.*"\(.*\)".*/\1/'))
 
-# Additionnal object files from C source to be added to libgnat.
+# Additional object files from C source to be added to libgnat.
 EXTRA_LIBGNAT_OBJS=
 
-# Additionnal C source files to be added to libgnat without corresponding
+# Additional C source files to be added to libgnat without corresponding
 # object file (#included files). This should include at least the GNAT
 # specific header files required to rebuild the runtime library from sources.
 EXTRA_LIBGNAT_SRCS=
 
-# Additionnal object files from Ada sources to be added in libgnat
+# Additional object files from Ada sources to be added in libgnat
 EXTRA_GNATRTL_NONTASKING_OBJS=
 
-# Additionnal object files from Ada sources to be added in libgnarl
+# Additional object files from Ada sources to be added in libgnarl
 EXTRA_GNATRTL_TASKING_OBJS=
 
 # Subsets of extra libgnat sources that always go together
