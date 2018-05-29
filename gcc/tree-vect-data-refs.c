@@ -212,6 +212,10 @@ vect_preserves_scalar_order_p (gimple *stmt_a, gimple *stmt_b)
      (but could happen later) while reads will happen no later than their
      current position (but could happen earlier).  Reordering is therefore
      only possible if the first access is a write.  */
+  if (is_pattern_stmt_p (stmtinfo_a))
+    stmt_a = STMT_VINFO_RELATED_STMT (stmtinfo_a);
+  if (is_pattern_stmt_p (stmtinfo_b))
+    stmt_b = STMT_VINFO_RELATED_STMT (stmtinfo_b);
   gimple *earlier_stmt = get_earlier_stmt (stmt_a, stmt_b);
   return !DR_IS_WRITE (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt)));
 }

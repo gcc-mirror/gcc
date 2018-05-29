@@ -1068,8 +1068,12 @@ get_earlier_stmt (gimple *stmt1, gimple *stmt2)
   if (uid1 == 0 || uid2 == 0)
     return NULL;
 
-  gcc_checking_assert (uid1 <= stmt_vec_info_vec->length ()
-		       && uid2 <= stmt_vec_info_vec->length ());
+  gcc_assert (uid1 <= stmt_vec_info_vec->length ()
+	      && uid2 <= stmt_vec_info_vec->length ());
+  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt1))
+			|| !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt1)))
+		       && (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt2))
+			   || !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt2))));
 
   if (uid1 < uid2)
     return stmt1;
@@ -1096,8 +1100,12 @@ get_later_stmt (gimple *stmt1, gimple *stmt2)
   if (uid1 == 0 || uid2 == 0)
     return NULL;
 
-  gcc_assert (uid1 <= stmt_vec_info_vec->length ());
-  gcc_assert (uid2 <= stmt_vec_info_vec->length ());
+  gcc_assert (uid1 <= stmt_vec_info_vec->length ()
+	      && uid2 <= stmt_vec_info_vec->length ());
+  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt1))
+			|| !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt1)))
+		       && (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt2))
+			   || !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt2))));
 
   if (uid1 > uid2)
     return stmt1;
