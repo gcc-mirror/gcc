@@ -1539,15 +1539,21 @@ package body Lib.Writ is
             --  Normal case of a unit entry with a source index
 
             if Sind > No_Source_File then
-               Fname := File_Name (Sind);
+               --  We never want directory information in ALI files
+               --  ???But back out this change temporarily until
+               --  gprbuild is fixed.
 
-               --  Ensure that on platforms where the file names are not case
-               --  sensitive, the recorded file name is in lower case.
+               if False then
+                  Fname := Strip_Directory (File_Name (Sind));
+               else
+                  Fname := File_Name (Sind);
+               end if;
+
+               --  Ensure that on platforms where the file names are not
+               --  case sensitive, the recorded file name is in lower case.
 
                if not File_Names_Case_Sensitive then
-                  Get_Name_String (Fname);
-                  To_Lower (Name_Buffer (1 .. Name_Len));
-                  Fname := Name_Find;
+                  Fname := Name_Find (To_Lower (Get_Name_String (Fname)));
                end if;
 
                Write_Info_Name_May_Be_Quoted (Fname);

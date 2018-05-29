@@ -1,3 +1,12 @@
+2018-05-29  Bob Duff  <duff@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Cleanup: avoid use of global var; call new
+	To_Lower function.
+	* libgnat/s-casuti.ads, libgnat/s-casuti.adb (To_Upper, To_Lower,
+	To_Mixed): New functions.
+	* osint.adb: Cleanup: use Is_Directory_Separator, which correctly
+	allows both '\' and '/' on Windows.
+
 2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.ads: Minor fixes and tweaks in comments.
