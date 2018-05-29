@@ -1,5 +1,16 @@
 2018-05-29  Olivier Hainque  <hainque@adacore.com>
 
+	* libgnat/system-vxworks7-ppc-rtp.ads: New file.
+	* libgnat/system-vxworks7-ppc-kernel.ads: New file.
+	* libgnat/system-vxworks7-e500-rtp.ads: New file.
+	* libgnat/system-vxworks7-e500-kernel.ads: New file.
+	* libgnat/system-vxworks7-x86-rtp.ads: New file.
+	* libgnat/system-vxworks-ppc64-kernel.ads: Rename as ...
+	* libgnat/system-vxworks7-ppc64-kernel.ads: and adjust name of
+	gnat-crtbe link spec to use the vx7 variant.
+
+2018-05-29  Olivier Hainque  <hainque@adacore.com>
+
 	* vx_crtbegin.inc: Use a consistent naming convention for the
 	registration/deregistration functions across RTP or kernel.  Remove the
 	ctor/dtor attribute setting based on RTP/kernel, expect the optional

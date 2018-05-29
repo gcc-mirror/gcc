@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                       (VxWorks 7.x PPC64 Kernel)                         --
+--                      (VxWorks 7 Kernel Version PPC)                      --
 --                                                                          --
 --          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -33,8 +33,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
---  This is the VxWorks 7.x version of this package for PPC64 Kernel
 
 package System is
    pragma Pure;
@@ -71,8 +69,8 @@ package System is
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;
-   Word_Size    : constant := 64;
-   Memory_Size  : constant := 2 ** 64;
+   Word_Size    : constant := 32;
+   Memory_Size  : constant := 2 ** 32;
 
    --  Address comparison
 
@@ -120,7 +118,7 @@ package System is
 
 private
 
-   pragma Linker_Options ("--specs=vxworks-gnat-crtbe-link.spec");
+   pragma Linker_Options ("--specs=vxworks7-gnat-crtbe-link.spec");
    --  Pull in crtbegin/crtend objects and register exceptions for ZCX.
    --  This is commented out by our Makefile for SJLJ runtimes.
 
