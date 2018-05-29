@@ -1,3 +1,12 @@
+2018-05-29  Martin Sebor  <msebor@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/85888
+	* calls.c (get_size_range): Call determine_value_range instead
+	of get_value_range..
+	* tree-vrp.h (determine_value_range): Declared new function.
+	* tree-vrp.c (determine_value_range_1, determine_value_range): New.
+
 2018-05-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_preserves_scalar_order_p): Make
