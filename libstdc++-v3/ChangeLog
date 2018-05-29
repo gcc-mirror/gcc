@@ -1,3 +1,7 @@
+2018-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__erased_dtor): Qualify call to __get.
+
 2018-05-27  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_tree.h (_Rb_tree_impl(_Node_allocator&&)): New.
