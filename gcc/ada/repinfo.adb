@@ -1711,20 +1711,21 @@ package body Repinfo is
 
                --  Normal case, list to standard output
 
-               if not List_Representation_Info_To_File
-                 and then not List_Representation_Info_To_JSON
-               then
-                  Write_Eol;
-                  Write_Str ("Representation information for unit ");
-                  Write_Unit_Name (Unit_Name (U));
-                  Col := Column;
-                  Write_Eol;
+               if not List_Representation_Info_To_File then
+                  if not List_Representation_Info_To_JSON then
+                     Write_Eol;
+                     Write_Str ("Representation information for unit ");
+                     Write_Unit_Name (Unit_Name (U));
+                     Col := Column;
+                     Write_Eol;
 
-                  for J in 1 .. Col - 1 loop
-                     Write_Char ('-');
-                  end loop;
+                     for J in 1 .. Col - 1 loop
+                        Write_Char ('-');
+                     end loop;
 
-                  Write_Eol;
+                     Write_Eol;
+                  end if;
+
                   List_Entities (Cunit_Entity (U), Bytes_Big_Endian);
 
                --  List representation information to file

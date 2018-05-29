@@ -1006,8 +1006,7 @@ package Opt is
    List_Representation_Info_To_JSON : Boolean := False;
    --  GNAT
    --  Set true by -gnatRj switch. Causes information from -gnatR/1/2/3/m to be
-   --  written to file.json (where file is the name of the source file) in the
-   --  JSON data interchange format.
+   --  output in the JSON data interchange format.
 
    List_Representation_Info_Mechanisms : Boolean := False;
    --  GNAT

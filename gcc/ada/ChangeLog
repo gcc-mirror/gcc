@@ -1,3 +1,15 @@
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (Debugging
+	Control): Adjust description of -gnatRj.
+	* gnat_ugn.texi: Regenerate.
+	* opt.ads (List_Representation_Info_To_JSON): Likewise.
+	* repinfo.adb (List_Rep_Info): Do not automatically create a file
+	if List_Representation_Info_To_JSON is true.
+	* switch-c.adb (Scan_Front_End_Switches) <R>: Remove incompatibility
+	check between -gnatRj and -gnatRs.
+	* usage.adb (Usage): Adjust description of -gnatRj.
+
 2018-05-29  Pascal Obry  <obry@adacore.com>
 
 	* libgnat/s-os_lib.adb (Normalize_Pathname): Fix handling of ".." in

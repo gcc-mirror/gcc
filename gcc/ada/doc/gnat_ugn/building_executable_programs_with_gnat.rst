@@ -5813,16 +5813,16 @@ Debugging Control
   subprogram conventions and parameter passing mechanisms for all the
   subprograms are included.
 
+  If the switch is followed by a ``j`` (e.g., :switch:`-gnatRj`), then
+  the output is in the JSON data interchange format specified by the
+  ECMA-404 standard. The semantic description of this JSON output is
+  available in the specification of the Repinfo unit present in the
+  compiler sources.
+
   If the switch is followed by an ``s`` (e.g., :switch:`-gnatR3s`), then
   the output is to a file with the name :file:`file.rep` where file is
-  the name of the corresponding source file.
-
-  If the switch is followed by a ``j`` (e.g., :switch:`-gnatR3j`), then
-  the output is to a file with the name :file:`file.json` where file is
-  the name of the corresponding source file, and it uses the JSON data
-  interchange format specified by the ECMA-404 standard. The semantic
-  description of this JSON output is available in the specification of
-  the Repinfo unit present in the compiler sources.
+  the name of the corresponding source file, except if `j`` is also
+  specified, in which case the file name is :file:`file.json`.
 
   Note that it is possible for record components to have zero size. In
   this case, the component clause uses an obvious extension of permitted
