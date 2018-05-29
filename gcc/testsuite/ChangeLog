@@ -1,3 +1,8 @@
+2018-05-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85950
+	* gcc.target/i386/pr85950.c: New test.
+
 2018-05-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85883
