@@ -1,3 +1,7 @@
+2018-05-29  Pascal Obry  <obry@adacore.com>
+
+	* gnat.dg/normalize_pathname.adb: New testcase.
+
 2018-05-29  Tom de Vries  <tom@codesourcery.com>
 
 	* lib/scanasm.exp (scan-assembler-times): Use proc name in error
