@@ -1,3 +1,8 @@
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Handle statement sequences that include an
+	At_End handler.
+
 2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Entities): Also recurse into blocks without label.
