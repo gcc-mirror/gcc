@@ -3586,10 +3586,26 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (auto_node)
 	{
 	  tree d_init = NULL_TREE;
-	  if (vec_safe_length (*init) == 1)
+	  const size_t len = vec_safe_length (*init);
+	  /* E.g. new auto(x) must have exactly one element, or
+	     a {} initializer will have one element.  */
+	  if (len == 1)
 	    {
 	      d_init = (**init)[0];
 	      d_init = resolve_nondeduced_context (d_init, complain);
+	    }
+	  /* For the rest, e.g. new A(1, 2, 3), create a list.  */
+	  else if (len > 1)
+	    {
+	      unsigned int n;
+	      tree t;
+	      tree *pp = &d_init;
+	      FOR_EACH_VEC_ELT (**init, n, t)
+		{
+		  t = resolve_nondeduced_context (t, complain);
+		  *pp = build_tree_list (NULL_TREE, t);
+		  pp = &TREE_CHAIN (*pp);
+		}
 	    }
 	  type = do_auto_deduction (type, d_init, auto_node, complain);
 	}

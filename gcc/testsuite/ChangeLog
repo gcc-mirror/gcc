@@ -1,3 +1,10 @@
+2018-05-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85883
+	* g++.dg/cpp1z/class-deduction55.C: New test.
+	* g++.dg/cpp1z/class-deduction56.C: New test.
+	* g++.dg/cpp1z/class-deduction57.C: New test.
+
 2018-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85952
