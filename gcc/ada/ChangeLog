@@ -1,3 +1,8 @@
+2018-05-29  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-taprop.ads (Monotonic_Clock): Refine documentation to
+	reflect reality.
+
 2018-05-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* exp_ch4.adb (Expand_N_Op_Abs): Always do range check against 'First.
