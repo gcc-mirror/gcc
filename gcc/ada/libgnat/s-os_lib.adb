@@ -2389,12 +2389,18 @@ package body System.OS_Lib is
          elsif Finish = Start + 1
            and then Path_Buffer (Start .. Finish) = ".."
          then
-            Start := Last;
-            loop
-               Start := Start - 1;
-               exit when Start = 1
-                 or else Path_Buffer (Start) = Directory_Separator;
-            end loop;
+            if Last > 1 then
+               Start := Last - 1;
+
+               while Start > 1
+                 and then Path_Buffer (Start) /= Directory_Separator
+               loop
+                  Start := Start - 1;
+               end loop;
+
+            else
+               Start := Last;
+            end if;
 
             if Start = 1 then
                if Finish = End_Path then

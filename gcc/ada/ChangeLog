@@ -1,5 +1,10 @@
 2018-05-29  Pascal Obry  <obry@adacore.com>
 
+	* libgnat/s-os_lib.adb (Normalize_Pathname): Fix handling of ".." in
+	the root directory.
+
+2018-05-29  Pascal Obry  <obry@adacore.com>
+
 	* libgnat/s-os_lib.adb: Minor reformatting.
 
 2018-05-29  Doug Rupp  <rupp@adacore.com>
