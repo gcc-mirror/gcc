@@ -1319,8 +1319,8 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
   wide_int min, max;
   enum value_range_type range_type;
 
-  if (TREE_CODE (exp) == SSA_NAME && integral)
-    range_type = get_range_info (exp, &min, &max);
+  if (integral)
+    range_type = determine_value_range (exp, &min, &max);
   else
     range_type = VR_VARYING;
 
