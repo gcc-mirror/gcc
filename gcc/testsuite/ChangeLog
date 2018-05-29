@@ -1,3 +1,7 @@
+2018-05-29  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/equal2.adb: New testcase.
+
 2018-05-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/float_attributes_overflows.adb: New testcase.

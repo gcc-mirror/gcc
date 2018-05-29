@@ -1,3 +1,18 @@
+2018-05-29  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq, Expand_Composite_Equality): Use the new
+	subprogram Inherits_From_Tagged_Full_View to identify more reliably
+	untagged private types completed with a derivation of an untagged
+	private whose full view is a tagged type.
+	* sem_util.ads, sem_util.adb (Inherits_From_Tagged_Full_View): New
+	subprogram.
+	(Collect_Primitive_Operations): Handle untagged private types completed
+	with a derivation of an untagged private type whose full view is a
+	tagged type. In such case, collecting the list of primitives we may
+	find two equality primitives: one associated with the untagged private
+	and another associated with the ultimate tagged type (and we must
+	remove from the returned list this latter one).
+
 2018-05-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Visit_Node): Handle statement sequences that include an

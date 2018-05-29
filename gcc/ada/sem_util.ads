@@ -1452,6 +1452,12 @@ package Sem_Util is
    --  Inherit the rep item chain of type From_Typ without clobbering any
    --  existing rep items on Typ's chain. Typ is the destination type.
 
+   function Inherits_From_Tagged_Full_View (Typ : Entity_Id) return Boolean;
+   pragma Inline (Inherits_From_Tagged_Full_View);
+   --  Return True if Typ is an untagged private type completed with a
+   --  derivation of an untagged private type declaration whose full view
+   --  is a tagged type.
+
    procedure Insert_Explicit_Dereference (N : Node_Id);
    --  In a context that requires a composite or subprogram type and where a
    --  prefix is an access type, rewrite the access type node N (which is the

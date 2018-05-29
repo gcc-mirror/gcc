@@ -2488,17 +2488,13 @@ package body Exp_Ch4 is
             Full_Type := Root_Type (Full_Type);
          end if;
 
-         --  If this is derived from an untagged private type completed with a
-         --  tagged type, it does not have a full view, so we use the primitive
-         --  operations of the private type. This check should no longer be
-         --  necessary when these types receive their full views ???
+         --  If this is an untagged private type completed with a derivation of
+         --  an untagged private type whose full view is a tagged type, we use
+         --  the primitive operations of the private parent type (since it does
+         --  not have a full view, and also because its equality primitive may
+         --  have been overridden in its untagged full view).
 
-         if Is_Private_Type (Typ)
-           and then not Is_Tagged_Type (Typ)
-           and then not Is_Controlled (Typ)
-           and then Is_Derived_Type (Typ)
-           and then No (Full_View (Typ))
-         then
+         if Inherits_From_Tagged_Full_View (Typ) then
             Prim := First_Elmt (Collect_Primitive_Operations (Typ));
          else
             Prim := First_Elmt (Primitive_Operations (Full_Type));
@@ -7857,16 +7853,14 @@ package body Exp_Ch4 is
                return;
             end if;
 
-            --  If this is derived from an untagged private type completed with
-            --  a tagged type, it does not have a full view, so we use the
-            --  primitive operations of the private type. This check should no
-            --  longer be necessary when these types get their full views???
+            --  If this is an untagged private type completed with a derivation
+            --  of an untagged private type whose full view is a tagged type,
+            --  we use the primitive operations of the private type (since it
+            --  does not have a full view, and also because its equality
+            --  primitive may have been overridden in its untagged full view).
 
-            if Is_Private_Type (A_Typ)
-              and then not Is_Tagged_Type (A_Typ)
-              and then Is_Derived_Type (A_Typ)
-              and then No (Full_View (A_Typ))
-            then
+            if Inherits_From_Tagged_Full_View (A_Typ) then
+
                --  Search for equality operation, checking that the operands
                --  have the same type. Note that we must find a matching entry,
                --  or something is very wrong.
