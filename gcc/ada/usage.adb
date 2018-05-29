@@ -352,7 +352,7 @@ begin
    --  Line for -gnatn switch
 
    Write_Switch_Char ("n[?]");
-   Write_Line ("Enable pragma Inline (both within and across units, ?=1/2)");
+   Write_Line ("Enable pragma Inline across units (?=1/2 for moderate/full)");
 
    --  Line for -gnato switch
 
