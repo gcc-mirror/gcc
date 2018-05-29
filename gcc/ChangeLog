@@ -1,3 +1,7 @@
+2018-05-29  Richard Biener  <rguenther@suse.de>
+
+	* dominance.c (iterate_fix_dominators): Push/pop TV_DOMINANCE.
+
 2018-05-29  Martin Liska  <mliska@suse.cz>
 	    David Malcolm  <dmalcolm@redhat.com>
 
