@@ -1,3 +1,10 @@
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (Write_Unknown_Val): New procedure.
+	(List_GCC_Expression): Call it.
+	(List_Record_Layout): Likewise.
+	(Write_Val): Likewise.
+
 2018-05-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* exp_ch4.adb (Expand_N_Op_Abs): Clear Do_Overflow_Check when inserting

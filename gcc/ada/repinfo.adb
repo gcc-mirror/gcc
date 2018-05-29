@@ -189,6 +189,9 @@ package body Repinfo is
    procedure Write_Mechanism (M : Mechanism_Type);
    --  Writes symbolic string for mechanism represented by M
 
+   procedure Write_Unknown_Val;
+   --  Writes symbolic string for an unknown or non-representable value
+
    procedure Write_Val (Val : Node_Ref_Or_Val; Paren : Boolean := False);
    --  Given a representation value, write it out. No_Uint values or values
    --  dependent on discriminants are written as two question marks. If the
@@ -653,7 +656,7 @@ package body Repinfo is
 
    begin
       if U = No_Uint then
-         Write_Str ("??");
+         Write_Unknown_Val;
       else
          Print_Expr (U);
       end if;
@@ -1111,7 +1114,7 @@ package body Repinfo is
                   --  Otherwise we can continue
 
                   else
-                     Write_Str ("??");
+                     Write_Unknown_Val;
                   end if;
                end if;
 
@@ -1128,8 +1131,8 @@ package body Repinfo is
                --  Allowing Uint_0 here is an annoying special case. Really
                --  this should be a fine Esize value but currently it means
                --  unknown, except that we know after gigi has back annotated
-               --  that a size  of zero is real, since otherwise gigi back
-               --  annotates using No_Uint as the value to indicate unknown).
+               --  that a size of zero is real, since otherwise gigi back
+               --  annotates using No_Uint as the value to indicate unknown.
 
                if (Esize (Comp) = Uint_0 or else Known_Static_Esize (Comp))
                  and then Known_Static_Normalized_First_Bit (Comp)
@@ -1151,7 +1154,7 @@ package body Repinfo is
                elsif List_Representation_Info < 3
                  or else (Esize (Comp) /= Uint_0 and then Unknown_Esize (Comp))
                then
-                  Write_Str ("??");
+                  Write_Unknown_Val;
 
                --  List_Representation >= 3 and Known_Esize (Comp)
 
@@ -1674,6 +1677,15 @@ package body Repinfo is
       end case;
    end Write_Mechanism;
 
+   -----------------------
+   -- Write_Unknown_Val --
+   -----------------------
+
+   procedure Write_Unknown_Val is
+   begin
+      Write_Str ("??");
+   end Write_Unknown_Val;
+
    ---------------
    -- Write_Val --
    ---------------
@@ -1682,7 +1694,7 @@ package body Repinfo is
    begin
       if Rep_Not_Constant (Val) then
          if List_Representation_Info < 3 or else Val = No_Uint then
-            Write_Str ("??");
+            Write_Unknown_Val;
 
          else
             if Paren then
