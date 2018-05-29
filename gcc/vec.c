@@ -476,6 +476,43 @@ test_qsort ()
   ASSERT_EQ (10, v.length ());
 }
 
+/* Verify that vec::reverse works correctly.  */
+
+static void
+test_reverse ()
+{
+  /* Reversing an empty vec ought to be a no-op.  */
+  {
+    auto_vec <int> v;
+    ASSERT_EQ (0, v.length ());
+    v.reverse ();
+    ASSERT_EQ (0, v.length ());
+  }
+
+  /* Verify reversing a vec with even length.  */
+  {
+    auto_vec <int> v;
+    safe_push_range (v, 0, 4);
+    v.reverse ();
+    ASSERT_EQ (3, v[0]);
+    ASSERT_EQ (2, v[1]);
+    ASSERT_EQ (1, v[2]);
+    ASSERT_EQ (0, v[3]);
+    ASSERT_EQ (4, v.length ());
+  }
+
+  /* Verify reversing a vec with odd length.  */
+  {
+    auto_vec <int> v;
+    safe_push_range (v, 0, 3);
+    v.reverse ();
+    ASSERT_EQ (2, v[0]);
+    ASSERT_EQ (1, v[1]);
+    ASSERT_EQ (0, v[2]);
+    ASSERT_EQ (3, v.length ());
+  }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -492,6 +529,7 @@ vec_c_tests ()
   test_unordered_remove ();
   test_block_remove ();
   test_qsort ();
+  test_reverse ();
 }
 
 } // namespace selftest
