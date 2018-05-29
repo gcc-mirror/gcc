@@ -30,19 +30,13 @@
  ****************************************************************************/
 
 /* crtbegin kind of file for ehframe registration/deregistration
-   purposes on VxWorks.  This variant provides _ctors and _dtors
-   arrays that the kernel module loader knows to process when it has
-   been configured for this purpose (c++ constructor strategy set to
-   automatic).  The ctor/dtor functions need not be visible in this
-   case.  */
+   purposes on VxWorks.  This variant exposes the ctor/dtor functions
+   as explicit constructors, expected to be placed in a .ctors/.dtors
+   section.  */
 
-#define CDTOR_VISIBILITY static
+/* 101 is the highest user level priority allowed by VxWorks.  */
+
+#define CTOR_ATTRIBUTE __attribute__((constructor(101)))
+#define DTOR_ATTRIBUTE __attribute__((destructor(101)))
+
 #include "vx_crtbegin.inc"
-
-/* Diab C++ for ppc64-vx7 crtbegin wants to declare a
-   char dso_handle = 0;
-   here. ???  */
-
-typedef void (*func_ptr) (void);
-func_ptr _dtors [] = {DTOR_NAME, 0};
-func_ptr _ctors [] = {CTOR_NAME, 0};
