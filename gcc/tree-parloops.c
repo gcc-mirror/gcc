@@ -2593,8 +2593,9 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   auto_vec<gphi *, 4> double_reduc_phis;
   auto_vec<gimple *, 4> double_reduc_stmts;
 
-  if (!stmt_vec_info_vec.exists ())
-    init_stmt_vec_info_vec ();
+  vec<stmt_vec_info> stmt_vec_infos;
+  stmt_vec_infos.create (50);
+  set_stmt_vec_info_vec (&stmt_vec_infos);
 
   simple_loop_info = vect_analyze_loop_form (loop);
   if (simple_loop_info == NULL)
@@ -2674,7 +2675,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
  gather_done:
   /* Release the claim on gimple_uid.  */
-  free_stmt_vec_info_vec ();
+  free_stmt_vec_infos (&stmt_vec_infos);
 
   if (reduction_list->elements () == 0)
     return;

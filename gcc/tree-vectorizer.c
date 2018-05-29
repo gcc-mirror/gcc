@@ -85,7 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 source_location vect_location;
 
 /* Vector mapping GIMPLE stmt to stmt_vec_info. */
-vec<stmt_vec_info> stmt_vec_info_vec;
+vec<stmt_vec_info> *stmt_vec_info_vec;
 
 /* Dump a cost entry according to args to F.  */
 
@@ -456,6 +456,8 @@ vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in)
     ddrs (vNULL),
     target_cost_data (target_cost_data_in)
 {
+  stmt_vec_infos.create (50);
+  set_stmt_vec_info_vec (&stmt_vec_infos);
 }
 
 vec_info::~vec_info ()
@@ -477,6 +479,7 @@ vec_info::~vec_info ()
   free_data_refs (datarefs);
   free_dependence_relations (ddrs);
   destroy_cost_data (target_cost_data);
+  free_stmt_vec_infos (&stmt_vec_infos);
 }
 
 /* A helper function to free scev and LOOP niter information, as well as
@@ -682,7 +685,7 @@ vectorize_loops (void)
   if (cfun->has_simduid_loops)
     note_simd_array_uses (&simd_array_to_simduid_htab);
 
-  init_stmt_vec_info_vec ();
+  set_stmt_vec_info_vec (NULL);
 
   /*  ----------- Analyze loops. -----------  */
 
@@ -923,8 +926,6 @@ vectorize_loops (void)
       loop->aux = NULL;
     }
 
-  free_stmt_vec_info_vec ();
-
   /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE,ORDERED_{START,END}} builtins.  */
   if (cfun->has_simduid_loops)
     adjust_simduid_builtins (simduid_to_vf_htab);
@@ -1062,16 +1063,12 @@ pass_slp_vectorize::execute (function *fun)
 	}
     }
 
-  init_stmt_vec_info_vec ();
-
   FOR_EACH_BB_FN (bb, fun)
     {
       if (vect_slp_bb (bb))
 	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 			 "basic block vectorized\n");
     }
-
-  free_stmt_vec_info_vec ();
 
   if (!in_loop_pipeline)
     {
