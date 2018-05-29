@@ -1,3 +1,7 @@
+2018-05-29  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/s-os_lib.adb: Minor reformatting.
+
 2018-05-29  Doug Rupp  <rupp@adacore.com>
 
 	* libgnat/a-calend.adb (Epoch_Offset): Move from body to ...

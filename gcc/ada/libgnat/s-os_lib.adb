@@ -2234,8 +2234,9 @@ package body System.OS_Lib is
       --  the path itself, the current directory if the path is relative,
       --  and additional fragments up to Max_Path in length in case
       --  there are any symlinks.
+
       Start, Finish : Positive;
-      Status : Integer;
+      Status        : Integer;
 
    --  Start of processing for Normalize_Pathname
 
@@ -2263,7 +2264,6 @@ package body System.OS_Lib is
       --    * Remove all double-quotes
 
       if On_Windows then
-
          --  Replace all '/' by '\'
 
          for Index in 1 .. End_Path loop
@@ -2324,7 +2324,6 @@ package body System.OS_Lib is
       --  empty string.
 
       for J in 1 .. Max_Iterations loop
-
          Start  := Last + 1;
          Finish := Last;
 
@@ -2378,6 +2377,7 @@ package body System.OS_Lib is
 
                   return Path_Buffer (1 .. Last - 1);
                end if;
+
             else
                Path_Buffer (Last + 1 .. End_Path - 2) :=
                  Path_Buffer (Last + 3 .. End_Path);
