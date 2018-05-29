@@ -1,3 +1,9 @@
+2018-05-29  Martin Liska  <mliska@suse.cz>
+
+        PR gcov-profile/85759
+	* doc/gcov.texi: Document GCOV_ERROR_FILE and GCOV_EXIT_AT_ERROR
+	env variables.
+
 2018-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-cfg.c (verify_gimple_assign_unary): Add checking for

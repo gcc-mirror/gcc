@@ -62,8 +62,16 @@ gcov_error (const char *fmt, ...)
   va_list argp;
 
   va_start (argp, fmt);
-  ret = vfprintf (get_gcov_error_file (), fmt, argp);
+  FILE *f = get_gcov_error_file ();
+  ret = vfprintf (f, fmt, argp);
   va_end (argp);
+
+  if (getenv ("GCOV_EXIT_AT_ERROR"))
+    {
+      fprintf (f, "profiling:exiting after an error\n");
+      exit (1);
+    }
+
   return ret;
 }
 
