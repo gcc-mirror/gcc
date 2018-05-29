@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *              Copyright (C) 2016, Free Software Foundation, Inc.          *
+ *              Copyright (C) 2016-2018, Free Software Foundation, Inc.     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,40 +29,17 @@
  *                                                                          *
  ****************************************************************************/
 
-/* Common body for the various flavors of vx_crtbegin C sources we need
-   to perform eh frame registration/deregistration in various
-   circumstances.  #includers should define CDTOR_VISIBILITY. */
+/* crtbegin kind of file for ehframe registration/deregistration
+   purposes on VxWorks.  This variant provides _ctors and _dtors
+   arrays that the kernel module loader knows to process when it has
+   been configured for this purpose (c++ constructor strategy set to
+   automatic).  */
 
-#include "tconfig.h"
-#include "tsystem.h"
-#include "coretypes.h"
-#include "tm.h"
-#include "unwind-dw2-fde.h"
+#define CTOR_ATTRIBUTE
+#define DTOR_ATTRIBUTE
 
-/* Pick names that the VxWorks muncher will get if involved and leave the
-   symbols with public visibility.  Hiding by default is pointless and even
-   problematic in some configurations.  When the presence of these
-   constructors is an issue, best is not to include the crt object files at
-   all.  */
+#include "vx_crtbegin.inc"
 
-#define CTOR_NAME _STI__101___crtbe_register_frame
-#define DTOR_NAME _STD__101___crtbe_deregister_frame
-
-void CTOR_NAME (void) CTOR_ATTRIBUTE;
-void DTOR_NAME (void) DTOR_ATTRIBUTE;
-
-static const char __EH_FRAME_BEGIN__[]
-__attribute__((section(EH_FRAME_SECTION_NAME), aligned(4)))
-  = { };
-
-void CTOR_NAME (void)
-{
-  static struct object object;
-  __register_frame_info (__EH_FRAME_BEGIN__, &object);
-}
-
-void DTOR_NAME (void)
-{
-  __deregister_frame_info (__EH_FRAME_BEGIN__);
-}
-
+typedef void (*func_ptr) (void);
+func_ptr _dtors [] = {DTOR_NAME, 0};
+func_ptr _ctors [] = {CTOR_NAME, 0};

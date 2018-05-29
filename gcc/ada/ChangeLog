@@ -1,3 +1,27 @@
+2018-05-29  Olivier Hainque  <hainque@adacore.com>
+
+	* vx_crtbegin.inc: Use a consistent naming convention for the
+	registration/deregistration functions across RTP or kernel.  Remove the
+	ctor/dtor attribute setting based on RTP/kernel, expect the optional
+	attribute extension to be provided by includers instead.
+	* vx_crtbegin.c: Mere inclusion of vx_crtbegin.inc with empty attribute
+	extension for the registration/deregistration functions.
+	* vx_crtbegin_attr.c: New file. Include vx_crtbegin.inc with explicit
+	constructor/destructor attribute extensions.
+	* vx_crtbegin_array.c: New file. Include vx_crtbegin.inc with empty
+	attribute extensions and declare _ctors/_dtors arrays.
+	* vx_crtbegin_auto.c: Remove.
+	* libgnat/system-vxworks7-aarch64-rtp-smp.ads: Use
+	vxworks7-gnat-crtbe-link.spec.
+	* libgnat/system-vxworks7-aarch64.ads: Likewise.
+	* libgnat/system-vxworks7-e500-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc64-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-x86-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-rtp-smp.ads: Likewise.
+
 2018-05-29  Piotr Trojanek  <trojanek@adacore.com>
 
 	* ali.adb: Minor reformatting.
