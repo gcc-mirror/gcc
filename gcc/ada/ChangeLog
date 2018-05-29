@@ -1,5 +1,12 @@
 2018-05-29  Ed Schonberg  <schonberg@adacore.com>
 
+	* einfo.ads, einfo.adb: Clarify use of Activation_Record_Component:
+	discriminants and exceptions are never components of such.  The flag
+	Needs_Activation_Record is set on subprogram types, not on access to
+	them.
+
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb: Set scope of component of subtype.
 
 2018-05-29  Ed Schonberg  <schonberg@adacore.com>
