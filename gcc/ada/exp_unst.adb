@@ -753,7 +753,13 @@ package body Exp_Unst is
             --  simplify the processing here by examining all components
             --  of the record.
 
-            elsif Nkind (N) = N_Selected_Component then
+            --  Selected components appear as unit names and end labels for
+            --  child units. The prefixes of these nodes denote parent
+            --  units and carry no type information so they are skipped.
+
+            elsif Nkind (N) = N_Selected_Component
+              and then Present (Etype (Prefix (N)))
+            then
                declare
                   DT : Boolean := False;
                begin
