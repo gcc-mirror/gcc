@@ -1,5 +1,10 @@
 2018-05-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-cfg.c (verify_gimple_assign_unary): Add checking for
+	VEC_UNPACK_*_EXPR.
+	(verify_gimple_assign_binary): Check TYPE_VECTOR_SUBPARTS for
+	VEC_PACK_*_EXPR.
+
 	PR target/85918
 	* tree.def (VEC_UNPACK_FIX_TRUNC_HI_EXPR, VEC_UNPACK_FIX_TRUNC_LO_EXPR,
 	VEC_PACK_FLOAT_EXPR): New tree codes.

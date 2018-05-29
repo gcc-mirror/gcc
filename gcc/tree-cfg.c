@@ -3678,7 +3678,37 @@ verify_gimple_assign_unary (gassign *stmt)
     case VEC_UNPACK_FLOAT_LO_EXPR:
     case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
     case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
-      /* FIXME.  */
+      if (TREE_CODE (rhs1_type) != VECTOR_TYPE
+          || TREE_CODE (lhs_type) != VECTOR_TYPE
+          || (!INTEGRAL_TYPE_P (TREE_TYPE (lhs_type))
+	      && !SCALAR_FLOAT_TYPE_P (TREE_TYPE (lhs_type)))
+          || (!INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
+	      && !SCALAR_FLOAT_TYPE_P (TREE_TYPE (rhs1_type)))
+	  || ((rhs_code == VEC_UNPACK_HI_EXPR
+	       || rhs_code == VEC_UNPACK_LO_EXPR)
+	      && (INTEGRAL_TYPE_P (TREE_TYPE (lhs_type))
+		  != INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))))
+	  || ((rhs_code == VEC_UNPACK_FLOAT_HI_EXPR
+	       || rhs_code == VEC_UNPACK_FLOAT_LO_EXPR)
+	      && (INTEGRAL_TYPE_P (TREE_TYPE (lhs_type))
+		  || SCALAR_FLOAT_TYPE_P (TREE_TYPE (rhs1_type))))
+	  || ((rhs_code == VEC_UNPACK_FIX_TRUNC_HI_EXPR
+	       || rhs_code == VEC_UNPACK_FIX_TRUNC_LO_EXPR)
+	      && (INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
+		  || SCALAR_FLOAT_TYPE_P (TREE_TYPE (lhs_type))))
+	  || (maybe_ne (GET_MODE_SIZE (element_mode (lhs_type)),
+			2 * GET_MODE_SIZE (element_mode (rhs1_type)))
+	      && (!VECTOR_BOOLEAN_TYPE_P (lhs_type)
+		  || !VECTOR_BOOLEAN_TYPE_P (rhs1_type)))
+	  || maybe_ne (2 * TYPE_VECTOR_SUBPARTS (lhs_type),
+		       TYPE_VECTOR_SUBPARTS (rhs1_type)))
+	{
+	  error ("type mismatch in vector unpack expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
+        }
+
       return false;
 
     case NEGATE_EXPR:
@@ -3993,7 +4023,9 @@ verify_gimple_assign_binary (gassign *stmt)
 		     == INTEGRAL_TYPE_P (TREE_TYPE (lhs_type))))
 	    || !types_compatible_p (rhs1_type, rhs2_type)
 	    || maybe_ne (GET_MODE_SIZE (element_mode (rhs1_type)),
-			 2 * GET_MODE_SIZE (element_mode (lhs_type))))
+			 2 * GET_MODE_SIZE (element_mode (lhs_type)))
+	    || maybe_ne (2 * TYPE_VECTOR_SUBPARTS (rhs1_type),
+			 TYPE_VECTOR_SUBPARTS (lhs_type)))
           {
             error ("type mismatch in vector pack expression");
             debug_generic_expr (lhs_type);
@@ -4012,7 +4044,9 @@ verify_gimple_assign_binary (gassign *stmt)
 	  || !SCALAR_FLOAT_TYPE_P (TREE_TYPE (lhs_type))
 	  || !types_compatible_p (rhs1_type, rhs2_type)
 	  || maybe_ne (GET_MODE_SIZE (element_mode (rhs1_type)),
-		       2 * GET_MODE_SIZE (element_mode (lhs_type))))
+		       2 * GET_MODE_SIZE (element_mode (lhs_type)))
+	  || maybe_ne (2 * TYPE_VECTOR_SUBPARTS (rhs1_type),
+		       TYPE_VECTOR_SUBPARTS (lhs_type)))
 	{
 	  error ("type mismatch in vector pack expression");
 	  debug_generic_expr (lhs_type);
