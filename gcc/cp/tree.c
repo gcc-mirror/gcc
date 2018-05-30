@@ -5432,7 +5432,7 @@ bool
 maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
 {
   if (c_inhibit_evaluation_warnings == 0
-      && !NULLPTR_TYPE_P (TREE_TYPE (expr)))
+      && !null_node_p (expr) && !NULLPTR_TYPE_P (TREE_TYPE (expr)))
     {
       warning_at (loc, OPT_Wzero_as_null_pointer_constant,
 		  "zero as null pointer constant");
