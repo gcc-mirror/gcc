@@ -1,3 +1,7 @@
+2018-05-30  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+        * crtstuff.c: Remove declaration of _Jv_RegisterClasses.
+
 2018-05-29  Martin Liska  <mliska@suse.cz>
 
         PR gcov-profile/85759
