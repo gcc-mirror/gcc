@@ -4147,7 +4147,7 @@ resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
 	    error ("invalid use of void expression");
 	  return NULL;
 	}
-      else if (invalid_nonstatic_memfn_p (input_location, arg, complain))
+      else if (invalid_nonstatic_memfn_p (arg->exp.locus, arg, complain))
 	return NULL;
     }
   return args;

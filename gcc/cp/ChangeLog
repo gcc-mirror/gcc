@@ -1,3 +1,9 @@
+2018-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/77777
+	* call.c (resolve_args): Use location of expression, not current input
+	location.
+
 2018-05-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Do not warn about zero-as-null when NULL is used.

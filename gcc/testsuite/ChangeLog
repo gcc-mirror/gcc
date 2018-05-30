@@ -1,3 +1,8 @@
+2018-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/77777
+	* g++.dg/diagnostic/pr77777.C: New test.
+
 2018-05-30  David Pagan  <dave.pagan@oracle.com>
 
 	PR c/55976
