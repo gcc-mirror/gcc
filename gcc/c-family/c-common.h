@@ -1033,8 +1033,8 @@ extern bool c_dump_tree (void *, tree);
 
 extern void verify_sequence_points (tree);
 
-extern tree fold_offsetof_1 (tree, tree_code ctx = ERROR_MARK);
-extern tree fold_offsetof (tree);
+extern tree fold_offsetof (tree, tree = size_type_node,
+			   tree_code ctx = ERROR_MARK);
 
 extern int complete_array_type (tree *, tree, bool);
 

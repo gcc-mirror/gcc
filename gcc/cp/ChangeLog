@@ -1,3 +1,13 @@
+2018-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85662
+	* cp-gimplify.c (cp_fold): Use fold_offsetof rather than
+	fold_offsetof_1, pass TREE_TYPE (x) as TYPE to it and drop the
+	fold_convert.
+
 2018-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85842 - -Wreturn-type, constexpr if and generic lambda.
