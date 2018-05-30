@@ -1049,3 +1049,21 @@ _getpagesize (void)
   return getpagesize ();
 }
 #endif
+
+int
+__gnat_name_case_equivalence ()
+{
+  /*  the values here must be synchronized with Ada.Directories.Name_Case_Kind:
+
+      Unknown          = 0
+      Case_Sensitive   = 1
+      Case_Insensitive = 2
+      Case_Preserving  = 3  */
+
+#if defined (__APPLE__) || defined (WIN32)
+  return 3;
+#else
+  return 1;
+#endif
+}
+

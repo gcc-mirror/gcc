@@ -1,3 +1,14 @@
+2018-05-30  Justin Squirek  <squirek@adacore.com>
+
+	* libgnat/a-direct.adb, libgnat/a-direct.ads (Name_Case_Equivalence):
+	Add implementation.
+	(Start_Search): Modify to use Start_Search_Internal
+	(Start_Search_Internal): Add to break out an extra flag for searching
+	case insensative due to the potential for directories within the same
+	OS to allow different casing schemes.
+	* sysdep.c (__gnat_name_case_equivalence): Add as a default fallback
+	for when the more precise solution fails.
+
 2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb, exp_ch5.adb, exp_ch7.adb, exp_unst.adb, sem_eval.adb:
