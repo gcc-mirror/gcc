@@ -7,13 +7,11 @@
 	* tree.c (maybe_warn_zero_as_null_pointer_constant): Also
 	check null_node_p.
 
-2018-05-24  Jason Merrill  <jason@redhat.com>
+2018-05-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85807 - ICE with call in template NSDMI.
 	* init.c (get_nsdmi): Use push_to/pop_from_top_level.
 	* tree.c (bot_manip): Don't set_flags_from_callee in a template.
-
-2018-05-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85873 - constant initializer_list array not in .rodata.
 	* tree.c (build_target_expr): Set TREE_READONLY.
