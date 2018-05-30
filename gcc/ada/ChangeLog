@@ -1,5 +1,12 @@
 2018-05-30  Arnaud Charlet  <charlet@adacore.com>
 
+	* gcc-interface/Makefile.in: Move special flags for Ada runtime files
+	from here...
+	* Makefile.rtl: ... to here.  Update comments.  Protect call to
+	"GCC_FOR_TARGET" in case target_os isn't defined.
+
+2018-05-30  Arnaud Charlet  <charlet@adacore.com>
+
 	* gcc-interface/Makefile.in: Move target pair settings from here...
 	* Makefile.rtl: ... to here.
 	(setup-rts): New target.
