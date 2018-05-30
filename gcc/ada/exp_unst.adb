@@ -720,8 +720,8 @@ package body Exp_Unst is
                --  other calls.
 
                when N_Allocator
-                  | N_Free_Statement
                   | N_Extended_Return_Statement
+                  | N_Free_Statement
                   | N_Simple_Return_Statement
                =>
                   declare
@@ -735,8 +735,8 @@ package body Exp_Unst is
                      end if;
                   end;
 
-               --  A 'Access reference is a (potential) call.
-               --  Other attributes require special handling.
+               --  A 'Access reference is a (potential) call. Other attributes
+               --  require special handling.
 
                when N_Attribute_Reference =>
                   declare
@@ -795,9 +795,9 @@ package body Exp_Unst is
                      end case;
                   end;
 
-               --  Component associations in aggregates are either static
-               --  or else the aggregate will be expanded into assignments,
-               --  in which case the expression is analyzed later and provides
+               --  Component associations in aggregates are either static or
+               --  else the aggregate will be expanded into assignments, in
+               --  which case the expression is analyzed later and provides
                --  no relevant code generation.
 
                when N_Component_Association =>

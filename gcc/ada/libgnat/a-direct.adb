@@ -1079,8 +1079,8 @@ package body Ada.Directories is
       Test_File : Directory_Entry_Type;
 
       function GNAT_name_case_equivalence return Interfaces.C.int;
-      pragma Import
-        (C, GNAT_name_case_equivalence, "__gnat_name_case_equivalence");
+      pragma Import (C, GNAT_name_case_equivalence,
+                     "__gnat_name_case_equivalence");
 
    begin
       --  Check for the invalid case
@@ -1101,10 +1101,11 @@ package body Ada.Directories is
       --  fall through to a Status_Error where we then take the imprecise
       --  default for the host OS.
 
-      Start_Search (Search    => S,
-                    Directory => To_String (Dir_Path),
-                    Pattern   => "",
-                    Filter    => (Directory => False, others => True));
+      Start_Search
+        (Search    => S,
+         Directory => To_String (Dir_Path),
+         Pattern   => "",
+         Filter    => (Directory => False, others => True));
 
       loop
          Get_Next_Entry (S, Test_File);
@@ -1112,7 +1113,7 @@ package body Ada.Directories is
          --  Check if we have found a "caseable" file
 
          exit when To_Lower (Simple_Name (Test_File)) /=
-                     To_Upper (Simple_Name (Test_File));
+                   To_Upper (Simple_Name (Test_File));
       end loop;
 
       End_Search (S);
@@ -1160,6 +1161,7 @@ package body Ada.Directories is
       return Case_Sensitive;
    exception
       when Status_Error =>
+
          --  There is no unobtrusive way to check for the directory's casing so
          --  return the OS default.
 
@@ -1437,10 +1439,11 @@ package body Ada.Directories is
             Case_Sensitive := False;
          end if;
 
-         Pat := Compile
-           (Pattern,
-            Glob           => True,
-            Case_Sensitive => Case_Sensitive);
+         Pat :=
+           Compile
+             (Pattern,
+              Glob           => True,
+              Case_Sensitive => Case_Sensitive);
       exception
          when Error_In_Regexp =>
             Free (Search.Value);
