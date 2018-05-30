@@ -1,3 +1,7 @@
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/tls1.adb, gnat.dg/tls1_pkg.ads: New testcase.
+
 2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/synchronized1.adb, gnat.dg/synchronized1.ads: New testcase.

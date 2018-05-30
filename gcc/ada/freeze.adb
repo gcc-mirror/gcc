@@ -3441,12 +3441,19 @@ package body Freeze is
                           (Is_OK_Static_Expression (Expression (Decl))
                             or else Nkind (Expression (Decl)) = N_Null)))
                then
-                  Error_Msg_NE
-                    ("Thread_Local_Storage variable& is "
-                     & "improperly initialized", Decl, E);
-                  Error_Msg_NE
-                    ("\only allowed initialization is explicit "
-                     & "NULL or static expression", Decl, E);
+                  if Nkind (Expression (Decl)) = N_Aggregate
+                    and then Compile_Time_Known_Aggregate (Expression (Decl))
+                  then
+                     null;
+                  else
+                     Error_Msg_NE
+                       ("Thread_Local_Storage variable& is "
+                        & "improperly initialized", Decl, E);
+                     Error_Msg_NE
+                       ("\only allowed initialization is explicit "
+                        & "NULL, static expression or static aggregate",
+                          Decl, E);
+                  end if;
                end if;
             end;
          end if;
