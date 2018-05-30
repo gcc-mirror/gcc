@@ -1,3 +1,10 @@
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch11.adb (Replace_Raise_By_Goto): The transfomation is legal even
+	if the local raise statement includes a string expression. This
+	expression might be picked up by an outer handler or discarded, but
+	plays no role in this transformation.
+
 2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_aggr.adb, exp_unst.adb, freeze.adb, libgnat/a-direct.adb: Minor
