@@ -3969,8 +3969,8 @@ package body Exp_Ch7 is
 
    begin
       --  For restricted run-time libraries (Ravenscar), tasks are
-      --  non-terminating and they can only appear at library level, so we do
-      --  not want finalization of task objects.
+      --  non-terminating and they can only appear at library level,
+      --  so we do not want finalization of task objects.
 
       if Restricted_Profile then
          return Empty;
@@ -4014,37 +4014,42 @@ package body Exp_Ch7 is
               Make_Defining_Identifier (Loc,
                 Chars => New_Internal_Name ('I'));
 
-            Elab_Body := Make_Subprogram_Body (Loc,
-              Specification =>
-                Make_Procedure_Specification (Loc,
-                  Defining_Unit_Name => Elab_Proc),
-              Declarations => New_List,
-              Handled_Statement_Sequence =>
-                 Relocate_Node (Handled_Statement_Sequence (N)));
+            Elab_Body :=
+              Make_Subprogram_Body (Loc,
+                Specification              =>
+                  Make_Procedure_Specification (Loc,
+                    Defining_Unit_Name => Elab_Proc),
+                Declarations               => New_List,
+                Handled_Statement_Sequence =>
+                  Relocate_Node (Handled_Statement_Sequence (N)));
 
-            Elab_Call := Make_Procedure_Call_Statement (Loc,
-               New_Occurrence_Of (Elab_Proc, Loc));
+            Elab_Call :=
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (Elab_Proc, Loc));
+
             Append_To (Declarations (N), Elab_Body);
             Analyze (Elab_Body);
             Set_Has_Nested_Subprogram (Elab_Proc);
 
             Set_Handled_Statement_Sequence (N,
-               Make_Handled_Sequence_Of_Statements (Loc,
-                  Statements => New_List (Elab_Call)));
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements => New_List (Elab_Call)));
+
             Analyze (Elab_Call);
 
-            --  The scope of all blocks in the elaboration code is
-            --  now the constructed elaboration procedure. Nested
-            --  subprograms within those blocks will have activation
-            --  records if they contain references to entities in the
-            --  enclosing block.
+            --  The scope of all blocks in the elaboration code is now the
+            --  constructed elaboration procedure. Nested subprograms within
+            --  those blocks will have activation records if they contain
+            --  references to entities in the enclosing block.
 
-            Stat := First
-                      (Statements (Handled_Statement_Sequence (Elab_Body)));
+            Stat :=
+              First (Statements (Handled_Statement_Sequence (Elab_Body)));
+
             while Present (Stat) loop
                if Nkind (Stat) = N_Block_Statement then
                   Set_Scope (Entity (Identifier (Stat)), Elab_Proc);
                end if;
+
                Next (Stat);
             end loop;
          end if;

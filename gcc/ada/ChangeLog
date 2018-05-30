@@ -1,3 +1,8 @@
+2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, exp_ch5.adb, exp_ch7.adb, exp_unst.adb, sem_eval.adb:
+	Minor reformatting.
+
 2018-05-30  Pascal Obry  <obry@adacore.com>
 
 	* libgnat/g-comlin.ads (Value_Callback, Define_Switch): New.
