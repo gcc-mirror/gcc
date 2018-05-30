@@ -5255,7 +5255,7 @@ package body Exp_Ch7 is
             --  node. Inspect the original node to detect the initial placement
             --  of the call.
 
-            elsif Original_Node (N) /= N then
+            elsif Is_Rewrite_Substitution (N) then
                Detect_Subprogram_Call (Original_Node (N));
 
                if Must_Hook then

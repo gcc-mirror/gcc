@@ -9643,7 +9643,7 @@ package body Sem_Ch13 is
                --  from the node, since we may have rewritten things and
                --  substituted an identifier representing the rewrite.
 
-               if Original_Node (Nod) /= Nod then
+               if Is_Rewrite_Substitution (Nod) then
                   Check_Expr_Constants (Original_Node (Nod));
 
                   --  If the node is an object declaration without initial

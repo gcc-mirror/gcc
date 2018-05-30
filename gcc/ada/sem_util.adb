@@ -15855,7 +15855,7 @@ package body Sem_Util is
       --  original node is a conversion, then Is_Variable will not be true
       --  but we still want to allow the conversion if it converts a variable).
 
-      elsif Original_Node (AV) /= AV then
+      elsif Is_Rewrite_Substitution (AV) then
 
          --  In Ada 2012, the explicit dereference may be a rewritten call to a
          --  Reference function.

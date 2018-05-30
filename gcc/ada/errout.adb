@@ -2387,7 +2387,7 @@ package body Errout is
          end loop;
 
          if Nkind (N) = N_Raise_Constraint_Error
-           and then Original_Node (N) /= N
+           and then Is_Rewrite_Substitution (N)
            and then No (Condition (N))
          then
             --  Warnings may have been posted on subexpressions of the original

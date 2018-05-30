@@ -6089,7 +6089,7 @@ package body Exp_Aggr is
       --  that Convert_To_Positional succeeded and reanalyzed the rewritten
       --  aggregate.
 
-      elsif Analyzed (N) and then N /= Original_Node (N) then
+      elsif Analyzed (N) and then Is_Rewrite_Substitution (N) then
          return;
       end if;
 
