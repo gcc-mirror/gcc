@@ -1,3 +1,12 @@
+2018-05-30  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/55976
+	* c-decl.c (grokdeclarator): Update check for return type warnings.
+	(start_function): Likewise.
+	(finish_function): Likewise.
+	* c-typeck.c (c_finish_return): Update check for return type warnings.
+	Pass OPT_Wreturn_type to pedwarn when appropriate.
+
 2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gimple-parser.c (c_parser_gimple_postfix_expression): Remove
