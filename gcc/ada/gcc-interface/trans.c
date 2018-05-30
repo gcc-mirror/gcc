@@ -7050,7 +7050,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	  else if (atomic_access_required_p (Name (gnat_node), &sync))
 	    gnu_result = build_atomic_store (gnu_lhs, gnu_rhs, sync);
 
-	  /* Or else, use memset when the conditions are met.  */
+	  /* Or else, use memset when the conditions are met.  This has already
+	     been validated by Aggr_Assignment_OK_For_Backend in the front-end
+	     and the RHS is thus guaranteed to be of the appropriate form.  */
 	  else if (use_memset_p)
 	    {
 	      tree value
