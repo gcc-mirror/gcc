@@ -715,6 +715,26 @@ package body Exp_Unst is
                        ((N, Current_Subprogram, Entity (At_End_Proc (N))));
                   end if;
 
+               --  Similarly, the following constructs include a semantic
+               --  attribute Procedure_To_Call that must be handled like
+               --  other calls.
+
+               when N_Allocator
+                  | N_Free_Statement
+                  | N_Extended_Return_Statement
+                  | N_Simple_Return_Statement
+               =>
+                  declare
+                     Proc : constant Entity_Id := Procedure_To_Call (N);
+                  begin
+                     if Present (Proc)
+                       and then Scope_Within (Proc, Subp)
+                       and then not Is_Imported (Proc)
+                     then
+                        Append_Unique_Call ((N, Current_Subprogram, Proc));
+                     end if;
+                  end;
+
                --  A 'Access reference is a (potential) call.
                --  Other attributes require special handling.
 

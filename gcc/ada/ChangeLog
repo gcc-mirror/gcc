@@ -1,5 +1,10 @@
 2018-05-30  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.adb (Visit_Node): Handle the semantic Procedure_To_Call
+	field in relevant nodes: Allocate, Free, and return statements.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_unst.adb (Visit_Node): Do not traverse a Component_Association
 	that has not been analyzed, as will be the case for a nested aggregate
 	that is expanded into individual assignments.
