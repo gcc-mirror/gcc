@@ -1,3 +1,8 @@
+2018-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Add
+	comment about the memset case.
+
 2018-05-30  Bob Duff  <duff@adacore.com>
 
 	* exp_ch5.adb (Expand_Formal_Container_Element_Loop): Remove the code
