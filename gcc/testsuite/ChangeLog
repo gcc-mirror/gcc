@@ -1,6 +1,11 @@
 2018-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85952
+	* g++.dg/warn/Wunused-var-33.C: New test.
+
 	2018-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85756
