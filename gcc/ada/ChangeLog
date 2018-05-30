@@ -1,3 +1,8 @@
+2018-05-30  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-comlin.ads (Value_Callback, Define_Switch): New.
+	* libgnat/g-comlin.adb: Add corresponding implementation.
+
 2018-05-30  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_res.adb, sem_util.adb: Fix several typos.
