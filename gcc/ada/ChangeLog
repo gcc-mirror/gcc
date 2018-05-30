@@ -1,3 +1,13 @@
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): The flag
+	Needs_Activation_Record is only needed on a subprogram type, not on a
+	pointer to such.
+	* sem_res.adb (Resolve_Selected_Component): If the context type and the
+	component type are anonymous access to subprograms, use the component
+	type to obtain the proper value of Needs_Activation_Record flag for the
+	expression.
+
 2018-05-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Add

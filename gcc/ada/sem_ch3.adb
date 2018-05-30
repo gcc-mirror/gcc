@@ -1307,11 +1307,9 @@ package body Sem_Ch3 is
 
       --  If the access_to_subprogram is not declared at the library level,
       --  it can only point to subprograms that are at the same or deeper
-      --  accessibility level. All such might require an activation record
-      --  when compiling for C.
+      --  accessibility level. The corresponding subprogram type might
+      --  require an activation record when compiling for C.
 
-      Set_Needs_Activation_Record  (T_Name,
-                                      not Is_Library_Level_Entity (T_Name));
       Set_Needs_Activation_Record  (Desig_Type,
                                       not Is_Library_Level_Entity (T_Name));
 
