@@ -574,6 +574,7 @@ package body Sem_Eval is
             null;
 
          elsif Is_Out_Of_Range (N, T, Assume_Valid => True) then
+
             --  Ignore out of range values for System.Priority in CodePeer
             --  mode since the actual target compiler may provide a wider
             --  range.

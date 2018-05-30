@@ -619,6 +619,7 @@ package body Exp_Unst is
 
             procedure Register_Subprogram (E : Entity_Id; Bod : Node_Id) is
                L : constant Nat := Get_Level (Subp, E);
+
             begin
                Subps.Append
                  ((Ent           => E,
@@ -635,6 +636,7 @@ package body Exp_Unst is
                    ARECnPT       => Empty,
                    ARECnP        => Empty,
                    ARECnU        => Empty));
+
                Set_Subps_Index (E, UI_From_Int (Subps.Last));
             end Register_Subprogram;
 
@@ -645,10 +647,12 @@ package body Exp_Unst is
 
                --  Record a subprogram call
 
-               when N_Procedure_Call_Statement | N_Function_Call =>
+               when N_Function_Call
+                  | N_Procedure_Call_Statement
+               =>
                   --  We are only interested in direct calls, not indirect
-                  --  calls (where Name (N) is an explicit dereference).
-                  --  at least for now!
+                  --  calls (where Name (N) is an explicit dereference) at
+                  --  least for now!
 
                   if Nkind (Name (N)) in N_Has_Entity then
                      Ent := Entity (Name (N));
@@ -670,10 +674,10 @@ package body Exp_Unst is
                   --  for uplevel references.
 
                   declare
-                     Subp   : Entity_Id;
                      Actual : Entity_Id;
-                     Formal : Node_Id;
                      DT     : Boolean := False;
+                     Formal : Node_Id;
+                     Subp   : Entity_Id;
 
                   begin
                      if Nkind (Name (N)) = N_Explicit_Dereference then
@@ -697,18 +701,18 @@ package body Exp_Unst is
                      end loop;
                   end;
 
-               --  An At_End_Proc in a statement sequence indicates that
-               --  there's a call from the enclosing construct or block
-               --  to that subprogram. As above, the called entity must
-               --  be local and not imported.
+               --  An At_End_Proc in a statement sequence indicates that there
+               --  is a call from the enclosing construct or block to that
+               --  subprogram. As above, the called entity must be local and
+               --  not imported.
 
                when N_Handled_Sequence_Of_Statements =>
                   if Present (At_End_Proc (N))
                     and then Scope_Within (Entity (At_End_Proc (N)), Subp)
                     and then not Is_Imported (Entity (At_End_Proc (N)))
                   then
-                     Append_Unique_Call ((N, Current_Subprogram,
-                                           Entity (At_End_Proc (N))));
+                     Append_Unique_Call
+                       ((N, Current_Subprogram, Entity (At_End_Proc (N))));
                   end if;
 
                --  A 'Access reference is a (potential) call.
@@ -759,8 +763,8 @@ package body Exp_Unst is
                               declare
                                  DT : Boolean := False;
                               begin
-                                 Check_Static_Type (Etype (Prefix (N)),
-                                                    Empty, DT);
+                                 Check_Static_Type
+                                   (Etype (Prefix (N)), Empty, DT);
                               end;
 
                               return OK;
@@ -818,6 +822,7 @@ package body Exp_Unst is
                   end if;
 
                   --  Make new entry in subprogram table if not already made
+
                   Register_Subprogram (Ent, N);
 
                   --  We make a recursive call to scan the subprogram body, so
@@ -852,8 +857,8 @@ package body Exp_Unst is
 
                   return Skip;
 
-               --  If we have a body stub, visit the associated subunit,
-               --  which is a semantic descendant of the stub.
+               --  If we have a body stub, visit the associated subunit, which
+               --  is a semantic descendant of the stub.
 
                when N_Body_Stub =>
                   Visit (Library_Unit (N));
@@ -885,8 +890,8 @@ package body Exp_Unst is
                --  Otherwise record an uplevel reference
 
                when others =>
-                  if
-                    Nkind (N) in N_Has_Entity and then Present (Entity (N))
+                  if Nkind (N) in N_Has_Entity
+                    and then Present (Entity (N))
                   then
                      Ent := Entity (N);
 
@@ -900,14 +905,14 @@ package body Exp_Unst is
                        and then
                          Chars (Enclosing_Subprogram (Ent)) /= Name_uParent
 
-                      --  Constants and variables are potentially
-                      --  uplevel references to global declarations.
+                        --  Constants and variables are potentially uplevel
+                        --  references to global declarations.
 
                        and then
                          (Ekind_In (Ent, E_Constant, E_Variable)
 
-                     --  Formals are interesting, but not if being used as mere
-                     --  names of parameters for name notation calls.
+                        --  Formals are interesting, but not if being used as
+                        --  mere names of parameters for name notation calls.
 
                         or else
                           (Is_Formal (Ent)
@@ -916,7 +921,7 @@ package body Exp_Unst is
                                and then Selector_Name (Parent (N)) = N))
 
                         --  Types other than known Is_Static types are
-                        --  potentially interesting
+                        --  potentially interesting.
 
                         or else (Is_Type (Ent)
                                   and then not Is_Static_Type (Ent)))
@@ -2037,13 +2042,13 @@ package body Exp_Unst is
          return;
       end if;
 
-      --  A specification will contain bodies if it contains instantiations
-      --  so examine package or subprogram declaration of the main unit,
-      --  when it is present.
+      --  A specification will contain bodies if it contains instantiations so
+      --  examine package or subprogram declaration of the main unit, when it
+      --  is present.
 
       if Nkind (Unit (N)) = N_Package_Body
-          or else (Nkind (Unit (N)) = N_Subprogram_Body
-                     and then not Acts_As_Spec (N))
+        or else (Nkind (Unit (N)) = N_Subprogram_Body
+                  and then not Acts_As_Spec (N))
       then
          Do_Search (Library_Unit (N));
       end if;

@@ -3065,6 +3065,7 @@ package body Checks is
                      --  If definitely not in range, warn
 
                      elsif Lov > Hi or else Hiv < Lo then
+
                         --  Ignore out of range values for System.Priority in
                         --  CodePeer mode since the actual target compiler may
                         --  provide a wider range.

@@ -3286,6 +3286,7 @@ package body Exp_Ch5 is
              Parameter_Associations => New_List (
                Convert_To_Iterable_Type (Container, Loc),
                New_Occurrence_Of (Cursor, Loc))));
+
          Set_Statements (New_Loop,
            New_List
              (Make_Block_Statement (Loc,
