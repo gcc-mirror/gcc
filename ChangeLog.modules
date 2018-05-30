@@ -1,3 +1,18 @@
+2018-05-30  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (struct module_state): Replace loc with imp_loc &
+	self_loc.  Rename imported to direct.
+	(module_state::occupied): Delete.
+	(module_state::read{_,config}): Replace crc_ptr with bool flag.
+	(module_state::do_import): ... here.  Break out ...
+	(module_state::find_module): ... this part.  Absorb ...
+	(module_state::occupy): ... this.  Delete.
+	(module_state::get_module): Change default insert.  Check vec_name
+	for occupation.
+	(module_state::write_imports): Adjust.
+	(import_module, declare_module): Adjust.
+
 2018-05-29  Nathan Sidwell  <nathan@acm.org>
 
 	Included from index becomes included_at location

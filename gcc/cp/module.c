@@ -2334,8 +2334,9 @@ struct GTY(()) module_state {
   vec<mc_slot, va_gc> *unnamed;		/* Unnamed decls.  */
   elf_in *GTY((skip)) from;     /* Lazy loading.  */
 
-  char *filename;	/* Filename */
-  location_t loc;	/* Its location.  */
+  char *filename;	/* BMI Filename */
+  location_t imp_loc;   /* Importing location.  */
+  location_t self_loc;  /* Location referring to module itself.  */
 
   unsigned lazy;	/* Number of lazy sections yet to read.  */
   unsigned loading;	/* Section currently being loaded.  */
@@ -2344,8 +2345,8 @@ struct GTY(()) module_state {
   unsigned mod;		/* Module owner number.  */
   unsigned crc;		/* CRC we saw reading it in. */
 
-  bool imported : 1;	/* Imported via import declaration.  */
-  bool exported : 1;	/* The import is exported.  */
+  bool direct : 1;	/* A direct import.  */
+  bool exported : 1;	/* We are exported.  */
 
  public:
   module_state (tree name = NULL_TREE);
@@ -2353,14 +2354,6 @@ struct GTY(()) module_state {
 
  public:
   void release (bool at_eof = true);
-
- public:
-  /* Whether this module is currently occupied.  */
-  bool occupied () const
-  {
-    return vec_name != NULL_TREE;
-  }
-  void occupy (location_t loc, tree vname);
 
  public:
   /* Enter and leave the module's location.  */
@@ -2374,7 +2367,7 @@ struct GTY(()) module_state {
  public:
   /* Read and write module.  */
   void write (elf_out *to);
-  void read (FILE *handle, int e, unsigned *crc_ptr);
+  void read (FILE *handle, int e, bool);
 
   /* Read a section.  */
   void load_section (unsigned snum);
@@ -2403,7 +2396,7 @@ struct GTY(()) module_state {
   /* The configuration.  */
   void write_config (elf_out *to, const char *opts, const range_t &sec_range,
 		     unsigned unnamed, unsigned crc);
-  bool read_config (range_t &sec_range, unsigned &unnamed, unsigned *crc_ptr);
+  bool read_config (range_t &sec_range, unsigned &unnamed, bool);
 
  private:
   /* Serialize various definitions. */
@@ -2456,11 +2449,8 @@ struct GTY(()) module_state {
   bool read_unnamed (unsigned count, const range_t &range);
 
  public:
-  /* Import a module.  Possibly ourselves.  */
-  static module_state *do_import (location_t, tree, bool module_unit_p,
-				  bool import_export_p,
-				  const char *filename = NULL,
-				  unsigned * = NULL);
+  static module_state *find_module (location_t, tree, bool module_p);
+  bool do_import (const char *filename = NULL);
 
  private:
   static int maybe_add_global (tree, unsigned &);
@@ -2469,7 +2459,7 @@ struct GTY(()) module_state {
   static void init ();
   static void fini ();
   static module_state *get_module (tree name, module_state * = NULL,
-				   bool insert = true);
+				   bool insert = false);
  public:
   /* Vector indexed by OWNER.  */
   static vec<module_state *, va_gc> *modules;
@@ -2494,10 +2484,10 @@ module_state::module_state (tree name)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     name (name), vec_name (NULL_TREE),
     remap (NULL), unnamed (NULL), from (NULL),
-    filename (NULL), loc (UNKNOWN_LOCATION),
+    filename (NULL), imp_loc (UNKNOWN_LOCATION), self_loc (UNKNOWN_LOCATION),
     lazy (0), loading (~0u), lru (0), mod (MODULE_UNKNOWN), crc (0)
 {
-  imported = exported = false;
+  direct = exported = false;
 }
 
 module_state::~module_state ()
@@ -6207,24 +6197,15 @@ module_state::get_module (tree name, module_state *dflt, bool insert)
     return NULL;
 
   module_state *state = *slot;
+  gcc_assert (!state || state->vec_name);
   if (dflt)
     {
       /* Don't overwrite occupied default.  */
-      if (dflt->occupied ())
+      if (dflt->vec_name)
 	return NULL;
 
-      /* Don't copy an occupied existing module.  */
-      if (state && state->occupied ())
-	return state;
-
-      /* Copy name and filename from the empty one we found.  */
       if (state)
-	{
-	  if (!dflt->filename)
-	    dflt->filename = state->filename;
-	  else
-	    free (state->filename);
-	}
+	return state;
 
       /* Use the default we were given, and put it back in the hash
 	 table.  */
@@ -6994,39 +6975,6 @@ module_server::export_done (tree name)
   return ok;
 }
 
-/* Set VEC_NAME fields from incoming VNAME, which may be a regular
-   IDENTIFIER.  */
-
-void
-module_state::occupy (location_t l, tree maybe_vec)
-{
-  gcc_assert (!vec_name);
-  loc = l;
-  if (identifier_p (maybe_vec))
-    {
-      /* Create a TREE_VEC of components.  */
-      auto_vec<tree,5> ids;
-      size_t len = IDENTIFIER_LENGTH (maybe_vec);
-      const char *ptr = IDENTIFIER_POINTER (maybe_vec);
-
-      while (const char *dot = (const char *)memchr (ptr, '.', len))
-	{
-	  tree id = get_identifier_with_length (ptr, dot - ptr);
-	  len -= dot - ptr + 1;
-	  ptr = dot + 1;
-	  ids.safe_push (id);
-	}
-      tree id = (ids.length () ? get_identifier_with_length (ptr, len)
-		 : maybe_vec);
-      ids.safe_push (id);
-      maybe_vec = make_tree_vec (ids.length ());
-      for (unsigned ix = ids.length (); ix--;)
-	TREE_VEC_ELT (maybe_vec, ix) = ids.pop ();
-    }
-
-  vec_name = maybe_vec;
-}
-
 /* Set enter or leave the module.
    With atom modules, we interact closely with the preprocessor.
    Imports happen before we've read following tokens.   */
@@ -7151,7 +7099,7 @@ module_state::write_readme (elf_out *to, const char *options)
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
-      if (state->imported)
+      if (state->direct)
 	readme.printf ("import:%s %s",
 		       IDENTIFIER_POINTER (state->name), state->filename);
     }
@@ -7176,7 +7124,7 @@ module_state::write_imports (bytes_out &cfg, bool direct)
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
-      if (state->imported == direct)
+      if (state->direct == direct)
 	{
 	  dump () && dump ("Writing %simport:%u %I (crc=%x)",
 			   !direct ? "indirect "
@@ -7218,25 +7166,33 @@ module_state::read_imports (bytes_in &cfg, bool direct)
 
 	  if (cfg.get_overrun ())
 	    return -1;
-	  imp = do_import (input_location, name, /*unit_p=*/false,
-			   /*import_p=*/true, filename_str, &crc);
-	  if (!imp)
+	  imp = find_module (self_loc, name, false);
+	  if (imp && !imp->filename)
 	    {
-	      from->set_error (elf::E_BAD_IMPORT);
-	      return -1;
+	      imp->crc = crc;
+	      if (!imp->do_import (filename_str))
+		imp = NULL;
+	      else
+		set_import (imp, exported);
 	    }
-	  set_import (imp, exported);
 	}
       else
+	imp = get_module (name);
+
+      if (imp && imp->filename && imp->crc != crc)
 	{
-	  imp = get_module (name, NULL, false);
-	  if (!imp || imp->crc != crc)
-	    {
-	      error ("indirect import %qE %s", name,
-		     imp ? "has CRC mismatch" : "is not already loaded");
-	      return -1;
-	    }
+	  error ("import %qE has CRC mismatch", name);
+	  imp = NULL;
 	}
+      else if (!imp && !direct)
+	error ("indirect import %qE is not already loaded", name);
+
+      if (!imp)
+	{
+	  from->set_error (elf::E_BAD_IMPORT);
+	  return -1;
+	}
+
       (*remap)[ix] = imp->mod;
       dump () && dump ("Read %simport:%u %I->%u",
 		       !direct ? "indirect "
@@ -7332,7 +7288,7 @@ module_state::write_config (elf_out *to, const char *opt_str,
 
 bool
 module_state::read_config (range_t &sec_range, unsigned &unnamed,
-			   unsigned *expected_crc)
+			   bool check_crc)
 {
   bytes_in cfg;
 
@@ -7383,9 +7339,10 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
 
   /* Check the CRC after the above sanity checks, so that the user is
      clued in.  */
+  unsigned e_crc = crc;
   crc = cfg.get_crc ();
   dump () && dump ("Reading CRC=%x", crc);
-  if (expected_crc && crc != *expected_crc)
+  if (check_crc && crc != e_crc)
     {
       error ("module %qE CRC mismatch", name);
       goto fail;
@@ -8864,7 +8821,7 @@ module_state::write (elf_out *to)
    be lazy, if this is an import and flag_module_lazy is in effect.  */
 
 void
-module_state::read (FILE *stream, int e, unsigned *crc_ptr)
+module_state::read (FILE *stream, int e, bool check_crc)
 {
   from = new elf_in (stream, e);
   lru = lazy_lru++;
@@ -8875,7 +8832,7 @@ module_state::read (FILE *stream, int e, unsigned *crc_ptr)
   range_t range;
   unsigned unnamed;
 
-  if (!read_config (range, unnamed, crc_ptr))
+  if (!read_config (range, unnamed, check_crc))
     return;
 
   /* Determine the module's number.  */
@@ -8989,13 +8946,13 @@ module_state::check_read (bool outermost, tree ns, tree id)
 	 Otherwise return NULL to let our importer know (and
 	 fail).  */
       if (lazy && id)
-	error_at (loc, "failed to load binding %<%E%s%E@%E%>: %s",
+	error_at (self_loc, "failed to load binding %<%E%s%E@%E%>: %s",
 		  ns, &"::"[ns == global_namespace ? 2 : 0], id, name, err);
       else
-	error_at  (loc, "failed to import module %qE: %s", name, err);
+	error_at  (imp_loc, "failed to import module %qE: %s", name, err);
       
       if (e == EMFILE)
-	inform (loc, "consider reducing %<--param %s%> value",
+	inform (imp_loc, "consider reducing %<--param %s%> value",
 		compiler_params[PARAM_LAZY_MODULES].option);
     }
 
@@ -9003,7 +8960,7 @@ module_state::check_read (bool outermost, tree ns, tree id)
     release (false);
 
   if (e && outermost)
-    fatal_error (loc, "jumping off the crazy train to crashville");
+    fatal_error (imp_loc, "jumping off the crazy train to crashville");
 
   return e;
 }
@@ -9269,28 +9226,20 @@ make_flat_name (tree name)
   return get_identifier_with_length (&buffer[0], buffer.length ());
 }
 
-/* Import the module NAME into the current TU.  If MODULE_P is
-   true, we're part of module NAME, and EXPORT_P indicates if
-   we're the exporting init (true), or not (false).  If MODULE_P
-   is false, NAME is a regular import.  EXPORT_P tells us if
-   we're a direct import of the current TU (true), or an indirect
-   import (false).  Returns the imported module object (or NULL).
-
-   We don't actually import anything when MODULE_P and IMPORT_EXPORT_P
-   are both true.  */
+/* Module NAME is being imported or defined in the current TU.
+   MODULE_P indicates whether this is the module unit, or an import.  */
 
 module_state *
-module_state::do_import (location_t loc, tree name, bool module_p,
-			 bool export_p, char const *filename, unsigned *crc_ptr)
+module_state::find_module (location_t loc, tree name, bool module_p)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  tree sname = name;
+  tree maybe_vec_name = name;
   if (TREE_CODE (name) == TREE_VEC)
     name = make_flat_name (name);
 
   module_state *dflt = module_p ? (*modules)[MODULE_NONE] : NULL;
-  module_state *state = get_module (name, dflt);
+  module_state *state = get_module (name, dflt, true);
 
   if (!state)
     {
@@ -9300,67 +9249,44 @@ module_state::do_import (location_t loc, tree name, bool module_p,
       return NULL;
     }
 
-  if (!state->occupied ())
+  if (!state->vec_name)
     {
       if (module_p)
 	{
 	  (*modules)[MODULE_PURVIEW] = state;
 	  current_module = MODULE_PURVIEW;
-	  if (export_p)
-	    {
-	      /* We're the exporting module unit, so not loading anything.  */
-	      state->exported = true;
-	      state->mod = MODULE_PURVIEW;
-	    }
 	}
-      else if (!export_p)
+
+      state->imp_loc = loc;
+      state->self_loc = loc; // FIXME
+      if (identifier_p (maybe_vec_name))
 	{
-	  /* The ordering of the import table implies that indirect
-	     imports should have already been loaded.  */
-	  error ("indirect import %qE not present", name);
-	  return NULL;
-	}
-      state->occupy (loc, sname);
+	  /* Create a TREE_VEC of components.  */
+	  auto_vec<tree,5> ids;
+	  size_t len = IDENTIFIER_LENGTH (maybe_vec_name);
+	  const char *ptr = IDENTIFIER_POINTER (maybe_vec_name);
 
-      if (!module_p || !export_p)
-	{
-	  unsigned n = dump.push (state);
-	  if (!lazy_open)
-	    freeze_an_elf ();
-
-	  gcc_assert (!state->filename);
-	  if (!filename)
-	    if (module_server *server = module_server::get ())
-	      filename = server->import_query (state->name, input_location);
-	  FILE *stream = NULL;
-	  int e = ENOENT;
-	  if (filename)
+	  while (const char *dot = (const char *)memchr (ptr, '.', len))
 	    {
-	      state->filename = xstrdup (filename);
-	      stream = fopen (state->filename, "rb");
-	      e = errno;
+	      tree id = get_identifier_with_length (ptr, dot - ptr);
+	      len -= dot - ptr + 1;
+	      ptr = dot + 1;
+	      ids.safe_push (id);
 	    }
-
-	  state->push_location ();
-	  state->announce ("importing");
-	  vec_safe_push (importing, state);
-	  state->read (stream, e, crc_ptr);
-	  bool failed = state->check_read (module_p || export_p);
-	  importing->pop ();
-	  state->announce (flag_module_lazy && !module_p
-			   ? "lazy" : "imported");
-	  state->pop_location ();
-	  dump.pop (n);
-
-	  if (failed)
-	    return NULL;
+	  tree id = (ids.length () ? get_identifier_with_length (ptr, len)
+		     : maybe_vec_name);
+	  ids.safe_push (id);
+	  maybe_vec_name = make_tree_vec (ids.length ());
+	  for (unsigned ix = ids.length (); ix--;)
+	    TREE_VEC_ELT (maybe_vec_name, ix) = ids.pop ();
 	}
+      state->vec_name = maybe_vec_name;
     }
   else if (state->mod == MODULE_PURVIEW)
     {
       /* Cannot import the current module.  */
       error_at (loc, "cannot import module in its own purview");
-      inform (state->loc, "module %qE declared here", state->name);
+      inform (state->imp_loc, "module %qE declared here", state->name);
       return NULL;
     }
   else
@@ -9373,14 +9299,52 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	{
 	  /* Cannot be module unit of an imported module.  */
 	  error_at (loc, "cannot declare module after import");
-	  inform (state->loc, "module %qE imported here", state->name);
+	  inform (state->imp_loc, "module %qE imported here", state->name);
 	  return NULL;
 	}
     }
 
-  gcc_assert (state);
-
   return state;
+}
+
+/* Read the BMI file for a module.  FNAME, if not NULL, is the name we
+   know it as.  CRC_PTR points to the CRC value we expect.  */
+
+bool
+module_state::do_import (char const *fname)
+{
+  gcc_assert (global_namespace == current_scope ());
+
+  unsigned n = dump.push (this);
+  if (!lazy_open)
+    freeze_an_elf ();
+
+  gcc_assert (!filename);
+
+  bool check_crc = fname != NULL;
+  if (!fname)
+    if (module_server *server = module_server::get ())
+      fname = server->import_query (name, input_location);
+  FILE *stream = NULL;
+  int e = ENOENT;
+  if (fname)
+    {
+      filename = xstrdup (fname);
+      stream = fopen (filename, "rb");
+      e = errno;
+    }
+
+  push_location ();
+  announce ("importing");
+  vec_safe_push (importing, this);
+  read (stream, e, check_crc);
+  bool failed = check_read (direct);
+  importing->pop ();
+  announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
+  pop_location ();
+  dump.pop (n);
+
+  return !failed;
 }
 
 /* Pick a victim module to freeze its reader.  */
@@ -9426,14 +9390,13 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
 
   unsigned snum = mslot->get_lazy ();
   dump () && dump ("Lazily binding %P@%N section:%u", ns, id, name, snum);
-  if (snum >= loading || !flag_module_lazy)
+
+  if (snum < loading && flag_module_lazy)
+    load_section (snum);
+
+  if (mslot->is_lazy ())
     from->set_error (elf::E_BAD_LAZY);
-  else
-    {
-      load_section (snum);
-      if (mslot->is_lazy ())
-	from->set_error (elf::E_BAD_LAZY);
-    }
+
   bool failed = check_read (outermost, ns, id);
   gcc_assert (!failed || !outermost);
  
@@ -9464,14 +9427,15 @@ import_module (const cp_expr &name, bool exporting, tree)
 
   gcc_assert (global_namespace == current_scope ());
   if (module_state *imp
-      = module_state::do_import (name.get_location (), *name,
-				 /*unit_p=*/false, /*import_p=*/true))
+      = module_state::find_module (name.get_location (), *name, false))
     {
-      imp->imported = true;
+      imp->direct = true;
       if (exporting)
 	imp->exported = true;
-      (*module_state::modules)[MODULE_NONE]->set_import (imp, exporting);
+      if (imp->filename || imp->do_import ())
+	(*module_state::modules)[MODULE_NONE]->set_import (imp, imp->exported);
     }
+
   gcc_assert (global_namespace == current_scope ());
 }
 
@@ -9483,7 +9447,18 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  module_state::do_import (name.get_location (), *name, true, exporting_p);
+  if (module_state *state
+      = module_state::find_module (name.get_location (), *name, true))
+    {
+      state->direct = true;
+      if (exporting_p)
+	{
+	  state->mod = MODULE_PURVIEW;
+	  state->exported = true;
+	}
+      else
+	state->do_import ();
+    }
 }
 
 /* Convert the module search path.  */
@@ -9520,7 +9495,7 @@ finish_module ()
 	  e = errno;
 	}
       location_t saved_loc = input_location;
-      input_location = state->loc;
+      input_location = state->imp_loc;
       unsigned n = dump.push (state);
       state->announce ("creating");
 
@@ -9528,8 +9503,8 @@ finish_module ()
       if (to.begin ())
 	state->write (&to);
       if (to.end ())
-	error_at (state->loc, "failed to export module %qE: %s", state->name,
-		  to.get_error ());
+	error_at (state->self_loc, "failed to export module %qE: %s",
+		  state->name, to.get_error ());
 
       dump.pop (n);
       input_location = saved_loc;
