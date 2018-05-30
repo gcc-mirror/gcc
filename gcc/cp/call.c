@@ -10923,13 +10923,11 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 	     lvalue-rvalue conversion applied to "a glvalue of literal type
 	     that refers to a non-volatile temporary object initialized
 	     with a constant expression".  Rather than try to communicate
-	     that this VAR_DECL is a temporary, just mark it constexpr.
-
-	     Currently this is only useful for initializer_list temporaries,
-	     since reference vars can't appear in constant expressions.  */
+	     that this VAR_DECL is a temporary, just mark it constexpr.  */
 	  DECL_DECLARED_CONSTEXPR_P (var) = true;
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (var) = true;
 	  TREE_CONSTANT (var) = true;
+	  TREE_READONLY (var) = true;
 	}
       DECL_INITIAL (var) = init;
       init = NULL_TREE;
