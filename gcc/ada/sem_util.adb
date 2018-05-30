@@ -22487,6 +22487,16 @@ package body Sem_Util is
          end if;
       end if;
 
+      --  In CodePeer mode and GNATprove mode, we need to consider all
+      --  assertions, unless they are disabled. Force Name_Check on
+      --  ignored assertions.
+
+      if Nam_In (Kind, Name_Ignore, Name_Off)
+        and then (CodePeer_Mode or GNATprove_Mode)
+      then
+         Kind := Name_Check;
+      end if;
+
       return Kind;
    end Policy_In_Effect;
 
