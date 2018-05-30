@@ -1,3 +1,9 @@
+2018-05-30  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Revert:
+	* config/aarch64/predicates.md (aarch64_mem_pair_lanes_operand): Make
+	address check not strict.
+
 2018-05-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85964

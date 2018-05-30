@@ -1,3 +1,8 @@
+2018-05-30  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Revert:
+	* gcc/target/aarch64/store_v2vec_lanes.c: Add extra tests.
+
 2017-05-30  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* gcc.target/aarch64/simd/ldp_stp_9: New.
