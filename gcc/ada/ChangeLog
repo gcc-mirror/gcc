@@ -1,3 +1,7 @@
+2018-05-30  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb: Minor comment fix.
+
 2018-05-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Visit_Node): Handle properly subprogram instantiations
