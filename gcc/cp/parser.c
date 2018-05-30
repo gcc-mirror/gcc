@@ -11594,10 +11594,13 @@ cp_parser_check_condition_declarator (cp_parser* parser,
                                      cp_declarator *declarator,
                                      location_t loc)
 {
-  if (function_declarator_p (declarator)
+  if (declarator == cp_error_declarator
+      || function_declarator_p (declarator)
       || declarator->kind == cdk_array)
     {
-      if (declarator->kind == cdk_array)
+      if (declarator == cp_error_declarator)
+	/* Already complained.  */;
+      else if (declarator->kind == cdk_array)
        error_at (loc, "condition declares an array");
       else
        error_at (loc, "condition declares a function");

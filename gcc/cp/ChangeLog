@@ -1,3 +1,8 @@
+2018-05-30  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_check_condition_declarator): Handle
+	cp_error_declarator.
+
 2018-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* typeck.c (cxx_sizeof_or_alignof_type): Return size_one_node instead
