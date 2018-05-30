@@ -3838,7 +3838,7 @@ package Einfo is
 --       been rewritten to an N_Package_Specification, the instantiation
 --       node is available from the Original_Node field of the package spec
 --       node. This is currently not guaranteed to be set in all cases, but
---       when set, the field is used in Get_Package_Instantiation_Node as
+--       when set, the field is used in Get_Unit_Instantiation_Node as
 --       one of the means of obtaining the instantiation node. Eventually
 --       it should be set in all cases, including package entities associated
 --       with formal packages. ???
