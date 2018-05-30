@@ -1,3 +1,8 @@
+2018-05-30  Borislav Petkov  <bp@suse.de>
+
+	* doc/extend.texi: Document some architecture specific
+	constraints and sort entries.
+
 2018-05-30  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/85369
