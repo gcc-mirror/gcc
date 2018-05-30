@@ -3013,6 +3013,19 @@ package body Sem_Ch13 is
                   goto Continue;
                end Initializes;
 
+               --  Max_Entry_Queue_Depth
+
+               when Aspect_Max_Entry_Queue_Depth =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name => Name_Max_Entry_Queue_Depth);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
                --  Max_Queue_Length
 
                when Aspect_Max_Queue_Length =>
@@ -9507,6 +9520,7 @@ package body Sem_Ch13 is
             | Aspect_Implicit_Dereference
             | Aspect_Initial_Condition
             | Aspect_Initializes
+            | Aspect_Max_Entry_Queue_Depth
             | Aspect_Max_Queue_Length
             | Aspect_Obsolescent
             | Aspect_Part_Of

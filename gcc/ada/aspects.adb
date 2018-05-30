@@ -568,6 +568,7 @@ package body Aspects is
     Aspect_Linker_Section               => Aspect_Linker_Section,
     Aspect_Lock_Free                    => Aspect_Lock_Free,
     Aspect_Machine_Radix                => Aspect_Machine_Radix,
+    Aspect_Max_Entry_Queue_Depth        => Aspect_Max_Entry_Queue_Depth,
     Aspect_Max_Queue_Length             => Aspect_Max_Queue_Length,
     Aspect_No_Elaboration_Code_All      => Aspect_No_Elaboration_Code_All,
     Aspect_No_Inline                    => Aspect_No_Inline,
