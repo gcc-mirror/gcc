@@ -1,5 +1,9 @@
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	* doc/invoke.texi (-flinker-output): Document
+
+2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	* passes.c (ipa_write_summaries): Only modify statements if body
 	is in memory.
 	* cgraphunit.c (ipa_passes): Also produce intermeidate code when
