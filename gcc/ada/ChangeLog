@@ -1,3 +1,9 @@
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Do not traverse a Component_Association
+	that has not been analyzed, as will be the case for a nested aggregate
+	that is expanded into individual assignments.
+
 2018-05-30  Justin Squirek  <squirek@adacore.com>
 
 	* aspects.adb, aspects.ads: Register new aspect.

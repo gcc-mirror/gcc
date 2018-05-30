@@ -775,6 +775,16 @@ package body Exp_Unst is
                      end case;
                   end;
 
+               --  Component associations in aggregates are either static
+               --  or else the aggregate will be expanded into assignments,
+               --  in which case the expression is analyzed later and provides
+               --  no relevant code generation.
+
+               when N_Component_Association =>
+                  if No (Etype (Expression (N))) then
+                     return Skip;
+                  end if;
+
                --  Indexed references can be uplevel if the type isn't static
                --  and if the lower bound (or an inner bound for a multi-
                --  dimensional array) is uplevel.
@@ -1865,8 +1875,7 @@ package body Exp_Unst is
 
          begin
             if Present (STT.ARECnF)
-              and then Nkind (CTJ.N) /= N_Attribute_Reference
-              and then Nkind (CTJ.N) /= N_Handled_Sequence_Of_Statements
+              and then Nkind (CTJ.N) in N_Subprogram_Call
             then
                --  CTJ.N is a call to a subprogram which may require a pointer
                --  to an activation record. The subprogram containing the call
