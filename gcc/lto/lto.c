@@ -3257,7 +3257,8 @@ static void
 lto_process_name (void)
 {
   if (flag_lto)
-    setproctitle ("lto1-lto");
+    setproctitle (flag_incremental_link == INCREMENTAL_LINK_LTO
+		  ? "lto1-inclink" : "lto1-lto");
   if (flag_wpa)
     setproctitle ("lto1-wpa");
   if (flag_ltrans)

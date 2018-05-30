@@ -495,7 +495,8 @@ compile_file (void)
 
   /* Compilation unit is finalized.  When producing non-fat LTO object, we are
      basically finished.  */
-  if (in_lto_p || !flag_lto || flag_fat_lto_objects)
+  if ((in_lto_p && flag_incremental_link != INCREMENTAL_LINK_LTO)
+      || !flag_lto || flag_fat_lto_objects)
     {
       /* File-scope initialization for AddressSanitizer.  */
       if (flag_sanitize & SANITIZE_ADDRESS)

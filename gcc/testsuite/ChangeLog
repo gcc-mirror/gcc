@@ -1,3 +1,68 @@
+2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* testsuite/g++.dg/lto/20081109-1_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20081118_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20081119-1_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20081120-1_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20081120-2_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20081123_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20081204-1_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20081219_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20090302_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20090313_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20091002-2_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20091002-3_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20091026-1_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20100724-1_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20101010-4_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20101015-2_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/20110311-1_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/pr45621_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/pr48042_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/pr48354-1_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/pr54625-1_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/pr54625-2_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/lto/pr68811_0.C: Add -flinker-output=nolto-rel.
+	* testsuite/g++.dg/torture/pr43760.C: New test. Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20081120-1_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20081120-2_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20081126_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20081204-1_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20081204-2_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20081212-1_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20081224_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20090116_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20090126-1_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20090126-2_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20090206-1_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20090219_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20091013-1_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20091014-1_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20091015-1_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20091016-1_0.c: Add -flinker-output=nolto-rel.
+	* testsuite/gcc.dg/lto/20091020-1_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/20091020-2_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/20091027-1_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/20100426_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/20100430-1_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/20100603-1_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/20100603-2_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/20100603-3_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/20111213-1_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/pr45736_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/pr52634_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/pr54702_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/pr59323-2_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/pr59323_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/pr60820_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/pr81406_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gcc.dg/lto/pr83388_0.c: Add -flinker-output-nolto-rel.
+	* testsuite/gfortran.dg/lto/20091016-1_0.f90: Add -flinker-output-nolto-rel.
+	* testsuite/gfortran.dg/lto/20091028-1_0.f90: Add -flinker-output-nolto-rel.
+	* testsuite/gfortran.dg/lto/20091028-2_0.f90: Add -flinker-output-nolto-rel.
+	* testsuite/gfortran.dg/lto/pr46911_0.f: Add -flinker-output-nolto-rel.
+	* testsuite/gfortran.dg/lto/pr47839_0.f90: Add -flinker-output-nolto-rel.
+
 2018-05-30  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Revert:
