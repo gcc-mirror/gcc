@@ -3022,7 +3022,7 @@
 ;; is guaranteed so upper bits should be considered undefined.
 ;; RTL uses GCC vector extension indices throughout so flip only for assembly.
 (define_insn "aarch64_get_lane<mode>"
-  [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
+  [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=?r, w, Utv")
 	(vec_select:<VEL>
 	  (match_operand:VALL_F16 1 "register_operand" "w, w, w")
 	  (parallel [(match_operand:SI 2 "immediate_operand" "i, i, i")])))]

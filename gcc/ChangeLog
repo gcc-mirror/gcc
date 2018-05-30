@@ -1,3 +1,10 @@
+2018-05-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_ira_change_pseudo_allocno_class):
+	Check for subset of GENERAL_REGS and FP_REGS.
+	* config/aarch64/aarch64-simd.md (aarch64_get_lane): Increase cost of
+	r=w alternative.
+
 2018-05-30  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* alias.c (adjust_offset_for_component_ref): Use poly_int_tree_p
