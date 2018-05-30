@@ -1,6 +1,9 @@
 2018-05-30  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
-	* gcc/config/msp430/msp430.md: Remove erroneous subreg expression from
+	* tree-core.h: Update comment about the format of NAME string
+	passed to handler in attribute_spec.
+
+	* config/msp430/msp430.md: Remove erroneous subreg expression from
 	zero_extendqisi2 insn pattern. Remove msp430x ISA restriction on
 	zero_extend{q,h}isi2.
 
