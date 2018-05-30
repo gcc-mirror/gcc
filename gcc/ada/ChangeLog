@@ -1,3 +1,11 @@
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Handle properly subprogram instantiations
+	that have no corresponding body and appear as attributes of the
+	corresponding wrapper package declaration.
+	(Register_Subprogram): New subprogram, used for subprogram bodies and
+	for subprogram instantiations to enter callable entity into Subp table.
+
 2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* libgnat/s-secsta.adb: Reimplement the secondary stack support.
