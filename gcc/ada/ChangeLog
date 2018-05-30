@@ -1,3 +1,7 @@
+2018-05-30  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-sestin.ads: Rework documentation comments.
+
 2018-05-30  Piotr Trojanek  <trojanek@adacore.com>
 
 	* errout.adb, exp_aggr.adb, exp_ch7.adb, exp_util.adb, lib.adb,
