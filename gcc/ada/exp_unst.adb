@@ -2037,6 +2037,17 @@ package body Exp_Unst is
          return;
       end if;
 
+      --  A specification will contain bodies if it contains instantiations
+      --  so examine package or subprogram declaration of the main unit,
+      --  when it is present.
+
+      if Nkind (Unit (N)) = N_Package_Body
+          or else (Nkind (Unit (N)) = N_Subprogram_Body
+                     and then not Acts_As_Spec (N))
+      then
+         Do_Search (Library_Unit (N));
+      end if;
+
       Do_Search (N);
    end Unnest_Subprograms;
 
