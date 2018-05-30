@@ -1,3 +1,15 @@
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): The statement part of
+	a package body that is a compilation unit may contain blocks that
+	declare local subprograms.  In Subprogram_Unnesting Mode such
+	subprograms must be handled as nested inside the (implicit) elaboration
+	procedure that executes that statement part. To handle properly uplevel
+	references we construct that subprogram explicitly, to contain blocks
+	and inner subprograms, The statement part of the compilation unit
+	becomes a call to this subprogram. This is only done if blocks are
+	present in the statement list of the body.
+
 2018-05-30  Bob Duff  <duff@adacore.com>
 
 	* exp_ch7.adb: Minor comment fix.

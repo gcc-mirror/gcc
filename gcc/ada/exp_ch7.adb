@@ -350,6 +350,16 @@ package body Exp_Ch7 is
    --  Build the deep Initialize/Adjust/Finalize for a record Typ with
    --  Has_Component_Component set and store them using the TSS mechanism.
 
+   procedure Check_Unnesting_Elaboration_Code (N : Node_Id);
+   --  The statement part of a package body that is a compilation unit may
+   --  contain blocks that declare local subprograms. In Subprogram_Unnesting
+   --  Mode such subprograms must be handled as nested inside the (implicit)
+   --  elaboration procedure that executes that statement part. To handle
+   --  properly uplevel references we construct that subprogram explicitly,
+   --  to contain blocks and inner subprograms, The statement part becomes
+   --  a call to this subprogram. This is only done if blocks are present
+   --  in the statement list of the body.
+
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;
       Typ  : Entity_Id;
@@ -3974,6 +3984,73 @@ package body Exp_Ch7 is
       end if;
    end Cleanup_Task;
 
+   -----------------------------------
+   -- Check_Unnesting_Elaboration_Code --
+   -----------------------------------
+
+   procedure Check_Unnesting_Elaboration_Code (N : Node_Id) is
+      Loc       : constant Source_Ptr := Sloc (N);
+      Elab_Body : Node_Id;
+      Elab_Call : Node_Id;
+      Elab_Proc : Entity_Id;
+      Stat      : Node_Id;
+
+   begin
+      if Unnest_Subprogram_Mode
+        and then Present (Handled_Statement_Sequence (N))
+        and then Is_Compilation_Unit (Current_Scope)
+      then
+         Stat := First (Statements (Handled_Statement_Sequence (N)));
+         while Present (Stat) loop
+            if Nkind (Stat) = N_Block_Statement then
+               exit;
+            end if;
+
+            Next (Stat);
+         end loop;
+
+         if Present (Stat) then
+            Elab_Proc :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_Internal_Name ('I'));
+
+            Elab_Body := Make_Subprogram_Body (Loc,
+              Specification =>
+                Make_Procedure_Specification (Loc,
+                  Defining_Unit_Name => Elab_Proc),
+              Declarations => New_List,
+              Handled_Statement_Sequence =>
+                 Relocate_Node (Handled_Statement_Sequence (N)));
+
+            Elab_Call := Make_Procedure_Call_Statement (Loc,
+               New_Occurrence_Of (Elab_Proc, Loc));
+            Append_To (Declarations (N), Elab_Body);
+            Analyze (Elab_Body);
+            Set_Has_Nested_Subprogram (Elab_Proc);
+
+            Set_Handled_Statement_Sequence (N,
+               Make_Handled_Sequence_Of_Statements (Loc,
+                  Statements => New_List (Elab_Call)));
+            Analyze (Elab_Call);
+
+            --  The scope of all blocks in the elaboration code is
+            --  now the constructed elaboration procedure. Nested
+            --  subprograms within those blocks will have activation
+            --  records if they contain references to entities in the
+            --  enclosing block.
+
+            Stat := First
+                      (Statements (Handled_Statement_Sequence (Elab_Body)));
+            while Present (Stat) loop
+               if Nkind (Stat) = N_Block_Statement then
+                  Set_Scope (Entity (Identifier (Stat)), Elab_Proc);
+               end if;
+               Next (Stat);
+            end loop;
+         end if;
+      end if;
+   end Check_Unnesting_Elaboration_Code;
+
    ------------------------------
    -- Check_Visibly_Controlled --
    ------------------------------
@@ -4702,6 +4779,7 @@ package body Exp_Ch7 is
          --  end of the body statements.
 
          Expand_Pragma_Initial_Condition (Spec_Id, N);
+         Check_Unnesting_Elaboration_Code (N);
 
          Pop_Scope;
       end if;
