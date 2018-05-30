@@ -1,3 +1,7 @@
+2018-05-30  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Remove conjuncts that are always true.
+
 2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_util.adb (Is_Atomic_Object): Cleaned up. Split the entity logic
