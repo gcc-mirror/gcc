@@ -17761,6 +17761,10 @@ package body Sem_Util is
             K : constant Entity_Kind := Ekind (E);
 
          begin
+            if Is_Loop_Parameter (E) then
+               return False;
+            end if;
+
             return    (K = E_Variable
                         and then Nkind (Parent (E)) /= N_Exception_Handler)
               or else (K = E_Component

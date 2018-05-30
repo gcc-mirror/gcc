@@ -1,3 +1,22 @@
+2018-05-30  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Element_Loop): Remove the code
+	to analyze the Elmt_Decl, because it gets analyzed in the wrong scope.
+	We need to analyze it as part of analyzing the block, so that if the
+	call to Element that initializes Elmt_Decl returns on the secondary
+	stack, the block will ss_mark/ss_release. This block is inside the
+	loop; we don't want to leak memory until the loop exits.  The purpose
+	of analyzing Elmt_Decl first was to catch the error of modifying it,
+	which is illegal because it's a loop parameter. The above causes us to
+	miss that error.  Therefore, we add a flag Is_Loop_Parameter, and set
+	it on the Element entity, so we end up with an E_Variable node with the
+	flag set.
+	* einfo.ads, einfo.adb (Is_Loop_Parameter): New flag.
+	* sem_ch5.adb (Diagnose_Non_Variable_Lhs): Give the "assignment to loop
+	parameter not allowed" error if Is_Loop_Parameter.
+	* sem_util.adb (Is_Variable): Return False if Is_Loop_Parameter, to
+	trigger the call to Diagnose_Non_Variable_Lhs.
+
 2018-05-30  Arnaud Charlet  <charlet@adacore.com>
 
 	* checks.adb (Apply_Scalar_Range_Check):

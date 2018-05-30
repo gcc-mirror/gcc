@@ -169,7 +169,13 @@ package body Sem_Ch5 is
                Ent : constant Entity_Id := Entity (N);
 
             begin
-               if Ekind (Ent) = E_In_Parameter then
+               if Ekind (Ent) = E_Loop_Parameter
+                 or else Is_Loop_Parameter (Ent)
+               then
+                  Error_Msg_N ("assignment to loop parameter not allowed", N);
+                  return;
+
+               elsif Ekind (Ent) = E_In_Parameter then
                   Error_Msg_N
                     ("assignment to IN mode parameter not allowed", N);
                   return;
@@ -186,10 +192,6 @@ package body Sem_Ch5 is
                then
                   Error_Msg_N
                     ("protected function cannot modify protected object", N);
-                  return;
-
-               elsif Ekind (Ent) = E_Loop_Parameter then
-                  Error_Msg_N ("assignment to loop parameter not allowed", N);
                   return;
                end if;
             end;
