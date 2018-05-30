@@ -1,3 +1,9 @@
+2018-05-30  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc/config/msp430/msp430.md: Remove erroneous subreg expression from
+	zero_extendqisi2 insn pattern. Remove msp430x ISA restriction on
+	zero_extend{q,h}isi2.
+
 2018-05-30  Borislav Petkov  <bp@suse.de>
 
 	* doc/extend.texi: Document some architecture specific
