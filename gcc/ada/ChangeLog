@@ -1,3 +1,9 @@
+2018-05-30  Olivier Hainque  <hainque@adacore.com>
+
+	* vx_crtbegin_attr.c (CTOR_ATTRIBUTE, DTOR_ATTRIBUTE): Empty.
+	(eh_registration_ctors, eh_registration_tors): New static variables,
+	forced in a .ctors/.dtors section, respectively, with priority.
+
 2018-05-30  Bob Duff  <duff@adacore.com>
 
 	* aspects.ads, contracts.adb, exp_util.adb, expander.adb, expander.ads,

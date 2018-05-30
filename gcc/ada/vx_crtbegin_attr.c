@@ -31,12 +31,19 @@
 
 /* crtbegin kind of file for ehframe registration/deregistration
    purposes on VxWorks.  This variant exposes the ctor/dtor functions
-   as explicit constructors, expected to be placed in a .ctors/.dtors
-   section.  */
+   as explicit constructors referenced from a .ctors/.dtors section.  */
+
+#define CTOR_ATTRIBUTE
+#define DTOR_ATTRIBUTE
+
+#include "vx_crtbegin.inc"
 
 /* 101 is the highest user level priority allowed by VxWorks.  */
 
-#define CTOR_ATTRIBUTE __attribute__((constructor(101)))
-#define DTOR_ATTRIBUTE __attribute__((destructor(101)))
+static void (* volatile eh_registration_ctors[])()
+  __attribute__((section (".ctors.65424")))
+= { &CTOR_NAME };
 
-#include "vx_crtbegin.inc"
+static void (* volatile eh_registration_dtors[])()
+  __attribute__((section (".dtors.65424")))
+= { &DTOR_NAME };
