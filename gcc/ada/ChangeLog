@@ -1,3 +1,8 @@
+2018-05-30  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads (Package_Instantiation): Update comment after a routine
+	that uses this field has been renamed.
+
 2018-05-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch11.adb (Replace_Raise_By_Goto): The transfomation is legal even
