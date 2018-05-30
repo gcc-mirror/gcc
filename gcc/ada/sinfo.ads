@@ -640,7 +640,7 @@ package Sinfo is
 
    --  The tree after this light expansion should be fully analyzed
    --  semantically, which sometimes requires the insertion of semantic
-   --  pre-analysis, for example for subprogram contracts and pragma
+   --  preanalysis, for example for subprogram contracts and pragma
    --  check/assert. In particular, all expression must have their proper type,
    --  and semantic links should be set between tree nodes (partial to full
    --  view, etc.) Some kinds of nodes should be either absent, or can be

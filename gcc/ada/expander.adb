@@ -125,12 +125,12 @@ package body Expander is
 
       --  The first is when are not generating code. In this mode the
       --  Full_Analysis flag indicates whether we are performing a complete
-      --  analysis, in which case Full_Analysis = True or a pre-analysis in
+      --  analysis, in which case Full_Analysis = True or a preanalysis in
       --  which case Full_Analysis = False. See the spec of Sem for more info
       --  on this.
 
       --  The second reason for the Expander_Active flag to be False is that
-      --  we are performing a pre-analysis. During pre-analysis all expansion
+      --  we are performing a preanalysis. During preanalysis all expansion
       --  activity is turned off to make sure nodes are semantically decorated
       --  but no extra nodes are generated. This is for instance needed for
       --  the first pass of aggregate semantic processing. Note that in this

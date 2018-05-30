@@ -59,7 +59,7 @@
 --    5. If the semantic analysis of expressions/names in the aspect should not
 --       occur at the point the aspect is defined, add code in the adequate
 --       semantic analysis procedure for the aspect. For example, this is the
---       case for aspects Pre and Post on subprograms, which are pre-analyzed
+--       case for aspects Pre and Post on subprograms, which are preanalyzed
 --       at the end of the declaration list to which the subprogram belongs,
 --       and fully analyzed (possibly with expansion) during the semantic
 --       analysis of subprogram bodies.

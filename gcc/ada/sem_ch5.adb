@@ -2278,7 +2278,7 @@ package body Sem_Ch5 is
          begin
 
             --  If the domain of iteration is an array component that depends
-            --  on a discriminant, create actual subtype for it. Pre-analysis
+            --  on a discriminant, create actual subtype for it. preanalysis
             --  does not generate the actual subtype of a selected component.
 
             if Nkind (Iter_Name) = N_Selected_Component
@@ -2702,7 +2702,7 @@ package body Sem_Ch5 is
       --  If the iteration is given by a range, create temporaries and
       --  assignment statements block to capture the bounds and perform
       --  required finalization actions in case a bound includes a function
-      --  call that uses the temporary stack. We first pre-analyze a copy of
+      --  call that uses the temporary stack. We first preanalyze a copy of
       --  the range in order to determine the expected type, and analyze and
       --  resolve the original bounds.
 
@@ -3131,7 +3131,7 @@ package body Sem_Ch5 is
 
          else
             --  A quantified expression that appears in a pre/post condition
-            --  is pre-analyzed several times.  If the range is given by an
+            --  is preanalyzed several times.  If the range is given by an
             --  attribute reference it is rewritten as a range, and this is
             --  done even with expansion disabled. If the type is already set
             --  do not reanalyze, because a range with static bounds may be

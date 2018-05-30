@@ -119,7 +119,7 @@ package body Sem_Ch13 is
    --  Build the declaration for a predicate function. The declaration is built
    --  at the end of the declarative part containing the type definition, which
    --  may be before the freeze point of the type. The predicate expression is
-   --  pre-analyzed at this point, to catch visibility errors.
+   --  preanalyzed at this point, to catch visibility errors.
 
    procedure Build_Predicate_Functions (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ),
@@ -8839,7 +8839,7 @@ package body Sem_Ch13 is
 
             --  within a generic unit, prevent a double analysis of the body
             --  which will not be marked analyzed yet. This will happen when
-            --  the freeze node is created during the pre-analysis of an
+            --  the freeze node is created during the preanalysis of an
             --  expression function.
 
             if Inside_A_Generic then
