@@ -10118,6 +10118,17 @@ package body Sem_Res is
          Set_Etype (N, Typ);
          Set_Entity_With_Checks (S, Comp1);
 
+         --  The type of the context and that of the component are
+         --  compatible and in general identical, but if they are anonymous
+         --  access_to_subprogram types the relevwnt type is that of the
+         --  component. Thid matters in Unnest_Subprograms mode, where the
+         --  relevant context is the one in which the type is declared. not
+         --  the point of use. this determines what activation record to use.
+
+         if Ekind (Typ) = E_Anonymous_Access_Subprogram_Type then
+            Set_Etype (N, Etype (Comp1));
+         end if;
+
       else
          --  Resolve prefix with its type
 
