@@ -1,3 +1,13 @@
+2018-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85964
+	* tracer.c (better_p): Drop initialized count check, we only
+	call the function with initialized counts now.
+	(find_best_successor): Do find a best edge if one
+	has uninitialized count.
+	(find_best_predecessor): Likewise.  Do BB frequency check only
+	if count is initialized.
+
 2017-05-30  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_host_wide_int_compare): New.
