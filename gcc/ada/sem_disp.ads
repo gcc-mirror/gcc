@@ -105,9 +105,8 @@ package Sem_Disp is
    package Inheritance_Utilities is
 
       --  This package provides generic versions of inheritance utilities
-      --  provided here. These versions are used in GNATprove backend to
-      --  adapt these utilities to GNATprove specific version of visibility of
-      --  types.
+      --  provided here. These versions are used in GNATprove backend to adapt
+      --  these utilities to GNATprove specific version of visibility of types.
 
       function Inherited_Subprograms
         (S               : Entity_Id;

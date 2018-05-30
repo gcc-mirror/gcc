@@ -111,8 +111,8 @@ package Ada.Calendar.Conversions is
    --  units of the result are seconds. Raises Time_Error if the result cannot
    --  fit into a Time value.
 
-   function To_Unix_Nano_Time (Ada_Time : Time) return
-      Interfaces.C.Extensions.long_long;
+   function To_Unix_Nano_Time
+     (Ada_Time : Time) return Interfaces.C.Extensions.long_long;
    --  Convert a time value represented as number of time units since the Ada
    --  implementation-defined Epoch to a value relative to the Unix Epoch. The
    --  units of the result are nanoseconds. Raises Time_Error if the result

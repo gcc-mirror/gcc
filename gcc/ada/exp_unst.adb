@@ -367,7 +367,9 @@ package body Exp_Unst is
             Callee : Entity_Id;
 
             procedure Check_Static_Type
-              (T : Entity_Id; N : Node_Id; DT : in out Boolean);
+              (T  : Entity_Id;
+               N  : Node_Id;
+               DT : in out Boolean);
             --  Given a type T, checks if it is a static type defined as a type
             --  with no dynamic bounds in sight. If so, the only action is to
             --  set Is_Static_Type True for T. If T is not a static type, then
@@ -391,7 +393,9 @@ package body Exp_Unst is
             -----------------------
 
             procedure Check_Static_Type
-              (T : Entity_Id; N : Node_Id; DT : in out Boolean)
+              (T  : Entity_Id;
+               N  : Node_Id;
+               DT : in out Boolean)
             is
                procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id);
                --  N is the bound of a dynamic type. This procedure notes that
@@ -410,9 +414,9 @@ package body Exp_Unst is
                begin
                   --  Entity name case. Make sure that the entity is declared
                   --  in a subprogram. This may not be the case for for a type
-                  --  in a loop appearing in a precondition.
-                  --  Exclude explicitly  discriminants (that can appear
-                  --  in bounds of discriminated components).
+                  --  in a loop appearing in a precondition. Exclude explicitly
+                  --  discriminants (that can appear in bounds of discriminated
+                  --  components).
 
                   if Is_Entity_Name (N) then
                      if Present (Entity (N))
@@ -645,14 +649,14 @@ package body Exp_Unst is
                   end if;
                end if;
 
-               --  for all calls where the formal is an unconstrained array
-               --  and the actual is constrained we need to check the bounds.
+               --  for all calls where the formal is an unconstrained array and
+               --  the actual is constrained we need to check the bounds.
 
                declare
-                  Subp   : Entity_Id;
                   Actual : Entity_Id;
-                  Formal : Node_Id;
                   DT     : Boolean := False;
+                  Formal : Node_Id;
+                  Subp   : Entity_Id;
 
                begin
                   if Nkind (Name (N)) = N_Explicit_Dereference then
@@ -679,12 +683,11 @@ package body Exp_Unst is
             elsif Nkind (N) = N_Handled_Sequence_Of_Statements
               and then Present (At_End_Proc (N))
             then
+               --  An At_End_Proc means there's a call from this block to that
+               --  subprogram.
 
-               --  An At_End_Proc means there's a call from this block
-               --  to that subprogram.
-
-               Append_Unique_Call ((N, Current_Subprogram,
-                                     Entity (At_End_Proc (N))));
+               Append_Unique_Call
+                 ((N, Current_Subprogram, Entity (At_End_Proc (N))));
 
             --  Handle a 'Access as a (potential) call
 
@@ -692,6 +695,7 @@ package body Exp_Unst is
                declare
                   Attr : constant Attribute_Id :=
                            Get_Attribute_Id (Attribute_Name (N));
+
                begin
                   case Attr is
                      when Attribute_Access
@@ -715,8 +719,8 @@ package body Exp_Unst is
                            end if;
                         end if;
 
-                     --  References to bounds can be uplevel references if
-                     --  the type isn't static.
+                     --  References to bounds can be uplevel references if the
+                     --  type isn't static.
 
                      when Attribute_First
                         | Attribute_Last
@@ -733,8 +737,8 @@ package body Exp_Unst is
                            declare
                               DT : Boolean := False;
                            begin
-                              Check_Static_Type (Etype (Prefix (N)),
-                                                 Empty, DT);
+                              Check_Static_Type
+                                (Etype (Prefix (N)), Empty, DT);
                            end;
 
                            return OK;
@@ -759,13 +763,12 @@ package body Exp_Unst is
                end;
 
             --  A selected component can have an implicit up-level reference
-            --  due to the bounds of previous fields in the record. We
-            --  simplify the processing here by examining all components
-            --  of the record.
+            --  due to the bounds of previous fields in the record. We simplify
+            --  the processing here by examining all components of the record.
 
             --  Selected components appear as unit names and end labels for
-            --  child units. The prefixes of these nodes denote parent
-            --  units and carry no type information so they are skipped.
+            --  child units. The prefixes of these nodes denote parent units
+            --  and carry no type information so they are skipped.
 
             elsif Nkind (N) = N_Selected_Component
               and then Present (Etype (Prefix (N)))
@@ -776,8 +779,8 @@ package body Exp_Unst is
                   Check_Static_Type (Etype (Prefix (N)), Empty, DT);
                end;
 
-            --  Record a subprogram. We record a subprogram body that acts as
-            --  a spec. Otherwise we record a subprogram declaration, providing
+            --  Record a subprogram. We record a subprogram body that acts as a
+            --  spec. Otherwise we record a subprogram declaration, providing
             --  that it has a corresponding body we can get hold of. The case
             --  of no corresponding body being available is ignored for now.
 

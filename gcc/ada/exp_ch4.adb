@@ -2435,10 +2435,10 @@ package body Exp_Ch4 is
          else
             declare
                Comp_Typ : Entity_Id;
+               Hi       : Node_Id;
                Indx     : Node_Id;
                Ityp     : Entity_Id;
                Lo       : Node_Id;
-               Hi       : Node_Id;
 
             begin
                --  Do the comparison in the type (or its full view) and not in
@@ -10976,10 +10976,10 @@ package body Exp_Ch4 is
          Xtyp : constant Entity_Id := Etype (Operand);
 
          Conv   : Node_Id;
-         Lo_Arg : Node_Id;
-         Lo_Val : Node_Id;
          Hi_Arg : Node_Id;
          Hi_Val : Node_Id;
+         Lo_Arg : Node_Id;
+         Lo_Val : Node_Id;
          Tnn    : Entity_Id;
 
       begin
@@ -11103,7 +11103,7 @@ package body Exp_Ch4 is
          if Is_Ordinary_Fixed_Point_Type (Target_Type)
            and then Is_Floating_Point_Type (Operand_Type)
            and then RM_Size (Base_Type (Target_Type)) <=
-             RM_Size (Standard_Long_Integer)
+                    RM_Size (Standard_Long_Integer)
            and then Nkind (Lo) = N_Real_Literal
            and then Nkind (Hi) = N_Real_Literal
          then
@@ -11120,9 +11120,7 @@ package body Exp_Ch4 is
                if RM_Size (Bfx_Type) > RM_Size (Standard_Integer) then
                   Int_Type := Standard_Long_Integer;
 
-               elsif
-                 RM_Size (Bfx_Type) > RM_Size (Standard_Short_Integer)
-               then
+               elsif RM_Size (Bfx_Type) > RM_Size (Standard_Short_Integer) then
                   Int_Type := Standard_Integer;
 
                else
@@ -11145,40 +11143,44 @@ package body Exp_Ch4 is
 
                --  Create integer objects for range checking of result.
 
-               Lo_Arg := Unchecked_Convert_To (Int_Type,
-                           New_Occurrence_Of (Expr_Id, Loc));
-               Lo_Val := Make_Integer_Literal (Loc,
-                           Corresponding_Integer_Value (Lo));
+               Lo_Arg :=
+                 Unchecked_Convert_To
+                   (Int_Type, New_Occurrence_Of (Expr_Id, Loc));
 
-               Hi_Arg := Unchecked_Convert_To (Int_Type,
-                           New_Occurrence_Of (Expr_Id, Loc));
-               Hi_Val := Make_Integer_Literal (Loc,
-                           Corresponding_Integer_Value (Hi));
+               Lo_Val :=
+                 Make_Integer_Literal (Loc, Corresponding_Integer_Value (Lo));
+
+               Hi_Arg :=
+                 Unchecked_Convert_To
+                   (Int_Type, New_Occurrence_Of (Expr_Id, Loc));
+
+               Hi_Val :=
+                 Make_Integer_Literal (Loc, Corresponding_Integer_Value (Hi));
 
                --  Rewrite conversion as an integer conversion of the
                --  original floating-point expression, followed by an
                --  unchecked conversion to the target fixed-point type.
 
-               Conv   := Make_Unchecked_Type_Conversion (Loc,
-                           Subtype_Mark =>
-                             New_Occurrence_Of (Target_Type, Loc),
-                           Expression   =>
-                             New_Occurrence_Of (Expr_Id, Loc));
+               Conv :=
+                 Make_Unchecked_Type_Conversion (Loc,
+                   Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
+                   Expression   => New_Occurrence_Of (Expr_Id, Loc));
             end;
 
-         else  -- For all other conversions
+         --  All other conversions
 
+         else
             Lo_Arg := New_Occurrence_Of (Tnn, Loc);
-            Lo_Val := Make_Attribute_Reference (Loc,
-                       Attribute_Name => Name_First,
-                         Prefix =>
-                           New_Occurrence_Of (Target_Type, Loc));
+            Lo_Val :=
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Occurrence_Of (Target_Type, Loc),
+                Attribute_Name => Name_First);
 
             Hi_Arg := New_Occurrence_Of (Tnn, Loc);
-            Hi_Val := Make_Attribute_Reference (Loc,
-                       Attribute_Name => Name_Last,
-                         Prefix =>
-                           New_Occurrence_Of (Target_Type, Loc));
+            Hi_Val :=
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Occurrence_Of (Target_Type, Loc),
+                Attribute_Name => Name_Last);
          end if;
 
          --  Build code for range checking
@@ -11189,18 +11191,20 @@ package body Exp_Ch4 is
              Object_Definition   => New_Occurrence_Of (Btyp, Loc),
              Constant_Present    => True,
              Expression          => Conv),
+
            Make_Raise_Constraint_Error (Loc,
-              Condition =>
-              Make_Or_Else (Loc,
-                  Make_Op_Lt (Loc,
-                    Left_Opnd  => Lo_Arg,
-                    Right_Opnd => Lo_Val),
+             Condition =>
+               Make_Or_Else (Loc,
+                 Left_Opnd  =>
+                   Make_Op_Lt (Loc,
+                     Left_Opnd  => Lo_Arg,
+                     Right_Opnd => Lo_Val),
 
                 Right_Opnd =>
                   Make_Op_Gt (Loc,
                     Left_Opnd  => Hi_Arg,
                     Right_Opnd => Hi_Val)),
-              Reason => CE_Range_Check_Failed)));
+              Reason   => CE_Range_Check_Failed)));
 
          Rewrite (N, New_Occurrence_Of (Tnn, Loc));
          Analyze_And_Resolve (N, Btyp);
@@ -11210,8 +11214,8 @@ package body Exp_Ch4 is
       -- Has_Extra_Accessibility --
       -----------------------------
 
-      --  Returns true for a formal of an anonymous access type or for
-      --  an Ada 2012-style stand-alone object of an anonymous access type.
+      --  Returns true for a formal of an anonymous access type or for an Ada
+      --  2012-style stand-alone object of an anonymous access type.
 
       function Has_Extra_Accessibility (Id : Entity_Id) return Boolean is
       begin

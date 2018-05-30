@@ -1554,22 +1554,20 @@ package body Exp_Ch3 is
 
       if Needs_Conditional_Null_Excluding_Check (Full_Init_Type) then
 
-         --  Look at the associated node for the object we are referencing and
-         --  verify that we are expanding a call to an Init_Proc for an
+         --  Look at the associated node for the object we are referencing
+         --  and verify that we are expanding a call to an Init_Proc for an
          --  internally generated object declaration before passing True and
          --  skipping the relevant checks.
 
          if Nkind (Id_Ref) in N_Has_Entity
            and then Comes_From_Source (Associated_Node (Id_Ref))
          then
-            Append_To (Args,
-              New_Occurrence_Of (Standard_True, Loc));
+            Append_To (Args, New_Occurrence_Of (Standard_True, Loc));
 
          --  Otherwise, we pass False to perform null-excluding checks
 
          else
-            Append_To (Args,
-              New_Occurrence_Of (Standard_False, Loc));
+            Append_To (Args, New_Occurrence_Of (Standard_False, Loc));
          end if;
       end if;
 

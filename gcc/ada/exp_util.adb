@@ -10449,8 +10449,8 @@ package body Exp_Util is
      (Typ : Entity_Id) return Boolean
    is
    begin
-      return Is_Array_Type (Typ)
-               and then Can_Never_Be_Null (Component_Type (Typ));
+      return
+        Is_Array_Type (Typ) and then Can_Never_Be_Null (Component_Type (Typ));
    end Needs_Conditional_Null_Excluding_Check;
 
    ----------------------------
@@ -10495,7 +10495,6 @@ package body Exp_Util is
          return False;
 
       else
-
          --  Otherwise, we require the address clause to be constant because
          --  the call to the initialization procedure (or the attach code) has
          --  to happen at the point of the declaration.

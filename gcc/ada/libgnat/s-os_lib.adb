@@ -2235,8 +2235,9 @@ package body System.OS_Lib is
       --  and additional fragments up to Max_Path in length in case
       --  there are any symlinks.
 
-      Start, Finish : Positive;
-      Status        : Integer;
+      Finish : Positive;
+      Start  : Positive;
+      Status : Integer;
 
    --  Start of processing for Normalize_Pathname
 

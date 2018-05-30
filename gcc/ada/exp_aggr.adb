@@ -4490,7 +4490,7 @@ package body Exp_Aggr is
                      return False;
                   end if;
 
-                  --  Duplicate expression for each index it covers.
+                  --  Duplicate expression for each index it covers
 
                   Vals (Num) := New_Copy_Tree (Elmt);
                   Num := Num + 1;

@@ -506,9 +506,8 @@ package Exp_Util is
    --  to repeat the checks.
 
    function Enclosing_Init_Proc return Entity_Id;
-   --  Obtain the entity associated with the enclosing type Init_Proc by
-   --  examining the current scope. If not inside an Init_Proc at the point of
-   --  call Empty will be returned.
+   --  Obtain the entity of the type initialization procedure which encloses
+   --  the current scope. Return Empty if no such procedure exists.
 
    procedure Ensure_Defined (Typ : Entity_Id; N : Node_Id);
    --  This procedure ensures that type referenced by Typ is defined. For the

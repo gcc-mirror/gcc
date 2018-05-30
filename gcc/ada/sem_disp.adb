@@ -2221,7 +2221,7 @@ package body Sem_Disp is
          --  table, but it would be awfully heavy, and there is no way that we
          --  could reasonably exceed this value.
 
-         N      : Nat := 0;
+         N : Nat := 0;
          --  Number of entries in Result
 
          Parent_Op : Entity_Id;
@@ -2246,7 +2246,7 @@ package body Sem_Disp is
             Result (N) := E;
          end Store_IS;
 
-         --  Start of processing for Inherited_Subprograms
+      --  Start of processing for Inherited_Subprograms
 
       begin
          pragma Assert (not (No_Interfaces and Interfaces_Only));
@@ -2258,7 +2258,6 @@ package body Sem_Disp is
            and then Is_Dispatching_Operation (S)
            and then Present (Find_DT (S))
          then
-
             --  Deal with direct inheritance
 
             if not Interfaces_Only then
@@ -2266,10 +2265,8 @@ package body Sem_Disp is
                loop
                   Parent_Op := Overridden_Operation (Parent_Op);
                   exit when No (Parent_Op)
-                    or else
-                      (No_Interfaces
-                       and then
-                       Is_Interface (Find_DT (Parent_Op)));
+                    or else (No_Interfaces
+                              and then Is_Interface (Find_DT (Parent_Op)));
 
                   if Is_Subprogram_Or_Generic_Subprogram (Parent_Op) then
                      Store_IS (Parent_Op);
