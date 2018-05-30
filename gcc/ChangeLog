@@ -1,3 +1,10 @@
+2018-05-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/85369
+	* builtins.c (expand_builtin_stpcpy_1): New function.
+	(expand_builtin_stpcpy): Call it, and call maybe_warn_nonstring_arg
+	only if the former succeeds.
+
 2018-05-31 Sameera Deshpande <sameera.deshpande@linaro.org>
 
 	* config/aarch64/aarch64-cores.def (saphira) : Add support for ARMv8.4
