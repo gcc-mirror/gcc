@@ -4727,7 +4727,25 @@ package body Exp_Aggr is
          return;
       end if;
 
+      --  A subaggregate may have been flattened but is not known to be
+      --  Compile_Time_Known. Set that flag in cases that cannot require
+      --  elaboration code, so that the aggregate can be used as the
+      --  initial value of a thread-local variable.
+
       if Is_Flat (N, Number_Dimensions (Typ)) then
+         Check_Static_Components;
+         if Static_Components then
+            if Is_Packed (Etype (N))
+              or else
+                (Is_Record_Type (Component_Type (Etype (N)))
+                 and then Has_Discriminants (Component_Type (Etype (N))))
+            then
+               null;
+            else
+               Set_Compile_Time_Known_Aggregate (N);
+            end if;
+         end if;
+
          return;
       end if;
 

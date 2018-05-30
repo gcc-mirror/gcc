@@ -1,3 +1,15 @@
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Object_Declaration): A pragma Thread_Local_Storage
+	is now legal on a variable of composite type initialized with an
+	aggregate that is fully static and requires no elaboration code.
+	* exp_aggr.adb (Convert_To_Positional): Recognize additional cases of
+	nested aggregates that are compile-time static, so they can be used to
+	initialize variables declared with Threqd_Local_Storage.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Add documentation on
+	Thread_Local_Storage.
+	* gnat_rm.texi: Regenerate.
+
 2018-05-30  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Policy_In_Effect): Take into account CodePeer and
