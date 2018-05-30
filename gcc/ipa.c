@@ -130,9 +130,11 @@ process_references (symtab_node *snode,
 		     constant folding.  Keep references alive so partitioning
 		     knows about potential references.  */
 		  || (VAR_P (node->decl)
-		      && flag_wpa
-		      && ctor_for_folding (node->decl)
-		         != error_mark_node))))
+		      && (flag_wpa
+			  || flag_incremental_link
+			 	 == INCREMENTAL_LINK_LTO)
+		      && dyn_cast <varpool_node *> (node)
+		      	   ->ctor_useable_for_folding_p ()))))
 	{
 	  /* Be sure that we will not optimize out alias target
 	     body.  */
@@ -622,7 +624,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	    fprintf (file, " %s", vnode->dump_name ());
           vnext = next_variable (vnode);
 	  /* Signal removal to the debug machinery.  */
-	  if (! flag_wpa)
+	  if (! flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO)
 	    {
 	      vnode->definition = false;
 	      (*debug_hooks->late_global_decl) (vnode->decl);
@@ -640,8 +642,9 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      changed = true;
 	    }
 	  /* Keep body if it may be useful for constant folding.  */
-	  if ((init = ctor_for_folding (vnode->decl)) == error_mark_node
-	      && !POINTER_BOUNDS_P (vnode->decl))
+	  if ((flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO)
+	      || ((init = ctor_for_folding (vnode->decl)) == error_mark_node
+	          && !POINTER_BOUNDS_P (vnode->decl)))
 	    vnode->remove_initializer ();
 	  else
 	    DECL_INITIAL (vnode->decl) = init;

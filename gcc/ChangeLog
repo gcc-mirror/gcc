@@ -1,5 +1,28 @@
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	* passes.c (ipa_write_summaries): Only modify statements if body
+	is in memory.
+	* cgraphunit.c (ipa_passes): Also produce intermeidate code when
+	incrementally linking.
+	(ipa_passes): Likewise.
+	* lto-cgraph.c (lto_output_node): When incrementally linking do not
+	pass down resolution info.
+	* common.opt (flag_incremental_link): Update info.
+	* gcc.c (plugin specs): Turn flinker-output=* to
+	-plugin-opt=-linker-output-known
+	* toplev.c (compile_file): Also cut compilation when doing incremental
+	link.
+	* flag-types. (enum lto_partition_model): Add
+	LTO_LINKER_OUTPUT_NOLTOREL.
+	(invoke.texi): Add -flinker-output docs.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Handle LTO incremental
+	link same way as WPA; do not stream in dead initializers.
+
+	* dwarf2out.c (dwarf2out_die_ref_for_decl,
+	darf2out_register_external_decl): Support incremental link.
+
+2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-opts.c (lto_write_options): Skip OPT_dumpdir, OPT_fresolution_.
 
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>

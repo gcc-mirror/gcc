@@ -2708,7 +2708,7 @@ ipa_write_summaries (void)
     {
       struct cgraph_node *node = order[i];
 
-      if (node->has_gimple_body_p ())
+      if (gimple_has_body_p (node->decl))
 	{
 	  /* When streaming out references to statements as part of some IPA
 	     pass summary, the statements need to have uids assigned and the

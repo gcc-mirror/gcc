@@ -1,6 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-lto-options { { -O2 -flto -fsanitize=null } { -O0 -flto -fsanitize=null } } } */
-/* { dg-extra-ld-options { -fno-sanitize=null -r -nostdlib } } */
+/* { dg-extra-ld-options { -fno-sanitize=null -r -nostdlib -flinker-output=nolto-rel } } */
 
 enum { a } e(void);
 struct C {
