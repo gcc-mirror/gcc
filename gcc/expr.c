@@ -4913,7 +4913,7 @@ get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
   else
     *bitstart = *bitpos - bitoffset;
 
-  *bitend = *bitstart + tree_to_uhwi (DECL_SIZE (repr)) - 1;
+  *bitend = *bitstart + tree_to_poly_uint64 (DECL_SIZE (repr)) - 1;
 }
 
 /* Returns true if ADDR is an ADDR_EXPR of a DECL that does not reside
@@ -6521,12 +6521,10 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	      continue;
 
 	    mode = TYPE_MODE (elttype);
-	    if (mode == BLKmode)
-	      bitsize = (tree_fits_uhwi_p (TYPE_SIZE (elttype))
-			 ? tree_to_uhwi (TYPE_SIZE (elttype))
-			 : -1);
-	    else
+	    if (mode != BLKmode)
 	      bitsize = GET_MODE_BITSIZE (mode);
+	    else if (!poly_int_tree_p (TYPE_SIZE (elttype), &bitsize))
+	      bitsize = -1;
 
 	    if (index != NULL_TREE && TREE_CODE (index) == RANGE_EXPR)
 	      {
@@ -10249,11 +10247,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  {
 	    poly_int64 offset = mem_ref_offset (exp).force_shwi ();
 	    base = TREE_OPERAND (base, 0);
+	    poly_uint64 type_size;
 	    if (known_eq (offset, 0)
 	        && !reverse
-		&& tree_fits_uhwi_p (TYPE_SIZE (type))
-		&& known_eq (GET_MODE_BITSIZE (DECL_MODE (base)),
-			     tree_to_uhwi (TYPE_SIZE (type))))
+		&& poly_int_tree_p (TYPE_SIZE (type), &type_size)
+		&& known_eq (GET_MODE_BITSIZE (DECL_MODE (base)), type_size))
 	      return expand_expr (build1 (VIEW_CONVERT_EXPR, type, base),
 				  target, tmode, modifier);
 	    if (TYPE_MODE (type) == BLKmode)

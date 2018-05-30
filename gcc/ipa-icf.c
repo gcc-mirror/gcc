@@ -1983,8 +1983,8 @@ sem_variable::equals (tree t1, tree t2)
 
 	/* Type of the offset on MEM_REF does not matter.  */
 	return return_with_debug (sem_variable::equals (x1, x2)
-			          && wi::to_offset  (y1)
-				     == wi::to_offset  (y2));
+			          && known_eq (wi::to_poly_offset (y1),
+					       wi::to_poly_offset (y2)));
       }
     case ADDR_EXPR:
     case FDESC_EXPR:

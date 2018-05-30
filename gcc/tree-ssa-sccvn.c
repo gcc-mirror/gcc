@@ -999,7 +999,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 
 	/* And now the usual component-reference style ops.  */
 	case BIT_FIELD_REF:
-	  offset += wi::to_offset (op->op1);
+	  offset += wi::to_poly_offset (op->op1);
 	  break;
 
 	case COMPONENT_REF:
@@ -1265,10 +1265,10 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       ptroff = gimple_assign_rhs2 (def_stmt);
       if (TREE_CODE (ptr) != SSA_NAME
 	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ptr)
-	  || TREE_CODE (ptroff) != INTEGER_CST)
+	  || !poly_int_tree_p (ptroff))
 	return false;
 
-      off += wi::to_offset (ptroff);
+      off += wi::to_poly_offset (ptroff);
       op->op0 = ptr;
     }
 

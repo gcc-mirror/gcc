@@ -1,3 +1,28 @@
+2018-05-30  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* alias.c (adjust_offset_for_component_ref): Use poly_int_tree_p
+	and wi::to_poly_offset.  Add the current offset and then check
+	whether the sum fits, rather than using an unchecked addition of
+	a checked term.  Check for a shwi rather than a uhwi.
+	* expr.c (get_bit_range): Use tree_to_poly_uint64.
+	(store_constructor): Use poly_int_tree_p.
+	(expand_expr_real_1): Likewise.
+	* function.c (assign_temp): Likewise.
+	* fold-const.c (const_binop): Use poly_int_tree_p and
+	wi::to_poly_offset.
+	(fold_indirect_ref_1): Likewise.  Use multiple_p to attempt an exact
+	division.
+	* ipa-icf-gimple.c (func_checker::compare_operand): Use
+	to_poly_offset for MEM offsets.
+	* ipa-icf.c (sem_variable::equals): Likewise.
+	* stor-layout.c (compute_record_mode): Use poly_int_tree_p.
+	* tree-ssa-sccvn.c (ao_ref_init_from_vn_reference): Use
+	wi::to_poly_offset for BIT_FIELD_REF offsets.
+	(vn_reference_maybe_forwprop_address): Use poly_int_tree_p and
+	wi::to_poly_offset.
+	* var-tracking.c (emit_note_insn_var_location): Use
+	tree_to_poly_uint64.
+
 2018-05-29  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.c (riscv_interrupt_type): Fix comment typo.

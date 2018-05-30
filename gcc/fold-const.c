@@ -1611,10 +1611,10 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
       return NULL_TREE;
 
     case POINTER_DIFF_EXPR:
-      if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg2) == INTEGER_CST)
+      if (poly_int_tree_p (arg1) && poly_int_tree_p (arg2))
 	{
-	  offset_int res = wi::sub (wi::to_offset (arg1),
-				    wi::to_offset (arg2));
+	  poly_offset_int res = (wi::to_poly_offset (arg1)
+				 - wi::to_poly_offset (arg2));
 	  return force_fit_type (type, res, 1,
 				 TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2));
 	}
@@ -14202,13 +14202,12 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 	      tree min_val = size_zero_node;
 	      if (type_domain && TYPE_MIN_VALUE (type_domain))
 		min_val = TYPE_MIN_VALUE (type_domain);
-	      offset_int off = wi::to_offset (op01);
-	      offset_int el_sz = wi::to_offset (TYPE_SIZE_UNIT (type));
-	      offset_int remainder;
-	      off = wi::divmod_trunc (off, el_sz, SIGNED, &remainder);
-	      if (remainder == 0 && TREE_CODE (min_val) == INTEGER_CST)
+	      poly_uint64 type_size, index;
+	      if (poly_int_tree_p (min_val)
+		  && poly_int_tree_p (TYPE_SIZE_UNIT (type), &type_size)
+		  && multiple_p (const_op01, type_size, &index))
 		{
-		  off = off + wi::to_offset (min_val);
+		  poly_offset_int off = index + wi::to_poly_offset (min_val);
 		  op01 = wide_int_to_tree (sizetype, off);
 		  return build4_loc (loc, ARRAY_REF, type, op00, op01,
 				     NULL_TREE, NULL_TREE);
