@@ -1,5 +1,10 @@
 2018-05-30  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.adb: Search specification of main unit as well, for
+	unnesting.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): The statement part of
 	a package body that is a compilation unit may contain blocks that
 	declare local subprograms.  In Subprogram_Unnesting Mode such
