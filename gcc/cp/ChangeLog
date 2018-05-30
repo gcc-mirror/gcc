@@ -1,5 +1,9 @@
 2018-05-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85873 - constant initializer_list array not in .rodata.
+	* tree.c (build_target_expr): Set TREE_READONLY.
+	* call.c (set_up_extended_ref_temp): Set TREE_READONLY.
+
 	* parser.c (cp_parser_check_condition_declarator): Handle
 	cp_error_declarator.
 
