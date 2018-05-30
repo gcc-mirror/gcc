@@ -1,7 +1,5 @@
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
-	* simple-object.h (simple_object_copy_lto_debug_sections): Add rename
-	parameter.
 	* simple-object.c (handle_lto_debug_sections): Add rename parameter.
 	(handle_lto_debug_sections_rename): New function.
 	(handle_lto_debug_sections_norename): New function.
