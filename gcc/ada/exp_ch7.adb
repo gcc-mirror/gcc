@@ -4175,12 +4175,12 @@ package body Exp_Ch7 is
 
             --    for Obj of Container loop
 
-            --  Routine Wrap_Transient_Declaration however does not generate a
-            --  physical block as wrapping a declaration will kill it too ealy.
-            --  To handle this peculiar case, mark the related iterator loop as
-            --  requiring the secondary stack. This signals the finalization
-            --  machinery to manage the secondary stack (see routine
-            --  Process_Statements_For_Controlled_Objects).
+            --  Routine Wrap_Transient_Declaration however does not generate
+            --  a physical block as wrapping a declaration will kill it too
+            --  early. To handle this peculiar case, mark the related iterator
+            --  loop as requiring the secondary stack. This signals the
+            --  finalization machinery to manage the secondary stack (see
+            --  routine Process_Statements_For_Controlled_Objects).
 
             Iter_Loop := Find_Enclosing_Iterator_Loop (Trans_Scop);
 
