@@ -1,5 +1,9 @@
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-opts.c (lto_write_options): Skip OPT_dumpdir, OPT_fresolution_.
+
+2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-wrapper.c (debug_objcopy): Add rename parameter; pass
 	it down to simple_object_copy_lto_debug_sections.
 	(run_gcc): Determine incremental LTO link time and configure
