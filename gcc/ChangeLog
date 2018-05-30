@@ -1,3 +1,8 @@
+2018-05-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Remove
+	descriptions of various incorrectly documented functions.
+
 2018-05-30  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Revert:
