@@ -1,3 +1,8 @@
+2018-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* typeck.c (cxx_sizeof_or_alignof_type): Return size_one_node instead
+	of using it in dead store.
+
 2018-05-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67445 - returning temporary initializer_list.

@@ -1597,9 +1597,6 @@ tree
 cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool std_alignof,
 			    bool complain)
 {
-  tree value;
-  bool dependent_p;
-
   gcc_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR);
   if (type == error_mark_node)
     return error_mark_node;
@@ -1608,15 +1605,17 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool std_alignof,
   if (TREE_CODE (type) == METHOD_TYPE)
     {
       if (complain)
-	pedwarn (input_location, OPT_Wpointer_arith, 
-		 "invalid application of %qs to a member function", 
-		 OVL_OP_INFO (false, op)->name);
+	{
+	  pedwarn (input_location, OPT_Wpointer_arith,
+		   "invalid application of %qs to a member function",
+		   OVL_OP_INFO (false, op)->name);
+	  return size_one_node;
+	}
       else
 	return error_mark_node;
-      value = size_one_node;
     }
 
-  dependent_p = dependent_type_p (type);
+  bool dependent_p = dependent_type_p (type);
   if (!dependent_p)
     complete_type (type);
   if (dependent_p
@@ -1630,7 +1629,7 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool std_alignof,
 	  && COMPLETE_TYPE_P (type)
 	  && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST))
     {
-      value = build_min (op, size_type_node, type);
+      tree value = build_min (op, size_type_node, type);
       TREE_READONLY (value) = 1;
       if (op == ALIGNOF_EXPR && std_alignof)
 	ALIGNOF_EXPR_STD_P (value) = true;
