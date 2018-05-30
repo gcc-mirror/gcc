@@ -1,3 +1,7 @@
+2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/synchronized1.adb, gnat.dg/synchronized1.ads: New testcase.
+
 2018-05-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/85950

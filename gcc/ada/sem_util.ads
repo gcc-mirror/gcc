@@ -1512,12 +1512,16 @@ package Sem_Util is
    --  Determine whether package E1 is an ancestor of E2
 
    function Is_Atomic_Object (N : Node_Id) return Boolean;
-   --  Determines if the given node denotes an atomic object in the sense of
-   --  the legality checks described in RM C.6(12).
+   --  Determine whether arbitrary node N denotes a reference to an atomic
+   --  object as per Ada RM C.6(12).
+
+   function Is_Atomic_Object_Entity (Id : Entity_Id) return Boolean;
+   --  Determine whether arbitrary entity Id denotes an atomic object as per
+   --  Ada RM C.6(12).
 
    function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean;
-   --  Determines if the given node is an atomic object (Is_Atomic_Object true)
-   --  or else is an object for which VFA is present.
+   --  Determine whether arbitrary node N denotes a reference to an object
+   --  which is either atomic or Volatile_Full_Access.
 
    function Is_Attribute_Result (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Result
