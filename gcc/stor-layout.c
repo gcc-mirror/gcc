@@ -1838,9 +1838,11 @@ compute_record_mode (tree type)
   /* If we only have one real field; use its mode if that mode's size
      matches the type's size.  This only applies to RECORD_TYPE.  This
      does not apply to unions.  */
-  if (TREE_CODE (type) == RECORD_TYPE && mode != VOIDmode
-      && tree_fits_uhwi_p (TYPE_SIZE (type))
-      && known_eq (GET_MODE_BITSIZE (mode), tree_to_uhwi (TYPE_SIZE (type))))
+  poly_uint64 type_size;
+  if (TREE_CODE (type) == RECORD_TYPE
+      && mode != VOIDmode
+      && poly_int_tree_p (TYPE_SIZE (type), &type_size)
+      && known_eq (GET_MODE_BITSIZE (mode), type_size))
     ;
   else
     mode = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1).else_blk ();

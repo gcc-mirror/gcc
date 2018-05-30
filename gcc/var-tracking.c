@@ -8665,7 +8665,6 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
   bool complete;
   enum var_init_status initialized = VAR_INIT_STATUS_UNINITIALIZED;
   HOST_WIDE_INT last_limit;
-  tree type_size_unit;
   HOST_WIDE_INT offsets[MAX_VAR_PARTS];
   rtx loc[MAX_VAR_PARTS];
   tree decl;
@@ -8816,8 +8815,9 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
 	}
       ++n_var_parts;
     }
-  type_size_unit = TYPE_SIZE_UNIT (TREE_TYPE (decl));
-  if ((unsigned HOST_WIDE_INT) last_limit < TREE_INT_CST_LOW (type_size_unit))
+  poly_uint64 type_size_unit
+    = tree_to_poly_uint64 (TYPE_SIZE_UNIT (TREE_TYPE (decl)));
+  if (maybe_lt (poly_uint64 (last_limit), type_size_unit))
     complete = false;
 
   if (! flag_var_tracking_uninit)
