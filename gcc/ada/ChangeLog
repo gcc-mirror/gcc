@@ -1,3 +1,7 @@
+2018-05-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_res.adb, sem_util.adb: Fix several typos.
+
 2018-05-30  Olivier Hainque  <hainque@adacore.com>
 
 	* vx_crtbegin_attr.c (CTOR_ATTRIBUTE, DTOR_ATTRIBUTE): Empty.
