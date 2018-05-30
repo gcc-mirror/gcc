@@ -1,3 +1,8 @@
+2018-05-31 Sameera Deshpande <sameera.deshpande@linaro.org>
+
+	* config/aarch64/aarch64-cores.def (saphira) : Add support for ARMv8.4
+	in saphira.
+
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* doc/invoke.texi (-flinker-output): Document
