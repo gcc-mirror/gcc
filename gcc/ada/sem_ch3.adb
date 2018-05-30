@@ -1299,8 +1299,8 @@ package body Sem_Ch3 is
          Set_Ekind (T_Name, E_Access_Subprogram_Type);
       end if;
 
-      Set_Can_Use_Internal_Rep (T_Name, not Always_Compatible_Rep_On_Target);
-
+      Set_Can_Use_Internal_Rep     (T_Name,
+                                      not Always_Compatible_Rep_On_Target);
       Set_Etype                    (T_Name, T_Name);
       Init_Size_Align              (T_Name);
       Set_Directly_Designated_Type (T_Name, Desig_Type);
@@ -14631,7 +14631,7 @@ package body Sem_Ch3 is
 
          --  But it is a real entity, and a birth certificate must be properly
          --  registered by entering it into the entity list, and setting its
-         --  scope to the  given subtype. This turns out to be useful for the
+         --  scope to the given subtype. This turns out to be useful for the
          --  LLVM code generator, but that scope is not used otherwise.
 
          Enter_Name (New_Compon);

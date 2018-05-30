@@ -1279,11 +1279,11 @@ package body Repinfo is
             Write_Str (" .. ");
          end if;
 
-         --  Allowing Uint_0 here is an annoying special case. Really
-         --  this should be a fine Esize value but currently it means
-         --  unknown, except that we know after gigi has back annotated
-         --  that a size of zero is real, since otherwise gigi back
-         --  annotates using No_Uint as the value to indicate unknown.
+         --  Allowing Uint_0 here is an annoying special case. Really this
+         --  should be a fine Esize value but currently it means unknown,
+         --  except that we know after gigi has back annotated that a size
+         --  of zero is real, since otherwise gigi back annotates using
+         --  No_Uint as the value to indicate unknown.
 
          if (Esize (Ent) = Uint_0 or else Known_Static_Esize (Ent))
            and then Known_Static_Normalized_First_Bit (Ent)
@@ -1300,11 +1300,10 @@ package body Repinfo is
                UI_Write (Lbit);
             end if;
 
-         --  The test for Esize (Ent) not Uint_0 here is an annoying
-         --  special case. Officially a value of zero for Esize means
-         --  unknown, but here we use the fact that we know that gigi
-         --  annotates Esize with No_Uint, not Uint_0. Really everyone
-         --  should use No_Uint???
+         --  The test for Esize (Ent) not Uint_0 here is an annoying special
+         --  case. Officially a value of zero for Esize means unknown, but
+         --  here we use the fact that we know that gigi annotates Esize with
+         --  No_Uint, not Uint_0. Really everyone should use No_Uint???
 
          elsif List_Representation_Info < 3
            or else (Esize (Ent) /= Uint_0 and then Unknown_Esize (Ent))
@@ -1316,8 +1315,8 @@ package body Repinfo is
          else
             Write_Val (Esiz, Paren => not List_Representation_Info_To_JSON);
 
-            --  If in front-end layout mode, then dynamic size is stored
-            --  in storage units, so renormalize for output.
+            --  If in front-end layout mode, then dynamic size is stored in
+            --  storage units, so renormalize for output.
 
             if not Back_End_Layout then
                Write_Str (" * ");
@@ -1433,7 +1432,6 @@ package body Repinfo is
          Variant   : Node_Id := Empty;
          Indent    : Natural := 0)
       is
-
          function Derived_Discriminant (Disc : Entity_Id) return Entity_Id;
          --  This function assumes that Outer_Ent is an extension of Ent.
          --  Disc is a discriminant of Ent that does not itself constrain a
@@ -1445,7 +1443,8 @@ package body Repinfo is
          ----------------------------
 
          function Derived_Discriminant (Disc : Entity_Id) return Entity_Id is
-            Corr_Disc, Derived_Disc : Entity_Id;
+            Corr_Disc    : Entity_Id;
+            Derived_Disc : Entity_Id;
 
          begin
             Derived_Disc := First_Stored_Discriminant (Outer_Ent);
@@ -1465,8 +1464,8 @@ package body Repinfo is
                      Corr_Disc := Corresponding_Discriminant (Corr_Disc);
                   end loop;
 
-                  if Original_Record_Component (Corr_Disc)
-                                             = Original_Record_Component (Disc)
+                  if Original_Record_Component (Corr_Disc) =
+                     Original_Record_Component (Disc)
                   then
                      return Derived_Disc;
                   end if;
@@ -1484,8 +1483,8 @@ package body Repinfo is
 
          Comp       : Node_Id;
          Comp_List  : Node_Id;
-         Var        : Node_Id;
          First      : Boolean := True;
+         Var        : Node_Id;
 
       --  Start of processing for List_Structural_Record_Layout
 
@@ -1501,12 +1500,15 @@ package body Repinfo is
          else
             declare
                Definition : Node_Id :=
-                 Type_Definition (Declaration_Node (Ent));
+                              Type_Definition (Declaration_Node (Ent));
+
                Is_Extension : constant Boolean :=
-                 Is_Tagged_Type (Ent)
-                   and then
-                 Nkind (Definition) = N_Derived_Type_Definition;
-               Disc, Listed_Disc : Entity_Id;
+                                Is_Tagged_Type (Ent)
+                                  and then Nkind (Definition) =
+                                             N_Derived_Type_Definition;
+
+               Disc        : Entity_Id;
+               Listed_Disc : Entity_Id;
 
             begin
                --  If this is an extension, first list the layout of the parent

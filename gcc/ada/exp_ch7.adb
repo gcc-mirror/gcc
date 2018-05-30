@@ -3521,6 +3521,7 @@ package body Exp_Ch7 is
       Set_At_End_Proc (HSS, New_Occurrence_Of (Fin_Id, Loc));
 
       --  Attach reference to finalizer to tree, for LLVM use
+
       Set_Parent (At_End_Proc (HSS), HSS);
 
       Analyze (At_End_Proc (HSS));
