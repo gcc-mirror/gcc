@@ -1,3 +1,15 @@
+2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Is_Atomic_Object): Cleaned up. Split the entity logic
+	in a separate routine.
+	(Is_Atomic_Object_Entity): New routine.
+	(Is_Atomic_Prefix): Cleaned up.
+	(Is_Synchronized_Object): Check that the object is atomic, or its type
+	is atomic.
+	(Object_Has_Atomic_Components): Removed.
+	* sem_util.ads (Is_Atomic_Object): Reword the comment on usage.
+	(Is_Atomic_Object_Entity): New routine.
+
 2018-05-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Access_Subprogram_Declaration): The flag

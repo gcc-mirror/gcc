@@ -13156,86 +13156,84 @@ package body Sem_Util is
    ----------------------
 
    function Is_Atomic_Object (N : Node_Id) return Boolean is
+      function Is_Atomic_Entity (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Atomic_Entity);
+      --  Determine whether arbitrary entity Id is either atomic or has atomic
+      --  components.
 
-      function Object_Has_Atomic_Components (N : Node_Id) return Boolean;
-      --  Determines if given object has atomic components
+      function Is_Atomic_Prefix (Pref : Node_Id) return Boolean;
+      --  Determine whether prefix Pref of a indexed or selected component is
+      --  an atomic object.
 
-      function Is_Atomic_Prefix (N : Node_Id) return Boolean;
-      --  If prefix is an implicit dereference, examine designated type
+      ----------------------
+      -- Is_Atomic_Entity --
+      ----------------------
+
+      function Is_Atomic_Entity (Id : Entity_Id) return Boolean is
+      begin
+         return Is_Atomic (Id) or else Has_Atomic_Components (Id);
+      end Is_Atomic_Entity;
 
       ----------------------
       -- Is_Atomic_Prefix --
       ----------------------
 
-      function Is_Atomic_Prefix (N : Node_Id) return Boolean is
+      function Is_Atomic_Prefix (Pref : Node_Id) return Boolean is
+         Typ : constant Entity_Id := Etype (Pref);
+
       begin
-         if Is_Access_Type (Etype (N)) then
+         if Is_Access_Type (Typ) then
+            return Has_Atomic_Components (Designated_Type (Typ));
+
+         elsif Is_Atomic_Entity (Typ) then
+            return True;
+
+         elsif Is_Entity_Name (Pref)
+           and then Is_Atomic_Entity (Entity (Pref))
+         then
+            return True;
+
+         elsif Nkind (Pref) = N_Indexed_Component then
+            return Is_Atomic_Prefix (Prefix (Pref));
+
+         elsif Nkind (Pref) = N_Selected_Component then
             return
-              Has_Atomic_Components (Designated_Type (Etype (N)));
-         else
-            return Object_Has_Atomic_Components (N);
+              Is_Atomic_Prefix (Prefix (Pref))
+                or else Is_Atomic (Entity (Selector_Name (Pref)));
          end if;
+
+         return False;
       end Is_Atomic_Prefix;
-
-      ----------------------------------
-      -- Object_Has_Atomic_Components --
-      ----------------------------------
-
-      function Object_Has_Atomic_Components (N : Node_Id) return Boolean is
-      begin
-         if Has_Atomic_Components (Etype (N))
-           or else Is_Atomic (Etype (N))
-         then
-            return True;
-
-         elsif Is_Entity_Name (N)
-           and then (Has_Atomic_Components (Entity (N))
-                      or else Is_Atomic (Entity (N)))
-         then
-            return True;
-
-         elsif Nkind (N) = N_Selected_Component
-           and then Is_Atomic (Entity (Selector_Name (N)))
-         then
-            return True;
-
-         elsif Nkind (N) = N_Indexed_Component
-           or else Nkind (N) = N_Selected_Component
-         then
-            return Is_Atomic_Prefix (Prefix (N));
-
-         else
-            return False;
-         end if;
-      end Object_Has_Atomic_Components;
 
    --  Start of processing for Is_Atomic_Object
 
    begin
-      --  Predicate is not relevant to subprograms
+      if Is_Entity_Name (N) then
+         return Is_Atomic_Object_Entity (Entity (N));
 
-      if Is_Entity_Name (N) and then Is_Overloadable (Entity (N)) then
-         return False;
+      elsif Nkind (N) = N_Indexed_Component then
+         return Is_Atomic (Etype (N)) or else Is_Atomic_Prefix (Prefix (N));
 
-      elsif Is_Atomic (Etype (N))
-        or else (Is_Entity_Name (N) and then Is_Atomic (Entity (N)))
-      then
-         return True;
-
-      elsif Nkind (N) = N_Selected_Component
-        and then Is_Atomic (Entity (Selector_Name (N)))
-      then
-         return True;
-
-      elsif Nkind (N) = N_Indexed_Component
-        or else Nkind (N) = N_Selected_Component
-      then
-         return Is_Atomic_Prefix (Prefix (N));
-
-      else
-         return False;
+      elsif Nkind (N) = N_Selected_Component then
+         return
+           Is_Atomic (Etype (N))
+             or else Is_Atomic_Prefix (Prefix (N))
+             or else Is_Atomic (Entity (Selector_Name (N)));
       end if;
+
+      return False;
    end Is_Atomic_Object;
+
+   -----------------------------
+   -- Is_Atomic_Object_Entity --
+   -----------------------------
+
+   function Is_Atomic_Object_Entity (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Is_Object (Id)
+          and then (Is_Atomic (Id) or else Is_Atomic (Etype (Id)));
+   end Is_Atomic_Object_Entity;
 
    -----------------------------
    -- Is_Atomic_Or_VFA_Object --
@@ -17353,7 +17351,9 @@ package body Sem_Util is
          --  The object is synchronized if it is atomic and Async_Writers is
          --  enabled.
 
-         elsif Is_Atomic (Id) and then Async_Writers_Enabled (Id) then
+         elsif Is_Atomic_Object_Entity (Id)
+           and then Async_Writers_Enabled (Id)
+         then
             return True;
 
          --  A constant is a synchronized object by default
