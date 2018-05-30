@@ -1611,5 +1611,13 @@ c_omp_predetermined_sharing (tree decl)
   if (TREE_READONLY (decl))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
+  /* Predetermine artificial variables holding integral values, those
+     are usually result of gimplify_one_sizepos or SAVE_EXPR
+     gimplification.  */
+  if (VAR_P (decl)
+      && DECL_ARTIFICIAL (decl)
+      && INTEGRAL_TYPE_P (TREE_TYPE (decl)))
+    return OMP_CLAUSE_DEFAULT_SHARED;
+
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }
