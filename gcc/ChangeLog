@@ -1,3 +1,11 @@
+2017-05-30  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_host_wide_int_compare): New.
+	(aarch64_ldrstr_offset_compare): New.
+	(aarch64_operands_adjust_ok_for_ldpstp): Update to consider all
+	load/store orderings.
+	(aarch64_gen_adjusted_ldpstp): Likewise.
+
 2018-05-30  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_ira_change_pseudo_allocno_class):
