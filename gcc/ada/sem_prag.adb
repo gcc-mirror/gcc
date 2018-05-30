@@ -11104,7 +11104,7 @@ package body Sem_Prag is
 
       --  Here to start processing for recognized pragma
 
-      Pname   := Original_Aspect_Pragma_Name (N);
+      Pname := Original_Aspect_Pragma_Name (N);
 
       --  Capture setting of Opt.Uneval_Old
 
@@ -11135,7 +11135,6 @@ package body Sem_Prag is
 
       elsif Is_Rewrite_Substitution (N)
         and then Nkind (Original_Node (N)) = N_Pragma
-        and then Original_Node (N) /= N
       then
          Set_Is_Ignored (N, Is_Ignored (Original_Node (N)));
          Set_Is_Checked (N, Is_Checked (Original_Node (N)));
@@ -13293,7 +13292,6 @@ package body Sem_Prag is
 
             elsif Is_Rewrite_Substitution (N)
               and then Nkind (Original_Node (N)) = N_Pragma
-              and then Original_Node (N) /= N
             then
                Set_Is_Ignored (N, Is_Ignored (Original_Node (N)));
                Set_Is_Checked (N, Is_Checked (Original_Node (N)));
