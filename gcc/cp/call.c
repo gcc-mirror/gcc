@@ -6517,6 +6517,7 @@ build_temp (tree expr, tree type, int flags,
 }
 
 /* Perform warnings about peculiar, but valid, conversions from/to NULL.
+   Also handle a subset of zero as null warnings.
    EXPR is implicitly converted to type TOTYPE.
    FN and ARGNUM are used for diagnostics.  */
 
@@ -6550,6 +6551,15 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
       else
 	warning_at (input_location, OPT_Wconversion_null,
 		    "converting %<false%> to pointer type %qT", totype);
+    }
+  /* Handle zero as null pointer warnings for cases other
+     than EQ_EXPR and NE_EXPR */
+  else if (null_ptr_cst_p (expr) &&
+	   (TYPE_PTR_OR_PTRMEM_P (totype) || NULLPTR_TYPE_P (totype)))
+    {
+      source_location loc =
+       expansion_point_location_if_in_system_header (input_location);
+      maybe_warn_zero_as_null_pointer_constant (expr, loc);
     }
 }
 
@@ -7101,6 +7111,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       && !check_narrowing (totype, expr, complain))
     return error_mark_node;
 
+  warning_sentinel w (warn_zero_as_null_pointer_constant);
   if (issue_conversion_warnings)
     expr = cp_convert_and_check (totype, expr, complain);
   else

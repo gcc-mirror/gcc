@@ -1,3 +1,12 @@
+2018-05-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Do not warn about zero-as-null when NULL is used.
+	* call.c (conversion_null_warnings): Check for pointer
+	types converted from zero constants.
+	(convert_like_real): Add a warning sentinel at the end.
+	* tree.c (maybe_warn_zero_as_null_pointer_constant): Also
+	check null_node_p.
+
 2018-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85807 - ICE with call in template NSDMI.
