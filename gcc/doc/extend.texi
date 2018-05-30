@@ -16369,8 +16369,6 @@ vector signed char vec_vavgsb (vector signed char, vector signed char);
 vector unsigned char vec_vavgub (vector unsigned char,
                                  vector unsigned char);
 
-vector float vec_copysign (vector float);
-
 vector float vec_ceil (vector float);
 
 vector signed int vec_cmpb (vector float, vector float);
@@ -16584,10 +16582,8 @@ vector float vec_ld (int, const float *);
 vector bool int vec_ld (int, const vector bool int *);
 vector signed int vec_ld (int, const vector signed int *);
 vector signed int vec_ld (int, const int *);
-vector signed int vec_ld (int, const long *);
 vector unsigned int vec_ld (int, const vector unsigned int *);
 vector unsigned int vec_ld (int, const unsigned int *);
-vector unsigned int vec_ld (int, const unsigned long *);
 vector bool short vec_ld (int, const vector bool short *);
 vector pixel vec_ld (int, const vector pixel *);
 vector signed short vec_ld (int, const vector signed short *);
@@ -16607,14 +16603,10 @@ vector unsigned short vec_lde (int, const unsigned short *);
 vector float vec_lde (int, const float *);
 vector signed int vec_lde (int, const int *);
 vector unsigned int vec_lde (int, const unsigned int *);
-vector signed int vec_lde (int, const long *);
-vector unsigned int vec_lde (int, const unsigned long *);
 
 vector float vec_lvewx (int, float *);
 vector signed int vec_lvewx (int, int *);
 vector unsigned int vec_lvewx (int, unsigned int *);
-vector signed int vec_lvewx (int, long *);
-vector unsigned int vec_lvewx (int, unsigned long *);
 
 vector signed short vec_lvehx (int, short *);
 vector unsigned short vec_lvehx (int, unsigned short *);
@@ -16627,10 +16619,8 @@ vector float vec_ldl (int, const float *);
 vector bool int vec_ldl (int, const vector bool int *);
 vector signed int vec_ldl (int, const vector signed int *);
 vector signed int vec_ldl (int, const int *);
-vector signed int vec_ldl (int, const long *);
 vector unsigned int vec_ldl (int, const vector unsigned int *);
 vector unsigned int vec_ldl (int, const unsigned int *);
-vector unsigned int vec_ldl (int, const unsigned long *);
 vector bool short vec_ldl (int, const vector bool short *);
 vector pixel vec_ldl (int, const vector pixel *);
 vector signed short vec_ldl (int, const vector signed short *);
@@ -17158,8 +17148,6 @@ vector unsigned char vec_vrlb (vector unsigned char,
 
 vector float vec_round (vector float);
 
-vector float vec_recip (vector float, vector float);
-
 vector float vec_rsqrt (vector float);
 
 vector float vec_rsqrte (vector float);
@@ -17573,8 +17561,6 @@ void vec_st (vector unsigned short, int, unsigned short *);
 void vec_st (vector bool short, int, vector bool short *);
 void vec_st (vector bool short, int, unsigned short *);
 void vec_st (vector pixel, int, vector pixel *);
-void vec_st (vector pixel, int, unsigned short *);
-void vec_st (vector pixel, int, short *);
 void vec_st (vector bool short, int, short *);
 void vec_st (vector signed char, int, vector signed char *);
 void vec_st (vector signed char, int, signed char *);
@@ -17610,8 +17596,6 @@ void vec_stvehx (vector signed short, int, short *);
 void vec_stvehx (vector unsigned short, int, unsigned short *);
 void vec_stvehx (vector bool short, int, short *);
 void vec_stvehx (vector bool short, int, unsigned short *);
-void vec_stvehx (vector pixel, int, short *);
-void vec_stvehx (vector pixel, int, unsigned short *);
 
 void vec_stvebx (vector signed char, int, signed char *);
 void vec_stvebx (vector unsigned char, int, unsigned char *);
@@ -17635,8 +17619,6 @@ void vec_stl (vector bool short, int, vector bool short *);
 void vec_stl (vector bool short, int, unsigned short *);
 void vec_stl (vector bool short, int, short *);
 void vec_stl (vector pixel, int, vector pixel *);
-void vec_stl (vector pixel, int, unsigned short *);
-void vec_stl (vector pixel, int, short *);
 void vec_stl (vector signed char, int, vector signed char *);
 void vec_stl (vector signed char, int, signed char *);
 void vec_stl (vector unsigned char, int, vector unsigned char *);
@@ -18591,8 +18573,6 @@ vector float vec_pack (vector double, vector double);
 vector int vec_packs (vector long long, vector long long);
 vector unsigned int vec_packs (vector unsigned long long,
                                vector unsigned long long);
-
-test_vsi_packsu_vssi_vssi (vector signed short x,
 
 vector unsigned char vec_packsu (vector signed short, vector signed short )
 vector unsigned char vec_packsu (vector unsigned short, vector unsigned short )
