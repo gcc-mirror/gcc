@@ -23,4 +23,4 @@ void Bink ()
 
 module a.; // { dg-error "expected" }
 
-import frist; // { dg-error "cannot import module in its own purview" }
+import frist; // { dg-error {cannot import module.* in its own purview} }

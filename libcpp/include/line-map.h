@@ -69,7 +69,7 @@ enum lc_reason
   LC_RENAME,		/* Other reason for name change.  */
   LC_RENAME_VERBATIM,	/* Likewise, but "" != stdin.  */
   LC_ENTER_MACRO,	/* Begin macro expansion.  */
-  LC_CXX_MODULE,	/* A C++ Module.  */
+  LC_MODULE,		/* A (C++) Module.  */
   LC_HWM
   /* FIXME: add support for stringize and paste.  */
 };
@@ -609,6 +609,14 @@ ORDINARY_MAP_IN_SYSTEM_HEADER_P (const line_map_ordinary *ord_map)
   return ord_map->sysp;
 }
 
+/* TRUE if this line map is for a module (not a source file).  */
+
+inline bool
+MAP_MODULE_P (const line_map *ord_map)
+{
+  return ord_map->reason == LC_MODULE;
+}
+
 /* Get the filename of ordinary map MAP.  */
 
 inline const char *
@@ -1077,6 +1085,22 @@ extern source_location linemap_line_start
 extern const struct line_map *linemap_add
   (struct line_maps *, enum lc_reason, unsigned int sysp,
    const char *to_file, linenum_type to_line);
+
+/* Create a source location for a module.  These are constructed after
+   the TU has been tokenized, and the regular linemap stuff
+   created.  */
+
+extern source_location linemap_module_loc
+  (line_maps *, source_location from, const char *name);
+
+/* Reseat a module location map with a new FROM.  */
+
+inline void
+LINEMAP_MODULE_SET_FROM (const line_map *map, source_location from)
+{
+  const_cast <line_map_ordinary *> (linemap_check_ordinary (map))
+    ->included_at = from;
+}
 
 /* Given a logical source location, returns the map which the
    corresponding (source file, line, column) triplet can be deduced

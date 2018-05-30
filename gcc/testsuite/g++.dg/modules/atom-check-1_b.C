@@ -9,7 +9,8 @@
 #endif
 
 
-import bob; // { dg-error "failed to import" }
-// { dg-error "jumping off" "" { target *-*-* } .-1 }
-// { dg-error "TS/ATOM mismatch" "bob.nms:" { target *-*-* } 0 }
+import bob;
+// { dg-error "failed to read"  "bob:" { target *-*-* } 0 }
+// { dg-error "TS/ATOM mismatch" "bob:" { target *-*-* } 0 }
+// { dg-error "jumping off" "" { target *-*-* } 0 }
 // { dg-prune-output "compilation terminated" }

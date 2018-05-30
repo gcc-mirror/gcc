@@ -601,6 +601,19 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   return map;
 }
 
+/* Create a location for a module NAME imported at FROM.  */
+
+source_location
+linemap_module_loc (line_maps *set, source_location from, const char *name)
+{
+  linemap_assert (!set->depth);
+  const line_map *map = linemap_add (set, LC_MODULE, false, name, 0);
+
+  LINEMAP_MODULE_SET_FROM (map, from);
+
+  return linemap_line_start (set, 0, 0);
+}
+
 /* Returns TRUE if the line table set tracks token locations across
    macro expansion, FALSE otherwise.  */
 
@@ -1792,7 +1805,7 @@ linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
 {
   const char *lc_reasons_v[LC_HWM]
       = { "LC_ENTER", "LC_LEAVE", "LC_RENAME", "LC_RENAME_VERBATIM",
-	  "LC_ENTER_MACRO", "LC_CXX_MODULE" };
+	  "LC_ENTER_MACRO", "LC_MODULE" };
   const char *reason;
   const line_map *map;
 

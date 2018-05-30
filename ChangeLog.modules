@@ -1,5 +1,37 @@
 2018-05-30  Nathan Sidwell  <nathan@acm.org>
 
+	Module location
+	libcpp/
+	* include/cpplib.h (cpp_module_file): Delete.
+	* include/line-map.h (MAP_MODULE_P, LINEMAP_MODULE_SET_FROM): New.
+	(linemap_module_loc): Declare.
+	* files.c (cpp_module_file): Delete.
+	* line-map.c (linemap_module_loc): New.
+	gcc/cp/
+	* cp-tree.h (module_file_nest): Delete.
+	(make_module_loc, reseat_module_loc, module_from_loc): Declare.
+	* lex.c (module_file_nest): Delete.
+	(make_module_loc, reseat_module_loc, module_from_loc): New.
+	* module.c (struct module_state): Replace imp_loc and self_loc
+	with plain loc.
+	(module_state::{push,pop}_location): Delete.
+	(module_state::from_loc): New.
+	(module_state::find_module): Set module loc here.
+	(module_state::do_import): Adjust loc setting.
+	(module_state::lazy_load): Likewise.
+	(finish_module): Likewise.
+	gcc/
+	* diagnostic.c (diagnostic_report_current_module): Show module imports.
+	gcc/testsuite/
+	* lib/prune.exp: Prune 'module imported at'.
+	* g++.dg/modules/atom-check-1_b.C: Adjust.
+	* g++.dg/modules/circ-1_c.C: Adjust.
+	* g++.dg/modules/flag-1_b.C: Adjust.
+	* g++.dg/modules/import-2.C: Adjust.
+	* g++.dg/modules/mod-decl-1.C: Adjust.
+	* g++.dg/modules/mod-decl-2_b.C: Adjust.
+	* g++.dg/modules/mod-stamp-1_d.C: Adjust.
+
 	gcc/cp/
 	* module.c (struct module_state): Replace loc with imp_loc &
 	self_loc.  Rename imported to direct.

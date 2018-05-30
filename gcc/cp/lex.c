@@ -452,7 +452,7 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
     }
 
   if (!(keyword == RID_IMPORT
-	|| !only_import && keyword == RID_MODULE))
+	|| (!only_import && keyword == RID_MODULE)))
     goto not_preamble;
 
   peeked_loc = 0;
@@ -615,13 +615,40 @@ handle_pragma_implementation (cpp_reader* /*dfile*/)
     }
 }
 
-/* Enter or leave a module file.  This is the least-worst location for
-   this function.  */
+/* Create the module location, included at FROM.  */
+
+location_t
+make_module_loc (location_t from, const char *name)
+{
+  while (linemap_location_from_macro_expansion_p (line_table, from))
+    {
+      /* Find the ordinary location nearest FROM.  */
+      const line_map *map = linemap_lookup (line_table, from);
+      const line_map_macro *mac_map = linemap_check_macro (map);
+      from = MACRO_MAP_EXPANSION_POINT_LOCATION (mac_map);
+    }
+
+  return linemap_module_loc (line_table, from, name);
+}
+
+/* Move the location at which a module was introduced.  Generally
+   because it's become a direct import after being indirect.  */
 
 void
-module_file_nest (const char *name)
+reseat_module_loc (location_t mloc, location_t new_from)
 {
-  cpp_module_file (parse_in, name);
+  const line_map *map = linemap_lookup (line_table, mloc);
+  LINEMAP_MODULE_SET_FROM (map, new_from);
+}
+
+/* Return the location from whence a module was introduced.  */
+
+location_t
+module_from_loc	(location_t mloc)
+{
+  const line_map *map = linemap_lookup (line_table, mloc);
+
+  return INCLUDED_AT (linemap_check_ordinary (map));
 }
 
 /* Issue an error message indicating that the lookup of NAME (an

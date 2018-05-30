@@ -2335,8 +2335,7 @@ struct GTY(()) module_state {
   elf_in *GTY((skip)) from;     /* Lazy loading.  */
 
   char *filename;	/* BMI Filename */
-  location_t imp_loc;   /* Importing location.  */
-  location_t self_loc;  /* Location referring to module itself.  */
+  location_t loc; 	/* Location referring to module itself.  */
 
   unsigned lazy;	/* Number of lazy sections yet to read.  */
   unsigned loading;	/* Section currently being loaded.  */
@@ -2356,13 +2355,14 @@ struct GTY(()) module_state {
   void release (bool at_eof = true);
 
  public:
-  /* Enter and leave the module's location.  */
-  void push_location ();
-  void pop_location ();
-
- public:
   void set_import (module_state const *, bool is_export);
   void announce (const char *) const;
+
+  /* The location at whence the module was imported/declared.  */
+  location_t from_loc () const
+  {
+    return module_from_loc (loc);
+  }
 
  public:
   /* Read and write module.  */
@@ -2484,7 +2484,7 @@ module_state::module_state (tree name)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     name (name), vec_name (NULL_TREE),
     remap (NULL), unnamed (NULL), from (NULL),
-    filename (NULL), imp_loc (UNKNOWN_LOCATION), self_loc (UNKNOWN_LOCATION),
+    filename (NULL), loc (UNKNOWN_LOCATION),
     lazy (0), loading (~0u), lru (0), mod (MODULE_UNKNOWN), crc (0)
 {
   direct = exported = false;
@@ -6975,35 +6975,6 @@ module_server::export_done (tree name)
   return ok;
 }
 
-/* Set enter or leave the module.
-   With atom modules, we interact closely with the preprocessor.
-   Imports happen before we've read following tokens.   */
-
-void
-module_state::push_location ()
-{
-  // FIXME:We want LC_MODULE_ENTER really.
-  if (modules_atom_p ())
-    module_file_nest (filename);
-  else
-    {
-      linemap_add (line_table, LC_ENTER, false, filename, 0);
-      input_location = linemap_line_start (line_table, 0, 0);
-    }
-}
-
-void
-module_state::pop_location ()
-{
-  if (modules_atom_p ())
-    module_file_nest (NULL);
-  else
-    {
-      linemap_add (line_table, LC_LEAVE, false, NULL, 0);  
-      input_location = linemap_line_start (line_table, 0, 0);
-    }
-}
-
 /* Generate a string of the compilation options.  */
 
 char *
@@ -7166,7 +7137,7 @@ module_state::read_imports (bytes_in &cfg, bool direct)
 
 	  if (cfg.get_overrun ())
 	    return -1;
-	  imp = find_module (self_loc, name, false);
+	  imp = find_module (loc, name, false);
 	  if (imp && !imp->filename)
 	    {
 	      imp->crc = crc;
@@ -8946,13 +8917,14 @@ module_state::check_read (bool outermost, tree ns, tree id)
 	 Otherwise return NULL to let our importer know (and
 	 fail).  */
       if (lazy && id)
-	error_at (self_loc, "failed to load binding %<%E%s%E@%E%>: %s",
+	error_at (loc, "failed to load binding %<%E%s%E@%E%>: %s",
 		  ns, &"::"[ns == global_namespace ? 2 : 0], id, name, err);
       else
-	error_at  (imp_loc, "failed to import module %qE: %s", name, err);
-      
+	error_at  (loc, filename ? "failed to read BMI %qs: %s"
+		   : "unknown BMI file", filename, err);
+
       if (e == EMFILE)
-	inform (imp_loc, "consider reducing %<--param %s%> value",
+	inform (loc, "consider reducing %<--param %s%> value",
 		compiler_params[PARAM_LAZY_MODULES].option);
     }
 
@@ -8960,7 +8932,7 @@ module_state::check_read (bool outermost, tree ns, tree id)
     release (false);
 
   if (e && outermost)
-    fatal_error (imp_loc, "jumping off the crazy train to crashville");
+    fatal_error (loc, "jumping off the crazy train to crashville");
 
   return e;
 }
@@ -9230,7 +9202,7 @@ make_flat_name (tree name)
    MODULE_P indicates whether this is the module unit, or an import.  */
 
 module_state *
-module_state::find_module (location_t loc, tree name, bool module_p)
+module_state::find_module (location_t from_loc, tree name, bool module_p)
 {
   gcc_assert (global_namespace == current_scope ());
 
@@ -9244,7 +9216,7 @@ module_state::find_module (location_t loc, tree name, bool module_p)
   if (!state)
     {
       /* Already declared the module.  */
-      error_at (loc, "cannot declare module in purview of module %qE",
+      error_at (from_loc, "cannot declare module in purview of module %qE",
 		dflt->name);
       return NULL;
     }
@@ -9257,8 +9229,7 @@ module_state::find_module (location_t loc, tree name, bool module_p)
 	  current_module = MODULE_PURVIEW;
 	}
 
-      state->imp_loc = loc;
-      state->self_loc = loc; // FIXME
+      state->loc = make_module_loc (from_loc, IDENTIFIER_POINTER (name));
       if (identifier_p (maybe_vec_name))
 	{
 	  /* Create a TREE_VEC of components.  */
@@ -9285,8 +9256,9 @@ module_state::find_module (location_t loc, tree name, bool module_p)
   else if (state->mod == MODULE_PURVIEW)
     {
       /* Cannot import the current module.  */
-      error_at (loc, "cannot import module in its own purview");
-      inform (state->imp_loc, "module %qE declared here", state->name);
+      error_at (from_loc, "cannot import module %qE in its own purview",
+		state->name);
+      inform (state->from_loc (), "module %qE declared here", state->name);
       return NULL;
     }
   else
@@ -9298,8 +9270,8 @@ module_state::find_module (location_t loc, tree name, bool module_p)
       if (module_p)
 	{
 	  /* Cannot be module unit of an imported module.  */
-	  error_at (loc, "cannot declare module after import");
-	  inform (state->imp_loc, "module %qE imported here", state->name);
+	  error_at (from_loc, "cannot declare module after import");
+	  inform (state->from_loc (), "module %qE imported here", state->name);
 	  return NULL;
 	}
     }
@@ -9334,14 +9306,15 @@ module_state::do_import (char const *fname)
       e = errno;
     }
 
-  push_location ();
+  location_t saved_loc = input_location;
+  input_location = loc;
   announce ("importing");
   vec_safe_push (importing, this);
   read (stream, e, check_crc);
   bool failed = check_read (direct);
   importing->pop ();
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
-  pop_location ();
+  input_location = saved_loc;
   dump.pop (n);
 
   return !failed;
@@ -9385,7 +9358,8 @@ module_state::freeze_an_elf ()
 bool
 module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
 {
-  push_location ();
+  location_t saved_loc = input_location;
+  input_location = loc;
   unsigned n = dump.push (this);
 
   unsigned snum = mslot->get_lazy ();
@@ -9401,7 +9375,7 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
   gcc_assert (!failed || !outermost);
  
   dump.pop (n);
-  pop_location ();
+  input_location = saved_loc;
 
   return !failed;
 }
@@ -9495,7 +9469,7 @@ finish_module ()
 	  e = errno;
 	}
       location_t saved_loc = input_location;
-      input_location = state->imp_loc;
+      input_location = state->loc;
       unsigned n = dump.push (state);
       state->announce ("creating");
 
@@ -9503,7 +9477,7 @@ finish_module ()
       if (to.begin ())
 	state->write (&to);
       if (to.end ())
-	error_at (state->self_loc, "failed to export module %qE: %s",
+	error_at (state->loc, "failed to export module %qE: %s",
 		  state->name, to.get_error ());
 
       dump.pop (n);
