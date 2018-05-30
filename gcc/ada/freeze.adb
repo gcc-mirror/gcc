@@ -186,7 +186,7 @@ package body Freeze is
    --  This procedure is called for each subprogram to complete processing of
    --  default expressions at the point where all types are known to be frozen.
    --  The expressions must be analyzed in full, to make sure that all error
-   --  processing is done (they have only been pre-analyzed). If the expression
+   --  processing is done (they have only been preanalyzed). If the expression
    --  is not an entity or literal, its analysis may generate code which must
    --  not be executed. In that case we build a function body to hold that
    --  code. This wrapper function serves no other purpose (it used to be

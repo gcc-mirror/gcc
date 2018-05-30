@@ -6676,7 +6676,7 @@ package body Sem_Res is
                Cannot_Inline
                  ("cannot inline & (in default expression)?", N, Nam_UA);
 
-            --  Inlining should not be performed during pre-analysis
+            --  Inlining should not be performed during preanalysis
 
             elsif Full_Analysis then
 

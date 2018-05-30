@@ -1,5 +1,13 @@
 2018-05-30  Bob Duff  <duff@adacore.com>
 
+	* aspects.ads, contracts.adb, exp_util.adb, expander.adb, expander.ads,
+	freeze.adb, inline.adb, lib-xref.adb, sem.ads, sem_aggr.adb,
+	sem_attr.adb, sem_ch13.adb, sem_ch3.adb, sem_ch5.adb, sem_ch6.adb,
+	sem_ch8.adb, sem_dim.adb, sem_elab.adb, sem_res.adb, sem_res.ads,
+	sinfo.ads: Spell preanalysis, preanalyze correctly.
+
+2018-05-30  Bob Duff  <duff@adacore.com>
+
 	* libgnat/g-sestin.ads: Rework documentation comments.
 
 2018-05-30  Piotr Trojanek  <trojanek@adacore.com>

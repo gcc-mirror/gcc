@@ -2218,7 +2218,7 @@ package body Sem_Ch3 is
       --  Context denotes the owner of the declarative list.
 
       procedure Check_Entry_Contracts;
-      --  Perform a pre-analysis of the pre- and postconditions of an entry
+      --  Perform a preanalysis of the pre- and postconditions of an entry
       --  declaration. This must be done before full resolution and creation
       --  of the parameter block, etc. to catch illegal uses within the
       --  contract expression. Full analysis of the expression is done when
@@ -5286,7 +5286,7 @@ package body Sem_Ch3 is
 
       --  Finally this happens in some complex cases when validity checks are
       --  enabled, where the same subtype declaration may be analyzed twice.
-      --  This can happen if the subtype is created by the pre-analysis of
+      --  This can happen if the subtype is created by the preanalysis of
       --  an attribute tht gives the range of a loop statement, and the loop
       --  itself appears within an if_statement that will be rewritten during
       --  expansion.

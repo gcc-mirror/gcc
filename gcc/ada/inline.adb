@@ -1156,7 +1156,7 @@ package body Inline is
          Append (Body_To_Analyze, Declarations (N));
       end if;
 
-      --  The body to inline is pre-analyzed. In GNATprove mode we must disable
+      --  The body to inline is preanalyzed. In GNATprove mode we must disable
       --  full analysis as well so that light expansion does not take place
       --  either, and name resolution is unaffected.
 
