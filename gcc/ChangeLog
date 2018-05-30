@@ -1,5 +1,8 @@
 2018-05-30  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config/msp430/msp430.c (msp430_output_labelref): Prepend
+	user_label_prefix to name.
+
 	* tree-core.h: Update comment about the format of NAME string
 	passed to handler in attribute_spec.
 

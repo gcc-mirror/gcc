@@ -3416,6 +3416,9 @@ msp430_output_labelref (FILE *file, const char *name)
 	}
     }
 
+  if (user_label_prefix[0] != 0)
+    fputs (user_label_prefix, file);
+
   fputs (name, file);
 }
 
