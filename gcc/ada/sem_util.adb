@@ -13162,7 +13162,7 @@ package body Sem_Util is
       --  components.
 
       function Is_Atomic_Prefix (Pref : Node_Id) return Boolean;
-      --  Determine whether prefix Pref of a indexed or selected component is
+      --  Determine whether prefix Pref of an indexed or selected component is
       --  an atomic object.
 
       ----------------------
