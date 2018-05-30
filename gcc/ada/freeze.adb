@@ -3447,12 +3447,11 @@ package body Freeze is
                      null;
                   else
                      Error_Msg_NE
-                       ("Thread_Local_Storage variable& is "
-                        & "improperly initialized", Decl, E);
+                       ("Thread_Local_Storage variable& is improperly "
+                        & "initialized", Decl, E);
                      Error_Msg_NE
-                       ("\only allowed initialization is explicit "
-                        & "NULL, static expression or static aggregate",
-                          Decl, E);
+                       ("\only allowed initialization is explicit NULL, "
+                        & "static expression or static aggregate", Decl, E);
                   end if;
                end if;
             end;

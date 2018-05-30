@@ -1,3 +1,8 @@
+2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb, exp_unst.adb, freeze.adb, libgnat/a-direct.adb: Minor
+	reformatting.
+
 2018-05-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Visit_Node): Handle the semantic Procedure_To_Call

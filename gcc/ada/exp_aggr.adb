@@ -4738,7 +4738,7 @@ package body Exp_Aggr is
             if Is_Packed (Etype (N))
               or else
                 (Is_Record_Type (Component_Type (Etype (N)))
-                 and then Has_Discriminants (Component_Type (Etype (N))))
+                  and then Has_Discriminants (Component_Type (Etype (N))))
             then
                null;
             else
