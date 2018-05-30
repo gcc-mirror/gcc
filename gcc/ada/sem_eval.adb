@@ -574,8 +574,16 @@ package body Sem_Eval is
             null;
 
          elsif Is_Out_Of_Range (N, T, Assume_Valid => True) then
-            Apply_Compile_Time_Constraint_Error
-              (N, "value not in range of}<<", CE_Range_Check_Failed);
+            --  Ignore out of range values for System.Priority in CodePeer
+            --  mode since the actual target compiler may provide a wider
+            --  range.
+
+            if CodePeer_Mode and then T = RTE (RE_Priority) then
+               Set_Do_Range_Check (N, False);
+            else
+               Apply_Compile_Time_Constraint_Error
+                 (N, "value not in range of}<<", CE_Range_Check_Failed);
+            end if;
 
          elsif Checks_On then
             Enable_Range_Check (N);
@@ -5437,9 +5445,11 @@ package body Sem_Eval is
               First_Rep_Item (Parent (N)));
             Rewrite (N, Make_Integer_Literal (Sloc (N), Uint_1));
 
-         --  All cases except the special array case
+         --  All cases except the special array case.
+         --  No message if we are dealing with System.Priority values in
+         --  CodePeer mode where the target runtime may have more priorities.
 
-         else
+         elsif not CodePeer_Mode or else Etype (N) /= RTE (RE_Priority) then
             Apply_Compile_Time_Constraint_Error
               (N, "value not in range of}", CE_Range_Check_Failed);
          end if;

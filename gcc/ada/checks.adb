@@ -3065,7 +3065,16 @@ package body Checks is
                      --  If definitely not in range, warn
 
                      elsif Lov > Hi or else Hiv < Lo then
-                        Bad_Value;
+                        --  Ignore out of range values for System.Priority in
+                        --  CodePeer mode since the actual target compiler may
+                        --  provide a wider range.
+
+                        if not CodePeer_Mode
+                          or else Target_Typ /= RTE (RE_Priority)
+                        then
+                           Bad_Value;
+                        end if;
+
                         return;
 
                      --  Otherwise we don't know

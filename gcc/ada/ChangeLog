@@ -1,3 +1,10 @@
+2018-05-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check):
+	* sem_eval.adb (Check_Non_Static_Context, Out_Of_Range): Ignore out of
+	range values for System.Priority in CodePeer mode since the actual
+	target compiler may provide a wider range.
+
 2018-05-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb: Search specification of main unit as well, for
