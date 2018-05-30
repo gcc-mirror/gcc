@@ -2915,6 +2915,12 @@ package Einfo is
 --       that are created for access parameters, access discriminants, and
 --       (as of Ada 2012) stand-alone objects.
 
+--    Is_Loop_Parameter (Flag307)
+--       Applies to all entities. Certain loops, in particular "for ... of"
+--       loops, get transformed so that the loop parameter is declared by a
+--       variable declaration, so the entity is an E_Variable. This is True for
+--       such E_Variables; False otherwise.
+
 --    Is_Machine_Code_Subprogram (Flag137)
 --       Defined in subprogram entities. Set to indicate that the subprogram
 --       is a machine code subprogram (i.e. its body includes at least one
@@ -5621,6 +5627,7 @@ package Einfo is
    --    Is_Known_Valid                      (Flag170)
    --    Is_Limited_Composite                (Flag106)
    --    Is_Limited_Record                   (Flag25)
+   --    Is_Loop_Parameter                   (Flag307)
    --    Is_Obsolescent                      (Flag153)
    --    Is_Package_Body_Entity              (Flag160)
    --    Is_Packed_Array_Impl_Type           (Flag138)
@@ -7343,6 +7350,7 @@ package Einfo is
    function Is_Limited_Composite                (Id : E) return B;
    function Is_Limited_Interface                (Id : E) return B;
    function Is_Local_Anonymous_Access           (Id : E) return B;
+   function Is_Loop_Parameter                   (Id : E) return B;
    function Is_Machine_Code_Subprogram          (Id : E) return B;
    function Is_Non_Static_Subtype               (Id : E) return B;
    function Is_Null_Init_Proc                   (Id : E) return B;
@@ -8049,6 +8057,7 @@ package Einfo is
    procedure Set_Is_Limited_Interface            (Id : E; V : B := True);
    procedure Set_Is_Limited_Record               (Id : E; V : B := True);
    procedure Set_Is_Local_Anonymous_Access       (Id : E; V : B := True);
+   procedure Set_Is_Loop_Parameter               (Id : E; V : B := True);
    procedure Set_Is_Machine_Code_Subprogram      (Id : E; V : B := True);
    procedure Set_Is_Non_Static_Subtype           (Id : E; V : B := True);
    procedure Set_Is_Null_Init_Proc               (Id : E; V : B := True);
@@ -8905,6 +8914,7 @@ package Einfo is
    pragma Inline (Is_Limited_Interface);
    pragma Inline (Is_Limited_Record);
    pragma Inline (Is_Local_Anonymous_Access);
+   pragma Inline (Is_Loop_Parameter);
    pragma Inline (Is_Machine_Code_Subprogram);
    pragma Inline (Is_Modular_Integer_Type);
    pragma Inline (Is_Named_Number);
@@ -9415,6 +9425,7 @@ package Einfo is
    pragma Inline (Set_Is_Limited_Interface);
    pragma Inline (Set_Is_Limited_Record);
    pragma Inline (Set_Is_Local_Anonymous_Access);
+   pragma Inline (Set_Is_Loop_Parameter);
    pragma Inline (Set_Is_Machine_Code_Subprogram);
    pragma Inline (Set_Is_Non_Static_Subtype);
    pragma Inline (Set_Is_Null_Init_Proc);
