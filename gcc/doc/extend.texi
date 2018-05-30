@@ -9285,14 +9285,14 @@ top:
 
    asm volatile goto ("some assembler instructions here"
    : /* No outputs. */
-   : "q" (iInt), "X" (sizeof(unsigned char) + 1)
+   : "q" (iInt), "X" (sizeof(unsigned char) + 1), "i" (42)
    : /* No clobbers. */
    : top);
 @}
 @end example
 
-With no modifiers, this is what the output from the operands would be for the 
-@samp{att} and @samp{intel} dialects of assembler:
+With no modifiers, this is what the output from the operands would be
+for the @samp{att} and @samp{intel} dialects of assembler:
 
 @multitable {Operand} {$.L2} {OFFSET FLAT:.L2}
 @headitem Operand @tab @samp{att} @tab @samp{intel}
@@ -9302,55 +9302,82 @@ With no modifiers, this is what the output from the operands would be for the
 @item @code{%1}
 @tab @code{$2}
 @tab @code{2}
-@item @code{%2}
-@tab @code{$.L2}
-@tab @code{OFFSET FLAT:.L2}
+@item @code{%3}
+@tab @code{$.L3}
+@tab @code{OFFSET FLAT:.L3}
 @end multitable
 
 The table below shows the list of supported modifiers and their effects.
 
 @multitable {Modifier} {Print the opcode suffix for the size of th} {Operand} {@samp{att}} {@samp{intel}}
 @headitem Modifier @tab Description @tab Operand @tab @samp{att} @tab @samp{intel}
-@item @code{z}
-@tab Print the opcode suffix for the size of the current integer operand (one of @code{b}/@code{w}/@code{l}/@code{q}).
-@tab @code{%z0}
-@tab @code{l}
-@tab 
+@item @code{a}
+@tab Print an absolute memory reference.
+@tab @code{%A0}
+@tab @code{*%rax}
+@tab @code{rax}
 @item @code{b}
 @tab Print the QImode name of the register.
 @tab @code{%b0}
 @tab @code{%al}
 @tab @code{al}
-@item @code{h}
-@tab Print the QImode name for a ``high'' register.
-@tab @code{%h0}
-@tab @code{%ah}
-@tab @code{ah}
-@item @code{w}
-@tab Print the HImode name of the register.
-@tab @code{%w0}
-@tab @code{%ax}
-@tab @code{ax}
-@item @code{k}
-@tab Print the SImode name of the register.
-@tab @code{%k0}
-@tab @code{%eax}
-@tab @code{eax}
-@item @code{q}
-@tab Print the DImode name of the register.
-@tab @code{%q0}
-@tab @code{%rax}
-@tab @code{rax}
-@item @code{l}
-@tab Print the label name with no punctuation.
-@tab @code{%l2}
-@tab @code{.L2}
-@tab @code{.L2}
 @item @code{c}
 @tab Require a constant operand and print the constant expression with no punctuation.
 @tab @code{%c1}
 @tab @code{2}
 @tab @code{2}
+@item @code{E}
+@tab Print the address in Double Integer (DImode) mode (8 bytes) when the target is 64-bit.
+Otherwise mode is unspecified (VOIDmode).
+@tab @code{%E1}
+@tab @code{%(rax)}
+@tab @code{[rax]}
+@item @code{h}
+@tab Print the QImode name for a ``high'' register.
+@tab @code{%h0}
+@tab @code{%ah}
+@tab @code{ah}
+@item @code{H}
+@tab Add 8 bytes to an offsettable memory reference. Useful when accessing the
+high 8 bytes of SSE values. For a memref in (%rax), it generates
+@tab @code{%H0}
+@tab @code{8(%rax)}
+@tab @code{8[rax]}
+@item @code{k}
+@tab Print the SImode name of the register.
+@tab @code{%k0}
+@tab @code{%eax}
+@tab @code{eax}
+@item @code{l}
+@tab Print the label name with no punctuation.
+@tab @code{%l3}
+@tab @code{.L3}
+@tab @code{.L3}
+@item @code{p}
+@tab Print raw symbol name (without syntax-specific prefixes).
+@tab @code{%p2}
+@tab @code{42}
+@tab @code{42}
+@item @code{P}
+@tab If used for a function, print the PLT suffix and generate PIC code.
+For example, emit @code{foo@@PLT} instead of 'foo' for the function
+foo(). If used for a constant, drop all syntax-specific prefixes and
+issue the bare constant. See @code{p} above.
+@item @code{q}
+@tab Print the DImode name of the register.
+@tab @code{%q0}
+@tab @code{%rax}
+@tab @code{rax}
+@item @code{w}
+@tab Print the HImode name of the register.
+@tab @code{%w0}
+@tab @code{%ax}
+@tab @code{ax}
+@item @code{z}
+@tab Print the opcode suffix for the size of the current integer operand (one of @code{b}/@code{w}/@code{l}/@code{q}).
+@tab @code{%z0}
+@tab @code{l}
+@tab 
 @end multitable
 
 @code{V} is a special modifier which prints the name of the full integer
