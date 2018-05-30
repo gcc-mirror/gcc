@@ -1,3 +1,10 @@
+2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-wrapper.c (debug_objcopy): Add rename parameter; pass
+	it down to simple_object_copy_lto_debug_sections.
+	(run_gcc): Determine incremental LTO link time and configure
+	lto1 into non-wpa mode, disable renaming of debug sections.
+
 2018-05-30  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Remove
