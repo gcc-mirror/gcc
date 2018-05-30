@@ -1,5 +1,11 @@
 2018-05-30  Piotr Trojanek  <trojanek@adacore.com>
 
+	* errout.adb, exp_aggr.adb, exp_ch7.adb, exp_util.adb, lib.adb,
+	sem_ch13.adb, sem_ch4.adb, sem_res.adb, sem_util.adb
+	(Has_Original_Node): Refactor to use Is_Rewrite_Substitution.
+
+2018-05-30  Piotr Trojanek  <trojanek@adacore.com>
+
 	* sem_prag.adb (Analyze_Pragma): Remove conjuncts that are always true.
 
 2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>

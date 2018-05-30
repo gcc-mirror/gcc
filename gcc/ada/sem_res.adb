@@ -12691,7 +12691,7 @@ package body Sem_Res is
 
             if Ada_Version >= Ada_2012
               and then not Comes_From_Source (N)
-              and then N /= Original_Node (N)
+              and then Is_Rewrite_Substitution (N)
               and then Ekind (Target_Type) = E_General_Access_Type
               and then Ekind (Opnd_Type) = E_Anonymous_Access_Type
             then

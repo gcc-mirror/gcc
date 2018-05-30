@@ -1345,7 +1345,7 @@ package body Sem_Ch4 is
             --  parameter has been analyzed, but may need a subsequent
             --  dereference, so skip its analysis now.
 
-            if N /= Original_Node (N)
+            if Is_Rewrite_Substitution (N)
               and then Nkind (Original_Node (N)) = Nkind (N)
               and then Nkind (Name (N)) /= Nkind (Name (Original_Node (N)))
               and then Present (Parameter_Associations (N))
