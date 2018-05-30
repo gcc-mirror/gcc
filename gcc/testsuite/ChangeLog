@@ -1,3 +1,10 @@
+2017-05-30  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* gcc.target/aarch64/simd/ldp_stp_9: New.
+	* gcc.target/aarch64/simd/ldp_stp_10: New.
+	* gcc.target/aarch64/simd/ldp_stp_11: New.
+	* gcc.target/aarch64/simd/ldp_stp_12: New.
+
 2018-05-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/tls1.adb, gnat.dg/tls1_pkg.ads: New testcase.
