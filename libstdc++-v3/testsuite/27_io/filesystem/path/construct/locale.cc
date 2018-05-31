@@ -31,7 +31,11 @@ void
 test01()
 {
   path p("/foo/bar", std::locale::classic());
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  VERIFY( p.native() == L"/foo/bar" );
+#else
   VERIFY( p.native() == "/foo/bar" );
+#endif
 }
 
 void

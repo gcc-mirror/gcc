@@ -42,7 +42,7 @@ test01()
   VERIFY( !exists(to) );
 
   // test empty file
-  std::ofstream{from.native()};
+  std::ofstream{from.c_str()};
   VERIFY( exists(from) );
   VERIFY( file_size(from) == 0 );
 
@@ -58,7 +58,7 @@ test01()
   VERIFY( exists(to) );
   VERIFY( file_size(to) == 0 );
 
-  std::ofstream{from.native()} << "Hello, filesystem!";
+  std::ofstream{from.c_str()} << "Hello, filesystem!";
   VERIFY( file_size(from) != 0 );
   remove(to);
   VERIFY( !exists(to) );

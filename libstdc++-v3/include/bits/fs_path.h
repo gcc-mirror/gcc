@@ -37,11 +37,11 @@
 #include <vector>
 #include <locale>
 #include <iosfwd>
+#include <iomanip>
 #include <codecvt>
 #include <string_view>
 #include <system_error>
 #include <bits/stl_algobase.h>
-#include <bits/quoted_string.h>
 #include <bits/locale_conv.h>
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -232,37 +232,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     // appends
 
-    path& operator/=(const path& __p)
-    {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      if (__p.is_absolute()
-	  || (__p.has_root_name() && __p.root_name() != root_name()))
-	operator=(__p);
-      else
-	{
-	  string_type __pathname;
-	  if (__p.has_root_directory())
-	    __pathname = root_name().native();
-	  else if (has_filename() || (!has_root_directory() && is_absolute()))
-	    __pathname = _M_pathname + preferred_separator;
-	  __pathname += __p.relative_path().native(); // XXX is this right?
-	  _M_pathname.swap(__pathname);
-	  _M_split_cmpts();
-	}
-#else
-      // Much simpler, as any path with root-name or root-dir is absolute.
-      if (__p.is_absolute())
-	operator=(__p);
-      else
-	{
-	  if (has_filename() || (_M_type == _Type::_Root_name))
-	    _M_pathname += preferred_separator;
-	  _M_pathname += __p.native();
-	  _M_split_cmpts();
-	}
-#endif
-      return *this;
-    }
+    path& operator/=(const path& __p);
 
     template <class _Source>
       _Path<_Source>&
@@ -378,7 +348,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     bool has_filename() const;
     bool has_stem() const;
     bool has_extension() const;
-    bool is_absolute() const { return has_root_directory(); }
+    bool is_absolute() const;
     bool is_relative() const { return !is_absolute(); }
 
     // generation
@@ -419,19 +389,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     enum class _Split { _Stem, _Extension };
 
-    path&
-    _M_append(path __p)
-    {
-      if (__p.is_absolute())
-	operator=(std::move(__p));
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      else if (__p.has_root_name() && __p.root_name() != root_name())
-	operator=(std::move(__p));
-#endif
-      else
-	operator/=(const_cast<const path&>(__p));
-      return *this;
-    }
+    path& _M_append(path __p);
 
     pair<const string_type*, size_t> _M_find_extension() const;
 
@@ -552,10 +510,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os, const path& __p)
     {
-      auto __tmp = __p.string<_CharT, _Traits>();
-      using __quoted_string
-	= std::__detail::_Quoted_string<decltype(__tmp)&, _CharT>;
-      __os << __quoted_string{__tmp, '"', '\\'};
+      __os << std::quoted(__p.string<_CharT, _Traits>());
       return __os;
     }
 
@@ -565,24 +520,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     operator>>(basic_istream<_CharT, _Traits>& __is, path& __p)
     {
       basic_string<_CharT, _Traits> __tmp;
-      using __quoted_string
-	= std::__detail::_Quoted_string<decltype(__tmp)&, _CharT>;
-      if (__is >> __quoted_string{ __tmp, '"', '\\' })
+      if (__is >> std::quoted(__tmp))
 	__p = std::move(__tmp);
       return __is;
-    }
-
-  template<typename _Source>
-    inline auto
-    u8path(const _Source& __source)
-    -> decltype(filesystem::path(__source, std::locale::classic()))
-    {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      const std::string __u8str{__source};
-      return std::filesystem::u8path(__u8str.begin(), __u8str.end());
-#else
-      return path{ __source };
-#endif
     }
 
   template<typename _InputIterator>
@@ -591,14 +531,44 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     -> decltype(filesystem::path(__first, __last, std::locale::classic()))
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      codecvt_utf8<value_type> __cvt;
-      string_type __tmp;
-      if (__str_codecvt_in(__first, __last, __tmp, __cvt))
-	return path{ __tmp };
+      codecvt_utf8<path::value_type> __cvt;
+      path::string_type __tmp;
+      if constexpr (is_pointer_v<_InputIterator>)
+	{
+	  if (__str_codecvt_in(__first, __last, __tmp, __cvt))
+	    return path{ __tmp };
+	}
       else
-	return {};
+	{
+	  const std::string __u8str{__first, __last};
+	  const char* const __ptr = __u8str.data();
+	  if (__str_codecvt_in(__ptr, __ptr + __u8str.size(), __tmp, __cvt))
+	    return path{ __tmp };
+	}
+      return {};
 #else
       return path{ __first, __last };
+#endif
+    }
+
+  template<typename _Source>
+    inline auto
+    u8path(const _Source& __source)
+    -> decltype(filesystem::path(__source, std::locale::classic()))
+    {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      if constexpr (is_convertible_v<const _Source&, std::string_view>)
+	{
+	  const std::string_view __s = __source;
+	  return filesystem::u8path(__s.data(), __s.data() + __s.size());
+	}
+      else
+	{
+	  std::string __s = path::_S_string_from_iter(__source);
+	  return filesystem::u8path(__s.data(), __s.data() + __s.size());
+	}
+#else
+      return path{ __source };
 #endif
     }
 
@@ -1068,6 +1038,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return ext.first && ext.second != string_type::npos;
   }
 
+  inline bool
+  path::is_absolute() const
+  {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    return has_root_name() && has_root_directory();
+#else
+    return has_root_directory();
+#endif
+  }
+
   inline path::iterator
   path::begin() const
   {
@@ -1082,6 +1062,38 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     if (_M_type == _Type::_Multi)
       return iterator(this, _M_cmpts.end());
     return iterator(this, true);
+  }
+
+#ifndef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  inline path& path::operator/=(const path& __p)
+  {
+    // Much simpler than the specification in the standard,
+    // as any path with root-name or root-dir is absolute.
+    if (__p.is_absolute())
+      operator=(__p);
+    else
+      {
+	if (has_filename() || (_M_type == _Type::_Root_name))
+	  _M_pathname += preferred_separator;
+	_M_pathname += __p.native();
+	_M_split_cmpts();
+      }
+    return *this;
+  }
+#endif
+
+  inline path&
+  path::_M_append(path __p)
+  {
+    if (__p.is_absolute())
+      operator=(std::move(__p));
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    else if (__p.has_root_name() && __p.root_name() != root_name())
+      operator=(std::move(__p));
+#endif
+    else
+      operator/=(const_cast<const path&>(__p));
+    return *this;
   }
 
   inline path::iterator&
