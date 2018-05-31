@@ -1,3 +1,9 @@
+2018-05-31  Matthias Klose  <doko@ubuntu.com>
+
+	PR sanitizer/86012
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Define
+	SIZEOF_STRUCT_USTAT for 32bit sparc.
+
 2018-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR sanitizer/85835
