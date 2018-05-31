@@ -1,3 +1,7 @@
+2018-05-31  Valentine Reboul  <reboul@adacore.com>
+
+	* gnatvsn.ads: Rename "GPL" version to "Community".
+
 2018-05-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads: Improve documentation for the Is_Unsigned_Type entity
