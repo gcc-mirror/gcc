@@ -1,5 +1,10 @@
 2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* repinfo.adb (List_Structural_Record_Layout): Set First to false
+	after having listed the fields of the parent type, if any.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <discrete_type>: Do not
 	deal with the ___XP suffix for packed array types here...
 	<E_Array_Subtype>: ...or here when processing the implementation type
