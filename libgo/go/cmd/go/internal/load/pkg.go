@@ -13,7 +13,6 @@ import (
 	"os"
 	pathpkg "path"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	"unicode"
@@ -224,9 +223,6 @@ func (p *Package) copyBuild(pp *build.Package) {
 	// TODO? Target
 	p.Goroot = pp.Goroot
 	p.Standard = p.Goroot && p.ImportPath != "" && isStandardImportPath(p.ImportPath)
-	if cfg.BuildToolchainName == "gccgo" {
-		p.Standard = stdpkg[p.ImportPath]
-	}
 	p.GoFiles = pp.GoFiles
 	p.CgoFiles = pp.CgoFiles
 	p.IgnoredGoFiles = pp.IgnoredGoFiles
@@ -895,13 +891,6 @@ var foldPath = make(map[string]string)
 func (p *Package) load(stk *ImportStack, bp *build.Package, err error) {
 	p.copyBuild(bp)
 
-	// When using gccgo the go/build package will not be able to
-	// find a standard package. It would be nicer to not get that
-	// error, but go/build doesn't know stdpkg.
-	if cfg.BuildToolchainName == "gccgo" && err != nil && p.Standard {
-		err = nil
-	}
-
 	// Decide whether p was listed on the command line.
 	// Given that load is called while processing the command line,
 	// you might think we could simply pass a flag down into load
@@ -976,7 +965,7 @@ func (p *Package) load(stk *ImportStack, bp *build.Package, err error) {
 			// This is for 'go tool'.
 			// Override all the usual logic and force it into the tool directory.
 			if cfg.BuildToolchainName == "gccgo" {
-				p.Target = filepath.Join(runtime.GCCGOTOOLDIR, elem)
+				p.Target = filepath.Join(base.ToolDir, elem)
 			} else {
 				p.Target = filepath.Join(cfg.GOROOTpkg, "tool", full)
 			}
@@ -1021,7 +1010,7 @@ func (p *Package) load(stk *ImportStack, bp *build.Package, err error) {
 
 	// Cgo translation adds imports of "runtime/cgo" and "syscall",
 	// except for certain packages, to avoid circular dependencies.
-	if p.UsesCgo() && (!p.Standard || !cgoExclude[p.ImportPath]) {
+	if p.UsesCgo() && (!p.Standard || !cgoExclude[p.ImportPath]) && cfg.BuildContext.Compiler != "gccgo" {
 		addImport("runtime/cgo")
 	}
 	if p.UsesCgo() && (!p.Standard || !cgoSyscallExclude[p.ImportPath]) {
@@ -1030,7 +1019,9 @@ func (p *Package) load(stk *ImportStack, bp *build.Package, err error) {
 
 	// SWIG adds imports of some standard packages.
 	if p.UsesSwig() {
-		addImport("runtime/cgo")
+		if cfg.BuildContext.Compiler != "gccgo" {
+			addImport("runtime/cgo")
+		}
 		addImport("syscall")
 		addImport("sync")
 
@@ -1097,9 +1088,6 @@ func (p *Package) load(stk *ImportStack, bp *build.Package, err error) {
 			continue
 		}
 		p1 := LoadImport(path, p.Dir, p, stk, p.Internal.Build.ImportPos[path], UseVendor)
-		if cfg.BuildToolchainName == "gccgo" && p1.Standard {
-			continue
-		}
 		if p.Standard && p.Error == nil && !p1.Standard && p1.Error == nil {
 			p.Error = &PackageError{
 				ImportStack: stk.Copy(),
@@ -1239,7 +1227,7 @@ func LinkerDeps(p *Package) []string {
 	deps := []string{"runtime"}
 
 	// External linking mode forces an import of runtime/cgo.
-	if externalLinkingForced(p) {
+	if externalLinkingForced(p) && cfg.BuildContext.Compiler != "gccgo" {
 		deps = append(deps, "runtime/cgo")
 	}
 	// On ARM with GOARM=5, it forces an import of math, for soft floating point.
@@ -1611,9 +1599,6 @@ func GetTestPackagesFor(p *Package, forceTest bool) (ptest, pxtest *Package, err
 	rawTestImports := str.StringList(p.TestImports)
 	for i, path := range p.TestImports {
 		p1 := LoadImport(path, p.Dir, p, &stk, p.Internal.Build.TestImportPos[path], UseVendor)
-		if cfg.BuildToolchainName == "gccgo" && p1.Standard {
-			continue
-		}
 		if p1.Error != nil {
 			return nil, nil, p1.Error
 		}
@@ -1642,9 +1627,6 @@ func GetTestPackagesFor(p *Package, forceTest bool) (ptest, pxtest *Package, err
 	rawXTestImports := str.StringList(p.XTestImports)
 	for i, path := range p.XTestImports {
 		p1 := LoadImport(path, p.Dir, p, &stk, p.Internal.Build.XTestImportPos[path], UseVendor)
-		if cfg.BuildToolchainName == "gccgo" && p1.Standard {
-			continue
-		}
 		if p1.Error != nil {
 			return nil, nil, p1.Error
 		}
