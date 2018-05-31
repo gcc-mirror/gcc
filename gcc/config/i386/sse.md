@@ -913,11 +913,6 @@
    (V8DF "sd")  (V4DF "sd") (V2DF "sd")])
 
 ;; Tie mode of assembler operand to mode iterator
-(define_mode_attr concat_tg_mode
-  [(V32QI "t") (V16HI "t") (V8SI "t") (V4DI "t") (V8SF "t") (V4DF "t")
-   (V64QI "g") (V32HI "g") (V16SI "g") (V8DI "g") (V16SF "g") (V8DF "g")])
-
-;; Tie mode of assembler operand to mode iterator
 (define_mode_attr xtg_mode
   [(V16QI "x") (V8HI "x") (V4SI "x") (V2DI "x") (V4SF "x") (V2DF "x")
    (V32QI "t") (V16HI "t") (V8SI "t") (V4DI "t") (V8SF "t") (V4DF "t")
@@ -18070,7 +18065,7 @@
          (match_operand:<64x2mode> 1 "nonimmediate_operand" "v,m")))]
   "TARGET_AVX512DQ"
   "@
-   vshuf<shuffletype>64x2\t{$0x0, %<concat_tg_mode>1, %<concat_tg_mode>1, %0<mask_operand2>|%0<mask_operand2>, %<concat_tg_mode>1, %<concat_tg_mode>1, 0x0}
+   vshuf<shuffletype>64x2\t{$0x0, %<xtg_mode>1, %<xtg_mode>1, %0<mask_operand2>|%0<mask_operand2>, %<xtg_mode>1, %<xtg_mode>1, 0x0}
    vbroadcast<shuffletype>64x2\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
@@ -18919,21 +18914,21 @@
   switch (which_alternative)
     {
     case 0:
-      return "vinsert<i128>\t{$0x1, %2, %<concat_tg_mode>1, %0|%0, %<concat_tg_mode>1, %2, 0x1}";
+      return "vinsert<i128>\t{$0x1, %2, %<xtg_mode>1, %0|%0, %<xtg_mode>1, %2, 0x1}";
     case 1:
       if (<MODE_SIZE> == 64)
 	{
 	  if (TARGET_AVX512DQ && GET_MODE_SIZE (<ssescalarmode>mode) == 4)
-	    return "vinsert<shuffletype>32x8\t{$0x1, %2, %<concat_tg_mode>1, %0|%0, %<concat_tg_mode>1, %2, 0x1}";
+	    return "vinsert<shuffletype>32x8\t{$0x1, %2, %<xtg_mode>1, %0|%0, %<xtg_mode>1, %2, 0x1}";
 	  else
-	    return "vinsert<shuffletype>64x4\t{$0x1, %2, %<concat_tg_mode>1, %0|%0, %<concat_tg_mode>1, %2, 0x1}";
+	    return "vinsert<shuffletype>64x4\t{$0x1, %2, %<xtg_mode>1, %0|%0, %<xtg_mode>1, %2, 0x1}";
 	}
       else
 	{
 	  if (TARGET_AVX512DQ && GET_MODE_SIZE (<ssescalarmode>mode) == 8)
-	    return "vinsert<shuffletype>64x2\t{$0x1, %2, %<concat_tg_mode>1, %0|%0, %<concat_tg_mode>1, %2, 0x1}";
+	    return "vinsert<shuffletype>64x2\t{$0x1, %2, %<xtg_mode>1, %0|%0, %<xtg_mode>1, %2, 0x1}";
 	  else
-	    return "vinsert<shuffletype>32x4\t{$0x1, %2, %<concat_tg_mode>1, %0|%0, %<concat_tg_mode>1, %2, 0x1}";
+	    return "vinsert<shuffletype>32x4\t{$0x1, %2, %<xtg_mode>1, %0|%0, %<xtg_mode>1, %2, 0x1}";
 	}
     case 2:
     case 3:

@@ -1,3 +1,10 @@
+2018-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (avx_vec_concat<mode>):
+	Substitute concat_tg_mode mode attribute with xtg_mode.
+	(<mask_codefor>avx512dq_broadcast<mode><mask_name>_1): Ditto.
+	(concat_tg_mode): Remove mode attribute.
+
 2018-05-31  Martin Sebor  <msebor@redhat.com>
 
 	PR c/82063
