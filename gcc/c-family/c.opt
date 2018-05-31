@@ -308,6 +308,10 @@ C ObjC C++ LTO ObjC++ Var(warn_alloc_size_limit) Warning Joined LangEnabledBy(C 
 -Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that
 attempt to allocate objects larger than the specified number of bytes.
 
+Wno-alloc-size-larger-than
+C ObjC C++ LTO ObjC++ Alias(Walloc-size-larger-than=, 18446744073709551615EiB,none) Warning
+-Wno-alloc-size-larger-than Disable Walloc-size-larger-than= warning.  Equivalent to Walloc-size-larger-than=<SIZE_MAX> or larger.
+
 Walloc-zero
 C ObjC C++ ObjC++ Var(warn_alloc_zero) Warning
 -Walloc-zero Warn for calls to allocation functions that specify zero bytes.

@@ -1,3 +1,10 @@
+2018-05-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c/82063
+	* calls.c (alloc_max_size): Correct a logic error/typo.
+	Treat excessive arguments as infinite.  Warn for invalid arguments.
+	* doc/invoke.texi (-Walloc-size-larger-than): Update.
+
 2018-05-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85829
