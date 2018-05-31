@@ -37,18 +37,6 @@
 
 #include <bits/c++config.h>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-# if defined (__UINT_LEAST16_TYPE__) && defined(__UINT_LEAST32_TYPE__)
-namespace std
-{
-  typedef __UINT_LEAST16_TYPE__ uint_least16_t;
-  typedef __UINT_LEAST32_TYPE__ uint_least32_t;
-}
-# else
-#  include <cstdint>
-# endif
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1576,12 +1564,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_unsigned<long long>
     { typedef unsigned long long __type; };
 
-#if defined(_GLIBCXX_USE_WCHAR_T) && !defined(__WCHAR_UNSIGNED__)
-  template<>
-    struct __make_unsigned<wchar_t> : __make_unsigned<__WCHAR_TYPE__>
-    { };
-#endif
-
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_0>
@@ -1685,21 +1667,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __make_signed<unsigned long long>
     { typedef signed long long __type; };
-
-#if defined(_GLIBCXX_USE_WCHAR_T) && defined(__WCHAR_UNSIGNED__)
-  template<>
-    struct __make_signed<wchar_t> : __make_signed<__WCHAR_TYPE__>
-    { };
-#endif
-
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-  template<>
-    struct __make_signed<char16_t> : __make_signed<uint_least16_t>
-    { };
-  template<>
-    struct __make_signed<char32_t> : __make_signed<uint_least32_t>
-    { };
-#endif
 
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
@@ -2091,6 +2058,59 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "declval() must not be used!");
       return __declval<_Tp>(0);
     }
+
+  // wchar_t, char16_t and char32_t are integral types but are neither
+  // signed integer types not unsigned integer types, so must be
+  // transformed to the integer type with the smallest rank that has the
+  // same size and signedness.
+  // Use the partial specialization for enumeration types to do that,
+  // which means these explicit specializations must be defined after
+  // std::conditional has been defined.
+
+#if defined(_GLIBCXX_USE_WCHAR_T)
+  template<>
+    struct __make_unsigned<wchar_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<wchar_t, false, true>::__type;
+    };
+
+  template<>
+    struct __make_signed<wchar_t>
+    {
+      using __type
+	= typename __make_signed_selector<wchar_t, false, true>::__type;
+    };
+#endif
+
+  template<>
+    struct __make_unsigned<char16_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<char16_t, false, true>::__type;
+    };
+
+  template<>
+    struct __make_signed<char16_t>
+    {
+      using __type
+	= typename __make_signed_selector<char16_t, false, true>::__type;
+    };
+
+  template<>
+    struct __make_unsigned<char32_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<char32_t, false, true>::__type;
+    };
+
+  template<>
+    struct __make_signed<char32_t>
+    {
+      using __type
+	= typename __make_signed_selector<char32_t, false, true>::__type;
+    };
+
 
   /// result_of
   template<typename _Signature>
