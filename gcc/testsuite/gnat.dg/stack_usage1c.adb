@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O2 -fstack-usage" }
+-- { dg-options "-O2 -Wstack-usage=128" { target i?86-*-* x86_64-*-* } }
 
 with Stack_Usage1_Pkg; use Stack_Usage1_Pkg;
 
@@ -34,6 +34,3 @@ begin
    end case;
 
 end Stack_Usage1c;
-
--- { dg-final { scan-stack-usage "\t\[0-9\]\[0-9\]\t" { target i?86-*-* x86_64-*-* } } }
--- { dg-final { cleanup-stack-usage } }
