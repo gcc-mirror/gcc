@@ -1,3 +1,9 @@
+2018-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85591
+	* config/i386/cpuinfo.c (get_amd_cpu): Return
+	AMDFAM15H_BDVER2 for AMDFAM15H model 0x2.
+
 2018-05-07  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	Backport from mainline.
