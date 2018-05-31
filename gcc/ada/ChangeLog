@@ -1,3 +1,8 @@
+2018-05-31  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-atopri.ads: Update comment on __atomic_compare_exchange
+	builtins.
+
 2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Call_to_gnu): If this is a function call and
