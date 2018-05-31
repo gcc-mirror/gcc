@@ -1,3 +1,12 @@
+2018-05-31  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/85879
+	* gimplify.c (gimplify_adjust_omp_clauses): Add 'remove = true'
+	when emitting error on private/firstprivate reductions.
+	* omp-low.c (lower_omp_target): Avoid reference-type processing
+	on pointers for firstprivate clause.
+
 2018-05-31 Sameera Deshpande <sameera.deshpande@linaro.org>
 
 	* config/aarch64/aarch64-simd-builtins.def (ld1x3): New.
