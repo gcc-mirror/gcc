@@ -9275,13 +9275,16 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_REDUCTION:
 	  decl = OMP_CLAUSE_DECL (c);
 	  /* OpenACC reductions need a present_or_copy data clause.
-	     Add one if necessary.  Error is the reduction is private.  */
+	     Add one if necessary.  Emit error when the reduction is private.  */
 	  if (ctx->region_type == ORT_ACC_PARALLEL)
 	    {
 	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	      if (n->value & (GOVD_PRIVATE | GOVD_FIRSTPRIVATE))
-		error_at (OMP_CLAUSE_LOCATION (c), "invalid private "
-			  "reduction on %qE", DECL_NAME (decl));
+		{
+		  remove = true;
+		  error_at (OMP_CLAUSE_LOCATION (c), "invalid private "
+			    "reduction on %qE", DECL_NAME (decl));
+		}
 	      else if ((n->value & GOVD_MAP) == 0)
 		{
 		  tree next = OMP_CLAUSE_CHAIN (c);
