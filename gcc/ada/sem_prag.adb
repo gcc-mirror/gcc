@@ -5931,23 +5931,9 @@ package body Sem_Prag is
                Stmt := First (L);
                while Present (Stmt) loop
 
-                  --  Pragmas Loop_Invariant and Loop_Variant may only appear
-                  --  inside a loop or a block housed inside a loop. Inspect
-                  --  the declarations and statements of the block as they may
-                  --  contain the first grouping.
-
-                  if Nkind (Stmt) = N_Block_Statement then
-                     HSS := Handled_Statement_Sequence (Stmt);
-
-                     Check_Grouping (Declarations (Stmt));
-
-                     if Present (HSS) then
-                        Check_Grouping (Statements (HSS));
-                     end if;
-
                   --  First pragma of the first topmost grouping has been found
 
-                  elsif Is_Loop_Pragma (Stmt) then
+                  if Is_Loop_Pragma (Stmt) then
 
                      --  The group and the current pragma are not in the same
                      --  declarative or statement list.
@@ -6003,6 +5989,24 @@ package body Sem_Prag is
                         --  then the list must be malformed.
 
                         raise Program_Error;
+                     end if;
+
+                  --  Pragmas Loop_Invariant and Loop_Variant may only appear
+                  --  inside a loop or a block housed inside a loop. Inspect
+                  --  the declarations and statements of the block as they may
+                  --  contain the first grouping. This case follows the one for
+                  --  loop pragmas, as block statements which originate in a
+                  --  loop pragma (and so Is_Loop_Pragma will return True on
+                  --  that block statement) should be treated in the previous
+                  --  case.
+
+                  elsif Nkind (Stmt) = N_Block_Statement then
+                     HSS := Handled_Statement_Sequence (Stmt);
+
+                     Check_Grouping (Declarations (Stmt));
+
+                     if Present (HSS) then
+                        Check_Grouping (Statements (HSS));
                      end if;
                   end if;
 
