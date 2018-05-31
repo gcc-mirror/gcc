@@ -614,13 +614,13 @@ s-runtime-inc: runtime.lo Makefile
 	rm -f runtime.inc.tmp2 runtime.inc.tmp3
 	$(STAMP) $@
 
-noinst_DATA += zstdpkglist.go zdefaultcc.go
+noinst_DATA += zdefaultcc.go
 
 # Generate the list of go std packages that were included in libgo
 zstdpkglist.go: s-zstdpkglist; @true
 s-zstdpkglist: Makefile
 	rm -f zstdpkglist.go.tmp
-	echo 'package load' > zstdpkglist.go.tmp
+	echo 'package build' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
 	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
 	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's|[a-z0-9_/]*_c\.lo||g' | sed 's|\([a-z0-9_/]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
@@ -1179,6 +1179,9 @@ runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 extra_go_files_runtime_internal_sys = version.go
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
 
+extra_go_files_go_build = zstdpkglist.go
+go/build.lo.dep: $(extra_go_files_go_build)
+
 extra_go_files_go_types = gccgosizes.go
 go/types.lo.dep: $(extra_go_files_go_types)
 
@@ -1187,9 +1190,6 @@ cmd/internal/objabi.lo.dep: $(extra_go_files_cmd_internal_objabi)
 
 extra_go_files_cmd_go_internal_cfg = zdefaultcc.go
 cmd/go/internal/cfg.lo.dep: $(extra_go_files_cmd_go_internal_cfg)
-
-extra_go_files_cmd_go_internal_load = zstdpkglist.go
-cmd/go/internal/load.lo.dep: $(extra_go_files_cmd_go_internal_load)
 
 extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
@@ -1420,6 +1420,7 @@ TEST_PACKAGES = \
 	net/http/httptrace/check \
 	net/http/httputil/check \
 	net/http/internal/check \
+	net/http/pprof/check \
 	net/internal/socktest/check \
 	net/mail/check \
 	net/rpc/check \

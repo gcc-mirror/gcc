@@ -232,7 +232,6 @@ check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	$(MKDIR_P) check-go-dir/src/cmd/go
 	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
 	cp -r $(cmdsrcdir)/go/internal check-go-dir/src/cmd/go/
-	cp $(libgodir)/zstdpkglist.go check-go-dir/src/cmd/go/internal/load/
 	cp $(libgodir)/zdefaultcc.go check-go-dir/src/cmd/go/internal/cfg/
 	cp -r $(cmdsrcdir)/go/testdata check-go-dir/src/cmd/go/
 	cp -r $(cmdsrcdir)/internal check-go-dir/src/cmd/

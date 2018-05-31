@@ -759,7 +759,7 @@ noinst_DATA = golang_org/x/net/internal/nettest.gox \
 	golang_org/x/net/nettest.gox internal/testenv.gox \
 	internal/trace.gox net/internal/socktest.gox \
 	os/signal/internal/pty.gox runtime/pprof/internal/profile.gox \
-	zstdpkglist.go zdefaultcc.go
+	zdefaultcc.go
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
 @LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-none.c
@@ -1208,10 +1208,10 @@ runtime_internal_sys_lo_check_GOCFLAGS = -fgo-compiling-runtime
 # Also use -fno-inline to get better results from the memory profiler.
 runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 extra_go_files_runtime_internal_sys = version.go
+extra_go_files_go_build = zstdpkglist.go
 extra_go_files_go_types = gccgosizes.go
 extra_go_files_cmd_internal_objabi = objabi.go
 extra_go_files_cmd_go_internal_cfg = zdefaultcc.go
-extra_go_files_cmd_go_internal_load = zstdpkglist.go
 extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
@@ -1375,6 +1375,7 @@ TEST_PACKAGES = \
 	net/http/httptrace/check \
 	net/http/httputil/check \
 	net/http/internal/check \
+	net/http/pprof/check \
 	net/internal/socktest/check \
 	net/mail/check \
 	net/rpc/check \
@@ -3198,7 +3199,7 @@ s-runtime-inc: runtime.lo Makefile
 zstdpkglist.go: s-zstdpkglist; @true
 s-zstdpkglist: Makefile
 	rm -f zstdpkglist.go.tmp
-	echo 'package load' > zstdpkglist.go.tmp
+	echo 'package build' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
 	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
 	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's|[a-z0-9_/]*_c\.lo||g' | sed 's|\([a-z0-9_/]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
@@ -3325,10 +3326,10 @@ $(foreach package,$(GOTOOL_PACKAGES),$(eval $(call PACKAGE_template,$(package)))
 runtime.lo.dep: $(extra_go_files_runtime)
 syscall.lo.dep: $(extra_go_files_syscall)
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
+go/build.lo.dep: $(extra_go_files_go_build)
 go/types.lo.dep: $(extra_go_files_go_types)
 cmd/internal/objabi.lo.dep: $(extra_go_files_cmd_internal_objabi)
 cmd/go/internal/cfg.lo.dep: $(extra_go_files_cmd_go_internal_cfg)
-cmd/go/internal/load.lo.dep: $(extra_go_files_cmd_go_internal_load)
 
 # FIXME: The following C files may as well move to the runtime
 # directory and be treated like other C files.

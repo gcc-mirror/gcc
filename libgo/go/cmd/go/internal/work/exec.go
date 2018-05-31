@@ -512,6 +512,7 @@ func (b *Builder) build(a *Action) (err error) {
 			ImportPath:  a.Package.ImportPath,
 			ImportMap:   make(map[string]string),
 			PackageFile: make(map[string]string),
+			Standard:    make(map[string]bool),
 		}
 		a.vetCfg = vcfg
 		for i, raw := range a.Package.Internal.RawImports {
@@ -548,17 +549,24 @@ func (b *Builder) build(a *Action) (err error) {
 
 	for _, a1 := range a.Deps {
 		p1 := a1.Package
-		if p1 == nil || p1.ImportPath == "" || a1.built == "" {
+		if p1 == nil || p1.ImportPath == "" {
 			continue
 		}
-		fmt.Fprintf(&icfg, "packagefile %s=%s\n", p1.ImportPath, a1.built)
+		if a1.built != "" {
+			fmt.Fprintf(&icfg, "packagefile %s=%s\n", p1.ImportPath, a1.built)
+		}
 		if vcfg != nil {
 			// Add import mapping if needed
 			// (for imports like "runtime/cgo" that appear only in generated code).
 			if !vcfgMapped[p1.ImportPath] {
 				vcfg.ImportMap[p1.ImportPath] = p1.ImportPath
 			}
-			vcfg.PackageFile[p1.ImportPath] = a1.built
+			if a1.built != "" {
+				vcfg.PackageFile[p1.ImportPath] = a1.built
+			}
+			if p1.Standard {
+				vcfg.Standard[p1.ImportPath] = true
+			}
 		}
 	}
 
@@ -693,6 +701,7 @@ type vetConfig struct {
 	GoFiles     []string
 	ImportMap   map[string]string
 	PackageFile map[string]string
+	Standard    map[string]bool
 	ImportPath  string
 
 	SucceedOnTypecheckFailure bool
@@ -722,7 +731,10 @@ func (b *Builder) vet(a *Action) error {
 	if vcfg.ImportMap["fmt"] == "" {
 		a1 := a.Deps[1]
 		vcfg.ImportMap["fmt"] = "fmt"
-		vcfg.PackageFile["fmt"] = a1.built
+		if a1.built != "" {
+			vcfg.PackageFile["fmt"] = a1.built
+		}
+		vcfg.Standard["fmt"] = true
 	}
 
 	// During go test, ignore type-checking failures during vet.
@@ -944,11 +956,19 @@ func splitPkgConfigOutput(out []byte) []string {
 
 // Calls pkg-config if needed and returns the cflags/ldflags needed to build the package.
 func (b *Builder) getPkgConfigFlags(p *load.Package) (cflags, ldflags []string, err error) {
-	if pkgs := p.CgoPkgConfig; len(pkgs) > 0 {
+	if pcargs := p.CgoPkgConfig; len(pcargs) > 0 {
+		// pkg-config permits arguments to appear anywhere in
+		// the command line. Move them all to the front, before --.
 		var pcflags []string
-		for len(pkgs) > 0 && strings.HasPrefix(pkgs[0], "--") {
-			pcflags = append(pcflags, pkgs[0])
-			pkgs = pkgs[1:]
+		var pkgs []string
+		for _, pcarg := range pcargs {
+			if pcarg == "--" {
+				// We're going to add our own "--" argument.
+			} else if strings.HasPrefix(pcarg, "--") {
+				pcflags = append(pcflags, pcarg)
+			} else {
+				pkgs = append(pkgs, pcarg)
+			}
 		}
 		for _, pkg := range pkgs {
 			if !load.SafeArg(pkg) {
@@ -1095,7 +1115,7 @@ func BuildInstallFunc(b *Builder, a *Action) (err error) {
 		// We want to hide that awful detail as much as possible, so don't
 		// advertise it by touching the mtimes (usually the libraries are up
 		// to date).
-		if !a.buggyInstall {
+		if !a.buggyInstall && !b.ComputeStaleOnly {
 			now := time.Now()
 			os.Chtimes(a.Target, now, now)
 		}
@@ -1545,6 +1565,8 @@ func joinUnambiguously(a []string) string {
 			buf.WriteByte(' ')
 		}
 		q := strconv.Quote(s)
+		// A gccgo command line can contain -( and -).
+		// Make sure we quote them since they are special to the shell.
 		if s == "" || strings.ContainsAny(s, " ()") || len(q) > len(s)+2 {
 			buf.WriteString(q)
 		} else {
@@ -1585,13 +1607,17 @@ func (b *Builder) Mkdir(dir string) error {
 
 // symlink creates a symlink newname -> oldname.
 func (b *Builder) Symlink(oldname, newname string) error {
+	// It's not an error to try to recreate an existing symlink.
+	if link, err := os.Readlink(newname); err == nil && link == oldname {
+		return nil
+	}
+
 	if cfg.BuildN || cfg.BuildX {
-		b.Showcmd("", "ln -sf %s %s", oldname, newname)
+		b.Showcmd("", "ln -s %s %s", oldname, newname)
 		if cfg.BuildN {
 			return nil
 		}
 	}
-	os.Remove(newname)
 	return os.Symlink(oldname, newname)
 }
 
