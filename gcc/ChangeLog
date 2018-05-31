@@ -1,3 +1,25 @@
+2018-05-31  Qing Zhao <qing.zhao@oracle.com>
+
+	PR middle-end/78809
+	PR middle-end/83026
+	* builtins.c (expand_builtin): Add the handling of BUILT_IN_STRCMP_EQ
+	and BUILT_IN_STRNCMP_EQ.
+	* builtins.def: Add new builtins BUILT_IN_STRCMP_EQ and
+	BUILT_IN_STRNCMP_EQ.
+	* gimple-fold.c (gimple_fold_builtin_string_compare): Add the
+	handling of BUILTIN_IN_STRCMP_EQ and BUILT_IN_STRNCMP_EQ.
+	(gimple_fold_builtin): Likewise.
+	* tree-ssa-strlen.c (compute_string_length): New function.
+	(determine_min_obsize): New function.
+	(handle_builtin_string_cmp): New function to handle calls to
+	string compare functions.
+	(strlen_optimize_stmt): Add handling to builtin string compare
+	calls.
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	Add the handling of BUILT_IN_STRCMP_EQ and BUILT_IN_STRNCMP_EQ.
+	* tree.c (build_common_builtin_nodes): Add new defines of
+	BUILT_IN_STRNCMP_EQ and BUILT_IN_STRCMP_EQ.
+
 2018-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85984
