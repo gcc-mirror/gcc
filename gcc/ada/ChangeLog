@@ -1,3 +1,9 @@
+2018-05-31  Frederic Konrad  <konrad@adacore.com>
+
+	* tracebak.c (STOP_FRAME): Harden condition.
+	(is_return_from, EXTRA_STOP_CONDITION): New helpers for VxWorks in RTP
+	mode.
+
 2018-05-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* checks.adb (Apply_Discriminant_Check): Do not apply discriminant
