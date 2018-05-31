@@ -1,3 +1,9 @@
+2018-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85984
+	* bb-reorder.c (pass_partition_blocks::gate): Return false for
+	functions with naked attribute.
+
 2018-05-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (avx_vec_concat<mode>):
