@@ -1611,10 +1611,10 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
       return NULL_TREE;
 
     case POINTER_DIFF_EXPR:
-      if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg2) == INTEGER_CST)
+      if (poly_int_tree_p (arg1) && poly_int_tree_p (arg2))
 	{
-	  offset_int res = wi::sub (wi::to_offset (arg1),
-				    wi::to_offset (arg2));
+	  poly_offset_int res = (wi::to_poly_offset (arg1)
+				 - wi::to_poly_offset (arg2));
 	  return force_fit_type (type, res, 1,
 				 TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2));
 	}
@@ -1622,6 +1622,7 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_FLOAT_EXPR:
       {
 	unsigned int HOST_WIDE_INT out_nelts, in_nelts, i;
 
@@ -1643,7 +1644,9 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 			? VECTOR_CST_ELT (arg1, i)
 			: VECTOR_CST_ELT (arg2, i - in_nelts));
 	    elt = fold_convert_const (code == VEC_PACK_TRUNC_EXPR
-				      ? NOP_EXPR : FIX_TRUNC_EXPR,
+				      ? NOP_EXPR
+				      : code == VEC_PACK_FLOAT_EXPR
+				      ? FLOAT_EXPR : FIX_TRUNC_EXPR,
 				      TREE_TYPE (type), elt);
 	    if (elt == NULL_TREE || !CONSTANT_CLASS_P (elt))
 	      return NULL_TREE;
@@ -1817,6 +1820,8 @@ const_unop (enum tree_code code, tree type, tree arg0)
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_FLOAT_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
       {
 	unsigned HOST_WIDE_INT out_nelts, in_nelts, i;
 	enum tree_code subcode;
@@ -1831,13 +1836,17 @@ const_unop (enum tree_code code, tree type, tree arg0)
 
 	unsigned int offset = 0;
 	if ((!BYTES_BIG_ENDIAN) ^ (code == VEC_UNPACK_LO_EXPR
-				   || code == VEC_UNPACK_FLOAT_LO_EXPR))
+				   || code == VEC_UNPACK_FLOAT_LO_EXPR
+				   || code == VEC_UNPACK_FIX_TRUNC_LO_EXPR))
 	  offset = out_nelts;
 
 	if (code == VEC_UNPACK_LO_EXPR || code == VEC_UNPACK_HI_EXPR)
 	  subcode = NOP_EXPR;
-	else
+	else if (code == VEC_UNPACK_FLOAT_LO_EXPR
+		 || code == VEC_UNPACK_FLOAT_HI_EXPR)
 	  subcode = FLOAT_EXPR;
+	else
+	  subcode = FIX_TRUNC_EXPR;
 
 	tree_vector_builder elts (type, out_nelts, 1);
 	for (i = 0; i < out_nelts; i++)
@@ -14193,13 +14202,12 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 	      tree min_val = size_zero_node;
 	      if (type_domain && TYPE_MIN_VALUE (type_domain))
 		min_val = TYPE_MIN_VALUE (type_domain);
-	      offset_int off = wi::to_offset (op01);
-	      offset_int el_sz = wi::to_offset (TYPE_SIZE_UNIT (type));
-	      offset_int remainder;
-	      off = wi::divmod_trunc (off, el_sz, SIGNED, &remainder);
-	      if (remainder == 0 && TREE_CODE (min_val) == INTEGER_CST)
+	      poly_uint64 type_size, index;
+	      if (poly_int_tree_p (min_val)
+		  && poly_int_tree_p (TYPE_SIZE_UNIT (type), &type_size)
+		  && multiple_p (const_op01, type_size, &index))
 		{
-		  off = off + wi::to_offset (min_val);
+		  poly_offset_int off = index + wi::to_poly_offset (min_val);
 		  op01 = wide_int_to_tree (sizetype, off);
 		  return build4_loc (loc, ARRAY_REF, type, op00, op01,
 				     NULL_TREE, NULL_TREE);

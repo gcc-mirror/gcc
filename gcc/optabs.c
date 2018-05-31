@@ -259,8 +259,15 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
 
   oprnd0 = ops->op0;
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
-  widen_pattern_optab =
-    optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
+  if (ops->code == VEC_UNPACK_FIX_TRUNC_HI_EXPR
+      || ops->code == VEC_UNPACK_FIX_TRUNC_LO_EXPR)
+    /* The sign is from the result type rather than operand's type
+       for these ops.  */
+    widen_pattern_optab
+      = optab_for_tree_code (ops->code, ops->type, optab_default);
+  else
+    widen_pattern_optab
+      = optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
   if (ops->code == WIDEN_MULT_PLUS_EXPR
       || ops->code == WIDEN_MULT_MINUS_EXPR)
     icode = find_widening_optab_handler (widen_pattern_optab,
@@ -1068,7 +1075,9 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
       || binoptab == vec_pack_usat_optab
       || binoptab == vec_pack_ssat_optab
       || binoptab == vec_pack_ufix_trunc_optab
-      || binoptab == vec_pack_sfix_trunc_optab)
+      || binoptab == vec_pack_sfix_trunc_optab
+      || binoptab == vec_packu_float_optab
+      || binoptab == vec_packs_float_optab)
     {
       /* The mode of the result is different then the mode of the
 	 arguments.  */

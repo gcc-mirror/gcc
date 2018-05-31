@@ -3266,6 +3266,12 @@ package body Exp_Ch5 is
       Set_Ekind (Cursor, E_Variable);
       Insert_Action (N, Init);
 
+      --  The loop parameter is declared by an object declaration, but within
+      --  the loop we must prevent user assignments to it; the following flag
+      --  accomplishes that.
+
+      Set_Is_Loop_Parameter (Element);
+
       --  Declaration for Element
 
       Elmt_Decl :=
@@ -3323,15 +3329,6 @@ package body Exp_Ch5 is
       Set_Warnings_Off (Element);
 
       Rewrite (N, New_Loop);
-
-      --  The loop parameter is declared by an object declaration, but within
-      --  the loop we must prevent user assignments to it, so we analyze the
-      --  declaration and reset the entity kind, before analyzing the rest of
-      --  the loop.
-
-      Analyze (Elmt_Decl);
-      Set_Ekind (Defining_Identifier (Elmt_Decl), E_Loop_Parameter);
-
       Analyze (N);
    end Expand_Formal_Container_Element_Loop;
 

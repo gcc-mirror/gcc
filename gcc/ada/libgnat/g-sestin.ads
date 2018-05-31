@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  This package provides facilities for obtaining information on secondary
---  stack usage.
+--  stack usage. See System.Secondary_Stack for documentation.
 
 with System.Secondary_Stack;
 
@@ -38,11 +38,5 @@ package GNAT.Secondary_Stack_Info is
 
    function SS_Get_Max return Long_Long_Integer
      renames System.Secondary_Stack.SS_Get_Max;
-   --  Return maximum used space in storage units for the current secondary
-   --  stack. For a dynamically allocated secondary stack, the returned
-   --  result is always -1. For a statically allocated secondary stack,
-   --  the returned value shows the largest amount of space allocated so
-   --  far during execution of the program to the current secondary stack,
-   --  i.e. the secondary stack for the current task.
 
 end GNAT.Secondary_Stack_Info;

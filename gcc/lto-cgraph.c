@@ -540,7 +540,10 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->thunk.thunk_p, 1);
   bp_pack_value (&bp, node->parallelized_function, 1);
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
-	        LDPR_NUM_KNOWN, node->resolution);
+	        LDPR_NUM_KNOWN,
+		/* When doing incremental link, we will get new resolution
+		   info next time we process the file.  */
+		flag_incremental_link ? LDPR_UNKNOWN : node->resolution);
   bp_pack_value (&bp, node->instrumentation_clone, 1);
   bp_pack_value (&bp, node->split_part, 1);
   streamer_write_bitpack (&bp);

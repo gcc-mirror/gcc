@@ -1,5 +1,7 @@
 2018-05-31  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r261033.
+
 	gcc/cp/
 	* module.c (bytes_in::begin): Add location_t arg.
 	(elf_in::begin): Add location args.

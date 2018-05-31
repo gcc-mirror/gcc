@@ -1550,6 +1550,27 @@ package body Exp_Ch3 is
          Decl  := Empty;
       end if;
 
+      --  Handle the optionally generated formal *_skip_null_excluding_checks
+
+      if Needs_Conditional_Null_Excluding_Check (Full_Init_Type) then
+
+         --  Look at the associated node for the object we are referencing
+         --  and verify that we are expanding a call to an Init_Proc for an
+         --  internally generated object declaration before passing True and
+         --  skipping the relevant checks.
+
+         if Nkind (Id_Ref) in N_Has_Entity
+           and then Comes_From_Source (Associated_Node (Id_Ref))
+         then
+            Append_To (Args, New_Occurrence_Of (Standard_True, Loc));
+
+         --  Otherwise, we pass False to perform null-excluding checks
+
+         else
+            Append_To (Args, New_Occurrence_Of (Standard_False, Loc));
+         end if;
+      end if;
+
       --  Add discriminant values if discriminants are present
 
       if Has_Discriminants (Full_Init_Type) then
@@ -8641,6 +8662,24 @@ package body Exp_Ch3 is
                Make_Defining_Identifier (Loc, Name_uTask_Name),
              In_Present          => True,
              Parameter_Type      => New_Occurrence_Of (Standard_String, Loc)));
+      end if;
+
+      --  Due to certain edge cases such as arrays with null-excluding
+      --  components being built with the secondary stack it becomes necessary
+      --  to add a formal to the Init_Proc which controls whether we raise
+      --  Constraint_Errors on generated calls for internal object
+      --  declarations.
+
+      if Needs_Conditional_Null_Excluding_Check (Typ) then
+         Append_To (Formals,
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier (Loc,
+                 New_External_Name (Chars
+                   (Component_Type (Typ)), "_skip_null_excluding_check")),
+             In_Present          => True,
+             Parameter_Type      =>
+               New_Occurrence_Of (Standard_Boolean, Loc)));
       end if;
 
       return Formals;

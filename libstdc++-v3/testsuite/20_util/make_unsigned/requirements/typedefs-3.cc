@@ -59,8 +59,21 @@ using I4 = smallest_rank_t<E4>;
 static_assert(is_same<make_unsigned<E4>::type, I4>::value, "");
 static_assert(is_same<make_unsigned<E4 const>::type, I4 const>::value, "");
 
-// PI libstdc++/60333
+// PR libstdc++/60333
 enum E5 : long long { };
 using I5 = smallest_rank_t<E5>;
 static_assert(is_same<make_unsigned<E5>::type, I5>::value, "");
 static_assert(is_same<make_unsigned<E5 const>::type, I5 const>::value, "");
+
+// PR libstdc++/85951
+using I6 = smallest_rank_t<char16_t>;
+static_assert(is_same<make_unsigned<char16_t>::type, I6>::value, "");
+static_assert(is_same<make_unsigned<char16_t const>::type, I6 const>::value, "");
+using I7 = smallest_rank_t<char32_t>;
+static_assert(is_same<make_unsigned<char32_t>::type, I7>::value, "");
+static_assert(is_same<make_unsigned<char32_t const>::type, I7 const>::value, "");
+#ifdef _GLIBCXX_USE_WCHAR_T
+using I8 = smallest_rank_t<wchar_t>;
+static_assert(is_same<make_unsigned<wchar_t>::type, I8>::value, "");
+static_assert(is_same<make_unsigned<wchar_t const>::type, I8 const>::value, "");
+#endif

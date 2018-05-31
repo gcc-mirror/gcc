@@ -1299,11 +1299,19 @@ package body Sem_Ch3 is
          Set_Ekind (T_Name, E_Access_Subprogram_Type);
       end if;
 
-      Set_Can_Use_Internal_Rep (T_Name, not Always_Compatible_Rep_On_Target);
-
+      Set_Can_Use_Internal_Rep     (T_Name,
+                                      not Always_Compatible_Rep_On_Target);
       Set_Etype                    (T_Name, T_Name);
       Init_Size_Align              (T_Name);
       Set_Directly_Designated_Type (T_Name, Desig_Type);
+
+      --  If the access_to_subprogram is not declared at the library level,
+      --  it can only point to subprograms that are at the same or deeper
+      --  accessibility level. The corresponding subprogram type might
+      --  require an activation record when compiling for C.
+
+      Set_Needs_Activation_Record  (Desig_Type,
+                                      not Is_Library_Level_Entity (T_Name));
 
       Generate_Reference_To_Formals (T_Name);
 
@@ -2210,7 +2218,7 @@ package body Sem_Ch3 is
       --  Context denotes the owner of the declarative list.
 
       procedure Check_Entry_Contracts;
-      --  Perform a pre-analysis of the pre- and postconditions of an entry
+      --  Perform a preanalysis of the pre- and postconditions of an entry
       --  declaration. This must be done before full resolution and creation
       --  of the parameter block, etc. to catch illegal uses within the
       --  contract expression. Full analysis of the expression is done when
@@ -5278,7 +5286,7 @@ package body Sem_Ch3 is
 
       --  Finally this happens in some complex cases when validity checks are
       --  enabled, where the same subtype declaration may be analyzed twice.
-      --  This can happen if the subtype is created by the pre-analysis of
+      --  This can happen if the subtype is created by the preanalysis of
       --  an attribute tht gives the range of a loop statement, and the loop
       --  itself appears within an if_statement that will be rewritten during
       --  expansion.
@@ -14620,9 +14628,12 @@ package body Sem_Ch3 is
          Set_Comes_From_Source (New_Compon, False);
 
          --  But it is a real entity, and a birth certificate must be properly
-         --  registered by entering it into the entity list.
+         --  registered by entering it into the entity list, and setting its
+         --  scope to the given subtype. This turns out to be useful for the
+         --  LLVM code generator, but that scope is not used otherwise.
 
          Enter_Name (New_Compon);
+         Set_Scope (New_Compon, Subt);
 
          return New_Compon;
       end Create_Component;

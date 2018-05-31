@@ -1371,6 +1371,15 @@ DEFTREECODE (VEC_UNPACK_LO_EXPR, "vec_unpack_lo_expr", tcc_unary, 1)
 DEFTREECODE (VEC_UNPACK_FLOAT_HI_EXPR, "vec_unpack_float_hi_expr", tcc_unary, 1)
 DEFTREECODE (VEC_UNPACK_FLOAT_LO_EXPR, "vec_unpack_float_lo_expr", tcc_unary, 1)
 
+/* Unpack (extract) the high/low elements of the input vector, convert
+   floating point values to integer and widen elements into the output
+   vector.  The input vector has twice as many elements as the output
+   vector, that are half the size of the elements of the output vector.  */
+DEFTREECODE (VEC_UNPACK_FIX_TRUNC_HI_EXPR, "vec_unpack_fix_trunc_hi_expr",
+	     tcc_unary, 1)
+DEFTREECODE (VEC_UNPACK_FIX_TRUNC_LO_EXPR, "vec_unpack_fix_trunc_lo_expr",
+	     tcc_unary, 1)
+
 /* Pack (demote/narrow and merge) the elements of the two input vectors
    into the output vector using truncation/saturation.
    The elements of the input vectors are twice the size of the elements of the
@@ -1383,6 +1392,12 @@ DEFTREECODE (VEC_PACK_SAT_EXPR, "vec_pack_sat_expr", tcc_binary, 2)
    elements of the input vector are twice the size of the elements of
    the output vector.  */
 DEFTREECODE (VEC_PACK_FIX_TRUNC_EXPR, "vec_pack_fix_trunc_expr", tcc_binary, 2)
+
+/* Convert fixed point values of the two input vectors to floating point
+   and pack (narrow and merge) the elements into the output vector. The
+   elements of the input vector are twice the size of the elements of
+   the output vector.  */
+DEFTREECODE (VEC_PACK_FLOAT_EXPR, "vec_pack_float_expr", tcc_binary, 2)
 
 /* Widening vector shift left in bits.
    Operand 0 is a vector to be shifted with N elements of size S.

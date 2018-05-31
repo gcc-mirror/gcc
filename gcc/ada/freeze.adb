@@ -186,7 +186,7 @@ package body Freeze is
    --  This procedure is called for each subprogram to complete processing of
    --  default expressions at the point where all types are known to be frozen.
    --  The expressions must be analyzed in full, to make sure that all error
-   --  processing is done (they have only been pre-analyzed). If the expression
+   --  processing is done (they have only been preanalyzed). If the expression
    --  is not an entity or literal, its analysis may generate code which must
    --  not be executed. In that case we build a function body to hold that
    --  code. This wrapper function serves no other purpose (it used to be
@@ -3441,12 +3441,18 @@ package body Freeze is
                           (Is_OK_Static_Expression (Expression (Decl))
                             or else Nkind (Expression (Decl)) = N_Null)))
                then
-                  Error_Msg_NE
-                    ("Thread_Local_Storage variable& is "
-                     & "improperly initialized", Decl, E);
-                  Error_Msg_NE
-                    ("\only allowed initialization is explicit "
-                     & "NULL or static expression", Decl, E);
+                  if Nkind (Expression (Decl)) = N_Aggregate
+                    and then Compile_Time_Known_Aggregate (Expression (Decl))
+                  then
+                     null;
+                  else
+                     Error_Msg_NE
+                       ("Thread_Local_Storage variable& is improperly "
+                        & "initialized", Decl, E);
+                     Error_Msg_NE
+                       ("\only allowed initialization is explicit NULL, "
+                        & "static expression or static aggregate", Decl, E);
+                  end if;
                end if;
             end;
          end if;

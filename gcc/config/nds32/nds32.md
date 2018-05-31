@@ -2180,6 +2180,26 @@
   [(set_attr "type"    "alu")
    (set_attr "length"    "4")]
 )
+
+(define_expand "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(bswap:SI (match_operand:SI 1 "register_operand" "r")))]
+  ""
+{
+  emit_insn (gen_unspec_wsbh (operands[0], operands[1]));
+  emit_insn (gen_rotrsi3 (operands[0], operands[0], GEN_INT (16)));
+  DONE;
+})
+
+(define_insn "bswaphi2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(bswap:HI (match_operand:HI 1 "register_operand" "r")))]
+  ""
+  "wsbh\t%0, %1"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
 ;; ----------------------------------------------------------------------------
 
 ;; Patterns for exception handling

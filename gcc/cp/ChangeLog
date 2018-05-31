@@ -1,3 +1,77 @@
+2018-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/77777
+	* call.c (resolve_args): Use location of expression, not current input
+	location.
+
+2018-05-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Do not warn about zero-as-null when NULL is used.
+	* call.c (conversion_null_warnings): Check for pointer
+	types converted from zero constants.
+	(convert_like_real): Add a warning sentinel at the end.
+	* tree.c (maybe_warn_zero_as_null_pointer_constant): Also
+	check null_node_p.
+
+2018-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85807 - ICE with call in template NSDMI.
+	* init.c (get_nsdmi): Use push_to/pop_from_top_level.
+	* tree.c (bot_manip): Don't set_flags_from_callee in a template.
+
+	PR c++/85873 - constant initializer_list array not in .rodata.
+	* tree.c (build_target_expr): Set TREE_READONLY.
+	* call.c (set_up_extended_ref_temp): Set TREE_READONLY.
+
+	* parser.c (cp_parser_check_condition_declarator): Handle
+	cp_error_declarator.
+
+2018-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* typeck.c (cxx_sizeof_or_alignof_type): Return size_one_node instead
+	of using it in dead store.
+
+2018-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67445 - returning temporary initializer_list.
+	PR c++/67711 - assigning from temporary initializer_list.
+	PR c++/48562 - new initializer_list.
+	* typeck.c (maybe_warn_about_returning_address_of_local): Also warn
+	about returning local initializer_list.
+	* cp-tree.h (AUTO_TEMP_NAME, TEMP_NAME_P): Remove.
+	* call.c (build_over_call): Warn about assignment from temporary
+	init_list.
+	* init.c (build_new_1): Warn about 'new std::initializer_list'.
+	(find_list_begin, maybe_warn_list_ctor): New.
+	(perform_member_init): Use maybe_warn_list_ctor.
+
+2018-05-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85883
+	* init.c (build_new): Handle deducing a class with new
+	with more than one argument.
+
+2018-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85952
+	* init.c (build_aggr_init): For structured binding initialized from
+	array call mark_rvalue_use on the initializer.
+
+2018-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* decl2.c (start_static_storage_duration_function): Use
+	splay_tree_delete_pointers.
+
+2018-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85815 - reference to member of enclosing template.
+	* search.c (lookup_base): Use currently_open_class.
+	(lookup_member): Use it regardless of -fconcepts.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Check it.
+
+	CWG 616, 1213 - value category of subobject references.
+	* tree.c (lvalue_kind): Fix handling of ARRAY_REF of pointer.
+
 2018-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85842 - -Wreturn-type, constexpr if and generic lambda.

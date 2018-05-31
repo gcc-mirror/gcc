@@ -1,3 +1,15 @@
+2018-05-30  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+        * crtstuff.c: Remove declaration of _Jv_RegisterClasses.
+
+2018-05-29  Martin Liska  <mliska@suse.cz>
+
+        PR gcov-profile/85759
+	* libgcov-driver-system.c (gcov_error): Introduce usage of
+        GCOV_EXIT_AT_ERROR env. variable.
+	* libgcov-driver.c (merge_one_data): Print error that we
+        overwrite a gcov file with a different timestamp.
+
 2018-05-23  Kalamatee  <kalamatee@gmail.com>
 
 	* config/m68k/lb1sf68.S (Laddsf$nf): Fix sign bit handling in

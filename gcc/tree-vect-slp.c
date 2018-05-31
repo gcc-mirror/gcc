@@ -3011,7 +3011,7 @@ vect_slp_bb (basic_block bb)
 	  if (gimple_location (stmt) != UNKNOWN_LOCATION)
 	    vect_location = gimple_location (stmt);
 
-	  if (!find_data_references_in_stmt (NULL, stmt, &datarefs))
+	  if (!vect_find_stmt_data_reference (NULL, stmt, &datarefs))
 	    break;
 	}
 

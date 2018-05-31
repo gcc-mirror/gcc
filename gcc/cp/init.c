@@ -577,6 +577,16 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 
 	  DECL_INSTANTIATING_NSDMI_P (member) = 1;
 
+	  bool pushed = false;
+	  if (!currently_open_class (DECL_CONTEXT (member)))
+	    {
+	      push_to_top_level ();
+	      push_nested_class (DECL_CONTEXT (member));
+	      pushed = true;
+	    }
+
+	  gcc_checking_assert (!processing_template_decl);
+
 	  inject_this_parameter (DECL_CONTEXT (member), TYPE_UNQUALIFIED);
 
 	  start_lambda_scope (member);
@@ -597,6 +607,12 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	      if (!nsdmi_inst)
 		nsdmi_inst = tree_cache_map::create_ggc (37);
 	      nsdmi_inst->put (member, init);
+	    }
+
+	  if (pushed)
+	    {
+	      pop_nested_class ();
+	      pop_from_top_level ();
 	    }
 
 	  input_location = sloc;
@@ -672,6 +688,64 @@ maybe_reject_flexarray_init (tree member, tree init)
 
   error_at (loc, "initializer for flexible array member %q#D", member);
   return true;
+}
+
+/* If INIT's value can come from a call to std::initializer_list<T>::begin,
+   return that function.  Otherwise, NULL_TREE.  */
+
+static tree
+find_list_begin (tree init)
+{
+  STRIP_NOPS (init);
+  while (TREE_CODE (init) == COMPOUND_EXPR)
+    init = TREE_OPERAND (init, 1);
+  STRIP_NOPS (init);
+  if (TREE_CODE (init) == COND_EXPR)
+    {
+      tree left = TREE_OPERAND (init, 1);
+      if (!left)
+	left = TREE_OPERAND (init, 0);
+      left = find_list_begin (left);
+      if (left)
+	return left;
+      return find_list_begin (TREE_OPERAND (init, 2));
+    }
+  if (TREE_CODE (init) == CALL_EXPR)
+    if (tree fn = get_callee_fndecl (init))
+      if (id_equal (DECL_NAME (fn), "begin")
+	  && is_std_init_list (DECL_CONTEXT (fn)))
+	return fn;
+  return NULL_TREE;
+}
+
+/* If INIT initializing MEMBER is copying the address of the underlying array
+   of an initializer_list, warn.  */
+
+static void
+maybe_warn_list_ctor (tree member, tree init)
+{
+  tree memtype = TREE_TYPE (member);
+  if (!init || !TYPE_PTR_P (memtype)
+      || !is_list_ctor (current_function_decl))
+    return;
+
+  tree parms = FUNCTION_FIRST_USER_PARMTYPE (current_function_decl);
+  tree initlist = non_reference (TREE_VALUE (parms));
+  tree targs = CLASSTYPE_TI_ARGS (initlist);
+  tree elttype = TREE_VEC_ELT (targs, 0);
+
+  if (!same_type_ignoring_top_level_qualifiers_p
+      (TREE_TYPE (memtype), elttype))
+    return;
+
+  tree begin = find_list_begin (init);
+  if (!begin)
+    return;
+
+  location_t loc = EXPR_LOC_OR_LOC (init, input_location);
+  warning_at (loc, OPT_Winit_list_lifetime,
+	     "initializing %qD from %qE does not extend the lifetime "
+	     "of the underlying array", member, begin);
 }
 
 /* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
@@ -885,6 +959,8 @@ perform_member_init (tree member, tree init)
 	   in that case.  */
 	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 						tf_warning_or_error);
+
+      maybe_warn_list_ctor (member, init);
 
       /* Reject a member initializer for a flexible array member.  */
       if (init && !maybe_reject_flexarray_init (member, init))
@@ -1678,6 +1754,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       if (VAR_P (exp) && DECL_DECOMPOSITION_P (exp))
 	{
 	  from_array = 1;
+	  init = mark_rvalue_use (init);
 	  if (init && DECL_P (init)
 	      && !(flags & LOOKUP_ONLYCONVERTING))
 	    {
@@ -2933,6 +3010,11 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       return error_mark_node;
     }
 
+  if (is_std_init_list (elt_type))
+    warning (OPT_Winit_list_lifetime,
+	     "%<new%> of initializer_list does not "
+	     "extend the lifetime of the underlying array");
+
   if (abstract_virtuals_error_sfinae (ACU_NEW, elt_type, complain))
     return error_mark_node;
 
@@ -3585,10 +3667,26 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (auto_node)
 	{
 	  tree d_init = NULL_TREE;
-	  if (vec_safe_length (*init) == 1)
+	  const size_t len = vec_safe_length (*init);
+	  /* E.g. new auto(x) must have exactly one element, or
+	     a {} initializer will have one element.  */
+	  if (len == 1)
 	    {
 	      d_init = (**init)[0];
 	      d_init = resolve_nondeduced_context (d_init, complain);
+	    }
+	  /* For the rest, e.g. new A(1, 2, 3), create a list.  */
+	  else if (len > 1)
+	    {
+	      unsigned int n;
+	      tree t;
+	      tree *pp = &d_init;
+	      FOR_EACH_VEC_ELT (**init, n, t)
+		{
+		  t = resolve_nondeduced_context (t, complain);
+		  *pp = build_tree_list (NULL_TREE, t);
+		  pp = &TREE_CHAIN (*pp);
+		}
 	    }
 	  type = do_auto_deduction (type, d_init, auto_node, complain);
 	}

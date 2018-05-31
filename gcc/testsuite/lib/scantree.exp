@@ -52,11 +52,11 @@ proc scan-tree-dump { args } {
 proc scan-tree-dump-times { args } {
 
     if { [llength $args] < 3 } {
-	error "scan-tree-dump: too few arguments"
+	error "scan-tree-dump-times: too few arguments"
 	return
     }
     if { [llength $args] > 4 } {
-	error "scan-tree-dump: too many arguments"
+	error "scan-tree-dump-times: too many arguments"
 	return
     }
     if { [llength $args] >= 4 } {

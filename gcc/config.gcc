@@ -268,7 +268,7 @@ case ${target} in
  | pdp11-*-bsd				\
  | sparc-hal-solaris2*			\
  | thumb-*-*				\
- | *-*-freebsd[12] | *-*-freebsd[12].*	\
+ | *-*-freebsd[12] | *-*-freebsd[1234].* \
  | *-*-freebsd*aout*			\
  | *-*-linux*aout*			\
  | *-*-linux*coff*			\

@@ -95,14 +95,24 @@ lvalue_kind (const_tree ref)
     case TRY_CATCH_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-    case ARRAY_REF:
     case VIEW_CONVERT_EXPR:
-      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 0));
-      if (op1_lvalue_kind == clk_class)
-	/* in the case of an array operand, the result is an lvalue if that
-	   operand is an lvalue and an xvalue otherwise */
-	op1_lvalue_kind = clk_rvalueref;
-      return op1_lvalue_kind;
+      return lvalue_kind (TREE_OPERAND (ref, 0));
+
+    case ARRAY_REF:
+      {
+	tree op1 = TREE_OPERAND (ref, 0);
+	if (TREE_CODE (TREE_TYPE (op1)) == ARRAY_TYPE)
+	  {
+	    op1_lvalue_kind = lvalue_kind (op1);
+	    if (op1_lvalue_kind == clk_class)
+	      /* in the case of an array operand, the result is an lvalue if
+		 that operand is an lvalue and an xvalue otherwise */
+	      op1_lvalue_kind = clk_rvalueref;
+	    return op1_lvalue_kind;
+	  }
+	else
+	  return clk_ordinary;
+      }
 
     case MEMBER_REF:
     case DOTSTAR_EXPR:
@@ -450,6 +460,14 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
 			   && TREE_CODE (value) == CALL_EXPR)
 		       || useless_type_conversion_p (TREE_TYPE (decl),
 						     TREE_TYPE (value)));
+
+  /* Set TREE_READONLY for optimization, such as gimplify_init_constructor
+     moving a constant aggregate into .rodata.  */
+  if (CP_TYPE_CONST_NON_VOLATILE_P (type)
+      && !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
+      && !VOID_TYPE_P (TREE_TYPE (value))
+      && reduced_constant_expression_p (value))
+    TREE_READONLY (decl) = true;
 
   if (complain & tf_no_cleanup)
     /* The caller is building a new-expr and does not need a cleanup.  */
@@ -3047,7 +3065,8 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
   /* Make a copy of this node.  */
   t = copy_tree_r (tp, walk_subtrees, NULL);
   if (TREE_CODE (*tp) == CALL_EXPR || TREE_CODE (*tp) == AGGR_INIT_EXPR)
-    set_flags_from_callee (*tp);
+    if (!processing_template_decl)
+      set_flags_from_callee (*tp);
   if (data.clear_location && EXPR_HAS_LOCATION (*tp))
     SET_EXPR_LOCATION (*tp, input_location);
   return t;
@@ -5463,7 +5482,7 @@ bool
 maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
 {
   if (c_inhibit_evaluation_warnings == 0
-      && !NULLPTR_TYPE_P (TREE_TYPE (expr)))
+      && !null_node_p (expr) && !NULLPTR_TYPE_P (TREE_TYPE (expr)))
     {
       warning_at (loc, OPT_Wzero_as_null_pointer_constant,
 		  "zero as null pointer constant");

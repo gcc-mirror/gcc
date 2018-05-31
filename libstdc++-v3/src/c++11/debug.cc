@@ -40,7 +40,8 @@
 
 #include <cxxabi.h> // for __cxa_demangle
 
-#if defined _GLIBCXX_HAVE_EXECINFO_H
+// libstdc++/85768
+#if 0 // defined _GLIBCXX_HAVE_EXECINFO_H
 # include <execinfo.h> // for backtrace
 #endif
 
@@ -1050,7 +1051,8 @@ namespace __gnu_debug
 	print_literal(ctx, "\n");
       }
 
-#if defined _GLIBCXX_HAVE_EXECINFO_H
+// libstdc++/85768
+#if 0 //defined _GLIBCXX_HAVE_EXECINFO_H
     {
       void* stack[32];
       int nb = backtrace(stack, 32);

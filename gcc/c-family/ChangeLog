@@ -1,3 +1,31 @@
+2018-05-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c/82063
+	* c.opt (-Wno-alloc-size-larger-than): New option.
+
+2018-04-22  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/55976
+	* c-opts.c (c_common_post_options): Set default for warn_return_type
+	for C++/C++ with ObjC extensions only. For C, makes it possible to 
+	differentiate between default (no option), -Wreturn-type, and
+	-Wno-return-type.
+
+2018-05-29  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Winit-list-lifetime): New flag.
+
+2018-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-lex.c (get_fileinfo): Use splay_tree_compare_strings and
+	splay_tree_delete_pointers.
+
+2018-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/85921
+	* c-warn.c (diagnose_mismatched_attributes): Remove unnecessary
+	noinline variable to workaround broken kernel headers.
+
 2018-05-18  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (Wdeprecated-copy): New flag.

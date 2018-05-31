@@ -512,6 +512,7 @@ func (b *Builder) build(a *Action) (err error) {
 			ImportPath:  a.Package.ImportPath,
 			ImportMap:   make(map[string]string),
 			PackageFile: make(map[string]string),
+			Standard:    make(map[string]bool),
 		}
 		a.vetCfg = vcfg
 		for i, raw := range a.Package.Internal.RawImports {
@@ -548,17 +549,24 @@ func (b *Builder) build(a *Action) (err error) {
 
 	for _, a1 := range a.Deps {
 		p1 := a1.Package
-		if p1 == nil || p1.ImportPath == "" || a1.built == "" {
+		if p1 == nil || p1.ImportPath == "" {
 			continue
 		}
-		fmt.Fprintf(&icfg, "packagefile %s=%s\n", p1.ImportPath, a1.built)
+		if a1.built != "" {
+			fmt.Fprintf(&icfg, "packagefile %s=%s\n", p1.ImportPath, a1.built)
+		}
 		if vcfg != nil {
 			// Add import mapping if needed
 			// (for imports like "runtime/cgo" that appear only in generated code).
 			if !vcfgMapped[p1.ImportPath] {
 				vcfg.ImportMap[p1.ImportPath] = p1.ImportPath
 			}
-			vcfg.PackageFile[p1.ImportPath] = a1.built
+			if a1.built != "" {
+				vcfg.PackageFile[p1.ImportPath] = a1.built
+			}
+			if p1.Standard {
+				vcfg.Standard[p1.ImportPath] = true
+			}
 		}
 	}
 
@@ -693,6 +701,7 @@ type vetConfig struct {
 	GoFiles     []string
 	ImportMap   map[string]string
 	PackageFile map[string]string
+	Standard    map[string]bool
 	ImportPath  string
 
 	SucceedOnTypecheckFailure bool
@@ -722,7 +731,10 @@ func (b *Builder) vet(a *Action) error {
 	if vcfg.ImportMap["fmt"] == "" {
 		a1 := a.Deps[1]
 		vcfg.ImportMap["fmt"] = "fmt"
-		vcfg.PackageFile["fmt"] = a1.built
+		if a1.built != "" {
+			vcfg.PackageFile["fmt"] = a1.built
+		}
+		vcfg.Standard["fmt"] = true
 	}
 
 	// During go test, ignore type-checking failures during vet.

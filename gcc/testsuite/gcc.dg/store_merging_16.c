@@ -1,6 +1,6 @@
 /* Only test on some 64-bit targets which do have bswap{si,di}2 patterns and
    are either big or little endian (not pdp endian).  */
-/* { dg-do compile { target { lp64 && { i?86-*-* x86_64-*-* powerpc*-*-* aarch64*-*-* } } } } */
+/* { dg-do run { target { lp64 && { i?86-*-* x86_64-*-* powerpc*-*-* aarch64*-*-* } } } } */
 /* { dg-require-effective-target store_merge } */
 /* { dg-options "-O2 -fdump-tree-store-merging" } */
 
@@ -114,7 +114,7 @@ main ()
 {
   unsigned char a[8];
   int i;
-  struct S b, c, d;
+  struct S c, d;
   f1 (a, 0x0102030405060708ULL);
   for (i = 0; i < 8; ++i)
     if (a[i] != 8 - i)

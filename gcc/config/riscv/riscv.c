@@ -130,6 +130,12 @@ struct GTY(())  machine_function {
   /* True if current function is a naked function.  */
   bool naked_p;
 
+  /* True if current function is an interrupt function.  */
+  bool interrupt_handler_p;
+
+  /* True if attributes on current function have been checked.  */
+  bool attributes_checked_p;
+
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
 };
@@ -287,6 +293,8 @@ static const struct attribute_spec riscv_attribute_table[] =
   /* The attribute telling no prologue/epilogue.  */
   { "naked",	0,  0, true, false, false, false,
     riscv_handle_fndecl_attribute, NULL },
+  /* This attribute generates prologue/epilogue for interrupt handlers.  */
+  { "interrupt", 0, 0, false, true, true, false, NULL, NULL },
 
   /* The last attribute spec is set to be NULL.  */
   { NULL,	0,  0, false, false, false, false, NULL, NULL }
@@ -2713,7 +2721,14 @@ riscv_handle_fndecl_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
-/* Return true if func is a naked function.  */
+/* Return true if function TYPE is an interrupt function.  */
+static bool
+riscv_interrupt_type_p (tree type)
+{
+  return lookup_attribute ("interrupt", TYPE_ATTRIBUTES (type)) != NULL;
+}
+
+/* Return true if FUNC is a naked function.  */
 static bool
 riscv_naked_function_p (tree func)
 {
@@ -3219,6 +3234,28 @@ riscv_save_reg_p (unsigned int regno)
   if (regno == RETURN_ADDR_REGNUM && crtl->calls_eh_return)
     return true;
 
+  /* If this is an interrupt handler, then must save extra registers.  */
+  if (cfun->machine->interrupt_handler_p)
+    {
+      /* zero register is always zero.  */
+      if (regno == GP_REG_FIRST)
+	return false;
+
+      /* The function will return the stack pointer to its original value.  */
+      if (regno == STACK_POINTER_REGNUM)
+	return false;
+
+      /* By convention, we assume that gp and tp are safe.  */
+      if (regno == GP_REGNUM || regno == THREAD_POINTER_REGNUM)
+	return false;
+
+      /* We must save every register used in this function.  If this is not a
+	 leaf function, then we must save all temporary registers.  */
+      if (df_regs_ever_live_p (regno)
+	  || (!crtl->is_leaf && call_used_regs[regno]))
+	return true;
+    }
+
   return false;
 }
 
@@ -3226,7 +3263,8 @@ riscv_save_reg_p (unsigned int regno)
 static bool
 riscv_use_save_libcall (const struct riscv_frame_info *frame)
 {
-  if (!TARGET_SAVE_RESTORE || crtl->calls_eh_return || frame_pointer_needed)
+  if (!TARGET_SAVE_RESTORE || crtl->calls_eh_return || frame_pointer_needed
+      || cfun->machine->interrupt_handler_p)
     return false;
 
   return frame->save_libcall_adjustment != 0;
@@ -3285,21 +3323,35 @@ riscv_save_libcall_count (unsigned mask)
    They decrease stack_pointer_rtx but leave frame_pointer_rtx and
    hard_frame_pointer_rtx unchanged.  */
 
+static HOST_WIDE_INT riscv_first_stack_step (struct riscv_frame_info *frame);
+
 static void
 riscv_compute_frame_info (void)
 {
   struct riscv_frame_info *frame;
   HOST_WIDE_INT offset;
+  bool interrupt_save_t1 = false;
   unsigned int regno, i, num_x_saved = 0, num_f_saved = 0;
 
   frame = &cfun->machine->frame;
+
+  /* In an interrupt function, if we have a large frame, then we need to
+     save/restore t1.  We check for this before clearing the frame struct.  */
+  if (cfun->machine->interrupt_handler_p)
+    {
+      HOST_WIDE_INT step1 = riscv_first_stack_step (frame);
+      if (! SMALL_OPERAND (frame->total_size - step1))
+	interrupt_save_t1 = true;
+    }
+
   memset (frame, 0, sizeof (*frame));
 
   if (!cfun->machine->naked_p)
     {
       /* Find out which GPRs we need to save.  */
       for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
-	if (riscv_save_reg_p (regno))
+	if (riscv_save_reg_p (regno)
+	    || (interrupt_save_t1 && (regno == T1_REGNUM)))
 	  frame->mask |= 1 << (regno - GP_REG_FIRST), num_x_saved++;
 
       /* If this function calls eh_return, we must also save and restore the
@@ -3612,16 +3664,11 @@ riscv_expand_prologue (void)
   unsigned mask = frame->mask;
   rtx insn;
 
-  if (cfun->machine->naked_p)
-    {
-      if (flag_stack_usage_info)
-	current_function_static_stack_size = 0;
-
-      return;
-    }
-
   if (flag_stack_usage_info)
     current_function_static_stack_size = size;
+
+  if (cfun->machine->naked_p)
+    return;
 
   /* When optimizing for size, call a subroutine to save the registers.  */
   if (riscv_use_save_libcall (frame))
@@ -3859,8 +3906,31 @@ riscv_expand_epilogue (bool sibcall_p)
     emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 			      EH_RETURN_STACKADJ_RTX));
 
-  if (!sibcall_p)
+  /* Return from interrupt.  */
+  if (cfun->machine->interrupt_handler_p)
+    emit_insn (gen_riscv_mret ());
+  else if (!sibcall_p)
     emit_jump_insn (gen_simple_return_internal (ra));
+}
+
+/* Implement EPILOGUE_USES.  */
+
+bool
+riscv_epilogue_uses (unsigned int regno)
+{
+  if (regno == RETURN_ADDR_REGNUM)
+    return true;
+
+  if (epilogue_completed && cfun->machine->interrupt_handler_p)
+    {
+      /* An interrupt function restores temp regs, so we must indicate that
+	 they are live at function end.  */
+      if (df_regs_ever_live_p (regno)
+	    || (!crtl->is_leaf && call_used_regs[regno]))
+	return true;
+    }
+
+  return false;
 }
 
 /* Return nonzero if this function is known to have a null epilogue.
@@ -3870,7 +3940,8 @@ riscv_expand_epilogue (bool sibcall_p)
 bool
 riscv_can_use_return_insn (void)
 {
-  return reload_completed && cfun->machine->frame.total_size == 0;
+  return (reload_completed && cfun->machine->frame.total_size == 0
+	  && ! cfun->machine->interrupt_handler_p);
 }
 
 /* Implement TARGET_SECONDARY_MEMORY_NEEDED.
@@ -4366,8 +4437,12 @@ riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
   if (TARGET_SAVE_RESTORE)
     return false;
 
-  /* Don't use sibcall for naked function.  */
+  /* Don't use sibcall for naked functions.  */
   if (cfun->machine->naked_p)
+    return false;
+
+  /* Don't use sibcall for interrupt functions.  */
+  if (cfun->machine->interrupt_handler_p)
     return false;
 
   return true;
@@ -4381,10 +4456,32 @@ riscv_set_current_function (tree decl)
   if (decl == NULL_TREE
       || current_function_decl == NULL_TREE
       || current_function_decl == error_mark_node
-      || !cfun->machine)
+      || ! cfun->machine
+      || cfun->machine->attributes_checked_p)
     return;
 
   cfun->machine->naked_p = riscv_naked_function_p (decl);
+  cfun->machine->interrupt_handler_p
+    = riscv_interrupt_type_p (TREE_TYPE (decl));
+
+  if (cfun->machine->naked_p && cfun->machine->interrupt_handler_p)
+    error ("function attributes %qs and %qs are mutually exclusive",
+	   "interrupt", "naked");
+
+  if (cfun->machine->interrupt_handler_p)
+    {
+      tree args = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      tree ret = TREE_TYPE (TREE_TYPE (decl));
+
+      if (TREE_CODE (ret) != VOID_TYPE)
+	error ("%qs function cannot return a value", "interrupt");
+
+      if (args && TREE_CODE (TREE_VALUE (args)) != VOID_TYPE)
+	error ("%qs function cannot have arguments", "interrupt");
+    }
+
+  /* Don't print the above diagnostics more than once.  */
+  cfun->machine->attributes_checked_p = 1;
 }
 
 /* Implement TARGET_CANNOT_COPY_INSN_P.  */

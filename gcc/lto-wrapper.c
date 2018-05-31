@@ -966,7 +966,7 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
    is returned.  Return NULL on error.  */
 
 const char *
-debug_objcopy (const char *infile)
+debug_objcopy (const char *infile, bool rename)
 {
   const char *outfile;
   const char *errmsg;
@@ -1008,7 +1008,7 @@ debug_objcopy (const char *infile)
     }
 
   outfile = make_temp_file ("debugobjtem");
-  errmsg = simple_object_copy_lto_debug_sections (inobj, outfile, &err);
+  errmsg = simple_object_copy_lto_debug_sections (inobj, outfile, &err, rename);
   if (errmsg)
     {
       unlink_if_ordinary (outfile);
@@ -1056,6 +1056,7 @@ run_gcc (unsigned argc, char *argv[])
   bool have_offload = false;
   unsigned lto_argc = 0, ltoobj_argc = 0;
   char **lto_argv, **ltoobj_argv;
+  bool linker_output_rel = false;
   bool skip_debug = false;
   unsigned n_debugobj;
 
@@ -1108,9 +1109,15 @@ run_gcc (unsigned argc, char *argv[])
 	  file_offset = (off_t) loffset;
 	}
       fd = open (filename, O_RDONLY | O_BINARY);
+      /* Linker plugin passes -fresolution and -flinker-output options.
+	 -flinker-output is passed only when user did not specify one and thus
+	 we do not need to worry about duplicities with the option handling
+	 below. */
       if (fd == -1)
 	{
 	  lto_argv[lto_argc++] = argv[i];
+	  if (strcmp (argv[i], "-flinker-output=rel") == 0)
+	    linker_output_rel = true;
 	  continue;
 	}
 
@@ -1175,6 +1182,11 @@ run_gcc (unsigned argc, char *argv[])
 	  lto_mode = LTO_MODE_WHOPR;
 	  break;
 
+	case OPT_flinker_output_:
+	  linker_output_rel = !strcmp (option->arg, "rel");
+	  break;
+
+
 	default:
 	  break;
 	}
@@ -1190,6 +1202,9 @@ run_gcc (unsigned argc, char *argv[])
 	}
       fputc ('\n', stderr);
     }
+
+  if (linker_output_rel)
+    no_partition = true;
 
   if (no_partition)
     {
@@ -1435,7 +1450,7 @@ cont1:
     for (i = 0; i < ltoobj_argc; ++i)
       {
 	const char *tem;
-	if ((tem = debug_objcopy (ltoobj_argv[i])))
+	if ((tem = debug_objcopy (ltoobj_argv[i], !linker_output_rel)))
 	  {
 	    obstack_ptr_grow (&argv_obstack, tem);
 	    n_debugobj++;

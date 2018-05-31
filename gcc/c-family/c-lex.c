@@ -103,11 +103,9 @@ get_fileinfo (const char *name)
   struct c_fileinfo *fi;
 
   if (!file_info_tree)
-    file_info_tree = splay_tree_new ((splay_tree_compare_fn)
-				     (void (*) (void)) strcmp,
+    file_info_tree = splay_tree_new (splay_tree_compare_strings,
 				     0,
-				     (splay_tree_delete_value_fn)
-				     (void (*) (void)) free);
+				     splay_tree_delete_pointers);
 
   n = splay_tree_lookup (file_info_tree, (splay_tree_key) name);
   if (n)

@@ -320,6 +320,10 @@ static const struct attribute_spec nds32_attribute_table[] =
   /* The attribute is used to tell this function to be ROM patch.  */
   { "indirect_call",0,  0, false, false, false, false, NULL, NULL },
 
+  /* FOR BACKWARD COMPATIBILITY,
+     this attribute also tells no prologue/epilogue.  */
+  { "no_prologue",  0,  0, false, false, false, false, NULL, NULL },
+
   /* The last attribute spec is set to be NULL.  */
   { NULL,           0,  0, false, false, false, false, NULL, NULL }
 };
@@ -348,6 +352,10 @@ nds32_init_machine_status (void)
   /* Initially this function is not under strictly aligned situation.  */
   machine->strict_aligned_p = 0;
 
+  /* Initially this function has no naked and no_prologue attributes.  */
+  machine->attr_naked_p = 0;
+  machine->attr_no_prologue_p = 0;
+
   return machine;
 }
 
@@ -365,6 +373,15 @@ nds32_compute_stack_frame (void)
      needs prologue/epilogue.  */
   cfun->machine->naked_p = 0;
 
+  /* We need to mark whether this function has naked and no_prologue
+     attribute so that we can distinguish the difference if users applies
+     -mret-in-naked-func option.  */
+  cfun->machine->attr_naked_p
+    = lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
+      ? 1 : 0;
+  cfun->machine->attr_no_prologue_p
+    = lookup_attribute ("no_prologue", DECL_ATTRIBUTES (current_function_decl))
+      ? 1 : 0;
 
   /* If __builtin_eh_return is used, we better have frame pointer needed
      so that we can easily locate the stack slot of return address.  */
@@ -501,7 +518,7 @@ nds32_compute_stack_frame (void)
     }
 
   /* Check if this function can omit prologue/epilogue code fragment.
-     If there is 'naked' attribute in this function,
+     If there is 'no_prologue'/'naked' attribute in this function,
      we can set 'naked_p' flag to indicate that
      we do not have to generate prologue/epilogue.
      Or, if all the following conditions succeed,
@@ -514,7 +531,8 @@ nds32_compute_stack_frame (void)
 		    is no outgoing size.
        condition 3: There is no local_size, which means
 		    we do not need to adjust $sp.  */
-  if (lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
+  if (lookup_attribute ("no_prologue", DECL_ATTRIBUTES (current_function_decl))
+      || lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
       || (cfun->machine->callee_saved_first_gpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_last_gpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_first_fpr_regno == SP_REGNUM
@@ -1376,14 +1394,22 @@ nds32_needs_double_word_align (machine_mode mode, const_tree type)
 static bool
 nds32_naked_function_p (tree func)
 {
-  tree t;
+  /* FOR BACKWARD COMPATIBILITY,
+     we need to support 'no_prologue' attribute as well.  */
+  tree t_naked;
+  tree t_no_prologue;
 
   if (TREE_CODE (func) != FUNCTION_DECL)
     abort ();
 
-  t = lookup_attribute ("naked", DECL_ATTRIBUTES (func));
+  /* We have to use lookup_attribute() to check attributes.
+     Because attr_naked_p and attr_no_prologue_p are set in
+     nds32_compute_stack_frame() and the function has not been
+     invoked yet.  */
+  t_naked       = lookup_attribute ("naked", DECL_ATTRIBUTES (func));
+  t_no_prologue = lookup_attribute ("no_prologue", DECL_ATTRIBUTES (func));
 
-  return (t != NULL_TREE);
+  return ((t_naked != NULL_TREE) || (t_no_prologue != NULL_TREE));
 }
 
 /* Function that determine whether a load postincrement is a good thing to use
@@ -4719,7 +4745,16 @@ nds32_expand_epilogue (bool sibcall_p)
       /* Generate return instruction by using 'return_internal' pattern.
 	 Make sure this instruction is after gen_blockage().  */
       if (!sibcall_p)
-	emit_jump_insn (gen_return_internal ());
+	{
+	  /* We need to further check attributes to determine whether
+	     there should be return instruction at epilogue.
+	     If the attribute naked exists but -mno-ret-in-naked-func
+	     is issued, there is NO need to generate return instruction.  */
+	  if (cfun->machine->attr_naked_p && !flag_ret_in_naked_func)
+	    return;
+
+	  emit_jump_insn (gen_return_internal ());
+	}
       return;
     }
 
@@ -5075,9 +5110,19 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
   if (cfun->machine->naked_p)
     {
       /* Generate return instruction by using 'return_internal' pattern.
-	 Make sure this instruction is after gen_blockage().  */
+	 Make sure this instruction is after gen_blockage().
+	 First we need to check this is a function without sibling call.  */
       if (!sibcall_p)
-	emit_jump_insn (gen_return_internal ());
+	{
+	  /* We need to further check attributes to determine whether
+	     there should be return instruction at epilogue.
+	     If the attribute naked exists but -mno-ret-in-naked-func
+	     is issued, there is NO need to generate return instruction.  */
+	  if (cfun->machine->attr_naked_p && !flag_ret_in_naked_func)
+	    return;
+
+	  emit_jump_insn (gen_return_internal ());
+	}
       return;
     }
 
@@ -5239,6 +5284,11 @@ nds32_can_use_return_insn (void)
   /* Prior to reloading, we can't tell how many registers must be saved.
      Thus we can not determine whether this function has null epilogue.  */
   if (!reload_completed)
+    return 0;
+
+  /* If attribute 'naked' appears but -mno-ret-in-naked-func is used,
+     we cannot use return instruction.  */
+  if (cfun->machine->attr_naked_p && !flag_ret_in_naked_func)
     return 0;
 
   sp_adjust = cfun->machine->local_size

@@ -4147,7 +4147,7 @@ resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
 	    error ("invalid use of void expression");
 	  return NULL;
 	}
-      else if (invalid_nonstatic_memfn_p (input_location, arg, complain))
+      else if (invalid_nonstatic_memfn_p (arg->exp.locus, arg, complain))
 	return NULL;
     }
   return args;
@@ -6517,6 +6517,7 @@ build_temp (tree expr, tree type, int flags,
 }
 
 /* Perform warnings about peculiar, but valid, conversions from/to NULL.
+   Also handle a subset of zero as null warnings.
    EXPR is implicitly converted to type TOTYPE.
    FN and ARGNUM are used for diagnostics.  */
 
@@ -6550,6 +6551,15 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
       else
 	warning_at (input_location, OPT_Wconversion_null,
 		    "converting %<false%> to pointer type %qT", totype);
+    }
+  /* Handle zero as null pointer warnings for cases other
+     than EQ_EXPR and NE_EXPR */
+  else if (null_ptr_cst_p (expr) &&
+	   (TYPE_PTR_OR_PTRMEM_P (totype) || NULLPTR_TYPE_P (totype)))
+    {
+      source_location loc =
+       expansion_point_location_if_in_system_header (input_location);
+      maybe_warn_zero_as_null_pointer_constant (expr, loc);
     }
 }
 
@@ -7101,6 +7111,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       && !check_narrowing (totype, expr, complain))
     return error_mark_node;
 
+  warning_sentinel w (warn_zero_as_null_pointer_constant);
   if (issue_conversion_warnings)
     expr = cp_convert_and_check (totype, expr, complain);
   else
@@ -8217,6 +8228,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree type = TREE_TYPE (to);
       tree as_base = CLASSTYPE_AS_BASE (type);
       tree arg = argarray[1];
+      location_t loc = EXPR_LOC_OR_LOC (arg, input_location);
 
       if (is_really_empty_class (type))
 	{
@@ -8226,6 +8238,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else if (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (as_base)))
 	{
+	  if (is_std_init_list (type)
+	      && conv_binds_ref_to_prvalue (convs[1]))
+	    warning_at (loc, OPT_Winit_list_lifetime,
+			"assignment from temporary initializer_list does not "
+			"extend the lifetime of the underlying array");
 	  arg = cp_build_fold_indirect_ref (arg);
 	  val = build2 (MODIFY_EXPR, TREE_TYPE (to), to, arg);
 	}
@@ -10917,13 +10934,11 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 	     lvalue-rvalue conversion applied to "a glvalue of literal type
 	     that refers to a non-volatile temporary object initialized
 	     with a constant expression".  Rather than try to communicate
-	     that this VAR_DECL is a temporary, just mark it constexpr.
-
-	     Currently this is only useful for initializer_list temporaries,
-	     since reference vars can't appear in constant expressions.  */
+	     that this VAR_DECL is a temporary, just mark it constexpr.  */
 	  DECL_DECLARED_CONSTEXPR_P (var) = true;
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (var) = true;
 	  TREE_CONSTANT (var) = true;
+	  TREE_READONLY (var) = true;
 	}
       DECL_INITIAL (var) = init;
       init = NULL_TREE;

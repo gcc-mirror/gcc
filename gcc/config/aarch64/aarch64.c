@@ -1087,16 +1087,17 @@ aarch64_err_no_fpadvsimd (machine_mode mode, const char *msg)
 }
 
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.
-   The register allocator chooses ALL_REGS if FP_REGS and GENERAL_REGS have
-   the same cost even if ALL_REGS has a much larger cost.  ALL_REGS is also
-   used if the cost of both FP_REGS and GENERAL_REGS is lower than the memory
-   cost (in this case the best class is the lowest cost one).  Using ALL_REGS
-   irrespectively of its cost results in bad allocations with many redundant
-   int<->FP moves which are expensive on various cores.
-   To avoid this we don't allow ALL_REGS as the allocno class, but force a
-   decision between FP_REGS and GENERAL_REGS.  We use the allocno class if it
-   isn't ALL_REGS.  Similarly, use the best class if it isn't ALL_REGS.
-   Otherwise set the allocno class depending on the mode.
+   The register allocator chooses POINTER_AND_FP_REGS if FP_REGS and
+   GENERAL_REGS have the same cost - even if POINTER_AND_FP_REGS has a much
+   higher cost.  POINTER_AND_FP_REGS is also used if the cost of both FP_REGS
+   and GENERAL_REGS is lower than the memory cost (in this case the best class
+   is the lowest cost one).  Using POINTER_AND_FP_REGS irrespectively of its
+   cost results in bad allocations with many redundant int<->FP moves which
+   are expensive on various cores.
+   To avoid this we don't allow POINTER_AND_FP_REGS as the allocno class, but
+   force a decision between FP_REGS and GENERAL_REGS.  We use the allocno class
+   if it isn't POINTER_AND_FP_REGS.  Similarly, use the best class if it isn't
+   POINTER_AND_FP_REGS.  Otherwise set the allocno class depending on the mode.
    The result of this is that it is no longer inefficient to have a higher
    memory move cost than the register move cost.
 */
@@ -1107,10 +1108,12 @@ aarch64_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
 {
   machine_mode mode;
 
-  if (allocno_class != ALL_REGS)
+  if (reg_class_subset_p (allocno_class, GENERAL_REGS)
+      || reg_class_subset_p (allocno_class, FP_REGS))
     return allocno_class;
 
-  if (best_class != ALL_REGS)
+  if (reg_class_subset_p (best_class, GENERAL_REGS)
+      || reg_class_subset_p (best_class, FP_REGS))
     return best_class;
 
   mode = PSEUDO_REGNO_MODE (regno);
@@ -17030,6 +17033,50 @@ aarch64_swap_ldrstr_operands (rtx* operands, bool load)
     }
 }
 
+/* Taking X and Y to be HOST_WIDE_INT pointers, return the result of a
+   comparison between the two.  */
+int
+aarch64_host_wide_int_compare (const void *x, const void *y)
+{
+  return wi::cmps (* ((const HOST_WIDE_INT *) x),
+		   * ((const HOST_WIDE_INT *) y));
+}
+
+/* Taking X and Y to be pairs of RTX, one pointing to a MEM rtx and the
+   other pointing to a REG rtx containing an offset, compare the offsets
+   of the two pairs.
+
+   Return:
+
+	1 iff offset (X) > offset (Y)
+	0 iff offset (X) == offset (Y)
+	-1 iff offset (X) < offset (Y)  */
+int
+aarch64_ldrstr_offset_compare (const void *x, const void *y)
+{
+  const rtx * operands_1 = (const rtx *) x;
+  const rtx * operands_2 = (const rtx *) y;
+  rtx mem_1, mem_2, base, offset_1, offset_2;
+
+  if (MEM_P (operands_1[0]))
+    mem_1 = operands_1[0];
+  else
+    mem_1 = operands_1[1];
+
+  if (MEM_P (operands_2[0]))
+    mem_2 = operands_2[0];
+  else
+    mem_2 = operands_2[1];
+
+  /* Extract the offsets.  */
+  extract_base_offset_in_addr (mem_1, &base, &offset_1);
+  extract_base_offset_in_addr (mem_2, &base, &offset_2);
+
+  gcc_assert (offset_1 != NULL_RTX && offset_2 != NULL_RTX);
+
+  return wi::cmps (INTVAL (offset_1), INTVAL (offset_2));
+}
+
 /* Given OPERANDS of consecutive load/store, check if we can merge
    them into ldp/stp by adjusting the offset.  LOAD is true if they
    are load instructions.  MODE is the mode of memory operands.
@@ -17056,7 +17103,7 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 				       scalar_mode mode)
 {
   enum reg_class rclass_1, rclass_2, rclass_3, rclass_4;
-  HOST_WIDE_INT offval_1, offval_2, offval_3, offval_4, msize;
+  HOST_WIDE_INT offvals[4], msize;
   rtx mem_1, mem_2, mem_3, mem_4, reg_1, reg_2, reg_3, reg_4;
   rtx base_1, base_2, base_3, base_4, offset_1, offset_2, offset_3, offset_4;
 
@@ -17072,8 +17119,12 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
       mem_4 = operands[7];
       gcc_assert (REG_P (reg_1) && REG_P (reg_2)
 		  && REG_P (reg_3) && REG_P (reg_4));
-      if (REGNO (reg_1) == REGNO (reg_2) || REGNO (reg_3) == REGNO (reg_4))
-	return false;
+
+      /* Do not attempt to merge the loads if the loads clobber each other.  */
+      for (int i = 0; i < 8; i += 2)
+	for (int j = i + 2; j < 8; j += 2)
+	  if (reg_overlap_mentioned_p (operands[i], operands[j]))
+	    return false;
     }
   else
     {
@@ -17115,32 +17166,34 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
       || !rtx_equal_p (base_3, base_4))
     return false;
 
-  offval_1 = INTVAL (offset_1);
-  offval_2 = INTVAL (offset_2);
-  offval_3 = INTVAL (offset_3);
-  offval_4 = INTVAL (offset_4);
+  offvals[0] = INTVAL (offset_1);
+  offvals[1] = INTVAL (offset_2);
+  offvals[2] = INTVAL (offset_3);
+  offvals[3] = INTVAL (offset_4);
   msize = GET_MODE_SIZE (mode);
-  /* Check if the offsets are consecutive.  */
-  if ((offval_1 != (offval_2 + msize)
-       || offval_1 != (offval_3 + msize * 2)
-       || offval_1 != (offval_4 + msize * 3))
-      && (offval_4 != (offval_3 + msize)
-	  || offval_4 != (offval_2 + msize * 2)
-	  || offval_4 != (offval_1 + msize * 3)))
+
+  /* Check if the offsets can be put in the right order to do a ldp/stp.  */
+  qsort (offvals, 4, sizeof (HOST_WIDE_INT), aarch64_host_wide_int_compare);
+
+  if (!(offvals[1] == offvals[0] + msize
+	&& offvals[3] == offvals[2] + msize))
+    return false;
+
+  /* Check that offsets are within range of each other.  The ldp/stp
+     instructions have 7 bit immediate offsets, so use 0x80.  */
+  if (offvals[2] - offvals[0] >= msize * 0x80)
+    return false;
+
+  /* The offsets must be aligned with respect to each other.  */
+  if (offvals[0] % msize != offvals[2] % msize)
     return false;
 
   /* Check if the addresses are clobbered by load.  */
-  if (load)
-    {
-      if (reg_mentioned_p (reg_1, mem_1)
-	  || reg_mentioned_p (reg_2, mem_2)
-	  || reg_mentioned_p (reg_3, mem_3))
-	return false;
-
-      /* In increasing order, the last load can clobber the address.  */
-      if (offval_1 > offval_2 && reg_mentioned_p (reg_4, mem_4))
-	return false;
-    }
+  if (load && (reg_mentioned_p (reg_1, mem_1)
+	       || reg_mentioned_p (reg_2, mem_2)
+	       || reg_mentioned_p (reg_3, mem_3)
+	       || reg_mentioned_p (reg_4, mem_4)))
+    return false;
 
   /* If we have SImode and slow unaligned ldp,
      check the alignment to be at least 8 byte. */
@@ -17179,8 +17232,8 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 }
 
 /* Given OPERANDS of consecutive load/store, this function pairs them
-   into ldp/stp after adjusting the offset.  It depends on the fact
-   that addresses of load/store instructions are in increasing order.
+   into LDP/STP after adjusting the offset.  It depends on the fact
+   that the operands can be sorted so the offsets are correct for STP.
    MODE is the mode of memory operands.  CODE is the rtl operator
    which should be applied to all memory operands, it's SIGN_EXTEND,
    ZERO_EXTEND or UNKNOWN.  */
@@ -17189,100 +17242,109 @@ bool
 aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 			     scalar_mode mode, RTX_CODE code)
 {
-  rtx base, offset_1, offset_2, t1, t2;
+  rtx base, offset_1, offset_3, t1, t2;
   rtx mem_1, mem_2, mem_3, mem_4;
-  HOST_WIDE_INT off_val, abs_off, adj_off, new_off, stp_off_limit, msize;
+  rtx temp_operands[8];
+  HOST_WIDE_INT off_val_1, off_val_3, base_off, new_off_1, new_off_3,
+		stp_off_upper_limit, stp_off_lower_limit, msize;
+
+  /* We make changes on a copy as we may still bail out.  */
+  for (int i = 0; i < 8; i ++)
+    temp_operands[i] = operands[i];
+
+  /* Sort the operands.  */
+  qsort (temp_operands, 4, 2 * sizeof (rtx *), aarch64_ldrstr_offset_compare);
 
   if (load)
     {
-      mem_1 = operands[1];
-      mem_2 = operands[3];
+      mem_1 = temp_operands[1];
+      mem_2 = temp_operands[3];
+      mem_3 = temp_operands[5];
+      mem_4 = temp_operands[7];
     }
   else
     {
-      mem_1 = operands[0];
-      mem_2 = operands[2];
-    }
-
-  extract_base_offset_in_addr (mem_1, &base, &offset_1);
-  extract_base_offset_in_addr (mem_2, &base, &offset_2);
-  gcc_assert (base != NULL_RTX && offset_1 != NULL_RTX
-	      && offset_2 != NULL_RTX);
-
-  if (INTVAL (offset_1) > INTVAL (offset_2))
-    {
-      std::swap (operands[0], operands[6]);
-      std::swap (operands[1], operands[7]);
-      std::swap (operands[2], operands[4]);
-      std::swap (operands[3], operands[5]);
-    }
-
-  if (load)
-    {
-      mem_1 = operands[1];
-      mem_2 = operands[3];
-      mem_3 = operands[5];
-      mem_4 = operands[7];
-    }
-  else
-    {
-      mem_1 = operands[0];
-      mem_2 = operands[2];
-      mem_3 = operands[4];
-      mem_4 = operands[6];
+      mem_1 = temp_operands[0];
+      mem_2 = temp_operands[2];
+      mem_3 = temp_operands[4];
+      mem_4 = temp_operands[6];
       gcc_assert (code == UNKNOWN);
     }
 
-  /* Extract the offset of the new first address.  */
   extract_base_offset_in_addr (mem_1, &base, &offset_1);
-  extract_base_offset_in_addr (mem_2, &base, &offset_2);
+  extract_base_offset_in_addr (mem_3, &base, &offset_3);
+  gcc_assert (base != NULL_RTX && offset_1 != NULL_RTX
+	      && offset_3 != NULL_RTX);
 
-  /* Adjust offset thus it can fit in ldp/stp instruction.  */
+  /* Adjust offset so it can fit in LDP/STP instruction.  */
   msize = GET_MODE_SIZE (mode);
-  stp_off_limit = msize * 0x40;
-  off_val = INTVAL (offset_1);
-  abs_off = (off_val < 0) ? -off_val : off_val;
-  new_off = abs_off % stp_off_limit;
-  adj_off = abs_off - new_off;
+  stp_off_upper_limit = msize * (0x40 - 1);
+  stp_off_lower_limit = - msize * 0x40;
 
-  /* Further adjust to make sure all offsets are OK.  */
-  if ((new_off + msize * 2) >= stp_off_limit)
+  off_val_1 = INTVAL (offset_1);
+  off_val_3 = INTVAL (offset_3);
+
+  /* The base offset is optimally half way between the two STP/LDP offsets.  */
+  if (msize <= 4)
+    base_off = (off_val_1 + off_val_3) / 2;
+  else
+    /* However, due to issues with negative LDP/STP offset generation for
+       larger modes, for DF, DI and vector modes. we must not use negative
+       addresses smaller than 9 signed unadjusted bits can store.  This
+       provides the most range in this case.  */
+    base_off = off_val_1;
+
+  /* Adjust the base so that it is aligned with the addresses but still
+     optimal.  */
+  if (base_off % msize != off_val_1 % msize)
+    /* Fix the offset, bearing in mind we want to make it bigger not
+       smaller.  */
+    base_off += (((base_off % msize) - (off_val_1 % msize)) + msize) % msize;
+  else if (msize <= 4)
+    /* The negative range of LDP/STP is one larger than the positive range.  */
+    base_off += msize;
+
+  /* Check if base offset is too big or too small.  We can attempt to resolve
+     this issue by setting it to the maximum value and seeing if the offsets
+     still fit.  */
+  if (base_off >= 0x1000)
     {
-      adj_off += stp_off_limit;
-      new_off -= stp_off_limit;
+      base_off = 0x1000 - 1;
+      /* We must still make sure that the base offset is aligned with respect
+	 to the address.  But it may may not be made any bigger.  */
+      base_off -= (((base_off % msize) - (off_val_1 % msize)) + msize) % msize;
     }
 
-  /* Make sure the adjustment can be done with ADD/SUB instructions.  */
-  if (adj_off >= 0x1000)
-    return false;
-
-  if (off_val < 0)
+  /* Likewise for the case where the base is too small.  */
+  if (base_off <= -0x1000)
     {
-      adj_off = -adj_off;
-      new_off = -new_off;
+      base_off = -0x1000 + 1;
+      base_off += (((base_off % msize) - (off_val_1 % msize)) + msize) % msize;
     }
 
-  /* Create new memory references.  */
-  mem_1 = change_address (mem_1, VOIDmode,
-			  plus_constant (DImode, operands[8], new_off));
+  /* Offset of the first STP/LDP.  */
+  new_off_1 = off_val_1 - base_off;
 
-  /* Check if the adjusted address is OK for ldp/stp.  */
-  if (!aarch64_mem_pair_operand (mem_1, mode))
+  /* Offset of the second STP/LDP.  */
+  new_off_3 = off_val_3 - base_off;
+
+  /* The offsets must be within the range of the LDP/STP instructions.  */
+  if (new_off_1 > stp_off_upper_limit || new_off_1 < stp_off_lower_limit
+      || new_off_3 > stp_off_upper_limit || new_off_3 < stp_off_lower_limit)
     return false;
 
-  msize = GET_MODE_SIZE (mode);
-  mem_2 = change_address (mem_2, VOIDmode,
-			  plus_constant (DImode,
-					 operands[8],
-					 new_off + msize));
-  mem_3 = change_address (mem_3, VOIDmode,
-			  plus_constant (DImode,
-					 operands[8],
-					 new_off + msize * 2));
-  mem_4 = change_address (mem_4, VOIDmode,
-			  plus_constant (DImode,
-					 operands[8],
-					 new_off + msize * 3));
+  replace_equiv_address_nv (mem_1, plus_constant (Pmode, operands[8],
+						  new_off_1), true);
+  replace_equiv_address_nv (mem_2, plus_constant (Pmode, operands[8],
+						  new_off_1 + msize), true);
+  replace_equiv_address_nv (mem_3, plus_constant (Pmode, operands[8],
+						  new_off_3), true);
+  replace_equiv_address_nv (mem_4, plus_constant (Pmode, operands[8],
+						  new_off_3 + msize), true);
+
+  if (!aarch64_mem_pair_operand (mem_1, mode)
+      || !aarch64_mem_pair_operand (mem_3, mode))
+    return false;
 
   if (code == ZERO_EXTEND)
     {
@@ -17301,21 +17363,29 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 
   if (load)
     {
+      operands[0] = temp_operands[0];
       operands[1] = mem_1;
+      operands[2] = temp_operands[2];
       operands[3] = mem_2;
+      operands[4] = temp_operands[4];
       operands[5] = mem_3;
+      operands[6] = temp_operands[6];
       operands[7] = mem_4;
     }
   else
     {
       operands[0] = mem_1;
+      operands[1] = temp_operands[1];
       operands[2] = mem_2;
+      operands[3] = temp_operands[3];
       operands[4] = mem_3;
+      operands[5] = temp_operands[5];
       operands[6] = mem_4;
+      operands[7] = temp_operands[7];
     }
 
   /* Emit adjusting instruction.  */
-  emit_insn (gen_rtx_SET (operands[8], plus_constant (DImode, base, adj_off)));
+  emit_insn (gen_rtx_SET (operands[8], plus_constant (DImode, base, base_off)));
   /* Emit ldp/stp instructions.  */
   t1 = gen_rtx_SET (operands[0], operands[1]);
   t2 = gen_rtx_SET (operands[2], operands[3]);

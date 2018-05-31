@@ -38,6 +38,8 @@ with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 
+with Interfaces.C;
+
 with System;                 use System;
 with System.CRTL;            use System.CRTL;
 with System.File_Attributes; use System.File_Attributes;
@@ -90,6 +92,16 @@ package body Ada.Directories is
    procedure Fetch_Next_Entry (Search : Search_Type);
    --  Get the next entry in a directory, setting Entry_Fetched if successful
    --  or resetting Is_Valid if not.
+
+   procedure Start_Search_Internal
+     (Search                 : in out Search_Type;
+      Directory              : String;
+      Pattern                : String;
+      Filter                 : Filter_Type := (others => True);
+      Force_Case_Insensitive : Boolean);
+   --  Similar to Start_Search except we can force a search to be
+   --  case-insensitive, which is important for detecting the name-case
+   --  equivalence for a given directory.
 
    ---------------
    -- Base_Name --
@@ -1057,6 +1069,105 @@ package body Ada.Directories is
       return Search.Value.Is_Valid;
    end More_Entries;
 
+   ---------------------------
+   -- Name_Case_Equivalence --
+   ---------------------------
+
+   function Name_Case_Equivalence (Name : String) return Name_Case_Kind is
+      Dir_Path  : Unbounded_String := To_Unbounded_String (Name);
+      S         : Search_Type;
+      Test_File : Directory_Entry_Type;
+
+      function GNAT_name_case_equivalence return Interfaces.C.int;
+      pragma Import (C, GNAT_name_case_equivalence,
+                     "__gnat_name_case_equivalence");
+
+   begin
+      --  Check for the invalid case
+
+      if not Is_Valid_Path_Name (Name) then
+         raise Name_Error with "invalid path name """ & Name & '"';
+      end if;
+
+      --  We were passed a "full path" to a file and not a directory, so obtain
+      --  the containing directory.
+
+      if Is_Regular_File (Name) then
+         Dir_Path := To_Unbounded_String (Containing_Directory (Name));
+      end if;
+
+      --  Since we must obtain a file within the Name directory, let's grab the
+      --  first for our test. When the directory is empty, Get_Next_Entry will
+      --  fall through to a Status_Error where we then take the imprecise
+      --  default for the host OS.
+
+      Start_Search
+        (Search    => S,
+         Directory => To_String (Dir_Path),
+         Pattern   => "",
+         Filter    => (Directory => False, others => True));
+
+      loop
+         Get_Next_Entry (S, Test_File);
+
+         --  Check if we have found a "caseable" file
+
+         exit when To_Lower (Simple_Name (Test_File)) /=
+                   To_Upper (Simple_Name (Test_File));
+      end loop;
+
+      End_Search (S);
+
+      --  Search for files within the directory with the same name, but
+      --  differing cases.
+
+      Start_Search_Internal
+        (Search                 => S,
+         Directory              => To_String (Dir_Path),
+         Pattern                => Simple_Name (Test_File),
+         Filter                 => (Directory => False, others => True),
+         Force_Case_Insensitive => True);
+
+      --  We will find at least one match due to the search hitting our test
+      --  file.
+
+      Get_Next_Entry (S, Test_File);
+
+      begin
+         --  If we hit two then we know we have a case-sensitive directory
+
+         Get_Next_Entry (S, Test_File);
+         End_Search (S);
+
+         return Case_Sensitive;
+      exception
+         when Status_Error =>
+            null;
+      end;
+
+      --  Finally, we have a file in the directory whose name is unique and
+      --  "caseable". Let's test to see if the OS is able to identify the file
+      --  in multiple cases, which will give us our result without having to
+      --  resort to defaults.
+
+      if Exists (To_String (Dir_Path) & Directory_Separator
+                  & To_Lower (Simple_Name (Test_File)))
+        and then Exists (To_String (Dir_Path) & Directory_Separator
+                          & To_Upper (Simple_Name (Test_File)))
+      then
+         return Case_Preserving;
+      end if;
+
+      return Case_Sensitive;
+   exception
+      when Status_Error =>
+
+         --  There is no unobtrusive way to check for the directory's casing so
+         --  return the OS default.
+
+         return Name_Case_Kind'Val (Integer (GNAT_name_case_equivalence));
+   end Name_Case_Equivalence;
+
    ------------
    -- Rename --
    ------------
@@ -1289,6 +1400,21 @@ package body Ada.Directories is
       Pattern   : String;
       Filter    : Filter_Type := (others => True))
    is
+   begin
+      Start_Search_Internal (Search, Directory, Pattern, Filter, False);
+   end Start_Search;
+
+   ---------------------------
+   -- Start_Search_Internal --
+   ---------------------------
+
+   procedure Start_Search_Internal
+     (Search                 : in out Search_Type;
+      Directory              : String;
+      Pattern                : String;
+      Filter                 : Filter_Type := (others => True);
+      Force_Case_Insensitive : Boolean)
+   is
       function opendir (file_name : String) return DIRs;
       pragma Import (C, opendir, "__gnat_opendir");
 
@@ -1306,11 +1432,18 @@ package body Ada.Directories is
 
       --  Check the pattern
 
+      declare
+         Case_Sensitive : Boolean := Is_Path_Name_Case_Sensitive;
       begin
-         Pat := Compile
-           (Pattern,
-            Glob           => True,
-            Case_Sensitive => Is_Path_Name_Case_Sensitive);
+         if Force_Case_Insensitive then
+            Case_Sensitive := False;
+         end if;
+
+         Pat :=
+           Compile
+             (Pattern,
+              Glob           => True,
+              Case_Sensitive => Case_Sensitive);
       exception
          when Error_In_Regexp =>
             Free (Search.Value);
@@ -1339,6 +1472,6 @@ package body Ada.Directories is
       Search.Value.Pattern  := Pat;
       Search.Value.Dir      := Dir;
       Search.Value.Is_Valid := True;
-   end Start_Search;
+   end Start_Search_Internal;
 
 end Ada.Directories;

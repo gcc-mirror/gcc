@@ -2342,7 +2342,7 @@ package body ALI is
             --  The file/path name may be quoted
 
             Sdep.Table (Sdep.Last).Sfile :=
-              Get_File_Name (May_Be_Quoted =>  True);
+              Get_File_Name (May_Be_Quoted => True);
 
             Sdep.Table (Sdep.Last).Stamp := Get_Stamp;
             Sdep.Table (Sdep.Last).Dummy_Entry :=

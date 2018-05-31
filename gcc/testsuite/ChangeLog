@@ -1,3 +1,300 @@
+2018-05-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c/82063
+	* gcc.dg/Walloc-size-larger-than-1.c: New test.
+	* gcc.dg/Walloc-size-larger-than-10.c: New test.
+	* gcc.dg/Walloc-size-larger-than-11.c: New test.
+	* gcc.dg/Walloc-size-larger-than-12.c: New test.
+	* gcc.dg/Walloc-size-larger-than-13.c: New test.
+	* gcc.dg/Walloc-size-larger-than-14.c: New test.
+	* gcc.dg/Walloc-size-larger-than-15.c: New test.
+	* gcc.dg/Walloc-size-larger-than-16.c: New test.
+	* gcc.dg/Walloc-size-larger-than-17.c: New test.
+	* gcc.dg/Walloc-size-larger-than-2.c: New test.
+	* gcc.dg/Walloc-size-larger-than-3.c: New test.
+	* gcc.dg/Walloc-size-larger-than-4.c: New test.
+	* gcc.dg/Walloc-size-larger-than-5.c: New test.
+	* gcc.dg/Walloc-size-larger-than-6.c: New test.
+	* gcc.dg/Walloc-size-larger-than-7.c: New test.
+	* gcc.dg/Walloc-size-larger-than-8.c: New test.
+	* gcc.dg/Walloc-size-larger-than-9.c: New test.
+	* gcc.dg/Walloc-size-larger-than.c: New test.
+
+2018-05-31  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/85879
+	* gfortran.dg/goacc/pr77371-1.f90: New test.
+	* gfortran.dg/goacc/pr77371-2.f90: New test.
+	* gfortran.dg/goacc/pr85879.f90: New test.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/stack_usage1.adb: Replace -fstack-usage with -Wstack-usage.
+	* gnat.dg/stack_usage1b.adb: Likewise.
+	* gnat.dg/stack_usage1c.adb: Likewise.
+	* gnat.dg/stack_usage3.adb: Likewise.
+	* gnat.dg/stack_usage1_pkg.adb: Delete.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/store_merging_10.c: Turn dg-do compile into dg-do run.
+	* gcc.dg/store_merging_11.c: Likewise.
+	* gcc.dg/store_merging_13.c: Likewise.
+	* gcc.dg/store_merging_14.c: Likewise.
+	* gcc.dg/store_merging_15.c: Likewise.
+	* gcc.dg/store_merging_16.c: Likewise.  Remove local variable.
+
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/limited1.adb, gnat.dg/limited1_inner.adb,
+	gnat.dg/limited1_inner.ads, gnat.dg/limited1_outer.adb,
+	gnat.dg/limited1_outer.ads: New testcase.
+
+2018-05-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/tampering_check1.adb, gnat.dg/tampering_check1_ivectors.ads,
+	gnat.dg/tampering_check1_trim.adb, gnat.dg/tampering_check1_trim.ads:
+	New testcase.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/size_clause1.adb: New testcase.
+
+2018-05-31  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/tagged1.adb, gnat.dg/tagged1.ads: New testcase.
+
+2018-05-31  Sameera Deshpande  <sameera.deshpande@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x3.c: New test for
+	vld1x3 intrinsics for aarch64.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x2.c: New test for
+	vst1x2 intrinsics for aarch64.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x3.c: New test for
+	vst1x3 intrinsics for aarch64.
+
+2018-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/77777
+	* g++.dg/diagnostic/pr77777.C: New test.
+
+2018-05-30  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/55976
+	* gcc.dg/noncompile/pr55976-1.c: New test.
+	* gcc.dg/noncompile/pr55976-2.c: New test.
+
+2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/lto/20111213-1_0.c: Fix template.
+	* gcc.dg/lto/20100603-1_0.c: Fix template.
+	* gcc.dg/lto/20100603-2_0.c: Fix template.
+	* gcc.dg/lto/20100603-3_0.c: Fix template.
+
+	* g++.dg/lto/20081109-1_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20081118_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20081119-1_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20081120-1_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20081120-2_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20081123_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20081204-1_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20081219_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20090302_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20090313_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20091002-2_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20091002-3_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20091026-1_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20100724-1_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20101010-4_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20101015-2_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/20110311-1_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/pr45621_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/pr48042_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/pr48354-1_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/pr54625-1_0.c: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/pr54625-2_0.c: Add -flinker-output=nolto-rel.
+	* g++.dg/lto/pr68811_0.C: Add -flinker-output=nolto-rel.
+	* g++.dg/torture/pr43760.C: New test. Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20081120-1_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20081120-2_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20081126_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20081204-1_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20081204-2_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20081212-1_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20081224_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20090116_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20090126-1_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20090126-2_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20090206-1_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20090219_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20091013-1_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20091014-1_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20091015-1_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20091016-1_0.c: Add -flinker-output=nolto-rel.
+	* gcc.dg/lto/20091020-1_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/20091020-2_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/20091027-1_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/20100426_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/20100430-1_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/20100603-1_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/20100603-2_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/20100603-3_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/20111213-1_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/pr45736_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/pr52634_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/pr54702_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/pr59323-2_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/pr59323_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/pr60820_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/pr81406_0.c: Add -flinker-output-nolto-rel.
+	* gcc.dg/lto/pr83388_0.c: Add -flinker-output-nolto-rel.
+	* gfortran.dg/lto/20091016-1_0.f90: Add -flinker-output-nolto-rel.
+	* gfortran.dg/lto/20091028-1_0.f90: Add -flinker-output-nolto-rel.
+	* gfortran.dg/lto/20091028-2_0.f90: Add -flinker-output-nolto-rel.
+	* gfortran.dg/lto/pr46911_0.f: Add -flinker-output-nolto-rel.
+	* gfortran.dg/lto/pr47839_0.f90: Add -flinker-output-nolto-rel.
+
+2018-05-30  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Revert:
+	* gcc/target/aarch64/store_v2vec_lanes.c: Add extra tests.
+
+2017-05-30  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* gcc.target/aarch64/simd/ldp_stp_9: New.
+	* gcc.target/aarch64/simd/ldp_stp_10: New.
+	* gcc.target/aarch64/simd/ldp_stp_11: New.
+	* gcc.target/aarch64/simd/ldp_stp_12: New.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/tls1.adb, gnat.dg/tls1_pkg.ads: New testcase.
+
+2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/synchronized1.adb, gnat.dg/synchronized1.ads: New testcase.
+
+2018-05-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85950
+	* gcc.target/i386/pr85950.c: New test.
+
+2018-05-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85883
+	* g++.dg/cpp1z/class-deduction55.C: New test.
+	* g++.dg/cpp1z/class-deduction56.C: New test.
+	* g++.dg/cpp1z/class-deduction57.C: New test.
+
+2018-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85952
+	* g++.dg/warn/Wunused-var-33.C: New test.
+
+	PR target/85918
+	* gcc.target/i386/avx512dq-pr85918.c: Add -mprefer-vector-width=512
+	and -fno-vect-cost-model options.  Add aligned(64) attribute to the
+	arrays.  Add suffix 1 to all functions and use 4 iterations rather
+	than N.  Add functions with conversions to and from float.
+	Add new set of functions with 8 iterations and another one
+	with 16 iterations, expect 24 vectorized loops instead of just 4.
+	* gcc.target/i386/avx512dq-pr85918-2.c: New test.
+
+2018-05-29  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/equal2.adb: New testcase.
+
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/float_attributes_overflows.adb: New testcase.
+
+2018-05-29  Pascal Obry  <obry@adacore.com>
+
+	* gnat.dg/normalize_pathname.adb: New testcase.
+
+2018-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/scanasm.exp (scan-assembler-times): Use proc name in error
+	message.
+	* lib/scanipa.exp (scan-ipa-dump-times): Same.
+	* lib/scanrtl.exp (scan-rtl-dump-times): Same.
+	* lib/scantree.exp (scan-tree-dump-times): Same.
+
+2018-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/scanasm.exp (scan-stack-usage, scan-stack-usage-not)
+	(scan-ada-spec, scan-ada-spec-not, scan-lto-assembler):
+	Use proc name as first argument to dg-scan.
+
+2018-05-29  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/scanasm.exp (scan-hidden, scan-not-hidden): Handle being called
+	with no arguments.
+
+2018-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85934
+	* gcc.target/i386/pr85934.c: New testcase.
+
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming12.adb, gnat.dg/renaming12.ads: New testcase.
+
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/rep_clause6.adb, gnat.dg/rep_clause6.ads: New testcase.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/fixedpnt5.adb: New testcase.
+
+2018-05-28  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/array31.adb: New testcase.
+
+2018-05-28  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/warn15-core-main.adb, gnat.dg/warn15-core.ads,
+	gnat.dg/warn15-interfaces.ads, gnat.dg/warn15.ads: New testcase.
+
+2018-05-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/data_stmt_pointer.f90: new test.
+
+2018-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85918
+	* gcc.target/i386/avx512dq-pr85918.c: New test.
+
+2018-05-25  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/interrupt-1.c: New.
+	* gcc.target/riscv/interrupt-2.c: New.
+	* gcc.target/riscv/interrupt-3.c: New.
+	* gcc.target/riscv/interrupt-4.c: New.
+	* gcc.target/riscv/interrupt-5.c: New.
+
+2018-05-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85786
+	* gfortran.dg/pr85786.f90: New test.
+
+2018-05-25  Paul Koning  <ni1d@arrl.net>
+
+	* gcc.c-torture/compile/20151204.c: Skip if pdp11.
+	* gcc.c-torture/compile/pr55921.c: Ditto.
+	* gcc.c-torture/compile/pr60655-1.c: Ditto.
+	* gcc.c-torture/compile/vector-align-1.c: Add max alignment if pdp11.
+
+2018-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85832
+	* gcc.target/i386/avx512f-pr85832.c: New test.
+	* gcc.target/i386/avx512vl-pr85832.c: New test.
+	* gcc.target/i386/avx512bw-pr85832.c: New test.
+	* gcc.target/i386/avx512vlbw-pr85832.c: New test.
+
 2018-05-25  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/85720

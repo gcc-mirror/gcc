@@ -314,7 +314,6 @@
 	(match_operand:DI 1 "general_operand" "rN,g"))]
   ""
   "* return output_move_multiple (operands);"
-;; what's the mose expensive code - say twice movsi = 16
   [(set_attr "length" "16,32")])
 
 (define_insn "movsi"
@@ -322,8 +321,6 @@
 	(match_operand:SI 1 "general_operand" "rN,IJ,IJ,g"))]
   ""
   "* return output_move_multiple (operands);"
-;; what's the most expensive code ? - I think 8!
-;; we could split it up and make several sub-cases...
   [(set_attr "length" "4,6,8,16")])
 
 (define_insn "mov<mode>"
@@ -425,14 +422,6 @@
   "
   [(set_attr "length" "0,2,4")])
 
-
-(define_expand "truncsihi2"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=g")
-	(subreg:HI 
-	  (match_operand:SI 1 "general_operand" "or")
-          0))]
-  ""
-  "")
 
 
 ;;- zero extension instructions

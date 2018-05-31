@@ -961,6 +961,7 @@ proper position among the other output files.  */
     -plugin %(linker_plugin_file) \
     -plugin-opt=%(lto_wrapper) \
     -plugin-opt=-fresolution=%u.res \
+    %{flinker-output=*:-plugin-opt=-linker-output-known} \
     %{!nostdlib:%{!nodefaultlibs:%:pass-through-libs(%(link_gcc_c_sequence))}} \
     }" PLUGIN_COND_CLOSE
 #else

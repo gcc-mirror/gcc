@@ -6336,7 +6336,11 @@ package body Sem_Ch8 is
                --  If this is a selection from Ada, System or Interfaces, then
                --  we assume a missing with for the corresponding package.
 
-               if Is_Known_Unit (N) then
+               if Is_Known_Unit (N)
+                 and then not (Present (Entity (Prefix (N)))
+                                and then Scope (Entity (Prefix (N))) /=
+                                           Standard_Standard)
+               then
                   if not Error_Posted (N) then
                      Error_Msg_Node_2 := Selector;
                      Error_Msg_N -- CODEFIX
@@ -7105,7 +7109,7 @@ package body Sem_Ch8 is
             end if;
 
          --  If the selected component appears within a default expression
-         --  and it has an actual subtype, the pre-analysis has not yet
+         --  and it has an actual subtype, the preanalysis has not yet
          --  completed its analysis, because Insert_Actions is disabled in
          --  that context. Within the init proc of the enclosing type we
          --  must complete this analysis, if an actual subtype was created.

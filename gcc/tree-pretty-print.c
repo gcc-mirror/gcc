@@ -3235,6 +3235,18 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_string (pp, " > ");
       break;
 
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+      pp_string (pp, " VEC_UNPACK_FIX_TRUNC_HI_EXPR < ");
+      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (pp, " > ");
+      break;
+
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
+      pp_string (pp, " VEC_UNPACK_FIX_TRUNC_LO_EXPR < ");
+      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (pp, " > ");
+      break;
+
     case VEC_PACK_TRUNC_EXPR:
       pp_string (pp, " VEC_PACK_TRUNC_EXPR < ");
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
@@ -3253,6 +3265,14 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case VEC_PACK_FIX_TRUNC_EXPR:
       pp_string (pp, " VEC_PACK_FIX_TRUNC_EXPR < ");
+      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (pp, ", ");
+      dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_string (pp, " > ");
+      break;
+
+    case VEC_PACK_FLOAT_EXPR:
+      pp_string (pp, " VEC_PACK_FLOAT_EXPR < ");
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
       pp_string (pp, ", ");
       dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
@@ -3575,6 +3595,8 @@ op_code_prio (enum tree_code code)
     case VEC_UNPACK_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
     case VEC_UNPACK_FLOAT_LO_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
       return 16;

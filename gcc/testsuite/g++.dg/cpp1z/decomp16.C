@@ -8,7 +8,7 @@ void
 foo ()
 {
   auto [ a, b ] = A ();
-  for (; auto [ a, b ] = A (); )			// { dg-error "expected|no match" }
+  for (; auto [ a, b ] = A (); )			// { dg-error "expected" }
     ;
   for (; false; auto [ a, b ] = A ())			// { dg-error "expected" }
     ;

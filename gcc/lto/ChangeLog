@@ -1,3 +1,11 @@
+2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lang.opt (lto_linker_output): Add nolto-rel.
+	* lto-lang.c (lto_post_options): Handle LTO_LINKER_OUTPUT_REL
+	and LTO_LINKER_OUTPUT_NOLTOREL.
+	(lto_init): Generate lto when doing incremental link.
+	* lto.c (lto_precess_name): Add lto1-inclink.
+
 2018-05-18  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/85583

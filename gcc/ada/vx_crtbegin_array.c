@@ -33,15 +33,12 @@
    purposes on VxWorks.  This variant provides _ctors and _dtors
    arrays that the kernel module loader knows to process when it has
    been configured for this purpose (c++ constructor strategy set to
-   automatic).  The ctor/dtor functions need not be visible in this
-   case.  */
+   automatic).  */
 
-#define CDTOR_VISIBILITY static
+#define CTOR_ATTRIBUTE
+#define DTOR_ATTRIBUTE
+
 #include "vx_crtbegin.inc"
-
-/* Diab C++ for ppc64-vx7 crtbegin wants to declare a
-   char dso_handle = 0;
-   here. ???  */
 
 typedef void (*func_ptr) (void);
 func_ptr _dtors [] = {DTOR_NAME, 0};

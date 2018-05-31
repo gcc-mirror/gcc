@@ -2698,22 +2698,22 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
     {
       tree xoffset = component_ref_field_offset (x);
       tree field = TREE_OPERAND (x, 1);
-      if (TREE_CODE (xoffset) != INTEGER_CST)
+      if (!poly_int_tree_p (xoffset))
 	{
 	  *known_p = false;
 	  return;
 	}
 
-      offset_int woffset
-	= (wi::to_offset (xoffset)
+      poly_offset_int woffset
+	= (wi::to_poly_offset (xoffset)
 	   + (wi::to_offset (DECL_FIELD_BIT_OFFSET (field))
-	      >> LOG2_BITS_PER_UNIT));
-      if (!wi::fits_uhwi_p (woffset))
+	      >> LOG2_BITS_PER_UNIT)
+	   + *offset);
+      if (!woffset.to_shwi (offset))
 	{
 	  *known_p = false;
 	  return;
 	}
-      *offset += woffset.to_uhwi ();
 
       x = TREE_OPERAND (x, 0);
     }

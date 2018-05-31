@@ -197,6 +197,9 @@ struct vec_info {
   /* The type of vectorization.  */
   vec_kind kind;
 
+  /* The mapping of GIMPLE UID to stmt_vec_info.  */
+  vec<struct _stmt_vec_info *> stmt_vec_infos;
+
   /* All SLP instances.  */
   auto_vec<slp_instance> slp_instances;
 
@@ -1009,10 +1012,10 @@ struct dataref_aux {
        && TYPE_PRECISION (TYPE) == 1		\
        && TYPE_UNSIGNED (TYPE)))
 
-extern vec<stmt_vec_info> stmt_vec_info_vec;
+extern vec<stmt_vec_info> *stmt_vec_info_vec;
 
-void init_stmt_vec_info_vec (void);
-void free_stmt_vec_info_vec (void);
+void set_stmt_vec_info_vec (vec<stmt_vec_info> *);
+void free_stmt_vec_infos (vec<stmt_vec_info> *);
 
 /* Return a stmt_vec_info corresponding to STMT.  */
 
@@ -1023,7 +1026,7 @@ vinfo_for_stmt (gimple *stmt)
   if (uid <= 0)
     return NULL;
 
-  return stmt_vec_info_vec[uid - 1];
+  return (*stmt_vec_info_vec)[uid - 1];
 }
 
 /* Set vectorizer information INFO for STMT.  */
@@ -1035,14 +1038,14 @@ set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
   if (uid == 0)
     {
       gcc_checking_assert (info);
-      uid = stmt_vec_info_vec.length () + 1;
+      uid = stmt_vec_info_vec->length () + 1;
       gimple_set_uid (stmt, uid);
-      stmt_vec_info_vec.safe_push (info);
+      stmt_vec_info_vec->safe_push (info);
     }
   else
     {
       gcc_checking_assert (info == NULL);
-      stmt_vec_info_vec[uid - 1] = info;
+      (*stmt_vec_info_vec)[uid - 1] = info;
     }
 }
 
@@ -1065,8 +1068,12 @@ get_earlier_stmt (gimple *stmt1, gimple *stmt2)
   if (uid1 == 0 || uid2 == 0)
     return NULL;
 
-  gcc_checking_assert (uid1 <= stmt_vec_info_vec.length ()
-		       && uid2 <= stmt_vec_info_vec.length ());
+  gcc_assert (uid1 <= stmt_vec_info_vec->length ()
+	      && uid2 <= stmt_vec_info_vec->length ());
+  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt1))
+			|| !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt1)))
+		       && (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt2))
+			   || !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt2))));
 
   if (uid1 < uid2)
     return stmt1;
@@ -1093,8 +1100,12 @@ get_later_stmt (gimple *stmt1, gimple *stmt2)
   if (uid1 == 0 || uid2 == 0)
     return NULL;
 
-  gcc_assert (uid1 <= stmt_vec_info_vec.length ());
-  gcc_assert (uid2 <= stmt_vec_info_vec.length ());
+  gcc_assert (uid1 <= stmt_vec_info_vec->length ()
+	      && uid2 <= stmt_vec_info_vec->length ());
+  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt1))
+			|| !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt1)))
+		       && (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt2))
+			   || !STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt2))));
 
   if (uid1 > uid2)
     return stmt1;
@@ -1495,6 +1506,8 @@ extern bool vect_gather_scatter_fn_p (bool, bool, tree, tree, unsigned int,
 				      signop, int, internal_fn *, tree *);
 extern bool vect_check_gather_scatter (gimple *, loop_vec_info,
 				       gather_scatter_info *);
+extern bool vect_find_stmt_data_reference (loop_p, gimple *,
+					   vec<data_reference_p> *);
 extern bool vect_analyze_data_refs (vec_info *, poly_uint64 *);
 extern void vect_record_base_alignments (vec_info *);
 extern tree vect_create_data_ref_ptr (gimple *, tree, struct loop *, tree,

@@ -708,7 +708,7 @@ package body Sem_Ch6 is
          Set_Corresponding_Body (N, Defining_Entity (New_Body));
          Set_Corresponding_Spec (New_Body, Def_Id);
 
-         --  Within a generic pre-analyze the original expression for name
+         --  Within a generic preanalyze the original expression for name
          --  capture. The body is also generated but plays no role in
          --  this because it is not part of the original source.
 
@@ -794,8 +794,8 @@ package body Sem_Ch6 is
             Form_New_Spec : Entity_Id;
             Form_Old_Def  : Entity_Id;
             Form_Old_Spec : Entity_Id;
-         begin
 
+         begin
             Form_New_Spec := First (Parameter_Specifications (New_Spec));
             Form_Old_Spec := First (Parameter_Specifications (Spec));
 
@@ -809,13 +809,10 @@ package body Sem_Ch6 is
                --  formals we exempt them from unreferenced warnings by marking
                --  them as always referenced.
 
-               Set_Referenced
-                 (Form_Old_Def,
-                  (Is_Formal (Form_Old_Def)
-                     and then Is_Controlling_Formal (Form_Old_Def))
-                   or else Referenced (Form_Old_Def));
-                   --  or else Is_Dispatching_Operation
-                   --          (Corresponding_Spec (New_Body)));
+               Set_Referenced (Form_Old_Def,
+                 (Is_Formal (Form_Old_Def)
+                    and then Is_Controlling_Formal (Form_Old_Def))
+                  or else Referenced (Form_Old_Def));
 
                Next (Form_New_Spec);
                Next (Form_Old_Spec);
@@ -3043,11 +3040,16 @@ package body Sem_Ch6 is
 
          --  If procedure with No_Return, check returns
 
-         elsif Nkind (Body_Spec) = N_Procedure_Specification
-           and then Present (Spec_Id)
-           and then No_Return (Spec_Id)
-         then
-            Check_Returns (HSS, 'P', Missing_Ret, Spec_Id);
+         elsif Nkind (Body_Spec) = N_Procedure_Specification then
+            if Present (Spec_Id) then
+               Id := Spec_Id;
+            else
+               Id := Body_Id;
+            end if;
+
+            if No_Return (Id) then
+               Check_Returns (HSS, 'P', Missing_Ret, Id);
+            end if;
          end if;
 
          --  Special checks in SPARK mode
@@ -3646,7 +3648,7 @@ package body Sem_Ch6 is
 
                if No (Spec_Id) and then GNATprove_Mode
 
-                 --  Inlining does not apply during pre-analysis of code
+                 --  Inlining does not apply during preanalysis of code
 
                  and then Full_Analysis
 
@@ -3843,9 +3845,8 @@ package body Sem_Ch6 is
 
       --  If the subprogram has a class-wide clone, build its body as a copy
       --  of the original body, and rewrite body of original subprogram as a
-      --  wrapper that calls the clone.
-      --  If N is a stub, this construction will take place when the proper
-      --  body is analyzed.
+      --  wrapper that calls the clone. If N is a stub, this construction will
+      --  take place when the proper body is analyzed.
 
       if Present (Spec_Id)
         and then Present (Class_Wide_Clone (Spec_Id))

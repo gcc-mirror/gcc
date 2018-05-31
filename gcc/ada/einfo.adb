@@ -629,9 +629,9 @@ package body Einfo is
    --    Suppress_Elaboration_Warnings   Flag303
    --    Is_Elaboration_Warnings_OK_Id   Flag304
    --    Is_Activation_Record            Flag305
+   --    Needs_Activation_Record         Flag306
+   --    Is_Loop_Parameter               Flag307
 
-   --    (unused)                        Flag306
-   --    (unused)                        Flag307
    --    (unused)                        Flag308
    --    (unused)                        Flag309
 
@@ -743,7 +743,6 @@ package body Einfo is
    function Activation_Record_Component (Id : E) return E is
    begin
       pragma Assert (Ekind_In (Id, E_Constant,
-                                   E_Discriminant,
                                    E_In_Parameter,
                                    E_In_Out_Parameter,
                                    E_Loop_Parameter,
@@ -2487,6 +2486,11 @@ package body Einfo is
       return Flag194 (Id);
    end Is_Local_Anonymous_Access;
 
+   function Is_Loop_Parameter (Id : E) return B is
+   begin
+      return Flag307 (Id);
+   end Is_Loop_Parameter;
+
    function Is_Machine_Code_Subprogram (Id : E) return B is
    begin
       pragma Assert (Is_Subprogram (Id));
@@ -2869,6 +2873,11 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag208 (Id);
    end Must_Have_Preelab_Init;
+
+   function Needs_Activation_Record (Id : E) return B is
+   begin
+      return Flag306 (Id);
+   end Needs_Activation_Record;
 
    function Needs_Debug_Info (Id : E) return B is
    begin
@@ -3952,7 +3961,6 @@ package body Einfo is
    procedure Set_Activation_Record_Component (Id : E; V : E) is
    begin
       pragma Assert (Ekind_In (Id, E_Constant,
-                                   E_Discriminant,
                                    E_In_Parameter,
                                    E_In_Out_Parameter,
                                    E_Loop_Parameter,
@@ -5712,6 +5720,11 @@ package body Einfo is
       Set_Flag25 (Id, V);
    end Set_Is_Limited_Record;
 
+   procedure Set_Is_Loop_Parameter (Id : E; V : B := True) is
+   begin
+      Set_Flag307 (Id, V);
+   end Set_Is_Loop_Parameter;
+
    procedure Set_Is_Machine_Code_Subprogram (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Subprogram (Id));
@@ -6107,6 +6120,11 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag208 (Id, V);
    end Set_Must_Have_Preelab_Init;
+
+   procedure Set_Needs_Activation_Record (Id : E; V : B := True) is
+   begin
+      Set_Flag306 (Id, V);
+   end Set_Needs_Activation_Record;
 
    procedure Set_Needs_Debug_Info (Id : E; V : B := True) is
    begin
@@ -8737,6 +8755,15 @@ package body Einfo is
       return N;
    end Number_Formals;
 
+   ------------------------
+   -- Object_Size_Clause --
+   ------------------------
+
+   function Object_Size_Clause (Id : E) return N is
+   begin
+      return Get_Attribute_Definition_Clause (Id, Attribute_Object_Size);
+   end Object_Size_Clause;
+
    --------------------
    -- Parameter_Mode --
    --------------------
@@ -9857,6 +9884,7 @@ package body Einfo is
       W ("Is_Limited_Interface",            Flag197 (Id));
       W ("Is_Limited_Record",               Flag25  (Id));
       W ("Is_Local_Anonymous_Access",       Flag194 (Id));
+      W ("Is_Loop_Parameter",               Flag307 (Id));
       W ("Is_Machine_Code_Subprogram",      Flag137 (Id));
       W ("Is_Non_Static_Subtype",           Flag109 (Id));
       W ("Is_Null_Init_Proc",               Flag178 (Id));
@@ -9915,6 +9943,7 @@ package body Einfo is
       W ("May_Inherit_Delayed_Rep_Aspects", Flag262 (Id));
       W ("Must_Be_On_Byte_Boundary",        Flag183 (Id));
       W ("Must_Have_Preelab_Init",          Flag208 (Id));
+      W ("Needs_Activation_Record",         Flag306 (Id));
       W ("Needs_Debug_Info",                Flag147 (Id));
       W ("Needs_No_Actuals",                Flag22  (Id));
       W ("Never_Set_In_Source",             Flag115 (Id));

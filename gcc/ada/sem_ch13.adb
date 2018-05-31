@@ -119,7 +119,7 @@ package body Sem_Ch13 is
    --  Build the declaration for a predicate function. The declaration is built
    --  at the end of the declarative part containing the type definition, which
    --  may be before the freeze point of the type. The predicate expression is
-   --  pre-analyzed at this point, to catch visibility errors.
+   --  preanalyzed at this point, to catch visibility errors.
 
    procedure Build_Predicate_Functions (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ),
@@ -3012,6 +3012,19 @@ package body Sem_Ch13 is
 
                   goto Continue;
                end Initializes;
+
+               --  Max_Entry_Queue_Depth
+
+               when Aspect_Max_Entry_Queue_Depth =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name => Name_Max_Entry_Queue_Depth);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
 
                --  Max_Queue_Length
 
@@ -8839,7 +8852,7 @@ package body Sem_Ch13 is
 
             --  within a generic unit, prevent a double analysis of the body
             --  which will not be marked analyzed yet. This will happen when
-            --  the freeze node is created during the pre-analysis of an
+            --  the freeze node is created during the preanalysis of an
             --  expression function.
 
             if Inside_A_Generic then
@@ -9507,6 +9520,7 @@ package body Sem_Ch13 is
             | Aspect_Implicit_Dereference
             | Aspect_Initial_Condition
             | Aspect_Initializes
+            | Aspect_Max_Entry_Queue_Depth
             | Aspect_Max_Queue_Length
             | Aspect_Obsolescent
             | Aspect_Part_Of
@@ -9643,7 +9657,7 @@ package body Sem_Ch13 is
                --  from the node, since we may have rewritten things and
                --  substituted an identifier representing the rewrite.
 
-               if Original_Node (Nod) /= Nod then
+               if Is_Rewrite_Substitution (Nod) then
                   Check_Expr_Constants (Original_Node (Nod));
 
                   --  If the node is an object declaration without initial

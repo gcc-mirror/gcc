@@ -221,6 +221,11 @@ private
    --  with overloading ambiguities in the body if we tried to use Time as an
    --  internal computational type.
 
+   function Epoch_Offset return Time_Rep;
+   pragma Inline (Epoch_Offset);
+   --  Return the difference between 2150-1-1 UTC and 1970-1-1 UTC expressed in
+   --  nanoseconds. Note that year 2100 is non-leap.
+
    Days_In_Month : constant array (Month_Number) of Day_Number :=
                      (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
    --  Days in month for non-leap year, leap year case is adjusted in code

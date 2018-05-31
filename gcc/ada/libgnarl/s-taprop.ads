@@ -340,9 +340,9 @@ package System.Task_Primitives.Operations is
 
    function Monotonic_Clock return Duration;
    pragma Inline (Monotonic_Clock);
-   --  Returns "absolute" time, represented as an offset relative to "the
-   --  Epoch", which is Jan 1, 1970. This clock implementation is immune to
-   --  the system's clock changes.
+   --  Returns "absolute" time, represented as an offset relative to an
+   --  unspecified Epoch. This clock implementation is immune to the
+   --  system's clock changes.
 
    function RT_Resolution return Duration;
    pragma Inline (RT_Resolution);
