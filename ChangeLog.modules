@@ -1,5 +1,14 @@
 2018-05-31  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (bytes_in::begin): Add location_t arg.
+	(elf_in::begin): Add location args.
+	(trees_in::{tree_node,finish}): Use error_at.
+	(module_server::module_server): Likewise.
+	(module_state::read*): Adjust.
+	(module_state::{do_import,lazy_load}): Don't set input_location.
+	(finish_module): Likewise.
+
 	ASYNC loading & server cookie.
 	gcc/cp/
 	* cp-tree.h (reseat_module_loc, module_from_loc): Delete.

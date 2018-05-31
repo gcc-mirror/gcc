@@ -599,7 +599,7 @@ public:
   }
 
 public:
-  bool begin ();
+  bool begin (location_t);
   bool end ()
   {
     release ();
@@ -819,7 +819,7 @@ elf_in::find (const char *sname)
    tables.  Return true on success.  */
 
 bool
-elf_in::begin ()
+elf_in::begin (location_t loc)
 {
   if (!parent::begin ())
     return false;
@@ -833,7 +833,7 @@ elf_in::begin ()
       || header.ident.magic[2] != 'L'
       || header.ident.magic[3] != 'F')
     {
-      error ("not Encapsulated Lazy Records of Named Declarations");
+      error_at (loc, "not Encapsulated Lazy Records of Named Declarations");
       return false;
     }
 
@@ -846,7 +846,7 @@ elf_in::begin ()
       || header.machine != EM_NONE
       || header.ident.osabi != OSABI_NONE)
     {
-      error ("unexpected encapsulation format or type");
+      error_at (loc, "unexpected encapsulation format or type");
       return false;
     }
 
@@ -856,7 +856,7 @@ elf_in::begin ()
     {
     malformed:
       set_error (e);
-      error ("encapsulation is malformed");
+      error_at (loc, "encapsulation is malformed");
       return false;
     }
 
@@ -1317,9 +1317,9 @@ public:
 
 public:
   /* Begin reading a named section.  */
-  bool begin (elf_in *src, const char *name);
+  bool begin (location_t loc, elf_in *src, const char *name);
   /* Begin reading a numbered section with optional name.  */
-  bool begin (elf_in *src, unsigned, const char * = NULL);
+  bool begin (location_t loc, elf_in *src, unsigned, const char * = NULL);
   /* Complete reading a buffer.  Propagate errors and return true on
      success.  */
   bool end (elf_in *src)
@@ -1847,17 +1847,17 @@ bytes_out::printf (const char *format, ...)
    Data always checked for CRC.  */
 
 bool
-bytes_in::begin (elf_in *source, const char *name)
+bytes_in::begin (location_t loc, elf_in *source, const char *name)
 {
   unsigned snum = source->find (name);
 
-  return begin (source, snum, name);
+  return begin (loc, source, snum, name);
 }
 
 /* Begin reading section numbered SNUM with NAME (may be NULL).  */
 
 bool
-bytes_in::begin (elf_in *source, unsigned snum, const char *name)
+bytes_in::begin (location_t loc, elf_in *source, unsigned snum, const char *name)
 {
   parent::begin ();
 
@@ -1868,9 +1868,9 @@ bytes_in::begin (elf_in *source, unsigned snum, const char *name)
       data = data::release (data);
       source->set_error (elf::E_BAD_DATA);
       if (name)
-	error ("section %qs is missing or corrupted", name);
+	error_at (loc, "section %qs is missing or corrupted", name);
       else
-	error ("section #%u is missing or corrupted", snum);
+	error_at (loc, "section #%u is missing or corrupted", snum);
       return false;
     }
   return true;
@@ -3439,7 +3439,7 @@ trees_in::finish (tree t)
 	  tree old = merge_global_decl (ctx, state->mod, t);
 
 	  if (!old)
-	    error ("failed to merge %#qD", t);
+	    error_at (state->loc, "failed to merge %#qD", t);
 	  else
 	    dump () && dump ("%s decl %N%S, (%p)",
 			     old == t ? "New" : "Existing",
@@ -5774,9 +5774,9 @@ trees_in::tree_node ()
 
 	if (!res)
 	  {
-	    error ("failed to find %<%E%s%E@%E%>",
-		   ctx, &"::"[2 * (ctx == global_namespace)],
-		   name, module_name (owner));
+	    error_at (state->loc, "failed to find %<%E%s%E@%E%>",
+		      ctx, &"::"[2 * (ctx == global_namespace)],
+		      name, module_name (owner));
 	    set_overrun ();
 	  }
 	else if (TREE_CODE (res) != TYPE_DECL
@@ -5852,7 +5852,7 @@ trees_in::tree_node ()
 	unsigned c = u ();
 	if (c >= MAX_TREE_CODES)
 	  {
-	    error ("unknown tree code %qd" , c);
+	    error_at (state->loc, "unknown tree code %qd" , c);
 	    set_overrun ();
 	  }
 	tree_code code = tree_code (c);
@@ -6666,9 +6666,9 @@ module_server::module_server (location_t loc, const char *option)
 
   if (errmsg)
     {
-      error ("failed %s of module server %qs", errmsg, option);
+      error_at (loc, "failed %s of module server %qs", errmsg, option);
       errno = err;
-      inform (input_location, err < 0 ? "%s" : err > 0 ? "%m"
+      inform (loc, err < 0 ? "%s" : err > 0 ? "%m"
 	      : "here's a nickel, kid.  Get yourself a real computer",
 	      hstrerror (-err));
       kill (loc);
@@ -7374,7 +7374,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
 {
   bytes_in cfg;
 
-  if (!cfg.begin (from, MOD_SNAME_PFX ".cfg"))
+  if (!cfg.begin (loc, from, MOD_SNAME_PFX ".cfg"))
     return false;
 
   /* Check version.  */
@@ -8312,7 +8312,7 @@ module_state::read_cluster (unsigned snum)
 {
   trees_in sec (this, global_vec);
 
-  if (!sec.begin (from, snum))
+  if (!sec.begin (loc, from, snum))
     return false;
 
   dump () && dump ("Reading section:%u", snum);
@@ -8476,7 +8476,7 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
 {
   bytes_in sec;
 
-  if (!sec.begin (from, MOD_SNAME_PFX ".nms"))
+  if (!sec.begin (loc, from, MOD_SNAME_PFX ".nms"))
     return false;
 
   dump () && dump ("Reading namespaces");
@@ -8554,7 +8554,7 @@ module_state::read_bindings (auto_vec<tree> &spaces, const range_t &range)
 {
   bytes_in sec;
 
-  if (!sec.begin (from, MOD_SNAME_PFX ".bnd"))
+  if (!sec.begin (loc, from, MOD_SNAME_PFX ".bnd"))
     return false;
 
   dump () && dump ("Reading binding table");
@@ -8628,7 +8628,7 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 
   bytes_in sec;
 
-  if (!sec.begin (from, MOD_SNAME_PFX ".vld"))
+  if (!sec.begin (loc, from, MOD_SNAME_PFX ".vld"))
     return false;
 
   dump () && dump ("Reading unnamed");
@@ -8908,7 +8908,7 @@ module_state::read (FILE *stream, int e, bool check_crc)
   from = new elf_in (stream, e);
   lru = lazy_lru++;
   lazy_open--;
-  if (!from->begin ())
+  if (!from->begin (loc))
     return;
 
   range_t range;
@@ -9415,15 +9415,12 @@ module_state::do_import (char const *fname, bool check_crc)
       e = errno;
     }
 
-  location_t saved_loc = input_location;
-  input_location = loc;
   announce ("importing");
   vec_safe_push (importing, this);
   read (stream, e, check_crc);
   bool failed = check_read (direct && !modules_atom_p ());
   importing->pop ();
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
-  input_location = saved_loc;
 
   return !failed;
 }
@@ -9466,8 +9463,6 @@ module_state::freeze_an_elf ()
 bool
 module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
 {
-  location_t saved_loc = input_location;
-  input_location = loc;
   unsigned n = dump.push (this);
 
   unsigned snum = mslot->get_lazy ();
@@ -9483,7 +9478,6 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
   gcc_assert (!failed || !outermost);
  
   dump.pop (n);
-  input_location = saved_loc;
 
   return !failed;
 }
@@ -9685,8 +9679,6 @@ finish_module ()
 	  stream = fopen (state->filename, "wb");
 	  e = errno;
 	}
-      location_t saved_loc = input_location;
-      input_location = state->loc;
       unsigned n = dump.push (state);
       state->announce ("creating");
 
@@ -9698,7 +9690,6 @@ finish_module ()
 		  state->name, to.get_error ());
 
       dump.pop (n);
-      input_location = saved_loc;
       if (!errorcount)
 	module_server::export_done (state);
     }
