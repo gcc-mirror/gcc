@@ -4057,8 +4057,12 @@ package body Exp_Ch4 is
                Else_Expr : constant Node_Id := New_Op_Node (N_Op_Subtract,
                                                             Loc);
             begin
+               --  To prevent spurious visibility issues, convert all
+               --  operands to Standard.Unsigned.
+
                Set_Left_Opnd (Cond_Expr,
-                 New_Copy_Tree (Left_Opnd (N)));
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Left_Opnd (N))));
                Set_Right_Opnd (Cond_Expr,
                  Make_Integer_Literal (Loc, Mod_Minus_Right));
                Append_To (Exprs, Cond_Expr);
@@ -4180,7 +4184,8 @@ package body Exp_Ch4 is
                                                             Loc);
             begin
                Set_Left_Opnd (Cond_Expr,
-                 New_Copy_Tree (Left_Opnd (N)));
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Left_Opnd (N))));
                Set_Right_Opnd (Cond_Expr,
                  Make_Integer_Literal (Loc, Intval (Right_Opnd (N))));
                Append_To (Exprs, Cond_Expr);

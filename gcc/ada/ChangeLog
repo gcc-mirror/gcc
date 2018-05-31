@@ -1,3 +1,11 @@
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Modular_Addition, Expand_Modular_Subtraction):
+	Convert all operands of the generated code to Standard.Unsigned, to
+	prevent spurious visibility errors. This is needed when the generated
+	expansion involves a modular index type of an array type, and the index
+	type is not immediately visible.
+
 2018-05-30  Piotr Trojanek  <trojanek@adacore.com>
 
 	* einfo.ads (Package_Instantiation): Update comment after a routine
