@@ -3338,6 +3338,10 @@ package Einfo is
 --       a further subtype is obtained using variable bounds. This further
 --       subtype is still unsigned, but this cannot be determined by looking
 --       at its bounds or the bounds of the corresponding base type.
+--       For a subtype indication whose range is statically a null range,
+--       the flag is set if the lower bound is non-negative, but the flag
+--       cannot be used to determine the comparison operator to emit in the
+--       generated code: use the base type.
 
 --    Is_Uplevel_Referenced_Entity (Flag283)
 --       Defined in all entities. Used when unnesting subprograms to indicate
