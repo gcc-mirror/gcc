@@ -1,3 +1,7 @@
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Remove obsolete code.
+
 2018-05-31  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_ch6.adb (Check_Missing_Return): Handle procedures with no
