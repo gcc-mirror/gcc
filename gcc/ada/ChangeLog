@@ -1,3 +1,11 @@
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_String_Literal): If the type is a string type
+	whose component subtype has a static predicate, ensure that the
+	predicate is applied to each character by expanding the string into the
+	equivalent aggregate. This is also done if the component subtype is
+	constrained.
+
 2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Call_to_gnu): Remove obsolete code.
