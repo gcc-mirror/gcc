@@ -1,3 +1,10 @@
+2018-05-31  Sergey Rybin  <rybin@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: gnatelim does not need
+	that the main unit to be built before the call, now it computes the
+	closure of the main unit itself.
+	* gnat_ugn.texi: Regenerate.
+
 2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Structural_Record_Layout): Set First to false

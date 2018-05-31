@@ -22155,7 +22155,7 @@ appropriate options.
 
 
 @node Overflow Check Handling in GNAT,Performing Dimensionality Analysis in GNAT,Improving Performance,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id55}@anchor{16a}@anchor{gnat_ugn/gnat_and_program_execution overflow-check-handling-in-gnat}@anchor{27}
+@anchor{gnat_ugn/gnat_and_program_execution id53}@anchor{16a}@anchor{gnat_ugn/gnat_and_program_execution overflow-check-handling-in-gnat}@anchor{27}
 @section Overflow Check Handling in GNAT
 
 
@@ -22171,7 +22171,7 @@ This section explains how to control the handling of overflow checks.
 @end menu
 
 @node Background,Management of Overflows in GNAT,,Overflow Check Handling in GNAT
-@anchor{gnat_ugn/gnat_and_program_execution id56}@anchor{1c1}@anchor{gnat_ugn/gnat_and_program_execution background}@anchor{1c2}
+@anchor{gnat_ugn/gnat_and_program_execution id54}@anchor{1c1}@anchor{gnat_ugn/gnat_and_program_execution background}@anchor{1c2}
 @subsection Background
 
 
@@ -22297,7 +22297,7 @@ exception raised because of the intermediate overflow (and we really
 would prefer this precondition to be considered True at run time).
 
 @node Management of Overflows in GNAT,Specifying the Desired Mode,Background,Overflow Check Handling in GNAT
-@anchor{gnat_ugn/gnat_and_program_execution id57}@anchor{1c3}@anchor{gnat_ugn/gnat_and_program_execution management-of-overflows-in-gnat}@anchor{1c4}
+@anchor{gnat_ugn/gnat_and_program_execution id55}@anchor{1c3}@anchor{gnat_ugn/gnat_and_program_execution management-of-overflows-in-gnat}@anchor{1c4}
 @subsection Management of Overflows in GNAT
 
 
@@ -22411,7 +22411,7 @@ out in the normal manner (with infinite values always failing all
 range checks).
 
 @node Specifying the Desired Mode,Default Settings,Management of Overflows in GNAT,Overflow Check Handling in GNAT
-@anchor{gnat_ugn/gnat_and_program_execution specifying-the-desired-mode}@anchor{f8}@anchor{gnat_ugn/gnat_and_program_execution id58}@anchor{1c5}
+@anchor{gnat_ugn/gnat_and_program_execution id56}@anchor{1c5}@anchor{gnat_ugn/gnat_and_program_execution specifying-the-desired-mode}@anchor{f8}
 @subsection Specifying the Desired Mode
 
 
@@ -22535,7 +22535,7 @@ causing all intermediate operations to be computed using the base
 type (@code{STRICT} mode).
 
 @node Default Settings,Implementation Notes,Specifying the Desired Mode,Overflow Check Handling in GNAT
-@anchor{gnat_ugn/gnat_and_program_execution id59}@anchor{1c6}@anchor{gnat_ugn/gnat_and_program_execution default-settings}@anchor{1c7}
+@anchor{gnat_ugn/gnat_and_program_execution id57}@anchor{1c6}@anchor{gnat_ugn/gnat_and_program_execution default-settings}@anchor{1c7}
 @subsection Default Settings
 
 
@@ -22582,7 +22582,7 @@ checking, but it has no effect on the method used for computing
 intermediate results.
 
 @node Implementation Notes,,Default Settings,Overflow Check Handling in GNAT
-@anchor{gnat_ugn/gnat_and_program_execution implementation-notes}@anchor{1c8}@anchor{gnat_ugn/gnat_and_program_execution id60}@anchor{1c9}
+@anchor{gnat_ugn/gnat_and_program_execution implementation-notes}@anchor{1c8}@anchor{gnat_ugn/gnat_and_program_execution id58}@anchor{1c9}
 @subsection Implementation Notes
 
 
@@ -22630,7 +22630,7 @@ platforms for which @code{Long_Long_Integer} is 64-bits (nearly all GNAT
 platforms).
 
 @node Performing Dimensionality Analysis in GNAT,Stack Related Facilities,Overflow Check Handling in GNAT,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id61}@anchor{16b}@anchor{gnat_ugn/gnat_and_program_execution performing-dimensionality-analysis-in-gnat}@anchor{28}
+@anchor{gnat_ugn/gnat_and_program_execution performing-dimensionality-analysis-in-gnat}@anchor{28}@anchor{gnat_ugn/gnat_and_program_execution id59}@anchor{16b}
 @section Performing Dimensionality Analysis in GNAT
 
 
@@ -23003,7 +23003,7 @@ passing (the dimension vector for the actual parameter must be equal to the
 dimension vector for the formal parameter).
 
 @node Stack Related Facilities,Memory Management Issues,Performing Dimensionality Analysis in GNAT,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution stack-related-facilities}@anchor{29}@anchor{gnat_ugn/gnat_and_program_execution id62}@anchor{16c}
+@anchor{gnat_ugn/gnat_and_program_execution stack-related-facilities}@anchor{29}@anchor{gnat_ugn/gnat_and_program_execution id60}@anchor{16c}
 @section Stack Related Facilities
 
 
@@ -23019,7 +23019,7 @@ particular, it deals with dynamic and static stack usage measurements.
 @end menu
 
 @node Stack Overflow Checking,Static Stack Usage Analysis,,Stack Related Facilities
-@anchor{gnat_ugn/gnat_and_program_execution id63}@anchor{1ca}@anchor{gnat_ugn/gnat_and_program_execution stack-overflow-checking}@anchor{f4}
+@anchor{gnat_ugn/gnat_and_program_execution id61}@anchor{1ca}@anchor{gnat_ugn/gnat_and_program_execution stack-overflow-checking}@anchor{f4}
 @subsection Stack Overflow Checking
 
 
@@ -23064,7 +23064,7 @@ Consequently, to modify the size of the environment task please refer to your
 operating system documentation.
 
 @node Static Stack Usage Analysis,Dynamic Stack Usage Analysis,Stack Overflow Checking,Stack Related Facilities
-@anchor{gnat_ugn/gnat_and_program_execution id64}@anchor{1cb}@anchor{gnat_ugn/gnat_and_program_execution static-stack-usage-analysis}@anchor{f5}
+@anchor{gnat_ugn/gnat_and_program_execution static-stack-usage-analysis}@anchor{f5}@anchor{gnat_ugn/gnat_and_program_execution id62}@anchor{1cb}
 @subsection Static Stack Usage Analysis
 
 
@@ -23113,7 +23113,7 @@ subprogram whose stack usage might be larger than the specified amount of
 bytes.  The wording is in keeping with the qualifier documented above.
 
 @node Dynamic Stack Usage Analysis,,Static Stack Usage Analysis,Stack Related Facilities
-@anchor{gnat_ugn/gnat_and_program_execution id65}@anchor{1cc}@anchor{gnat_ugn/gnat_and_program_execution dynamic-stack-usage-analysis}@anchor{121}
+@anchor{gnat_ugn/gnat_and_program_execution dynamic-stack-usage-analysis}@anchor{121}@anchor{gnat_ugn/gnat_and_program_execution id63}@anchor{1cc}
 @subsection Dynamic Stack Usage Analysis
 
 
@@ -23192,7 +23192,7 @@ The package @code{GNAT.Task_Stack_Usage} provides facilities to get
 stack-usage reports at run time. See its body for the details.
 
 @node Memory Management Issues,,Stack Related Facilities,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id66}@anchor{16d}@anchor{gnat_ugn/gnat_and_program_execution memory-management-issues}@anchor{2a}
+@anchor{gnat_ugn/gnat_and_program_execution id64}@anchor{16d}@anchor{gnat_ugn/gnat_and_program_execution memory-management-issues}@anchor{2a}
 @section Memory Management Issues
 
 
@@ -23208,7 +23208,7 @@ incorrect uses of access values (including 'dangling references').
 @end menu
 
 @node Some Useful Memory Pools,The GNAT Debug Pool Facility,,Memory Management Issues
-@anchor{gnat_ugn/gnat_and_program_execution id67}@anchor{1cd}@anchor{gnat_ugn/gnat_and_program_execution some-useful-memory-pools}@anchor{1ce}
+@anchor{gnat_ugn/gnat_and_program_execution id65}@anchor{1cd}@anchor{gnat_ugn/gnat_and_program_execution some-useful-memory-pools}@anchor{1ce}
 @subsection Some Useful Memory Pools
 
 
@@ -23289,7 +23289,7 @@ for T1'Storage_Size use 10_000;
 @end quotation
 
 @node The GNAT Debug Pool Facility,,Some Useful Memory Pools,Memory Management Issues
-@anchor{gnat_ugn/gnat_and_program_execution id68}@anchor{1cf}@anchor{gnat_ugn/gnat_and_program_execution the-gnat-debug-pool-facility}@anchor{1d0}
+@anchor{gnat_ugn/gnat_and_program_execution id66}@anchor{1cf}@anchor{gnat_ugn/gnat_and_program_execution the-gnat-debug-pool-facility}@anchor{1d0}
 @subsection The GNAT Debug Pool Facility
 
 
