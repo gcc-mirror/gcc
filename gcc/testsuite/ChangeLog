@@ -1,3 +1,7 @@
+2018-05-31  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/tagged1.adb, gnat.dg/tagged1.ads: New testcase.
+
 2018-05-31  Sameera Deshpande  <sameera.deshpande@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vld1x3.c: New test for

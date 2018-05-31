@@ -877,6 +877,10 @@ package Sem_Util is
    --  If the state space is that of a package, Pack_Id denotes its entity,
    --  otherwise Pack_Id is Empty.
 
+   function Find_Primitive_Eq (Typ : Entity_Id) return Entity_Id;
+   --  Locate primitive equality for type if it exists. Return Empty if it is
+   --  not available.
+
    function Find_Specific_Type (CW : Entity_Id) return Entity_Id;
    --  Find specific type of a class-wide type, and handle the case of an
    --  incomplete type coming either from a limited_with clause or from an

@@ -1,3 +1,10 @@
+2018-05-31  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Find_Primitive_Eq): New subprogram.
+	* exp_ch4.adb (Expand_Composite_Equality): Use the new subprogram
+	Find_Primitive_Eq to search for the primitive of types whose underlying
+	type is a tagged type.
+
 2018-05-31  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma.Check_Loop_Pragma_Placement): Inverse
