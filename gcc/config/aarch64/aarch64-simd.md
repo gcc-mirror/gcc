@@ -5056,6 +5056,70 @@
     }
 })
 
+
+(define_expand "aarch64_ld1x3<VALLDIF:mode>"
+  [(match_operand:CI 0 "register_operand" "=w")
+   (match_operand:DI 1 "register_operand" "r")
+   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_SIMD"
+{
+  rtx mem = gen_rtx_MEM (CImode, operands[1]);
+  emit_insn (gen_aarch64_ld1_x3_<VALLDIF:mode> (operands[0], mem));
+  DONE;
+})
+
+(define_insn "aarch64_ld1_x3_<mode>"
+  [(set (match_operand:CI 0 "register_operand" "=w")
+        (unspec:CI
+	  [(match_operand:CI 1 "aarch64_simd_struct_operand" "Utv")
+	   (unspec:VALLDIF [(const_int 3)] UNSPEC_VSTRUCTDUMMY)] UNSPEC_LD1))]
+  "TARGET_SIMD"
+  "ld1\\t{%S0.<Vtype> - %U0.<Vtype>}, %1"
+  [(set_attr "type" "neon_load1_3reg<q>")]
+)
+
+(define_expand "aarch64_st1x2<VALLDIF:mode>"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:OI 1 "register_operand" "")
+   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_SIMD"
+{
+  rtx mem = gen_rtx_MEM (OImode, operands[0]);
+  emit_insn (gen_aarch64_st1_x2_<VALLDIF:mode> (mem, operands[1]));
+  DONE;
+})
+
+(define_insn "aarch64_st1_x2_<mode>"
+   [(set (match_operand:OI 0 "aarch64_simd_struct_operand" "=Utv")
+	 (unspec:OI
+	  [(match_operand:OI 1 "register_operand" "w")
+          (unspec:VALLDIF [(const_int 2)] UNSPEC_VSTRUCTDUMMY)] UNSPEC_ST1))]
+  "TARGET_SIMD"
+  "st1\\t{%S1.<Vtype> - %T1.<Vtype>}, %0"
+  [(set_attr "type" "neon_store1_2reg<q>")]
+)
+
+(define_expand "aarch64_st1x3<VALLDIF:mode>"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:CI 1 "register_operand" "")
+   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_SIMD"
+{
+  rtx mem = gen_rtx_MEM (CImode, operands[0]);
+  emit_insn (gen_aarch64_st1_x3_<VALLDIF:mode> (mem, operands[1]));
+  DONE;
+})
+
+(define_insn "aarch64_st1_x3_<mode>"
+   [(set (match_operand:CI 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:CI
+         [(match_operand:CI 1 "register_operand" "w")
+	  (unspec:VALLDIF [(const_int 3)] UNSPEC_VSTRUCTDUMMY)] UNSPEC_ST1))]
+  "TARGET_SIMD"
+  "st1\\t{%S1.<Vtype> - %U1.<Vtype>}, %0"
+  [(set_attr "type" "neon_store1_3reg<q>")]
+)
+
 (define_insn "*aarch64_mov<mode>"
   [(set (match_operand:VSTRUCT 0 "aarch64_simd_nonimmediate_operand" "=w,Utv,w")
 	(match_operand:VSTRUCT 1 "aarch64_simd_general_operand" " w,w,Utv"))]

@@ -1,3 +1,12 @@
+2018-05-31  Sameera Deshpande  <sameera.deshpande@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x3.c: New test for
+	vld1x3 intrinsics for aarch64.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x2.c: New test for
+	vst1x2 intrinsics for aarch64.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x3.c: New test for
+	vst1x3 intrinsics for aarch64.
+
 2018-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/77777
