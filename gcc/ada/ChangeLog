@@ -1,5 +1,10 @@
 2018-05-31  Piotr Trojanek  <trojanek@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma): Replace call to Unique_Defining_Entity
+	with a semantically equivalent call to Defining_Entity.
+
+2018-05-31  Piotr Trojanek  <trojanek@adacore.com>
+
 	* sem_prag.adb (Analyze_Pragma): Set Etype on the rewritten
 	Max_Queue_Length expression.
 
