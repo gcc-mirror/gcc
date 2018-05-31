@@ -1517,6 +1517,7 @@ package body Repinfo is
                if Is_Extension then
                   List_Structural_Record_Layout
                     (Base_Type (Parent_Subtype (Ent)), Outer_Ent);
+                  First := False;
 
                   if Present (Record_Extension_Part (Definition)) then
                      Definition := Record_Extension_Part (Definition);
