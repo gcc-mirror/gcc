@@ -1,3 +1,9 @@
+2018-05-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85829
+	* config/i386/x86-tune.def: Re-enable partial_reg_dependency
+	and movx for Haswell.
+
 2018-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
