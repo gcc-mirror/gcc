@@ -1,5 +1,13 @@
 2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/stack_usage1.adb: Replace -fstack-usage with -Wstack-usage.
+	* gnat.dg/stack_usage1b.adb: Likewise.
+	* gnat.dg/stack_usage1c.adb: Likewise.
+	* gnat.dg/stack_usage3.adb: Likewise.
+	* gnat.dg/stack_usage1_pkg.adb: Delete.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.dg/store_merging_10.c: Turn dg-do compile into dg-do run.
 	* gcc.dg/store_merging_11.c: Likewise.
 	* gcc.dg/store_merging_13.c: Likewise.
