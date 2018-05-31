@@ -3040,11 +3040,16 @@ package body Sem_Ch6 is
 
          --  If procedure with No_Return, check returns
 
-         elsif Nkind (Body_Spec) = N_Procedure_Specification
-           and then Present (Spec_Id)
-           and then No_Return (Spec_Id)
-         then
-            Check_Returns (HSS, 'P', Missing_Ret, Spec_Id);
+         elsif Nkind (Body_Spec) = N_Procedure_Specification then
+            if Present (Spec_Id) then
+               Id := Spec_Id;
+            else
+               Id := Body_Id;
+            end if;
+
+            if No_Return (Id) then
+               Check_Returns (HSS, 'P', Missing_Ret, Id);
+            end if;
          end if;
 
          --  Special checks in SPARK mode
