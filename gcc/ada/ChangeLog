@@ -1,3 +1,11 @@
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Object_Size_Clause): Declare.
+	* einfo.adb (Object_Size_Clause): New function.
+	* gcc-interface/utils.c (maybe_pad_type): Test Has_Size_Clause before
+	retrieving Size_Clause and post the warning on the object size clause
+	if Has_Object_Size_Clause is true.
+
 2018-05-31  Javier Miranda  <miranda@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Find_Primitive_Eq): New subprogram.

@@ -8755,6 +8755,15 @@ package body Einfo is
       return N;
    end Number_Formals;
 
+   ------------------------
+   -- Object_Size_Clause --
+   ------------------------
+
+   function Object_Size_Clause (Id : E) return N is
+   begin
+      return Get_Attribute_Definition_Clause (Id, Attribute_Object_Size);
+   end Object_Size_Clause;
+
    --------------------
    -- Parameter_Mode --
    --------------------

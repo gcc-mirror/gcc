@@ -1828,7 +1828,7 @@ package Einfo is
 
 --    Has_Object_Size_Clause (Flag172)
 --       Defined in entities for types and subtypes. Set if an Object_Size
---       clause has been processed for the type Used to prevent multiple
+--       clause has been processed for the type. Used to prevent multiple
 --       Object_Size clauses for a given entity.
 
 --    Has_Out_Or_In_Out_Parameter (Flag110)
@@ -3752,6 +3752,15 @@ package Einfo is
 --    Number_Formals (synthesized)
 --       Applies to subprograms and subprogram types. Yields the number of
 --       formals as a value of type Pos.
+
+--    Object_Size_Clause (synthesized)
+--       Applies to entities for types and subtypes. If an object size clause
+--       is present in the rep item chain for an entity then the attribute
+--       definition clause node is returned. Otherwise Object_Size_Clause
+--       returns Empty if no item is present. Usually this is only meaningful
+--       if the flag Has_Object_Size_Clause is set. This is because when the
+--       representation item chain is copied for a derived type, it can inherit
+--       an object size clause that is not applicable to the entity.
 
 --    OK_To_Rename (Flag247)
 --       Defined only in entities for variables. If this flag is set, it
@@ -5782,6 +5791,7 @@ package Einfo is
    --    Is_Access_Protected_Subprogram_Type (synth)
    --    Is_Atomic_Or_VFA                    (synth)
    --    Is_Controlled                       (synth)
+   --    Object_Size_Clause                  (synth)
    --    Partial_Invariant_Procedure         (synth)
    --    Predicate_Function                  (synth)
    --    Predicate_Function_M                (synth)
@@ -7673,6 +7683,7 @@ package Einfo is
    function Number_Dimensions                   (Id : E) return Pos;
    function Number_Entries                      (Id : E) return Nat;
    function Number_Formals                      (Id : E) return Pos;
+   function Object_Size_Clause                  (Id : E) return N;
    function Parameter_Mode                      (Id : E) return Formal_Kind;
    function Partial_Refinement_Constituents     (Id : E) return L;
    function Primitive_Operations                (Id : E) return L;

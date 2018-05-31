@@ -1,3 +1,7 @@
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/size_clause1.adb: New testcase.
+
 2018-05-31  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/tagged1.adb, gnat.dg/tagged1.ads: New testcase.
