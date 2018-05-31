@@ -1,3 +1,23 @@
+2018-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/atomic-17.c: New test.
+	* c-c++-common/gomp/atomic-18.c: New test.
+	* c-c++-common/gomp/atomic-19.c: New test.
+	* c-c++-common/gomp/atomic-20.c: New test.
+	* c-c++-common/gomp/atomic-21.c: New test.
+	* c-c++-common/gomp/atomic-22.c: New test.
+	* c-c++-common/gomp/critical-1.c: New test.
+	* c-c++-common/gomp/critical-2.c: New test.
+	* c-c++-common/gomp/requires-1.c: New test.
+	* c-c++-common/gomp/requires-2.c: New test.
+	* c-c++-common/gomp/requires-3.c: New test.
+	* c-c++-common/gomp/requires-4.c: New test.
+	* gcc.dg/gomp/atomic-5.c (f1): Add another expected error.
+	* g++.dg/gomp/atomic-18.C: New test.
+	* g++.dg/gomp/atomic-19.C: New test.
+	* g++.dg/gomp/atomic-5.C (f1): Add another expected error.
+	* g++.dg/gomp/critical-3.C: New test.
+
 2018-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/if-1.c (foo): Add some further tests.

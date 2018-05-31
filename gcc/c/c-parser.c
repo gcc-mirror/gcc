@@ -1459,6 +1459,7 @@ static void c_parser_omp_cancellation_point (c_parser *, enum pragma_context);
 static bool c_parser_omp_target (c_parser *, enum pragma_context, bool *);
 static void c_parser_omp_end_declare_target (c_parser *);
 static void c_parser_omp_declare (c_parser *, enum pragma_context);
+static void c_parser_omp_requires (c_parser *);
 static bool c_parser_omp_ordered (c_parser *, enum pragma_context, bool *);
 static void c_parser_oacc_routine (c_parser *, enum pragma_context);
 
@@ -11056,6 +11057,10 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       c_parser_omp_declare (parser, context);
       return false;
 
+    case PRAGMA_OMP_REQUIRES:
+      c_parser_omp_requires (parser);
+      return false;     
+
     case PRAGMA_OMP_ORDERED:
       return c_parser_omp_ordered (parser, context, if_p);
 
@@ -12457,9 +12462,10 @@ c_parser_omp_clause_hint (c_parser *parser, tree list)
 
       parens.skip_until_found_close (parser);
 
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+	  || TREE_CODE (t) != INTEGER_CST)
 	{
-	  c_parser_error (parser, "expected integer expression");
+	  c_parser_error (parser, "expected constant integer expression");
 	  return list;
 	}
 
@@ -15424,61 +15430,156 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
   tree lhs = NULL_TREE, rhs = NULL_TREE, v = NULL_TREE;
   tree lhs1 = NULL_TREE, rhs1 = NULL_TREE;
   tree stmt, orig_lhs, unfolded_lhs = NULL_TREE, unfolded_lhs1 = NULL_TREE;
-  enum tree_code code = OMP_ATOMIC, opcode = NOP_EXPR;
+  enum tree_code code = ERROR_MARK, opcode = NOP_EXPR;
+  enum omp_memory_order memory_order = OMP_MEMORY_ORDER_UNSPECIFIED;
   struct c_expr expr;
   location_t eloc;
   bool structured_block = false;
   bool swapped = false;
-  bool seq_cst = false;
   bool non_lvalue_p;
+  bool first = true;
+  tree clauses = NULL_TREE;
 
-  if (c_parser_next_token_is (parser, CPP_NAME))
+  while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     {
-      const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
-      if (!strcmp (p, "seq_cst"))
-	{
-	  seq_cst = true;
-	  c_parser_consume_token (parser);
-	  if (c_parser_next_token_is (parser, CPP_COMMA)
-	      && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
-	    c_parser_consume_token (parser);
-	}
-    }
-  if (c_parser_next_token_is (parser, CPP_NAME))
-    {
-      const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      if (!first && c_parser_next_token_is (parser, CPP_COMMA))
+	c_parser_consume_token (parser);
 
-      if (!strcmp (p, "read"))
-	code = OMP_ATOMIC_READ;
-      else if (!strcmp (p, "write"))
-	code = NOP_EXPR;
-      else if (!strcmp (p, "update"))
-	code = OMP_ATOMIC;
-      else if (!strcmp (p, "capture"))
-	code = OMP_ATOMIC_CAPTURE_NEW;
-      else
-	p = NULL;
-      if (p)
-	c_parser_consume_token (parser);
-    }
-  if (!seq_cst)
-    {
-      if (c_parser_next_token_is (parser, CPP_COMMA)
-	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
-	c_parser_consume_token (parser);
+      first = false;
 
       if (c_parser_next_token_is (parser, CPP_NAME))
 	{
 	  const char *p
 	    = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
-	  if (!strcmp (p, "seq_cst"))
+	  location_t cloc = c_parser_peek_token (parser)->location;
+	  enum tree_code new_code = ERROR_MARK;
+	  enum omp_memory_order new_memory_order
+	    = OMP_MEMORY_ORDER_UNSPECIFIED;
+
+	  if (!strcmp (p, "read"))
+	    new_code = OMP_ATOMIC_READ;
+	  else if (!strcmp (p, "write"))
+	    new_code = NOP_EXPR;
+	  else if (!strcmp (p, "update"))
+	    new_code = OMP_ATOMIC;
+	  else if (!strcmp (p, "capture"))
+	    new_code = OMP_ATOMIC_CAPTURE_NEW;
+	  else if (!strcmp (p, "seq_cst"))
+	    new_memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	  else if (!strcmp (p, "acq_rel"))
+	    new_memory_order = OMP_MEMORY_ORDER_ACQ_REL;
+	  else if (!strcmp (p, "release"))
+	    new_memory_order = OMP_MEMORY_ORDER_RELEASE;
+	  else if (!strcmp (p, "acquire"))
+	    new_memory_order = OMP_MEMORY_ORDER_ACQUIRE;
+	  else if (!strcmp (p, "relaxed"))
+	    new_memory_order = OMP_MEMORY_ORDER_RELAXED;
+	  else if (!strcmp (p, "hint"))
 	    {
-	      seq_cst = true;
 	      c_parser_consume_token (parser);
+	      clauses = c_parser_omp_clause_hint (parser, clauses);
+	      continue;
+	    }
+	  else
+	    {
+	      p = NULL;
+	      error_at (cloc, "expected %<read%>, %<write%>, %<update%>, "
+			      "%<capture%>, %<seq_cst%>, %<acq_rel%>, "
+			      "%<release%>, %<relaxed%> or %<hint%> clause");
+	    }
+	  if (p)
+	    {
+	      if (new_code != ERROR_MARK)
+		{
+		  if (code != ERROR_MARK)
+		    error_at (cloc, "too many atomic clauses");
+		  else
+		    code = new_code;
+		}
+	      else if (new_memory_order != OMP_MEMORY_ORDER_UNSPECIFIED)
+		{
+		  if (memory_order != OMP_MEMORY_ORDER_UNSPECIFIED)
+		    error_at (cloc, "too many memory order clauses");
+		  else
+		    memory_order = new_memory_order;
+		}
+	      c_parser_consume_token (parser);
+	      continue;
 	    }
 	}
+      break;
     }
   c_parser_skip_to_pragma_eol (parser);
+
+  if (code == ERROR_MARK)
+    code = OMP_ATOMIC;
+  if (memory_order == OMP_MEMORY_ORDER_UNSPECIFIED)
+    {
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask
+			       | OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER_USED);
+      switch ((enum omp_memory_order)
+	      (omp_requires_mask & OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER))
+	{
+	case OMP_MEMORY_ORDER_UNSPECIFIED:
+	case OMP_MEMORY_ORDER_RELAXED:
+	  memory_order = OMP_MEMORY_ORDER_RELAXED;
+	  break;
+	case OMP_MEMORY_ORDER_SEQ_CST:
+	  memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	  break;
+	case OMP_MEMORY_ORDER_ACQ_REL:
+	  switch (code)
+	    {
+	    case OMP_ATOMIC_READ:
+	      memory_order = OMP_MEMORY_ORDER_ACQUIRE;
+	      break;
+	    case NOP_EXPR: /* atomic write */
+	    case OMP_ATOMIC:
+	      memory_order = OMP_MEMORY_ORDER_RELEASE;
+	      break;
+	    default:
+	      memory_order = OMP_MEMORY_ORDER_ACQ_REL;
+	      break;
+	    }
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else
+    switch (code)
+      {
+      case OMP_ATOMIC_READ:
+	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
+	    || memory_order == OMP_MEMORY_ORDER_RELEASE)
+	  {
+	    error_at (loc, "%<#pragma omp atomic read%> incompatible with "
+			   "%<acq_rel%> or %<release%> clauses");
+	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	  }
+	break;
+      case NOP_EXPR: /* atomic write */
+	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
+	    || memory_order == OMP_MEMORY_ORDER_ACQUIRE)
+	  {
+	    error_at (loc, "%<#pragma omp atomic write%> incompatible with "
+			   "%<acq_rel%> or %<acquire%> clauses");
+	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	  }
+	break;
+      case OMP_ATOMIC:
+	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
+	    || memory_order == OMP_MEMORY_ORDER_ACQUIRE)
+	  {
+	    error_at (loc, "%<#pragma omp atomic update%> incompatible with "
+			   "%<acq_rel%> or %<acquire%> clauses");
+	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	  }
+	break;
+      default:
+	break;
+      }
 
   switch (code)
     {
@@ -15796,7 +15897,7 @@ done:
     }
   else
     stmt = c_finish_omp_atomic (loc, code, opcode, lhs, rhs, v, lhs1, rhs1,
-				swapped, seq_cst);
+				swapped, memory_order);
   if (stmt != error_mark_node)
     add_stmt (stmt);
 
@@ -15847,6 +15948,10 @@ c_parser_omp_critical (location_t loc, c_parser *parser, bool *if_p)
 	}
       else
 	c_parser_error (parser, "expected identifier");
+
+      if (c_parser_next_token_is (parser, CPP_COMMA)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
+	c_parser_consume_token (parser);
 
       clauses = c_parser_omp_all_clauses (parser,
 					  OMP_CRITICAL_CLAUSE_MASK,
@@ -17384,6 +17489,10 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context, bool *if_p)
       return false;
     }
 
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   if (c_parser_next_token_is (parser, CPP_NAME))
     {
       const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
@@ -18268,6 +18377,141 @@ c_parser_omp_declare (c_parser *parser, enum pragma_context context)
   c_parser_error (parser, "expected %<simd%> or %<reduction%> "
 			  "or %<target%>");
   c_parser_skip_to_pragma_eol (parser);
+}
+
+/* OpenMP 5.0
+   #pragma omp requires clauses[optseq] new-line  */
+
+static void
+c_parser_omp_requires (c_parser *parser)
+{
+  bool first = true;
+  enum omp_requires new_req = (enum omp_requires) 0;
+
+  c_parser_consume_pragma (parser);
+
+  location_t loc = c_parser_peek_token (parser)->location;
+  while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
+    {
+      if (!first && c_parser_next_token_is (parser, CPP_COMMA))
+	c_parser_consume_token (parser);
+
+      first = false;
+
+      if (c_parser_next_token_is (parser, CPP_NAME))
+	{
+	  const char *p
+	    = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	  location_t cloc = c_parser_peek_token (parser)->location;
+	  enum omp_requires this_req = (enum omp_requires) 0;
+
+	  if (!strcmp (p, "unified_address"))
+	    this_req = OMP_REQUIRES_UNIFIED_ADDRESS;
+	  else if (!strcmp (p, "unified_shared_memory"))
+	    this_req = OMP_REQUIRES_UNIFIED_SHARED_MEMORY;
+	  else if (!strcmp (p, "dynamic_allocators"))
+	    this_req = OMP_REQUIRES_DYNAMIC_ALLOCATORS;
+	  else if (!strcmp (p, "reverse_offload"))
+	    this_req = OMP_REQUIRES_REVERSE_OFFLOAD;
+	  else if (!strcmp (p, "atomic_default_mem_order"))
+	    {
+	      c_parser_consume_token (parser);
+
+	      matching_parens parens;
+	      if (parens.require_open (parser))
+		{
+		  if (c_parser_next_token_is (parser, CPP_NAME))
+		    {
+		      tree v = c_parser_peek_token (parser)->value;
+		      p = IDENTIFIER_POINTER (v);
+
+		      if (!strcmp (p, "seq_cst"))
+			this_req
+			  = (enum omp_requires) OMP_MEMORY_ORDER_SEQ_CST;
+		      else if (!strcmp (p, "relaxed"))
+			this_req
+			  = (enum omp_requires) OMP_MEMORY_ORDER_RELAXED;
+		      else if (!strcmp (p, "acq_rel"))
+			this_req
+			  = (enum omp_requires) OMP_MEMORY_ORDER_ACQ_REL;
+		    }
+		  if (this_req == 0)
+		    {
+		      error_at (c_parser_peek_token (parser)->location,
+				"expected %<seq_cst%>, %<relaxed%> or "
+				"%<acq_rel%>");
+		      if (c_parser_peek_2nd_token (parser)->type
+			  == CPP_CLOSE_PAREN)
+			c_parser_consume_token (parser);
+		    }
+		  else
+		    c_parser_consume_token (parser);
+
+		  parens.skip_until_found_close (parser);
+		  if (this_req == 0)
+		    {
+		      c_parser_skip_to_pragma_eol (parser, false);
+		      return;
+		    }
+		}
+	      p = NULL;
+	    }
+	  else
+	    {
+	      error_at (cloc, "expected %<unified_address%>, "
+			      "%<unified_shared_memory%>, "
+			      "%<dynamic_allocators%>, "
+			       "%<reverse_offload%> "
+			       "or %<atomic_default_mem_order%> clause");
+	      c_parser_skip_to_pragma_eol (parser, false);
+	      return;
+	    }
+	  if (p)
+	    c_parser_consume_token (parser);
+	  if (this_req)
+	    {
+	      if ((this_req & ~OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER) != 0)
+		{
+		  if ((this_req & new_req) != 0)
+		    error_at (cloc, "too many %qs clauses", p);
+		  if (this_req != OMP_REQUIRES_DYNAMIC_ALLOCATORS
+		      && (omp_requires_mask & OMP_REQUIRES_TARGET_USED) != 0)
+		    error_at (cloc, "%qs clause used lexically after first "
+				    "target construct or offloading API", p);
+		}
+	      else if ((new_req & OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER) != 0)
+		{
+		  error_at (cloc, "too many %qs clauses",
+			    "atomic_default_mem_order");
+		  this_req = (enum omp_requires) 0;
+		}
+	      else if ((omp_requires_mask
+			& OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER) != 0)
+		{
+		  error_at (cloc, "more than one %<atomic_default_mem_order%>"
+				  " clause in a single compilation unit");
+		  this_req
+		    = (enum omp_requires)
+		       (omp_requires_mask
+			& OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER);
+		}
+	      else if ((omp_requires_mask
+			& OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER_USED) != 0)
+		error_at (cloc, "%<atomic_default_mem_order%> clause used "
+				"lexically after first %<atomic%> construct "
+				"without memory order clause");
+	      new_req = (enum omp_requires) (new_req | this_req);
+	      omp_requires_mask
+		= (enum omp_requires) (omp_requires_mask | this_req);
+	      continue;
+	    }
+	}
+      break;
+    }
+  c_parser_skip_to_pragma_eol (parser);
+
+  if (new_req == 0)
+    error_at (loc, "%<pragma omp requires%> requires at least one clause");
 }
 
 /* OpenMP 4.5:

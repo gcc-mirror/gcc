@@ -192,8 +192,8 @@ enum gf_mask {
     GF_OMP_RETURN_NOWAIT	= 1 << 0,
 
     GF_OMP_SECTION_LAST		= 1 << 0,
-    GF_OMP_ATOMIC_NEED_VALUE	= 1 << 0,
-    GF_OMP_ATOMIC_SEQ_CST	= 1 << 1,
+    GF_OMP_ATOMIC_MEMORY_ORDER  = (1 << 3) - 1,
+    GF_OMP_ATOMIC_NEED_VALUE	= 1 << 3,
     GF_PREDICT_TAKEN		= 1 << 15
 };
 
@@ -1474,8 +1474,9 @@ gimple *gimple_build_omp_sections_switch (void);
 gomp_single *gimple_build_omp_single (gimple_seq, tree);
 gomp_target *gimple_build_omp_target (gimple_seq, int, tree);
 gomp_teams *gimple_build_omp_teams (gimple_seq, tree);
-gomp_atomic_load *gimple_build_omp_atomic_load (tree, tree);
-gomp_atomic_store *gimple_build_omp_atomic_store (tree);
+gomp_atomic_load *gimple_build_omp_atomic_load (tree, tree,
+						enum omp_memory_order);
+gomp_atomic_store *gimple_build_omp_atomic_store (tree, enum omp_memory_order);
 gtransaction *gimple_build_transaction (gimple_seq);
 extern void gimple_seq_add_stmt (gimple_seq *, gimple *);
 extern void gimple_seq_add_stmt_without_update (gimple_seq *, gimple *);
@@ -2317,26 +2318,27 @@ gimple_omp_atomic_set_need_value (gimple *g)
 }
 
 
-/* Return true if OMP atomic load/store statement G has the
-   GF_OMP_ATOMIC_SEQ_CST flag set.  */
+/* Return the memory order of the OMP atomic load/store statement G.  */
 
-static inline bool
-gimple_omp_atomic_seq_cst_p (const gimple *g)
+static inline enum omp_memory_order
+gimple_omp_atomic_memory_order (const gimple *g)
 {
   if (gimple_code (g) != GIMPLE_OMP_ATOMIC_LOAD)
     GIMPLE_CHECK (g, GIMPLE_OMP_ATOMIC_STORE);
-  return (gimple_omp_subcode (g) & GF_OMP_ATOMIC_SEQ_CST) != 0;
+  return (enum omp_memory_order)
+	 (gimple_omp_subcode (g) & GF_OMP_ATOMIC_MEMORY_ORDER);
 }
 
 
-/* Set the GF_OMP_ATOMIC_SEQ_CST flag on G.  */
+/* Set the memory order on G.  */
 
 static inline void
-gimple_omp_atomic_set_seq_cst (gimple *g)
+gimple_omp_atomic_set_memory_order (gimple *g, enum omp_memory_order mo)
 {
   if (gimple_code (g) != GIMPLE_OMP_ATOMIC_LOAD)
     GIMPLE_CHECK (g, GIMPLE_OMP_ATOMIC_STORE);
-  g->subcode |= GF_OMP_ATOMIC_SEQ_CST;
+  g->subcode = ((g->subcode & ~GF_OMP_ATOMIC_MEMORY_ORDER)
+		| (mo & GF_OMP_ATOMIC_MEMORY_ORDER));
 }
 
 

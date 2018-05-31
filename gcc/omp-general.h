@@ -89,4 +89,16 @@ extern bool offloading_function_p (tree fn);
 extern int oacc_get_fn_dim_size (tree fn, int axis);
 extern int oacc_get_ifn_dim_arg (const gimple *stmt);
 
+enum omp_requires {
+  OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER = 0xf,
+  OMP_REQUIRES_UNIFIED_ADDRESS = 0x10,
+  OMP_REQUIRES_UNIFIED_SHARED_MEMORY = 0x20,
+  OMP_REQUIRES_DYNAMIC_ALLOCATORS = 0x40,
+  OMP_REQUIRES_REVERSE_OFFLOAD = 0x80,
+  OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER_USED = 0x100,
+  OMP_REQUIRES_TARGET_USED = 0x200
+};
+
+extern GTY(()) enum omp_requires omp_requires_mask;
+
 #endif /* GCC_OMP_GENERAL_H */

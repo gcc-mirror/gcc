@@ -1,3 +1,16 @@
+2018-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_requires): New function.
+	(c_parser_pragma): Handle PRAGMA_OMP_REQUIRES.
+	(c_parser_omp_clause_hint): Require constant integer expression rather
+	than just integer expression.
+	(c_parser_omp_atomic): Parse hint and memory order clauses.  Handle
+	default memory order from requires directive if any.  Adjust
+	c_finish_omp_atomic caller.
+	(c_parser_omp_critical): Allow comma in between (name) and hint clause.
+	(c_parser_omp_target): Set OMP_REQUIRES_TARGET_USED bit in
+	omp_requires_mask.
+
 2018-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_depend): Parse mutexinoutset kind.

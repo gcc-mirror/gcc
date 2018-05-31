@@ -1,3 +1,12 @@
+2018-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_atomic): Replace bool seq_cst argument with
+	enum omp_memory_order memory_order.
+	* c-omp.c (c_finish_omp_atomic): Likewise.  Set OMP_ATOMIC_MEMORY_ORDER
+	instead of OMP_ATOMIC_SEQ_CST.
+	* c-pragma.c (omp_pragmas): Add requires.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_REQUIRES.
+
 2018-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_omp_split_clauses): Handle OMP_CLAUSE_NONTEMPORAL.  Handle

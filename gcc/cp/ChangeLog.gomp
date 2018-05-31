@@ -1,3 +1,29 @@
+2018-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (OMP_ATOMIC_DEPENDENT_P): Return true also for first
+	argument being OMP_CLAUSE.
+	(finish_omp_atomic): Remove seq_cst argument.  Add clauses and mo
+	arguments.
+	* parser.c (cp_parser_omp_atomic): Parse hint and memory order clauses.
+	Handle default memory order from requires directive if any.  Adjust
+	finish_omp_atomic caller.
+	(cp_parser_omp_critical): Allow comma in between (name) and hint
+	clause.
+	(cp_parser_omp_target): Set OMP_REQUIRES_TARGET_USED bit in
+	omp_requires_mask.
+	(cp_parser_omp_requires): New function.
+	(cp_parser_pragma): Handle PRAGMA_OMP_REQUIRES.
+	* pt.c (tsubst_expr) <case OMP_ATOMIC>: Call tsubst_omp_clauses
+	on clauses if any, adjust finish_omp_atomic caller.  Use
+	OMP_ATOMIC_MEMORY_ORDER rather than OMP_ATOMIC_SEQ_CST.
+	* semantics.c (finish_omp_clauses): Use error_at rather than
+	error for priority and hint clause diagnostics.  Fix pasto for
+	hint clause.  Diagnose hint expression that doesn't fold into
+	INTEGER_CST.
+	(finish_omp_atomic): Remove seq_cst argument.  Add clauses and mo
+	arguments.  Adjust c_finish_omp_atomic caller.  Stick clauses if
+	any into first argument of wrapping OMP_ATOMIC.
+
 2018-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_depend): Parse mutexinoutset kind.

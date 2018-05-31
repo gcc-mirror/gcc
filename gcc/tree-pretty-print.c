@@ -1270,6 +1270,34 @@ dump_block_node (pretty_printer *pp, tree block, int spc, dump_flags_t flags)
     }
 }
 
+/* Dump #pragma omp atomic memory order clause.  */
+
+void
+dump_omp_atomic_memory_order (pretty_printer *pp, enum omp_memory_order mo)
+{
+  switch (mo)
+    {
+    case OMP_MEMORY_ORDER_RELAXED:
+      pp_string (pp, " relaxed");
+      break;
+    case OMP_MEMORY_ORDER_SEQ_CST:
+      pp_string (pp, " seq_cst");
+      break;
+    case OMP_MEMORY_ORDER_ACQ_REL:
+      pp_string (pp, " acq_rel");
+      break;
+    case OMP_MEMORY_ORDER_ACQUIRE:
+      pp_string (pp, " acquire");
+      break;
+    case OMP_MEMORY_ORDER_RELEASE:
+      pp_string (pp, " release");
+      break;
+    case OMP_MEMORY_ORDER_UNSPECIFIED:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
 
 /* Dump the node NODE on the pretty_printer PP, SPC spaces of
    indent.  FLAGS specifies details to show in the dump (see TDF_* in
@@ -3196,8 +3224,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_ATOMIC:
       pp_string (pp, "#pragma omp atomic");
-      if (OMP_ATOMIC_SEQ_CST (node))
-	pp_string (pp, " seq_cst");
+      dump_omp_atomic_memory_order (pp, OMP_ATOMIC_MEMORY_ORDER (node));
       newline_and_indent (pp, spc + 2);
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
       pp_space (pp);
@@ -3208,8 +3235,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_ATOMIC_READ:
       pp_string (pp, "#pragma omp atomic read");
-      if (OMP_ATOMIC_SEQ_CST (node))
-	pp_string (pp, " seq_cst");
+      dump_omp_atomic_memory_order (pp, OMP_ATOMIC_MEMORY_ORDER (node));
       newline_and_indent (pp, spc + 2);
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
       pp_space (pp);
@@ -3218,8 +3244,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
       pp_string (pp, "#pragma omp atomic capture");
-      if (OMP_ATOMIC_SEQ_CST (node))
-	pp_string (pp, " seq_cst");
+      dump_omp_atomic_memory_order (pp, OMP_ATOMIC_MEMORY_ORDER (node));
       newline_and_indent (pp, spc + 2);
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
       pp_space (pp);

@@ -1130,7 +1130,8 @@ create_call_for_reduction_1 (reduction_info **slot, struct clsn_data *clsn_data)
 
   tmp_load = create_tmp_var (TREE_TYPE (TREE_TYPE (addr)));
   tmp_load = make_ssa_name (tmp_load);
-  load = gimple_build_omp_atomic_load (tmp_load, addr);
+  load = gimple_build_omp_atomic_load (tmp_load, addr,
+				       OMP_MEMORY_ORDER_RELAXED);
   SSA_NAME_DEF_STMT (tmp_load) = load;
   gsi = gsi_start_bb (new_bb);
   gsi_insert_after (&gsi, load, GSI_NEW_STMT);
@@ -1146,7 +1147,9 @@ create_call_for_reduction_1 (reduction_info **slot, struct clsn_data *clsn_data)
   name = force_gimple_operand_gsi (&gsi, x, true, NULL_TREE, true,
 				   GSI_CONTINUE_LINKING);
 
-  gsi_insert_after (&gsi, gimple_build_omp_atomic_store (name), GSI_NEW_STMT);
+  gimple *store = gimple_build_omp_atomic_store (name,
+						 OMP_MEMORY_ORDER_RELAXED);
+  gsi_insert_after (&gsi, store, GSI_NEW_STMT);
   return 1;
 }
 

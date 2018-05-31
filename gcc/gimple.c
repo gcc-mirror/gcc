@@ -1188,12 +1188,13 @@ gimple_build_omp_teams (gimple_seq body, tree clauses)
 /* Build a GIMPLE_OMP_ATOMIC_LOAD statement.  */
 
 gomp_atomic_load *
-gimple_build_omp_atomic_load (tree lhs, tree rhs)
+gimple_build_omp_atomic_load (tree lhs, tree rhs, enum omp_memory_order mo)
 {
   gomp_atomic_load *p
     = as_a <gomp_atomic_load *> (gimple_alloc (GIMPLE_OMP_ATOMIC_LOAD, 0));
   gimple_omp_atomic_load_set_lhs (p, lhs);
   gimple_omp_atomic_load_set_rhs (p, rhs);
+  gimple_omp_atomic_set_memory_order (p, mo);
   return p;
 }
 
@@ -1202,11 +1203,12 @@ gimple_build_omp_atomic_load (tree lhs, tree rhs)
    VAL is the value we are storing.  */
 
 gomp_atomic_store *
-gimple_build_omp_atomic_store (tree val)
+gimple_build_omp_atomic_store (tree val, enum omp_memory_order mo)
 {
   gomp_atomic_store *p
     = as_a <gomp_atomic_store *> (gimple_alloc (GIMPLE_OMP_ATOMIC_STORE, 0));
   gimple_omp_atomic_store_set_val (p, val);
+  gimple_omp_atomic_set_memory_order (p, mo);
   return p;
 }
 

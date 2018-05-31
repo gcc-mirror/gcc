@@ -2403,8 +2403,8 @@ dump_gimple_omp_atomic_load (pretty_printer *buffer, gomp_atomic_load *gs,
   else
     {
       pp_string (buffer, "#pragma omp atomic_load");
-      if (gimple_omp_atomic_seq_cst_p (gs))
-	pp_string (buffer, " seq_cst");
+      dump_omp_atomic_memory_order (buffer,
+				    gimple_omp_atomic_memory_order (gs));
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, " [needed]");
       newline_and_indent (buffer, spc + 2);
@@ -2435,9 +2435,10 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer,
     }
   else
     {
-      pp_string (buffer, "#pragma omp atomic_store ");
-      if (gimple_omp_atomic_seq_cst_p (gs))
-	pp_string (buffer, "seq_cst ");
+      pp_string (buffer, "#pragma omp atomic_store");
+      dump_omp_atomic_memory_order (buffer,
+				    gimple_omp_atomic_memory_order (gs));
+      pp_space (buffer);
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, "[needed] ");
       pp_left_paren (buffer);

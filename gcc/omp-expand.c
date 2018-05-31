@@ -6016,6 +6016,24 @@ expand_omp_synch (struct omp_region *region)
     }
 }
 
+/* Translate enum omp_memory_order to enum memmodel.  The two enums
+   are using different numbers so that OMP_MEMORY_ORDER_UNSPECIFIED
+   is 0.  */
+
+static enum memmodel
+omp_memory_order_to_memmodel (enum omp_memory_order mo)
+{
+  switch (mo)
+    {
+    case OMP_MEMORY_ORDER_RELAXED: return MEMMODEL_RELAXED;
+    case OMP_MEMORY_ORDER_ACQUIRE: return MEMMODEL_ACQUIRE;
+    case OMP_MEMORY_ORDER_RELEASE: return MEMMODEL_RELEASE;
+    case OMP_MEMORY_ORDER_ACQ_REL: return MEMMODEL_ACQ_REL;
+    case OMP_MEMORY_ORDER_SEQ_CST: return MEMMODEL_SEQ_CST;
+    default: gcc_unreachable ();
+    }
+}
+
 /* A subroutine of expand_omp_atomic.  Attempt to implement the atomic
    operation as a normal volatile load.  */
 
@@ -6047,11 +6065,9 @@ expand_omp_atomic_load (basic_block load_bb, tree addr,
   type = TREE_TYPE (loaded_val);
   itype = TREE_TYPE (TREE_TYPE (decl));
 
-  call = build_call_expr_loc (loc, decl, 2, addr,
-			      build_int_cst (NULL,
-					     gimple_omp_atomic_seq_cst_p (stmt)
-					     ? MEMMODEL_SEQ_CST
-					     : MEMMODEL_RELAXED));
+  enum omp_memory_order omo = gimple_omp_atomic_memory_order (stmt);
+  tree mo = build_int_cst (NULL, omp_memory_order_to_memmodel (omo));
+  call = build_call_expr_loc (loc, decl, 2, addr, mo);
   if (!useless_type_conversion_p (type, itype))
     call = fold_build1_loc (loc, VIEW_CONVERT_EXPR, type, call);
   call = build2_loc (loc, MODIFY_EXPR, void_type_node, loaded_val, call);
@@ -6122,11 +6138,9 @@ expand_omp_atomic_store (basic_block load_bb, tree addr,
 
   if (!useless_type_conversion_p (itype, type))
     stored_val = fold_build1_loc (loc, VIEW_CONVERT_EXPR, itype, stored_val);
-  call = build_call_expr_loc (loc, decl, 3, addr, stored_val,
-			      build_int_cst (NULL,
-					     gimple_omp_atomic_seq_cst_p (stmt)
-					     ? MEMMODEL_SEQ_CST
-					     : MEMMODEL_RELAXED));
+  enum omp_memory_order omo = gimple_omp_atomic_memory_order (stmt);
+  tree mo = build_int_cst (NULL, omp_memory_order_to_memmodel (omo));
+  call = build_call_expr_loc (loc, decl, 3, addr, stored_val, mo);
   if (exchange)
     {
       if (!useless_type_conversion_p (type, itype))
@@ -6167,7 +6181,6 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   enum tree_code code;
   bool need_old, need_new;
   machine_mode imode;
-  bool seq_cst;
 
   /* We expect to find the following sequences:
 
@@ -6200,7 +6213,9 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
     return false;
   need_new = gimple_omp_atomic_need_value_p (gsi_stmt (gsi));
   need_old = gimple_omp_atomic_need_value_p (last_stmt (load_bb));
-  seq_cst = gimple_omp_atomic_seq_cst_p (last_stmt (load_bb));
+  enum omp_memory_order omo
+    = gimple_omp_atomic_memory_order (last_stmt (load_bb));
+  enum memmodel mo = omp_memory_order_to_memmodel (omo);
   gcc_checking_assert (!need_old || !need_new);
 
   if (!operand_equal_p (gimple_assign_lhs (stmt), stored_val, 0))
@@ -6267,9 +6282,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
      use the RELAXED memory model.  */
   call = build_call_expr_loc (loc, decl, 3, addr,
 			      fold_convert_loc (loc, itype, rhs),
-			      build_int_cst (NULL,
-					     seq_cst ? MEMMODEL_SEQ_CST
-						     : MEMMODEL_RELAXED));
+			      build_int_cst (NULL, mo));
 
   if (need_old || need_new)
     {

@@ -11152,7 +11152,8 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
       != GS_ALL_DONE)
     return GS_ERROR;
 
-  loadstmt = gimple_build_omp_atomic_load (tmp_load, addr);
+  loadstmt = gimple_build_omp_atomic_load (tmp_load, addr,
+					   OMP_ATOMIC_MEMORY_ORDER (*expr_p));
   gimplify_seq_add_stmt (pre_p, loadstmt);
   if (rhs && gimplify_expr (&rhs, pre_p, NULL, is_gimple_val, fb_rvalue)
       != GS_ALL_DONE)
@@ -11160,13 +11161,9 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
 
   if (TREE_CODE (*expr_p) == OMP_ATOMIC_READ)
     rhs = tmp_load;
-  storestmt = gimple_build_omp_atomic_store (rhs);
+  storestmt
+    = gimple_build_omp_atomic_store (rhs, OMP_ATOMIC_MEMORY_ORDER (*expr_p));
   gimplify_seq_add_stmt (pre_p, storestmt);
-  if (OMP_ATOMIC_SEQ_CST (*expr_p))
-    {
-      gimple_omp_atomic_set_seq_cst (loadstmt);
-      gimple_omp_atomic_set_seq_cst (storestmt);
-    }
   switch (TREE_CODE (*expr_p))
     {
     case OMP_ATOMIC_READ:

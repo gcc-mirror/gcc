@@ -529,6 +529,17 @@ enum omp_clause_defaultmap_kind {
   OMP_CLAUSE_DEFAULTMAP_MASK = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1)
 };
 
+/* memory-order-clause on OpenMP atomic/flush constructs or
+   argument of atomic_default_mem_order clause.  */
+enum omp_memory_order {
+  OMP_MEMORY_ORDER_UNSPECIFIED,
+  OMP_MEMORY_ORDER_RELAXED,
+  OMP_MEMORY_ORDER_ACQUIRE,
+  OMP_MEMORY_ORDER_RELEASE,
+  OMP_MEMORY_ORDER_ACQ_REL,
+  OMP_MEMORY_ORDER_SEQ_CST
+};
+
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
    combined by bitwise-or to form the complete set of qualifiers for a
    type.  */
@@ -1021,6 +1032,9 @@ struct GTY(()) tree_base {
     /* Internal function code.  */
     enum internal_fn ifn;
 
+    /* OMP_ATOMIC* memory order.  */
+    enum omp_memory_order omp_atomic_memory_order;
+
     /* The following two fields are used for MEM_REF and TARGET_MEM_REF
        expression trees and specify known data non-dependences.  For
        two memory references in a function they are known to not
@@ -1160,9 +1174,6 @@ struct GTY(()) tree_base {
 
        OMP_PARALLEL_COMBINED in
            OMP_PARALLEL
-
-       OMP_ATOMIC_SEQ_CST in
-	   OMP_ATOMIC*
 
        OMP_CLAUSE_PRIVATE_OUTER_REF in
 	   OMP_CLAUSE_PRIVATE

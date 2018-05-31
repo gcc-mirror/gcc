@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 
+enum omp_requires omp_requires_mask;
+
 tree
 omp_find_clause (tree clauses, enum omp_clause_code kind)
 {

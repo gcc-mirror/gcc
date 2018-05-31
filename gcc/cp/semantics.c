@@ -7038,7 +7038,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("%<priority%> expression must be integral");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<priority%> expression must be integral");
 	      remove = true;
 	    }
 	  else
@@ -7067,7 +7068,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("%<num_tasks%> expression must be integral");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<hint%> expression must be integral");
 	      remove = true;
 	    }
 	  else
@@ -7077,6 +7079,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		{
 		  t = maybe_constant_value (t);
 		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		  if (TREE_CODE (t) != INTEGER_CST)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%<hint%> expression must be constant integer "
+				"expression");
+		      remove = true;
+		    }
 		}
 	      OMP_CLAUSE_HINT_EXPR (c) = t;
 	    }
@@ -8385,7 +8394,8 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 
 void
 finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
-		   tree rhs, tree v, tree lhs1, tree rhs1, bool seq_cst)
+		   tree rhs, tree v, tree lhs1, tree rhs1, tree clauses,
+		   enum omp_memory_order mo)
 {
   tree orig_lhs;
   tree orig_rhs;
@@ -8412,6 +8422,15 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
 		     || (v && type_dependent_expression_p (v))
 		     || (lhs1 && type_dependent_expression_p (lhs1))
 		     || (rhs1 && type_dependent_expression_p (rhs1)));
+      if (clauses)
+	{
+	  gcc_assert (TREE_CODE (clauses) == OMP_CLAUSE
+		      && OMP_CLAUSE_CODE (clauses) == OMP_CLAUSE_HINT
+		      && OMP_CLAUSE_CHAIN (clauses) == NULL_TREE);
+	  if (type_dependent_expression_p (OMP_CLAUSE_HINT_EXPR (clauses))
+	      || TREE_CODE (OMP_CLAUSE_HINT_EXPR (clauses)) != INTEGER_CST)
+	    dependent_p = true;
+	}
       if (!dependent_p)
 	{
 	  lhs = build_non_dependent_expr (lhs);
@@ -8454,7 +8473,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
 	  return;
 	}
       stmt = c_finish_omp_atomic (input_location, code, opcode, lhs, rhs,
-				  v, lhs1, rhs1, swapped, seq_cst,
+				  v, lhs1, rhs1, swapped, mo,
 				  processing_template_decl != 0);
       if (stmt == error_mark_node)
 	return;
@@ -8465,7 +8484,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
 	{
 	  stmt = build_min_nt_loc (EXPR_LOCATION (orig_lhs),
 				   OMP_ATOMIC_READ, orig_lhs);
-	  OMP_ATOMIC_SEQ_CST (stmt) = seq_cst;
+	  OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
 	  stmt = build2 (MODIFY_EXPR, void_type_node, orig_v, stmt);
 	}
       else
@@ -8481,12 +8500,13 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
 	    {
 	      stmt = build_min_nt_loc (EXPR_LOCATION (orig_lhs1),
 				       code, orig_lhs1, stmt);
-	      OMP_ATOMIC_SEQ_CST (stmt) = seq_cst;
+	      OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
 	      stmt = build2 (MODIFY_EXPR, void_type_node, orig_v, stmt);
 	    }
 	}
-      stmt = build2 (OMP_ATOMIC, void_type_node, integer_zero_node, stmt);
-      OMP_ATOMIC_SEQ_CST (stmt) = seq_cst;
+      stmt = build2 (OMP_ATOMIC, void_type_node,
+		     clauses ? clauses : integer_zero_node, stmt);
+      OMP_ATOMIC_MEMORY_ORDER (stmt) = mo;
     }
   finish_expr_stmt (stmt);
 }
