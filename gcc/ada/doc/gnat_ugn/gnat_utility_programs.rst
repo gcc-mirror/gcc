@@ -4788,6 +4788,9 @@ Alternatively, you may run the script using the following command line:
        is used to select the same output mode as with the ``--tests-dir`` option.
        This attribute cannot be used together with ``Subdir`` or ``Tests_Root``.
 
+  * ``Stubs_Dir``
+       is used to select the same output mode as with the ``--stubs-dir`` option.
+
   * ``Harness_Dir``
        is used to specify the directory in which to place harness packages and project
        file for the test driver, otherwise specified by ``--harness-dir``.
