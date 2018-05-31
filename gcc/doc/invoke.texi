@@ -5510,10 +5510,14 @@ portability bugs and should be avoided.
 Warn about calls to functions decorated with attribute @code{alloc_size}
 that attempt to allocate objects larger than the specified number of bytes,
 or where the result of the size computation in an integer type with infinite
-precision would exceed @code{SIZE_MAX / 2}.  The option argument @var{n}
-may end in one of the standard suffixes designating a multiple of bytes
-such as @code{kB} and @code{KiB} for kilobyte and kibibyte, respectively,
-@code{MB} and @code{MiB} for megabyte and mebibyte, and so on.
+precision would exceed @code{SIZE_MAX / 2}.  The option argument @var{n} is
+treated as an integer with infinite precision and may end in one of
+the standard suffixes designating a multiple of bytes such as @code{kB} and
+@code{KiB} for kilobyte and kibibyte, respectively, @code{MB} and @code{MiB}
+for megabyte and mebibyte, and so on.
+@option{-Walloc-size-larger-than=}@var{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled either by specifying
+@var{n} of @var{SIZE_MAX} or more or by @option{-Wno-alloc-size-larger-than}.
 @xref{Function Attributes}.
 
 @item -Walloca
