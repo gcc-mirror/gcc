@@ -1,3 +1,12 @@
+2018-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85950
+	* config/i386/i386.md (l<rounding_insn><MODEF:mode><SWI48:mode>2):
+	Enable for TARGET_SSE4_1 and generate rounds{s,d} and cvtts{s,d}2si{,q}
+	sequence.
+	(sse4_1_round<mode>2): Use nonimmediate_operand
+	for operand 1 predicate.
+
 2018-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85984

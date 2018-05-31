@@ -1,3 +1,8 @@
+2018-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85950
+	* gcc.target/i386/pr85950.c: New test.
+
 2018-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85984
