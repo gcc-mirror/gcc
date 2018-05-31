@@ -1,5 +1,12 @@
 2018-05-31  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* vxworks-arm-link.spec, vxworks-e500-link.spec,
+	vxworks-gnat-crtbe-link.spec, vxworks-smp-arm-link.spec,
+	vxworks-smp-e500-link.spec, vxworks-smp-ppc-link.spec,
+	vxworks-smp-x86-link.spec: New files.
+
+2018-05-31  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* gnatvsn.adb: Re-center the copyright header.
 	* indepsw-darwin.adb: Adjust the starting copyright year to 2011.
 
