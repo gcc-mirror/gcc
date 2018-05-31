@@ -55,6 +55,10 @@ test01()
 
   compare_paths( append("dir/", "/file"), "/file" );
   compare_paths( append("dir/", "file"),  "dir/file" );
+
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  compare_paths( append("c:/foo", "/bar"),  "c:/bar" );
+#endif
 }
 
 void

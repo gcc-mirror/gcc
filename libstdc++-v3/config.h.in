@@ -264,6 +264,9 @@
 /* Only used in build directory testsuite_hooks.h. */
 #undef HAVE_LIMIT_VMEM
 
+/* Define to 1 if you have the `link' function. */
+#undef HAVE_LINK
+
 /* Define if futex syscall is available. */
 #undef HAVE_LINUX_FUTEX
 
@@ -339,6 +342,9 @@
 /* Define to 1 if you have the `quick_exit' function. */
 #undef HAVE_QUICK_EXIT
 
+/* Define to 1 if you have the `readlink' function. */
+#undef HAVE_READLINK
+
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
 
@@ -407,6 +413,9 @@
 
 /* Define if strxfrm_l is available in <string.h>. */
 #undef HAVE_STRXFRM_L
+
+/* Define to 1 if you have the `symlink' function. */
+#undef HAVE_SYMLINK
 
 /* Define to 1 if the target runtime linker supports binding the same symbol
    to different versions. */

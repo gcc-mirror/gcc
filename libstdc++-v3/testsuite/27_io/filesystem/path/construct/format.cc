@@ -30,7 +30,7 @@ void
 test01()
 {
   // path(string_type&&, format)
-  auto s = [&]() -> path::string_type { return "foo/bar"; };
+  auto s = [&]() -> path::string_type { return path("foo/bar").native(); };
   path p0(s());
   path p1(s(), path::auto_format);
   VERIFY( p1 == p0 );
@@ -44,7 +44,7 @@ void
 test02()
 {
   // path(const Source&, format)
-  path::string_type s = "foo/bar";
+  const path::string_type s = path("foo/bar").native();
   path p0(s);
   path p1(s, path::auto_format);
   VERIFY( p1 == p0 );
@@ -58,7 +58,7 @@ void
 test03()
 {
   // path(const Source&, format)
-  std::string s = "foo/bar";
+  const std::string s = "foo/bar";
   path p0(s);
   path p1(s, path::auto_format);
   VERIFY( p1 == p0 );
@@ -73,7 +73,7 @@ test04()
 {
 #ifdef _GLIBCXX_USE_WCHAR_T
   // path(const Source&, format)
-  std::wstring s = L"foo/bar";
+  const std::wstring s = L"foo/bar";
   path p0(s);
   path p1(s, path::auto_format);
   VERIFY( p1 == p0 );

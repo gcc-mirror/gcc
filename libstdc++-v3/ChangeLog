@@ -1,3 +1,189 @@
+2018-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78870 support std::filesystem on Windows
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for link, readlink and symlink.
+	* include/bits/fs_path.h (path::operator/=(const path&)): Move
+	definition out of class body.
+	(path::is_absolute(), path::_M_append(path)): Likewise.
+	(operator<<(basic_ostream, const path&)): Use std::quoted directly.
+	(operator>>(basic_istream, path&)): Likewise.
+	(u8path): Reorder definitions and fix Windows implementation.
+	(path::is_absolute()): Define inline and fix for Windows.
+	[!_GLIBCXX_FILESYSTEM_IS_WINDOWS] (path::operator/=(const path&)):
+	Define POSIX version inline.
+	(path::_M_append(path)): Define inline.
+	* include/experimental/bits/fs_path.h (path::is_absolute()): Move
+	definition out of class body.
+	(operator<<(basic_ostream, const path&)): Fix type of delimiter and
+	escape characters.
+	(operator>>(basic_istream, path&)): Likewise.
+	(path::is_absolute()): Define inline and fix for Windows.
+	* src/filesystem/dir-common.h (__gnu_posix): New namespace.
+	(__gnu_posix::char_type, __gnu_posix::DIR, __gnu_posix::dirent)
+	(__gnu_posix::opendir, __gnu_posix::readdir, __gnu_posix::closedir):
+	Define as adaptors for Windows functions/types or as
+	using-declarations for POSIX functions/types.
+	(_Dir_base, get_file_type): Qualify names to use declarations from
+	__gnu_posix namespace.
+	(_Dir_base::is_dor_or_dotdot): New helper functions.
+	* src/filesystem/dir.cc (_Dir, recursive_directory_iterator): Qualify
+	names to use declarations from __gnu_posix namespace.
+	* src/filesystem/ops-common.h (__gnu_posix): New nested namespace.
+	(__gnu_posix::open, __gnu_posix::close, __gnu_posix::stat_type)
+	(__gnu_posix::stat, __gnu_posix::lstat, __gnu_posix::mode_t)
+	(__gnu_posix::chmod, __gnu_posix::mkdir, __gnu_posix::getcwd)
+	(__gnu_posix::chdir, __gnu_posix::utimbuf, __gnu_posix::utime)
+	(__gnu_posix::rename, __gnu_posix::truncate, __gnu_posix::char_type):
+	Define as adaptors for Windows functions/types or as
+	using-declarations for POSIX functions/types.
+	(stat_type, do_copy_file): Qualify names to use declarations from
+	__gnu_posix namespace.
+	(do_space): Declare new function.
+	(make_file_type): Only use S_ISLNK if defined.
+	* src/filesystem/ops.cc (char_ptr, filesystem::canonical): Use
+	path::value_type not char.
+	(filesystem::copy, create_dir, filesystem::create_directory): Qualify
+	names to use declarations from __gnu_posix namespace.
+	(filesystem::create_hard_link): Check HAVE_LINK autoconf macro and
+	add implementation for Windows.
+	(filesystem::create_symlink): Check HAVE_SYMLINK autoconf macro.
+	(filesystem::current_path(error_code&)): Use __gnu_posix::getcwd.
+	[!_PC_PATH_MAX]: Don't use pathconf.
+	[PATH_MAX]: Use if defined.
+	(filesystem::current_path(const path&, error_code&))
+	(filesystem::equivalent, do_stat, filesystem::hard_link_count)
+	(filesystem::last_write_time, filesystem::permissions): Use names
+	from __gnu_posix.
+	(filesystem::read_symlink): Check HAVE_READLINK autoconf macro.
+	(filesystem::remove) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Add
+	implementation for Windows.
+	(filesystem::rename, filesystem::resize_file): Use names from
+	__gnu_posix.
+	(filesystem::space): Use do_space.
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Get absolute path to directory.
+	(filesystem::status, filesystem::symlink_status): Use names from
+	__gnu_posix.
+	(filesystem::temp_directory_path): Add implementation for Windows.
+	* src/filesystem/path.cc (dot): Define constant.
+	(path::replace_extension): Use dot.
+	(path::_M_find_extension): Likewise. Use path::string_type not
+	std::string.
+	(path::_M_split_cmpts): Use dot.
+	(filesystem_error::_M_get_what): Use u8string() not native().
+	* src/filesystem/std-dir.cc (_Dir, recursive_directory_iterator):
+	Qualify names to use declarations from __gnu_posix namespace.
+	* src/filesystem/std-ops.cc (filesystem::absolute(const path&)): Use
+	correct error_code.
+	(filesystem::absolute(const path&, error_code&)): Add implementation
+	for Windows.
+	(char_ptr, filesystem::canonical): Use path::value_type not char.
+	(do_copy_file): Use names from __gnu_posix.
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Do not use fchmod, fchmodat or
+	sendfile.
+	(filesystem::copy, create_dir, filesystem::create_directory): Qualify
+	names to use declarations from __gnu_posix namespace.
+	(filesystem::create_hard_link): Check HAVE_LINK autoconf macro and
+	add implementation for Windows.
+	(filesystem::create_symlink): Check HAVE_SYMLINK autoconf macro.
+	(filesystem::current_path(error_code&)): Use __gnu_posix::getcwd.
+	[!_PC_PATH_MAX]: Don't use pathconf.
+	[PATH_MAX]: Use if defined.
+	(filesystem::current_path(const path&, error_code&))
+	(filesystem::equivalent, do_stat, filesystem::hard_link_count)
+	(filesystem::last_write_time, filesystem::permissions): Use names
+	from __gnu_posix.
+	(filesystem::read_symlink): Check HAVE_READLINK autoconf macro.
+	(filesystem::remove) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Add
+	implementation for Windows.
+	(filesystem::rename, filesystem::resize_file): Use names from
+	__gnu_posix.
+	(do_space): Define.
+	(filesystem::space): Use do_space.
+	(filesystem::status, filesystem::symlink_status): Use names from
+	__gnu_posix.
+	(filesystem::temp_directory_path): Add implementation for Windows.
+	* src/filesystem/std-path.cc
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS] (path::operator/=(const path&)):
+	Define for Windows.
+	(dot): Define constant.
+	(path::replace_extension, is_dot): Use dot.
+	(path::lexically_normal): Check _M_type instead of calling
+	non-existent function.
+	(path::_M_find_extension): Use dot. Use path::string_type not
+	std::string.
+	(path::_M_split_cmpts): Use dot.
+	(filesystem_error::_M_get_what): Use u8string() not native().
+	* testsuite/27_io/filesystem/iterators/directory_iterator.cc: Do not
+	use symlinks.
+	* testsuite/27_io/filesystem/iterators/recursive_directory_iterator.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/absolute.cc: Use
+	__gnu_test::root_path() instead of "/" and add Windows-specific tests.
+	* testsuite/27_io/filesystem/operations/canonical.cc: Use
+	path::string() to get narrow string, not path::native().
+	* testsuite/27_io/filesystem/operations/copy.cc: Construct fstreams
+	with std::filesystem::path not std::basic_string.
+	* testsuite/27_io/filesystem/operations/copy_file.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/exists.cc: Use
+	__gnu_test::root_path() instead of "/".
+	* testsuite/27_io/filesystem/operations/is_empty.cc: Construct
+	fstreams with std::filesystem::path not std::basic_string.
+	* testsuite/27_io/filesystem/operations/last_write_time.cc: Use
+	path::string() to get narrow string.
+	* testsuite/27_io/filesystem/operations/space.cc: Check results for
+	errors, expect sensible values otherwise.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc: Add
+	helpers for adjusting the environment on Windows.
+	* testsuite/27_io/filesystem/path/append/path.cc: Test
+	Windows-specific behaviour.
+	* testsuite/27_io/filesystem/path/construct/format.cc: Fix creation
+	of path::string_type objects.
+	* testsuite/27_io/filesystem/path/construct/locale.cc: Compare native
+	string to wide string on Windows.
+	* testsuite/27_io/filesystem/path/decompose/root_directory.cc: Allow
+	for backslash as root-directory.
+	* testsuite/27_io/filesystem/path/decompose/stem.cc: Use
+	path::string() to get narrow string.
+	* testsuite/27_io/filesystem/path/itr/traversal.cc: Test Windows-style
+	paths.
+	* testsuite/27_io/filesystem/path/native/string.cc: Use string_type
+	not std::string.
+	* testsuite/27_io/filesystem/path/query/is_absolute.cc: Adjust for
+	different definintion of absolute paths on Windows.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Do not use symlinks.
+	* testsuite/experimental/filesystem/operations/absolute.cc: Test
+	Windows behaviour.
+	* testsuite/experimental/filesystem/operations/copy.cc: Construct
+	fstreams with NTCTS not std::basic_string.
+	* testsuite/experimental/filesystem/operations/copy_file.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/exists.cc: Use
+	__gnu_test::root_path() instead of "/".
+	* testsuite/experimental/filesystem/operations/is_empty.cc: Construct
+	fstreams with NTCTS not std::basic_string.
+	* testsuite/experimental/filesystem/operations/last_write_time.cc:
+	Use path::string() to get narrow string.
+	* testsuite/experimental/filesystem/operations/space.cc: Use
+	__gnu_test::root_path() instead of "/".
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Add helpers for adjusting the environment on Windows.
+	* testsuite/experimental/filesystem/path/append/path.cc: Use
+	path::string() to get narrow strings for comparisons.
+	* testsuite/experimental/filesystem/path/concat/path.cc: Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/stem.cc: Likewise.
+	* testsuite/experimental/filesystem/path/native/string.cc: Use
+	string_type not std::string.
+	* testsuite/experimental/filesystem/path/query/is_absolute.cc:
+	Adjust for different definintion of absolute paths on Windows.
+	* testsuite/util/testsuite_fs.h (__gnu_test::root_path()): New
+	function.
+	(__gnu_test::scoped_file): Construct fstreams with NTCTS not
+	std::basic_string.
+
 2018-05-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85951

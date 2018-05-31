@@ -372,7 +372,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     bool has_filename() const;
     bool has_stem() const;
     bool has_extension() const;
-    bool is_absolute() const { return has_root_directory(); }
+    bool is_absolute() const;
     bool is_relative() const { return !is_absolute(); }
 
     // iterators
@@ -537,7 +537,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       auto __tmp = __p.string<_CharT, _Traits>();
       using __quoted_string
 	= std::__detail::_Quoted_string<decltype(__tmp)&, _CharT>;
-      __os << __quoted_string{__tmp, '"', '\\'};
+      __os << __quoted_string{__tmp, _CharT('"'), _CharT('\\')};
       return __os;
     }
 
@@ -549,7 +549,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string<_CharT, _Traits> __tmp;
       using __quoted_string
 	= std::__detail::_Quoted_string<decltype(__tmp)&, _CharT>;
-      if (__is >> __quoted_string{ __tmp, '"', '\\' })
+      if (__is >> __quoted_string{ __tmp, _CharT('"'), _CharT('\\') })
 	__p = std::move(__tmp);
       return __is;
     }
@@ -991,6 +991,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   {
     auto ext = _M_find_extension();
     return ext.first && ext.second != string_type::npos;
+  }
+
+  inline bool
+  path::is_absolute() const
+  {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    return has_root_name() && has_root_directory();
+#else
+    return has_root_directory();
+#endif
   }
 
   inline path::iterator
