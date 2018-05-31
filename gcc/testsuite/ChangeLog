@@ -1,3 +1,12 @@
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/store_merging_10.c: Turn dg-do compile into dg-do run.
+	* gcc.dg/store_merging_11.c: Likewise.
+	* gcc.dg/store_merging_13.c: Likewise.
+	* gcc.dg/store_merging_14.c: Likewise.
+	* gcc.dg/store_merging_15.c: Likewise.
+	* gcc.dg/store_merging_16.c: Likewise.  Remove local variable.
+
 2018-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
