@@ -43,6 +43,7 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
+with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -171,6 +172,25 @@ package body Exp_Unst is
          end if;
       end loop;
    end Get_Level;
+
+   --------------------------
+   -- In_Synchronized_Unit --
+   --------------------------
+
+   function In_Synchronized_Unit (Subp : Entity_Id) return Boolean is
+      S : Entity_Id := Scope (Subp);
+
+   begin
+      while Present (S) and then S /= Standard_Standard loop
+         if Is_Concurrent_Type (S) then
+            return True;
+         end if;
+
+         S := Scope (S);
+      end loop;
+
+      return False;
+   end In_Synchronized_Unit;
 
    ----------------
    -- Subp_Index --
@@ -1160,6 +1180,13 @@ package body Exp_Unst is
                Decl : Node_Id;
 
             begin
+               --  Subprograms declared in tasks and protected types
+               --  are reachable and cannot be eliminated.
+
+               if In_Synchronized_Unit (STJ.Ent) then
+                  STJ.Reachable := True;
+               end if;
+
                --  Subprogram is reachable, copy and reset index
 
                if STJ.Reachable then

@@ -1,5 +1,12 @@
 2018-05-31  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.ads, exp_unst.adb (In_Synchronized_Unit): New predicate to
+	mark subprograms that cannot be eliminated because they must be treated
+	as reachable from outside the current unit. This includes entry bodies
+	and protected operations.
+
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch4.adb (Expand_Modular_Addition, Expand_Modular_Subtraction):
 	Convert all operands of the generated code to Standard.Unsigned, to
 	prevent spurious visibility errors. This is needed when the generated
