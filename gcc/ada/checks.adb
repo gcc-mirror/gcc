@@ -1458,6 +1458,19 @@ package body Checks is
          T_Typ := Typ;
       end if;
 
+      --  If the expression is a function call that returns a limited object
+      --  it cannot be copied. It is not clear how to perform the proper
+      --  discriminant check in this case because the discriminant value must
+      --  be retrieved from the constructed object itself.
+
+      if Nkind (N) = N_Function_Call
+        and then Is_Limited_Type (Typ)
+        and then Is_Entity_Name (Name (N))
+        and then Returns_By_Ref (Entity (Name (N)))
+      then
+         return;
+      end if;
+
       --  Only apply checks when generating code and discriminant checks are
       --  not suppressed. In GNATprove mode, we do not apply the checks, but we
       --  still analyze the expression to possibly issue errors on SPARK code

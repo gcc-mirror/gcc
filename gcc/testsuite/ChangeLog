@@ -1,3 +1,9 @@
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/limited1.adb, gnat.dg/limited1_inner.adb,
+	gnat.dg/limited1_inner.ads, gnat.dg/limited1_outer.adb,
+	gnat.dg/limited1_outer.ads: New testcase.
+
 2018-05-31  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/tampering_check1.adb, gnat.dg/tampering_check1_ivectors.ads,
