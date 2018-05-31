@@ -18795,7 +18795,7 @@ package body Sem_Prag is
                   return;
                end if;
 
-               Entry_Id := Unique_Defining_Entity (Entry_Decl);
+               Entry_Id := Defining_Entity (Entry_Decl);
 
             --  Otherwise the pragma is associated with an illegal construct
 
