@@ -1,3 +1,28 @@
+2018-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85951
+	* include/std/type_traits [_GLIBCXX_USE_C99_STDINT_TR1]: Do not define
+	uint_least16_t and uint_least32_t.
+	(__make_unsigned<wchar_t>): Define unconditionally.
+	(__make_unsigned_selector<_Tp, true, false>): Remove intermediate
+	typedefs.
+	(__make_unsigned_selector_base): New type to provide helper templates.
+	(__make_unsigned_selector<_Tp, false, true>): Reimplement using
+	__make_unsigned_selector_base helpers.
+	(__make_unsigned<char16_t>, __make_unsigned<char32_t>): Define.
+	(__make_signed_selector<_Tp, true, false>): Remove intermediate
+	typedefs.
+	(__make_signed<wchar_t>, __make_signed<char16_t>)
+	(__make_signed<char32_t>)): Define unconditionally.
+	* testsuite/20_util/make_signed/requirements/typedefs-3.cc: Check
+	wchar_t, char16_t and char32_t are transformed correctly.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error lineno.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-3.cc: Check
+	wchar_t, char16_t and char32_t are transformed correctly.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Adjust
+	dg-error lineno.
+
 2018-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (__erased_dtor): Qualify call to __get.
