@@ -1,3 +1,8 @@
+2018-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85984
+	* gcc.target/i386/pr85984.c: New test.
+
 2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/stack_usage1.adb: Replace -fstack-usage with -Wstack-usage.
