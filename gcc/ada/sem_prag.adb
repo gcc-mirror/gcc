@@ -18833,6 +18833,7 @@ package body Sem_Prag is
 
             if Nkind (Arg) /= N_Integer_Literal then
                Rewrite (Arg, Make_Integer_Literal (Sloc (Arg), Val));
+               Set_Etype (Arg, Etype (Original_Node (Arg)));
             end if;
 
             Record_Rep_Item (Entry_Id, N);
