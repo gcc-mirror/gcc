@@ -1,3 +1,9 @@
+2018-05-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma.Check_Loop_Pragma_Placement): Inverse
+	order of treatment between nodes recognized as loop pragmas (or
+	generated from one) and block statements.
+
 2018-05-31  Doug Rupp  <rupp@adacore.com>
 
 	* libgnat/s-osprim__posix2008.adb (Clock): Implement using
