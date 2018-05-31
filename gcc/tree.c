@@ -10277,6 +10277,14 @@ build_common_builtin_nodes (void)
 			"__builtin_memcmp_eq",
 			ECF_PURE | ECF_NOTHROW | ECF_LEAF);
 
+  local_define_builtin ("__builtin_strncmp_eq", ftype, BUILT_IN_STRNCMP_EQ,
+			"__builtin_strncmp_eq",
+			ECF_PURE | ECF_NOTHROW | ECF_LEAF);
+
+  local_define_builtin ("__builtin_strcmp_eq", ftype, BUILT_IN_STRCMP_EQ,
+			"__builtin_strcmp_eq",
+			ECF_PURE | ECF_NOTHROW | ECF_LEAF);
+
   /* If there's a possibility that we might use the ARM EABI, build the
     alternate __cxa_end_cleanup node used to resume from C++.  */
   if (targetm.arm_eabi_unwinder)

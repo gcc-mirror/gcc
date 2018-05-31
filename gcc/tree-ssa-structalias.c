@@ -4498,7 +4498,9 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
          that use the memory pointed to by their arguments (but not
 	 transitively).  */
       case BUILT_IN_STRCMP:
+      case BUILT_IN_STRCMP_EQ:
       case BUILT_IN_STRNCMP:
+      case BUILT_IN_STRNCMP_EQ:
       case BUILT_IN_STRCASECMP:
       case BUILT_IN_STRNCASECMP:
       case BUILT_IN_MEMCMP:
