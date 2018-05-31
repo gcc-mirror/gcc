@@ -1,3 +1,9 @@
+2018-05-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/tampering_check1.adb, gnat.dg/tampering_check1_ivectors.ads,
+	gnat.dg/tampering_check1_trim.adb, gnat.dg/tampering_check1_trim.ads:
+	New testcase.
+
 2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/size_clause1.adb: New testcase.

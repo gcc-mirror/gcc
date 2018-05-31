@@ -4987,6 +4987,7 @@ package body Exp_Ch7 is
                | N_Entry_Body_Formal_Part
                | N_Exit_Statement
                | N_If_Statement
+               | N_Iteration_Scheme
                | N_Terminate_Alternative
             =>
                pragma Assert (Present (Prev));
@@ -5058,13 +5059,11 @@ package body Exp_Ch7 is
                   return Curr;
                end if;
 
-            --  An iteration scheme or an Ada 2012 iterator specification is
-            --  not a valid context because Analyze_Iteration_Scheme already
-            --  employs special processing for them.
+            --  An Ada 2012 iterator specification is not a valid context
+            --  because Analyze_Iterator_Specification already employs special
+            --  processing for it.
 
-            when N_Iteration_Scheme
-               | N_Iterator_Specification
-            =>
+            when N_Iterator_Specification =>
                return Empty;
 
             when N_Loop_Parameter_Specification =>
