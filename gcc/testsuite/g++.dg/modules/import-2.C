@@ -1,11 +1,13 @@
+// { dg-additional-options -fmodules-atom }
+
 // Don't segfault on missing module BMI
 
 // { dg-module-bmi "!bob" }
+// { dg-module-bmi "!bill" }
 
-import bob;
-// { dg-message "module imported at" "" { target *-*-* } 0 }
-// { dg-error "unknown BMI file" "" { target *-*-* } 0 }
+import bill;  // { dg-error "server cannot provide" }
+import bob;  // { dg-error "server cannot provide" }
+// { dg-prune-output "unknown BMI file" }
 // { dg-prune-output "fatal error:" }
-// { dg-prune-output "server error" }
 // { dg-prune-output "compilation terminated" }
 

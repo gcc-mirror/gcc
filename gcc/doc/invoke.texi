@@ -29176,7 +29176,7 @@ one of the following forms:
 
 @item @samp{number}
 A file number associated with a bidirectional streaming socket.  The spawning
-environment must have made this available.
+environment must have made this available.  
 
 @item @samp{number,number}
 Two file numbers associated with read and write pipes.  The spawning
@@ -29203,6 +29203,12 @@ local domain socket.  You may add leading or trailing whitespace to
 have it interpretted as a program to execute.
 
 @end itemize
+
+An optional cookie may suffix the first word of the option.  It is
+introduced by either an @samp{?} or @samp{/} character.  The @samp{?}
+is not part of the cookie.  Only some formats permit the @samp{/}
+form.  If no cookie is provided, the main source file name is used.
+The cookie is used in the initial handshake with the module server.
 
 The oracle is connected to lazily, when the first module mapping is
 required.  The networking protocols are only supported on hosts that
@@ -29249,16 +29255,10 @@ interface unit.
 The compilation is of a module interface unit, and will generate a BMI
 for @var{module-name}.  The response should be `@samp{BMI} @var{bmifile}'.
 
-@item @samp{HELLO} @var{$ver} @var{$flags} @var{$srcname}
+@item @samp{HELLO} @var{$ver} @var{$flags} @var{$cookie}
 This is the first command.  It informs the server of the name of the
 source being compiled.  Response is either `@samp{OK}
 @var{$ver} @var{$flags}', or `@samp{ERROR} @var{$errormsg}'.
-FIXME: Perhaps there should be some kind of cookie in this request, so
-the server can be confident it is talking to who it expects to.  But
-I'm not a cryptographer, so therefore not competent to do this correctly.
-
-@item @samp{HELLO} @var{$ver} @var{$srcbase} @var{$srcpath}
-FIXME
 
 @item @samp{HELP} [@var{$cmd}]
 A help request.  The response is `@samp{HELP} @var{$msg}'.
@@ -29329,8 +29329,8 @@ A @samp{BMI}, @samp{SEARCH} or @samp{PATH} query.
 @item @var{$srcbase}
 A basename of a source file to search for.
 
-@item @var{$srcname}
-The source name used to invoke compilation
+@item @var{$cookie}
+A cookie provided when invoking the compiler.
 
 @item @var{$ver}
 A numeric version number, currently 0.

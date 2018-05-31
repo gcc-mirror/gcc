@@ -631,26 +631,6 @@ make_module_loc (location_t from, const char *name)
   return linemap_module_loc (line_table, from, name);
 }
 
-/* Move the location at which a module was introduced.  Generally
-   because it's become a direct import after being indirect.  */
-
-void
-reseat_module_loc (location_t mloc, location_t new_from)
-{
-  const line_map *map = linemap_lookup (line_table, mloc);
-  LINEMAP_MODULE_SET_FROM (map, new_from);
-}
-
-/* Return the location from whence a module was introduced.  */
-
-location_t
-module_from_loc	(location_t mloc)
-{
-  const line_map *map = linemap_lookup (line_table, mloc);
-
-  return INCLUDED_AT (linemap_check_ordinary (map));
-}
-
 /* Issue an error message indicating that the lookup of NAME (an
    IDENTIFIER_NODE) failed.  Returns the ERROR_MARK_NODE.  */
 

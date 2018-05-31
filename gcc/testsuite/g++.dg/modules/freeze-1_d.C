@@ -6,9 +6,10 @@ import kevin;
 
 int main ()
 {
-  bob ();
   stuart ();
+  bob ();
   kevin ();
+
   return 0;
 }
 

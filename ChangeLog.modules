@@ -1,3 +1,50 @@
+2018-05-31  Nathan Sidwell  <nathan@acm.org>
+
+	ASYNC loading & server cookie.
+	gcc/cp/
+	* cp-tree.h (reseat_module_loc, module_from_loc): Delete.
+	(atom_module_preamble): Declare.
+	* cxx-module-server.sh (cmd): Fix ASYNC response.
+	* lex.c (reseat_module_loc, module_from_loc): Delete.
+	* module.c (module_state::from_loc): Is a field.
+	(module_server): Require locations throughout.  Redesign
+	interface.  Add cookie.
+	(module_state::read_config): Use from_loc.
+	(module_state::read): Don't set module_purview here ...
+	(module_state::find_module): ... do it here.
+	(module_state::do_import): Add check_crc flag.  Don't query server
+	here.
+	(import_module, declare_module): Query server here (ts).
+	(module_state::atom_preamble): New.
+	(atom_module_preamble): Call it.
+	(finish_module): Adjust.
+	* parser.c (cp_parser_peek_module_name): Fold into ...
+	(cp_parser_module_name): ... here.
+	(cp_parser_module_declaration): No injected atom end marker.
+	(cp_parser_module_preamble): Rename to ...
+	(cp_parser_get_module_preamble_tokens): ... this.  Don't append
+	end marker.  Return end loc.
+	(cp_parser_parse_module_preamble): New.
+	(cp_parser_declaration_seq_opt): Adjust.
+	(cp_parser_fill_main): Skip preamble.
+	(c_parse_file): Do preamble tokenization and parsing here.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Document server cookie.
+	libcpp/
+	* include/cpplib.h (cpp_relocate_peeked_tokens): Declare.
+	* include/line-map.h (linemap_save_pre_module)
+	(linemap_restore_pre_module): Declare.
+	(LINEMAP_MODULE_SET_FROM): Delete.
+	* lex.c (cpp_relocate_peeked_tokens): New.
+	* line-map.c (linemap_module_loc): Set from direcly.
+	(linemap_save_pre_module, linemap_restore_pre_module): New.
+	gcc/testsuite/
+	* g++.dg/modules/flag-1_b.C
+	* g++.dg/modules/freeze-1_d.C
+	* g++.dg/modules/import-2.C
+	* g++.dg/modules/indirect-1_c.C
+	* g++.dg/modules/mod-stamp-1_d.C
+
 2018-05-30  Nathan Sidwell  <nathan@acm.org>
 
 	Module location

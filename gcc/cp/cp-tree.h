@@ -6621,8 +6621,6 @@ extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
 extern location_t make_module_loc		(location_t, const char *name);
-extern void reseat_module_loc			(location_t, location_t);
-extern location_t module_from_loc		(location_t);
 extern unsigned atom_preamble_prefix_peek	(bool, bool, cpp_reader *);
 extern unsigned atom_preamble_prefix_next	(unsigned, cpp_reader *,
 						 unsigned, source_location);
@@ -6672,6 +6670,7 @@ extern void set_implicit_module_owner (tree, tree);
 extern int push_module_export (bool, tree = NULL);
 extern void pop_module_export (int);
 extern void declare_module (const cp_expr &, bool, tree);
+extern void atom_module_preamble (location_t);
 extern void init_module_processing ();
 extern void finish_module ();
 extern void import_module (const cp_expr &, bool, tree);

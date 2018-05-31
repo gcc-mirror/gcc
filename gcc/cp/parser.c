@@ -249,7 +249,6 @@ static void cp_parser_initial_pragma
   (cp_token *);
 static void cp_parser_fill_main
   (cp_parser *parser, cp_token *first);
-static void cp_parser_module_preamble (cp_parser *parser);
 static bool cp_parser_omp_declare_reduction_exprs
   (tree, cp_parser *);
 static void cp_finalize_oacc_routine
@@ -12656,65 +12655,9 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
    In TS mode, record the location of the beginning of global module.  */
 static location_t module_marker_loc;
 
-/* Extract a module name from an array of peeked tokens.  No errors
-   are issued.  */
-
-static tree
-cp_parser_peek_module_name (const cp_token *tokens, size_t &length)
-{
-  tree name = NULL_TREE;
-  size_t limit = length;
-  unsigned ix = 0;
-  bool atom_p = modules_atom_p ();
-
-  if (!limit)
-    ;
-  else if (atom_p && tokens[0].type == CPP_HEADER_NAME)
-    name = tokens[ix++].u.value;
-  else
-    {
-      if (tokens[0].type == CPP_NAME)
-	name = tokens[ix++].u.value;
-
-      if (ix < limit && ((ix && tokens[ix].type == CPP_DOT)
-			 || (atom_p && tokens[ix].type == CPP_COLON)))
-	{
-	  /* Concatenate dotted identifiers, and partition suffix  */
-	  auto_vec<tree,5> ids;
-
-	  if (name)
-	    ids.quick_push (name);
-	  while (ix + 2 <= limit
-		 && tokens[ix].type == CPP_DOT && tokens[ix+1].type == CPP_NAME)
-	    {
-	      ix++;
-	      ids.safe_push (tokens[ix].u.value);
-	      ix++;
-	    }
-	  if (atom_p && ix + 2 <= limit
-	      && tokens[ix].type == CPP_COLON && tokens[ix+1].type == CPP_NAME)
-	    {
-	      ix++;
-	      ids.safe_push (tokens[ix].u.value);
-	      ix++;
-	    }
-
-	  name = make_tree_vec (ids.length ());
-	  for (unsigned ix = ids.length (); ix--;)
-	    TREE_VEC_ELT (name, ix) = ids.pop ();
-	  // FIXME:set partition flag
-	}
-    }
-
-  /* Record how many tokens we peeked.  */
-  length = ix;
-  return name;
-}
-
 /* Parse a module-name,
    identifier
    module-name . identifier
-   module-name : partition
    header-name (ATOM)
 
    Returns an identifer or TREE_VEC of identifiers, or NULL.   */
@@ -12722,17 +12665,39 @@ cp_parser_peek_module_name (const cp_token *tokens, size_t &length)
 static cp_expr
 cp_parser_module_name (cp_parser *parser)
 {
-  cp_token *token = cp_lexer_peek_token (parser->lexer);
-  size_t length = token != &eof_token ? parser->lexer->last_token - token : 0;
-  tree name = cp_parser_peek_module_name (token, length);
+  tree name = NULL_TREE;
+  bool atom_p = modules_atom_p ();
+  cp_token *first_tok = cp_lexer_peek_token (parser->lexer);
 
-  if (name)
-    while (length--)
-      cp_lexer_consume_token (parser->lexer);
+  if (atom_p && first_tok->type == CPP_HEADER_NAME)
+    cp_lexer_consume_token (parser->lexer)->u.value;
+  else if (first_tok->type == CPP_NAME)
+    {
+      name = cp_lexer_consume_token (parser->lexer)->u.value;
+
+      if (cp_lexer_peek_token (parser->lexer)->type == CPP_DOT)
+	{
+	  /* Concatenate dotted identifiers.  */
+	  auto_vec<tree,5> ids;
+
+	  for (;;)
+	    {
+	      ids.safe_push (name);
+	      if (!(cp_lexer_peek_token (parser->lexer)->type == CPP_DOT
+		    && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)))
+		break;
+	      cp_lexer_consume_token (parser->lexer);
+	      name = cp_lexer_consume_token (parser->lexer)->u.value;
+	    }
+	  name = make_tree_vec (ids.length ());
+	  for (unsigned ix = ids.length (); ix--;)
+	    TREE_VEC_ELT (name, ix) = ids.pop ();
+	}
+    }
   else
     cp_parser_error (parser, "expected module-name");
-
-  return cp_expr (name, token->location);
+  
+  return cp_expr (name, first_tok->location);
 }
 
 /* Emit an error if we're not at the outermost level.  */
@@ -12763,19 +12728,13 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   bool atom_p = modules_atom_p ();
 
-  if (!exporting && module_marker_loc == UNKNOWN_LOCATION
-      && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON)
-      && (atom_p ? token->location == UNKNOWN_LOCATION : first_decl))
+  if (!exporting && first_decl && !atom_p
+      && module_marker_loc == UNKNOWN_LOCATION
+      && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
-      if (atom_p)
-	/* In ATOM mode, an injected 'module;' marks the end of the
-	   preamble.  It has an UNKOWN_LOCATION.  We may peek at the
-	   EOF token, which is fine.  */
-	module_marker_loc = cp_lexer_peek_nth_token (parser->lexer, 2)->location;
-      else
-	/* In TS mode we record the existence of the initial module;
-	   in preamble_marker_loc.  */
-	module_marker_loc = token->location;
+      /* In TS mode we record the existence of the initial module;
+	 in preamble_marker_loc.  */
+      module_marker_loc = token->location;
 
       cp_lexer_consume_token (parser->lexer);
       return;
@@ -12918,10 +12877,11 @@ cp_parser_module_proclamation (cp_parser *parser)
 
 /* Tokenize an atom preamble.  */
 
-static void
-cp_parser_module_preamble (cp_parser *parser)
+static location_t
+cp_parser_get_module_preamble_tokens (cp_parser *parser)
 {
   cp_lexer *lexer = parser->lexer;
+  location_t last_semi = UNKNOWN_LOCATION;
 
   for (bool only_import = false;;)
     {
@@ -12930,9 +12890,11 @@ cp_parser_module_preamble (cp_parser *parser)
       if (!state)
 	break;
 
+      bool is_pragma = state & 0x8;
       only_import = state & 0x10;
       state &= 0xf;
-      while (state)
+
+      for (;;)
 	{
 	  cp_token tok;
 
@@ -12944,22 +12906,82 @@ cp_parser_module_preamble (cp_parser *parser)
 	  state = atom_preamble_prefix_next (state, parse_in, tok.type,
 					     tok.location);
 	  vec_safe_push (lexer->buffer, tok);
+	  if (!state)
+	    {
+	      if (!is_pragma)
+		last_semi = tok.location;
+	      break;
+	    }
 	}
     }
 
-  /* Mark the end of the preamble.  */
-  vec_safe_reserve (lexer->buffer, 2, false);
-  cp_token *tok = lexer->buffer->quick_push (eof_token);
-  cp_token *stok = lexer->buffer->quick_push (eof_token);
-  gcc_checking_assert (tok + 1 == stok);
+  return last_semi;
+}
 
-  tok[0].type = CPP_KEYWORD;
-  tok[0].keyword = RID_MODULE;
-  tok[0].location = UNKNOWN_LOCATION;
-  tok[0].u.value = get_identifier ("module");
+/* Parse an atom preamble.  This is done before tokenizing the rest
+   of the source, as it can affect preprocessor state.  */
 
-  tok[1].type = CPP_SEMICOLON;
-  tok[1].location = UNKNOWN_LOCATION;
+location_t
+cp_parser_parse_module_preamble (cp_parser *parser)
+{
+  cp_lexer *lexer = parser->lexer;
+  vec_safe_push (lexer->buffer, eof_token);
+  lexer->next_token = &(*lexer->buffer)[0];
+  lexer->last_token = &lexer->buffer->last ();
+  location_t first_loc = UNKNOWN_LOCATION;
+
+  for (bool first = true, export_p = false;;)
+    {
+      cp_token *tok = cp_lexer_peek_token (lexer);
+      switch (tok->type)
+	{
+	case CPP_EOF:
+	  /* Lose the EOF.  */
+	  lexer->buffer->pop ();
+	  return first_loc;
+
+	case CPP_PRAGMA:
+	  cp_parser_pragma (parser, pragma_external, NULL);
+	  continue;
+
+	case CPP_KEYWORD:
+	  if (first_loc == UNKNOWN_LOCATION)
+	    first_loc = tok->location;
+	  switch (tok->keyword)
+	    {
+	    case RID_MODULE:
+	      cp_parser_module_declaration (parser, first, export_p);
+	      first = false;
+	      export_p = false;
+	      continue;
+
+	    case RID_IMPORT:
+	      cp_parser_import_declaration (parser, export_p);
+	      first = false;
+	      export_p = false;
+	      continue;
+
+	    case RID_EXPORT:
+	      if (!export_p)
+		{
+		  export_p = true;
+		  cp_lexer_consume_token (lexer);
+		  continue;
+		}
+	      break;
+
+	    default:
+	      break;
+	    }
+	  break;
+
+	  default:
+	    break;
+	}
+      cp_parser_error (parser, "expected module-declaration,"
+		       " import-declaration or pragma in module-preamble");
+      cp_parser_skip_to_end_of_statement (parser);
+    }
 }
 
 /* Declarations [gram.dcl.dcl] */
@@ -12975,7 +12997,7 @@ cp_parser_module_preamble (cp_parser *parser)
 static void
 cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 {
-  bool first = top_level && modules_p ();
+  bool first = top_level && modules_p () && !modules_atom_p ();
 
   while (true)
     {
@@ -39421,6 +39443,7 @@ static void
 cp_parser_fill_main (cp_parser *parser, cp_token *tok)
 {
   cp_lexer *lexer = parser->lexer;
+  size_t lwm = lexer->buffer->length ();
 
   while (tok->type != CPP_EOF)
     {
@@ -39429,8 +39452,8 @@ cp_parser_fill_main (cp_parser *parser, cp_token *tok)
     }
   vec_safe_push (lexer->buffer, *tok);
 
+  lexer->next_token = &(*lexer->buffer)[lwm];
   lexer->last_token = &lexer->buffer->last ();
-  lexer->next_token = &(*lexer->buffer)[0];
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
@@ -39467,8 +39490,21 @@ c_parse_file (void)
   if (modules_p ())
     {
       if (modules_atom_p ())
-	cp_parser_module_preamble (the_parser);
+	{
+	  location_t end = cp_parser_get_module_preamble_tokens (the_parser);
+	  if (end != UNKNOWN_LOCATION)
+	    {
+	      unsigned cookie = linemap_save_pre_module (line_table, end);
+	      location_t loc = cp_parser_parse_module_preamble (the_parser);
+	      atom_module_preamble (loc);
+	      if (unsigned adjust
+		  = linemap_restore_pre_module (line_table, cookie))
+		cpp_relocate_peeked_tokens (parse_in, adjust);
+	    }
+	}
       cp_lexer_get_preprocessor_token (0, &first);
+      if (modules_atom_p ())
+	module_marker_loc = first.location;
     }
 
   cp_parser_fill_main (the_parser, &first);

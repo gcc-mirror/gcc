@@ -26,6 +26,10 @@ along with GCC; see the file COPYING3.  If not see
 
 /* (Incomplete) Design Notes
 
+   There are two different modules proposal, TS and ATOM.  Supporting
+   both causes complications, but such is the price of
+   experimentation.  You may not mix compilations of the two schemes.
+   
    Each namespace-scope and container-like decl has a MODULE_OWNER.
    This is MODULE_NONE for the global module, MODULE_PURVIEW for the
    current TU and >= MODULE_IMPORT_BASE for imported modules.  During
@@ -2336,6 +2340,7 @@ struct GTY(()) module_state {
 
   char *filename;	/* BMI Filename */
   location_t loc; 	/* Location referring to module itself.  */
+  location_t from_loc;  /* Location module was imported at.  */
 
   unsigned lazy;	/* Number of lazy sections yet to read.  */
   unsigned loading;	/* Section currently being loaded.  */
@@ -2357,12 +2362,6 @@ struct GTY(()) module_state {
  public:
   void set_import (module_state const *, bool is_export);
   void announce (const char *) const;
-
-  /* The location at whence the module was imported/declared.  */
-  location_t from_loc () const
-  {
-    return module_from_loc (loc);
-  }
 
  public:
   /* Read and write module.  */
@@ -2450,7 +2449,9 @@ struct GTY(()) module_state {
 
  public:
   static module_state *find_module (location_t, tree, bool module_p);
-  bool do_import (const char *filename = NULL);
+  bool do_import (const char *filename, bool check_crc);
+  static module_state *get_module (tree name, module_state * = NULL,
+				   bool insert = false);
 
  private:
   static int maybe_add_global (tree, unsigned &);
@@ -2458,8 +2459,8 @@ struct GTY(()) module_state {
  public:
   static void init ();
   static void fini ();
-  static module_state *get_module (tree name, module_state * = NULL,
-				   bool insert = false);
+  static bool atom_preamble (location_t loc);
+
  public:
   /* Vector indexed by OWNER.  */
   static vec<module_state *, va_gc> *modules;
@@ -2484,7 +2485,7 @@ module_state::module_state (tree name)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     name (name), vec_name (NULL_TREE),
     remap (NULL), unnamed (NULL), from (NULL),
-    filename (NULL), loc (UNKNOWN_LOCATION),
+    filename (NULL), loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     lazy (0), loading (~0u), lru (0), mod (MODULE_UNKNOWN), crc (0)
 {
   direct = exported = false;
@@ -2549,61 +2550,88 @@ class module_server {
   char *pos;	/* Read/Write point in buffer.  */
   char *end;	/* Ending NUL byte.  */
   char *start;  /* Start of current response line.  */
+  bool batching;
 
 private:
   /* Construction always succeeds, but may result in a dead server.  */
-  module_server (const char *connection);
+  module_server (location_t loc, const char *connection);
   ~module_server ()
   {
-    if (from)
-      kill ();
+    gcc_assert (!from);
   }
 
 private:
-  void kill ();
-  static module_server *make (const char *);
+  void kill (location_t);
+  static module_server *make (location_t loc, const char *);
 
 public:
-  static module_server *get ()
+  static module_server *get (location_t loc)
   {
     if (!server)
-      server = make (module_server_name);
+      server = make (loc, module_server_name);
     return server->from ? server : NULL;
   }
-  static void fini (bool reset = false)
+  static void fini (location_t loc, bool reset = false)
   {
-    if (server && reset)
-      server->reset ();
-    delete server;
-    server = NULL;
+    if (server)
+      {
+	if (reset)
+	  server->reset ();
+	server->kill (loc);
+	delete server;
+	server = NULL;
+      }
   }
 
 public:
-  char *import_query (tree name, location_t from);
-  char *export_query (tree name);
-  bool export_done (tree name);
+  static char *import_export (const module_state *, bool export_p);
+  static bool export_done (const module_state *);
+
+public:
+  bool cork ()
+  {
+    batching = true;
+    return batching;
+  }
+  void uncork ()
+  {
+    batching = false;
+  }
+  bool corked () const
+  {
+    return batching;
+  }
+
+public:
+  void import_query (const module_state *, bool async);
+  void export_query (const module_state *);
+  char *bmi_response (const module_state *state)
+  {
+    return get_response (state->from_loc) ? bmi_resp (state) : NULL;
+  }
+  void await_cmd ()
+  {
+    send_command ("AWAIT");
+  }
+  bool async_response (location_t);
+  module_state *await_response (location_t, char *&);
 
 private:
   void reset ();
-  bool handshake (const char *main_src);
-  char *import_export_query (const char *, tree name, const char *);
-  void send_command (bool, const char * = NULL, ...);
-  bool get_response (bool = false);
-  bool next_line (bool more)
+  bool handshake (location_t, const char *main_src);
+  void send_command (const char * = NULL, ...) ATTRIBUTE_PRINTF_2;
+  bool get_response (location_t);
+  char *response_token (location_t);
+  int response_word (location_t, const char *, ...);
+  const char *response_error ()
   {
-    if (!more)
-      end = buffer;
+    const char *result = pos != end ? pos : "unspecified error";
     pos = end;
-    return more;
+    return result;
   }
-  char *response_token ();
-  int response_word (const char *, ...);
-  void response_error ();
-  void response_unexpected ();
-  bool response_end_p () const
-  {
-    return pos == end;
-  }
+  void response_unexpected (location_t);
+  void response_eol (location_t);
+  char *bmi_resp (const module_state *);
 
 private:
   static module_server *server;
@@ -2681,8 +2709,8 @@ dumper::push (module_state *m)
   if (!dumps || !dumps->stack.space (1))
     {
       /* Create or extend the dump implementor.  */
-      bool current = dumps ? dumps->stack.length () : 0;
-      unsigned count = current ? current *2 : MODULE_STAMP ? 1 : 20;
+      unsigned current = dumps ? dumps->stack.length () : 0;
+      unsigned count = current ? current * 2 : MODULE_STAMP ? 1 : 20;
       size_t alloc = (offsetof (impl, impl::stack)
 		      + impl::stack_t::embedded_size (count));
       dumps = XRESIZEVAR (impl, dumps, alloc);
@@ -6316,6 +6344,7 @@ module_state::init ()
 		     global_vec->length (), global_crc);
   for (unsigned ix = global_vec->length (); ix--;)
     TREE_VISITED ((*global_vec)[ix]) = false;
+
   dump.pop (0);
 }
 
@@ -6373,10 +6402,11 @@ module_state::announce (const char *what) const
    client-side socket handling in the compiler.  At least it's not
    ipv4.  */
 
-module_server::module_server (const char *option)
+module_server::module_server (location_t loc, const char *option)
   : name (NULL), from (NULL), to (NULL), pex (NULL),
     /* Exercise buffer expansion code.  */
-    buffer (NULL), size (MODULE_STAMP ? 3 : 200), pos (NULL), end (NULL)
+    buffer (NULL), size (MODULE_STAMP ? 3 : 200), pos (NULL), end (NULL),
+    start (NULL), batching (false)
 {
   pex = NULL;
   
@@ -6411,17 +6441,24 @@ module_server::module_server (const char *option)
   writable = XNEWVEC (char, len + 1);
   memcpy (writable, option, len + 1);
 
+  char *cookie = NULL;
   int fd_in = -1, fd_out = -1;
 
   /* Try a file number or pair of same.  */
   char *endp;
   if (!defaulting)
     {
-      unsigned long lfd_in = strtoul (option, &endp, 10);
+      unsigned long lfd_in = strtoul (writable, &endp, 10);
       unsigned long lfd_out = lfd_in;
       if (*endp == ',')
 	lfd_out = strtoul (endp + 1, &endp, 10);
-      if (!*endp && lfd_in != ULONG_MAX && lfd_out != ULONG_MAX)
+      if (*endp == '?')
+	cookie = endp + 1;
+      else if (*endp == '/')
+	cookie = endp;
+
+      if ((cookie || !*endp)
+	  && lfd_in != ULONG_MAX && lfd_out != ULONG_MAX)
 	{
 	  fd_in = int (lfd_in);
 	  fd_out = int (lfd_out);
@@ -6430,7 +6467,7 @@ module_server::module_server (const char *option)
 
   if (!defaulting && fd_in < 0 && !count)
     {
-      /* There are no spaces in it, try opening a socket.  */
+      /* There are no spaces in the name, try opening a socket.  */
       int port = -1;
 #ifdef HOST_HAS_AF
       union saddr {
@@ -6448,10 +6485,16 @@ module_server::module_server (const char *option)
 #ifdef HOST_HAS_AF
       saddr.fam = AF_UNSPEC;
 #endif
-      if (IS_ABSOLUTE_PATH (option))
+      if (IS_ABSOLUTE_PATH (writable))
 	{
 	  /* An absolute path is treated as a local domain socket.  */
 #ifdef HOST_HAS_AF_UNIX
+	  cookie = static_cast <char *> (memchr (writable, '?', len));
+	  if (cookie)
+	    {
+	      len = cookie - writable;
+	      *cookie++ = 0;
+	    }
 	  if (len < sizeof (saddr.un.sun_path))
 	    {
 	      memset (&saddr.un, 0, sizeof (saddr.un));
@@ -6467,7 +6510,12 @@ module_server::module_server (const char *option)
       else if (char *colon = (char *)memrchr (writable, ':', len))
 	{
 	  port = strtoul (colon + 1, &endp, 10);
-	  if (!*endp)
+	  if (*endp == '?')
+	    cookie = endp + 1;
+	  else if (*endp == '/')
+	    cookie = endp;
+
+	  if (cookie || !*endp)
 	    {
 	      /* Ends in ':number', treat as ipv6 domain socket.  */
 	      *colon = 0;
@@ -6557,9 +6605,13 @@ module_server::module_server (const char *option)
 	    ptr++;
 	  if (!*ptr)
 	    break;
-	  argv[count++] = ptr;
-	  while (*ptr && !ISSPACE (*ptr))
-	    ptr++;
+	  for (argv[count++] = ptr; *ptr && !ISSPACE (*ptr); ptr++)
+	    if (*ptr == '?' && count == 1)
+	      {
+		cookie = ptr;
+		*cookie++ = 0;
+	      }
+
 	  if (!*ptr)
 	    break;
 	  *ptr = 0;
@@ -6619,7 +6671,7 @@ module_server::module_server (const char *option)
       inform (input_location, err < 0 ? "%s" : err > 0 ? "%m"
 	      : "here's a nickel, kid.  Get yourself a real computer",
 	      hstrerror (-err));
-      kill ();
+      kill (loc);
       return;
     }
 
@@ -6631,14 +6683,14 @@ module_server::module_server (const char *option)
 
   pos = end = buffer = XNEWVEC (char, size);
 
-  if (!handshake (main_input_filename))
-    kill ();
+  if (!handshake (loc, cookie ? cookie : main_input_filename))
+    kill (loc);
 }
 
 /* Close down the server.  Mark it as not restartable.  */
 
 void
-module_server::kill ()
+module_server::kill (location_t loc)
 {
   if (to)
     fclose (to);
@@ -6652,11 +6704,11 @@ module_server::kill ()
       pex = NULL;
 
       if (WIFSIGNALED (status))
-	error ("module server %qs died by signal %s",
-	       name, strsignal (WTERMSIG (status)));
+	error_at (loc, "module server %qs died by signal %s",
+		  name, strsignal (WTERMSIG (status)));
       else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
-	error ("module server %qs exit status %d",
-	       name, WEXITSTATUS (status));
+	error_at (loc, "module server %qs exit status %d",
+		  name, WEXITSTATUS (status));
     }
   else if (from)
     fclose (from);
@@ -6670,51 +6722,54 @@ module_server::kill ()
 /* Create a new server connecting to OPTION.  */
 
 module_server *
-module_server::make (const char *option)
+module_server::make (location_t loc, const char *option)
 {
   if (!option)
     if (char const *env = getenv ("CXX_MODULE_SERVER"))
       if (env[0])
 	option = env;
 
-  return new module_server (option);
+  return new module_server (loc, option);
 }
 
 /* Send a command to the server.  */
 
 void
-module_server::send_command (bool more, const char *format, ...)
+module_server::send_command (const char *format, ...)
 {
-  gcc_checking_assert (more || format);
-
   size_t actual = 0;
-  if (more)
-    *end++ = format ? '+' : '-';
- again:
-  if (format)
-    {
-      va_list args;
-      va_start (args, format);
-      size_t available = (buffer + size) - end;
-      gcc_checking_assert (available);
-      actual = vsnprintf (end, available - 1, format, args);
-      va_end (args);
-      if (actual > available - 1)
-	{
-	  size = actual + 20;
-	  char *next = XRESIZEVEC (char, buffer, size);
-	  end = next + (end - buffer);
-	  buffer = end;
-	  goto again;
-	}
-    }
-  if (more)
+  if (pos != buffer)
+    pos = end = buffer;
+  if (batching)
+    *end++ = '+';
+  else if (end != buffer)
+    *end++ = '-';
+
+  if (*format)
+    for (;;)
+      {
+	va_list args;
+	va_start (args, format);
+	size_t available = (buffer + size) - end;
+	gcc_checking_assert (available);
+	actual = vsnprintf (end, available - 1, format, args);
+	va_end (args);
+	if (actual < available)
+	  break;
+
+	size = size * 2 + actual + 20;
+	char *next = XRESIZEVEC (char, buffer, size);
+	end = next + (end - buffer);
+	buffer = pos = next;
+      }
+
+  if (batching)
     dump () && dump ("Server pending request:%s", end);
   else
     dump () && dump ("Server request:%s", buffer);
   end += actual;
   *end++ = '\n';
-  if (!more)
+  if (!batching)
     {
       fwrite (buffer, 1, end - buffer, to);
       end = pos = buffer;
@@ -6724,9 +6779,9 @@ module_server::send_command (bool more, const char *format, ...)
 /* Read a response from the server.   Server may die.  */
 
 bool
-module_server::get_response (bool pending)
+module_server::get_response (location_t loc)
 {
-  if (pending)
+  if (batching)
     pos = end + 1;
   else
     {
@@ -6737,8 +6792,7 @@ module_server::get_response (bool pending)
       if (!fgets (buffer + off, size - off, from))
 	{
 	  const char *err = ferror (from) ? "error" : "end of file";
-	  error ("unexpected %s from module server %qs", err, name);
-	  kill ();
+	  error_at (loc, "unexpected %s from module server %qs", err, name);
 	  off = 0;
 	}
       else
@@ -6752,8 +6806,10 @@ module_server::get_response (bool pending)
 	      buffer = next;
 	      goto more;
 	    }
+
 	  if (pos[0] == '+')
 	    {
+	      batching = true;
 	      pos = buffer + off;
 	      goto more;
 	    }
@@ -6767,15 +6823,14 @@ module_server::get_response (bool pending)
     }
 
   start = pos;
-  bool more = *pos == '+';
-  bool done = *pos == '-';
-  if (more | done)
+  batching = *pos == '+';
+  if (batching || *pos == '-')
     pos++;
 
   while (*pos != '\n' && ISSPACE (*pos))
     pos++;
 
-  if (more)
+  if (batching)
     {
       end = strchr (pos, '\n');
       if (end)
@@ -6784,34 +6839,35 @@ module_server::get_response (bool pending)
 	end = pos + strlen (pos);
     }
 
-  return more;
+  return *pos != 0;
 }
 
 void
-module_server::response_unexpected ()
+module_server::response_unexpected (location_t loc)
 {
   /* Restore the whitespace we zapped tokenizing.  */
   for (char *ptr = start; ptr != pos; ptr++)
     if (!*ptr)
       *ptr = ' ';
-  error ("unexpected server response %qs", start);
-}
-
-void
-module_server::response_error ()
-{
-  error ("server error %qs", pos != end ? pos : "unspecfied");
+  error_at (loc, "server response malformed: %qs", start);
   pos = end;
 }
 
+void
+module_server::response_eol (location_t loc)
+{
+  if (pos != end)
+    response_unexpected (loc);
+}
+
 char *
-module_server::response_token ()
+module_server::response_token (location_t loc)
 {
   char *ptr = pos;
 
   if (ptr == end)
     {
-      response_unexpected ();
+      response_unexpected (loc);
       ptr = NULL;
     }
   else
@@ -6833,9 +6889,9 @@ module_server::response_token ()
 }
 
 int
-module_server::response_word (const char *option, ...)
+module_server::response_word (location_t loc, const char *option, ...)
 {
-  if (const char *tok = response_token ())
+  if (const char *tok = response_token (loc))
     {
       va_list args;
       int count = 0;
@@ -6853,24 +6909,24 @@ module_server::response_word (const char *option, ...)
 	}
       while (option);
       va_end (args);
-      response_unexpected ();
+      response_unexpected (loc);
     }
   return -1;
 }
 
 /*  Module server protocol non-canonical precis:
 
-    HELLO version mainfile
+    HELLO version flags cookie
     	-> HELLO/ERROR response
     INCLUDE header-name from
     	-> INCLUDE/IMPORT reponse
-    [DEFER] BMI|SEARCH|PATH module-name from
+    [ASYNC] BMI|SEARCH|PATH module-name from
     	-> BMI bmipath
 	-> SEARCH srcbase
 	-> PATH srcpath
 	-> ERROR
-    DEFERRED
-	-> deferred response
+    AWAIT
+	-> OK module-name deferred response
     EXPORT module-name
     	-> BMI bmipath
     DONE module-name
@@ -6882,96 +6938,149 @@ module_server::response_word (const char *option, ...)
 void
 module_server::reset ()
 {
-  send_command (false, "RESET");
+  send_command ("RESET");
 }
 
 /* Start handshake.  */
 
 bool
-module_server::handshake (const char *main_file)
+module_server::handshake (location_t loc, const char *cookie)
 {
-  send_command (false, "HELLO %d %s", SERVER_VERSION, main_file);
+  send_command ("HELLO %d 0 %s", SERVER_VERSION, cookie);
 
-  get_response ();
-  bool ok = false;
-  switch (response_word ("HELLO", "ERROR", NULL))
+  bool ok = get_response (loc);
+  switch (response_word (loc, "HELLO", "ERROR", NULL))
     {
     default:
+      ok = false;
       break;
 
-    case 0: /* HELLO $ver */
-      if (char *ver = response_token ())
+    case 0: /* HELLO $ver $attr */
+      if (char *ver = response_token (loc))
 	dump () && dump ("Connected to server version %s", ver);
+      /* Read, ignore attribs.  */
+      response_token (loc);
+      response_eol (loc);
       ok = true;
       break;
 
     case 1: /* ERROR $msg */
-      response_error ();
+      error_at (loc, "server handshake failure: %s", response_error ());
+      ok = false;
       break;
     }
 
-  next_line (false);
   return ok;
 }
 
-char *
-module_server::import_export_query (const char *query, tree name,
-				    const char *loc)
+void
+module_server::import_query (const module_state *state, bool async)
 {
-  if (noisy_p ())
-    {
-      fprintf (stderr, " query:%s", IDENTIFIER_POINTER (name));
-      fflush (stderr);
-    }
+  send_command ("%sBMI %s %s", async ? "ASYNC " : "",
+		IDENTIFIER_POINTER (state->name),
+		LOCATION_FILE (state->from_loc));
+}
 
-  send_command (false, "%s %s %s", query, IDENTIFIER_POINTER (name), loc);
-  get_response ();
+void
+module_server::export_query (const module_state *state)
+{
+  send_command ("EXPORT %s", IDENTIFIER_POINTER (state->name));
+}
+
+char *
+module_server::bmi_resp (const module_state *state)
+{
   char *filename = NULL;
 
-  switch (response_word ("BMI", "ERROR", NULL))
+  switch (response_word (state->from_loc, "BMI", "ERROR", NULL))
     {
     default:
       break;
 
     case 0: /* BMI $bmifile  */
-      filename = response_token ();
+      filename = response_token (state->from_loc);
+      response_eol (state->from_loc);
       break;
 
     case 1: /* ERROR $msg */
-      if (!response_end_p ())
-	response_error ();
+      error_at (state->from_loc, "server cannot provide module %qE: %s",
+		state->name, response_error ());
       break;
     }
-  next_line (false);
+
   return filename;
+}
+
+bool
+module_server::async_response (location_t loc)
+{
+  get_response (loc);
+  switch (response_word (loc, "OK", "ERROR", NULL))
+    {
+    default:
+      break;
+
+    case 0: /* OK  */
+      response_eol (loc);
+      return true;
+      break;
+
+    case 1: /* ERROR $msg */
+      error_at (loc, "server asynchronous failure: %s", response_error ());
+      break;
+    }
+  return false;
+}
+
+module_state *
+module_server::await_response (location_t loc, char *&fname)
+{
+  if (!get_response (loc))
+    return NULL;
+
+  if (response_word (loc, "OK", NULL))
+    return NULL;
+
+  char *name_str = response_token (loc);
+  if (!name_str)
+    return NULL;
+
+  tree name = get_identifier (name_str);
+  module_state *state = module_state::get_module (name);
+  if (state)
+    fname = bmi_resp (state);
+  return state;
 }
 
 /* Import query.  */
 
 char *
-module_server::import_query (tree name, location_t loc)
+module_server::import_export (const module_state *state, bool export_p)
 {
-  return import_export_query ("BMI", name, LOCATION_FILE (loc));
-}
-
-/* Export query.  */
-
-char *
-module_server::export_query (tree name)
-{
-  return import_export_query ("EXPORT", name, "");
+  if (module_server *server = get (state->from_loc))
+    {
+      if (export_p)
+	server->export_query (state);
+      else
+	server->import_query (state, false);
+      return server->bmi_response (state);
+    }
+  return NULL;
 }
 
 /* Export done.  */
 
 bool
-module_server::export_done (tree name)
+module_server::export_done (const module_state *state)
 {
-  dump () && dump ("Completed server");
-  send_command (false, "DONE %s", IDENTIFIER_POINTER (name));
-  get_response ();
-  bool ok = response_word ("OK", NULL) == 0;
-  next_line (false);
+  bool ok = false;
+  if (module_server *server = get (state->from_loc))
+    {
+      dump () && dump ("Completed server");
+      server->send_command ("DONE %s", IDENTIFIER_POINTER (state->name));
+      server->get_response (state->from_loc);
+      ok = server->response_word (state->from_loc, "OK", NULL) == 0;
+    }
   return ok;
 }
 
@@ -7141,10 +7250,12 @@ module_state::read_imports (bytes_in &cfg, bool direct)
 	  if (imp && !imp->filename)
 	    {
 	      imp->crc = crc;
-	      if (!imp->do_import (filename_str))
+	      unsigned n = dump.push (imp);
+	      if (!imp->do_import (filename_str, true))
 		imp = NULL;
 	      else
 		set_import (imp, exported);
+	      dump.pop (n);
 	    }
 	}
       else
@@ -7152,11 +7263,11 @@ module_state::read_imports (bytes_in &cfg, bool direct)
 
       if (imp && imp->filename && imp->crc != crc)
 	{
-	  error ("import %qE has CRC mismatch", name);
+	  error_at (loc, "import %qE has CRC mismatch", name);
 	  imp = NULL;
 	}
       else if (!imp && !direct)
-	error ("indirect import %qE is not already loaded", name);
+	error_at (loc, "indirect import %qE is not already loaded", name);
 
       if (!imp)
 	{
@@ -7285,15 +7396,15 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
       if (my_date != their_date)
 	{
 	  /* Dates differ, decline.  */
-	  error ("file is version %s, this is version %s",
-		 their_string, my_string);
+	  error_at (loc, "file is version %s, this is version %s",
+		    their_string, my_string);
 	  goto fail;
 	}
       else if (my_time != their_time)
 	/* Times differ, give it a go.  */
-	warning (0, "file is version %s, compiler is version %s,"
-		 " perhaps close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
-		 their_string, my_string);
+	warning_at (loc, 0, "file is version %s, compiler is version %s,"
+		    " perhaps close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
+		    their_string, my_string);
     }
 
   /*  We wrote the inner crc merely to merge it, so simply read it
@@ -7302,7 +7413,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
 
   if (modules_atom_p () != cfg.u ())
     {
-      error ("TS/ATOM mismatch");
+      error_at (loc, "TS/ATOM mismatch");
     fail:
       cfg.set_overrun ();
       return cfg.end (from);
@@ -7315,7 +7426,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   dump () && dump ("Reading CRC=%x", crc);
   if (check_crc && crc != e_crc)
     {
-      error ("module %qE CRC mismatch", name);
+      error_at (loc, "module %qE CRC mismatch", name);
       goto fail;
     }
 
@@ -7325,7 +7436,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
       || memcmp (their_name, IDENTIFIER_POINTER (name),
 		 IDENTIFIER_LENGTH (name)))
     {
-      error ("module %qs found, expected module %qE", their_name, name);
+      error_at (loc, "module %qs found, expected module %qE", their_name, name);
       goto fail;
     }
 
@@ -7336,8 +7447,8 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   if (strcmp (their_target, TARGET_MACHINE)
       || strcmp (their_host, HOST_MACHINE))
     {
-      error ("target & host is %qs:%qs, expected %qs:%qs",
-	     their_target, TARGET_MACHINE, their_host, HOST_MACHINE);
+      error_at (loc, "target & host is %qs:%qs, expected %qs:%qs",
+		their_target, TARGET_MACHINE, their_host, HOST_MACHINE);
       goto fail;
     }
 
@@ -7347,8 +7458,8 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   char *our_opts = get_option_string ();
   if (strcmp (their_opts, our_opts))
     {
-      error ("compilation options differ %qs, expected %qs",
-	     their_opts, our_opts);
+      error_at (loc, "compilation options differ %qs, expected %qs",
+		their_opts, our_opts);
       goto fail;
     }
   XDELETEVEC (our_opts);
@@ -7360,7 +7471,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   if (their_glength != global_vec->length ()
       || their_gcrc != global_crc)
     {
-      error ("global tree mismatch");
+      error_at (loc, "global tree mismatch");
       goto fail;
     }
 
@@ -7393,7 +7504,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   if (sec_range.first > sec_range.second
       || sec_range.second > from->get_num_sections ())
     {
-      error ("paradoxical declaration section range");
+      error_at (loc, "paradoxical declaration section range");
       goto fail;
     }
 
@@ -7438,7 +7549,7 @@ module_state::read_function_def (trees_in &in, tree decl)
     {
       if (mod != MAYBE_DECL_MODULE_OWNER (decl))
 	{
-	  error ("unexpected definition of %q#D", decl);
+	  error_at (loc, "unexpected definition of %q#D", decl);
 	  in.set_overrun ();
 	  return false;
 	}
@@ -8807,10 +8918,9 @@ module_state::read (FILE *stream, int e, bool check_crc)
     return;
 
   /* Determine the module's number.  */
-  unsigned ix = MODULE_PURVIEW;
-  if (this != (*modules)[MODULE_NONE])
+  if (mod == MODULE_UNKNOWN)
     {
-      ix = modules->length ();
+      unsigned ix = modules->length ();
       if (ix == MODULE_LIMIT)
 	{
 	  sorry ("too many modules loaded (limit is %u)", ix);
@@ -8823,10 +8933,13 @@ module_state::read (FILE *stream, int e, bool check_crc)
 	  bitmap_set_bit (imports, ix);
 	  bitmap_set_bit (exports, ix);
 	}
+      mod = ix;
     }
-  mod = ix;
-  (*remap)[MODULE_PURVIEW] = ix;
-  dump () && dump ("Assigning %N module number %u", name, ix);
+  else
+    gcc_assert (mod == MODULE_PURVIEW);
+
+  (*remap)[MODULE_PURVIEW] = mod;
+  dump () && dump ("Assigning %N module number %u", name, mod);
 
   /* We may have been frozen during the importing done by read_config.  */
   maybe_defrost ();
@@ -9227,8 +9340,10 @@ module_state::find_module (location_t from_loc, tree name, bool module_p)
 	{
 	  (*modules)[MODULE_PURVIEW] = state;
 	  current_module = MODULE_PURVIEW;
+	  state->mod = MODULE_PURVIEW;
 	}
 
+      state->from_loc = from_loc;
       state->loc = make_module_loc (from_loc, IDENTIFIER_POINTER (name));
       if (identifier_p (maybe_vec_name))
 	{
@@ -9258,7 +9373,7 @@ module_state::find_module (location_t from_loc, tree name, bool module_p)
       /* Cannot import the current module.  */
       error_at (from_loc, "cannot import module %qE in its own purview",
 		state->name);
-      inform (state->from_loc (), "module %qE declared here", state->name);
+      inform (state->from_loc, "module %qE declared here", state->name);
       return NULL;
     }
   else
@@ -9266,12 +9381,11 @@ module_state::find_module (location_t from_loc, tree name, bool module_p)
       /* A circular dependency cannot exist solely in the imported
          unit graph, it must go via the current TU, and we discover
          that differently.  */
-      gcc_assert (state->mod != MODULE_UNKNOWN);
       if (module_p)
 	{
 	  /* Cannot be module unit of an imported module.  */
 	  error_at (from_loc, "cannot declare module after import");
-	  inform (state->from_loc (), "module %qE imported here", state->name);
+	  inform (state->from_loc, "module %qE imported here", state->name);
 	  return NULL;
 	}
     }
@@ -9283,20 +9397,15 @@ module_state::find_module (location_t from_loc, tree name, bool module_p)
    know it as.  CRC_PTR points to the CRC value we expect.  */
 
 bool
-module_state::do_import (char const *fname)
+module_state::do_import (char const *fname, bool check_crc)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  unsigned n = dump.push (this);
   if (!lazy_open)
     freeze_an_elf ();
 
   gcc_assert (!filename);
 
-  bool check_crc = fname != NULL;
-  if (!fname)
-    if (module_server *server = module_server::get ())
-      fname = server->import_query (name, input_location);
   FILE *stream = NULL;
   int e = ENOENT;
   if (fname)
@@ -9311,11 +9420,10 @@ module_state::do_import (char const *fname)
   announce ("importing");
   vec_safe_push (importing, this);
   read (stream, e, check_crc);
-  bool failed = check_read (direct);
+  bool failed = check_read (direct && !modules_atom_p ());
   importing->pop ();
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
   input_location = saved_loc;
-  dump.pop (n);
 
   return !failed;
 }
@@ -9400,14 +9508,23 @@ import_module (const cp_expr &name, bool exporting, tree)
     exporting = true;
 
   gcc_assert (global_namespace == current_scope ());
-  if (module_state *imp
-      = module_state::find_module (name.get_location (), *name, false))
+  location_t from_loc = name.get_location ();
+  if (module_state *imp = module_state::find_module (from_loc, *name, false))
     {
       imp->direct = true;
       if (exporting)
 	imp->exported = true;
-      if (imp->filename || imp->do_import ())
-	(*module_state::modules)[MODULE_NONE]->set_import (imp, imp->exported);
+      if (!modules_atom_p ())
+	{
+	  if (!imp->filename)
+	    {
+	      unsigned n = dump.push (imp);
+	      char *fname = module_server::import_export (imp, false);
+	      imp->do_import (fname, false);
+	      dump.pop (n);
+	    }
+	  (*module_state::modules)[MODULE_NONE]->set_import (imp, imp->exported);
+	}
     }
 
   gcc_assert (global_namespace == current_scope ());
@@ -9421,18 +9538,123 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  if (module_state *state
-      = module_state::find_module (name.get_location (), *name, true))
+  location_t from_loc = name.get_location ();
+  if (module_state *state = module_state::find_module (from_loc, *name, true))
     {
-      state->direct = true;
       if (exporting_p)
 	{
 	  state->mod = MODULE_PURVIEW;
 	  state->exported = true;
 	}
       else
-	state->do_import ();
+	state->direct = true;
+
+      if (!modules_atom_p ())
+	{
+	  unsigned n = dump.push (state);
+	  char *fname = module_server::import_export (state, exporting_p);
+	  if (exporting_p)
+	    state->filename = fname ? xstrdup (fname) : NULL;
+	  else
+	    state->do_import (fname, false);
+	  dump.pop (n);
+	}
     }
+}
+
+/* The module preamble has been parsed.  Now load all the imports.  */
+
+bool
+module_state::atom_preamble (location_t loc)
+{
+  /* Iterate over the module hash, informing the server of every not
+     loaded (direct) import.  */
+  if (!hash->elements ())
+    return true;
+
+  dump.push (NULL);
+  dump () && dump ("Processing preamble");
+
+  module_state *interface = NULL;
+  if (module_state *mod = (*modules)[MODULE_PURVIEW])
+    if (mod->exported)
+      interface = mod;
+
+  module_server *server = module_server::get (loc);
+  if (!server)
+    return false;
+
+  unsigned imports = 0;
+
+  server->cork ();
+  hash_table<module_state_hash>::iterator end (hash->end ());
+  for (hash_table<module_state_hash>::iterator iter (hash->begin ());
+       iter != end; ++iter)
+    {
+      module_state *imp = *iter;
+      gcc_assert (!imp->filename);
+      if (imp->direct)
+	{
+	  server->import_query (imp, true);
+	  imports++;
+	}
+      else
+	gcc_assert (imp == interface);
+    }
+
+  if (!imports)
+    server->uncork ();
+  if (interface)
+    server->export_query (interface);
+  if (imports)
+    {
+      server->uncork ();
+      server->await_cmd ();
+      server->async_response (loc);
+    }
+  if (interface)
+    if (char *fname = server->bmi_response (interface))
+      interface->filename = xstrdup (fname);
+  if (imports)
+    {
+      char *fname;
+      while (module_state *imp = server->await_response (loc, fname))
+	{
+	  if (!fname)
+	    continue;
+
+	  if (!imp->direct || imp == interface
+	      || (imp->filename && strcmp (imp->filename, fname)))
+	    {
+	      error_at (imp->from_loc, "unexpected server response for %qE: %qs",
+		     imp->name, fname);
+	      break;
+	    }
+
+	  unsigned n = dump.push (imp);
+	  if (imp->filename || imp->do_import (fname, false))
+	    {
+	      if (imp->mod != MODULE_PURVIEW)
+		(*modules)[MODULE_NONE]->set_import (imp, imp->exported);
+	      imports--;
+	    }
+	  dump.pop (n);
+	}
+    }
+
+  dump.pop (0);
+
+  return imports == 0;
+}
+
+/* Do processing after a (non-empty) atom preamble has been parsed.  LOC is the
+   final location of the preamble.  */
+
+void
+atom_module_preamble (location_t loc)
+{
+  if (!module_state::atom_preamble (loc))
+    fatal_error (loc, "returning to gate for a mechanical issue");
 }
 
 /* Convert the module search path.  */
@@ -9456,15 +9678,10 @@ finish_module ()
   module_state *state = (*module_state::modules)[MODULE_PURVIEW];
   if (state && state->exported && !errorcount)
     {
-      module_server *server = module_server::get ();
-      char *filename = NULL;
-      if (server)
-	filename = server->export_query (state->name);
       FILE *stream = NULL;
       int e = ENOENT;
-      if (filename)
+      if (state->filename)
 	{
-	  state->filename = xstrdup (filename);
 	  stream = fopen (state->filename, "wb");
 	  e = errno;
 	}
@@ -9482,8 +9699,8 @@ finish_module ()
 
       dump.pop (n);
       input_location = saved_loc;
-      if (server && !errorcount)
-	server->export_done (state->name);
+      if (!errorcount)
+	module_server::export_done (state);
     }
 
   if (state)
@@ -9493,7 +9710,7 @@ finish_module ()
       state->release ();
     }
 
-  module_server::fini ();
+  module_server::fini (input_location);
 }
 
 /* Try and exec ourselves to repeat the preamble scan with
@@ -9517,7 +9734,7 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
   dump.push (NULL);
   dump () && dump ("About to reexec with prefix length %u", count);
   module_state::fini ();
-  module_server::fini (true);
+  module_server::fini (loc, true);
   /* The preprocessor does not leave files open, so we can ignore the
      pfile arg.  */
   
@@ -9534,6 +9751,10 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
   sprintf (fpreamble, "-fmodule-preamble=%d", count);
 
   dump.pop (0);
+  if (noisy_p ())
+    fprintf (stderr, "Reinvoking %s with %s due to ambiguous preamble\n",
+	     argv[0], fpreamble);
+
   /* You have to wake up.  */
   execv (argv[0], argv);
   fatal_error (loc, "I was stung by a Space Bee");

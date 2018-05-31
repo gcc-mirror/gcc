@@ -2477,6 +2477,29 @@ _cpp_token_from_context_at (cpp_context *context, int index)
    abort ();
 }
 
+/* Adjust the location of any peeked tokens by ADJUST.  Only certain
+   kind of peeking can have occurred.  An indirect token buffer will
+   have come from macro expansion.  Its originating token will be
+   before the cut, so we don't have to relocate anything about it.  */
+
+void
+cpp_relocate_peeked_tokens (cpp_reader *pfile, unsigned adjust)
+{
+  cpp_context *context = pfile->context;
+  
+  if (context->tokens_kind == TOKENS_KIND_DIRECT)
+    {
+      const cpp_token *end = LAST (context).token;
+      for (const cpp_token *tok = FIRST (context).token; tok != end; tok++)
+	/* Usually peeked tokens are immutable, but not in this case.  */
+	const_cast <cpp_token *> (tok)->src_loc += adjust;
+    }
+  else
+    gcc_checking_assert (!context->prev
+			 || !_cpp_remaining_tokens_num_in_context
+			 (context->prev));
+}
+
 /* Look ahead in the input stream.  */
 const cpp_token *
 cpp_peek_token (cpp_reader *pfile, int index)

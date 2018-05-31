@@ -606,12 +606,52 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 source_location
 linemap_module_loc (line_maps *set, source_location from, const char *name)
 {
-  linemap_assert (!set->depth);
   const line_map *map = linemap_add (set, LC_MODULE, false, name, 0);
 
-  LINEMAP_MODULE_SET_FROM (map, from);
+  const_cast <line_map_ordinary *> (linemap_check_ordinary (map))
+    ->included_at = from;
 
   return linemap_line_start (set, 0, 0);
+}
+
+/* We're about to parse a module preamble, and this will insert
+   linemaps.  Reset the current line map to end at FINAL, and return a
+   cookie we can use to restore the linemap state to that point.  */
+   
+unsigned
+linemap_save_pre_module (line_maps *set, source_location final)
+{
+  unsigned hwm = LINEMAPS_USED (set, false);
+
+  if (hwm)
+    set->highest_line = final;
+
+  return hwm;
+}
+
+/* A linemap at LWM was interrupted to insert module locations.
+   Append a new map, continuing the interrupted one.  Return
+   adjustment to apply to peeked cpp tokens.. */
+
+unsigned
+linemap_restore_pre_module (line_maps *set, unsigned lwm)
+{
+  unsigned adjust = 0;
+
+  if (lwm && lwm != LINEMAPS_USED (set, false))
+    {
+      const line_map_ordinary *pre_map
+	= linemap_check_ordinary (LINEMAPS_MAP_AT (set, false, lwm - 1));
+      unsigned src_line = SOURCE_LINE (pre_map,
+				       LAST_SOURCE_LINE_LOCATION (pre_map));
+      const line_map_ordinary *post_map = linemap_check_ordinary
+	(linemap_add (set, LC_RENAME_VERBATIM,
+		      ORDINARY_MAP_IN_SYSTEM_HEADER_P (pre_map),
+		      ORDINARY_MAP_FILE_NAME (pre_map), src_line));
+      adjust = post_map->start_location - pre_map->start_location;
+    }
+
+  return adjust;
 }
 
 /* Returns TRUE if the line table set tracks token locations across

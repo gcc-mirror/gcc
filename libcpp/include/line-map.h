@@ -1093,14 +1093,13 @@ extern const struct line_map *linemap_add
 extern source_location linemap_module_loc
   (line_maps *, source_location from, const char *name);
 
-/* Reseat a module location map with a new FROM.  */
+/* Save linemap state just before parsing an ATOM preamble.  */
+extern unsigned linemap_save_pre_module
+  (line_maps *, source_location);
 
-inline void
-LINEMAP_MODULE_SET_FROM (const line_map *map, source_location from)
-{
-  const_cast <line_map_ordinary *> (linemap_check_ordinary (map))
-    ->included_at = from;
-}
+/* Restore the linemap state such that the map at LWM continues.  */
+extern unsigned linemap_restore_pre_module
+  (line_maps *, unsigned lwm);
 
 /* Given a logical source location, returns the map which the
    corresponding (source file, line, column) triplet can be deduced

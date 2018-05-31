@@ -95,7 +95,6 @@ cmd () {
 	    # process an ASYNC
 	    if test $async_ix -ne 0 ; then
 		((async_ix--))
-		eval echo cmd '"${'async$async_ix'[@]}"'
 		eval cmd '"${'async$async_ix'[@]}"'
 		eval resp='"OK ${'async$async_ix'[1]} $line"'
 	    else
@@ -133,7 +132,7 @@ cmd () {
 	    ;;
 	(HELLO)
 	    if test "$2" = $VERSION ; then
-		main="$3"
+		main="$4"
 		resp="HELLO $VERSION 0"
 	    else
 		resp="ERROR Bad version (expect $VERSION)"
