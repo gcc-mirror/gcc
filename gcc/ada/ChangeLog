@@ -1,3 +1,9 @@
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Discriminant_Check): Do not apply discriminant
+	check to a call to a build-in-place function, given that the return
+	object is limited and cannot be copied.
+
 2018-05-31  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/s-atopri.ads: Update comment on __atomic_compare_exchange
