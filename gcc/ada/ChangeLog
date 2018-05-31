@@ -1,3 +1,8 @@
+2018-05-31  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/s-osprim__posix2008.adb (Clock): Implement using
+	clock_gettime.
+
 2018-05-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.ads, exp_unst.adb (In_Synchronized_Unit): New predicate to
