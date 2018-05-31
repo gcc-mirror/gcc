@@ -4614,15 +4614,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	gnu_actual
 	  = emit_range_check (gnu_actual, gnat_formal_type, gnat_actual);
 
-      /* Unless this is an In parameter, we must remove any justified modular
-	 building from GNU_NAME to get an lvalue.  */
-      if (!in_param
-	  && TREE_CODE (gnu_name) == CONSTRUCTOR
-	  && TREE_CODE (TREE_TYPE (gnu_name)) == RECORD_TYPE
-	  && TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (gnu_name)))
-	gnu_name
-	  = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_name))), gnu_name);
-
       /* First see if the parameter is passed by reference.  */
       if (is_true_formal_parm && DECL_BY_REF_P (gnu_formal))
 	{
