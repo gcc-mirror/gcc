@@ -5557,8 +5557,9 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
 				  TYPE_SIZE_UNIT (type));
 	  if (integer_zerop (size))
 	    {
-	      error ("%qE in %<reduction%> clause is a zero size array",
-		     omp_clause_printable_decl (t));
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE in %<reduction%> clause is a zero size array",
+			omp_clause_printable_decl (t));
 	      return true;
 	    }
 	  size = size_binop (MINUS_EXPR, size, size_one_node);
@@ -5605,8 +5606,9 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
       }
   else if (TYPE_READONLY (type))
     {
-      error ("%qE has const type for %<reduction%>",
-	     omp_clause_printable_decl (t));
+      error_at (OMP_CLAUSE_LOCATION (c),
+		"%qE has const type for %<reduction%>",
+		omp_clause_printable_decl (t));
       return true;
     }
   else if (!processing_template_decl)
@@ -5768,8 +5770,9 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
     *need_dtor = true;
   else
     {
-      error ("user defined reduction not found for %qE",
-	     omp_clause_printable_decl (t));
+      error_at (OMP_CLAUSE_LOCATION (c),
+		"user defined reduction not found for %qE",
+		omp_clause_printable_decl (t));
       return true;
     }
   if (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF)
@@ -5958,10 +5961,11 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		   || OMP_CLAUSE_LINEAR_KIND (c) == OMP_CLAUSE_LINEAR_UVAL)
 		  && TREE_CODE (type) != REFERENCE_TYPE)
 		{
-		  error ("linear clause with %qs modifier applied to "
-			 "non-reference variable with %qT type",
-			 OMP_CLAUSE_LINEAR_KIND (c) == OMP_CLAUSE_LINEAR_REF
-			 ? "ref" : "uval", TREE_TYPE (t));
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "linear clause with %qs modifier applied to "
+			    "non-reference variable with %qT type",
+			    OMP_CLAUSE_LINEAR_KIND (c) == OMP_CLAUSE_LINEAR_REF
+			    ? "ref" : "uval", TREE_TYPE (t));
 		  remove = true;
 		  break;
 		}
@@ -5972,8 +5976,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (!INTEGRAL_TYPE_P (type)
 		      && TREE_CODE (type) != POINTER_TYPE)
 		    {
-		      error ("linear clause applied to non-integral non-pointer"
-			     " variable with %qT type", TREE_TYPE (t));
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"linear clause applied to non-integral "
+				"non-pointer variable with %qT type",
+				TREE_TYPE (t));
 		      remove = true;
 		      break;
 		    }
@@ -5994,7 +6000,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		       || TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE
 		       || !INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (t)))))
 	    {
-	      error ("linear step expression must be integral");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"linear step expression must be integral");
 	      remove = true;
 	      break;
 	    }
@@ -6086,8 +6093,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  || (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_LINEAR
 		      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_UNIFORM)))
 	    {
-	      error ("%<this%> allowed in OpenMP only in %<declare simd%>"
-		     " clauses");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<this%> allowed in OpenMP only in %<declare simd%>"
+			" clauses");
 	      remove = true;
 	      break;
 	    }
@@ -6097,11 +6105,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (DECL_P (t))
-		error ("%qD is not a variable in clause %qs", t,
-		       omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not a variable in clause %qs", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      else
-		error ("%qE is not a variable in clause %qs", t,
-		       omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not a variable in clause %qs", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
 	  else if (ort == C_ORT_ACC
@@ -6109,7 +6119,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      if (bitmap_bit_p (&oacc_reduction_head, DECL_UID (t)))
 		{
-		  error ("%qD appears more than once in reduction clauses", t);
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qD appears more than once in reduction clauses",
+			    t);
 		  remove = true;
 		}
 	      else
@@ -6119,16 +6131,19 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t))
 		   || bitmap_bit_p (&lastprivate_head, DECL_UID (t)))
 	    {
-	      error ("%qD appears more than once in data clauses", t);
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD appears more than once in data clauses", t);
 	      remove = true;
 	    }
 	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
 		   && bitmap_bit_p (&map_head, DECL_UID (t)))
 	    {
 	      if (ort == C_ORT_ACC)
-		error ("%qD appears more than once in data clauses", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD appears more than once in data clauses", t);
 	      else
-		error ("%qD appears both in data and map clauses", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD appears both in data and map clauses", t);
 	      remove = true;
 	    }
 	  else
@@ -6157,8 +6172,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    t = OMP_CLAUSE_DECL (c);
 	  if (ort != C_ORT_ACC && t == current_class_ptr)
 	    {
-	      error ("%<this%> allowed in OpenMP only in %<declare simd%>"
-		     " clauses");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<this%> allowed in OpenMP only in %<declare simd%>"
+			" clauses");
 	      remove = true;
 	      break;
 	    }
@@ -6169,23 +6185,30 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (DECL_P (t))
-		error ("%qD is not a variable in clause %<firstprivate%>", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not a variable in clause %<firstprivate%>",
+			  t);
 	      else
-		error ("%qE is not a variable in clause %<firstprivate%>", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not a variable in clause %<firstprivate%>",
+			  t);
 	      remove = true;
 	    }
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
 		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
 	    {
-	      error ("%qD appears more than once in data clauses", t);
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD appears more than once in data clauses", t);
 	      remove = true;
 	    }
 	  else if (bitmap_bit_p (&map_head, DECL_UID (t)))
 	    {
 	      if (ort == C_ORT_ACC)
-		error ("%qD appears more than once in data clauses", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD appears more than once in data clauses", t);
 	      else
-		error ("%qD appears both in data and map clauses", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD appears both in data and map clauses", t);
 	      remove = true;
 	    }
 	  else
@@ -6200,8 +6223,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    t = OMP_CLAUSE_DECL (c);
 	  if (t == current_class_ptr)
 	    {
-	      error ("%<this%> allowed in OpenMP only in %<declare simd%>"
-		     " clauses");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<this%> allowed in OpenMP only in %<declare simd%>"
+			" clauses");
 	      remove = true;
 	      break;
 	    }
@@ -6212,15 +6236,20 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (DECL_P (t))
-		error ("%qD is not a variable in clause %<lastprivate%>", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not a variable in clause %<lastprivate%>",
+			  t);
 	      else
-		error ("%qE is not a variable in clause %<lastprivate%>", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not a variable in clause %<lastprivate%>",
+			  t);
 	      remove = true;
 	    }
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
 		   || bitmap_bit_p (&lastprivate_head, DECL_UID (t)))
 	    {
-	      error ("%qD appears more than once in data clauses", t);
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD appears more than once in data clauses", t);
 	      remove = true;
 	    }
 	  else
@@ -6257,7 +6286,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      else if (!type_dependent_expression_p (t)
 		       && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 		{
-		  error ("%<gang%> static expression must be integral");
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<gang%> static expression must be integral");
 		  remove = true;
 		}
 	      else
@@ -6393,7 +6423,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("schedule chunk size expression must be integral");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"schedule chunk size expression must be integral");
 	      remove = true;
 	    }
 	  else
@@ -6423,8 +6454,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("%qs length expression must be integral",
-		     omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qs length expression must be integral",
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
 	  else
@@ -6436,9 +6468,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) != INTEGER_CST
 		      || tree_int_cst_sgn (t) != 1)
 		    {
-		      error ("%qs length expression must be positive constant"
-			     " integer expression",
-			     omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%qs length expression must be positive "
+				"constant integer expression",
+				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		      remove = true;
 		    }
 		}
@@ -6455,7 +6488,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("%<async%> expression must be integral");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<async%> expression must be integral");
 	      remove = true;
 	    }
 	  else
@@ -6483,7 +6517,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("%<thread_limit%> expression must be integral");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<thread_limit%> expression must be integral");
 	      remove = true;
 	    }
 	  else
@@ -6512,7 +6547,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("%<device%> id must be integral");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<device%> id must be integral");
 	      remove = true;
 	    }
 	  else
@@ -6533,8 +6569,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("%<dist_schedule%> chunk size expression must be "
-		     "integral");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<dist_schedule%> chunk size expression must be "
+			"integral");
 	      remove = true;
 	    }
 	  else
@@ -6550,8 +6587,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  t = OMP_CLAUSE_DECL (c);
 	  if (t == current_class_ptr && ort != C_ORT_OMP_DECLARE_SIMD)
 	    {
-	      error ("%<this%> allowed in OpenMP only in %<declare simd%>"
-		     " clauses");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<this%> allowed in OpenMP only in %<declare simd%>"
+			" clauses");
 	      remove = true;
 	      break;
 	    }
@@ -6560,9 +6598,11 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (DECL_P (t))
-		error ("%qD is not a variable in %<aligned%> clause", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not a variable in %<aligned%> clause", t);
 	      else
-		error ("%qE is not a variable in %<aligned%> clause", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not a variable in %<aligned%> clause", t);
 	      remove = true;
 	    }
 	  else if (!type_dependent_expression_p (t)
@@ -6580,7 +6620,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else if (bitmap_bit_p (&aligned_head, DECL_UID (t)))
 	    {
-	      error ("%qD appears more than once in %<aligned%> clauses", t);
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD appears more than once in %<aligned%> clauses",
+			t);
 	      remove = true;
 	    }
 	  else
@@ -6593,8 +6635,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("%<aligned%> clause alignment expression must "
-		     "be integral");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<aligned%> clause alignment expression must "
+			"be integral");
 	      remove = true;
 	    }
 	  else
@@ -6606,8 +6649,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) != INTEGER_CST
 		      || tree_int_cst_sgn (t) != 1)
 		    {
-		      error ("%<aligned%> clause alignment expression must be "
-			     "positive constant integer expression");
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%<aligned%> clause alignment expression must "
+				"be positive constant integer expression");
 		      remove = true;
 		    }
 		}
@@ -6622,15 +6666,20 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
 	      if (DECL_P (t))
-		error ("%qD is not a variable in %<nontemporal%> clause", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not a variable in %<nontemporal%> clause",
+			  t);
 	      else
-		error ("%qE is not a variable in %<nontemporal%> clause", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not a variable in %<nontemporal%> clause",
+			  t);
 	      remove = true;
 	    }
 	  else if (bitmap_bit_p (&oacc_reduction_head, DECL_UID (t)))
 	    {
-	      error ("%qD appears more than once in %<nontemporal%> clauses",
-		     t);
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD appears more than once in %<nontemporal%> "
+			"clauses", t);
 	      remove = true;
 	    }
 	  else
@@ -6661,8 +6710,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    remove = true;
 	  else if (t == current_class_ptr)
 	    {
-	      error ("%<this%> allowed in OpenMP only in %<declare simd%>"
-		     " clauses");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<this%> allowed in OpenMP only in %<declare simd%>"
+			" clauses");
 	      remove = true;
 	    }
           else if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
@@ -6670,11 +6720,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!lvalue_p (t))
 	    {
 	      if (DECL_P (t))
-		error ("%qD is not lvalue expression nor array section "
-		       "in %<depend%> clause", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not lvalue expression nor array section "
+			  "in %<depend%> clause", t);
 	      else
-		error ("%qE is not lvalue expression nor array section "
-		       "in %<depend%> clause", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not lvalue expression nor array section "
+			  "in %<depend%> clause", t);
 	      remove = true;
 	    }
 	  else if (!cxx_mark_addressable (t))
@@ -6717,14 +6769,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      if (bitmap_bit_p (&map_head, DECL_UID (t)))
 			{
 			  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
-			    error ("%qD appears more than once in motion"
-				   " clauses", t);
+			    error_at (OMP_CLAUSE_LOCATION (c),
+				      "%qD appears more than once in motion"
+				      " clauses", t);
 			  else if (ort == C_ORT_ACC)
-			    error ("%qD appears more than once in data"
-				   " clauses", t);
+			    error_at (OMP_CLAUSE_LOCATION (c),
+				      "%qD appears more than once in data"
+				      " clauses", t);
 			  else
-			    error ("%qD appears more than once in map"
-				   " clauses", t);
+			    error_at (OMP_CLAUSE_LOCATION (c),
+				      "%qD appears more than once in map"
+				      " clauses", t);
 			  remove = true;
 			}
 		      else
@@ -6800,23 +6855,27 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_POINTER))
 		break;
 	      if (DECL_P (t))
-		error ("%qD is not a variable in %qs clause", t,
-		       omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not a variable in %qs clause", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      else
-		error ("%qE is not a variable in %qs clause", t,
-		       omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not a variable in %qs clause", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
 	  else if (VAR_P (t) && CP_DECL_THREAD_LOCAL_P (t))
 	    {
-	      error ("%qD is threadprivate variable in %qs clause", t,
-		     omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD is threadprivate variable in %qs clause", t,
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
 	  else if (ort != C_ORT_ACC && t == current_class_ptr)
 	    {
-	      error ("%<this%> allowed in OpenMP only in %<declare simd%>"
-		     " clauses");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<this%> allowed in OpenMP only in %<declare simd%>"
+			" clauses");
 	      remove = true;
 	      break;
 	    }
@@ -6848,7 +6907,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		   && !type_dependent_expression_p (t)
 		   && !POINTER_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("%qD is not a pointer variable", t);
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD is not a pointer variable", t);
 	      remove = true;
 	    }
 	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
@@ -6857,15 +6917,18 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (bitmap_bit_p (&generic_head, DECL_UID (t))
 		  || bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
 		{
-		  error ("%qD appears more than once in data clauses", t);
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qD appears more than once in data clauses", t);
 		  remove = true;
 		}
 	      else if (bitmap_bit_p (&map_head, DECL_UID (t)))
 		{
 		  if (ort == C_ORT_ACC)
-		    error ("%qD appears more than once in data clauses", t);
+		    error_at (OMP_CLAUSE_LOCATION (c),
+			      "%qD appears more than once in data clauses", t);
 		  else
-		    error ("%qD appears both in data and map clauses", t);
+		    error_at (OMP_CLAUSE_LOCATION (c),
+			      "%qD appears both in data and map clauses", t);
 		  remove = true;
 		}
 	      else
@@ -6874,20 +6937,25 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (bitmap_bit_p (&map_head, DECL_UID (t)))
 	    {
 	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
-		error ("%qD appears more than once in motion clauses", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD appears more than once in motion clauses", t);
 	      if (ort == C_ORT_ACC)
-		error ("%qD appears more than once in data clauses", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD appears more than once in data clauses", t);
 	      else
-		error ("%qD appears more than once in map clauses", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD appears more than once in map clauses", t);
 	      remove = true;
 	    }
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
 		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
 	    {
 	      if (ort == C_ORT_ACC)
-		error ("%qD appears more than once in data clauses", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD appears more than once in data clauses", t);
 	      else
-		error ("%qD appears both in data and map clauses", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD appears both in data and map clauses", t);
 	      remove = true;
 	    }
 	  else
@@ -7002,9 +7070,11 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (processing_template_decl)
 		break;
 	      if (DECL_P (t))
-		error ("%qD is not an argument in %<uniform%> clause", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not an argument in %<uniform%> clause", t);
 	      else
-		error ("%qE is not an argument in %<uniform%> clause", t);
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not an argument in %<uniform%> clause", t);
 	      remove = true;
 	      break;
 	    }
@@ -7019,7 +7089,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (!type_dependent_expression_p (t)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
-	      error ("%<grainsize%> expression must be integral");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<grainsize%> expression must be integral");
 	      remove = true;
 	    }
 	  else
@@ -7190,8 +7261,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_NOTINBRANCH:
 	  if (branch_seen)
 	    {
-	      error ("%<inbranch%> clause is incompatible with "
-		     "%<notinbranch%>");
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<inbranch%> clause is incompatible with "
+			"%<notinbranch%>");
 	      remove = true;
 	    }
 	  branch_seen = true;
@@ -7342,7 +7414,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_COPYIN:
 	  if (!VAR_P (t) || !CP_DECL_THREAD_LOCAL_P (t))
 	    {
-	      error ("%qE must be %<threadprivate%> for %<copyin%>", t);
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE must be %<threadprivate%> for %<copyin%>", t);
 	      remove = true;
 	    }
 	  break;
@@ -7385,9 +7458,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  if (share_name)
 	    {
-	      error ("%qE is predetermined %qs for %qs",
-		     omp_clause_printable_decl (t), share_name,
-		     omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE is predetermined %qs for %qs",
+			omp_clause_printable_decl (t), share_name,
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
 	}

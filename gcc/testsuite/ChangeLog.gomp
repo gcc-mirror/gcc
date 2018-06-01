@@ -1,5 +1,8 @@
 2018-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/gomp/pr33372-1.C: Adjust location of the expected diagnostics.
+	* g++.dg/gomp/pr33372-3.C: Likewise.
+
 	* c-c++-common/gomp/nontemporal-2.c: New test.
 
 2018-05-31  Jakub Jelinek  <jakub@redhat.com>

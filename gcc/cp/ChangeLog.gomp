@@ -1,5 +1,9 @@
 2018-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* semantics.c (finish_omp_reduction_clause): Use error_at with
+	OMP_CLAUSE_LOCATION (c) as first argument instead of error.
+	(finish_omp_clauses):
+
 	* semantics.c (finish_omp_clauses): Diagnose more than one
 	nontemporal clause refering to the same variable.
 

@@ -1,5 +1,9 @@
 2018-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-typeck.c (c_finish_omp_clauses): Use error_at with
+	OMP_CLAUSE_LOCATION (c) as first argument instead of error.
+	Formatting fix.
+
 	* c-typeck.c (c_finish_omp_clauses): Diagnose more than one
 	nontemporal clause refering to the same variable.
 
