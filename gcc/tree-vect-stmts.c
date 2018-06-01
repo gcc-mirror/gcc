@@ -995,7 +995,6 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 		       stmt_vector_for_cost *cost_vec)
 {
   unsigned int inside_cost = 0, prologue_cost = 0;
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   gimple *first_stmt = STMT_VINFO_STMT (stmt_info);
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
 
@@ -1016,10 +1015,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   /* Grouped stores update all elements in the group at once,
      so we want the DR for the first statement.  */
   if (!slp_node && grouped_access_p)
-    {
-      first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
-      dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-    }
+    first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
 
   /* True if we should include any once-per-group costs as well as
      the cost of the statement itself.  For SLP we only get called
@@ -1058,7 +1054,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 				       scalar_store, stmt_info, 0, vect_body);
     }
   else
-    vect_get_store_cost (dr, ncopies, &inside_cost, cost_vec);
+    vect_get_store_cost (stmt_info, ncopies, &inside_cost, cost_vec);
 
   if (memory_access_type == VMAT_ELEMENTWISE
       || memory_access_type == VMAT_STRIDED_SLP)
@@ -1079,13 +1075,12 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 
 /* Calculate cost of DR's memory access.  */
 void
-vect_get_store_cost (struct data_reference *dr, int ncopies,
+vect_get_store_cost (stmt_vec_info stmt_info, int ncopies,
 		     unsigned int *inside_cost,
 		     stmt_vector_for_cost *body_cost_vec)
 {
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   int alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
-  gimple *stmt = DR_STMT (dr);
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
   switch (alignment_support_scheme)
     {
@@ -1145,7 +1140,6 @@ vect_model_load_cost (stmt_vec_info stmt_info, unsigned ncopies,
 		      stmt_vector_for_cost *cost_vec)
 {
   gimple *first_stmt = STMT_VINFO_STMT (stmt_info);
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   unsigned int inside_cost = 0, prologue_cost = 0;
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
 
@@ -1198,16 +1192,10 @@ vect_model_load_cost (stmt_vec_info stmt_info, unsigned ncopies,
 		      + assumed_nunits - 1) / assumed_nunits);
     }
 
-  /* ???  Need to transition load permutation (and load cost) handling
-     from vect_analyze_slp_cost_1 to here.  */
-
   /* Grouped loads read all elements in the group at once,
      so we want the DR for the first statement.  */
   if (!slp_node && grouped_access_p)
-    {
-      first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
-      dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-    }
+    first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info);
 
   /* True if we should include any once-per-group costs as well as
      the cost of the statement itself.  For SLP we only get called
@@ -1246,7 +1234,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, unsigned ncopies,
 				       scalar_load, stmt_info, 0, vect_body);
     }
   else
-    vect_get_load_cost (dr, ncopies, first_stmt_p,
+    vect_get_load_cost (stmt_info, ncopies, first_stmt_p,
 			&inside_cost, &prologue_cost, 
 			cost_vec, cost_vec, true);
   if (memory_access_type == VMAT_ELEMENTWISE
@@ -1263,16 +1251,15 @@ vect_model_load_cost (stmt_vec_info stmt_info, unsigned ncopies,
 
 /* Calculate cost of DR's memory access.  */
 void
-vect_get_load_cost (struct data_reference *dr, int ncopies,
+vect_get_load_cost (stmt_vec_info stmt_info, int ncopies,
 		    bool add_realign_cost, unsigned int *inside_cost,
 		    unsigned int *prologue_cost,
 		    stmt_vector_for_cost *prologue_cost_vec,
 		    stmt_vector_for_cost *body_cost_vec,
 		    bool record_prologue_costs)
 {
+  data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   int alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
-  gimple *stmt = DR_STMT (dr);
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
   switch (alignment_support_scheme)
     {

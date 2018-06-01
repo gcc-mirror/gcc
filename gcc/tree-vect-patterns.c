@@ -3880,7 +3880,6 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
 	= STMT_VINFO_DATA_REF (stmt_vinfo);
       STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
 	= STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
-      DR_STMT (STMT_VINFO_DATA_REF (stmt_vinfo)) = pattern_stmt;
       *type_out = vectype;
       *type_in = vectype;
       stmts->safe_push (last_stmt);
@@ -4017,7 +4016,6 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
 	= STMT_VINFO_DATA_REF (stmt_vinfo);
       STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
 	= STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
-      DR_STMT (STMT_VINFO_DATA_REF (stmt_vinfo)) = pattern_stmt;
 
       *type_out = vectype1;
       *type_in = vectype1;
@@ -4376,7 +4374,6 @@ vect_try_gather_scatter_pattern (gimple *stmt, stmt_vec_info last_stmt_info,
     = STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
   STMT_VINFO_GATHER_SCATTER_P (pattern_stmt_info)
     = STMT_VINFO_GATHER_SCATTER_P (stmt_info);
-  DR_STMT (dr) = pattern_stmt;
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   *type_out = vectype;

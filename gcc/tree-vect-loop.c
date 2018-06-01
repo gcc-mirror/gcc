@@ -2165,7 +2165,7 @@ start_over:
 	    {
 	      struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
 	      tree vectype
-		= STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr)));
+		= STMT_VINFO_VECTYPE (vinfo_for_stmt (vect_dr_stmt (dr)));
 	      niters_th += TYPE_VECTOR_SUBPARTS (vectype) - 1;
 	    }
 	  else

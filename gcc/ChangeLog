@@ -1,5 +1,48 @@
 2018-06-01  Richard Biener  <rguenther@suse.de>
 
+	* tree-vectorizer.h (vect_dr_stmt): New function.
+	(vect_get_load_cost): Adjust.
+	(vect_get_store_cost): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	Use vect_dr_stmt instead of DR_SMTT.
+	(vect_record_base_alignments): Likewise.
+	(vect_calculate_target_alignment): Likewise.
+	(vect_compute_data_ref_alignment): Likewise and make static.
+	(vect_update_misalignment_for_peel): Likewise.
+	(vect_verify_datarefs_alignment): Likewise.
+	(vector_alignment_reachable_p): Likewise.
+	(vect_get_data_access_cost): Likewise.  Pass down
+	vinfo to vect_get_load_cost/vect_get_store_cost instead of DR.
+	(vect_get_peeling_costs_all_drs): Likewise.
+	(vect_peeling_hash_get_lowest_cost): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_find_same_alignment_drs): Likewise.
+	(vect_analyze_data_refs_alignment): Likewise.
+	(vect_analyze_group_access_1): Likewise.
+	(vect_analyze_group_access): Likewise.
+	(vect_analyze_data_ref_access): Likewise.
+	(vect_analyze_data_ref_accesses): Likewise.
+	(vect_vfa_segment_size): Likewise.
+	(vect_small_gap_p): Likewise.
+	(vectorizable_with_step_bound_p): Likewise.
+	(vect_prune_runtime_alias_test_list): Likewise.
+	(vect_analyze_data_refs): Likewise.
+	(vect_supportable_dr_alignment): Likewise.
+	* tree-vect-loop-manip.c (get_misalign_in_elems): Likewise.
+	(vect_gen_prolog_loop_niters): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_2): Likewise.
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Do not
+	modify DR_STMT.
+	(vect_recog_mask_conversion_pattern): Likewise.
+	(vect_try_gather_scatter_pattern): Likewise.
+	* tree-vect-stmts.c (vect_model_store_cost): Pass stmt_info
+	to vect_get_store_cost.
+	(vect_get_store_cost): Get stmt_info instead of DR.
+	(vect_model_load_cost): Pass stmt_info to vect_get_load_cost.
+	(vect_get_load_cost): Get stmt_info instead of DR.
+
+2018-06-01  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/86017
 	* gimple-fold.c (var_decl_component_p): Also allow offsetted
 	vars wrapped in MEM_REFs.

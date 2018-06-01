@@ -1305,6 +1305,22 @@ vect_dr_behavior (data_reference *dr)
     return &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
 }
 
+/* Return the stmt DR is in.  For DR_STMT that have been replaced by
+   a pattern this returns the corresponding pattern stmt.  Otherwise
+   DR_STMT is returned.  */
+
+inline gimple *
+vect_dr_stmt (data_reference *dr)
+{
+  gimple *stmt = DR_STMT (dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+    return STMT_VINFO_RELATED_STMT (stmt_info);
+  /* DR_STMT should never refer to a stmt in a pattern replacement.  */
+  gcc_checking_assert (!STMT_VINFO_RELATED_STMT (stmt_info));
+  return stmt;
+}
+
 /* Return true if the vect cost model is unlimited.  */
 static inline bool
 unlimited_cost_model (loop_p loop)
@@ -1473,11 +1489,11 @@ extern bool vect_analyze_stmt (gimple *, bool *, slp_tree, slp_instance,
 extern bool vectorizable_condition (gimple *, gimple_stmt_iterator *,
 				    gimple **, tree, int, slp_tree,
 				    stmt_vector_for_cost *);
-extern void vect_get_load_cost (struct data_reference *, int, bool,
+extern void vect_get_load_cost (stmt_vec_info, int, bool,
 				unsigned int *, unsigned int *,
 				stmt_vector_for_cost *,
 				stmt_vector_for_cost *, bool);
-extern void vect_get_store_cost (struct data_reference *, int,
+extern void vect_get_store_cost (stmt_vec_info, int,
 				 unsigned int *, stmt_vector_for_cost *);
 extern bool vect_supportable_shift (enum tree_code, tree);
 extern tree vect_gen_perm_mask_any (tree, const vec_perm_indices &);
