@@ -290,7 +290,14 @@ bool
 range_stmt::op1_irange (irange& r, const irange& lhs_range,
 			const irange& op2_range) const
 {  
-  gcc_assert (operand2 () != NULL);
+  // Changing the API to say unary ops can be called with the range of the
+  // RHS instead of the type if the caller wants.
+  // This is more flexible since we can still get the type from the range if
+  // that is all we want, but getting an actual range will let us sometimes
+  // determine more. see operator_cast::op1_irange.()
+  
+  // gcc_assert (operand2 () != NULL);
+  
   // An empty range is viral, so return an empty range.
   if (op2_range.empty_p () || lhs_range.empty_p ())
     {

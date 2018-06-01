@@ -572,7 +572,12 @@ block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
   if (op1 == name)
     { 
       if (!op2)
-        return stmt.op1_irange (r, lhs);
+        {
+	  if (get_operand_range (op1_range, op1, stmt))
+	    return stmt.op1_irange (r, lhs, op1_range);
+	  else
+	    return stmt.op1_irange (r, lhs);
+	}
       // If we need the second operand, get a value and evaluate.
       if (get_operand_range (op2_range, op2, stmt))
 	return stmt.op1_irange (r, lhs, op2_range);
@@ -633,7 +638,10 @@ block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
         // We know we only care about operand1.
         if (!op2)
 	  {
-	    if (!stmt.op1_irange (tmp_range, lhs))
+	    // we pass op1_range to the unary operation. Nomally it's a hidden
+	    // range_for_type paraemter, but sometimes having the actul range
+	    // is helpful
+	    if (!stmt.op1_irange (tmp_range, lhs, op1_range))
 	      return false;
 	  }
 	else

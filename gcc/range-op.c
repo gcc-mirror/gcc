@@ -1215,12 +1215,23 @@ operator_cast::op1_irange (irange& r, const irange& lhs,
   tree op2_type = op2.get_type ();
   irange op_type;
 
-  /* if the precision of the LHS is smaller than the precision of the RHS,
+  /* If the precision of the LHS is smaller than the precision of the RHS,
      then there would be truncation of the value on the RHS, and so we can tell
      nothing about it.  */
   if (TYPE_PRECISION (lhs_type) < TYPE_PRECISION (op2_type))
     {
-      r.set_range_for_type (op2_type);
+      // If we've been passed an actual value for the RHS rather than the type
+      // see if it fits the LHS, and if so, then we can allow it.
+      r = op2;
+      r.cast (lhs_type);
+      r.cast (op2_type);
+      if (r == op2)
+        {
+	  r = lhs;
+	  r.cast (op2_type);
+	}
+      else
+	r = op2;
       return true;
     }
 
