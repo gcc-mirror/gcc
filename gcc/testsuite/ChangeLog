@@ -1,3 +1,8 @@
+2018-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/85960
+	* gcc.dg/ipa/ipa-pta-19.c: New testcase.
+
 2018-05-31  Qing Zhao <qing.zhao@oracle.com>
 
 	PR middle-end/78809
