@@ -88,7 +88,7 @@ nds32 port		Chung-Ju Wu		<jasonwucj@gmail.com>
 nds32 port		Shiva Chen		<shiva0217@gmail.com>
 nios2 port		Chung-Lin Tang		<cltang@codesourcery.com>
 nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
-nvptx port		Tom de Vries		<tom@codesourcery.com>
+nvptx port		Tom de Vries		<tdevries@suse.de>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 powerpcspe port		Andrew Jenner		<andrew@codesourcery.com>
 riscv port		Kito Cheng		<kito.cheng@gmail.com>
@@ -623,7 +623,7 @@ Ilya Verbin					<iverbin@gmail.com>
 Andre Vieira					<andre.simoesdiasvieira@arm.com>
 Kugan Vivekanandarajah				<kuganv@linaro.org>
 Ville Voutilainen				<ville.voutilainen@gmail.com>
-Tom de Vries					<tom@codesourcery.com>
+Tom de Vries					<tdevries@suse.de>
 Nenad Vukicevic					<nenad@intrepid.com>
 Feng Wang					<fengwang@nudt.edu.cn>
 Jiong Wang					<jiong.wang@arm.com>
