@@ -1,3 +1,9 @@
+2018-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85873 - constant initializer_list array not in .rodata.
+	* call.c (convert_like_real): Treat the backing array for an
+	initializer_list like a C99 compound literal.
+
 2018-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
