@@ -73,7 +73,8 @@ spread_'rtype_code` ('rtype` *ret, const 'rtype` *source,
 
       /* The front end has signalled that we need to populate the
 	 return array descriptor.  */
-      GFC_DTYPE_COPY_SETRANK(ret,source,rrank);
+      ret->dtype.rank = rrank;
+
       dim = 0;
       rs = 1;
       for (n = 0; n < rrank; n++)
