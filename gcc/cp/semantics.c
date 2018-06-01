@@ -5871,8 +5871,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bitmap_initialize (&firstprivate_head, &bitmap_default_obstack);
   bitmap_initialize (&lastprivate_head, &bitmap_default_obstack);
   bitmap_initialize (&aligned_head, &bitmap_default_obstack);
+  /* If ort == C_ORT_OMP_DECLARE_SIMD used as uniform_head instead.  */
   bitmap_initialize (&map_head, &bitmap_default_obstack);
   bitmap_initialize (&map_field_head, &bitmap_default_obstack);
+  /* If ort == C_ORT_OMP used as nontemporal_head instead.  */
   bitmap_initialize (&oacc_reduction_head, &bitmap_default_obstack);
 
   if (ort & C_ORT_ACC)
@@ -6625,6 +6627,14 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		error ("%qE is not a variable in %<nontemporal%> clause", t);
 	      remove = true;
 	    }
+	  else if (bitmap_bit_p (&oacc_reduction_head, DECL_UID (t)))
+	    {
+	      error ("%qD appears more than once in %<nontemporal%> clauses",
+		     t);
+	      remove = true;
+	    }
+	  else
+	    bitmap_set_bit (&oacc_reduction_head, DECL_UID (t));
 	  break;
 
 	case OMP_CLAUSE_DEPEND:
