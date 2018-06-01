@@ -6872,7 +6872,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	elttype = cp_build_qualified_type
 	  (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
 	array = build_array_of_n_type (elttype, len);
-	array = finish_compound_literal (array, new_ctor, complain);
+	array = finish_compound_literal (array, new_ctor, complain, fcl_c99);
 	/* Take the address explicitly rather than via decay_conversion
 	   to avoid the error about taking the address of a temporary.  */
 	array = cp_build_addr_expr (array, complain);
