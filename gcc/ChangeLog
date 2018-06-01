@@ -1,3 +1,8 @@
+2018-06-01  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2out.c (dwarf2out_finish): Remove generation of
+	DW_AT_loclists_base.
+
 2018-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-ssa-store-merging.c: Include gimple-fold.h.
