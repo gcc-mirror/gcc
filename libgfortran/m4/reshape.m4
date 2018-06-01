@@ -120,7 +120,7 @@ reshape_'rtype_ccode` ('rtype` * const restrict ret,
         alloc_size = rs;
 
       ret->base_addr = xmallocarray (alloc_size, sizeof ('rtype_name`));
-      GFC_DTYPE_COPY_SETRANK(ret,source,rdim);
+      ret->dtype.rank = rdim;
     }
 
   if (shape_empty)

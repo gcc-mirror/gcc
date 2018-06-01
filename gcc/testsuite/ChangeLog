@@ -1,4 +1,11 @@
 2018-06-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85816
+	PR fortran/85975
+	* gfortran.dg/pr85816.f90: New test.
+	* gfortran.dg/pr85975.f90: New test.
+
+2018-06-01  Steven G. Kargl  <kargl@gcc.gnu.org>
  
 	PR fortran/63570
 	* gfortran.dg/random_init_1.f90: New test.

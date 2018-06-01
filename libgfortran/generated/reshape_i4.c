@@ -116,7 +116,7 @@ reshape_4 (gfc_array_i4 * const restrict ret,
         alloc_size = rs;
 
       ret->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_4));
-      GFC_DTYPE_COPY_SETRANK(ret,source,rdim);
+      ret->dtype.rank = rdim;
     }
 
   if (shape_empty)

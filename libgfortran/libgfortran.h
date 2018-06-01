@@ -439,11 +439,6 @@ typedef GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_4) gfc_full_a
 /* Macros to set size and type information.  */
 
 #define GFC_DTYPE_COPY(a,b) do { (a)->dtype = (b)->dtype; } while(0)
-#define GFC_DTYPE_COPY_SETRANK(a,b,n) \
-  do { \
-  (a)->dtype.rank = ((b)->dtype.rank | n ); \
-  } while (0)
-
 #define GFC_DTYPE_IS_UNSET(a) (unlikely((a)->dtype.elem_len == 0))
 #define GFC_DTYPE_CLEAR(a) do { (a)->dtype.elem_len = 0; \
 				(a)->dtype.version = 0; \
