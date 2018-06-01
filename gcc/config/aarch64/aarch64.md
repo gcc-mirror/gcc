@@ -5103,6 +5103,16 @@
   [(set_attr "type" "f_cvtf2i")]
 )
 
+(define_insn "*fix_to_zero_extend<mode>di2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (unsigned_fix:SI
+	  (match_operand:GPF 1 "register_operand" "w"))))]
+  "TARGET_FLOAT"
+  "fcvtzu\t%w0, %<s>1"
+  [(set_attr "type" "f_cvtf2i")]
+)
+
 (define_insn "<optab><fcvt_target><GPF:mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w,w")
         (FLOATUORS:GPF (match_operand:<FCVT_TARGET> 1 "register_operand" "w,?r")))]

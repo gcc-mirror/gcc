@@ -1,3 +1,9 @@
+2018-05-31  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64.md:
+	(*fix_to_zero_extenddfdi2): New pattern.
+	* gcc.target/aarch64/fix_extend1.c: New testcase.
+
 2018-05-31  Qing Zhao <qing.zhao@oracle.com>
 
 	PR middle-end/78809
