@@ -119,7 +119,7 @@ Classes used:
 
    module_state - module object
 
-   module_server - server object
+   module_mapper - mapper object
 
    I have a confession: tri-valued bools are not the worst thing in
    this file.  */
@@ -133,8 +133,8 @@ Classes used:
 #define MODULE_STAMP 0
 #endif
 
-/* Server Protocol version.  Very new.  */
-#define SERVER_VERSION 0
+/* Mapper Protocol version.  Very new.  */
+#define MAPPER_VERSION 0
 
 #include "config.h"
 #include "system.h"
@@ -2511,8 +2511,8 @@ bool module_state_hash::equal (const value_type existing,
 
 /* Some flag values: */
 
-/* Server name.  */
-static const char *module_server_name;
+/* Mapper name.  */
+static const char *module_mapper_name;
 
 /* Global trees.  */
 const std::pair<tree *, unsigned> module_state::global_trees[] =
@@ -2537,12 +2537,12 @@ GTY(()) vec<module_state *, va_gc> *module_state::modules;
 /* Hash of module state, findable by NAME. */
 hash_table<module_state_hash> *module_state::hash;
 
-/* Server to query and inform of modular compilations.  This is a
+/* Mapper to query and inform of modular compilations.  This is a
    singleton.  */
-class module_server {
+class module_mapper {
   char *name;
-  FILE *from;   /* Read from server.  */
-  FILE *to;	/* Write to server.  */
+  FILE *from;   /* Read from mapper.  */
+  FILE *to;	/* Write to mapper.  */
   pex_obj *pex; /* If it's a subprocess.  */
 
   char *buffer; /* Line buffer.  */
@@ -2553,33 +2553,33 @@ class module_server {
   bool batching;
 
 private:
-  /* Construction always succeeds, but may result in a dead server.  */
-  module_server (location_t loc, const char *connection);
-  ~module_server ()
+  /* Construction always succeeds, but may result in a dead mapper.  */
+  module_mapper (location_t loc, const char *connection);
+  ~module_mapper ()
   {
     gcc_assert (!from);
   }
 
 private:
   void kill (location_t);
-  static module_server *make (location_t loc, const char *);
+  static module_mapper *make (location_t loc, const char *);
 
 public:
-  static module_server *get (location_t loc)
+  static module_mapper *get (location_t loc)
   {
-    if (!server)
-      server = make (loc, module_server_name);
-    return server->from ? server : NULL;
+    if (!mapper)
+      mapper = make (loc, module_mapper_name);
+    return mapper->from ? mapper : NULL;
   }
   static void fini (location_t loc, bool reset = false)
   {
-    if (server)
+    if (mapper)
       {
 	if (reset)
-	  server->reset ();
-	server->kill (loc);
-	delete server;
-	server = NULL;
+	  mapper->reset ();
+	mapper->kill (loc);
+	delete mapper;
+	mapper = NULL;
       }
   }
 
@@ -2634,11 +2634,11 @@ private:
   char *bmi_resp (const module_state *);
 
 private:
-  static module_server *server;
+  static module_mapper *mapper;
 };
 
-/* Our module server (created lazily).  */
-module_server *module_server::server;
+/* Our module mapper (created lazily).  */
+module_mapper *module_mapper::mapper;
 
 /* A dumping machinery.  */
 
@@ -6398,11 +6398,11 @@ module_state::announce (const char *what) const
     }
 }
 
-/* Create a server.  The server may be dead.  Yes, I'm embedding some
+/* Create a mapper.  The mapper may be dead.  Yes, I'm embedding some
    client-side socket handling in the compiler.  At least it's not
    ipv4.  */
 
-module_server::module_server (location_t loc, const char *option)
+module_mapper::module_mapper (location_t loc, const char *option)
   : name (NULL), from (NULL), to (NULL), pex (NULL),
     /* Exercise buffer expansion code.  */
     buffer (NULL), size (MODULE_STAMP ? 3 : 200), pos (NULL), end (NULL),
@@ -6412,15 +6412,15 @@ module_server::module_server (location_t loc, const char *option)
   
   bool defaulting = !option;
   if (defaulting)
-    option = "cxx-module-server";
+    option = "cxx-module-mapper";
 
   if (noisy_p ())
     {
-      fprintf (stderr, " server:%s", option);
+      fprintf (stderr, " mapper:%s", option);
       fflush (stderr);
     }
 
-  dump () && dump ("Initializing server %s", option);
+  dump () && dump ("Initializing mapper %s", option);
 
   int err = 0;
   const char *errmsg = NULL;
@@ -6666,7 +6666,7 @@ module_server::module_server (location_t loc, const char *option)
 
   if (errmsg)
     {
-      error_at (loc, "failed %s of module server %qs", errmsg, option);
+      error_at (loc, "failed %s of mapper %qs", errmsg, option);
       errno = err;
       inform (loc, err < 0 ? "%s" : err > 0 ? "%m"
 	      : "here's a nickel, kid.  Get yourself a real computer",
@@ -6678,8 +6678,8 @@ module_server::module_server (location_t loc, const char *option)
   setvbuf (from, NULL, _IOLBF, 0); /* We read lines.  */
   setvbuf (to, NULL, _IONBF, 0); /* We write whole buffers.  */
 
-  /* We have a live server.  Say Hello.  */
-  dump () && dump ("Initialized server");
+  /* We have a live mapper.  Say Hello.  */
+  dump () && dump ("Initialized mapper");
 
   pos = end = buffer = XNEWVEC (char, size);
 
@@ -6687,10 +6687,10 @@ module_server::module_server (location_t loc, const char *option)
     kill (loc);
 }
 
-/* Close down the server.  Mark it as not restartable.  */
+/* Close down the mapper.  Mark it as not restartable.  */
 
 void
-module_server::kill (location_t loc)
+module_mapper::kill (location_t loc)
 {
   if (to)
     fclose (to);
@@ -6704,10 +6704,10 @@ module_server::kill (location_t loc)
       pex = NULL;
 
       if (WIFSIGNALED (status))
-	error_at (loc, "module server %qs died by signal %s",
+	error_at (loc, "mapper %qs died by signal %s",
 		  name, strsignal (WTERMSIG (status)));
       else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
-	error_at (loc, "module server %qs exit status %d",
+	error_at (loc, "mapper %qs exit status %d",
 		  name, WEXITSTATUS (status));
     }
   else if (from)
@@ -6719,23 +6719,18 @@ module_server::kill (location_t loc)
   buffer = NULL;
 }
 
-/* Create a new server connecting to OPTION.  */
+/* Create a new mapper connecting to OPTION.  */
 
-module_server *
-module_server::make (location_t loc, const char *option)
+module_mapper *
+module_mapper::make (location_t loc, const char *option)
 {
-  if (!option)
-    if (char const *env = getenv ("CXX_MODULE_SERVER"))
-      if (env[0])
-	option = env;
-
-  return new module_server (loc, option);
+  return new module_mapper (loc, option);
 }
 
-/* Send a command to the server.  */
+/* Send a command to the mapper.  */
 
 void
-module_server::send_command (const char *format, ...)
+module_mapper::send_command (const char *format, ...)
 {
   size_t actual = 0;
   if (pos != buffer)
@@ -6764,9 +6759,9 @@ module_server::send_command (const char *format, ...)
       }
 
   if (batching)
-    dump () && dump ("Server pending request:%s", end);
+    dump () && dump ("Mapper pending request:%s", end);
   else
-    dump () && dump ("Server request:%s", buffer);
+    dump () && dump ("Mapper request:%s", buffer);
   end += actual;
   *end++ = '\n';
   if (!batching)
@@ -6776,10 +6771,10 @@ module_server::send_command (const char *format, ...)
     }
 }
 
-/* Read a response from the server.   Server may die.  */
+/* Read a response from the mapper.   Mapper may die.  */
 
 bool
-module_server::get_response (location_t loc)
+module_mapper::get_response (location_t loc)
 {
   if (batching)
     pos = end + 1;
@@ -6792,7 +6787,7 @@ module_server::get_response (location_t loc)
       if (!fgets (buffer + off, size - off, from))
 	{
 	  const char *err = ferror (from) ? "error" : "end of file";
-	  error_at (loc, "unexpected %s from module server %qs", err, name);
+	  error_at (loc, "unexpected %s from mapper %qs", err, name);
 	  off = 0;
 	}
       else
@@ -6819,7 +6814,7 @@ module_server::get_response (location_t loc)
       buffer[off] = 0;
       end = buffer + off;
       pos = buffer;
-      dump () && dump ("Server response:%s", buffer);
+      dump () && dump ("Mapper response:%s", buffer);
     }
 
   start = pos;
@@ -6843,25 +6838,25 @@ module_server::get_response (location_t loc)
 }
 
 void
-module_server::response_unexpected (location_t loc)
+module_mapper::response_unexpected (location_t loc)
 {
   /* Restore the whitespace we zapped tokenizing.  */
   for (char *ptr = start; ptr != pos; ptr++)
     if (!*ptr)
       *ptr = ' ';
-  error_at (loc, "server response malformed: %qs", start);
+  error_at (loc, "mapper response malformed: %qs", start);
   pos = end;
 }
 
 void
-module_server::response_eol (location_t loc)
+module_mapper::response_eol (location_t loc)
 {
   if (pos != end)
     response_unexpected (loc);
 }
 
 char *
-module_server::response_token (location_t loc)
+module_mapper::response_token (location_t loc)
 {
   char *ptr = pos;
 
@@ -6889,7 +6884,7 @@ module_server::response_token (location_t loc)
 }
 
 int
-module_server::response_word (location_t loc, const char *option, ...)
+module_mapper::response_word (location_t loc, const char *option, ...)
 {
   if (const char *tok = response_token (loc))
     {
@@ -6914,7 +6909,7 @@ module_server::response_word (location_t loc, const char *option, ...)
   return -1;
 }
 
-/*  Module server protocol non-canonical precis:
+/*  Module mapper protocol non-canonical precis:
 
     HELLO version flags cookie
     	-> HELLO/ERROR response
@@ -6936,7 +6931,7 @@ module_server::response_word (location_t loc, const char *option, ...)
  */
 
 void
-module_server::reset ()
+module_mapper::reset ()
 {
   send_command ("RESET");
 }
@@ -6944,9 +6939,9 @@ module_server::reset ()
 /* Start handshake.  */
 
 bool
-module_server::handshake (location_t loc, const char *cookie)
+module_mapper::handshake (location_t loc, const char *cookie)
 {
-  send_command ("HELLO %d 0 %s", SERVER_VERSION, cookie);
+  send_command ("HELLO %d 0 %s", MAPPER_VERSION, cookie);
 
   bool ok = get_response (loc);
   switch (response_word (loc, "HELLO", "ERROR", NULL))
@@ -6957,7 +6952,7 @@ module_server::handshake (location_t loc, const char *cookie)
 
     case 0: /* HELLO $ver $attr */
       if (char *ver = response_token (loc))
-	dump () && dump ("Connected to server version %s", ver);
+	dump () && dump ("Connected to mapper version %s", ver);
       /* Read, ignore attribs.  */
       response_token (loc);
       response_eol (loc);
@@ -6965,7 +6960,7 @@ module_server::handshake (location_t loc, const char *cookie)
       break;
 
     case 1: /* ERROR $msg */
-      error_at (loc, "server handshake failure: %s", response_error ());
+      error_at (loc, "mapper handshake failure: %s", response_error ());
       ok = false;
       break;
     }
@@ -6974,7 +6969,7 @@ module_server::handshake (location_t loc, const char *cookie)
 }
 
 void
-module_server::import_query (const module_state *state, bool async)
+module_mapper::import_query (const module_state *state, bool async)
 {
   send_command ("%sBMI %s %s", async ? "ASYNC " : "",
 		IDENTIFIER_POINTER (state->name),
@@ -6982,13 +6977,13 @@ module_server::import_query (const module_state *state, bool async)
 }
 
 void
-module_server::export_query (const module_state *state)
+module_mapper::export_query (const module_state *state)
 {
   send_command ("EXPORT %s", IDENTIFIER_POINTER (state->name));
 }
 
 char *
-module_server::bmi_resp (const module_state *state)
+module_mapper::bmi_resp (const module_state *state)
 {
   char *filename = NULL;
 
@@ -7003,7 +6998,7 @@ module_server::bmi_resp (const module_state *state)
       break;
 
     case 1: /* ERROR $msg */
-      error_at (state->from_loc, "server cannot provide module %qE: %s",
+      error_at (state->from_loc, "mapper cannot provide module %qE: %s",
 		state->name, response_error ());
       break;
     }
@@ -7012,7 +7007,7 @@ module_server::bmi_resp (const module_state *state)
 }
 
 bool
-module_server::async_response (location_t loc)
+module_mapper::async_response (location_t loc)
 {
   get_response (loc);
   switch (response_word (loc, "OK", "ERROR", NULL))
@@ -7026,14 +7021,14 @@ module_server::async_response (location_t loc)
       break;
 
     case 1: /* ERROR $msg */
-      error_at (loc, "server asynchronous failure: %s", response_error ());
+      error_at (loc, "mapper asynchronous failure: %s", response_error ());
       break;
     }
   return false;
 }
 
 module_state *
-module_server::await_response (location_t loc, char *&fname)
+module_mapper::await_response (location_t loc, char *&fname)
 {
   if (!get_response (loc))
     return NULL;
@@ -7055,15 +7050,15 @@ module_server::await_response (location_t loc, char *&fname)
 /* Import query.  */
 
 char *
-module_server::import_export (const module_state *state, bool export_p)
+module_mapper::import_export (const module_state *state, bool export_p)
 {
-  if (module_server *server = get (state->from_loc))
+  if (module_mapper *mapper = get (state->from_loc))
     {
       if (export_p)
-	server->export_query (state);
+	mapper->export_query (state);
       else
-	server->import_query (state, false);
-      return server->bmi_response (state);
+	mapper->import_query (state, false);
+      return mapper->bmi_response (state);
     }
   return NULL;
 }
@@ -7071,15 +7066,15 @@ module_server::import_export (const module_state *state, bool export_p)
 /* Export done.  */
 
 bool
-module_server::export_done (const module_state *state)
+module_mapper::export_done (const module_state *state)
 {
   bool ok = false;
-  if (module_server *server = get (state->from_loc))
+  if (module_mapper *mapper = get (state->from_loc))
     {
-      dump () && dump ("Completed server");
-      server->send_command ("DONE %s", IDENTIFIER_POINTER (state->name));
-      server->get_response (state->from_loc);
-      ok = server->response_word (state->from_loc, "OK", NULL) == 0;
+      dump () && dump ("Completed mapper");
+      mapper->send_command ("DONE %s", IDENTIFIER_POINTER (state->name));
+      mapper->get_response (state->from_loc);
+      ok = mapper->response_word (state->from_loc, "OK", NULL) == 0;
     }
   return ok;
 }
@@ -7109,7 +7104,7 @@ module_state::get_option_string  ()
       /* Some module-related options we don't need to preserve.  */
       if (opt->opt_index == OPT_fmodule_lazy
 	  || opt->opt_index == OPT_fmodule_preamble_
-	  || opt->opt_index == OPT_fmodule_server_
+	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodules_atom
 	  || opt->opt_index == OPT_fmodules_ts)
 	continue;
@@ -9513,7 +9508,7 @@ import_module (const cp_expr &name, bool exporting, tree)
 	  if (!imp->filename)
 	    {
 	      unsigned n = dump.push (imp);
-	      char *fname = module_server::import_export (imp, false);
+	      char *fname = module_mapper::import_export (imp, false);
 	      imp->do_import (fname, false);
 	      dump.pop (n);
 	    }
@@ -9546,7 +9541,7 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
       if (!modules_atom_p ())
 	{
 	  unsigned n = dump.push (state);
-	  char *fname = module_server::import_export (state, exporting_p);
+	  char *fname = module_mapper::import_export (state, exporting_p);
 	  if (exporting_p)
 	    state->filename = fname ? xstrdup (fname) : NULL;
 	  else
@@ -9561,7 +9556,7 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 bool
 module_state::atom_preamble (location_t loc)
 {
-  /* Iterate over the module hash, informing the server of every not
+  /* Iterate over the module hash, informing the mapper of every not
      loaded (direct) import.  */
   if (!hash->elements ())
     return true;
@@ -9574,13 +9569,13 @@ module_state::atom_preamble (location_t loc)
     if (mod->exported)
       interface = mod;
 
-  module_server *server = module_server::get (loc);
-  if (!server)
+  module_mapper *mapper = module_mapper::get (loc);
+  if (!mapper)
     return false;
 
   unsigned imports = 0;
 
-  server->cork ();
+  mapper->cork ();
   hash_table<module_state_hash>::iterator end (hash->end ());
   for (hash_table<module_state_hash>::iterator iter (hash->begin ());
        iter != end; ++iter)
@@ -9589,7 +9584,7 @@ module_state::atom_preamble (location_t loc)
       gcc_assert (!imp->filename);
       if (imp->direct)
 	{
-	  server->import_query (imp, true);
+	  mapper->import_query (imp, true);
 	  imports++;
 	}
       else
@@ -9597,22 +9592,22 @@ module_state::atom_preamble (location_t loc)
     }
 
   if (!imports)
-    server->uncork ();
+    mapper->uncork ();
   if (interface)
-    server->export_query (interface);
+    mapper->export_query (interface);
   if (imports)
     {
-      server->uncork ();
-      server->await_cmd ();
-      server->async_response (loc);
+      mapper->uncork ();
+      mapper->await_cmd ();
+      mapper->async_response (loc);
     }
   if (interface)
-    if (char *fname = server->bmi_response (interface))
+    if (char *fname = mapper->bmi_response (interface))
       interface->filename = xstrdup (fname);
   if (imports)
     {
       char *fname;
-      while (module_state *imp = server->await_response (loc, fname))
+      while (module_state *imp = mapper->await_response (loc, fname))
 	{
 	  if (!fname)
 	    continue;
@@ -9620,7 +9615,7 @@ module_state::atom_preamble (location_t loc)
 	  if (!imp->direct || imp == interface
 	      || (imp->filename && strcmp (imp->filename, fname)))
 	    {
-	      error_at (imp->from_loc, "unexpected server response for %qE: %qs",
+	      error_at (imp->from_loc, "unexpected mapper response for %qE: %qs",
 		     imp->name, fname);
 	      break;
 	    }
@@ -9691,7 +9686,7 @@ finish_module ()
 
       dump.pop (n);
       if (!errorcount)
-	module_server::export_done (state);
+	module_mapper::export_done (state);
     }
 
   if (state)
@@ -9701,7 +9696,7 @@ finish_module ()
       state->release ();
     }
 
-  module_server::fini (input_location);
+  module_mapper::fini (input_location);
 }
 
 /* Try and exec ourselves to repeat the preamble scan with
@@ -9725,7 +9720,7 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
   dump.push (NULL);
   dump () && dump ("About to reexec with prefix length %u", count);
   module_state::fini ();
-  module_server::fini (loc, true);
+  module_mapper::fini (loc, true);
   /* The preprocessor does not leave files open, so we can ignore the
      pfile arg.  */
   
@@ -9760,8 +9755,8 @@ handle_module_option (unsigned code, const char *str, int num)
 {
   switch (opt_code (code))
     {
-    case OPT_fmodule_server_:
-      module_server_name = str;
+    case OPT_fmodule_mapper_:
+      module_mapper_name = str;
       return true;
 
     case OPT_fmodule_preamble_:

@@ -1532,9 +1532,9 @@ fno-modules
 C++ ObjC++ Driver Undocumented RejectNegative Var(flag_modules,0) Integer
 ;; undocumented
 
-fmodule-server=
-C++ ObjC++ Driver Joined RejectNegative MissingArgError(missing server)
--fmodule-server=<n|file|cmd> Server for module name mappings
+fmodule-mapper=
+C++ ObjC++ Driver Joined RejectNegative MissingArgError(missing mapper)
+Mapper for module to BMI files
 
 fmodule-preamble
 Driver C++ Var(flag_module_preamble,65535,-1) Integer

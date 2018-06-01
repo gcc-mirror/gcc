@@ -36,7 +36,7 @@ invoke_compiler () {
     local src=$1
     local from=$2
     local ign=false
-    local cmd="$COLLECT_GCC"
+    local -a cmd=("$COLLECT_GCC")
 
     if test -z "$cmd" ; then
 	echo "not inferior of compiler driver"
@@ -50,10 +50,9 @@ invoke_compiler () {
 	    (-S) action=-S ; ign=true ;;
 	    (-c) ign=true ;;
 	    (-o) ign=true ;;
-	    (-fmodule-output=*) ign=true ;;
 	    (*)  ;;
 	esac
-	$ign || cmd+=" $arg"
+	$ign || cmd=("${cmd[@]}" "$arg")
 	test "$arg" = '-o' || ign=false
     done
 
@@ -69,8 +68,7 @@ invoke_compiler () {
     fi
 
     $verbose && echo "$progname: compiling module interface $src" >&2
-    cmd+=" $action $src"
-    $cmd || echo "compilation $src failed"
+    "${cmd[@]}" $action "$src" || echo "compilation $src failed"
 }
 
 bmi () {

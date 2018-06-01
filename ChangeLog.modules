@@ -1,5 +1,15 @@
 2018-05-31  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi (C++ Modules): Rename -fmodule-server to
+	-fmodule-mapper.
+	gcc/c-family/
+	* c.opt (fmodule-mapper): Renamed from fmodule-server.
+	gcc/cp/
+	* cxx-module-mapper.sh: Renamed from cxx-module-server.sh.
+	* Make-lang.in: Update.
+	* module.c (struct module_mapper): Renamed from module_server.
+
 	Merge trunk r261033.
 
 	gcc/cp/
