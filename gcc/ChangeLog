@@ -1,3 +1,11 @@
+2018-06-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_simd_vec_unpack<su>_lo_<mode>): Use UXTL and SXTL assembler
+	mnemonics.
+	(aarch64_simd_vec_unpack<su>_hi_<mode>): Use UXTL2 and SXTL2 assembler
+	mnemonics.
+
 2018-06-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85989
