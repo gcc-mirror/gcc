@@ -632,7 +632,9 @@ var_decl_component_p (tree var)
   tree inner = var;
   while (handled_component_p (inner))
     inner = TREE_OPERAND (inner, 0);
-  return SSA_VAR_P (inner);
+  return (DECL_P (inner)
+	  || (TREE_CODE (inner) == MEM_REF
+	      && TREE_CODE (TREE_OPERAND (inner, 0)) == ADDR_EXPR));
 }
 
 /* If the SIZE argument representing the size of an object is in a range
