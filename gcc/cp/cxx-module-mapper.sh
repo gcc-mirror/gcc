@@ -50,6 +50,7 @@ invoke_compiler () {
 	    (-S) action=-S ; ign=true ;;
 	    (-c) ign=true ;;
 	    (-o) ign=true ;;
+	    (-fmodule-preamble=*) ign=true ;;
 	    (*)  ;;
 	esac
 	$ign || cmd=("${cmd[@]}" "$arg")

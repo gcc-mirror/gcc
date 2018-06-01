@@ -29267,33 +29267,33 @@ operand may have one of the following forms:
 
 @table @gcctabopt
 
-@item @samp{number}
-@itemx @samp{number}?@samp{cookie}
-@itemx @samp{number}@samp{/cookie}
+@item @var{number}
+@itemx @var{number}@samp{?}@var{cookie}
+@itemx @var{number}@var{/cookie}
 A file number associated with a bidirectional streaming socket.  The spawning
 environment must have made this available.  
 
-@item @samp{number,number}
-@itemx @samp{number,number}?@samp{cookie}
-@itemx @samp{number,number}@samp{/cookie}
+@item @var{number}@samp{,}@var{number}
+@itemx @var{number}@samp{,}@var{number}@samp{?}@var{cookie}
+@itemx @var{number}@samp{,}@var{number}@var{/cookie}
 Two file numbers associated with read and write pipes.  The spawning
 environment must have made these available.
 
-@item @samp{[hostname]:port}
-@itemx @samp{[hostname]:port}?@samp{cookie}
-@itemx @samp{[hostname]:port}@samp{/cookie}
+@item [@var{hostname}]@samp{:}@var{port}
+@item [@var{hostname}]@samp{:}@var{port}@samp{?}@var{cookie}
+@item [@var{hostname}]@samp{:}@var{port}@var{/cookie}
 A hostname, which defaults to @samp{localhost} and a port number to
 connect to.  IPv6 is used.  If your host lacks ipv6, this form is
 non-functional.  If you must use ipv4, you may use
-@samp{-fmodule-mapper='ncat ipv4host port'}.
+@option{-fmodule-mapper='ncat @var{ipv4host} @var{port}'}.
 
-@item @samp{/path}
-@itemx @samp{/path}?@samp{cookie}
+@item @var{/path}
+@itemx @var{/path}@samp{?}@var{cookie}
 A local domain socket.  If your host lacks local domain sockets, this
 form is non-functional.
 
-@item @samp{program} @samp{args...}
-@itemx @samp{program}/@samp{cookie} @samp{args...}
+@item @var{program} @var{args...}
+@itemx @var{program}@samp{?}@var{cookie} @var{args...}
 A program to spawn, and communicate with on its stdin/stdout streams.
 The user's @var{PATH} is searched for the program.  Arguments are
 separated by white space, (it is not possible for one of the arguments
@@ -29303,68 +29303,76 @@ is solely an absolute path.  In that case it is interpretted as a
 local domain socket.  You may add leading or trailing whitespace to
 have it interpretted as a program to execute.
 
+@item @samp{@@}@var{file}
+A mapping file consisting of space-separated module-name, filename
+pairs, one per line.  Only the mappings for the direct imports and any
+module export name need be provided.
+
 @end table
 
-An optional cookie may suffix the first word of the option.  It is
-introduced by either an @samp{?} or @samp{/} character.  The @samp{?}
-is not part of the cookie.  Only some formats permit the @samp{/}
-form.  If no cookie is provided, the main source file name is used.
-The cookie is used in the initial handshake with the module server.
+As shown, an optional cookie may suffix the first word of the option.
+It is introduced by either a @samp{?} or @samp{/} character.  The
+@samp{?} is not part of the cookie, but @samp{/} is.  Only some
+formats permit the @samp{/} form.  If no cookie is provided, the main
+source file name is used.  The cookie is used in the initial handshake
+with the module server.
 
-The oracle is connected to lazily, when the first module mapping is
-required.  The networking protocols are only supported on hosts that
-provide networking.  If no oracle is specified a default is provided.
+The oracle is connected to or loaded lazily, when the first module
+mapping is required.  The networking protocols are only supported on
+hosts that provide networking.  If no oracle is specified a default is
+provided.
 
 Messages consist of whitespace-separated tokens.  This implicitly
 means filenames containing whitespace are not supported.  Each line is
-terminated by a line-feed (0xa) character.  The server should accept
-and respond to the following commands:
+terminated by a line-feed (@code{0xa}) character.  The server should
+accept and respond to the following commands:
 
-@itemize
+@table @gcctabopt
 
-@item @var{$query} @var{$module} [@var{$from}]
+@item @var{query} @var{module} [@var{from}]
 A query for an import (including for a module implementation unit).
-The @var{$query} may be a combination of @samp{BMI}, @samp{SEARCH} or
+The @var{query} may be a combination of @samp{BMI}, @samp{SEARCH} or
 @samp{PATH}, concatentated with @samp{,}.  The response should be one
-of `@samp{BMI} @var{$bmipath}', `@samp{SEARCH} @var{$srcbase}' or
-``@samp{PATH} @var{$srcpath}' respectively.  If the request is not
+of `@samp{BMI} @var{bmipath}', `@samp{SEARCH} @var{srcbase}' or
+`@samp{PATH} @var{srcpath}' respectively.  If the request is not
 fulfilable, the response is `@samp{ERROR} [@var{msg}]'.  Usually an
-error response will cause compilation to terminate.  When the query is
-multiplicative, the first possible response should be give.
+error response will cause compilation to terminate.  When the a
+multi-part query is given, the first possible response should be
+given.
 
 @item @samp{AWAIT}
 Request for an asynchronous response.  The response is as for a
 non-asynchronous query, except it is prefixed by `@samp{OK}
-@var{$module}', so it may be linked to the orignal request.   If there
-is no outstanding ASYNC query, an error response of @samp{ERROR
-$errormsg} should be given.
+@var{module}', so it may be linked to the orignal request.   If there
+is no outstanding ASYNC query, an error response of `@samp{ERROR}
+@var{msg}' should be given.
 
-@item @samp{ASYNC} @var{$query}
-An asynchronous query.  The @var{$query} is as above, but the response
-may be either @samp{OK} or @samp{ERROR $errormsg}.  A later response
+@item @samp{ASYNC} @var{query}
+An asynchronous query.  The @var{query} is as above, but the response
+may be either `@samp{OK}' or `@samp{ERROR} @var{msg}'.  A later response
 to an @samp{AWAIT} query will provide response data.
 
-@item @samp{DONE} @var{$module}
+@item @samp{DONE} @var{module}
 The compilation has succesfully produced a BMI file for
-@var{module-name}.  The response should be `@samp{OK}'.  Note that the
+@var{module}.  The response should be `@samp{OK}'.  Note that the
 compilation may not have completed the object-file generation of the
 interface unit.
 
-@item @samp{EXPORT} @var{$module}
+@item @samp{EXPORT} @var{module}
 The compilation is of a module interface unit, and will generate a BMI
-for @var{module-name}.  The response should be `@samp{BMI} @var{bmifile}'.
+for @var{module}.  The response should be `@samp{BMI} @var{bmipath}'.
 
-@item @samp{HELLO} @var{$ver} @var{$flags} @var{$cookie}
+@item @samp{HELLO} @var{ver} @var{flags} @var{cookie}
 This is the first command.  It informs the server of the name of the
 source being compiled.  Response is either `@samp{OK}
-@var{$ver} @var{$flags}', or `@samp{ERROR} @var{$errormsg}'.
+@var{ver} @var{flags}', or `@samp{ERROR} @var{msg}'.
 
-@item @samp{HELP} [@var{$cmd}]
-A help request.  The response is `@samp{HELP} @var{$msg}'.
+@item @samp{HELP} [@var{cmd}]
+A help request.  The response is `@samp{HELP} @var{msg}'.
 
-@item @samp{INCLUDE} @var{$header} @var{$from}
-A @code{#include} directive for @var{$header} is about to be processed
-while preprocessing @var{$from}, in legacy header mode.  The response
+@item @samp{INCLUDE} @var{header} @var{from}
+A @code{#include} directive for @var{header} is about to be processed
+while preprocessing @var{from}, in legacy header mode.  The response
 informs the compiler how to treat the inclusion.  A response of
 `@samp{INCLUDE}' causes textual inclusion.  A response of
 `@samp{IMPORT}' causes importation.  (A subsequent import query will
@@ -29375,20 +29383,20 @@ This command resets the server.  There is no response.  It is used
 if a preamble rescan is needed.  Any unresponded @samp{ASYNC} requests
 are dropped.
 
-@end itemize
+@end table
 
 It is recommended that any unrecognized command causes an @samp{ERROR}
 response with a suitable message.
 
 Requests and responses may be batched.  If a request line begins with
-a @code{+} character, before waiting for a response another request
-should be made.  That too may begin with @code{+}.  The final request
-of the batch should begin with @code{-}, and may be empty.  Similarly
+a @samp{+} character, before waiting for a response another request
+should be made.  That too may begin with @samp{+}.  The final request
+of the batch should begin with @samp{-}, and may be empty.  Similarly
 responses may be batched, both in response to a set of batched
 requests, or as a result of a batched @samp{AWAIT} request (including
-a batch consisting of solely an @code{AWAIT}).  Each non-ultimate line
-of a batched response begins with a @code{+}.  The final line should
-begin with @code{-}, and may otherwise be empty.  Response to a
+a batch consisting of solely an @samp{AWAIT}).  Each non-ultimate line
+of a batched response begins with a @samp{+}.  The final line should
+begin with @samp{-}, and may otherwise be empty.  Response to a
 batched request are in request order, except that a batch of
 @samp{ASYNC} requests that are deferred provides only a single
 @samp{OK} or @samp{ERROR} response.  Servers should not commence
@@ -29403,38 +29411,39 @@ module names themselves.
 
 The following metavariables were used:
 
-@itemize
+@table @gcctabop
 
-@item @var{$bmipath}
+@item @var{bmipath}
 Pathname of a BMI file.
 
-@item @var{$flags}
+@item @var{flags}
 A comma-separated set of words indicating capabilities.  If there are
 no flags, a placeholder of @samp{0} should be used.  FIXME:Not very baked
 
-@item @var{$from}
+@item @var{from}
 The source path of the file containing the import or include.
 
-@item @var{$module}
-A module name.  Legacy header module names are surrounded by @code{<>}
-or @code{""} pairs
+@item @var{module}
+A module name.  Legacy header module names are surrounded by @samp{<>}
+or @samp{""} pairs
 
-@item @var{$msg}
+@item @var{msg}
 A human readable message.  This may contain whitespace.
 
-@item @var{$query}
+@item @var{query}
 A @samp{BMI}, @samp{SEARCH} or @samp{PATH} query.
 
-@item @var{$srcbase}
+@item @var{srcbase}
 A basename of a source file to search for.
 
-@item @var{$cookie}
-A cookie provided when invoking the compiler.
+@item @var{cookie}
+A cookie provided when invoking the compiler.  This may be helpful to
+distinguish different connections to a common server.
 
-@item @var{$ver}
+@item @var{ver}
 A numeric version number, currently 0.
 
-@end itemize
+@end table
 
 A project-specific oracle is expected to be provided by the build
 system that invokes the compiler.  It is not expected that a
@@ -29442,9 +29451,7 @@ general-purpose server is provided for all compilations.  As such, the
 server will know the build configuration, the compiler it invoked, and
 the environment (such as working directory) in which that is
 operating.  As it may parallelize builds, several compilations may
-connect to the same socket.  The @var{$srcpath} token of the
-@samp{HELLO} command will allow it to distinguish between different
-connections.
+connect to the same socket.
 
 When delivering paths to the compiler, paths relative to the
 compiler's working directory should be used.  A compiler may embed the
@@ -29453,10 +29460,10 @@ server traffic, but may require the build system to recreate the same
 directory structure across parellelized build systems.
 
 The default oracle generates BMI files in the current directory,
-mapping @code{.} to @code{-} and appending a @samp{.nms} suffix.  It will
-also attempt to build a BMI, if one is not available for @code{IMPT}
-commands by looking for a source file in the same directory as the
-main source file with a @code{.cc}, @code{.C} or @code{.ccm} suffix.
+mapping @samp{.} to @samp{-} and appending a @samp{.nms} suffix.  It will
+also attempt to build a BMI, if one is not available for @samp{BMI}
+requests by looking for a source file in the same directory as the
+main source file with a @samp{.cc} suffix.
 
 It is expected that build systems will provide their own oracles.
 

@@ -485,7 +485,7 @@ public:
       err = e;
   }
   /* Get an error string.  */
-  const char *get_error () const;
+  const char *get_error (const char *) const;
 
 public:
   unsigned get_num_sections () const 
@@ -507,8 +507,11 @@ public:
 /* Return error string.  */
 
 const char *
-elf::get_error () const
+elf::get_error (const char *name) const
 {
+  if (!name)
+    return "Unknown BMI mapping";
+
   switch (err)
     {
     case 0:
@@ -2351,6 +2354,7 @@ struct GTY(()) module_state {
 
   bool direct : 1;	/* A direct import.  */
   bool exported : 1;	/* We are exported.  */
+  bool imported : 1;	/* Import has been done.  */
 
  public:
   module_state (tree name = NULL_TREE);
@@ -2358,6 +2362,17 @@ struct GTY(()) module_state {
 
  public:
   void release (bool at_eof = true);
+
+ public:
+  /* Is this a placeholder mapping state?  */
+  bool is_mapping () const
+  {
+    return loc == UNKNOWN_LOCATION;
+  }
+  bool is_imported () const
+  {
+    return imported;
+  }
 
  public:
   void set_import (module_state const *, bool is_export);
@@ -2452,6 +2467,7 @@ struct GTY(()) module_state {
   bool do_import (const char *filename, bool check_crc);
   static module_state *get_module (tree name, module_state * = NULL,
 				   bool insert = false);
+  static module_state *insert_mapping (tree name, char *filename);
 
  private:
   static int maybe_add_global (tree, unsigned &);
@@ -2488,7 +2504,7 @@ module_state::module_state (tree name)
     filename (NULL), loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     lazy (0), loading (~0u), lru (0), mod (MODULE_UNKNOWN), crc (0)
 {
-  direct = exported = false;
+  direct = exported = imported = false;
 }
 
 module_state::~module_state ()
@@ -2540,7 +2556,7 @@ hash_table<module_state_hash> *module_state::hash;
 /* Mapper to query and inform of modular compilations.  This is a
    singleton.  */
 class module_mapper {
-  char *name;
+  const char *name;
   FILE *from;   /* Read from mapper.  */
   FILE *to;	/* Write to mapper.  */
   pex_obj *pex; /* If it's a subprocess.  */
@@ -2550,7 +2566,7 @@ class module_mapper {
   char *pos;	/* Read/Write point in buffer.  */
   char *end;	/* Ending NUL byte.  */
   char *start;  /* Start of current response line.  */
-  bool batching;
+  bool batching;/* batching requests or responses.  */
 
 private:
   /* Construction always succeeds, but may result in a dead mapper.  */
@@ -2573,14 +2589,26 @@ public:
   }
   static void fini (location_t loc)
   {
-    if (loc != UNKNOWN_LOCATION && mapper)
+    if (mapper)
       {
 	mapper->kill (loc);
 	delete mapper;
 	mapper = NULL;
       }
-    else
-      gcc_checking_assert (!mapper);
+  }
+  static void assert_none ()
+  {
+    gcc_checking_assert (!mapper);
+  }
+
+public:
+  bool is_live () const
+  {
+    return from != NULL;
+  }
+  bool is_file () const
+  {
+    return from && !to;
   }
 
 public:
@@ -2607,7 +2635,7 @@ public:
   void export_query (const module_state *);
   char *bmi_response (const module_state *state)
   {
-    return get_response (state->from_loc) ? bmi_resp (state) : NULL;
+    return get_response (state->from_loc) > 0 ? bmi_resp (state) : NULL;
   }
   void await_cmd ()
   {
@@ -2619,7 +2647,7 @@ public:
 private:
   bool handshake (location_t, const char *main_src);
   void send_command (const char * = NULL, ...) ATTRIBUTE_PRINTF_2;
-  bool get_response (location_t);
+  int get_response (location_t);
   char *response_token (location_t);
   int response_word (location_t, const char *, ...);
   const char *response_error ()
@@ -2629,7 +2657,7 @@ private:
     return result;
   }
   void response_unexpected (location_t);
-  void response_eol (location_t);
+  bool response_eol (location_t);
   char *bmi_resp (const module_state *);
 
 private:
@@ -6224,27 +6252,45 @@ module_state::get_module (tree name, module_state *dflt, bool insert)
     return NULL;
 
   module_state *state = *slot;
-  gcc_assert (!state || state->vec_name);
   if (dflt)
     {
       /* Don't overwrite occupied default.  */
       if (dflt->vec_name)
 	return NULL;
 
+      gcc_assert (!dflt->filename);
       if (state)
-	return state;
+	{
+	  /* Don't copy an occupied module.  */
+	  if (state->vec_name)
+	    return state;
 
-      /* Use the default we were given, and put it back in the hash
-	 table.  */
+	  gcc_assert (state->filename);
+	  dflt->filename = state->filename;
+	  state->filename = NULL;
+	  delete state;
+	}
       dflt->name = name;
       state = dflt;
-      *slot = state;
     }
   else if (!state)
-    {
-      state = new (ggc_alloc<module_state> ()) module_state (name);
-      *slot = state;
-    }
+    state = new (ggc_alloc<module_state> ()) module_state (name);
+  *slot = state;
+  return state;
+}
+
+/* Insert a mapping for module NAME to BMI FILENAME.  If there is
+   already a mapping, ignore the new one.  Takes ownership of
+   FILENAME.  */
+
+module_state *
+module_state::insert_mapping (tree name, char *filename)
+{
+  module_state *state = get_module (name, NULL, true);
+
+  if (!state->filename)
+    state->filename = filename;
+
   return state;
 }
 
@@ -6408,10 +6454,9 @@ module_mapper::module_mapper (location_t loc, const char *option)
     start (NULL), batching (false)
 {
   pex = NULL;
-  
-  bool defaulting = !option;
-  if (defaulting)
-    option = "cxx-module-mapper";
+
+  if (!option)
+    name = option = "cxx-module-mapper";
 
   if (noisy_p ())
     {
@@ -6440,31 +6485,43 @@ module_mapper::module_mapper (location_t loc, const char *option)
   writable = XNEWVEC (char, len + 1);
   memcpy (writable, option, len + 1);
 
-  char *cookie = NULL;
+  const char *cookie = NULL;
   int fd_in = -1, fd_out = -1;
+
+  if (!name && writable[0] == '@')
+    {
+      name = writable + 1;
+      from = fopen (name, "r");
+      if (!from)
+	{
+	  err = errno;
+	  errmsg = "opening";
+	}
+    }
 
   /* Try a file number or pair of same.  */
   char *endp;
-  if (!defaulting)
+  if (!name)
     {
       unsigned long lfd_in = strtoul (writable, &endp, 10);
       unsigned long lfd_out = lfd_in;
       if (*endp == ',')
 	lfd_out = strtoul (endp + 1, &endp, 10);
-      if (*endp == '?')
-	cookie = endp + 1;
-      else if (*endp == '/')
-	cookie = endp;
+      if (*endp == '?' || *endp == '/')
+	{
+	  cookie = option + (endp - writable) + (*endp == '?');
+	  *endp = 0;
+	}
 
-      if ((cookie || !*endp)
-	  && lfd_in != ULONG_MAX && lfd_out != ULONG_MAX)
+      if (!*endp && lfd_in != ULONG_MAX && lfd_out != ULONG_MAX)
 	{
 	  fd_in = int (lfd_in);
 	  fd_out = int (lfd_out);
+	  name = writable;
 	}
     }
 
-  if (!defaulting && fd_in < 0 && !count)
+  if (!name && !count)
     {
       /* There are no spaces in the name, try opening a socket.  */
       int port = -1;
@@ -6488,11 +6545,11 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	{
 	  /* An absolute path is treated as a local domain socket.  */
 #ifdef HOST_HAS_AF_UNIX
-	  cookie = static_cast <char *> (memchr (writable, '?', len));
-	  if (cookie)
+	  if (char *ques = static_cast <char *> (memchr (writable, '?', len)))
 	    {
-	      len = cookie - writable;
-	      *cookie++ = 0;
+	      len = ques - writable;
+	      *ques = 0;
+	      cookie = ques + 1;
 	    }
 	  if (len < sizeof (saddr.un.sun_path))
 	    {
@@ -6505,16 +6562,18 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	  saddr_len = 1;
 	  errmsg = "unix protocol unsupported";
 #endif
+	  name = writable;
 	}
       else if (char *colon = (char *)memrchr (writable, ':', len))
 	{
 	  port = strtoul (colon + 1, &endp, 10);
-	  if (*endp == '?')
-	    cookie = endp + 1;
-	  else if (*endp == '/')
-	    cookie = endp;
+	  if (*endp == '?' || *endp == '/')
+	    {
+	      cookie = option + (endp - writable) + (*endp == '?');
+	      *endp = 0;
+	    }
 
-	  if (cookie || !*endp)
+	  if (!*endp)
 	    {
 	      /* Ends in ':number', treat as ipv6 domain socket.  */
 	      *colon = 0;
@@ -6537,6 +6596,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      saddr_len = 1;
 	      errmsg = "ipv6 protocol unsupported";
 #endif
+	      name = writable;
 	    }
 	}
 
@@ -6586,7 +6646,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	  from = to = NULL;
 	}
     }
-  else if (!errmsg)
+  else if (!name || name == option)
     {
       /* Split writable at white-space.  No space-containing args
 	 for you!  */
@@ -6602,8 +6662,8 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	  for (argv[count++] = ptr; *ptr && !ISSPACE (*ptr); ptr++)
 	    if (*ptr == '?' && count == 1)
 	      {
-		cookie = ptr;
-		*cookie++ = 0;
+		*ptr = 0;
+		cookie = ptr + 1;
 	      }
 
 	  if (!*ptr)
@@ -6611,9 +6671,6 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	  *ptr = 0;
 	}
       argv[count] = NULL;
-
-      /* Record just the command.  */
-      name = argv[0];
 
       pex = pex_init (PEX_USE_PIPES, name, NULL);
       to = pex_input_pipe (pex, false);
@@ -6626,7 +6683,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	{
 	  int flags = PEX_SEARCH;
 
-	  if (defaulting
+	  if (name == option
 	      && save_decoded_options[0].opt_index == OPT_SPECIAL_program_name
 	      && save_decoded_options[0].arg != progname)
 	    {
@@ -6634,7 +6691,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      const char *fullname = save_decoded_options[0].arg;
 	      size_t dir_len = progname - fullname;
 
-	      gcc_checking_assert (count == 1 && argv[0] == name);
+	      gcc_checking_assert (count == 1 && !strcmp (name, argv[0]));
 	      argv[0] = XNEWVEC (char, dir_len + len + 1);
 	      memcpy (argv[0], fullname, dir_len);
 	      memcpy (argv[0] + dir_len, name, len + 1);
@@ -6644,6 +6701,8 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	  if (!flags)
 	    free (argv[0]);
 	}
+
+      name = argv[0];
 
       if (!errmsg)
 	{
@@ -6660,7 +6719,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 
   if (errmsg)
     {
-      error_at (loc, "failed %s of mapper %qs", errmsg, option);
+      error_at (loc, "failed %s of mapper %qs", errmsg, name ? name : option);
       errno = err;
       inform (loc, err < 0 ? "%s" : err > 0 ? "%m"
 	      : "here's a nickel, kid.  Get yourself a real computer",
@@ -6669,16 +6728,44 @@ module_mapper::module_mapper (location_t loc, const char *option)
       return;
     }
 
-  setvbuf (from, NULL, _IOLBF, 0); /* We read lines.  */
-  setvbuf (to, NULL, _IONBF, 0); /* We write whole buffers.  */
-
-  /* We have a live mapper.  Say Hello.  */
   dump () && dump ("Initialized mapper");
 
   pos = end = buffer = XNEWVEC (char, size);
 
-  if (!handshake (loc, cookie ? cookie : main_input_filename))
-    kill (loc);
+  setvbuf (from, NULL, _IOLBF, 0); /* We read lines.  */
+  if (to)
+    {
+      /* A server, say Hello!.  */
+      setvbuf (to, NULL, _IONBF, 0); /* We write whole buffers.  */
+      if (!handshake (loc, cookie ? cookie : main_input_filename))
+	kill (loc);
+    }
+  else
+    {
+      /* A mapping file.  Read it.  */
+      for (int r; (r = get_response (loc)) >= 0;)
+	if (r)
+	  {
+	    char *mod = response_token (loc);
+	    char *file = mod ? response_token (loc) : NULL;
+	    if (file && response_eol (loc))
+	      {
+		file = xstrdup (file);
+		module_state *state
+		  = module_state::insert_mapping (get_identifier (mod), file);
+		if (state->filename != file)
+		  {
+		    if (strcmp (state->filename, file))
+		      warning_at (loc, 0,
+				  "ignoring conflicting mapping of %qE to %qs",
+				  state->name, file);
+		    free (file);
+		  }
+	      }
+	  }
+      fclose (from);
+      /* Leave from non-null to show liveness.  */
+    }
 }
 
 /* Close down the mapper.  Mark it as not restartable.  */
@@ -6704,7 +6791,7 @@ module_mapper::kill (location_t loc)
 	error_at (loc, "mapper %qs exit status %d",
 		  name, WEXITSTATUS (status));
     }
-  else if (from)
+  else if (from && !is_file ())
     fclose (from);
 
   from = to = NULL;
@@ -6765,24 +6852,30 @@ module_mapper::send_command (const char *format, ...)
     }
 }
 
-/* Read a response from the mapper.   Mapper may die.  */
+/* Read a response from the mapper.  -ve -> end, 0 -> blank, +ve -> something*/
 
-bool
+int
 module_mapper::get_response (location_t loc)
 {
   if (batching)
     pos = end + 1;
   else
     {
-      gcc_assert (end == buffer && pos == end);
+      gcc_assert (pos == end);
+      end = pos = buffer;
       size_t off = 0;
 
     more:
       if (!fgets (buffer + off, size - off, from))
 	{
-	  const char *err = ferror (from) ? "error" : "end of file";
-	  error_at (loc, "unexpected %s from mapper %qs", err, name);
-	  off = 0;
+	  const char *err = NULL;
+	  if (ferror (from))
+	    err = "error";
+	  else if (!is_file ())
+	    err = "end of file";
+	  if (err)
+	    error_at (loc, "unexpected %s from mapper %qs", err, name);
+	  return -1;
 	}
       else
 	{
@@ -6842,11 +6935,13 @@ module_mapper::response_unexpected (location_t loc)
   pos = end;
 }
 
-void
+bool
 module_mapper::response_eol (location_t loc)
 {
-  if (pos != end)
+  bool res = pos == end;
+  if (!res)
     response_unexpected (loc);
+  return res;
 }
 
 char *
@@ -6931,7 +7026,7 @@ module_mapper::handshake (location_t loc, const char *cookie)
 {
   send_command ("HELLO %d 0 %s", MAPPER_VERSION, cookie);
 
-  bool ok = get_response (loc);
+  bool ok = get_response (loc) > 0;
   switch (response_word (loc, "HELLO", "ERROR", NULL))
     {
     default:
@@ -7018,7 +7113,7 @@ module_mapper::async_response (location_t loc)
 module_state *
 module_mapper::await_response (location_t loc, char *&fname)
 {
-  if (!get_response (loc))
+  if (get_response (loc) <= 0)
     return NULL;
 
   if (response_word (loc, "OK", NULL))
@@ -7041,13 +7136,14 @@ char *
 module_mapper::import_export (const module_state *state, bool export_p)
 {
   if (module_mapper *mapper = get (state->from_loc))
-    {
-      if (export_p)
-	mapper->export_query (state);
-      else
-	mapper->import_query (state, false);
-      return mapper->bmi_response (state);
-    }
+    if (!mapper->is_file ())
+      {
+	if (export_p)
+	  mapper->export_query (state);
+	else
+	  mapper->import_query (state, false);
+	return mapper->bmi_response (state);
+      }
   return NULL;
 }
 
@@ -7056,14 +7152,19 @@ module_mapper::import_export (const module_state *state, bool export_p)
 bool
 module_mapper::export_done (const module_state *state)
 {
-  bool ok = false;
+  bool ok = true;
   if (module_mapper *mapper = get (state->from_loc))
     {
-      dump () && dump ("Completed mapper");
-      mapper->send_command ("DONE %s", IDENTIFIER_POINTER (state->name));
-      mapper->get_response (state->from_loc);
-      ok = mapper->response_word (state->from_loc, "OK", NULL) == 0;
+      if (!mapper->is_file ())
+	{
+	  dump () && dump ("Completed mapper");
+	  mapper->send_command ("DONE %s", IDENTIFIER_POINTER (state->name));
+	  mapper->get_response (state->from_loc);
+	  ok = mapper->response_word (state->from_loc, "OK", NULL) == 0;
+	}
     }
+  else
+    ok = false;
   return ok;
 }
 
@@ -7230,10 +7331,17 @@ module_state::read_imports (bytes_in &cfg, bool direct)
 	  if (cfg.get_overrun ())
 	    return -1;
 	  imp = find_module (loc, name, false);
-	  if (imp && !imp->filename)
+	  if (imp && !imp->is_imported ())
 	    {
 	      imp->crc = crc;
 	      unsigned n = dump.push (imp);
+	      if (imp->filename && strcmp (filename_str, imp->filename))
+		{
+		  error_at (loc, "conflicting BMI names for %qE: %qs & %qs",
+			    imp->name, imp->filename, filename_str);
+		  free (imp->filename);
+		  imp->filename = NULL;
+		}
 	      if (!imp->do_import (filename_str, true))
 		imp = NULL;
 	      else
@@ -9007,7 +9115,7 @@ module_state::check_read (bool outermost, tree ns, tree id)
   int e = from->has_error ();
   if (e)
     {
-      const char *err = from->get_error ();
+      const char *err = from->get_error (filename);
       /* Failure to read a module is going to cause big
 	 problems, so bail out, if this is the top level.
 	 Otherwise return NULL to let our importer know (and
@@ -9382,24 +9490,29 @@ module_state::find_module (location_t from_loc, tree name, bool module_p)
 bool
 module_state::do_import (char const *fname, bool check_crc)
 {
-  gcc_assert (global_namespace == current_scope ());
+  gcc_assert (global_namespace == current_scope ()
+	      && !is_imported ());
 
   if (!lazy_open)
     freeze_an_elf ();
 
-  gcc_assert (!filename);
+  if (fname)
+    {
+      gcc_assert (!filename);
+      filename = xstrdup (fname);
+    }
 
   FILE *stream = NULL;
   int e = ENOENT;
-  if (fname)
+  if (filename)
     {
-      filename = xstrdup (fname);
       stream = fopen (filename, "rb");
       e = errno;
     }
 
   announce ("importing");
   vec_safe_push (importing, this);
+  imported = true;
   read (stream, e, check_crc);
   bool failed = check_read (direct && !modules_atom_p ());
   importing->pop ();
@@ -9493,7 +9606,7 @@ import_module (const cp_expr &name, bool exporting, tree)
 	imp->exported = true;
       if (!modules_atom_p ())
 	{
-	  if (!imp->filename)
+	  if (!imp->is_imported ())
 	    {
 	      unsigned n = dump.push (imp);
 	      char *fname = module_mapper::import_export (imp, false);
@@ -9530,10 +9643,10 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 	{
 	  unsigned n = dump.push (state);
 	  char *fname = module_mapper::import_export (state, exporting_p);
-	  if (exporting_p)
-	    state->filename = fname ? xstrdup (fname) : NULL;
-	  else
+	  if (!exporting_p)
 	    state->do_import (fname, false);
+	  else if (fname)
+	    state->filename = xstrdup (fname);
 	  dump.pop (n);
 	}
     }
@@ -9561,6 +9674,9 @@ module_state::atom_preamble (location_t loc)
   if (!mapper)
     return false;
 
+  /* Importing stuff perturbs the hash table, so we can't just iterate
+     it in mapping-file mode.  */
+  auto_vec<module_state *> directs;
   unsigned imports = 0;
 
   mapper->cork ();
@@ -9569,47 +9685,60 @@ module_state::atom_preamble (location_t loc)
        iter != end; ++iter)
     {
       module_state *imp = *iter;
-      gcc_assert (!imp->filename);
+      gcc_assert (mapper->is_file () || !imp->filename);
       if (imp->direct)
 	{
-	  mapper->import_query (imp, true);
+	  if (mapper->is_file ())
+	    directs.safe_push (imp);
+	  else
+	    mapper->import_query (imp, true);
 	  imports++;
 	}
       else
-	gcc_assert (imp == interface);
+	gcc_assert (imp == interface || imp->is_mapping ());
     }
 
-  if (!imports)
-    mapper->uncork ();
-  if (interface)
-    mapper->export_query (interface);
-  if (imports)
+  if (!mapper->is_file ())
     {
-      mapper->uncork ();
-      mapper->await_cmd ();
-      mapper->async_response (loc);
-    }
-  if (interface)
-    if (char *fname = mapper->bmi_response (interface))
-      interface->filename = xstrdup (fname);
-  if (imports)
-    {
-      char *fname;
-      while (module_state *imp = mapper->await_response (loc, fname))
+      if (!imports)
+	mapper->uncork ();
+      if (interface)
+	mapper->export_query (interface);
+      if (imports)
 	{
-	  if (!fname)
-	    continue;
+	  mapper->uncork ();
+	  mapper->await_cmd ();
+	  mapper->async_response (loc);
+	}
+      if (interface)
+	if (char *fname = mapper->bmi_response (interface))
+	  interface->filename = xstrdup (fname);
+    }
 
-	  if (!imp->direct || imp == interface
-	      || (imp->filename && strcmp (imp->filename, fname)))
+  if (imports)
+    {
+      char *fname = NULL;
+      while (module_state *imp =
+	     !mapper->is_file () ? mapper->await_response (loc, fname)
+	     : directs.length () ? directs.pop () : NULL)
+	{
+	  if (!mapper->is_file ())
 	    {
-	      error_at (imp->from_loc, "unexpected mapper response for %qE: %qs",
-		     imp->name, fname);
-	      break;
+	      if (!fname)
+		continue;
+
+	      if (!imp->direct || imp == interface
+		  || (imp->filename && strcmp (imp->filename, fname)))
+		{
+		  error_at (imp->from_loc,
+			    "unexpected mapper response for %qE: %qs",
+			    imp->name, fname);
+		  break;
+		}
 	    }
 
 	  unsigned n = dump.push (imp);
-	  if (imp->filename || imp->do_import (fname, false))
+	  if (imp->is_imported () || imp->do_import (fname, false))
 	    {
 	      if (imp->mod != MODULE_PURVIEW)
 		(*modules)[MODULE_NONE]->set_import (imp, imp->exported);
@@ -9669,8 +9798,8 @@ finish_module ()
       if (to.begin ())
 	state->write (&to);
       if (to.end ())
-	error_at (state->loc, "failed to export module %qE: %s",
-		  state->name, to.get_error ());
+	error_at (state->loc, "failed to export module %qE: %s", state->name,
+		  to.get_error (state->filename));
 
       dump.pop (n);
       if (!errorcount)
@@ -9709,7 +9838,7 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
   dump () && dump ("About to reexec with prefix length %u", count);
   module_state::fini ();
   /* The mapper should not be live, but make sure of that.  */
-  module_mapper::fini (UNKNOWN_LOCATION);
+  module_mapper::assert_none ();
   /* The preprocessor does not leave files open, so we can ignore the
      pfile arg.  */
   

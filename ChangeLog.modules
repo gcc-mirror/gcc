@@ -1,3 +1,24 @@
+2018-06-01  Nathan Sidwell  <nathan@acm.org>
+
+	Module mapping file is back
+	gcc/
+	* doc/invoke.text (C++ Modules): Document mapping file.
+	gcc/cp/
+	* cxx-module-mapper.sh: Strip -fmodule-preamble=.
+	* module.c (elf::get_error): Detect no file name.
+	(module_state): Add imported field.
+	(module_state::is_{imported,mapping}): New.
+	(module_mapper::module_mapper): Read mapping file.
+	(module_mapper::get_response): Distingish empty from end.
+	(module_state::get_module): Copy a mapping.
+	(module_state::insert_mapping): New.
+	(module_state::read_imports): Adjust.
+	(module_state::do_import): Set imported.
+	(import_module, declare_module): Adjust.
+	(module_state::atom_preamble): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/map-1{_a.C,_b.C,.map}: New.
+
 2018-05-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
