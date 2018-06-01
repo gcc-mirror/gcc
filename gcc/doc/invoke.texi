@@ -29411,7 +29411,7 @@ module names themselves.
 
 The following metavariables were used:
 
-@table @gcctabop
+@table @gcctabopt
 
 @item @var{bmipath}
 Pathname of a BMI file.
