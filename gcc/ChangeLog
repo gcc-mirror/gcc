@@ -1,3 +1,23 @@
+2018-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-store-merging.c: Include gimple-fold.h.
+	(struct store_immediate_info): Document BIT_INSERT_EXPR stores.
+	(struct merged_store_group): Add bit_insertion field.
+	(dump_char_array): Use standard hexadecimal format.
+	(merged_store_group::merged_store_group): Set bit_insertion to false.
+	(merged_store_group::apply_stores): Use optimal buffer size.  Deal
+	with BIT_INSERT_EXPR stores.  Move up code updating the mask and
+	also print the mask in the dump file.
+	(pass_store_merging::gate): Minor tweak.
+	(imm_store_chain_info::coalesce_immediate): Fix wrong association
+	of stores with groups in dump.  Allow coalescing of BIT_INSERT_EXPR
+	stores with INTEGER_CST stores.
+	(count_multiple_uses) <BIT_INSERT_EXPR>: New case.
+	(imm_store_chain_info::output_merged_store): Add try_bitpos variable
+	and use it throughout.  Generate bit insertion sequences if need be.
+	(pass_store_merging::process_store): Remove redundant condition.
+	Record stores from a SSA name to a bit-field with BIT_INSERT_EXPR.
+
 2018-06-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_mangle_type): Change the mangling of

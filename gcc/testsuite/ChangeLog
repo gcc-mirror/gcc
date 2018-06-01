@@ -1,4 +1,11 @@
+2018-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/store_merging_20.c: New test.
+	* gnat.dg/opt71.adb: Likewise.
+	* gnat.dg/opt71_pkg.ads: New helper.
+
 2018-06-01  Carl Love  <cel@us.ibm.com>
+
 	* gcc.target/powerpc/altivec-35.c (foo): Add builtin test vec_madds.
 	* gcc.target/powerpc/builtins-6-runnable.c (main): Fix typo for output.
 	Add vec_xst_be for signed and unsigned arguments.
