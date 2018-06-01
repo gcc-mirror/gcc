@@ -1,3 +1,13 @@
+2018-06-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/85989
+	* gimple-ssa-backprop.c (backprop::m_visited_phis): New member
+	variable.
+	(backprop::intersect_uses): Check it when deciding whether this
+	is a backedge reference.
+	(backprop::process_block): Add each phi to m_visited_phis
+	after visiting it, then clear it at the end.
+
 2018-06-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vect_dr_stmt): New function.
