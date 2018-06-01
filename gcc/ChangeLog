@@ -1,3 +1,8 @@
+2018-06-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_mangle_type): Change the mangling of
+	the 128-bit floating point types.  Fix function comment.
+
 2018-06-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md
