@@ -1,5 +1,8 @@
 2018-06-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/fortran/
+	* cpp.c (cb_file_change): Adjust for line map inclusion changes.
+
 	Module mapping file is back
 	gcc/
 	* doc/invoke.text (C++ Modules): Document mapping file.
