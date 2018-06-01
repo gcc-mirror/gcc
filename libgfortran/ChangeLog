@@ -1,3 +1,11 @@
+2018-06-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk.
+	PR libgfortran/85840
+	* io/write.c (write_float_0, write_real, write_real_g0,
+	write_complex): Use separate local variables for the float
+	string length.
+
 2018-02-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
