@@ -22168,6 +22168,12 @@ mark_decl_instantiated (tree result, int extern_p)
 	 linkonce sections.  */
       else if (TREE_PUBLIC (result))
 	maybe_make_one_only (result);
+      if (TREE_CODE (result) == FUNCTION_DECL
+	  && DECL_TEMPLATE_INSTANTIATED (result))
+	/* If the function has already been instantiated, clear DECL_EXTERNAL,
+	   since start_preparsed_function wouldn't have if we had an earlier
+	   extern explicit instantiation.  */
+	DECL_EXTERNAL (result) = 0;
     }
 
   /* If EXTERN_P, then this function will not be emitted -- unless

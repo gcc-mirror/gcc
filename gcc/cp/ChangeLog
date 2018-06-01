@@ -1,3 +1,8 @@
+2018-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58281 - explicit instantiation of constexpr
+	* pt.c (mark_decl_instantiated): Clear DECL_EXTERNAL.
+
 2018-05-31  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (instantiate_decl): Any defaulted function is defined.
