@@ -1,3 +1,9 @@
+2018-05-31  Jason Merrill  <jason@redhat.com>
+
+	CWG 1581: When are constexpr member functions defined?
+	* constexpr.c (instantiate_cx_fn_r, instantiate_constexpr_fns): New.
+	(cxx_eval_outermost_constant_expr): Call instantiate_constexpr_fns.
+
 2018-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58281 - explicit instantiation of constexpr

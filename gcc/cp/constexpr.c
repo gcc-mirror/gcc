@@ -4813,6 +4813,46 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     return r;
 }
 
+/* P0859: A function is needed for constant evaluation if it is a constexpr
+   function that is named by an expression ([basic.def.odr]) that is
+   potentially constant evaluated.
+
+   So we need to instantiate any constexpr functions mentioned by the
+   expression even if the definition isn't needed for evaluating the
+   expression.  */
+
+static tree
+instantiate_cx_fn_r (tree *tp, int *walk_subtrees, void */*data*/)
+{
+  if (TREE_CODE (*tp) == FUNCTION_DECL
+      && DECL_DECLARED_CONSTEXPR_P (*tp)
+      && !DECL_INITIAL (*tp)
+      && DECL_TEMPLOID_INSTANTIATION (*tp))
+    {
+      ++function_depth;
+      instantiate_decl (*tp, /*defer_ok*/false, /*expl_inst*/false);
+      --function_depth;
+    }
+  else if (TREE_CODE (*tp) == CALL_EXPR
+	   || TREE_CODE (*tp) == AGGR_INIT_EXPR)
+    {
+      if (EXPR_HAS_LOCATION (*tp))
+	input_location = EXPR_LOCATION (*tp);
+    }
+
+  if (!EXPR_P (*tp))
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
+}
+static void
+instantiate_constexpr_fns (tree t)
+{
+  location_t loc = input_location;
+  cp_walk_tree_without_duplicates (&t, instantiate_cx_fn_r, NULL);
+  input_location = loc;
+}
+
 static tree
 cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 				  bool strict = true, tree object = NULL_TREE)
@@ -4858,6 +4898,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	r = TARGET_EXPR_INITIAL (r);
     }
 
+  instantiate_constexpr_fns (r);
   r = cxx_eval_constant_expression (&ctx, r,
 				    false, &non_constant_p, &overflow_p);
 
@@ -4959,6 +5000,7 @@ is_sub_constant_expr (tree t)
 
   constexpr_ctx ctx = { NULL, &map, NULL, NULL, NULL, NULL, true, true };
 
+  instantiate_constexpr_fns (t);
   cxx_eval_constant_expression (&ctx, t, false, &non_constant_p,
 				&overflow_p);
   return !non_constant_p && !overflow_p;
