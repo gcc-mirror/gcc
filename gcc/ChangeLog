@@ -1,3 +1,9 @@
+2018-06-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/aarch64/aarch64.c (aarch64_ira_change_pseudo_allocno_class):
+	Fix subreg tests so that we only return a choice between
+	GENERAL_REGS and FP_REGS if the original classes included both.
+
 2018-06-01  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/85960
