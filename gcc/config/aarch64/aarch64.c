@@ -1108,12 +1108,12 @@ aarch64_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
 {
   machine_mode mode;
 
-  if (reg_class_subset_p (allocno_class, GENERAL_REGS)
-      || reg_class_subset_p (allocno_class, FP_REGS))
+  if (!reg_class_subset_p (GENERAL_REGS, allocno_class)
+      || !reg_class_subset_p (FP_REGS, allocno_class))
     return allocno_class;
 
-  if (reg_class_subset_p (best_class, GENERAL_REGS)
-      || reg_class_subset_p (best_class, FP_REGS))
+  if (!reg_class_subset_p (GENERAL_REGS, best_class)
+      || !reg_class_subset_p (FP_REGS, best_class))
     return best_class;
 
   mode = PSEUDO_REGNO_MODE (regno);
