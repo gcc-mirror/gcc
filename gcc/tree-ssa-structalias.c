@@ -3903,7 +3903,7 @@ get_function_part_constraint (varinfo_t fi, unsigned part)
       c.offset = 0;
       c.type = SCALAR;
     }
-  else if (TREE_CODE (fi->decl) == FUNCTION_DECL)
+  else if (fi->decl && TREE_CODE (fi->decl) == FUNCTION_DECL)
     {
       varinfo_t ai = first_vi_for_offset (fi, part);
       if (ai)
@@ -4735,7 +4735,7 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 
   fi = get_fi_for_callee (t);
   if (!in_ipa_mode
-      || (fndecl && !fi->is_fn_info))
+      || (fi->decl && fndecl && !fi->is_fn_info))
     {
       auto_vec<ce_s, 16> rhsc;
       int flags = gimple_call_flags (t);
@@ -5352,7 +5352,7 @@ find_func_clobbers (struct function *fn, gimple *origt)
 
       /* For callees without function info (that's external functions),
 	 ESCAPED is clobbered and used.  */
-      if (gimple_call_fndecl (t)
+      if (cfi->decl
 	  && !cfi->is_fn_info)
 	{
 	  varinfo_t vi;
@@ -6115,6 +6115,27 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
 static unsigned int
 create_variable_info_for (tree decl, const char *name, bool add_id)
 {
+  /* First see if we are dealing with an ifunc resolver call and
+     assiociate that with a call to the resolver function result.  */
+  cgraph_node *node;
+  if (in_ipa_mode
+      && TREE_CODE (decl) == FUNCTION_DECL
+      && (node = cgraph_node::get (decl))->ifunc_resolver)
+    {
+      varinfo_t fi = get_vi_for_tree (node->get_alias_target ()->decl);
+      constraint_expr rhs
+	= get_function_part_constraint (fi, fi_result);
+      fi = new_var_info (NULL_TREE, "ifuncres", true);
+      fi->is_reg_var = true;
+      constraint_expr lhs;
+      lhs.type = SCALAR;
+      lhs.var = fi->id;
+      lhs.offset = 0;
+      process_constraint (new_constraint (lhs, rhs));
+      insert_vi_for_tree (decl, fi);
+      return fi->id;
+    }
+
   varinfo_t vi = create_variable_info_for_1 (decl, name, add_id, false, NULL);
   unsigned int id = vi->id;
 
@@ -7715,7 +7736,8 @@ associate_varinfo_to_alias (struct cgraph_node *node, void *data)
   if ((node->alias
        || (node->thunk.thunk_p
 	   && ! node->global.inlined_to))
-      && node->analyzed)
+      && node->analyzed
+      && !node->ifunc_resolver)
     insert_vi_for_tree (node->decl, (varinfo_t)data);
   return false;
 }
@@ -8087,7 +8109,7 @@ ipa_pta_execute (void)
 		         (node->decl, first_vi_for_offset (fi, fi_uses));
 		}
 	      /* Handle direct calls to external functions.  */
-	      else if (decl)
+	      else if (decl && (!fi || fi->decl))
 		{
 		  pt = gimple_call_use_set (stmt);
 		  if (gimple_call_flags (stmt) & ECF_CONST)
@@ -8132,8 +8154,7 @@ ipa_pta_execute (void)
 		    }
 		}
 	      /* Handle indirect calls.  */
-	      else if (!decl
-		       && (fi = get_fi_for_callee (stmt)))
+	      else if ((fi = get_fi_for_callee (stmt)))
 		{
 		  /* We need to accumulate all clobbers/uses of all possible
 		     callees.  */
@@ -8189,6 +8210,8 @@ ipa_pta_execute (void)
 			}
 		    }
 		}
+	      else
+		gcc_unreachable ();
 	    }
 	}
 

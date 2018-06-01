@@ -1,3 +1,18 @@
+2018-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/85960
+	* tree-ssa-structalias.c (get_function_part_constraint):
+	Handle NULL fi->decl.
+	(find_func_aliases_for_call): Properly handle indirect
+	fi from direct call.
+	(find_func_clobbers): Likewise.
+	(ipa_pta_execute): Likewise.
+	(create_variable_info_for): For functions that are ifunc_resolver
+	resolve to a varinfo that contains the result of the resolver
+	call.
+	(associate_varinfo_to_alias): Do not treat ifunc resolvers as
+	aliases.
+
 2018-05-31  Michael Collison  <michael.collison@arm.com>
 
 	* config/aarch64/aarch64.md:
