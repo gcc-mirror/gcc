@@ -32095,8 +32095,9 @@ rs6000_handle_altivec_attribute (tree *node,
   return NULL_TREE;
 }
 
-/* AltiVec defines four built-in scalar types that serve as vector
-   elements; we must teach the compiler how to mangle them.  */
+/* AltiVec defines five built-in scalar types that serve as vector
+   elements; we must teach the compiler how to mangle them.  The 128-bit
+   floating point mangling is target-specific as well.  */
 
 static const char *
 rs6000_mangle_type (const_tree type)
@@ -32113,30 +32114,12 @@ rs6000_mangle_type (const_tree type)
   if (type == bool_int_type_node) return "U6__booli";
   if (type == bool_long_long_type_node) return "U6__boolx";
 
-  /* Use a unique name for __float128 rather than trying to use "e" or "g". Use
-     "g" for IBM extended double, no matter whether it is long double (using
-     -mabi=ibmlongdouble) or the distinct __ibm128 type.  */
-  if (TARGET_FLOAT128_TYPE)
-    {
-      if (type == ieee128_float_type_node)
-	return "U10__float128";
-
-      if (type == ibm128_float_type_node)
-	return "u8__ibm128";
-
-      if (TARGET_LONG_DOUBLE_128 && type == long_double_type_node)
-	return (TARGET_IEEEQUAD) ? "U10__float128" : "g";
-    }
-
-  /* Mangle IBM extended float long double as `g' (__float128) on
-     powerpc*-linux where long-double-64 previously was the default.  */
-  if (TYPE_MAIN_VARIANT (type) == long_double_type_node
-      && TARGET_ELF
-      && TARGET_LONG_DOUBLE_128
-      && !TARGET_IEEEQUAD)
+  if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IBM_P (TYPE_MODE (type)))
     return "g";
+  if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IEEE_P (TYPE_MODE (type)))
+    return "u9__ieee128";
 
-  /* For all other types, use normal C++ mangling.  */
+  /* For all other types, use the default mangling.  */
   return NULL;
 }
 
