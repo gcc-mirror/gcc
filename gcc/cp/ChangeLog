@@ -1,3 +1,7 @@
+2018-05-31  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (instantiate_decl): Any defaulted function is defined.
+
 2018-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/77777

@@ -23748,7 +23748,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
       deleted_p = DECL_DELETED_FN (code_pattern);
       pattern_defined = ((DECL_SAVED_TREE (code_pattern) != NULL_TREE
 			  && DECL_INITIAL (code_pattern) != error_mark_node)
-			 || DECL_DEFAULTED_OUTSIDE_CLASS_P (code_pattern)
+			 || DECL_DEFAULTED_FN (code_pattern)
 			 || deleted_p);
     }
   else
