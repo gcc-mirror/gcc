@@ -60,11 +60,11 @@ void print_uc (vector unsigned char vec_expected,
 {
   int i;
 
-  printf("expected signed char data\n");
+  printf("expected unsigned char data\n");
   for (i = 0; i < 16; i++)
     printf(" %d,", vec_expected[i]);
 
-  printf("\nactual signed char data\n");
+  printf("\nactual unsigned char data\n");
   for (i = 0; i < 16; i++)
     printf(" %d,", vec_actual[i]);
   printf("\n");
@@ -197,13 +197,11 @@ void print_ull (vector unsigned long long vec_expected,
 
   printf("expected unsigned long long data\n");
   for (i = 0; i < 2; i++)
-	  //    printf(" %llu,", vec_expected[i]);
-    printf(" 0x%llx,", vec_expected[i]);
+    printf(" %llu,", vec_expected[i]);
 
   printf("\nactual unsigned long long data\n");
   for (i = 0; i < 2; i++)
-	  //    printf(" %llu,", vec_actual[i]);
-    printf("0x %llx,", vec_actual[i]);
+    printf(" %llu,", vec_actual[i]);
   printf("\n");
 }
 
@@ -745,6 +743,56 @@ int main() {
 #endif
      }
 
+   disp = 8;
+#ifdef __BIG_ENDIAN__
+   vec_si_expected1 = (vector signed int){  0, 0, -8, -7 };
+#else
+   vec_si_expected1 = (vector signed int){  0, 0, -5, -6 };
+#endif
+   store_data_si = (vector signed int){ -8, -7, -6, -5 };
+
+   for (i=0; i<4; i++)
+     vec_si_result1[i] = 0;
+
+   address_si = &vec_si_result1[0];
+
+   vec_xst_be (store_data_si, disp, address_si);
+
+   if (result_wrong_si (vec_si_expected1, vec_si_result1))
+     {
+#ifdef DEBUG
+       printf("Error: vec_xst_be, si disp = %d, result does not match expected result\n", disp);
+       print_si (vec_si_expected1, vec_si_result1);
+#else
+       abort();
+#endif
+     }
+
+   disp = 0;
+#ifdef __BIG_ENDIAN__
+   vec_ui_expected1 = (vector unsigned int){ 0, 1, 2, 3 };
+#else
+   vec_ui_expected1 = (vector unsigned int){ 3, 2, 1, 0 };
+#endif
+   store_data_ui = (vector unsigned int){ 0, 1, 2, 3 };
+
+   for (i=0; i<4; i++)
+     vec_ui_result1[i] = 0;
+
+   address_ui = &vec_ui_result1[0];
+
+   vec_xst_be (store_data_ui, disp, address_ui);
+
+   if (result_wrong_ui (vec_ui_expected1, vec_ui_result1))
+     {
+#ifdef DEBUG
+       printf("Error: vec_xst_be, ui disp = 0, result does not match expected result\n");
+       print_ui (vec_ui_expected1, vec_ui_result1);
+#else
+       abort();
+#endif
+     }
+
    disp = 0;
 #ifdef __BIG_ENDIAN__
    vec_ss_expected1 = (vector signed short int){ -4, -3, -2, -1, 0, 1, 2, 3 };
@@ -972,7 +1020,6 @@ int main() {
 #endif
      }
 
-#if 0
    disp = 0;
 #ifdef __BIG_ENDIAN__
    vec_f_expected1 = (vector float){ 0.0, 1.2, 2.3, 3.4 };
@@ -997,5 +1044,4 @@ int main() {
        abort();
 #endif
      }
-#endif
 }
