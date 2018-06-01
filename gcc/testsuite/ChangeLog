@@ -1,3 +1,13 @@
+2018-06-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+ 
+	PR fortran/63570
+	* gfortran.dg/random_init_1.f90: New test.
+	* gfortran.dg/random_init_2.f90: New test.
+	* gfortran.dg/random_init_3.f90: New test.
+	* gfortran.dg/random_init_4.f90: New test.
+	* gfortran.dg/random_init_5.f90: New test.
+	* gfortran.dg/random_init_6.f90: New test.
+
 2018-06-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85989
