@@ -2571,16 +2571,16 @@ public:
       mapper = make (loc, module_mapper_name);
     return mapper->from ? mapper : NULL;
   }
-  static void fini (location_t loc, bool reset = false)
+  static void fini (location_t loc)
   {
-    if (mapper)
+    if (loc != UNKNOWN_LOCATION && mapper)
       {
-	if (reset)
-	  mapper->reset ();
 	mapper->kill (loc);
 	delete mapper;
 	mapper = NULL;
       }
+    else
+      gcc_checking_assert (!mapper);
   }
 
 public:
@@ -2617,7 +2617,6 @@ public:
   module_state *await_response (location_t, char *&);
 
 private:
-  void reset ();
   bool handshake (location_t, const char *main_src);
   void send_command (const char * = NULL, ...) ATTRIBUTE_PRINTF_2;
   bool get_response (location_t);
@@ -6568,14 +6567,9 @@ module_mapper::module_mapper (location_t loc, const char *option)
       /* We were given filenums, or sucessfuly created a socket.  */
       gcc_assert (!errmsg);
 
-      if (fd_out < 0 && flag_module_preamble < 0)
-	/* We were given filenums.  We must dup both of them in case
-	   we have to rescan the preamble.  */
-	fd_in = dup (fd_in);
-      else
-	fd_out = fd_in;
+      if (fd_out < 0)
+	fd_out = dup (fd_in);
 
-      fd_out = dup (fd_out);
       if (fd_in >= 0)
 	from = fdopen (fd_in, "r+");
       if (fd_out >= 0)
@@ -6929,12 +6923,6 @@ module_mapper::response_word (location_t loc, const char *option, ...)
     RESET
         No response
  */
-
-void
-module_mapper::reset ()
-{
-  send_command ("RESET");
-}
 
 /* Start handshake.  */
 
@@ -9720,12 +9708,13 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
   dump.push (NULL);
   dump () && dump ("About to reexec with prefix length %u", count);
   module_state::fini ();
-  module_mapper::fini (loc, true);
+  /* The mapper should not be live, but make sure of that.  */
+  module_mapper::fini (UNKNOWN_LOCATION);
   /* The preprocessor does not leave files open, so we can ignore the
      pfile arg.  */
   
   int argc = original_argc;
-  char **argv = XNEWVEC (char *, argc + 2 + 7);
+  char **argv = XNEWVEC (char *, argc + 2 + 10);
   memcpy (argv, original_argv, argc * sizeof (char *));
 
   /* Use the extra space for the new option.  */

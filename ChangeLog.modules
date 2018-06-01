@@ -1,6 +1,13 @@
 2018-05-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
+	* doc/invoke.texi (C++ Modules): Show mapper cookie.
+	gcc/cp/
+	* module.c (module_mapper::fini): Assert.
+	(module_mapper::module_mapper): Remove dup2.
+	(module_mapper::reset): Delete.
+
+	gcc/
 	* doc/invoke.texi (C++ Modules): Rename -fmodule-server to
 	-fmodule-mapper.
 	gcc/c-family/
