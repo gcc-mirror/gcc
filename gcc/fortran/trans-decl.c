@@ -229,6 +229,8 @@ tree gfor_fndecl_dgemm;
 tree gfor_fndecl_cgemm;
 tree gfor_fndecl_zgemm;
 
+/* RANDOM_INIT function.  */
+tree gfor_fndecl_random_init;
 
 static void
 gfc_add_decl_to_parent_function (tree decl)
@@ -3327,6 +3329,11 @@ gfc_build_intrinsic_function_decls (void)
 	get_identifier (PREFIX("ctime")), ".W",
 	void_type_node, 3, pchar_type_node, gfc_charlen_type_node,
 	gfc_int8_type_node);
+
+  gfor_fndecl_random_init = gfc_build_library_function_decl (
+	get_identifier (PREFIX("random_init")),
+	void_type_node, 3, gfc_logical4_type_node, gfc_logical4_type_node,
+	gfc_int4_type_node);
 
   gfor_fndecl_sc_kind = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("selected_char_kind")), "..R",

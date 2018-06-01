@@ -3404,6 +3404,17 @@ gfc_resolve_mvbits (gfc_code *c)
 }
 
 
+/* Set up the call to RANDOM_INIT.  */ 
+
+void
+gfc_resolve_random_init (gfc_code *c)
+{
+  const char *name;
+  name = gfc_get_string (PREFIX ("random_init"));
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
 void
 gfc_resolve_random_number (gfc_code *c)
 {

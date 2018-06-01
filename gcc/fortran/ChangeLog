@@ -1,3 +1,22 @@
+2018-06-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/63570
+	* check.c (gfc_check_random_init): New function. Check arguments of
+	RANDOM_INIT.
+	* gfortran.h (GFC_ISYM_RANDOM_INIT): New enum token.
+	* intrinsic.c (add_subroutines): Add RANDOM_INIT to list of 
+	subroutines.
+	(gfc_check_intrinsic_standard): Introduce Fortran 2018 check.
+	* intrinsic.h: Add prototypes for gfc_check_random_init and
+	gfc_resolve_random_init
+	* intrinsic.texi: Document new intrinsic subprogram.
+	* iresolve.c (gfc_resolve_random_init): Resolve routine name.
+	* trans-decl.c: Declare gfor_fndecl_random_init
+	* trans-intrinsic.c (conv_intrinsic_random_init): New function.
+	Translate call to RANDOM_INIT.
+	(gfc_conv_intrinsic_subroutine): Call it.
+ 	* trans.h: Declare gfor_fndecl_random_init
+
 2018-05-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* decl.c (match_data_constant):  Fortran 2018 allows pointer

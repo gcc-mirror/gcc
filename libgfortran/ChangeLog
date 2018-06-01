@@ -1,3 +1,11 @@
+2018-06-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/63570
+	* libgfortran/Makefile.am: Add random_init.f90 to build.
+	* libgfortran/Makefile.in: Regenerated.
+	* libgfortran/gfortran.map: Expose symbol for _gfortran_random_init.
+	* libgfortran/intrinsics/random_init.f90: Implementation.
+
 2018-05-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/85840
