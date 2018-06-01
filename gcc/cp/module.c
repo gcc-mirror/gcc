@@ -2585,7 +2585,7 @@ public:
   {
     if (!mapper)
       mapper = make (loc, module_mapper_name);
-    return mapper->from ? mapper : NULL;
+    return mapper;
   }
   static void fini (location_t loc)
   {
@@ -2606,9 +2606,13 @@ public:
   {
     return from != NULL;
   }
+  bool is_server () const
+  {
+    return is_live () && to;
+  }
   bool is_file () const
   {
-    return from && !to;
+    return is_live () && !to;
   }
 
 public:
@@ -6743,6 +6747,8 @@ module_mapper::module_mapper (location_t loc, const char *option)
   else
     {
       /* A mapping file.  Read it.  */
+      dump () && dump ("Reading mapping file %s", name);
+
       for (int r; (r = get_response (loc)) >= 0;)
 	if (r)
 	  {
@@ -6773,6 +6779,11 @@ module_mapper::module_mapper (location_t loc, const char *option)
 void
 module_mapper::kill (location_t loc)
 {
+  if (!is_live ())
+    return;
+
+  dump () && dump ("Killing mapper %s", name);
+
   if (to)
     fclose (to);
 
@@ -6847,7 +6858,8 @@ module_mapper::send_command (const char *format, ...)
   *end++ = '\n';
   if (!batching)
     {
-      fwrite (buffer, 1, end - buffer, to);
+      if (is_live ())
+	fwrite (buffer, 1, end - buffer, to);
       end = pos = buffer;
     }
 }
@@ -6865,43 +6877,46 @@ module_mapper::get_response (location_t loc)
       end = pos = buffer;
       size_t off = 0;
 
-    more:
-      if (!fgets (buffer + off, size - off, from))
+      if (is_live ())
 	{
-	  const char *err = NULL;
-	  if (ferror (from))
-	    err = "error";
-	  else if (!is_file ())
-	    err = "end of file";
-	  if (err)
-	    error_at (loc, "unexpected %s from mapper %qs", err, name);
-	  return -1;
-	}
-      else
-	{
-	  off += strlen (buffer + off);
-	  if (buffer[off - 1] != '\n')
+	  while (buffer[off] = !0, fgets (buffer + off, size - off, from))
 	    {
-	      size *= 2;
-	      char *next = XRESIZEVEC (char, buffer, size);
-	      pos = (pos - buffer) + next;
-	      buffer = next;
-	      goto more;
+	      off += strlen (buffer + off);
+	      if (buffer[off - 1] != '\n')
+		{
+		  size *= 2;
+		  char *next = XRESIZEVEC (char, buffer, size);
+		  pos = (pos - buffer) + next;
+		  buffer = next;
+		}
+	      else if (pos[0] == '+')
+		{
+		  batching = true;
+		  pos = buffer + off;
+		}
+	      else
+		break;
 	    }
 
-	  if (pos[0] == '+')
+	  if (buffer[off])
 	    {
-	      batching = true;
-	      pos = buffer + off;
-	      goto more;
+	      const char *err = NULL;
+	      if (ferror (from))
+		err = "error";
+	      else if (!is_file ())
+		err = "end of file";
+	      if (err)
+		error_at (loc, "unexpected %s from mapper %qs", err, name);
+	      return -1;
 	    }
+
 	  off--;
 	}
 
       buffer[off] = 0;
+      dump () && dump ("Mapper response:%s", buffer);
       end = buffer + off;
       pos = buffer;
-      dump () && dump ("Mapper response:%s", buffer);
     }
 
   start = pos;
@@ -7135,15 +7150,17 @@ module_mapper::await_response (location_t loc, char *&fname)
 char *
 module_mapper::import_export (const module_state *state, bool export_p)
 {
-  if (module_mapper *mapper = get (state->from_loc))
-    if (!mapper->is_file ())
-      {
-	if (export_p)
-	  mapper->export_query (state);
-	else
-	  mapper->import_query (state, false);
-	return mapper->bmi_response (state);
-      }
+  module_mapper *mapper = get (state->from_loc);
+  
+  if (mapper->is_server ())
+    {
+      if (export_p)
+	mapper->export_query (state);
+      else
+	mapper->import_query (state, false);
+      return mapper->bmi_response (state);
+    }
+
   return NULL;
 }
 
@@ -7153,18 +7170,18 @@ bool
 module_mapper::export_done (const module_state *state)
 {
   bool ok = true;
-  if (module_mapper *mapper = get (state->from_loc))
+  module_mapper *mapper = get (state->from_loc);
+  
+  if (mapper->is_server ())
     {
-      if (!mapper->is_file ())
-	{
-	  dump () && dump ("Completed mapper");
-	  mapper->send_command ("DONE %s", IDENTIFIER_POINTER (state->name));
-	  mapper->get_response (state->from_loc);
-	  ok = mapper->response_word (state->from_loc, "OK", NULL) == 0;
-	}
+      dump () && dump ("Completed mapper");
+      mapper->send_command ("DONE %s", IDENTIFIER_POINTER (state->name));
+      mapper->get_response (state->from_loc);
+      ok = mapper->response_word (state->from_loc, "OK", NULL) == 0;
     }
   else
-    ok = false;
+    ok = mapper->is_live ();
+
   return ok;
 }
 
@@ -9671,7 +9688,7 @@ module_state::atom_preamble (location_t loc)
       interface = mod;
 
   module_mapper *mapper = module_mapper::get (loc);
-  if (!mapper)
+  if (!mapper->is_live ())
     return false;
 
   /* Importing stuff perturbs the hash table, so we can't just iterate
