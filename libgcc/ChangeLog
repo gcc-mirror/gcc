@@ -1,3 +1,10 @@
+2018-06-02  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config.host (nds32*-linux*): New.
+	* config/nds32/linux-atomic.c: New file.
+	* config/nds32/linux-unwind.h: New file.
+
 2018-05-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/85591

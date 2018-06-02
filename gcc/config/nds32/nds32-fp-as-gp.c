@@ -265,7 +265,8 @@ public:
   /* opt_pass methods: */
   bool gate (function *)
   {
-    return TARGET_16_BIT
+    return !TARGET_LINUX_ABI
+	   && TARGET_16_BIT
 	   && optimize_size;
   }
   unsigned int execute (function *) { return nds32_fp_as_gp (); }

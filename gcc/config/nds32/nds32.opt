@@ -151,7 +151,7 @@ Target Report Mask(RELAX_HINT)
 Insert relax hint for linker to do relaxation.
 
 mvh
-Target Report Mask(VH)
+Target Report Mask(VH) Condition(!TARGET_LINUX_ABI)
 Enable Virtual Hosting support.
 
 misr-vector-size=
@@ -184,23 +184,6 @@ Enum(nds32_arch_type) String(v3f) Value(ARCH_V3F)
 
 EnumValue
 Enum(nds32_arch_type) String(v3s) Value(ARCH_V3S)
-
-mcmodel=
-Target RejectNegative Joined Enum(nds32_cmodel_type) Var(nds32_cmodel_option) Init(CMODEL_LARGE)
-Specify the address generation strategy for code model.
-
-Enum
-Name(nds32_cmodel_type) Type(enum nds32_cmodel_type)
-Known cmodel types (for use with the -mcmodel= option):
-
-EnumValue
-Enum(nds32_cmodel_type) String(small) Value(CMODEL_SMALL)
-
-EnumValue
-Enum(nds32_cmodel_type) String(medium) Value(CMODEL_MEDIUM)
-
-EnumValue
-Enum(nds32_cmodel_type) String(large) Value(CMODEL_LARGE)
 
 mcpu=
 Target RejectNegative Joined Enum(nds32_cpu_type) Var(nds32_cpu_option) Init(CPU_N9)

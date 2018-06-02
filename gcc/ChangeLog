@@ -1,4 +1,38 @@
 2018-06-02  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config.gcc (nds32*): Use nds32-linux.opt and nds32-elf.opt.
+	(nds32le-*-*, nds32be-*-*): Integrate checking process.
+	(nds32*-*-*): Add glibc and uclibc conditions.
+	* common/config/nds32/nds32-common.c (nds32_except_unwind_info): New.
+	(TARGET_EXCEPT_UNWIND_INFO): Define.
+	* config/nds32/elf.h: New file.
+	* config/nds32/linux.h: New file.
+	* config/nds32/nds32-elf.opt: New file.
+	* config/nds32/nds32-linux.opt: New file.
+	* config/nds32/nds32-fp-as-gp.c
+	(pass_nds32_fp_as_gp::gate): Consider TARGET_LINUX_ABI.
+	* config/nds32/nds32.c (nds32_conditional_register_usage): Consider
+	TARGET_LINUX_ABI.
+	(nds32_asm_file_end): Ditto.
+	(nds32_print_operand): Ditto.
+	(nds32_insert_attributes): Ditto.
+	(nds32_init_libfuncs): New function.
+	(TARGET_HAVE_TLS): Define.
+	(TARGET_INIT_LIBFUNCS): Define.
+	* config/nds32/nds32.h (TARGET_DEFAULT_RELAX): Apply different relax
+	spec content.
+	(TARGET_ELF): Apply different mcmodel setting.
+	(LINK_SPEC, LIB_SPEC, STARTFILE_SPEC, ENDFILE_SPEC): The content has
+	been migrated into elf.h and linux.h files.
+	* config/nds32/nds32.md (add_pc): Consider TARGET_LINUX_ABI.
+	* config/nds32/nds32.opt (mvh): Consider TARGET_LINUX_ABI.
+	(mcmodel): The content has been migrated into nds32-elf.opt and
+	nds32-linux.opt files.
+	* config/nds32/t-elf: New file.
+	* config/nds32/t-linux: New file.
+
+2018-06-02  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Shiva Chen  <shiva0217@gmail.com>
 
 	* config/nds32/constants.md (unspec_volatile_element): Add
