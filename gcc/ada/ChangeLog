@@ -1,5 +1,17 @@
 2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	Backport from mainline
+	2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): In the by-reference case, if
+	the type of the parameter is an unconstrained array type, convert
+	to the type of the actual before the type of the formal only if the
+	conversion was suppressed earlier.  Use in_param and gnu_actual_type
+	local variables throughout, and uniform spelling for In Out or Out.
+	Also remove dead code in the component-by-reference case.
+
+2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (TYPE_PADDING_FOR_COMPONENT): New macro.
 	* gcc-interface/decl.c (gnat_to_gnu_component_type): Cache the padding
 	type built for an aliased component with variable size.
