@@ -1,5 +1,14 @@
 2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: If this is
+	not a definition, retrieve the expression only if it's a compile-time
+	known value if we are just annotating types.
+
+	* gcc-interface/utils.c (convert): Do not try to upcast properly for a
+	conversion between tagged types in type_annotate_only mode.
+
+2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	Backport from mainline
 	2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
