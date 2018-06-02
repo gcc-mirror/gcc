@@ -1,5 +1,13 @@
 2018-06-01  Carl Love  <cel@us.ibm.com>
 
+Commit 260294 on 2018-05-16 by Carl Love was supposed to add the
+following files.
+
+	* gcc.target/powerpc/vsx-vector-6-be.p7.c: New test file.
+	* gcc.target/powerpc/vsx-vector-6-be.p8.c: New test file.
+
+2018-06-01  Carl Love  <cel@us.ibm.com>
+
 	* gcc.target/powerpc/altivec-12.c (main): Fix declaration of ucz
 	to make it consistent with the naming convention in the file.
 	* gcc.target/powerpc/altivec-7-be.c: Move BE specific checks
