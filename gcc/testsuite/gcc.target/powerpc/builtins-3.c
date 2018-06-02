@@ -1,7 +1,6 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-O2 -mvsx -mcpu=power6" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
+/* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-options "-maltivec" } */
 
 #include <altivec.h>
 
@@ -79,6 +78,20 @@ test_sll_vsi_vsi_vuc (vector signed int x, vector unsigned char y)
 
 vector unsigned int
 test_sll_vui_vui_vuc (vector unsigned int x, vector unsigned char y)
+{
+	return vec_sll (x, y);
+}
+
+vector signed int long long
+test_sll_vsill_vsill_vuc (vector signed long long int x,
+			  vector unsigned char y)
+{
+	return vec_sll (x, y);
+}
+
+vector unsigned int long long
+test_sll_vuill_vuill_vuc (vector unsigned long long int x,
+			  vector unsigned char y)
 {
 	return vec_sll (x, y);
 }
@@ -310,18 +323,46 @@ test_cmpb_float (vector float x, vector float y)
      test_nabs_int             1 vspltisw, 1 vsubuwm, 1 vminsw
      test_nabs_float           1 xvnabssp
      test_nabs_double          1 xvnabsdp
-     test_vsll_slo_vsll_vsc    1 vslo
-     test_vsll_slo_vsll_vuc    1 vslo
-     test_vull_slo_vsll_vsc    1 vslo
-     test_vull_slo_vsll_vuc    1 vslo
-     test_vsc_mulo_vsc_vsc     1 xxsldwi
-     test_vuc_mulo_vuc_vuc     1 xxsldwi
-     test_vssi_mulo_vssi_vssi  1 xxsldwi
-     test_vusi_mulo_vusi_vusi  1 xxsldwi
-     test_vsi_mulo_vsi_vsi     1 xxsldwi
-     test_vui_mulo_vui_vui     1 xxsldwi
-     test_vsl_mulo_vsl_vsl     1 xxsldwi
-     test_vul_mulo_vul_vul     1 xxsldwi
+     test_sll_vsc_vsc_vsuc     1 vsl
+     test_sll_vuc_vuc_vuc      1 vsl
+     test_sll_vsi_vsi_vuc      1 vsl
+     test_sll_vui_vui_vuc      1 vsl
+     test_sll_vsill_vsill_vuc  1 vsl
+     test_sll_vuill_vuill_vuc  1 vsl
+     test_sll_vbll_vbll_vuc    1 vsl
+     test_sll_vbll_vbll_vull   1 vsl
+     test_sll_vbll_vbll_vus    1 vsl
+     test_sll_vp_vp_vuc        1 vsl
+     test_sll_vssi_vssi_vuc    1 vsl
+     test_sll_vusi_vusi_vuc    1 vsl
+     test_slo_vsc_vsc_vsc      1 vslo
+     test_slo_vsc_vsc_vuc      1 vslo
+     test_slo_vuc_vuc_vsc      1 vslo
+     test_slo_vuc_vuc_vuc      1 vslo
+     test_slo_vsi_vsi_vsc      1 vslo
+     test_slo_vsi_vsi_vuc      1 vslo
+     test_slo_vui_vui_vsc      1 vslo
+     test_slo_vui_vui_vuc      1 vslo
+     test_slo_vsll_slo_vsll_vsc 1 vslo
+     test_slo_vsll_slo_vsll_vuc 1 vslo
+     test_slo_vull_slo_vull_vsc 1 vslo
+     test_slo_vull_slo_vull_vuc 1 vslo
+     test_slo_vp_vp_vsc        1 vslo
+     test_slo_vp_vp_vuc        1 vslo
+     test_slo_vssi_vssi_vsc    1 vslo
+     test_slo_vssi_vssi_vuc    1 vslo
+     test_slo_vusi_vusi_vsc    1 vslo
+     test_slo_vusi_vusi_vuc    1 vslo
+     test_slo_vf_vf_vsc        1 vslo
+     test_slo_vf_vf_vuc        1 vslo
+     test_vsc_sldw_vsc_vsc     1 xxsldwi
+     test_vuc_sldw_vuc_vuc     1 xxsldwi
+     test_vssi_sldw_vssi_vssi  1 xxsldwi
+     test_vusi_sldw_vusi_vusi  1 xxsldwi
+     test_vsi_sldw_vsi_vsi     1 xxsldwi
+     test_vui_sldw_vui_vui     1 xxsldwi
+     test_vsl_sldw_vsl_vsl     1 xxsldwi
+     test_vul_sldw_vul_vul     1 xxsldwi
      test_cmpb_float           1 vcmpbfp */
 
 /* { dg-final { scan-assembler-times "vcmpequb" 1 } } */
@@ -340,3 +381,6 @@ test_cmpb_float (vector float x, vector float y)
 /* { dg-final { scan-assembler-times "vslo"    20 } } */
 /* { dg-final { scan-assembler-times "xxsldwi"  8 } } */
 /* { dg-final { scan-assembler-times "vcmpbfp"  1 } } */
+/* { dg-final { scan-assembler-times "vsl"     68 { target le } } } */
+/* { dg-final { scan-assembler-times "vsl"     68 { target { be && ilp32 } } } } */
+/* { dg-final { scan-assembler-times "vsl"     82 { target { be && lp64  } } } } */

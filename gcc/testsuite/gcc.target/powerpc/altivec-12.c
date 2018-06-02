@@ -18,7 +18,7 @@ vector char scz;
 vector unsigned char uca = {0,4,8,1,5,9,2,6,10,3,7,11,15,12,14,13};
 vector unsigned char ucb = {6,4,8,3,1,9,2,6,10,3,7,11,15,12,14,13};
 vector unsigned char uc_expected = {3,4,8,2,3,9,2,6,10,3,7,11,15,12,14,13};
-vector char ucz;
+vector unsigned char ucz;
 
 vector short int ssia = {9, 16, 25, 36};
 vector short int ssib = {-8, -27, -64, -125};

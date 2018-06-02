@@ -1,3 +1,42 @@
+2018-06-01  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/altivec-12.c (main): Fix declaration of ucz
+	to make it consistent with the naming convention in the file.
+	* gcc.target/powerpc/altivec-7-be.c: Move BE specific checks
+	to altivec-7.c.  Delete file.
+	* gcc.target/powerpc/altivec-7-le.c: Move LE specific checks
+	to altivec-7.c.  Delete file.
+	* gcc.target/powerpc/altivec-7.h: Move to altivec-7.c.
+	* gcc.target/powerpc/altivec-7.c (main): Add vec_unpackh and
+	vec_unpackl tests.  Update instruction counts.
+	* gcc.target/powerpc/builtins-1-le.c: Move LE specific checks to
+	tests to builtins-1.c.
+	* gcc.target/powerpc/builtins-1-be.c: Move BE specific
+	tests to builtins-1.c.
+	* gcc.target/powerpc/builtins-1.h: Move to file builtins-1.c.
+	* gcc.target/powerpc/builtins-1.c (main): Add test case for vec_and.
+	vec_round, vec_rsqrt, vec_rsqrte, vec_mergee, vec_mergh, vec_mergo.
+	Remove vec_ctf tests returning double.  Remove vec_cts with
+	double args. Remove vec_sel with invalid arguments. Add tests for
+	vec_splat.
+	Add instruction counts for new tests.
+	* gcc.target/powerpc/builtins-3-runnable.c (main): Add test for
+	vec_doublee, vec_doubleo, vec_doublel, vec_doubleh, vec_signed,
+	vec_unsigned.
+	* gcc.target/powerpc/builtins-3.c: Add tests test_sll_vuill_vuill_vuc,
+	test_sll_vsill_vsill_vuc.
+	* gcc.target/powerpc/p9-xxbr-2.c (rev_bool_long_long): Added test for
+	vec_revb.
+	* gcc.target/powerpc/vsx-7.h: Rename to vsx-7.c. Remove redundant
+	tests from altivec-7.h.
+	* gcc.target/powerpc/vsx-7-be.c: Remove file.
+	* gcc.target/powerpc/vsx-builtin-7.c: Add test functions splat_sc_s8,
+	splat_uc_u8, splat_ssi_s16, splat_usi_s16, splat_si_s32, splat_ui_u32,
+	splat_sll, splat_uc, splat_int128, splat_uint128.
+	Make second argument of vec_extract and vec_insert a signed int.
+	* gcc.target/powerpc/vsx-vector-5.c (vrint): Add vrint test for float
+	argument.
+
 2018-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/store_merging_20.c: New test.
