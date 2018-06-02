@@ -1,3 +1,8 @@
+2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr53.ad[sb]: New test.
+	* gnat.dg/discr53_pkg.ads: New helper.
+
 2018-05-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85895
