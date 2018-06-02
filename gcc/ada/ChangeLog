@@ -1,3 +1,13 @@
+2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): If this is a function call and
+	there is no target, also create a temporary for the return value for
+	an allocator if the type is an unconstrained record type with default
+	discriminant.
+
 2018-04-12  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
