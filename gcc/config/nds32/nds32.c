@@ -1391,7 +1391,7 @@ nds32_needs_double_word_align (machine_mode mode, const_tree type)
 }
 
 /* Return true if FUNC is a naked function.  */
-static bool
+bool
 nds32_naked_function_p (tree func)
 {
   /* FOR BACKWARD COMPATIBILITY,
@@ -1626,6 +1626,11 @@ nds32_register_pass (
 static void
 nds32_register_passes (void)
 {
+  nds32_register_pass (
+    make_pass_nds32_fp_as_gp,
+    PASS_POS_INSERT_BEFORE,
+    "ira");
+
   nds32_register_pass (
     make_pass_nds32_relax_opt,
     PASS_POS_INSERT_AFTER,
@@ -2191,56 +2196,12 @@ static void
 nds32_asm_function_end_prologue (FILE *file)
 {
   fprintf (file, "\t! END PROLOGUE\n");
-
-  /* If frame pointer is NOT needed and -mfp-as-gp is issued,
-     we can generate special directive: ".omit_fp_begin"
-     to guide linker doing fp-as-gp optimization.
-     However, for a naked function, which means
-     it should not have prologue/epilogue,
-     using fp-as-gp still requires saving $fp by push/pop behavior and
-     there is no benefit to use fp-as-gp on such small function.
-     So we need to make sure this function is NOT naked as well.  */
-  if (!frame_pointer_needed
-      && !cfun->machine->naked_p
-      && cfun->machine->fp_as_gp_p)
-    {
-      fprintf (file, "\t! ----------------------------------------\n");
-      fprintf (file, "\t! Guide linker to do "
-		     "link time optimization: fp-as-gp\n");
-      fprintf (file, "\t! We add one more instruction to "
-		     "initialize $fp near to $gp location.\n");
-      fprintf (file, "\t! If linker fails to use fp-as-gp transformation,\n");
-      fprintf (file, "\t! this extra instruction should be "
-		     "eliminated at link stage.\n");
-      fprintf (file, "\t.omit_fp_begin\n");
-      fprintf (file, "\tla\t$fp,_FP_BASE_\n");
-      fprintf (file, "\t! ----------------------------------------\n");
-    }
 }
 
 /* Before rtl epilogue has been expanded, this function is used.  */
 static void
 nds32_asm_function_begin_epilogue (FILE *file)
 {
-  /* If frame pointer is NOT needed and -mfp-as-gp is issued,
-     we can generate special directive: ".omit_fp_end"
-     to claim fp-as-gp optimization range.
-     However, for a naked function,
-     which means it should not have prologue/epilogue,
-     using fp-as-gp still requires saving $fp by push/pop behavior and
-     there is no benefit to use fp-as-gp on such small function.
-     So we need to make sure this function is NOT naked as well.  */
-  if (!frame_pointer_needed
-      && !cfun->machine->naked_p
-      && cfun->machine->fp_as_gp_p)
-    {
-      fprintf (file, "\t! ----------------------------------------\n");
-      fprintf (file, "\t! Claim the range of fp-as-gp "
-		     "link time optimization\n");
-      fprintf (file, "\t.omit_fp_end\n");
-      fprintf (file, "\t! ----------------------------------------\n");
-    }
-
   fprintf (file, "\t! BEGIN EPILOGUE\n");
 }
 
@@ -3167,6 +3128,18 @@ nds32_asm_file_start (void)
   fprintf (asm_out_file, "\t! This vector size directive is required "
 			 "for checking inconsistency on interrupt handler\n");
   fprintf (asm_out_file, "\t.vec_size\t%d\n", nds32_isr_vector_size);
+
+  /* If user enables '-mforce-fp-as-gp' or compiles programs with -Os,
+     the compiler may produce 'la $fp,_FP_BASE_' instruction
+     at prologue for fp-as-gp optimization.
+     We should emit weak reference of _FP_BASE_ to avoid undefined reference
+     in case user does not pass '--relax' option to linker.  */
+  if (TARGET_FORCE_FP_AS_GP || optimize_size)
+    {
+      fprintf (asm_out_file, "\t! This weak reference is required to do "
+			     "fp-as-gp link time optimization\n");
+      fprintf (asm_out_file, "\t.weak\t_FP_BASE_\n");
+    }
 
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
@@ -4126,6 +4099,12 @@ nds32_option_override (void)
 	fixed_regs[r] = call_used_regs[r] = 1;
     }
 
+  /* See if user explicitly would like to use fp-as-gp optimization.
+     If so, we must prevent $fp from being allocated
+     during register allocation.  */
+  if (TARGET_FORCE_FP_AS_GP)
+    fixed_regs[FP_REGNUM] = call_used_regs[FP_REGNUM] = 1;
+
   if (!TARGET_16_BIT)
     {
       /* Under no 16 bit ISA, we need to strictly disable TARGET_V3PUSH.  */
@@ -4544,6 +4523,10 @@ nds32_expand_prologue (void)
      The result will be in cfun->machine.  */
   nds32_compute_stack_frame ();
 
+  /* Check frame_pointer_needed again to prevent fp is need after reload.  */
+  if (frame_pointer_needed)
+    cfun->machine->fp_as_gp_p = false;
+
   /* If this is a variadic function, first we need to push argument
      registers that hold the unnamed argument value.  */
   if (cfun->machine->va_args_size != 0)
@@ -4950,6 +4933,10 @@ nds32_expand_prologue_v3push (void)
 
   if (cfun->machine->callee_saved_gpr_regs_size > 0)
     df_set_regs_ever_live (FP_REGNUM, 1);
+
+  /* Check frame_pointer_needed again to prevent fp is need after reload.  */
+  if (frame_pointer_needed)
+    cfun->machine->fp_as_gp_p = false;
 
   /* If the function is 'naked',
      we do not have to generate prologue code fragment.  */

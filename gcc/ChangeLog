@@ -1,3 +1,29 @@
+2018-06-02  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Shiva Chen  <shiva0217@gmail.com>
+
+	* config/nds32/constants.md (unspec_volatile_element): Add
+	UNSPEC_VOLATILE_OMIT_FP_BEGIN and UNSPEC_VOLATILE_OMIT_FP_END.
+	* config/nds32/nds32-fp-as-gp.c: New implementation of fp_as_gp
+	optimization.
+	* config/nds32/nds32-protos.h (nds32_naked_function_p): Declare.
+	(make_pass_nds32_fp_as_gp): Declare.
+	* config/nds32/nds32.c (nds32_register_passes): Add fp_as_gp as one
+	optmization pass.
+	(nds32_asm_function_end_prologue): Remove unused asm output.
+	(nds32_asm_function_begin_epilogue): Remove unused asm output.
+	(nds32_asm_file_start): Output necessary fp_as_gp information.
+	(nds32_option_override): Adjust register usage.
+	(nds32_expand_prologue): Consider fp_as_gp situation.
+	(nds32_expand_prologue_v3push): Consider fp_as_gp situation.
+	* config/nds32/nds32.md (prologue): Check fp_as_gp_p and naked_p.
+	(epilogue): Ditto.
+	(return): Ditto.
+	(simple_return): Ditto.
+	(omit_fp_begin): Output special directive for fp_as_gp.
+	(omit_fp_end): Output special directive for fp_as_gp.
+	* config/nds32/nds32.opt (mfp-as-gp, mno-fp-as-gp, mforce-fp-as-gp,
+	mforbid-fp-as-gp): New options.
+
 2018-06-01  Mark Wielaard  <mark@klomp.org>
 
 	* dwarf2out.c (dwarf2out_finish): Remove generation of
