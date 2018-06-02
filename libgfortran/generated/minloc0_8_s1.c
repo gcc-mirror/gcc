@@ -72,7 +72,7 @@ minloc0_8_s1 (gfc_array_i8 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
-      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
+      retarray->dtype.rank = 1;
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_8));
     }
@@ -187,7 +187,7 @@ mminloc0_8_s1 (gfc_array_i8 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank - 1, 1);
-      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
+      retarray->dtype.rank = 1;
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_8));
     }
@@ -326,7 +326,7 @@ sminloc0_8_s1 (gfc_array_i8 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
-      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
+      retarray->dtype.rank = 1;
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_8));
     }
