@@ -5031,23 +5031,19 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 		     Is_Bit_Packed_Array (gnat_array) ? TYPE_DECL : VAR_DECL,
 		     true, Has_Component_Size_Clause (gnat_array));
 
-  /* If the array has aliased components and the component size can be zero,
-     force at least unit size to ensure that the components have distinct
-     addresses.  */
-  if (!gnu_comp_size
-      && Has_Aliased_Components (gnat_array)
-      && (integer_zerop (TYPE_SIZE (gnu_type))
-	  || (TREE_CODE (gnu_type) == ARRAY_TYPE
-	      && !TREE_CONSTANT (TYPE_SIZE (gnu_type)))))
-    gnu_comp_size
-      = size_binop (MAX_EXPR, TYPE_SIZE (gnu_type), bitsize_unit_node);
-
   /* If the component type is a RECORD_TYPE that has a self-referential size,
      then use the maximum size for the component size.  */
   if (!gnu_comp_size
       && TREE_CODE (gnu_type) == RECORD_TYPE
       && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
     gnu_comp_size = max_size (TYPE_SIZE (gnu_type), true);
+
+  /* If the array has aliased components and the component size is zero, force
+     the unit size to ensure that the components have distinct addresses.  */
+  if (!gnu_comp_size
+      && Has_Aliased_Components (gnat_array)
+      && integer_zerop (TYPE_SIZE (gnu_type)))
+    gnu_comp_size = bitsize_unit_node;
 
   /* Honor the component size.  This is not needed for bit-packed arrays.  */
   if (gnu_comp_size && !Is_Bit_Packed_Array (gnat_array))
@@ -5069,6 +5065,30 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       if (gnu_type != orig_type && !DECL_P (TYPE_NAME (gnu_type)))
 	create_type_decl (TYPE_NAME (gnu_type), gnu_type, true, debug_info_p,
 			  gnat_array);
+    }
+
+  /* This is a very special case where the array has aliased components and the
+     component size might be zero at run time.  As explained above, we force at
+     least the unit size but we don't want to build a distinct padding type for
+     each invocation (they are not canonicalized if they have variable size) so
+     we cache this special padding type as TYPE_PADDING_FOR_COMPONENT.  */
+  else if (Has_Aliased_Components (gnat_array)
+	   && TREE_CODE (gnu_type) == ARRAY_TYPE
+	   && !TREE_CONSTANT (TYPE_SIZE (gnu_type)))
+    {
+      if (TYPE_PADDING_FOR_COMPONENT (gnu_type))
+	gnu_type = TYPE_PADDING_FOR_COMPONENT (gnu_type);
+      else
+	{
+	  gnu_comp_size
+	    = size_binop (MAX_EXPR, TYPE_SIZE (gnu_type), bitsize_unit_node);
+	  TYPE_PADDING_FOR_COMPONENT (gnu_type)
+	    = maybe_pad_type (gnu_type, gnu_comp_size, 0, gnat_array,
+			      true, false, definition, true);
+	  gnu_type = TYPE_PADDING_FOR_COMPONENT (gnu_type);
+	  create_type_decl (TYPE_NAME (gnu_type), gnu_type, true, debug_info_p,
+			    gnat_array);
+	}
     }
 
   if (Has_Atomic_Components (gnat_array) || Is_Atomic_Or_VFA (gnat_type))

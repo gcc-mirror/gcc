@@ -1,5 +1,10 @@
 2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/opt3.ads: New test.
+	* gnat.dg/specs/opt3_pkg.ads: New helper.
+
+2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/discr53.ad[sb]: New test.
 	* gnat.dg/discr53_pkg.ads: New helper.
 
