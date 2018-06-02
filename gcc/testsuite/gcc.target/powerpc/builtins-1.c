@@ -1,5 +1,7 @@
-/* This test is included into builtins-1-be.c and builtins-1-le.c to test on
-   Big Endian and Little Endian machines.  */
+/* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
+/* { dg-options "-mcpu=power8 -O0 -mno-fold-gimple -dp" } */
+/* { dg-prune-output "gimple folding of rs6000 builtins has been disabled." } */
 
 #include <altivec.h>
 
@@ -18,6 +20,9 @@ int main ()
   vector double da = {1.0, 2.0};
   vector double db = {-2.0, -3.0};
   vector double dz = vec_and (da, db);
+
+  vector signed int si_a = {1, 2, 3, 4};
+  vector unsigned int ui_a = {1, 2, 3, 4};
 
   vector long long la = {5L, 14L};
   vector long long lb = {3L, 86L};
@@ -87,6 +92,10 @@ int main ()
   vector unsigned char ca = {0,4,8,1,5,9,2,6,10,3,7,11,15,12,14,13};
   vector unsigned char cbb = {5,4,8,3,1,9,2,6,10,3,7,11,15,12,14,13};
 
+  vector unsigned char ucba = {5,4,8,3,1,9,2,6,10,3,7,11,15,12,14,13};
+  vector unsigned char ucbb = {5,4,8,3,1,9,2,6,10,3,7,11,15,12,14,13};
+  vector unsigned char ucbc = {5,4,8,3,1,9,2,6,10,3,7,11,15,12,14,13};
+
   vector long long lv = vec_perm (la, lb, ca);
 
   vector unsigned char  ucm = vec_and (ca, cbb);
@@ -95,7 +104,6 @@ int main ()
 
   vector unsigned long long uv = vec_perm (ua, ub, ca);
 
-  vector long long lw = vec_sel (la, lb, lc);
   vector long long lx = vec_sel (la, lb, uc);
   vector long long ly = vec_sel (la, lb, ld);
 
@@ -182,6 +190,8 @@ int main ()
   vector signed char scb = vec_cntlz (sca);
   vector signed char scc = vec_mergel (sca, scb);
 
+  vector unsigned char uca = {4, 3, 9, 15, 30, 31, 0, 0,
+			      1, 117, 36, 99, 98, 97, 96, 95};
   vector unsigned char cb = vec_cntlz (ca);
 
   vector double dd = vec_xl (0, &y);
@@ -190,6 +200,10 @@ int main ()
   vector double dzz = vec_round (dd);
   vector double dzz1 = vec_rsqrt (dd);
   vector double dzz2 = vec_rsqrte (dd);
+
+  vector float ff1 = vec_round (fa);
+  vector float ff2 = vec_rsqrt (fa);
+  vector float ff3 = vec_rsqrte (fa);
 
   vector double dff = vec_splat (de, 0);
   vector double dgg = vec_splat (de, 1);
@@ -201,7 +215,8 @@ int main ()
   vector bool long long l6 = vec_splat (ld, 1);
   vector bool long long l10 = vec_mergee (ld, ld);
   vector bool long long l11 = vec_mergeo (ld, ld);
-
+  vector bool long long l15 = vec_and (ld, ld);
+  
   vector long long l7 = vec_div (l3, l4);
   vector unsigned long long u5 = vec_div (u3, u4);
   vector long long l12 = vec_mergee (la, lb);
@@ -212,11 +227,7 @@ int main ()
   vector long long l8 = vec_mul (l3, l4);
   vector unsigned long long u6 = vec_mul (u3, u4);
 
-  vector double dh = vec_ctf (la, -2);
-  vector double di = vec_ctf (ua, 2);
   vector int sz = vec_cts (fa, 0x1F);
-  vector long long l9 = vec_cts (dh, -2);
-  vector unsigned long long u7 = vec_ctu (di, 2);
   vector unsigned int usz = vec_ctu (fa, 0x1F);
 
   vector float f1 = vec_mergee (fa, fb);
@@ -225,5 +236,132 @@ int main ()
   vector double d1 = vec_mergee (da, db);
   vector double d2 = vec_mergeo (da, db);
 
+  vector float f3 = vec_ctf (si_a, 1);
+  vector float f4 = vec_ctf (ui_a, 2);
+
+  vector bool char z_vbc2 = vec_splat (bca, 0);
+  vector signed char z_vsc1 = vec_splat (sca, 1);
+  vector unsigned char z_vuc1 = vec_splat (ucbc, 2);
+
+  vector bool int z_vbi1 = vec_splat (bia, 3);
+  vector signed int z_vsi1 = vec_splat (sia, 1);
+  vector unsigned int z_vui1 = vec_splat (uia, 2);
+
+  vector bool int z_bi2 = vec_mergee (bia, bib);
+  vector signed int z_si2 = vec_mergee (sia, sib);
+  vector unsigned int z_ui2 = vec_mergee (uia, uib);
+  
+  vector bool char z_bc2 = vec_mergeh (bca, bcb);
+  vector signed char z_sc2 = vec_mergeh (sca, scb);
+  vector bool int z_bi3 = vec_mergeh (bia, bib);
+  vector signed int z_si3 = vec_mergeh (sia, sib);
+  vector unsigned int z_ui3 = vec_mergeh (uia, uib);
+  vector bool short z_bs1 = vec_mergeh (bsa, bsb);
+
+  vector bool int z_bi4 = vec_mergeo (bia, bib);
+  vector signed int z_si4 = vec_mergeo (sia, sib);
+  vector unsigned int z_ui4 = vec_mergeo (uia, uib);
+  
+  vector pixel int z_vp1 = vec_splat (pa, 1);
+  vector bool short z_bs2 = vec_splat (bsa, 0);
+  vector short signed int z_vss1 = vec_splat (ssa, 2);
+  vector unsigned short int z_vuss1 = vec_splat (usa, 1);
+
+
   return 0;
 }
+
+/* Expected results:
+   vec_all_eq          vcmpequd.
+   vec_all_ge          vcmpgtud.
+   vec_all_ne          vcmpequd.
+   vec_any_eq          vcmpequd.
+   vec_any_ne          vcmpequd.
+   vec_all_gt          vcmpgtud.
+   vec_all_le          vcmpgtud.
+   vec_all_lt          vcmpgtud.
+   vec_any_ge          vcmpgtud.
+   vec_any_gt          vcmpgtud.
+   vec_any_lt          vcmpgtud.
+   vec_any_le          vcmpgtud.
+   vec_and             xxland
+   vec_andc            xxland
+   vec_cntlz           vclzd, vclzb, vclzw, vclzh
+   xvcpsgnsp           vec_cpsgn
+   vec_ctf             xvmuldp 
+   vec_cts             xvcvdpsxds, vctsxs
+   vec_ctu             xvcvdpuxds, vctuxs
+   vec_div             divd, divdu | __divdi3(), __udivdi3()
+   vec_mergel          vmrghb, vmrghh, xxmrghw
+   vec_mergeh          xxmrglw, vmrglh
+   vec_mul             mulld | mullw, mulhwu
+   vec_nor             xxlnor
+   vec_or              xxlor
+   vec_packsu          vpksdus
+   vec_                perm vperm
+   vec_                round xvrdpi
+   vec_sel             xxsel
+   vec_xor             xxlxor 
+   vec_rsqrt           xvrsqrtesp
+   vec_rsqrte          xvrsqrtesp
+   vec_xl              lxvd2x
+   vec_xst             stxvd2x
+   vec_splat           xxspltb, xxspltw, vsplth
+   vec_mergee          xxmrgld, vmrgow
+   vec_mergeo          xxmrghd, vmrgew  */
+
+/* { dg-final { scan-assembler-times "vcmpequd" 8 } } */
+/* { dg-final { scan-assembler-times "vcmpgtud" 16 } } */
+/* { dg-final { scan-assembler-times "xxland" 30 } } */
+/* { dg-final { scan-assembler-times "xxlandc" 13 } } */
+/* { dg-final { scan-assembler-times "vclzb" 2 } } */
+/* { dg-final { scan-assembler-times "vclzd" 2 } } */
+/* { dg-final { scan-assembler-times "vclzw" 2 } } */
+/* { dg-final { scan-assembler-times "vclzh" 2 } } */
+/* { dg-final { scan-assembler-times "xvcpsgnsp" 1 } } */
+/* { dg-final { scan-assembler-times "xvcpsgndp" 1 } } */
+/* { dg-final { scan-assembler-times "xvmuldp" 2 } } */
+/* { dg-final { scan-assembler-times "xvcvdpsxds" 0 } } */
+/* { dg-final { scan-assembler-times "vctsxs" 2 } } */
+/* { dg-final { scan-assembler-times "xvcvdpuxds" 0 } } */
+/* { dg-final { scan-assembler-times "vctuxs" 2 } } */
+
+/* { dg-final { scan-assembler-times "vmrghb" 4 { target be } } } */
+/* { dg-final { scan-assembler-times "vmrghb" 5 { target le } } } */
+/* { dg-final { scan-assembler-times "vmrghh" 8 } } */
+/* { dg-final { scan-assembler-times "xxmrghw" 8 } } */
+/* { dg-final { scan-assembler-times "xxmrglw" 8 } } */
+/* { dg-final { scan-assembler-times "vmrglh" 8 } } */
+/* { dg-final { scan-assembler-times "xxlnor" 6 } } */
+/* { dg-final { scan-assembler-times "xxlor" 11 { target { ilp32 } } } } */
+/* { dg-final { scan-assembler-times "xxlor" 7  { target { lp64 } } } } */
+/* { dg-final { scan-assembler-times "vpksdus" 2 } } */
+/* { dg-final { scan-assembler-times "vperm" 4 } } */
+/* { dg-final { scan-assembler-times "xvrdpi" 2 } } */
+/* { dg-final { scan-assembler-times "xxsel" 10 } } */
+/* { dg-final { scan-assembler-times "xxlxor" 6 } } */
+/* { dg-final { scan-assembler-times "divd" 8  { target lp64 } } } */
+/* { dg-final { scan-assembler-times "divdu" 2  { target lp64 } } } */
+/* { dg-final { scan-assembler-times "mulld" 4  { target lp64 } } } */
+/* { dg-final { scan-assembler-times "bl __divdi3" 3  { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "bl __udivdi3" 3  { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "mullw" 12  { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "mulhwu" 4  { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "xxmrgld" 0 } } */
+/* { dg-final { scan-assembler-times "xxmrghd" 0 } } */
+/* { dg-final { scan-assembler-times "xvrsqrtesp" 2 } } */
+/* { dg-final { scan-assembler-times "xvrsqrtedp" 2 } } */
+/* { dg-final { scan-assembler-times "xxspltd" 8 } } */
+/* { dg-final { scan-assembler-times "vcfsx" 2 } } */
+/* { dg-final { scan-assembler-times "vcfux" 2 } } */
+/* { dg-final { scan-assembler-times "vspltb" 6 } } */
+/* { dg-final { scan-assembler-times "vspltw" 0 } } */
+/* { dg-final { scan-assembler-times "vmrgow" 8 } } */
+/* { dg-final { scan-assembler-times "vmrglb" 5 { target le } } } */
+/* { dg-final { scan-assembler-times "vmrglb" 6 { target be } } } */
+/* { dg-final { scan-assembler-times "vmrgew" 8 } } */
+/* { dg-final { scan-assembler-times "vsplth" 8 } } */
+/* { dg-final { scan-assembler-times "vcmpequd." 8 } } */
+/* { dg-final { scan-assembler-times "vcmpgtud." 16 } } */
+/* { dg-final { scan-assembler-times "vrfin" 2 } } */
+
