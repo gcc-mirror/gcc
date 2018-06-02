@@ -155,9 +155,8 @@ extern int nds32_adjust_insn_length (rtx_insn *, int);
 
 /* Auxiliary functions for FP_AS_GP detection.  */
 
-extern int nds32_fp_as_gp_check_available (void);
-
 extern bool nds32_symbol_load_store_p (rtx_insn *);
+extern bool nds32_naked_function_p (tree);
 
 /* Auxiliary functions for jump table generation.  */
 
@@ -367,5 +366,6 @@ extern bool nds32_use_load_post_increment(machine_mode);
 
 /* Functions for create nds32 specific optimization pass.  */
 extern rtl_opt_pass *make_pass_nds32_relax_opt (gcc::context *);
+extern rtl_opt_pass *make_pass_nds32_fp_as_gp (gcc::context *);
 
 /* ------------------------------------------------------------------------ */
