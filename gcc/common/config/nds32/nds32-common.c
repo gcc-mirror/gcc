@@ -87,6 +87,19 @@ static const struct default_options nds32_option_optimization_table[] =
 };
 
 /* ------------------------------------------------------------------------ */
+
+/* Implement TARGET_EXCEPT_UNWIND_INFO.  */
+static enum unwind_info_type
+nds32_except_unwind_info (struct gcc_options *opts ATTRIBUTE_UNUSED)
+{
+  if (TARGET_LINUX_ABI)
+    return UI_DWARF2;
+
+  return UI_SJLJ;
+}
+
+/* ------------------------------------------------------------------------ */
+
 
 /* Run-time Target Specification.  */
 
@@ -127,7 +140,7 @@ static const struct default_options nds32_option_optimization_table[] =
 /* Defining the Output Assembler Language.  */
 
 #undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
+#define TARGET_EXCEPT_UNWIND_INFO nds32_except_unwind_info
 
 /* ------------------------------------------------------------------------ */
 

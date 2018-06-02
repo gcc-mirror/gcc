@@ -2221,7 +2221,7 @@
   [(set (match_operand:SI 0 "register_operand"          "=r")
 	(plus:SI (match_operand:SI 1 "register_operand"  "0")
 		 (pc)))]
-  "flag_pic"
+  "TARGET_LINUX_ABI || flag_pic"
   "add5.pc\t%0"
   [(set_attr "type"    "alu")
    (set_attr "length"    "4")]
