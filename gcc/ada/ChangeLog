@@ -1,5 +1,11 @@
 2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (TYPE_PADDING_FOR_COMPONENT): New macro.
+	* gcc-interface/decl.c (gnat_to_gnu_component_type): Cache the padding
+	type built for an aliased component with variable size.
+
+2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	Backport from mainline
 	2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
