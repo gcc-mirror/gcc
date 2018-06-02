@@ -1,5 +1,9 @@
 2018-06-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85764 - bogus 'this' not captured error.
+	* lambda.c (resolvable_dummy_lambda): Use nonlambda_method_basetype.
+	(nonlambda_method_basetype): Handle NSDMI.
+
 	CWG 1581: When are constexpr member functions defined?
 	* constexpr.c (instantiate_cx_fn_r, instantiate_constexpr_fns): New.
 	(cxx_eval_outermost_constant_expr): Call instantiate_constexpr_fns.
