@@ -1,3 +1,7 @@
+2018-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/torture/pr86034.c: New test.
+
 2018-06-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/36497

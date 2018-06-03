@@ -1,3 +1,11 @@
+2018-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/86034
+	* gimple-ssa-store-merging.c (output_merged_store): Convert the RHS to
+	the unsigned bitfield type in a bit insertion sequence if it does not
+	have a larger precision than the bitfield size.
+	(process_store): Also bypass widening conversions for BIT_INSERT_EXPR.
+
 2018-06-03  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/nds32/nds32-peephole2.md: Add new patterns for code size.
