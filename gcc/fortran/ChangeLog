@@ -1,10 +1,15 @@
+2018-06-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36497
+	* decl.c (variable_decl): Use gfc_add_type for cray pointees.
+
 2018-06-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/63570
 	* check.c (gfc_check_random_init): New function. Check arguments of
 	RANDOM_INIT.
 	* gfortran.h (GFC_ISYM_RANDOM_INIT): New enum token.
-	* intrinsic.c (add_subroutines): Add RANDOM_INIT to list of 
+	* intrinsic.c (add_subroutines): Add RANDOM_INIT to list of
 	subroutines.
 	(gfc_check_intrinsic_standard): Introduce Fortran 2018 check.
 	* intrinsic.h: Add prototypes for gfc_check_random_init and
