@@ -1,3 +1,8 @@
+2018-06-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* common/config/nds32/nds32-common.c (nds32_option_optimization_table):
+	Disable -fdelete-null-pointer-checks for ELF toolchain.
+
 2018-06-02  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 

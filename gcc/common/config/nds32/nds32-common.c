@@ -74,6 +74,11 @@ nds32_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options nds32_option_optimization_table[] =
 {
+#if TARGET_LINUX_ABI == 0
+  /* Disable -fdelete-null-pointer-checks by default in ELF toolchain.  */
+  { OPT_LEVELS_ALL,               OPT_fdelete_null_pointer_checks,
+							   NULL, 0 },
+#endif
   /* Enable -fsched-pressure by default at -O1 and above.  */
   { OPT_LEVELS_1_PLUS,            OPT_fsched_pressure,     NULL, 1 },
   /* Enable -fomit-frame-pointer by default at all optimization levels.  */
