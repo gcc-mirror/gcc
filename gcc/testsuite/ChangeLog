@@ -1,3 +1,8 @@
+2018-06-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85938
+	* gfortran.dg/pr85938.f90: Fixed by revision r261081
+
 2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/opt3.ads: New test.
