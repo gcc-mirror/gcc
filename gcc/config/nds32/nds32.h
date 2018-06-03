@@ -853,6 +853,7 @@ enum nds32_builtins
 
 #define TARGET_ISA_V3 \
   (nds32_arch_option == ARCH_V3 \
+   || nds32_arch_option == ARCH_V3J \
    || nds32_arch_option == ARCH_V3F \
    || nds32_arch_option == ARCH_V3S)
 #define TARGET_ISA_V3M  (nds32_arch_option == ARCH_V3M)
