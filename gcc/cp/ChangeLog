@@ -1,5 +1,8 @@
 2018-06-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85739 - ICE with pointer to member template parm.
+	* cvt.c (perform_qualification_conversions): Use cp_fold_convert.
+
 	PR c++/85761 - ICE with ill-formed use of const outer variable.
 	* expr.c (mark_use): Handle location wrappers.
 
