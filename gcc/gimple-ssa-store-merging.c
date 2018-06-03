@@ -3778,7 +3778,14 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		  const HOST_WIDE_INT end_gap
 		    = (try_bitpos + try_size) - (info->bitpos + info->bitsize);
 		  tree tem = info->ops[0].val;
-		  if ((BYTES_BIG_ENDIAN ? start_gap : end_gap) > 0)
+		  if (TYPE_PRECISION (TREE_TYPE (tem)) <= info->bitsize)
+		    {
+		      tree bitfield_type
+			= build_nonstandard_integer_type (info->bitsize,
+							  UNSIGNED);
+		      tem = gimple_convert (&seq, loc, bitfield_type, tem);
+		    }
+		  else if ((BYTES_BIG_ENDIAN ? start_gap : end_gap) > 0)
 		    {
 		      const unsigned HOST_WIDE_INT imask
 			= (HOST_WIDE_INT_1U << info->bitsize) - 1;
@@ -4270,13 +4277,12 @@ pass_store_merging::process_store (gimple *stmt)
 	      || !multiple_p (bitpos, BITS_PER_UNIT))
 	  && const_bitsize <= 64)
 	{
-	  /* Bypass a truncating conversion to the bit-field type.  */
+	  /* Bypass a conversion to the bit-field type.  */
 	  if (is_gimple_assign (def_stmt) && CONVERT_EXPR_CODE_P (rhs_code))
 	    {
 	      tree rhs1 = gimple_assign_rhs1 (def_stmt);
 	      if (TREE_CODE (rhs1) == SSA_NAME
-		  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
-		  && const_bitsize <= TYPE_PRECISION (TREE_TYPE (rhs1)))
+		  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 		rhs = rhs1;
 	    }
 	  rhs_code = BIT_INSERT_EXPR;
