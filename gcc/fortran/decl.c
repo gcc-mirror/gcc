@@ -2431,7 +2431,7 @@ variable_decl (int elem)
 	    }
 
 	  if (not_constant)
-	    { 
+	    {
 	      gfc_error ("Explicit shaped array with nonconstant bounds at %C");
 	      m = MATCH_ERROR;
 	      goto cleanup;
@@ -2535,13 +2535,12 @@ variable_decl (int elem)
       gfc_find_symbol (name, gfc_current_ns, 1, &sym);
       if (sym != NULL && sym->attr.cray_pointee)
 	{
-	  sym->ts.type = current_ts.type;
-	  sym->ts.kind = current_ts.kind;
-	  sym->ts.u.cl = cl;
-	  sym->ts.u.derived = current_ts.u.derived;
-	  sym->ts.is_c_interop = current_ts.is_c_interop;
-	  sym->ts.is_iso_c = current_ts.is_iso_c;
 	  m = MATCH_YES;
+	  if (!gfc_add_type (sym, &current_ts, &gfc_current_locus))
+	    {
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 
 	  /* Check to see if we have an array specification.  */
 	  if (cp_as != NULL)
