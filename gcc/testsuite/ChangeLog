@@ -1,3 +1,7 @@
+2018-06-03  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.target/powerpc/altivec-7.c: Remove extra brace.
+
 2018-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/torture/pr86034.c: New test.
