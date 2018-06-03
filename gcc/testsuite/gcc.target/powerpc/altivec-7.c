@@ -103,7 +103,7 @@ int main ()
 /* { dg-final { scan-assembler-times "xxlxor" 5 } } */
 /* { dg-final { scan-assembler-times "lvx" 1 } } */
 /* { dg-final { scan-assembler-times "vmsumubm" 1 } } */
-/* { dg-final { scan-assembler-times "vupklpx" 1 } } } */
+/* { dg-final { scan-assembler-times "vupklpx" 1 } } */
 /* { dg-final { scan-assembler-times "vupklsx" 0 } } */
 /* { dg-final { scan-assembler-times "vupklsb" 2 } } */
 /* { dg-final { scan-assembler-times "vupkhpx" 1 } } */
