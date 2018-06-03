@@ -1,5 +1,5 @@
 // Ick!
-// { dg-additional-options -fmodule-mapper=@$srcdir/g++.dg/modules/map-1.map }
+// { dg-additional-options -fmodule-mapper=$srcdir/g++.dg/modules/map-1.map }
 // { dg-additional-files map-1.map }
 
 import frob;

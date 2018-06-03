@@ -16,3 +16,5 @@ namespace
 {
   extern module foo : void Baz (); // { dg-error "may only occur" }
 }
+
+// { dg-warning "not exporting module" "" { target *-*-* } 0 }

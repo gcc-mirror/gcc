@@ -19,3 +19,5 @@ namespace Bink
 {
   import ben; // { dg-error "only occur" }
 }
+
+// { dg-warning "not exporting module" "" { target *-*-* } 0 }

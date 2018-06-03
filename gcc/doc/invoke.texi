@@ -29259,9 +29259,9 @@ encoding the exported declarations of the module.  Importing a module
 reads in the BMI.  The dependency graph of imports is a Directed
 Acyclic Graph (DAG).
 
-An oracle provides a line-based server or file that the compiler
+An module mapper provides a line-based server or file that the compiler
 queries to determine the mapping between module names and BMI files.
-It is also used to build BMIs on demand.  An oracle may be
+It is also used to build BMIs on demand.  A mapper may be
 specified with the @option{-fmodule-mapper=@var{val}} option.  The
 operand may have one of the following forms:
 
@@ -29269,41 +29269,36 @@ operand may have one of the following forms:
 
 @item @var{number}
 @itemx @var{number}?@var{cookie}
-@itemx @var{number}@var{/cookie}
 A file number associated with a bidirectional streaming socket.  The spawning
 environment must have made this available.  
 
 @item @var{number},@var{number}
 @itemx @var{number},@var{number}?@var{cookie}
-@itemx @var{number},@var{number}@var{/cookie}
 Two file numbers associated with read and write pipes.  The spawning
 environment must have made these available.
 
-@item [@var{hostname}]:@var{port}
-@item [@var{hostname}]:@var{port}?@var{cookie}
-@item [@var{hostname}]:@var{port}@var{/cookie}
-A hostname, which defaults to @samp{localhost} and a port number to
+@item @var{hostname}:@var{port}
+@itemx :@var{port}
+@itemx @var{hostname}:@var{port}?@var{cookie}
+@itemx :@var{port}?@var{cookie}
+A hostname, which defaults to @samp{localhost}, and a port number to
 connect to.  IPv6 is used.  If your host lacks ipv6, this form is
 non-functional.  If you must use ipv4, you may use
-@option{-fmodule-mapper='ncat @var{ipv4host} @var{port}'}.
+@option{-fmodule-mapper='|ncat @var{ipv4host} @var{port}'}.
 
-@item @var{/path}
-@itemx @var{/path}?@var{cookie}
+@item =@var{socket}
+@itemx =@var{socket}?@var{cookie}
 A local domain socket.  If your host lacks local domain sockets, this
 form is non-functional.
 
-@item @var{program} @var{args...}
-@itemx @var{program}?@var{cookie} @var{args...}
+@item |@var{program} @var{args...}
+@itemx |@var{program}?@var{cookie} @var{args...}
 A program to spawn, and communicate with on its stdin/stdout streams.
-The user's @var{PATH} is searched for the program.  Arguments are
-separated by white space, (it is not possible for one of the arguments
-delivered to the program to contain a space, FIXME:Think about wide
-chars etc, URL encoding?).  There is an ambiguity, if the option value
-is solely an absolute path.  In that case it is interpretted as a
-local domain socket.  You may add leading or trailing whitespace to
-have it interpretted as a program to execute.
+Your @var{PATH} environment variable is searched for the program.
+Arguments are separated by space characters, (it is not possible for
+one of the arguments delivered to the program to contain a space).
 
-@item @@@var{file}
+@item @var{file}
 A mapping file consisting of space-separated module-name, filename
 pairs, one per line.  Only the mappings for the direct imports and any
 module export name need be provided.
@@ -29311,21 +29306,23 @@ module export name need be provided.
 @end table
 
 As shown, an optional cookie may suffix the first word of the option.
-It is introduced by either a @samp{?} or @samp{/} character.  The
-@samp{?} is not part of the cookie, but @samp{/} is.  Only some
-formats permit the @samp{/} form.  If no cookie is provided, the main
-source file name is used.  The cookie is used in the initial handshake
-with the module server.
+It is introduced by a @samp{?}, which is not part of the cookie.  If
+no cookie is provided, the main source file name is used.  The cookie
+is used in the initial handshake with the module server.  Be aware
+that @samp{?} and @samp{|} characters are often significant to the
+shell, and will need quoting.
 
-The oracle is connected to or loaded lazily, when the first module
+The mapper is connected to or loaded lazily, when the first module
 mapping is required.  The networking protocols are only supported on
-hosts that provide networking.  If no oracle is specified a default is
+hosts that provide networking.  If no mapper is specified a default is
 provided.
 
-Messages consist of whitespace-separated tokens.  This implicitly
-means filenames containing whitespace are not supported.  Each line is
-terminated by a line-feed (@code{0xa}) character.  The server should
-accept and respond to the following commands:
+Messages consist of whitespace-separated tokens and a possible final
+filename.  As filenames are the last item on a line, they may contain
+spaces without difficulty.  All non-ascii names are expected to be
+UTF8 encoded.  Each line is terminated by a line-feed (@code{0xa})
+character.  The server should accept and respond to the following
+commands:
 
 @table @gcctabopt
 
@@ -29379,9 +29376,9 @@ causes importation.  (A subsequent import query will be forthcoming.)
 (This is not implemented.)
 
 @item RESET
-This command resets the server.  There is no response.  It is used
-if a preamble rescan is needed.  Any unresponded @samp{ASYNC} requests
-are dropped.
+This command resets the server.  There is no response.  It may be
+needed when a preamble rescan happens.  Any unresponded @samp{ASYNC}
+requests are dropped.
 
 @end table
 
@@ -29404,10 +29401,6 @@ responses until all requests of a batch have been received.  There may
 be a fixed-capacity pipe between client and server, and sending
 responses before the client has started reading could result in
 deadlock.
-
-FIXME: Character encodings are not yet considered.  Perhaps URL
-encoding for filename elements.  There does not seem difficulty with
-module names themselves.
 
 The following metavariables were used:
 

@@ -606,7 +606,7 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 					 ? SOURCE_COLUMN (map, where) : 0);
 	      pp_verbatim (context->printer, "%s %s %r%s%s%R",
 			   first ? "In" : ",\n  ",
-			      is_module ? "module imported at"
+			      is_module ? "module at"
 			   : was_module ? "file included from"
 			   :              "              from",
 			   "locus", LINEMAP_FILE (map), line_col);

@@ -58,7 +58,7 @@ invoke_compiler () {
     done
 
     # look for something named by the module name
-    if test $from != '.' -a -e "$from/$src" ; then
+    if test "$from" != '.' -a -e "$from/$src" ; then
 	src="$from/$src"
     elif ! test -e "$src" ; then
 	src=$(dirname $main)/$src

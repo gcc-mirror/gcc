@@ -2652,7 +2652,7 @@ private:
   bool handshake (location_t, const char *main_src);
   void send_command (const char * = NULL, ...) ATTRIBUTE_PRINTF_2;
   int get_response (location_t);
-  char *response_token (location_t);
+  char *response_token (location_t, bool all = false);
   int response_word (location_t, const char *, ...);
   const char *response_error ()
   {
@@ -6459,63 +6459,45 @@ module_mapper::module_mapper (location_t loc, const char *option)
 {
   pex = NULL;
 
+  /* We set name as soon as we know what kind of mapper this is.  */
   if (!option)
-    name = option = "cxx-module-mapper";
-
-  if (noisy_p ())
-    {
-      fprintf (stderr, " mapper:%s", option);
-      fflush (stderr);
-    }
+    name = option = "|cxx-module-mapper";
 
   dump () && dump ("Initializing mapper %s", option);
 
   int err = 0;
   const char *errmsg = NULL;
 
-  /* First copy and count white space -- we use that to distinguish
-     programs that look like a socket name.  */
-  char *writable;
-  unsigned count = 0;
+  /* First copy.  */
+  unsigned spaces = 0;
+  unsigned len = 0;
+  char *cookie = NULL;
 
-  for (writable = const_cast <char *> (option); *writable; writable++)
-    if (ISSPACE (*writable))
-      {
-	while (ISSPACE (writable[1]))
-	  writable++;
-	count++;
-      }
-  size_t len = writable - option;
-  writable = XNEWVEC (char, len + 1);
+  for (; option[len]; len++)
+    {
+      if (option[len] == ' ')
+	spaces++;
+      if (option[len] == '?' && !cookie)
+	cookie = const_cast <char *> (&option[len]);
+    }
+  char *writable XNEWVEC (char, len + 1);
   memcpy (writable, option, len + 1);
-
-  const char *cookie = NULL;
+  if (cookie)
+    {
+      len = cookie - option;
+      cookie = writable + len;
+      *cookie = 0;
+    }
   int fd_in = -1, fd_out = -1;
 
-  if (!name && writable[0] == '@')
-    {
-      name = writable + 1;
-      from = fopen (name, "r");
-      if (!from)
-	{
-	  err = errno;
-	  errmsg = "opening";
-	}
-    }
-
-  /* Try a file number or pair of same.  */
-  char *endp;
   if (!name)
     {
+      /* Does it look like one or two fule numbers?  */
+      char *endp;
       unsigned long lfd_in = strtoul (writable, &endp, 10);
       unsigned long lfd_out = lfd_in;
-      if (*endp == ',')
+      if (endp != writable && *endp == ',')
 	lfd_out = strtoul (endp + 1, &endp, 10);
-      if (*endp == '?' || *endp == '/')
-	{
-	  cookie = option + (endp - writable) + (*endp == '?');
-	  *endp = 0;
-	}
 
       if (!*endp && lfd_in != ULONG_MAX && lfd_out != ULONG_MAX)
 	{
@@ -6525,10 +6507,9 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	}
     }
 
-  if (!name && !count)
+  if (!name)
     {
-      /* There are no spaces in the name, try opening a socket.  */
-      int port = -1;
+      /* Does it look like a socket?  */
 #ifdef HOST_HAS_AF
       union saddr {
 	sa_family_t fam;
@@ -6545,16 +6526,10 @@ module_mapper::module_mapper (location_t loc, const char *option)
 #ifdef HOST_HAS_AF
       saddr.fam = AF_UNSPEC;
 #endif
-      if (IS_ABSOLUTE_PATH (writable))
+      if (writable[0] == '=')
 	{
-	  /* An absolute path is treated as a local domain socket.  */
+	  /* A local socket.  */
 #ifdef HOST_HAS_AF_UNIX
-	  if (char *ques = static_cast <char *> (memchr (writable, '?', len)))
-	    {
-	      len = ques - writable;
-	      *ques = 0;
-	      cookie = ques + 1;
-	    }
 	  if (len < sizeof (saddr.un.sun_path))
 	    {
 	      memset (&saddr.un, 0, sizeof (saddr.un));
@@ -6570,27 +6545,25 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	}
       else if (char *colon = (char *)memrchr (writable, ':', len))
 	{
-	  port = strtoul (colon + 1, &endp, 10);
-	  if (*endp == '?' || *endp == '/')
-	    {
-	      cookie = option + (endp - writable) + (*endp == '?');
-	      *endp = 0;
-	    }
+	  /* Try a hostname:port address.  */
+	  char *endp;
+	  int port = strtoul (colon + 1, &endp, 10);
 
-	  if (!*endp)
+	  if (endp != colon + 1 && !*endp)
 	    {
 	      /* Ends in ':number', treat as ipv6 domain socket.  */
 	      *colon = 0;
 #ifdef HOST_HAS_AF_INET6
-	      if (port >= 0x10000)
-		errno = EINVAL; /* Seems plausible.  */
-	      else if (struct hostent *hent
+	      if (struct hostent *hent
 		  = gethostbyname2 (colon != writable
 				    ? writable : "localhost", AF_INET6))
 		{
 		  memset (&saddr.in6, 0, sizeof (saddr.in6));
-		  saddr.in6.sin6_family = AF_INET6;
 		  saddr.in6.sin6_port = htons (port);
+		  if (ntohs (saddr.in6.sin6_port) != port)
+		    errno = EINVAL;
+		  else
+		    saddr.in6.sin6_family = AF_INET6;
 		  memcpy (&saddr.in6.sin6_addr, hent->h_addr, hent->h_length);
 		}
 	      else
@@ -6600,6 +6573,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      saddr_len = 1;
 	      errmsg = "ipv6 protocol unsupported";
 #endif
+	      *colon = ':';
 	      name = writable;
 	    }
 	}
@@ -6628,7 +6602,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 
   if (fd_in >= 0)
     {
-      /* We were given filenums, or sucessfuly created a socket.  */
+      /* We were given filenums, or successfully created a socket.  */
       gcc_assert (!errmsg);
 
       if (fd_out < 0)
@@ -6650,31 +6624,37 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	  from = to = NULL;
 	}
     }
-  else if (!name || name == option)
+  else if (option[0] == '|')
     {
+      /* A program to spawn and talk to.  */
       /* Split writable at white-space.  No space-containing args
 	 for you!  */
-      char **argv = XALLOCAVEC (char *, count + 2);
-      count = 0;
+      char **argv = XALLOCAVEC (char *, spaces + 2);
+      unsigned arg_no = 0;
 
-      for (char *ptr = writable; ; ptr++)
+      for (char *ptr = writable + 1; ; ptr++)
 	{
-	  while (ISSPACE (*ptr))
-	    ptr++;
-	  if (!*ptr)
-	    break;
-	  for (argv[count++] = ptr; *ptr && !ISSPACE (*ptr); ptr++)
-	    if (*ptr == '?' && count == 1)
-	      {
-		*ptr = 0;
-		cookie = ptr + 1;
-	      }
-
+	  argv[arg_no++] = ptr;
+	  for (;; ptr++)
+	    {
+	      if (*ptr == ' ')
+		break;
+	      else if (*ptr)
+		continue;
+	      else if (ptr != cookie)
+		break;
+	      else if (arg_no != 1)
+		{
+		  /* Not a cookie after all.  */
+		  *cookie = '?';
+		  cookie = NULL;
+		}
+	    }
 	  if (!*ptr)
 	    break;
 	  *ptr = 0;
 	}
-      argv[count] = NULL;
+      argv[arg_no] = NULL;
 
       pex = pex_init (PEX_USE_PIPES, name, NULL);
       to = pex_input_pipe (pex, false);
@@ -6695,10 +6675,10 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      const char *fullname = save_decoded_options[0].arg;
 	      size_t dir_len = progname - fullname;
 
-	      gcc_checking_assert (count == 1 && !strcmp (name, argv[0]));
+	      gcc_checking_assert (arg_no == 1 && !strcmp (name + 1, argv[0]));
 	      argv[0] = XNEWVEC (char, dir_len + len + 1);
 	      memcpy (argv[0], fullname, dir_len);
-	      memcpy (argv[0] + dir_len, name, len + 1);
+	      memcpy (argv[0] + dir_len, name + 1, len + 1);
 	      flags = 0;
 	    }
 	  errmsg = pex_run (pex, flags, argv[0], argv, NULL, NULL, &err);
@@ -6706,7 +6686,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    free (argv[0]);
 	}
 
-      name = argv[0];
+      name = writable;
 
       if (!errmsg)
 	{
@@ -6721,6 +6701,18 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	}
     }
 
+  if (!name)
+    {
+      /* Try a mapping file.  */
+      name = writable;
+      from = fopen (name, "r");
+      if (!from)
+	{
+	  err = errno;
+	  errmsg = "opening";
+	}
+    }
+
   if (errmsg)
     {
       error_at (loc, "failed %s of mapper %qs", errmsg, name ? name : option);
@@ -6732,6 +6724,11 @@ module_mapper::module_mapper (location_t loc, const char *option)
       return;
     }
 
+  if (noisy_p ())
+    {
+      fprintf (stderr, " mapper:%s", name);
+      fflush (stderr);
+    }
   dump () && dump ("Initialized mapper");
 
   pos = end = buffer = XNEWVEC (char, size);
@@ -6741,7 +6738,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
     {
       /* A server, say Hello!.  */
       setvbuf (to, NULL, _IONBF, 0); /* We write whole buffers.  */
-      if (!handshake (loc, cookie ? cookie : main_input_filename))
+      if (!handshake (loc, cookie ? cookie + 1 : main_input_filename))
 	kill (loc);
     }
   else
@@ -6960,7 +6957,7 @@ module_mapper::response_eol (location_t loc)
 }
 
 char *
-module_mapper::response_token (location_t loc)
+module_mapper::response_token (location_t loc, bool all)
 {
   char *ptr = pos;
 
@@ -6969,6 +6966,8 @@ module_mapper::response_token (location_t loc)
       response_unexpected (loc);
       ptr = NULL;
     }
+  else if (all)
+    pos = end;
   else
     {
       char *eptr = ptr;
@@ -7019,13 +7018,13 @@ module_mapper::response_word (location_t loc, const char *option, ...)
     	-> HELLO/ERROR response
     INCLUDE header-name from
     	-> INCLUDE/IMPORT reponse
-    [ASYNC] BMI|SEARCH|PATH module-name from
+    [ASYNC] BMI|SEARCH|PATH module-name
     	-> BMI bmipath
 	-> SEARCH srcbase
 	-> PATH srcpath
 	-> ERROR
     AWAIT
-	-> OK module-name deferred response
+	-> OK module-name deferred-response
     EXPORT module-name
     	-> BMI bmipath
     DONE module-name
@@ -7091,7 +7090,7 @@ module_mapper::bmi_resp (const module_state *state)
       break;
 
     case 0: /* BMI $bmifile  */
-      filename = response_token (state->from_loc);
+      filename = response_token (state->from_loc, true);
       response_eol (state->from_loc);
       break;
 
@@ -9140,9 +9139,10 @@ module_state::check_read (bool outermost, tree ns, tree id)
       if (lazy && id)
 	error_at (loc, "failed to load binding %<%E%s%E@%E%>: %s",
 		  ns, &"::"[ns == global_namespace ? 2 : 0], id, name, err);
+      else if (filename)
+	error_at  (loc, "failed to read BMI %qs: %s", filename, err);
       else
-	error_at  (loc, filename ? "failed to read BMI %qs: %s"
-		   : "unknown BMI file", filename, err);
+	error_at  (loc, "failed to read BMI: %s", err);
 
       if (e == EMFILE)
 	inform (loc, "consider reducing %<--param %s%> value",
@@ -9799,7 +9799,11 @@ finish_module ()
   module_state::fini ();
 
   module_state *state = (*module_state::modules)[MODULE_PURVIEW];
-  if (state && state->exported && !errorcount)
+  if (!state || !state->exported)
+    ;/* Not a module interface.  */
+  else if (errorcount)
+    warning_at (state->loc, 0, "not exporting module due to errors");
+  else
     {
       FILE *stream = NULL;
       int e = ENOENT;
@@ -9815,7 +9819,7 @@ finish_module ()
       if (to.begin ())
 	state->write (&to);
       if (to.end ())
-	error_at (state->loc, "failed to export module %qE: %s", state->name,
+	error_at (state->loc, "failed to export module: %s",
 		  to.get_error (state->filename));
 
       dump.pop (n);

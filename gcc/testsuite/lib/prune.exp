@@ -44,7 +44,7 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)(In file included|\[ \]+from)\[^\n\]*" $text "" text
 
     # module
-    regsub -all "(^|\n)(In|  ) module imported at\[^\n\]*" $text "" text
+    regsub -all "(^|\n)(In|  ) module at\[^\n\]*" $text "" text
 
     # Ignore informational notes.
     regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text

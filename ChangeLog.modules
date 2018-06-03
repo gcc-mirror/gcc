@@ -1,3 +1,24 @@
+2018-06-03  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* diagnostic.c (diagnostic_report_current_module): Don't claim
+	module was imported.
+	* doc/invoke.texi (C++ Modules): Update module-mapper docs.
+	gcc/cp/
+	* module.c (module_mapper::module_mapper): Change syntax for
+	option.
+	(module_mapper::response_token): Add all parm.
+	(module_mapper::bmi_response): Use it.
+	(module_state::check_read): Fix error reporting.
+	(finish_module): Warn if not exporting due to errors.
+	gcc/testsuite/
+	* lib/prune.exp (prune_gcc_output): Adjust module import regexp/
+	* g++.dg/modules/map-1_[ab].C: Adjust module-mapper arg.
+	* g++.dg/modules/atom-decl-2.C: Add expected warning
+	* g++.dg/modules/mod-decl-1.C: Likewise.
+	* g++.dg/modules/mod-decl-3.C: Likewise.
+	* g++.dg/modules/proclaim-1.C: Likewise.
+
 2018-06-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
