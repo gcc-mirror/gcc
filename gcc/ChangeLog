@@ -1,3 +1,7 @@
+2018-06-03  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/nds32-peephole2.md: Add new patterns for code size.
+
 2018-06-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32-opts.h (nds32_arch_type): Add ARCH_V3J.
