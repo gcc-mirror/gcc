@@ -1,5 +1,12 @@
 2018-06-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-opts.h (nds32_arch_type): Add ARCH_V3J.
+	* config/nds32/nds32.c (nds32_option_override): Consider ARCH_V3J.
+	* config/nds32/nds32.h (TARGET_ISA_V3): Add ARCH_V3J checking.
+	* config/nds32/nds32.opt (march): Add enum value Value(ARCH_V3J).
+
+2018-06-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* common/config/nds32/nds32-common.c (nds32_option_optimization_table):
 	Disable -fdelete-null-pointer-checks for ELF toolchain.
 

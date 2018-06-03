@@ -4087,7 +4087,9 @@ nds32_option_override (void)
     }
   if (TARGET_ISA_V3)
     {
-      /* Under V3 ISA, currently nothing should be strictly set.  */
+      /* If this is ARCH_V3J, we need to enable TARGET_REDUCED_REGS.  */
+      if (nds32_arch_option == ARCH_V3J)
+	target_flags |= MASK_REDUCED_REGS;
     }
   if (TARGET_ISA_V3M)
     {

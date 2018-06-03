@@ -177,6 +177,9 @@ EnumValue
 Enum(nds32_arch_type) String(v3) Value(ARCH_V3)
 
 EnumValue
+Enum(nds32_arch_type) String(v3j) Value(ARCH_V3J)
+
+EnumValue
 Enum(nds32_arch_type) String(v3m) Value(ARCH_V3M)
 
 EnumValue
