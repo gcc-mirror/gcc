@@ -139,6 +139,9 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 		  break;
 		}
 	    }
+	  temp_override<location_t> l (input_location);
+	  if (loc != UNKNOWN_LOCATION)
+	    input_location = loc;
 	  expr = process_outer_var_ref (expr, tf_warning_or_error, true);
 	  if (!(TREE_TYPE (oexpr)
 		&& TYPE_REF_P (TREE_TYPE (oexpr))))
@@ -184,6 +187,11 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	}
       break;
     default:
+      if (location_wrapper_p (expr))
+	{
+	  loc = EXPR_LOCATION (expr);
+	  recurse_op[0] = true;
+	}
       break;
     }
 

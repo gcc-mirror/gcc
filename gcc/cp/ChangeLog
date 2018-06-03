@@ -1,3 +1,8 @@
+2018-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85761 - ICE with ill-formed use of const outer variable.
+	* expr.c (mark_use): Handle location wrappers.
+
 2018-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85764 - bogus 'this' not captured error.
