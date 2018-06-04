@@ -516,7 +516,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const type_info&
     _S_ti() noexcept
     {
-      static constexpr _Sp_make_shared_tag __tag;
+      static constexpr alignas(type_info) _Sp_make_shared_tag __tag;
       return reinterpret_cast<const type_info&>(__tag);
     }
 #endif
