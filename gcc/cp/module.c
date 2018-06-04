@@ -2661,7 +2661,7 @@ private:
     return result;
   }
   void response_unexpected (location_t);
-  bool response_eol (location_t);
+  bool response_eol (location_t, bool ignore = false);
   char *bmi_resp (const module_state *);
 
 private:
@@ -6683,7 +6683,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    }
 	  errmsg = pex_run (pex, flags, argv[0], argv, NULL, NULL, &err);
 	  if (!flags)
-	    free (argv[0]);
+	    XDELETEVEC (argv[0]);
 	}
 
       name = writable;
@@ -6750,8 +6750,23 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	if (r)
 	  {
 	    char *mod = response_token (loc);
-	    char *file = mod ? response_token (loc) : NULL;
-	    if (file && response_eol (loc))
+	    bool ignore = false;
+	    char *file = NULL;
+
+	    /* Ignore non-cookie lines.  */
+	    if (cookie && 0 != strcmp (mod, cookie + 1))
+	      ignore = true;
+	    else
+	      {
+		if (cookie)
+		  mod = response_token (loc);
+		if (mod)
+		  file = response_token (loc, true);
+	      }
+
+	    if (!response_eol (loc, ignore))
+	      ;
+	    else if (file)
 	      {
 		file = xstrdup (file);
 		module_state *state
@@ -6948,12 +6963,13 @@ module_mapper::response_unexpected (location_t loc)
 }
 
 bool
-module_mapper::response_eol (location_t loc)
+module_mapper::response_eol (location_t loc, bool ignore)
 {
-  bool res = pos == end;
-  if (!res)
+  bool at_end = pos == end;
+  if (!at_end && !ignore)
     response_unexpected (loc);
-  return res;
+  pos = end;
+  return at_end;
 }
 
 char *
@@ -7355,7 +7371,7 @@ module_state::read_imports (bytes_in &cfg, bool direct)
 		{
 		  error_at (loc, "conflicting BMI names for %qE: %qs & %qs",
 			    imp->name, imp->filename, filename_str);
-		  free (imp->filename);
+		  XDELETEVEC (imp->filename);
 		  imp->filename = NULL;
 		}
 	      if (!imp->do_import (filename_str, true))

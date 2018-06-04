@@ -2537,12 +2537,12 @@ Disable module importing.
 
 @item -fmodule-mapper=@var{fd}
 @itemx -fmodule-mapper=@var{[hostname]:port}
-@itemx -fmodule-mapper=@var{program}
-@itemx -fmodule-mapper=@var{/pathname}
+@itemx -fmodule-mapper=|@var{program}
+@itemx -fmodule-mapper==@var{socket}
+@itemx -fmodule-mapper=@var{file}
 @opindex fmodule-mapper
 An oracle to query for module name to filename mappings.  If
-unspecified a default oracle is looked for in the CXX_MODULE_SERVER
-environment variable, and if that is unset, a default is provided.
+unspecified a default is provided.
 
 @item -fms-extensions
 @opindex fms-extensions
@@ -29299,6 +29299,7 @@ Arguments are separated by space characters, (it is not possible for
 one of the arguments delivered to the program to contain a space).
 
 @item @var{file}
+@itemx @var{file}?@var{cookie}
 A mapping file consisting of space-separated module-name, filename
 pairs, one per line.  Only the mappings for the direct imports and any
 module export name need be provided.
@@ -29306,9 +29307,13 @@ module export name need be provided.
 @end table
 
 As shown, an optional cookie may suffix the first word of the option.
-It is introduced by a @samp{?}, which is not part of the cookie.  If
-no cookie is provided, the main source file name is used.  The cookie
-is used in the initial handshake with the module server.  Be aware
+It is introduced by a @samp{?}, which is not part of the cookie.  The
+cookie is used in the initial handshake with the module server, or to
+specify a prefix on mapping file lines.  In the server case, the main
+source file name is used if no cookie is specified.  In the file case,
+all non-blank lines are significant, unless a cookie is specified, in
+which case only lines beginning with the cookie are significant.  The
+cookie must be separated by whitespace from the module name.  Be aware
 that @samp{?} and @samp{|} characters are often significant to the
 shell, and will need quoting.
 

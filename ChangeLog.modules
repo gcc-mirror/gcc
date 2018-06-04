@@ -1,3 +1,15 @@
+2018-06-04  Nathan Sidwell  <nathan@acm.org>
+
+	Cookies for mapping files
+	gcc/cp/
+	* module.c (module_mapper::response_eol): Add ignore arg.
+	(module_mapper::module_mapper): Cookie on file mapper.
+	gcc/
+	* invoke.texi (C++ Modules): Document file mapper cookie.
+	gcc/testsuite/
+	* g++.dg/modules/map-1_b.C: Use specific mapper.
+	* g++.dg/modules/map-1_b.map: New.
+
 2018-06-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
