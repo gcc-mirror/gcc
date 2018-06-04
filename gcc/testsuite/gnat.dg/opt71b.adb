@@ -4,9 +4,9 @@
 
 with Opt71_Pkg; use Opt71_Pkg;
 
-procedure Opt71 (X : not null access Rec; Size : Positive) is
+procedure Opt71b (X : not null access Rec; Y : not null access Rec) is
 begin
-   X.all := (Flag => True, Size => Size);
+   X.all := (Flag => True, Size => Y.Size);
 end;
 
 -- { dg-final { scan-tree-dump "Merging successful" "store-merging" } }
