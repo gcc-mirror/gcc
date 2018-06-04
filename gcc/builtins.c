@@ -8266,6 +8266,9 @@ fold_builtin_sincos (location_t loc,
       call = builtin_save_expr (call);
     }
 
+  tree ptype = build_pointer_type (type);
+  arg1 = fold_convert (ptype, arg1);
+  arg2 = fold_convert (ptype, arg2);
   return build2 (COMPOUND_EXPR, void_type_node,
 		 build2 (MODIFY_EXPR, void_type_node,
 			 build_fold_indirect_ref_loc (loc, arg1),

@@ -1,3 +1,9 @@
+2018-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85955
+	* builtins.c (fold_builtin_sincos): Convert pointers to
+	destination to appropriate type before dereferencing.
+
 2018-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (abs<mode>2 for FLOAT128): Handle IFmode.
