@@ -1,5 +1,11 @@
 2018-06-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61806 - missed SFINAE with partial specialization.
+	* cp-tree.h (deferring_access_check_sentinel): Add deferring_kind
+	parameter to constructor.
+	* pt.c (instantiate_class_template_1): Enable access checking
+	before call to most_specialized_partial_spec.
+
 	PR c++/85765 - SFINAE and non-type default template arg.
 	* pt.c (type_unification_real): Do full semantic processing if
 	substituting a partial args list replaces all template parms.

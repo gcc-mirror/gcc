@@ -10850,6 +10850,10 @@ instantiate_class_template_1 (tree type)
   /* Mark the type as in the process of being defined.  */
   TYPE_BEING_DEFINED (type) = 1;
 
+  /* We may be in the middle of deferred access check.  Disable
+     it now.  */
+  deferring_access_check_sentinel acs (dk_no_deferred);
+
   /* Determine what specialization of the original template to
      instantiate.  */
   t = most_specialized_partial_spec (type, tf_warning_or_error);
@@ -10888,10 +10892,6 @@ instantiate_class_template_1 (tree type)
   /* If we've recursively instantiated too many templates, stop.  */
   if (! push_tinst_level (type))
     return type;
-
-  /* We may be in the middle of deferred access check.  Disable
-     it now.  */
-  push_deferring_access_checks (dk_no_deferred);
 
   int saved_unevaluated_operand = cp_unevaluated_operand;
   int saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
@@ -11373,7 +11373,6 @@ instantiate_class_template_1 (tree type)
   maximum_field_alignment = saved_maximum_field_alignment;
   if (!fn_context)
     pop_from_top_level ();
-  pop_deferring_access_checks ();
   pop_tinst_level ();
 
   /* The vtable for a template class can be emitted in any translation
