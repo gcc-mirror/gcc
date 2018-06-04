@@ -47,7 +47,10 @@ char* strndup (const char*, size_t);
 
 #define NONSTRING __attribute__ ((nonstring))
 
-char str[4];
+/* STR needs to be bigger than ARR to trigger warnings, otherwise
+   since STR must be a string, using both in a string function
+   can be assumed to be safe even if ARR isn't nul-terminated.  */
+char str[5];
 char arr[4] NONSTRING;
 
 char *ptr;
@@ -55,7 +58,7 @@ char *parr NONSTRING;
 
 struct MemArrays
 {
-  char str[4];
+  char str[5];
   char arr[4] NONSTRING;
   char *parr NONSTRING;
 };
