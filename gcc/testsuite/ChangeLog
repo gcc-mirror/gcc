@@ -1,3 +1,14 @@
+2018-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85832
+	PR target/86036
+	* gcc.target/i386/avx512f-pr85832.c: Expect vptestnm rather than
+	vptestm.
+	* gcc.target/i386/avx512vl-pr85832.c: Likewise.
+	* gcc.target/i386/avx512vlbw-pr85832.c: Likewise.
+	* gcc.target/i386/avx512bw-pr85832.c: Likewise.
+	* gcc.target/i386/avx512bw-pr86036.c: New test.
+
 2018-06-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86038
