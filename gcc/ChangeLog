@@ -1,3 +1,8 @@
+2018-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86025
+	* tree.c (inchash::add_expr): Handle IDENTIFIER_NODE.
+
 2018-06-01  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/85712
