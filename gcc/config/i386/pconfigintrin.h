@@ -1,5 +1,5 @@
-#ifndef _X86INTRIN_H_INCLUDED
-#error "Never use <pconfigintrin.h> directly; include <x86intrin.h> instead."
+#ifndef _IMMINTRIN_H_INCLUDED
+#error "Never use <pconfigintrin.h> directly; include <immintrin.h> instead."
 #endif
 
 #ifndef _PCONFIGINTRIN_H_INCLUDED
