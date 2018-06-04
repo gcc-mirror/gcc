@@ -1,3 +1,9 @@
+2018-06-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85981
+	* resolve.c (resolve_allocate_deallocate): Check errmsg is default
+	character kind.
+
 2018-06-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/36497
