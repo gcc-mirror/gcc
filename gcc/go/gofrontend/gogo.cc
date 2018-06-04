@@ -8258,8 +8258,16 @@ Traverse::remember_type(const Type* type)
   // We mostly only have to remember named types.  But it turns out
   // that an interface type can refer to itself without using a name
   // by relying on interface inheritance, as in
-  // type I interface { F() interface{I} }
+  //
+  //         type I interface { F() interface{I} }
+  //
+  // Similarly it is possible for array types to refer to themselves
+  // without a name, e.g.
+  //
+  //         var x [uintptr(unsafe.Sizeof(&x))]byte
+  //
   if (type->classification() != Type::TYPE_NAMED
+      && type->classification() != Type::TYPE_ARRAY
       && type->classification() != Type::TYPE_INTERFACE)
     return false;
   if (this->types_seen_ == NULL)
