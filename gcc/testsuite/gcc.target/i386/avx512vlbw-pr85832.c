@@ -1,8 +1,8 @@
 /* PR target/85832 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512vl -mavx512bw -masm=att" } */
-/* { dg-final { scan-assembler-times {\mvptestmb\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mvptestmw\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mvptestnmb\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mvptestnmw\M} 2 } } */
 
 #include <x86intrin.h>
 

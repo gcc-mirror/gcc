@@ -11287,7 +11287,7 @@
   "TARGET_AVX512BW && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    vpcmpeq<ssemodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}
-   vptestm<ssemodesuffix>\t{%1, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %1}"
+   vptestnm<ssemodesuffix>\t{%1, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %1}"
   [(set_attr "type" "ssecmp")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "evex")
@@ -11302,7 +11302,7 @@
   "TARGET_AVX512F && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    vpcmpeq<ssemodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}
-   vptestm<ssemodesuffix>\t{%1, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %1}"
+   vptestnm<ssemodesuffix>\t{%1, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %1}"
   [(set_attr "type" "ssecmp")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "evex")
