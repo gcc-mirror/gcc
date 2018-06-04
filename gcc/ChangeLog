@@ -1,3 +1,21 @@
+2018-06-04  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_expand_epilogue): Change bool arg
+	to int.
+	* config/riscv/riscv.c (riscv_for_each_saved_reg): New args epilogue
+	and maybe_eh_return.  Change regno to unsigned int.  Use new args to
+	handle EH_RETURN_DATA_REGNO registers properly.
+	(riscv_expand_prologue): Pass new args to riscv_for_each_saved_reg.
+	(riscv_expand_epilogue): Update comment.  Change argument name and
+	type.  Update code to use new name and type.  Pass new args to
+	riscv_for_each_saved_reg.  Only use EH_RETURN_STACKADJ_RTX when
+	EXCEPTION_RETURN.
+	* config/riscv/riscv.md (NORMAL_RETURN): New.
+	(SIBCALL_RETURN, EXCEPTION_RETURN): New.
+	(epilogue, sibcall_epilogue): Update riscv_expand_epilogue arg.
+	(eh_return): Call gen_eh_return_internal and emit barrier.
+	(eh_return_internal): Call riscv_expand_epilogue.
+
 2018-06-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-ssa-store-merging.c (struct merged_store_group): Move up
