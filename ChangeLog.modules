@@ -1,5 +1,12 @@
 2018-06-04  Nathan Sidwell  <nathan@acm.org>
 
+	Self relative direct import pathnames.
+	gcc/cp/
+	* module.c (relativize_import): New.
+	(module_state::write_readme): Call it.
+	(module_state::read_imports): Make import relative to importer,
+	query mapper if needed.
+
 	Cookies for mapping files
 	gcc/cp/
 	* module.c (module_mapper::response_eol): Add ignore arg.

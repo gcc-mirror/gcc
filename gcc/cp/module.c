@@ -7265,6 +7265,74 @@ module_state::get_option_string  ()
   return opt_str;
 }
 
+/* Make pathname TO relative to FROM.  */
+
+static char *
+relativize_import (const char *from, char *&real_from, char *to)
+{
+  char *real_to = NULL;
+
+  if (IS_ABSOLUTE_PATH (from) == IS_ABSOLUTE_PATH (to))
+    {
+      size_t last_dir = strlen (from);
+      while (last_dir && !IS_DIR_SEPARATOR (from[last_dir]))
+	last_dir--;
+      if (0 == strncmp (from, to, last_dir))
+	{
+	  /* TO is in FROM's dir, or a subpath thereof.   It's
+	     directly reachable by removing the LAST_DIR prefix.  */
+	  memmove (to, to + last_dir, strlen (to + last_dir) + 1);
+	  return to;
+	}
+    }
+  
+  /* These are not directly comparable.  Figure the real paths and
+     process them.  */
+  if (!real_from)
+    real_from = lrealpath (from);
+  if (real_from)
+    real_to = lrealpath (to);
+
+  if (real_to
+      /* lrealpath can simply return a copy.  */
+      && IS_ABSOLUTE_PATH (real_from)
+      && IS_ABSOLUTE_PATH (real_to))
+    {
+      size_t last_dir = 0;
+      for (size_t pos = 0; real_from[pos]; pos++)
+	if (real_from[pos] != real_to[pos])
+	  break;
+	else if (IS_DIR_SEPARATOR (real_from[pos]))
+	  /* Canonicalization will have canonicalized the dir
+	     separator, so we don't need to consider two different
+	     ones in the two paths.  */
+	  last_dir = pos + 1;
+
+      unsigned dir_count = 0;
+      for (size_t pos = last_dir; real_from[pos]; pos++)
+	if (IS_DIR_SEPARATOR (real_from[pos]))
+	  dir_count++;
+
+      size_t to_len = strlen (real_to + last_dir);
+      char *rel_path = XNEWVEC (char, to_len + 1 + 3 * dir_count);
+      size_t pos = 0;
+      while (dir_count--)
+	{
+	  rel_path[pos++] = '.';
+	  rel_path[pos++] = '.';
+	  rel_path[pos++] = DIR_SEPARATOR;
+	}
+
+      memcpy (rel_path + pos, real_to + last_dir, to_len + 1);
+      free (real_to);
+      return rel_path;
+    }
+
+  /* Give up.  The importer will ask the mapper.  */
+  to[0] = 0;
+  return to;
+}
+
 /* A human-readable README section.  It is a STRTAB that may be
    extracted with:
      readelf -p.gnu.c++.README $(module).nms */
@@ -7292,13 +7360,20 @@ module_state::write_readme (elf_out *to, const char *options)
   readme.printf ("options:%s", options);
 
   /* Its direct imports.  */
+  char *real_from = NULL;
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
       if (state->direct)
-	readme.printf ("import:%s %s",
-		       IDENTIFIER_POINTER (state->name), state->filename);
+	{
+	  state->filename
+	    = relativize_import (filename, real_from, state->filename);
+	  readme.printf ("import:%s %s",
+			 IDENTIFIER_POINTER (state->name), state->filename);
+	}
     }
+  if (real_from)
+    free (real_from);
 
   readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
 }
@@ -7332,6 +7407,7 @@ module_state::write_imports (bytes_out &cfg, bool direct)
 	  cfg.u32 (state->crc);
 	  if (direct)
 	    {
+	      /* write_readme will have relativized this.  */
 	      cfg.str (state->filename);
 	      cfg.u (state->exported);
 	    }
@@ -7344,6 +7420,7 @@ int
 module_state::read_imports (bytes_in &cfg, bool direct)
 {
   unsigned count = 0;
+  int from_len = -1;
   for (unsigned ix; (ix = cfg.u ()); count++)
     {
       if (ix >= remap->length () || ix < MODULE_IMPORT_BASE || (*remap)[ix])
@@ -7357,7 +7434,8 @@ module_state::read_imports (bytes_in &cfg, bool direct)
 
       if (direct)
 	{
-	  const char *filename_str = cfg.str ();
+	  size_t len;
+	  const char *filename_str = cfg.str (&len);
 	  bool exported = cfg.u ();
 
 	  if (cfg.get_overrun ())
@@ -7367,13 +7445,34 @@ module_state::read_imports (bytes_in &cfg, bool direct)
 	    {
 	      imp->crc = crc;
 	      unsigned n = dump.push (imp);
-	      if (imp->filename && strcmp (filename_str, imp->filename))
+	      if (imp->filename)
+		/* The mapper already specified.  Assume it knows what
+		   it's doing.  */
+		filename_str = NULL;
+	      else if (filename_str[0])
 		{
-		  error_at (loc, "conflicting BMI names for %qE: %qs & %qs",
-			    imp->name, imp->filename, filename_str);
-		  XDELETEVEC (imp->filename);
-		  imp->filename = NULL;
+		  /* Make it relative to how we got to this module.  */
+		  if (from_len < 0)
+		    {
+		      from_len = 0;
+		      for (size_t pos = 0; filename[pos]; pos++)
+			if (IS_DIR_SEPARATOR (filename[pos]))
+			  from_len = pos + 1;
+		    }
+
+		  if (from_len)
+		    {
+		      char *rel = XNEWVEC (char, from_len + len + 1);
+		      memcpy (rel, filename, from_len);
+		      memcpy (rel + from_len, filename_str, len + 1);
+		      imp->filename = rel;
+		      filename_str = NULL;
+		    }
 		}
+	      else
+		/* Ask the mapper.  */
+		filename_str = module_mapper::import_export (imp, false);
+
 	      if (!imp->do_import (filename_str, true))
 		imp = NULL;
 	      else
