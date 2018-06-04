@@ -1,3 +1,8 @@
+2018-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85955
+	* gcc.dg/pr85955.c: New testcase.
+
 2018-06-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85981
