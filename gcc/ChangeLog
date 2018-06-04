@@ -1,3 +1,16 @@
+2018-06-04  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+        * config/i386/cldemoteintrin.h: Change define from _X86INTRIN_H_INCLUDED
+        to _IMMINTRIN_H_INCLUDED.
+        * config/i386/pconfigintrin.h: Ditto.
+        * config/i386/waitpkgintrin.h: Ditto.
+        * config/i386/immintrin.h: Add includes for sgxintrin.h,
+        pconfigintrin.h, waitpkgintrin.h and cldemoteintrin.h.
+        * config/i386/x86intrin.h: Remove includes for mintrin.h, xmmintrin.h,
+        emmintrin.h, pmmintrin.h, tmmintrin.h, smmintrin.h, wmmintrin.h,
+        bmiintrin.h, bmi2intrin.h, lzcntintrin.h, sgxintrin.h, pconfigintrin.h,
+        waitpkgintrin.h and cldemoteintrin.h.
+
 2018-06-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86038
