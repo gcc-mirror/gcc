@@ -1,3 +1,7 @@
+2018-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/simd-1.c: New test.
+
 2018-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (HAVE_UNAME, HAVE_GETHOSTNAME, HAVE_GETPID): Add
