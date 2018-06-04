@@ -1,3 +1,9 @@
+2018-06-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfgcleanup.c (cleanup_tree_cfg_1): Fold into...
+	(cleanup_tree_cfg_noloop): ... single caller.  Do
+	start_recording_case_labels later.
+
 2018-06-04  Sebastian Peryt  <sebastian.peryt@intel.com>
 
         * config/i386/cldemoteintrin.h: Change define from _X86INTRIN_H_INCLUDED
