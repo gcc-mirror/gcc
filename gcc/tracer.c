@@ -159,7 +159,8 @@ find_best_successor (basic_block bb)
     }
   if (!best || ignore_bb_p (best->dest))
     return NULL;
-  if (best->probability.to_reg_br_prob_base () <= probability_cutoff)
+  if (!best->probability.initialized_p ()
+      || best->probability.to_reg_br_prob_base () <= probability_cutoff)
     return NULL;
   return best;
 }

@@ -1,3 +1,9 @@
+2018-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86038
+	* tracer.c (find_best_successor): Check probability for
+	being initialized, bail out if not.
+
 2018-06-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/86003
