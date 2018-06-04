@@ -1,3 +1,9 @@
+2018-06-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/86003
+	* config/arm/arm-cpus.in (ALL_QUIRKS): Add xscale feature to the list
+	of bits to ignore when comparing architectures.
+
 2018-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69615
