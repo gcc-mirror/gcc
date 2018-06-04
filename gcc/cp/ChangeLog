@@ -1,3 +1,9 @@
+2018-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85765 - SFINAE and non-type default template arg.
+	* pt.c (type_unification_real): Do full semantic processing if
+	substituting a partial args list replaces all template parms.
+
 2018-06-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85739 - ICE with pointer to member template parm.
