@@ -268,7 +268,9 @@ define fgroup DOTPROD	NEON dotprod
 
 # List of all quirk bits to strip out when comparing CPU features with
 # architectures.
-define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd
+# xscale isn't really a 'quirk', but it isn't an architecture either and we
+# need to ignore it for matching purposes.
+define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd xscale
 
 # Architecture entries
 # format:
