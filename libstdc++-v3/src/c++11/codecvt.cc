@@ -1086,7 +1086,12 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
     reinterpret_cast<char16_t*>(__to),
     reinterpret_cast<char16_t*>(__to_end)
   };
-  auto res = ucs2_in(from, to, _M_maxcode, _M_mode);
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  codecvt_mode mode = {};
+#else
+  codecvt_mode mode = little_endian;
+#endif
+  auto res = ucs2_in(from, to, _M_maxcode, mode);
 #elif __SIZEOF_WCHAR_T__ == 4
   range<char32_t> to{
     reinterpret_cast<char32_t*>(__to),

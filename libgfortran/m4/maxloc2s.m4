@@ -54,7 +54,6 @@ export_proto('name`'rtype_qual`_'atype_code`);
   const 'atype_name` *maxval;
   index_type i;
 
-  assert(back == 0);
   extent = GFC_DESCRIPTOR_EXTENT(array,0);
   if (extent <= 0)
     return 0;
@@ -63,15 +62,16 @@ export_proto('name`'rtype_qual`_'atype_code`);
 
   ret = 1;
   src = array->base_addr;
-  maxval = src;
-  for (i=2; i<=extent; i++)
+  maxval = NULL;
+  for (i=1; i<=extent; i++)
     {
-      src += sstride;
-      if (compare_fcn (src, maxval, len) > 0)
+      if (maxval == NULL || (back ? compare_fcn (src, maxval, len) >= 0 :
+      	 	    	    	    compare_fcn (src, maxval, len) > 0))
       {
 	 ret = i;
 	 maxval = src;
       }
+      src += sstride;
     }
   return ret;
 }
@@ -96,7 +96,6 @@ m'name`'rtype_qual`_'atype_code` ('atype` * const restrict array,
   int mask_kind;
   index_type mstride;
 
-  assert(back == 0);
   extent = GFC_DESCRIPTOR_EXTENT(array,0);
   if (extent <= 0)
     return 0;
@@ -134,7 +133,8 @@ m'name`'rtype_qual`_'atype_code` ('atype` * const restrict array,
 
   for (i=j+1; i<=extent; i++)
     {
-      if (*mbase && compare_fcn (src, maxval, len) > 0)
+      if (*mbase && (back ? compare_fcn (src, maxval, len) >= 0 :
+      	 	    	   compare_fcn (src, maxval, len) > 0))
       {
 	 ret = i;
 	 maxval = src;

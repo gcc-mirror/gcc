@@ -74,6 +74,11 @@
   (and (match_code "const_int,const_wide_int,const_double,const_vector")
        (not (match_test "op == CONST0_RTX (mode)"))))
 
+;; Return 1 if OP is the constant 1, 2 or 3.
+(define_predicate "const123_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 3)")))
+
 ;; Return 1 if OP is the constant 2 or 3.
 (define_predicate "const23_operand"
   (and (match_code "const_int")

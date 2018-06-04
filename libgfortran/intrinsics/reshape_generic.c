@@ -106,8 +106,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
 	alloc_size = rs;
 
       ret->base_addr = xmallocarray (alloc_size, size);
-
-      GFC_DTYPE_COPY_SETRANK(ret,source,rdim);
+      ret->dtype.rank = rdim;
     }
 
   if (shape_empty)

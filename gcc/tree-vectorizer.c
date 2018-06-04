@@ -78,13 +78,104 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gimple-pretty-print.h"
 
 
 /* Loop or bb location.  */
 source_location vect_location;
 
 /* Vector mapping GIMPLE stmt to stmt_vec_info. */
-vec<stmt_vec_info> stmt_vec_info_vec;
+vec<stmt_vec_info> *stmt_vec_info_vec;
+
+/* Dump a cost entry according to args to F.  */
+
+void
+dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
+		stmt_vec_info stmt_info, int misalign,
+		enum vect_cost_model_location where)
+{
+  fprintf (f, "%p ", data);
+  if (stmt_info)
+    {
+      print_gimple_expr (f, STMT_VINFO_STMT (stmt_info), 0, TDF_SLIM);
+      fprintf (f, " ");
+    }
+  else
+    fprintf (f, "<unknown> ");
+  fprintf (f, "%d times ", count);
+  const char *ks = "unknown";
+  switch (kind)
+    {
+    case scalar_stmt:
+      ks = "scalar_stmt";
+      break;
+    case scalar_load:
+      ks = "scalar_load";
+      break;
+    case scalar_store:
+      ks = "scalar_store";
+      break;
+    case vector_stmt:
+      ks = "vector_stmt";
+      break;
+    case vector_load:
+      ks = "vector_load";
+      break;
+    case vector_gather_load:
+      ks = "vector_gather_load";
+      break;
+    case unaligned_load:
+      ks = "unaligned_load";
+      break;
+    case unaligned_store:
+      ks = "unaligned_store";
+      break;
+    case vector_store:
+      ks = "unaligned_store";
+      break;
+    case vector_scatter_store:
+      ks = "unaligned_store";
+      break;
+    case vec_to_scalar:
+      ks = "unaligned_store";
+      break;
+    case scalar_to_vec:
+      ks = "unaligned_store";
+      break;
+    case cond_branch_not_taken:
+      ks = "unaligned_store";
+      break;
+    case cond_branch_taken:
+      ks = "unaligned_store";
+      break;
+    case vec_perm:
+      ks = "unaligned_store";
+      break;
+    case vec_promote_demote:
+      ks = "unaligned_store";
+      break;
+    case vec_construct:
+      ks = "unaligned_store";
+      break;
+    }
+  fprintf (f, "%s ", ks);
+  if (kind == unaligned_load || kind == unaligned_store)
+    fprintf (f, "(misalign %d) ", misalign);
+  const char *ws = "unknown";
+  switch (where)
+    {
+    case vect_prologue:
+      ws = "prologue";
+      break;
+    case vect_body:
+      ws = "body";
+      break;
+    case vect_epilogue:
+      ws = "epilogue";
+      break;
+    }
+  fprintf (f, "in %s\n", ws);
+}
 
 /* For mapping simduid to vectorization factor.  */
 
@@ -365,6 +456,8 @@ vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in)
     ddrs (vNULL),
     target_cost_data (target_cost_data_in)
 {
+  stmt_vec_infos.create (50);
+  set_stmt_vec_info_vec (&stmt_vec_infos);
 }
 
 vec_info::~vec_info ()
@@ -386,6 +479,7 @@ vec_info::~vec_info ()
   free_data_refs (datarefs);
   free_dependence_relations (ddrs);
   destroy_cost_data (target_cost_data);
+  free_stmt_vec_infos (&stmt_vec_infos);
 }
 
 /* A helper function to free scev and LOOP niter information, as well as
@@ -591,7 +685,7 @@ vectorize_loops (void)
   if (cfun->has_simduid_loops)
     note_simd_array_uses (&simd_array_to_simduid_htab);
 
-  init_stmt_vec_info_vec ();
+  set_stmt_vec_info_vec (NULL);
 
   /*  ----------- Analyze loops. -----------  */
 
@@ -832,8 +926,6 @@ vectorize_loops (void)
       loop->aux = NULL;
     }
 
-  free_stmt_vec_info_vec ();
-
   /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE,ORDERED_{START,END}} builtins.  */
   if (cfun->has_simduid_loops)
     adjust_simduid_builtins (simduid_to_vf_htab);
@@ -971,16 +1063,12 @@ pass_slp_vectorize::execute (function *fun)
 	}
     }
 
-  init_stmt_vec_info_vec ();
-
   FOR_EACH_BB_FN (bb, fun)
     {
       if (vect_slp_bb (bb))
 	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 			 "basic block vectorized\n");
     }
-
-  free_stmt_vec_info_vec ();
 
   if (!in_loop_pipeline)
     {

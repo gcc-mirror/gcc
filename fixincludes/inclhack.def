@@ -5011,6 +5011,22 @@ fix = {
 };
 
 /*
+ *  This hack ensures the include_next in the fixed unistd.h actually
+ *  finds the system's unistd.h and not the fixed unistd.h again.
+ */
+fix = {
+    hackname    = vxworks_iolib_include_unistd;
+    files       = ioLib.h;
+    mach        = "*-*-vxworks*";
+    select      = "#include \"unistd.h\"";
+
+    c_fix       = format;
+    c_fix_arg   = "#include <unistd.h>";
+
+    test_text       = "#include \"unistd.h\"";
+};
+
+/*
  *  There are several name conflicts with C++ reserved words in X11 header
  *  files.  These are fixed in some versions, so don't do the fixes if
  *  we find __cplusplus in the file.  These were found on the RS/6000.

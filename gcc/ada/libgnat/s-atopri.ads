@@ -92,18 +92,6 @@ package System.Atomic_Primitives is
                   Sync_Compare_And_Swap_8,
                   "__sync_val_compare_and_swap_1");
 
-   --  ??? Should use __atomic_compare_exchange_1 (doesn't work yet):
-   --  function Sync_Compare_And_Swap_8
-   --    (Ptr           : Address;
-   --     Expected      : Address;
-   --     Desired       : uint8;
-   --     Weak          : Boolean   := False;
-   --     Success_Model : Mem_Model := Seq_Cst;
-   --     Failure_Model : Mem_Model := Seq_Cst) return Boolean;
-   --  pragma Import (Intrinsic,
-   --                 Sync_Compare_And_Swap_8,
-   --                 "__atomic_compare_exchange_1");
-
    function Sync_Compare_And_Swap_16
      (Ptr      : Address;
       Expected : uint16;
@@ -127,6 +115,20 @@ package System.Atomic_Primitives is
    pragma Import (Intrinsic,
                   Sync_Compare_And_Swap_64,
                   "__sync_val_compare_and_swap_8");
+
+   --  ??? We might want to switch to the __atomic series of builtins for
+   --  compare-and-swap operations at some point.
+
+   --  function Atomic_Compare_Exchange_8
+   --    (Ptr           : Address;
+   --     Expected      : Address;
+   --     Desired       : uint8;
+   --     Weak          : Boolean   := False;
+   --     Success_Model : Mem_Model := Seq_Cst;
+   --     Failure_Model : Mem_Model := Seq_Cst) return Boolean;
+   --  pragma Import (Intrinsic,
+   --                 Atomic_Compare_Exchange_8,
+   --                 "__atomic_compare_exchange_1");
 
    --------------------------
    -- Lock-free operations --

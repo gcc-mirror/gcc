@@ -1,3 +1,30 @@
+2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lang.opt (lto_linker_output): Add nolto-rel.
+	* lto-lang.c (lto_post_options): Handle LTO_LINKER_OUTPUT_REL
+	and LTO_LINKER_OUTPUT_NOLTOREL.
+	(lto_init): Generate lto when doing incremental link.
+	* lto.c (lto_precess_name): Add lto1-inclink.
+
+2018-05-18  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/85583
+	* lto-partition.c (account_reference_p): Do not account
+	references from aliases; do not account refernces from
+	external initializers.
+
+2018-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (cmp_partitions_size): Remove.
+	(lto_wpa_write_files): Also output priorities; do not sort partitions.
+	(cmp_partition_order): Move to ...
+	* lto-partition.c (cmp_partition_order): ...
+	(lto_1_to_1_map): Sort partitions.
+
+2018-04-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Fix sanity check.
+
 2018-04-19  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c: Include sreal.h

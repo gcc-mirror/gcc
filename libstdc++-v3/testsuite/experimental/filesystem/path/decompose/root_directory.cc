@@ -48,8 +48,8 @@ test02()
     path rootdir = p.root_directory();
     // If root-directory is composed of 'slash name',
     // 'slash' is excluded from the returned string.
-    if (!rootdir.empty() && rootdir.native() != "/")
-      VERIFY( rootdir.native()[0] != '/' );
+    if (!rootdir.empty() && rootdir.string() != "/")
+      VERIFY( rootdir.string()[0] != '/' );
   }
 }
 

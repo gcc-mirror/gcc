@@ -1307,7 +1307,7 @@ maybe_diag_incompatible_alias (tree alias, tree target)
   tree altype = TREE_TYPE (alias);
   tree targtype = TREE_TYPE (target);
 
-  bool ifunc = lookup_attribute ("ifunc", DECL_ATTRIBUTES (alias));
+  bool ifunc = cgraph_node::get (alias)->ifunc_resolver;
   tree funcptr = altype;
 
   if (ifunc)
@@ -2452,8 +2452,11 @@ ipa_passes (void)
   if (flag_generate_lto || flag_generate_offload)
     targetm.asm_out.lto_start ();
 
-  if (!in_lto_p)
+  if (!in_lto_p
+      || flag_incremental_link == INCREMENTAL_LINK_LTO)
     {
+      if (!quiet_flag)
+	fprintf (stderr, "Streaming LTO\n");
       if (g->have_offload)
 	{
 	  section_name_prefix = OFFLOAD_SECTION_NAME_PREFIX;
@@ -2472,7 +2475,9 @@ ipa_passes (void)
   if (flag_generate_lto || flag_generate_offload)
     targetm.asm_out.lto_end ();
 
-  if (!flag_ltrans && (in_lto_p || !flag_lto || flag_fat_lto_objects))
+  if (!flag_ltrans
+      && ((in_lto_p && flag_incremental_link != INCREMENTAL_LINK_LTO)
+	  || !flag_lto || flag_fat_lto_objects))
     execute_ipa_pass_list (passes->all_regular_ipa_passes);
   invoke_plugin_callbacks (PLUGIN_ALL_IPA_PASSES_END, NULL);
 
@@ -2559,7 +2564,8 @@ symbol_table::compile (void)
 
   /* Do nothing else if any IPA pass found errors or if we are just streaming LTO.  */
   if (seen_error ()
-      || (!in_lto_p && flag_lto && !flag_fat_lto_objects))
+      || ((!in_lto_p || flag_incremental_link == INCREMENTAL_LINK_LTO)
+	  && flag_lto && !flag_fat_lto_objects))
     {
       timevar_pop (TV_CGRAPHOPT);
       return;

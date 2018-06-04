@@ -1,5 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-lto-options {{-flto -r -nostdlib -O}} } */
+/* { dg-extra-ld-options "-flinker-output=nolto-rel" } */
 
 extern void baz (void);
 

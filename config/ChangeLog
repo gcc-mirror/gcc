@@ -1,3 +1,18 @@
+2018-05-10  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/64914
+	* bootstrap-ubsan.mk: Define UBSAN_BOOTSTRAP.
+
+2018-05-09  Joshua Watt <jpewhacker@gmail.com>
+
+        * ax_pthread.m4: Add file.
+
+2018-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85571
+	* bootstrap-lto-noplugin.mk: Disable compare.
+	* bootstrap-lto.mk: Supply contrib/compare-lto for do-compare.
+
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/85490

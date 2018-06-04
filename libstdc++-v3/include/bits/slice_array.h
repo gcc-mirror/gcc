@@ -192,8 +192,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const size_t      _M_stride;
       const _Array<_Tp> _M_array;
 
+#if __cplusplus < 201103L
       // not implemented
       slice_array();
+#else
+    public:
+      slice_array() = delete;
+#endif
     };
 
   template<typename _Tp>

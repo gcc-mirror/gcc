@@ -1983,14 +1983,14 @@ struct attribute_spec {
   bool affects_type_identity;
   /* Function to handle this attribute.  NODE points to the node to which
      the attribute is to be applied.  If a DECL, it should be modified in
-     place; if a TYPE, a copy should be created.  NAME is the name of the
-     attribute (possibly with leading or trailing __).  ARGS is the TREE_LIST
-     of the arguments (which may be NULL).  FLAGS gives further information
-     about the context of the attribute.  Afterwards, the attributes will
-     be added to the DECL_ATTRIBUTES or TYPE_ATTRIBUTES, as appropriate,
-     unless *NO_ADD_ATTRS is set to true (which should be done on error,
-     as well as in any other cases when the attributes should not be added
-     to the DECL or TYPE).  Depending on FLAGS, any attributes to be
+     place; if a TYPE, a copy should be created.  NAME is the canonicalized
+     name of the attribute i.e. without any leading or trailing underscores.
+     ARGS is the TREE_LIST of the arguments (which may be NULL).  FLAGS gives
+     further information about the context of the attribute.  Afterwards, the
+     attributes will be added to the DECL_ATTRIBUTES or TYPE_ATTRIBUTES, as
+     appropriate, unless *NO_ADD_ATTRS is set to true (which should be done on
+     error, as well as in any other cases when the attributes should not be
+     added to the DECL or TYPE).  Depending on FLAGS, any attributes to be
      applied to another type or DECL later may be returned;
      otherwise the return value should be NULL_TREE.  This pointer may be
      NULL if no special handling is required beyond the checks implied

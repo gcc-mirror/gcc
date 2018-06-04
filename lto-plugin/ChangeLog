@@ -1,3 +1,12 @@
+2018-05-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto-plugin.c: (non_claimed_files): New static var.
+	(linker_ouput_known): New static var.
+	(all_symbols_read_handler): When user specifies linker output do not
+	imply it; output warning when nonlto-rel mode is forced.
+	(claim_file_header): Record number of nonclaimed files.
+	(process_option): Remember if linker output is known
+
 2018-04-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/85384

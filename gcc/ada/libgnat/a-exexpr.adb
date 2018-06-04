@@ -349,7 +349,7 @@ package body Exception_Propagation is
    -- Propagate_Exception --
    -------------------------
 
-   procedure Propagate_Exception (Excep : EOA) is
+   procedure Propagate_Exception (Excep : Exception_Occurrence) is
    begin
       Propagate_GCC_Exception (To_GCC_Exception (Excep.Machine_Occurrence));
    end Propagate_Exception;

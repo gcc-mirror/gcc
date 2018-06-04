@@ -99,7 +99,9 @@
       <entry><literal>-lstdc++fs</literal></entry>
       <entry>Linking to <filename class="libraryfile">libstdc++fs</filename>
         is required for use of the Filesystem library extensions in
-        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>.
+        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>
+        and the C++17 Filesystem library in
+        <filename class="headerfile">&lt;filesystem&gt;</filename>.
       </entry>
     </row>
 
@@ -1034,7 +1036,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 </para>
 
 <para> The <symbol>_GLIBCXX_USE_CXX11_ABI</symbol> macro (see
-<xref linkend="manual.intro.using.macros"/>) controls whether
+  <xref linkend="manual.intro.using.macros"/>) controls whether
   the declarations in the library headers use the old or new ABI.
   So the decision of which ABI to use can be made separately for each
   source file being compiled.
@@ -1069,10 +1071,37 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 </para>
 
 <para> Although the standard exception types defined in
-  <filename class="headerfile">&lt;stdexcept&gt;</filename> use strings, they
+  <filename class="headerfile">&lt;stdexcept&gt;</filename> use strings, most
   are not defined twice, so that a <classname>std::out_of_range</classname>
   exception thrown in one file can always be caught by a suitable handler in
   another file, even if the two files are compiled with different ABIs.
+</para>
+
+<para> One exception type does change when using the new ABI, namely
+  <classname>std::ios_base::failure</classname>.
+  This is necessary because the 2011 standard changed its base class from
+  <classname>std::exception</classname> to
+  <classname>std::system_error</classname>, which causes its layout to change.
+  Exceptions due to iostream errors are thrown by a function inside
+  <filename class="libraryfile">libstdc++.so</filename>, so whether the thrown
+  exception uses the old <classname>std::ios_base::failure</classname> type
+  or the new one depends on the ABI that was active when
+  <filename class="libraryfile">libstdc++.so</filename> was built,
+  <emphasis>not</emphasis> the ABI active in the user code that is using
+  iostreams.
+  This means that for a given build of GCC the type thrown is fixed.
+  In current releases the library throws a special type that can be caught
+  by handlers for either the old or new type,
+  but for GCC 7.1, 7.2 and 7.3 the library throws the new
+  <classname>std::ios_base::failure</classname> type,
+  and for GCC 5.x and 6.x the library throws the old type.
+  Catch handlers of type <classname>std::ios_base::failure</classname>
+  will only catch the exceptions if using a newer release,
+  or if the handler is compiled with the same ABI as the type thrown by
+  the library.
+  Handlers for <classname>std::exception</classname> will always catch
+  iostreams exceptions, because the old and new type both inherit from
+  <classname>std::exception</classname>.
 </para>
 
 <section xml:id="manual.intro.using.abi.trouble" xreflabel="Dual ABI Troubleshooting"><info><title>Troubleshooting</title></info>

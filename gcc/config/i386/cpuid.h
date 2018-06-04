@@ -98,6 +98,7 @@
 #define bit_AVX512VBMI	(1 << 1)
 #define bit_PKU	(1 << 3)
 #define bit_OSPKE	(1 << 4)
+#define bit_WAITPKG	(1 << 5)
 #define bit_AVX512VBMI2	(1 << 6)
 #define bit_SHSTK	(1 << 7)
 #define bit_GFNI	(1 << 8)
@@ -109,6 +110,7 @@
 #define bit_RDPID	(1 << 22)
 #define bit_MOVDIRI	(1 << 27)
 #define bit_MOVDIR64B	(1 << 28)
+#define bit_CLDEMOTE	(1 << 25)
 
 /* %edx */
 #define bit_AVX5124VNNIW (1 << 2)

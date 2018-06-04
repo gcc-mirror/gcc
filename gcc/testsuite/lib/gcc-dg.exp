@@ -21,7 +21,9 @@ load_lib target-supports-dg.exp
 load_lib scanasm.exp
 load_lib scanrtl.exp
 load_lib scantree.exp
+load_lib scanltranstree.exp
 load_lib scanipa.exp
+load_lib scanwpaipa.exp
 load_lib scanlang.exp
 load_lib timeout.exp
 load_lib timeout-dg.exp

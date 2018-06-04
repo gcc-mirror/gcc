@@ -26,17 +26,31 @@ proc dump-suffix { arg } {
     return [string range $arg $idx end]
 }
 
+# Construct the dumpbase.
+# Argument 0 is the src file
+# Argument 1 is the dump base suffix
+proc dump-base { args } {
+    set src [lindex $args 0]
+    set dumpbase_suf [lindex $args 1]
+    set dumpbase $src
+    if { [string length $dumpbase_suf] != 0 } {
+	regsub {[.][^.]*$} $src $dumpbase_suf dumpbase
+    }
+    return $dumpbase
+}
+
 # Utility for scanning compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
 #
 # Argument 0 is the type of dump we are searching (rtl, tree, ipa)
 # Argument 1 is the regexp to match.
 # Argument 2 is the suffix for the dump file
-# Argument 3 handles expected failures and the like
+# Argument 3 is the suffix of the dump base
+# Argument 4 handles expected failures and the like
 proc scan-dump { args } {
 
-    if { [llength $args] >= 4 } {
-        switch [dg-process-target [lindex $args 3]] {
+    if { [llength $args] >= 5 } {
+        switch [dg-process-target [lindex $args 4]] {
             "S" { }
             "N" { return }
             "F" { setup_xfail "*-*-*" }
@@ -52,7 +66,8 @@ proc scan-dump { args } {
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump $suf \"$printable_pattern\""
     set src [file tail $filename]
-    set output_file "[glob -nocomplain $src.[lindex $args 2]]"
+    set dumpbase [dump-base $src [lindex $args 3]]
+    set output_file "[glob -nocomplain $dumpbase.[lindex $args 2]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
 	unresolved "$testname"
@@ -75,11 +90,12 @@ proc scan-dump { args } {
 # Argument 1 is the regexp to match.
 # Argument 2 is number of times the regexp must be found
 # Argument 3 is the suffix for the dump file
-# Argument 4 handles expected failures and the like
+# Argument 4 is the suffix of the dump base
+# Argument 5 handles expected failures and the like
 proc scan-dump-times { args } {
 
-    if { [llength $args] >= 5 } {
-	switch [dg-process-target [lindex $args 4]] {
+    if { [llength $args] >= 6 } {
+	switch [dg-process-target [lindex $args 5]] {
 	    "S" { }
 	    "N" { return }
 	    "F" { setup_xfail "*-*-*" }
@@ -95,7 +111,8 @@ proc scan-dump-times { args } {
     set printable_pattern [make_pattern_printable [lindex $args 1]]
     set testname "$testcase scan-[lindex $args 0]-dump-times $suf \"$printable_pattern\" [lindex $args 2]"
     set src [file tail $filename]
-    set output_file "[glob -nocomplain $src.[lindex $args 3]]"
+    set dumpbase [dump-base $src [lindex $args 4]]
+    set output_file "[glob -nocomplain $dumpbase.[lindex $args 3]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
 	unresolved "$testname"
@@ -120,11 +137,12 @@ proc scan-dump-times { args } {
 # Argument 0 is the type of dump we are searching (rtl, tree, ipa)
 # Argument 1 is the regexp to match.
 # Argument 2 is the suffix for the dump file
-# Argument 3 handles expected failures and the like
+# Argument 3 is the suffix of the dump base
+# Argument 4 handles expected failures and the like
 proc scan-dump-not { args } {
 
-    if { [llength $args] >= 4 } {
-	switch [dg-process-target [lindex $args 3]] {
+    if { [llength $args] >= 5 } {
+	switch [dg-process-target [lindex $args 4]] {
 	    "S" { }
 	    "N" { return }
 	    "F" { setup_xfail "*-*-*" }
@@ -139,7 +157,8 @@ proc scan-dump-not { args } {
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump-not $suf \"$printable_pattern\""
     set src [file tail $filename]
-    set output_file "[glob -nocomplain $src.[lindex $args 2]]"
+    set dumpbase [dump-base $src [lindex $args 3]]
+    set output_file "[glob -nocomplain $dumpbase.[lindex $args 2]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
 	unresolved "$testname"
@@ -163,13 +182,14 @@ proc scan-dump-not { args } {
 # Argument 0 is the type of dump we are searching (rtl, tree, ipa)
 # Argument 1 is the regexp to match.
 # Argument 2 is the suffix for the dump file
-# Argument 3 handles expected failures and the like
+# Argument 3 is the suffix of the dump base
+# Argument 4 handles expected failures and the like
 proc scan-dump-dem { args } {
     global cxxfilt
     global base_dir
 
-    if { [llength $args] >= 4 } {
-	switch [dg-process-target [lindex $args 3]] {
+    if { [llength $args] >= 5 } {
+	switch [dg-process-target [lindex $args 4]] {
 	    "S" { }
 	    "N" { return }
 	    "F" { setup_xfail "*-*-*" }
@@ -194,7 +214,8 @@ proc scan-dump-dem { args } {
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump-dem $suf \"$printable_pattern\""
     set src [file tail $filename]
-    set output_file "[glob -nocomplain $src.[lindex $args 2]]"
+    set dumpbase [dump-base $src [lindex $args 3]]
+    set output_file "[glob -nocomplain $dumpbase.[lindex $args 2]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
 	unresolved "$testname"
@@ -217,13 +238,14 @@ proc scan-dump-dem { args } {
 # Argument 0 is the type of dump we are searching (rtl, tree, ipa)
 # Argument 1 is the regexp to match.
 # Argument 2 is the suffix for the dump file
-# Argument 3 handles expected failures and the like
+# Argument 3 is the suffix of the dump base
+# Argument 4 handles expected failures and the like
 proc scan-dump-dem-not { args } {
     global cxxfilt
     global base_dir
 
-    if { [llength $args] >= 4 } {
-	switch [dg-process-target [lindex $args 3]] {
+    if { [llength $args] >= 5 } {
+	switch [dg-process-target [lindex $args 4]] {
 	    "S" { }
 	    "N" { return }
 	    "F" { setup_xfail "*-*-*" }
@@ -248,7 +270,8 @@ proc scan-dump-dem-not { args } {
     set suf [dump-suffix [lindex $args 2]]
     set testname "$testcase scan-[lindex $args 0]-dump-dem-not $suf \"$printable_pattern\""
     set src [file tail $filename]
-    set output_file "[glob -nocomplain $src.[lindex $args 2]]"
+    set dumpbase [dump-base $src [lindex $args 3]]
+    set output_file "[glob -nocomplain $dumpbase.[lindex $args 2]]"
     if { $output_file == "" } {
 	verbose -log "$testcase: dump file does not exist"
 	unresolved "$testname"

@@ -1,3 +1,13 @@
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libvtv.exp: Include scanltranstree.exp.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libvtv.exp: Include scanwpaipa.exp.
+
 2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.

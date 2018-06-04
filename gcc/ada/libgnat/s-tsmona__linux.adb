@@ -122,7 +122,7 @@ package body Module_Name is
       while lm /= null loop
          if Big_String_Conv.To_Pointer (lm.l_name) (1) /= ASCII.NUL then
             --  Discard non-file (like the executable itself or the gate).
-            Add_Module_To_Cache (Value (lm.l_name));
+            Add_Module_To_Cache (Value (lm.l_name), lm.l_addr);
          end if;
          lm := lm.l_next;
       end loop;

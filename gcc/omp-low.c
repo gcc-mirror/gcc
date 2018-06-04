@@ -7714,7 +7714,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
 	      {
 		gcc_assert (is_gimple_omp_oacc (ctx->stmt));
-		if (omp_is_reference (new_var))
+		if (omp_is_reference (new_var)
+		    && TREE_CODE (TREE_TYPE (new_var)) != POINTER_TYPE)
 		  {
 		    /* Create a local object to hold the instance
 		       value.  */

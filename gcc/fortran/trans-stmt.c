@@ -1735,11 +1735,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       if (sym->attr.subref_array_pointer)
 	{
 	  gcc_assert (e->expr_type == EXPR_VARIABLE);
-	  tmp = e->symtree->n.sym->ts.type == BT_CLASS
-	      ? gfc_class_data_get (e->symtree->n.sym->backend_decl)
-	      : e->symtree->n.sym->backend_decl;
-	  tmp = gfc_get_element_type (TREE_TYPE (tmp));
-	  tmp = fold_convert (gfc_array_index_type, size_in_bytes (tmp));
+	  tmp = gfc_get_array_span (se.expr, e);
+
 	  gfc_conv_descriptor_span_set (&se.pre, desc, tmp);
 	}
 

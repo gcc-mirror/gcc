@@ -517,6 +517,9 @@ cgraph_node::create (tree decl)
 	g->have_offload = true;
     }
 
+  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
+    node->ifunc_resolver = true;
+
   node->register_symbol ();
 
   if (DECL_CONTEXT (decl) && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
@@ -575,6 +578,8 @@ cgraph_node::create_alias (tree alias, tree target)
   alias_node->alias = true;
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (alias)) != NULL)
     alias_node->transparent_alias = alias_node->weakref = true;
+  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (alias)))
+    alias_node->ifunc_resolver = true;
   return alias_node;
 }
 
@@ -2299,7 +2304,7 @@ cgraph_node::get_availability (symtab_node *ref)
     avail = AVAIL_AVAILABLE;
   else if (transparent_alias)
     ultimate_alias_target (&avail, ref);
-  else if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl))
+  else if (ifunc_resolver
 	   || lookup_attribute ("noipa", DECL_ATTRIBUTES (decl)))
     avail = AVAIL_INTERPOSABLE;
   else if (!externally_visible)

@@ -29,6 +29,7 @@ enum nds32_arch_type
 {
   ARCH_V2,
   ARCH_V3,
+  ARCH_V3J,
   ARCH_V3M,
   ARCH_V3F,
   ARCH_V3S
@@ -42,6 +43,10 @@ enum nds32_cpu_type
   CPU_N8,
   CPU_E8,
   CPU_N9,
+  CPU_N10,
+  CPU_GRAYWOLF,
+  CPU_N12,
+  CPU_N13,
   CPU_SIMPLE
 };
 
@@ -51,6 +56,13 @@ enum nds32_cmodel_type
   CMODEL_SMALL,
   CMODEL_MEDIUM,
   CMODEL_LARGE
+};
+
+/* The code model defines the address generation strategy.  */
+enum nds32_ict_model_type
+{
+  ICT_MODEL_SMALL,
+  ICT_MODEL_LARGE
 };
 
 /* Multiply instruction configuration.  */

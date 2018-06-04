@@ -31,6 +31,11 @@ BRIG Separate Alias(d)
 -dump=
 BRIG Joined Alias(d)
 
+fassume-phsa
+BRIG Report Var(flag_assume_phsa) Init(1) Optimization
+Assume we are finalizing for phsa and its libhsail-rt.  Enables additional
+phsa-specific optimizations (default).
+
 L
 BRIG Joined Separate
 ; Not documented

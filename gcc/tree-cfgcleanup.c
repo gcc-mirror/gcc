@@ -146,12 +146,11 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 	{
 	case GIMPLE_COND:
 	  {
-	    code_helper rcode;
-	    tree ops[3] = {};
-	    if (gimple_simplify (stmt, &rcode, ops, NULL, no_follow_ssa_edges,
+	    gimple_match_op res_op;
+	    if (gimple_simplify (stmt, &res_op, NULL, no_follow_ssa_edges,
 				 no_follow_ssa_edges)
-		&& rcode == INTEGER_CST)
-	      val = ops[0];
+		&& res_op.code == INTEGER_CST)
+	      val = res_op.ops[0];
 	  }
 	  break;
 
@@ -758,66 +757,6 @@ cleanup_control_flow_pre ()
   return retval;
 }
 
-/* Iterate the cfg cleanups, while anything changes.  */
-
-static bool
-cleanup_tree_cfg_1 (void)
-{
-  bool retval = false;
-  basic_block bb;
-  unsigned i, n;
-
-  /* Prepare the worklists of altered blocks.  */
-  cfgcleanup_altered_bbs = BITMAP_ALLOC (NULL);
-
-  /* During forwarder block cleanup, we may redirect edges out of
-     SWITCH_EXPRs, which can get expensive.  So we want to enable
-     recording of edge to CASE_LABEL_EXPR.  */
-  start_recording_case_labels ();
-
-  /* We cannot use FOR_EACH_BB_FN for the BB iterations below
-     since the basic blocks may get removed.  */
-
-  /* Start by iterating over all basic blocks in PRE order looking for
-     edge removal opportunities.  Do this first because incoming SSA form
-     may be invalid and we want to avoid performing SSA related tasks such
-     as propgating out a PHI node during BB merging in that state.  */
-  retval |= cleanup_control_flow_pre ();
-
-  /* After doing the above SSA form should be valid (or an update SSA
-     should be required).  */
-
-  /* Continue by iterating over all basic blocks looking for BB merging
-     opportunities.  */
-  n = last_basic_block_for_fn (cfun);
-  for (i = NUM_FIXED_BLOCKS; i < n; i++)
-    {
-      bb = BASIC_BLOCK_FOR_FN (cfun, i);
-      if (bb)
-	retval |= cleanup_tree_cfg_bb (bb);
-    }
-
-  /* Now process the altered blocks, as long as any are available.  */
-  while (!bitmap_empty_p (cfgcleanup_altered_bbs))
-    {
-      i = bitmap_first_set_bit (cfgcleanup_altered_bbs);
-      bitmap_clear_bit (cfgcleanup_altered_bbs, i);
-      if (i < NUM_FIXED_BLOCKS)
-	continue;
-
-      bb = BASIC_BLOCK_FOR_FN (cfun, i);
-      if (!bb)
-	continue;
-
-      retval |= cleanup_control_flow_bb (bb);
-      retval |= cleanup_tree_cfg_bb (bb);
-    }
-
-  end_recording_case_labels ();
-  BITMAP_FREE (cfgcleanup_altered_bbs);
-  return retval;
-}
-
 static bool
 mfb_keep_latches (edge e)
 {
@@ -834,10 +773,7 @@ cleanup_tree_cfg_noloop (void)
 
   timevar_push (TV_TREE_CLEANUP_CFG);
 
-  /* Iterate until there are no more cleanups left to do.  If any
-     iteration changed the flowgraph, set CHANGED to true.
-
-     If dominance information is available, there cannot be any unreachable
+  /* If dominance information is available, there cannot be any unreachable
      blocks.  */
   if (!dom_info_available_p (CDI_DOMINATORS))
     {
@@ -908,7 +844,52 @@ cleanup_tree_cfg_noloop (void)
 	  }
     }
 
-  changed |= cleanup_tree_cfg_1 ();
+  /* Prepare the worklists of altered blocks.  */
+  cfgcleanup_altered_bbs = BITMAP_ALLOC (NULL);
+
+  /* Start by iterating over all basic blocks in PRE order looking for
+     edge removal opportunities.  Do this first because incoming SSA form
+     may be invalid and we want to avoid performing SSA related tasks such
+     as propgating out a PHI node during BB merging in that state.  */
+  changed |= cleanup_control_flow_pre ();
+
+  /* After doing the above SSA form should be valid (or an update SSA
+     should be required).  */
+
+  /* During forwarder block cleanup, we may redirect edges out of
+     SWITCH_EXPRs, which can get expensive.  So we want to enable
+     recording of edge to CASE_LABEL_EXPR.  */
+  start_recording_case_labels ();
+
+  /* Continue by iterating over all basic blocks looking for BB merging
+     opportunities.  We cannot use FOR_EACH_BB_FN for the BB iteration
+     since the basic blocks may get removed.  */
+  unsigned n = last_basic_block_for_fn (cfun);
+  for (unsigned i = NUM_FIXED_BLOCKS; i < n; i++)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      if (bb)
+	changed |= cleanup_tree_cfg_bb (bb);
+    }
+
+  /* Now process the altered blocks, as long as any are available.  */
+  while (!bitmap_empty_p (cfgcleanup_altered_bbs))
+    {
+      unsigned i = bitmap_first_set_bit (cfgcleanup_altered_bbs);
+      bitmap_clear_bit (cfgcleanup_altered_bbs, i);
+      if (i < NUM_FIXED_BLOCKS)
+	continue;
+
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      if (!bb)
+	continue;
+
+      changed |= cleanup_control_flow_bb (bb);
+      changed |= cleanup_tree_cfg_bb (bb);
+    }
+
+  end_recording_case_labels ();
+  BITMAP_FREE (cfgcleanup_altered_bbs);
 
   gcc_assert (dom_info_available_p (CDI_DOMINATORS));
 

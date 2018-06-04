@@ -48,9 +48,10 @@ bool in_lto_p = false
 
 ; This variable is set to non-0 only by LTO front-end.  1 indicates that
 ; the output produced will be used for incrmeental linking (thus weak symbols
-; can still be bound).
+; can still be bound) and 2 indicates that the IL is going to be linked and
+; and output to LTO object file.
 Variable
-int flag_incremental_link = 0
+enum incremental_link flag_incremental_link = INCREMENTAL_LINK_NONE
 
 ; 0 means straightforward implementation of complex divide acceptable.
 ; 1 means wide ranges of inputs must work for complex divide.
@@ -1171,7 +1172,7 @@ List all available debugging counters with their limits and counts.
 
 fdbg-cnt=
 Common RejectNegative Joined Var(common_deferred_options) Defer
--fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]	Set the debug counter limit.
+-fdbg-cnt=<counter>[:<lower_limit>]:<upper_limit>[,<counter>:...]	Set the debug counter limit.
 
 fdebug-prefix-map=
 Common Joined RejectNegative Var(common_deferred_options) Defer

@@ -1,3 +1,62 @@
+2018-06-02  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config.host (nds32*-linux*): New.
+	* config/nds32/linux-atomic.c: New file.
+	* config/nds32/linux-unwind.h: New file.
+
+2018-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85591
+	* config/i386/cpuinfo.c (get_amd_cpu): Return
+	AMDFAM15H_BDVER2 for AMDFAM15H model 0x2.
+
+2018-05-30  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+        * crtstuff.c: Remove declaration of _Jv_RegisterClasses.
+
+2018-05-29  Martin Liska  <mliska@suse.cz>
+
+        PR gcov-profile/85759
+	* libgcov-driver-system.c (gcov_error): Introduce usage of
+        GCOV_EXIT_AT_ERROR env. variable.
+	* libgcov-driver.c (merge_one_data): Print error that we
+        overwrite a gcov file with a different timestamp.
+
+2018-05-23  Kalamatee  <kalamatee@gmail.com>
+
+	* config/m68k/lb1sf68.S (Laddsf$nf): Fix sign bit handling in
+	path to Lf$finfty.
+
+2018-05-18  Kito Cheng <kito.cheng@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+	    Jim Wilson <jimw@sifive.com>
+
+	* config/riscv/save-restore.S: Add support for rv32e.
+
+2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/libunwind.S: Update comment relating to armv5.
+
+2018-05-17  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/arm/cmse.c (cmse_check_address_range): Replace
+	UINTPTR_MAX with __UINTPTR_MAX__ and uintptr_t with __UINTPTR_TYPE__.
+
+2018-05-17  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_GOLDMONT_PLUS.
+	* config/i386/cpuinfo.c (get_intel_cpu): Detect Goldmont Plus.
+
+2018-05-08  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_GOLDMONT.
+	* config/i386/cpuinfo.c (get_intel_cpu): Detect Goldmont.
+
+2018-05-07  Amaan Cheval  <amaan.cheval@gmail.com>
+
+	* config.host (x86_64-*-rtems*): Build crti.o and crtn.o.
+
 2018-04-27  Andreas Tobler  <andreast@gcc.gnu.org>
 	    Maryse Levavasseur <maryse.levavasseur@stormshield.eu>
 

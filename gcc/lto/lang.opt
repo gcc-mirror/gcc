@@ -34,6 +34,9 @@ EnumValue
 Enum(lto_linker_output) String(rel) Value(LTO_LINKER_OUTPUT_REL)
 
 EnumValue
+Enum(lto_linker_output) String(nolto-rel) Value(LTO_LINKER_OUTPUT_NOLTOREL)
+
+EnumValue
 Enum(lto_linker_output) String(dyn) Value(LTO_LINKER_OUTPUT_DYN)
 
 EnumValue

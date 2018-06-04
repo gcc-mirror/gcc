@@ -593,34 +593,22 @@ s-zdefaultcc: Makefile
 	$(SHELL) $(srcdir)/../move-if-change zdefaultcc.go.tmp zdefaultcc.go
 	$(STAMP) $@ 
 
-# _Complex_lock and _Reader_lock are Go translations of some AIX system
-# types and should not be exported back to C
-# semt is a Go translation of the C type sem_t; it fails to convert on
-# some systems and need not be exported back to C.
-# sigset conflicts with system type sigset on AIX, so we need to rename it
+# Post-process runtime.inc.raw (raw output of -fgo-c-header option when
+# compiling runtime) to prune out certain types that should not be
+# exported back to C. See comments in mkruntimeinc.sh for more details.
 runtime.inc: s-runtime-inc; @true
 s-runtime-inc: runtime.lo Makefile
-	rm -f runtime.inc.tmp2 runtime.inc.tmp3
-	grep -v "#define _" runtime.inc.tmp | grep -v "#define [cm][01234] " | grep -v "#define empty " > runtime.inc.tmp2
-	for pattern in '_[GP][a-z]' _Max _Lock _Sig _Trace _MHeap _Num; do \
-	  grep "#define $$pattern" runtime.inc.tmp >> runtime.inc.tmp2; \
-	done
-	for TYPE in _Complex_lock _Reader_lock semt; do \
-	  sed -e '/struct '$${TYPE}' {/,/^}/s/^.*$$//' runtime.inc.tmp2 > runtime.inc.tmp3; \
-	  mv runtime.inc.tmp3 runtime.inc.tmp2; \
-	done
-	sed -e 's/sigset/sigset_go/' runtime.inc.tmp2 > runtime.inc.tmp3
-	$(SHELL) $(srcdir)/mvifdiff.sh runtime.inc.tmp3 runtime.inc
-	rm -f runtime.inc.tmp2 runtime.inc.tmp3
+	$(SHELL) $(srcdir)/mkruntimeinc.sh
+	$(SHELL) $(srcdir)/mvifdiff.sh tmp-runtime.inc runtime.inc
 	$(STAMP) $@
 
-noinst_DATA += zstdpkglist.go zdefaultcc.go
+noinst_DATA += zdefaultcc.go
 
 # Generate the list of go std packages that were included in libgo
 zstdpkglist.go: s-zstdpkglist; @true
 s-zstdpkglist: Makefile
 	rm -f zstdpkglist.go.tmp
-	echo 'package load' > zstdpkglist.go.tmp
+	echo 'package build' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
 	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
 	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's|[a-z0-9_/]*_c\.lo||g' | sed 's|\([a-z0-9_/]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
@@ -714,184 +702,7 @@ else
 syscall_lib_clone_lo =
 endif
 
-PACKAGES = \
-	archive/tar \
-	archive/zip \
-	bufio \
-	bytes \
-	compress/bzip2 \
-	compress/flate \
-	compress/gzip \
-	compress/lzw \
-	compress/zlib \
-	container/heap \
-	container/list \
-	container/ring \
-	context \
-	crypto \
-	crypto/aes \
-	crypto/cipher \
-	crypto/des \
-	crypto/dsa \
-	crypto/ecdsa \
-	crypto/elliptic \
-	crypto/hmac \
-	crypto/internal/cipherhw \
-	crypto/md5 \
-	crypto/rand \
-	crypto/rc4 \
-	crypto/rsa \
-	crypto/sha1 \
-	crypto/sha256 \
-	crypto/sha512 \
-	crypto/subtle \
-	crypto/tls \
-	crypto/x509 \
-	crypto/x509/pkix \
-	database/sql \
-	database/sql/driver \
-	debug/dwarf \
-	debug/elf \
-	debug/gosym \
-	debug/macho \
-	debug/pe \
-	debug/plan9obj \
-	debug/xcoff \
-	encoding \
-	encoding/ascii85 \
-	encoding/asn1 \
-	encoding/base32 \
-	encoding/base64 \
-	encoding/binary \
-	encoding/csv \
-	encoding/gob \
-	encoding/hex \
-	encoding/json \
-	encoding/pem \
-	encoding/xml \
-	errors \
-	expvar \
-	flag \
-	fmt \
-	go/ast \
-	go/build \
-	go/constant \
-	go/doc \
-	go/format \
-	go/importer \
-	go/internal/gccgoimporter \
-	go/internal/gcimporter \
-	go/internal/srcimporter \
-	go/parser \
-	go/printer \
-	go/scanner \
-	go/token \
-	go/types \
-	golang_org/x/crypto/chacha20poly1305 \
-	golang_org/x/crypto/chacha20poly1305/internal/chacha20 \
-	golang_org/x/crypto/cryptobyte \
-	golang_org/x/crypto/cryptobyte/asn1 \
-	golang_org/x/crypto/curve25519 \
-	golang_org/x/crypto/poly1305 \
-	golang_org/x/net/http2/hpack \
-	golang_org/x/net/idna \
-	golang_org/x/net/internal/nettest \
-	golang_org/x/net/lex/httplex \
-	golang_org/x/net/nettest \
-	golang_org/x/net/proxy \
-	golang_org/x/text/secure/bidirule \
-	golang_org/x/text/transform \
-	golang_org/x/text/unicode/bidi \
-	golang_org/x/text/unicode/norm \
-	golang_org/x/text/width \
-	hash \
-	hash/adler32 \
-	hash/crc32 \
-	hash/crc64 \
-	hash/fnv \
-	html \
-	html/template \
-	image \
-	image/color \
-	image/color/palette \
-	image/draw \
-	image/gif \
-	image/internal/imageutil \
-	image/jpeg \
-	image/png \
-	index/suffixarray \
-	internal/nettrace \
-	internal/poll \
-	internal/race \
-	internal/singleflight \
-	internal/syscall/unix \
-	internal/testenv \
-	internal/testlog \
-	internal/trace \
-	io \
-	io/ioutil \
-	log \
-	log/syslog \
-	math \
-	math/big \
-	math/bits \
-	math/cmplx \
-	math/rand \
-	mime \
-	mime/multipart \
-	mime/quotedprintable \
-	net \
-	net/http \
-	net/http/cgi \
-	net/http/cookiejar \
-	net/http/fcgi \
-	net/http/httptest \
-	net/http/httptrace \
-	net/http/httputil \
-	net/http/internal \
-	net/http/pprof \
-	net/internal/socktest \
-	net/mail \
-	net/rpc \
-	net/rpc/jsonrpc \
-	net/smtp \
-	net/textproto \
-	net/url \
-	os \
-	os/exec \
-	os/signal \
-	os/signal/internal/pty \
-	os/user \
-	path \
-	path/filepath \
-	reflect \
-	regexp \
-	regexp/syntax \
-	runtime \
-	runtime/debug \
-	runtime/internal/atomic \
-	runtime/internal/sys \
-	runtime/pprof \
-	runtime/pprof/internal/profile \
-	runtime/trace \
-	sort \
-	strconv \
-	strings \
-	sync \
-	sync/atomic \
-	syscall \
-	testing \
-	testing/internal/testdeps \
-	testing/iotest \
-	testing/quick \
-	text/scanner \
-	text/tabwriter \
-	text/template \
-	text/template/parse \
-	time \
-	unicode \
-	unicode/utf16 \
-	unicode/utf8
+PACKAGES = $(shell cat $(srcdir)/libgo-packages.txt)
 
 libgo_go_objs = \
 	$(addsuffix .lo,$(PACKAGES)) \
@@ -939,37 +750,7 @@ libgolibbegin_a_SOURCES = \
 
 libgolibbegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
 
-GOTOOL_PACKAGES = \
-	cmd/go/internal/base \
-	cmd/go/internal/bug \
-	cmd/go/internal/cache \
-	cmd/go/internal/cfg \
-	cmd/go/internal/clean \
-	cmd/go/internal/cmdflag \
-	cmd/go/internal/doc \
-	cmd/go/internal/envcmd \
-	cmd/go/internal/fix \
-	cmd/go/internal/fmtcmd \
-	cmd/go/internal/generate \
-	cmd/go/internal/get \
-	cmd/go/internal/help \
-	cmd/go/internal/list \
-	cmd/go/internal/load \
-	cmd/go/internal/run \
-	cmd/go/internal/str \
-	cmd/go/internal/test \
-	cmd/go/internal/tool \
-	cmd/go/internal/version \
-	cmd/go/internal/vet \
-	cmd/go/internal/web \
-	cmd/go/internal/work \
-	cmd/internal/browser \
-	cmd/internal/buildid \
-	cmd/internal/edit \
-	cmd/internal/objabi \
-	cmd/internal/test2json \
-	cmd/vet/internal/cfg \
-	cmd/vet/internal/whitelist
+GOTOOL_PACKAGES = $(shell cat $(srcdir)/gotool-packages.txt)
 
 libgotool_a_SOURCES =
 libgotool_a_DEPENDENCIES = $(addsuffix .lo,$(GOTOOL_PACKAGES))
@@ -1156,7 +937,7 @@ extra_go_files_syscall = \
 syscall.lo.dep: $(extra_go_files_syscall)
 
 # Pass -fgo-compiling-runtime when compiling the runtime package.
-runtime_lo_GOCFLAGS = -fgo-c-header=runtime.inc.tmp -fgo-compiling-runtime
+runtime_lo_GOCFLAGS = -fgo-c-header=runtime.inc.raw -fgo-compiling-runtime
 runtime_check_GOCFLAGS = -fgo-compiling-runtime
 runtime_internal_atomic_lo_GOCFLAGS = -fgo-compiling-runtime
 runtime_internal_atomic_lo_check_GOCFLAGS = -fgo-compiling-runtime
@@ -1179,6 +960,9 @@ runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 extra_go_files_runtime_internal_sys = version.go
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
 
+extra_go_files_go_build = zstdpkglist.go
+go/build.lo.dep: $(extra_go_files_go_build)
+
 extra_go_files_go_types = gccgosizes.go
 go/types.lo.dep: $(extra_go_files_go_types)
 
@@ -1187,9 +971,6 @@ cmd/internal/objabi.lo.dep: $(extra_go_files_cmd_internal_objabi)
 
 extra_go_files_cmd_go_internal_cfg = zdefaultcc.go
 cmd/go/internal/cfg.lo.dep: $(extra_go_files_cmd_go_internal_cfg)
-
-extra_go_files_cmd_go_internal_load = zstdpkglist.go
-cmd/go/internal/load.lo.dep: $(extra_go_files_cmd_go_internal_load)
 
 extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
@@ -1281,171 +1062,10 @@ golang_org_x_net_lif_check = \
 
 endif
 
-TEST_PACKAGES = \
-	bufio/check \
-	bytes/check \
-	context/check \
-	crypto/check \
-	errors/check \
-	expvar/check \
-	flag/check \
-	fmt/check \
-	hash/check \
-	html/check \
-	image/check \
-	io/check \
-	log/check \
-	math/check \
-	mime/check \
-	net/check \
-	os/check \
-	path/check \
-	reflect/check \
-	regexp/check \
-	runtime/check \
-	sort/check \
-	strconv/check \
-	strings/check \
-	sync/check \
-	syscall/check \
-	time/check \
-	unicode/check \
-	archive/tar/check \
-	archive/zip/check \
-	cmd/go/internal/cache/check \
-	cmd/go/internal/generate/check \
-	cmd/go/internal/get/check \
-	cmd/go/internal/load/check \
-	cmd/go/internal/work/check \
-	cmd/internal/buildid/check \
-	cmd/internal/edit/check \
-	cmd/internal/objabi/check \
-	cmd/internal/test2json/check \
-	cmd/vet/internal/cfg/check \
-	compress/bzip2/check \
-	compress/flate/check \
-	compress/gzip/check \
-	compress/lzw/check \
-	compress/zlib/check \
-	container/heap/check \
-	container/list/check \
-	container/ring/check \
-	crypto/aes/check \
-	crypto/cipher/check \
-	crypto/des/check \
-	crypto/dsa/check \
-	crypto/ecdsa/check \
-	crypto/elliptic/check \
-	crypto/hmac/check \
-	crypto/md5/check \
-	crypto/rand/check \
-	crypto/rc4/check \
-	crypto/rsa/check \
-	crypto/sha1/check \
-	crypto/sha256/check \
-	crypto/sha512/check \
-	crypto/subtle/check \
-	crypto/tls/check \
-	crypto/x509/check \
-	database/sql/check \
-	database/sql/driver/check \
-	debug/dwarf/check \
-	debug/elf/check \
-	debug/macho/check \
-	debug/pe/check \
-	debug/plan9obj/check \
-	debug/xcoff/check \
-	encoding/ascii85/check \
-	encoding/asn1/check \
-	encoding/base32/check \
-	encoding/base64/check \
-	encoding/binary/check \
-	encoding/csv/check \
-	encoding/gob/check \
-	encoding/hex/check \
-	encoding/json/check \
-	encoding/pem/check \
-	encoding/xml/check \
-	html/template/check \
-	go/ast/check \
-	go/build/check \
-	go/constant/check \
-	go/doc/check \
-	go/format/check \
-	go/importer/check \
-	go/internal/gcimporter/check \
-	go/internal/gccgoimporter/check \
-	go/internal/srcimporter/check \
-	go/parser/check \
-	go/printer/check \
-	go/scanner/check \
-	go/token/check \
-	go/types/check \
-	golang_org/x/crypto/chacha20poly1305/check \
-	golang_org/x/crypto/chacha20poly1305/internal/chacha20/check \
-	golang_org/x/crypto/cryptobyte/check \
-	golang_org/x/crypto/curve25519/check \
-	golang_org/x/crypto/poly1305/check \
-	golang_org/x/net/http2/hpack/check \
-	golang_org/x/net/idna/check \
-	golang_org/x/net/lex/httplex/check \
+TPACKAGES = $(shell cat $(srcdir)/check-packages.txt)
+TEST_PACKAGES = $(addsuffix /check,$(TPACKAGES)) \
 	$(golang_org_x_net_lif_check) \
-	golang_org/x/net/proxy/check \
-	$(golang_org_x_net_route_check) \
-	hash/adler32/check \
-	hash/crc32/check \
-	hash/crc64/check \
-	hash/fnv/check \
-	image/color/check \
-	image/draw/check \
-	image/jpeg/check \
-	image/png/check \
-	index/suffixarray/check \
-	internal/poll/check \
-	internal/singleflight/check \
-	internal/trace/check \
-	io/ioutil/check \
-	log/syslog/check \
-	math/big/check \
-	math/bits/check \
-	math/cmplx/check \
-	math/rand/check \
-	mime/multipart/check \
-	mime/quotedprintable/check \
-	net/http/check \
-	net/http/cgi/check \
-	net/http/cookiejar/check \
-	net/http/fcgi/check \
-	net/http/httptest/check \
-	net/http/httptrace/check \
-	net/http/httputil/check \
-	net/http/internal/check \
-	net/internal/socktest/check \
-	net/mail/check \
-	net/rpc/check \
-	net/smtp/check \
-	net/textproto/check \
-	net/url/check \
-	net/rpc/jsonrpc/check \
-	os/exec/check \
-	os/signal/check \
-	os/user/check \
-	path/filepath/check \
-	regexp/syntax/check \
-	runtime/debug/check \
-	runtime/internal/atomic/check \
-	runtime/internal/sys/check \
-	runtime/pprof/check \
-	runtime/pprof/internal/profile/check \
-	runtime/trace/check \
-	sync/atomic/check \
-	text/scanner/check \
-	text/tabwriter/check \
-	text/template/check \
-	text/template/parse/check \
-	testing/quick/check \
-	unicode/utf16/check \
-	unicode/utf8/check
+	$(golang_org_x_net_route_check)
 
 check: check-tail
 check-recursive: check-head

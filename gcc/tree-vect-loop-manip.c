@@ -1560,7 +1560,7 @@ static tree
 get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
 {
   struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-  gimple *dr_stmt = DR_STMT (dr);
+  gimple *dr_stmt = vect_dr_stmt (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
@@ -1631,7 +1631,7 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
   tree niters_type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
   gimple_seq stmts = NULL, new_stmts = NULL;
   tree iters, iters_name;
-  gimple *dr_stmt = DR_STMT (dr);
+  gimple *dr_stmt = vect_dr_stmt (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   unsigned int target_align = DR_TARGET_ALIGNMENT (dr);

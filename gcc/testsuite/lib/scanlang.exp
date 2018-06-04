@@ -36,8 +36,10 @@ proc scan-lang-dump { args } {
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump "lang" [lindex $args 0] "\[0-9\]\[0-9\]\[0-9\]l.[lindex $args 1]" [lindex $args 2]
+	scan-dump "lang" [lindex $args 0] \
+		  "\[0-9\]\[0-9\]\[0-9\]l.[lindex $args 1]" "" [lindex $args 2]
     } else {
-	scan-dump "lang" [lindex $args 0] "\[0-9\]\[0-9\]\[0-9\]l.[lindex $args 1]"
+	scan-dump "lang" [lindex $args 0] \
+		  "\[0-9\]\[0-9\]\[0-9\]l.[lindex $args 1]" ""
     }
 }

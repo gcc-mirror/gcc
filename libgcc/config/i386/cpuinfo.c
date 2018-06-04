@@ -83,17 +83,20 @@ get_amd_cpu (unsigned int family, unsigned int model)
     /* AMD Family 15h "Bulldozer".  */
     case 0x15:
       __cpu_model.__cpu_type = AMDFAM15H;
+
+      if (model == 0x2)
+	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER2;      
       /* Bulldozer version 1.  */
-      if ( model <= 0xf)
+      else if (model <= 0xf)
 	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER1;
       /* Bulldozer version 2 "Piledriver" */
-      if (model >= 0x10 && model <= 0x2f)
+      else if (model <= 0x2f)
 	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER2;      
       /* Bulldozer version 3 "Steamroller"  */
-      if (model >= 0x30 && model <= 0x4f)
+      else if (model <= 0x4f)
 	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER3;
       /* Bulldozer version 4 "Excavator"   */
-      if (model >= 0x60 && model <= 0x7f)
+      else if (model <= 0x7f)
 	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER4;
       break;
     /* AMD Family 16h "btver2" */
@@ -139,6 +142,15 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	    case 0x5d:
 	      /* Silvermont.  */
 	      __cpu_model.__cpu_type = INTEL_SILVERMONT;
+	      break;
+	    case 0x5c:
+	    case 0x5f:
+	      /* Goldmont.  */
+	      __cpu_model.__cpu_type = INTEL_GOLDMONT;
+	      break;
+	    case 0x7a:
+	      /* Goldmont Plus.  */
+	      __cpu_model.__cpu_type = INTEL_GOLDMONT_PLUS;
 	      break;
 	    case 0x57:
 	      /* Knights Landing.  */

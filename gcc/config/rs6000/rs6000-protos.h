@@ -57,16 +57,12 @@ extern bool rs6000_move_128bit_ok_p (rtx []);
 extern bool rs6000_split_128bit_ok_p (rtx []);
 extern void rs6000_expand_float128_convert (rtx, rtx, bool);
 extern void rs6000_expand_vector_init (rtx, rtx);
-extern void paired_expand_vector_init (rtx, rtx);
 extern void rs6000_expand_vector_set (rtx, rtx, int);
 extern void rs6000_expand_vector_extract (rtx, rtx, rtx);
 extern void rs6000_split_vec_extract_var (rtx, rtx, rtx, rtx, rtx);
 extern rtx rs6000_adjust_vec_address (rtx, rtx, rtx, rtx, machine_mode);
 extern void rs6000_split_v4si_init (rtx []);
 extern void altivec_expand_vec_perm_le (rtx op[4]);
-extern void altivec_expand_lvx_be (rtx, rtx, machine_mode, unsigned);
-extern void altivec_expand_stvx_be (rtx, rtx, machine_mode, unsigned);
-extern void altivec_expand_stvex_be (rtx, rtx, machine_mode, unsigned);
 extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void rs6000_scale_v2df (rtx, rtx, int);
@@ -110,9 +106,6 @@ extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
 							    rtx);
 extern void rs6000_secondary_reload_inner (rtx, rtx, rtx, bool);
 extern void rs6000_secondary_reload_gpr (rtx, rtx, rtx, bool);
-extern int paired_emit_vector_cond_expr (rtx, rtx, rtx,
-                                         rtx, rtx, rtx);
-extern void paired_expand_vector_move (rtx operands[]);
 
 
 extern int ccr_bit (rtx, int);

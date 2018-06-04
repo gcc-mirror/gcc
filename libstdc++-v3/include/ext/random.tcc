@@ -85,13 +85,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   uint32_t __parity1, uint32_t __parity2,
 	   uint32_t __parity3, uint32_t __parity4>
     template<typename _Sseq>
-      typename std::enable_if<std::is_class<_Sseq>::value>::type
+      auto
       simd_fast_mersenne_twister_engine<_UIntType, __m,
 					__pos1, __sl1, __sl2, __sr1, __sr2,
 					__msk1, __msk2, __msk3, __msk4,
 					__parity1, __parity2, __parity3,
 					__parity4>::
       seed(_Sseq& __q)
+      -> _If_seed_seq<_Sseq>
       {
 	size_t __lag;
 

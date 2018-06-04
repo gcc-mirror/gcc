@@ -1,4 +1,4 @@
-/* { dg-options "-mxl-gp-opt" } */
+/* { dg-options "-mxl-gp-opt -fno-pic" } */
 
 extern int a;
 

@@ -463,7 +463,7 @@ func_checker::compare_operand (tree t1, tree t2)
 	  return return_false_with_msg ("");
 
 	/* Type of the offset on MEM_REF does not matter.  */
-	return wi::to_offset  (y1) == wi::to_offset  (y2);
+	return known_eq (wi::to_poly_offset (y1), wi::to_poly_offset (y2));
       }
     case COMPONENT_REF:
       {

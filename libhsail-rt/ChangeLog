@@ -1,3 +1,14 @@
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* include/internal/phsa-rt.h: Whitespace cleanup.
+	* include/internal/workitems.h: Store work item ID data to easily
+	accessible locations.
+	* rt/workitems.c: Same.
+
+2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* rt/workitems.c: Fix an alloca stack underflow.
+
 2018-04-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/85384

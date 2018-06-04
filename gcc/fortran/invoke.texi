@@ -481,10 +481,9 @@ conformance to the Fortran 95, Fortran 2003, Fortran 2008 and Fortran
 2018 standards, respectively; errors are given for all extensions
 beyond the relevant language standard, and warnings are given for the
 Fortran 77 features that are permitted but obsolescent in later
-standards. @samp{-std=f2008ts} allows the Fortran 2008 standard
-including the additions of the Technical Specification (TS) 29113 on
-Further Interoperability of Fortran with C and TS 18508 on Additional
-Parallel Features in Fortran.
+standards. The deprecated option @samp{-std=f2008ts} acts as an alias for
+@samp{-std=f2018}. It is only present for backwards compatibility with
+earlier gfortran versions and should not be used any more.
 
 @item -ftest-forall-temp
 @opindex @code{ftest-forall-temp}
@@ -994,7 +993,7 @@ of the Fortran Character Set.  For continuation lines, a tab followed
 by a digit between 1 and 9 is supported.  @option{-Wtabs} will cause a
 warning to be issued if a tab is encountered. Note, @option{-Wtabs} is
 active for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003},
-@option{-std=f2008}, @option{-std=f2008ts}, @option{-std=f2018} and
+@option{-std=f2008}, @option{-std=f2018} and
 @option{-Wall}.
 
 @item -Wundefined-do-loop

@@ -176,7 +176,7 @@ func GetImporter(searchpaths []string, initmap map[*types.Package]InitData) Impo
 				return p, nil
 			}
 			rc, err := lookup(pkgpath)
-			if err == nil {
+			if err == nil && rc != nil {
 				defer rc.Close()
 				rs, ok := rc.(io.ReadSeeker)
 				if !ok {

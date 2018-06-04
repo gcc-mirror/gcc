@@ -554,9 +554,10 @@ package body Sem_SPARK is
 
       Super_Move,
       --  Enhanced moving semantics (under 'Access). Checks that paths have
-      --  Read_Write permission. After moving a path, its permission is set
-      --  to No_Access, as well as the permission of its extensions and the
-      --  permission of its prefixes up to the first Reference node.
+      --  Read_Write permission (shallow types may have only Write permission).
+      --  After moving a path, its permission is set to No_Access, as well as
+      --  the permission of its extensions and the permission of its prefixes
+      --  up to the first Reference node.
 
       Borrow_Out,
       --  Used for actual OUT parameters. Checks that paths have Write_Perm
@@ -750,9 +751,10 @@ package body Sem_SPARK is
    --  execution.
 
    procedure Return_Parameter_Or_Global
-     (Id   : Entity_Id;
-      Mode : Formal_Kind;
-      Subp : Entity_Id);
+     (Id         : Entity_Id;
+      Mode       : Formal_Kind;
+      Subp       : Entity_Id;
+      Global_Var : Boolean);
    --  Auxiliary procedure to Return_Parameters and Return_Globals
 
    procedure Return_Parameters (Subp : Entity_Id);
@@ -813,8 +815,9 @@ package body Sem_SPARK is
    --  global items with appropriate permissions.
 
    procedure Setup_Parameter_Or_Global
-     (Id   : Entity_Id;
-      Mode : Formal_Kind);
+     (Id         : Entity_Id;
+      Mode       : Formal_Kind;
+      Global_Var : Boolean);
    --  Auxiliary procedure to Setup_Parameters and Setup_Globals
 
    procedure Setup_Parameters (Subp : Entity_Id);
@@ -1039,33 +1042,45 @@ package body Sem_SPARK is
    begin
       case N_Declaration'(Nkind (Decl)) is
          when N_Full_Type_Declaration =>
+
             --  Nothing to do here ??? NOT TRUE IF CONSTRAINT ON TYPE
+
             null;
 
          when N_Object_Declaration =>
+
             --  First move the right-hand side
+
             Current_Checking_Mode := Move;
             Check_Node (Expression (Decl));
 
             declare
+               Deep : constant Boolean :=
+                        Is_Deep (Etype (Defining_Identifier (Decl)));
                Elem : Perm_Tree_Access;
 
             begin
                Elem := new Perm_Tree_Wrapper'
                  (Tree =>
                     (Kind                => Entire_Object,
-                     Is_Node_Deep        =>
-                       Is_Deep (Etype (Defining_Identifier (Decl))),
+                     Is_Node_Deep        => Deep,
                      Permission          => Read_Write,
                      Children_Permission => Read_Write));
 
                --  If unitialized declaration, then set to Write_Only. If a
                --  pointer declaration, it has a null default initialization.
-               if Nkind (Expression (Decl)) = N_Empty
+
+               if No (Expression (Decl))
                  and then not Has_Full_Default_Initialization
-                   (Etype (Defining_Identifier (Decl)))
+                                (Etype (Defining_Identifier (Decl)))
                  and then not Is_Access_Type
-                   (Etype (Defining_Identifier (Decl)))
+                                (Etype (Defining_Identifier (Decl)))
+
+                 --  Objects of shallow types are considered as always
+                 --  initialized, leaving the checking of initialization to
+                 --  flow analysis.
+
+                 and then Deep
                then
                   Elem.all.Tree.Permission := Write_Only;
                   Elem.all.Tree.Children_Permission := Write_Only;
@@ -1077,9 +1092,7 @@ package body Sem_SPARK is
                     Unique_Entity (Defining_Identifier (Decl)),
                     Elem);
 
-               pragma Assert (Get_First (Current_Perm_Env)
-                              /= null);
-
+               pragma Assert (Get_First (Current_Perm_Env) /= null);
             end;
 
          when N_Subtype_Declaration =>
@@ -1209,6 +1222,9 @@ package body Sem_SPARK is
                   Check_Node (Prefix (Expr));
 
                when Name_Image =>
+                  Check_List (Expressions (Expr));
+
+               when Name_Img =>
                   Check_Node (Prefix (Expr));
 
                when Name_SPARK_Mode =>
@@ -1375,12 +1391,6 @@ package body Sem_SPARK is
                Copy_Env (Saved_Env, Current_Perm_Env);
                Free_Env (Saved_Env);
             end;
-
-         when N_Reduction_Expression =>
-            null;
-
-         when N_Reduction_Expression_Parameter =>
-            null;
 
          --  Analyze the list of associations in the aggregate
 
@@ -3534,10 +3544,10 @@ package body Sem_SPARK is
          when N_Identifier
             | N_Expanded_Name
          =>
-            return Has_Alias_Deep (Etype (N));
+            return Is_Aliased (Entity (N)) or else Has_Alias_Deep (Etype (N));
 
          when N_Defining_Identifier =>
-            return Has_Alias_Deep (Etype (N));
+            return Is_Aliased (N) or else Has_Alias_Deep (Etype (N));
 
          when N_Type_Conversion
             | N_Unchecked_Type_Conversion
@@ -4236,6 +4246,7 @@ package body Sem_SPARK is
 
    procedure Process_Path (N : Node_Id) is
       Root : constant Entity_Id := Get_Enclosing_Object (N);
+
    begin
       --  We ignore if yielding to synchronized
 
@@ -4248,7 +4259,8 @@ package body Sem_SPARK is
       --  We ignore shallow unaliased. They are checked in flow analysis,
       --  allowing backward compatibility.
 
-      if not Has_Alias (N)
+      if Current_Checking_Mode /= Super_Move
+        and then not Has_Alias (N)
         and then Is_Shallow (Etype (N))
       then
          return;
@@ -4265,6 +4277,7 @@ package body Sem_SPARK is
             when Read =>
                if Perm_N not in Read_Perm then
                   Perm_Error (N, Read_Only, Perm_N);
+                  return;
                end if;
 
             --  If shallow type no need for RW, only R
@@ -4273,12 +4286,14 @@ package body Sem_SPARK is
                if Is_Shallow (Etype (N)) then
                   if Perm_N not in Read_Perm then
                      Perm_Error (N, Read_Only, Perm_N);
+                     return;
                   end if;
                else
                   --  Check permission RW if deep
 
                   if Perm_N /= Read_Write then
                      Perm_Error (N, Read_Write, Perm_N);
+                     return;
                   end if;
 
                   declare
@@ -4309,6 +4324,7 @@ package body Sem_SPARK is
             when Super_Move =>
                if Perm_N /= Read_Write then
                   Perm_Error (N, Read_Write, Perm_N);
+                  return;
                end if;
 
                declare
@@ -4336,6 +4352,7 @@ package body Sem_SPARK is
             when Assign =>
                if Perm_N not in Write_Perm then
                   Perm_Error (N, Write_Only, Perm_N);
+                  return;
                end if;
 
                --  If the tree has an array component, then the permissions do
@@ -4347,7 +4364,7 @@ package body Sem_SPARK is
 
                --  Same if has function component
 
-               if Has_Function_Component (N) then
+               if Has_Function_Component (N) then  --  Dead code?
                   return;
                end if;
 
@@ -4540,7 +4557,7 @@ package body Sem_SPARK is
             if Ekind (E) = E_Abstract_State then
                null;
             else
-               Return_Parameter_Or_Global (E, Kind, Subp);
+               Return_Parameter_Or_Global (E, Kind, Subp, Global_Var => True);
             end if;
             Next_Global (Item);
          end loop;
@@ -4586,9 +4603,10 @@ package body Sem_SPARK is
    --------------------------------
 
    procedure Return_Parameter_Or_Global
-     (Id   : Entity_Id;
-      Mode : Formal_Kind;
-      Subp : Entity_Id)
+     (Id         : Entity_Id;
+      Mode       : Formal_Kind;
+      Subp       : Entity_Id;
+      Global_Var : Boolean)
    is
       Elem : constant Perm_Tree_Access := Get (Current_Perm_Env, Id);
       pragma Assert (Elem /= null);
@@ -4603,7 +4621,9 @@ package body Sem_SPARK is
       --  Observed IN parameters and globals need not return a permission to
       --  the caller.
 
-      elsif Mode = E_In_Parameter and then not Is_Borrowed_In (Id) then
+      elsif Mode = E_In_Parameter
+        and then (not Is_Borrowed_In (Id) or else Global_Var)
+      then
          null;
 
       --  All other parameters and globals should return with mode RW to the
@@ -4630,7 +4650,7 @@ package body Sem_SPARK is
    begin
       Formal := First_Formal (Subp);
       while Present (Formal) loop
-         Return_Parameter_Or_Global (Formal, Ekind (Formal), Subp);
+         Return_Parameter_Or_Global (Formal, Ekind (Formal), Subp, False);
          Next_Formal (Formal);
       end loop;
    end Return_Parameters;
@@ -4867,10 +4887,7 @@ package body Sem_SPARK is
    -- Set_Perm_Prefixes_Assign --
    ------------------------------
 
-   function Set_Perm_Prefixes_Assign
-     (N : Node_Id)
-       return Perm_Tree_Access
-   is
+   function Set_Perm_Prefixes_Assign (N : Node_Id) return Perm_Tree_Access is
       C : constant Perm_Tree_Access := Get_Perm_Tree (N);
 
    begin
@@ -4883,6 +4900,9 @@ package body Sem_SPARK is
       case Kind (C) is
          when Entire_Object =>
             pragma Assert (Children_Permission (C) = Read_Write);
+
+            --  Maroua: Children could have read_only perm. Why Read_Write?
+
             C.all.Tree.Permission := Read_Write;
 
          when Reference =>
@@ -4902,13 +4922,13 @@ package body Sem_SPARK is
 
          when Record_Component =>
             declare
-               Perm : Perm_Kind := Read_Write;
-
                Comp : Perm_Tree_Access;
+               Perm : Perm_Kind := Read_Write;
 
             begin
                --  We take the Glb of all the descendants, and then update the
                --  permission of the node with it.
+
                Comp := Perm_Tree_Maps.Get_First (Component (C));
                while Comp /= null loop
                   Perm := Glb (Perm, Permission (Comp));
@@ -4922,6 +4942,7 @@ package body Sem_SPARK is
       end case;
 
       case Nkind (N) is
+
          --  Base identifier. End recursion here.
 
          when N_Identifier
@@ -6087,7 +6108,7 @@ package body Sem_SPARK is
             if Ekind (E) = E_Abstract_State then
                null;
             else
-               Setup_Parameter_Or_Global (E, Kind);
+               Setup_Parameter_Or_Global (E, Kind, Global_Var => True);
             end if;
             Next_Global (Item);
          end loop;
@@ -6133,8 +6154,9 @@ package body Sem_SPARK is
    -------------------------------
 
    procedure Setup_Parameter_Or_Global
-     (Id   : Entity_Id;
-      Mode : Formal_Kind)
+     (Id         : Entity_Id;
+      Mode       : Formal_Kind;
+      Global_Var : Boolean)
    is
       Elem : Perm_Tree_Access;
 
@@ -6151,7 +6173,7 @@ package body Sem_SPARK is
 
             --  Borrowed IN: RW for everybody
 
-            if Is_Borrowed_In (Id) then
+            if Is_Borrowed_In (Id) and not Global_Var then
                Elem.all.Tree.Permission := Read_Write;
                Elem.all.Tree.Children_Permission := Read_Write;
 
@@ -6188,7 +6210,8 @@ package body Sem_SPARK is
    begin
       Formal := First_Formal (Subp);
       while Present (Formal) loop
-         Setup_Parameter_Or_Global (Formal, Ekind (Formal));
+         Setup_Parameter_Or_Global
+           (Formal, Ekind (Formal), Global_Var => False);
          Next_Formal (Formal);
       end loop;
    end Setup_Parameters;

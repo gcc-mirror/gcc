@@ -23,4 +23,25 @@
 
 typedef std::multimap<int, int> mmtype;
 
-static_assert(std::is_nothrow_move_constructible<mmtype>::value, "Error");
+static_assert( std::is_nothrow_move_constructible<mmtype>::value,
+	       "noexcept move constructor" );
+static_assert( std::is_nothrow_constructible<mmtype,
+	       mmtype&&, const typename mmtype::allocator_type&>::value,
+	       "noexcept move constructor with allocator" );
+
+struct not_noexcept_less
+{
+  not_noexcept_less() = default;
+  not_noexcept_less(const not_noexcept_less&) /* noexcept */
+  { }
+
+  bool
+  operator()(int l, int r) const
+  { return l < r; }
+};
+
+typedef std::multimap<int, int, not_noexcept_less> emmtype;
+
+static_assert( !std::is_nothrow_constructible<emmtype, emmtype&&,
+	       const typename emmtype::allocator_type&>::value,
+	       "except move constructor with allocator" );

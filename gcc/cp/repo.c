@@ -330,8 +330,7 @@ repo_emit_p (tree decl)
   /* For constructors and destructors, the repository contains
      information about the clones -- not the original function --
      because only the clones are emitted in the object file.  */
-  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
-      || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
+  if (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
     {
       int emit_p = 0;
       tree clone;

@@ -218,11 +218,13 @@ CHECK_ENV = \
 	export LD_LIBRARY_PATH; \
 	GOROOT=$${abs_libgodir}; \
 	export GOROOT; \
+	GOCACHE=$(abs_builddir)/gocache-test; \
+	export GOCACHE; \
 	fl1="FA"; fl2="IL"; fl="$${fl1}$${fl2}";
 
 # ECHO_ENV is a variant of CHECK_ENV to put into a testlog file.
 # It assumes that abs_libgodir is set.
-ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' CC='$(abs_builddir)/check-gcc' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GOROOT=`echo $${abs_libgodir}`
+ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' CC='$(abs_builddir)/check-gcc' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GOROOT=`echo $${abs_libgodir} GOCACHE='$(abs_builddir)/gocache-test'`
 
 # check-go-tool runs `go test cmd/go` in our environment.
 check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
@@ -230,7 +232,6 @@ check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	$(MKDIR_P) check-go-dir/src/cmd/go
 	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
 	cp -r $(cmdsrcdir)/go/internal check-go-dir/src/cmd/go/
-	cp $(libgodir)/zstdpkglist.go check-go-dir/src/cmd/go/internal/load/
 	cp $(libgodir)/zdefaultcc.go check-go-dir/src/cmd/go/internal/cfg/
 	cp -r $(cmdsrcdir)/go/testdata check-go-dir/src/cmd/go/
 	cp -r $(cmdsrcdir)/internal check-go-dir/src/cmd/

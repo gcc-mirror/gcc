@@ -282,6 +282,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
   /* True if this entity is to be considered as imported.  */
   const bool imported_p
     = (Is_Imported (gnat_entity) && No (Address_Clause (gnat_entity)));
+  /* True if this entity has a foreign convention.  */
+  const bool foreign = Has_Foreign_Convention (gnat_entity);
   /* For a type, contains the equivalent GNAT node to be used in gigi.  */
   Entity_Id gnat_equiv_type = Empty;
   /* Temporary used to walk the GNAT tree.  */
@@ -599,16 +601,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 was defined to represent.  This is necessary to avoid generating dumb
 	 elaboration code in simple cases, but we may throw it away later if it
 	 is not a constant.  But do not retrieve it if it is an allocator since
-	 the designated type might still be dummy at this point.  */
+	 the designated type might still be dummy at this point.  Note that we
+	 invoke gnat_to_gnu_external and not gnat_to_gnu because the expression
+	 may contain N_Expression_With_Actions nodes and thus declarations of
+	 objects from other units that we need to discard.  */
       if (!definition
 	  && !No_Initialization (Declaration_Node (gnat_entity))
-	  && Present (Expression (Declaration_Node (gnat_entity)))
-	  && Nkind (Expression (Declaration_Node (gnat_entity)))
-	     != N_Allocator)
-	  /* The expression may contain N_Expression_With_Actions nodes and
-	     thus object declarations from other units.  Discard them.  */
-	gnu_expr
-	  = gnat_to_gnu_external (Expression (Declaration_Node (gnat_entity)));
+	  && Present (gnat_temp = Expression (Declaration_Node (gnat_entity)))
+	  && Nkind (gnat_temp) != N_Allocator
+	  && (!type_annotate_only || Compile_Time_Known_Value (gnat_temp)))
+	gnu_expr = gnat_to_gnu_external (gnat_temp);
 
       /* ... fall through ... */
 
@@ -658,8 +660,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* Get the type after elaborating the renamed object.  */
-	if (Has_Foreign_Convention (gnat_entity)
-	    && Is_Descendant_Of_Address (Underlying_Type (gnat_type)))
+	if (foreign && Is_Descendant_Of_Address (Underlying_Type (gnat_type)))
 	  gnu_type = ptr_type_node;
 	else
 	  {
@@ -1594,6 +1595,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  tree gnu_list = NULL_TREE;
 	  Entity_Id gnat_literal;
 
+	  /* Boolean types with foreign convention have precision 1.  */
+	  if (is_boolean && foreign)
+	    esize = 1;
+
 	  gnu_type = make_node (is_boolean ? BOOLEAN_TYPE : ENUMERAL_TYPE);
 	  TYPE_PRECISION (gnu_type) = esize;
 	  TYPE_UNSIGNED (gnu_type) = is_unsigned;
@@ -1774,6 +1779,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	esize = UI_To_Int (RM_Size (gnat_entity));
 
+      /* Boolean types with foreign convention have precision 1.  */
+      if (Is_Boolean_Type (gnat_entity) && foreign)
+	{
+	  gnu_type = make_node (BOOLEAN_TYPE);
+	  TYPE_PRECISION (gnu_type) = 1;
+	  TYPE_UNSIGNED (gnu_type) = 1;
+	  set_min_and_max_values_for_integral_type (gnu_type, 1, UNSIGNED);
+	  layout_type (gnu_type);
+	}
       /* First subtypes of Character are treated as Character; otherwise
 	 this should be an unsigned type if the base type is unsigned or
 	 if the lower bound is constant and non-negative or if the type
@@ -1783,7 +1797,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 conversions to it and gives more leeway to the optimizer; but
 	 this means that we will need to explicitly test for this case
 	 when we change the representation based on the RM size.  */
-      if (kind == E_Enumeration_Subtype
+      else if (kind == E_Enumeration_Subtype
 	  && No (First_Literal (Etype (gnat_entity)))
 	  && Esize (gnat_entity) == RM_Size (gnat_entity)
 	  && esize == CHAR_TYPE_SIZE
@@ -1808,8 +1822,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					 gnat_entity, "U", definition, true,
 					 debug_info_p));
 
-      TYPE_BIASED_REPRESENTATION_P (gnu_type)
-	= Has_Biased_Representation (gnat_entity);
+      if (TREE_CODE (gnu_type) == INTEGER_TYPE)
+	TYPE_BIASED_REPRESENTATION_P (gnu_type)
+	  = Has_Biased_Representation (gnat_entity);
 
       /* Do the same processing for Character subtypes as for types.  */
       if (TYPE_STRING_FLAG (TREE_TYPE (gnu_type)))
@@ -1872,10 +1887,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  SET_TYPE_RM_SIZE (gnu_type,
 			    UI_To_gnu (RM_Size (gnat_entity), bitsizetype));
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type) = 1;
-
-	  /* Strip the ___XP suffix for standard DWARF.  */
-	  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-	    gnu_entity_name = TYPE_NAME (gnu_type);
 
 	  /* Create a stripped-down declaration, mainly for debugging.  */
 	  create_type_decl (gnu_entity_name, gnu_type, true, debug_info_p,
@@ -2623,17 +2634,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		set_nonaliased_component_on_array_type (gnu_type);
 	    }
 
-	  /* Strip the ___XP suffix for standard DWARF.  */
-	  if (Is_Packed_Array_Impl_Type (gnat_entity)
-	      && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-	    {
-	      Entity_Id gnat_original_array_type
-		= Underlying_Type (Original_Array_Type (gnat_entity));
-
-	      gnu_entity_name
-		= get_entity_name (gnat_original_array_type);
-	    }
-
 	  /* Attach the TYPE_STUB_DECL in case we have a parallel type.  */
 	  TYPE_STUB_DECL (gnu_type)
 	    = create_type_stub_decl (gnu_entity_name, gnu_type);
@@ -2759,13 +2759,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     array subtypes the same alias set.  */
 	  relate_alias_sets (gnu_type, gnu_base_type, ALIAS_SET_COPY);
 
-	  /* If this is a packed type, make this type the same as the packed
-	     array type, but do some adjusting in the type first.  */
+	  /* If this is a packed type implemented specially, then replace our
+	     type with the implementation type.  */
 	  if (Present (Packed_Array_Impl_Type (gnat_entity)))
 	    {
-	      Entity_Id gnat_index;
-	      tree gnu_inner;
-
 	      /* First finish the type we had been making so that we output
 		 debugging information for it.  */
 	      process_attributes (&gnu_type, &attr_list, false, gnat_entity);
@@ -2780,26 +2777,24 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 That's sort of "morally" true and will make it possible for
 		 the debugger to look it up by name in DWARF, which is needed
 		 in order to decode the packed array type.  */
-	      gnu_decl
+	      tree gnu_tmp_decl
 		= create_type_decl (gnu_entity_name, gnu_type,
 				    !Comes_From_Source (Etype (gnat_entity))
 				    && artificial_p, debug_info_p,
 				    gnat_entity);
-
 	      /* Save it as our equivalent in case the call below elaborates
 		 this type again.  */
-	      save_gnu_tree (gnat_entity, gnu_decl, false);
+	      save_gnu_tree (gnat_entity, gnu_tmp_decl, false);
 
-	      gnu_decl
-		= gnat_to_gnu_entity (Packed_Array_Impl_Type (gnat_entity),
-				      NULL_TREE, false);
-	      this_made_decl = true;
-	      gnu_type = TREE_TYPE (gnu_decl);
+	      gnu_type
+		= gnat_to_gnu_type (Packed_Array_Impl_Type (gnat_entity));
 	      save_gnu_tree (gnat_entity, NULL_TREE, false);
-	      save_gnu_tree (gnat_entity, gnu_decl, false);
-	      saved = true;
 
-	      gnu_inner = gnu_type;
+	      /* Set the ___XP suffix for GNAT encodings.  */
+	      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+		gnu_entity_name = DECL_NAME (TYPE_NAME (gnu_type));
+
+	      tree gnu_inner = gnu_type;
 	      while (TREE_CODE (gnu_inner) == RECORD_TYPE
 		     && (TYPE_JUSTIFIED_MODULAR_P (gnu_inner)
 			 || TYPE_PADDING_P (gnu_inner)))
@@ -2836,7 +2831,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		      gcc_checking_assert (!TYPE_ACTUAL_BOUNDS (gnu_inner));
 		    }
 
-		  for (gnat_index = First_Index (gnat_entity);
+		  for (Entity_Id gnat_index = First_Index (gnat_entity);
 		       Present (gnat_index);
 		       gnat_index = Next_Index (gnat_index))
 		    SET_TYPE_ACTUAL_BOUNDS
@@ -3299,6 +3294,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				  debug_info_p, false,
 				  all_rep ? NULL_TREE : bitsize_zero_node,
 				  NULL);
+
+	    /* Empty classes have the size of a storage unit in C++.  */
+	    if (TYPE_SIZE (gnu_type) == bitsize_zero_node
+		&& Convention (gnat_entity) == Convention_CPP)
+	      {
+		TYPE_SIZE (gnu_type) = bitsize_unit_node;
+		TYPE_SIZE_UNIT (gnu_type) = size_one_node;
+		compute_record_mode (gnu_type);
+	      }
 
 	    /* If there are entities in the chain corresponding to components
 	       that we did not elaborate, ensure we elaborate their types if
@@ -3966,8 +3970,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* If we should request stack realignment for a foreign convention
 	   subprogram, do so.  Note that this applies to task entry points
 	   in particular.  */
-	if (FOREIGN_FORCE_REALIGN_STACK
-	    && Has_Foreign_Convention (gnat_entity))
+	if (FOREIGN_FORCE_REALIGN_STACK && foreign)
 	  prepend_one_attribute
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("force_align_arg_pointer"), NULL_TREE,
@@ -5028,23 +5031,19 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 		     Is_Bit_Packed_Array (gnat_array) ? TYPE_DECL : VAR_DECL,
 		     true, Has_Component_Size_Clause (gnat_array));
 
-  /* If the array has aliased components and the component size can be zero,
-     force at least unit size to ensure that the components have distinct
-     addresses.  */
-  if (!gnu_comp_size
-      && Has_Aliased_Components (gnat_array)
-      && (integer_zerop (TYPE_SIZE (gnu_type))
-	  || (TREE_CODE (gnu_type) == ARRAY_TYPE
-	      && !TREE_CONSTANT (TYPE_SIZE (gnu_type)))))
-    gnu_comp_size
-      = size_binop (MAX_EXPR, TYPE_SIZE (gnu_type), bitsize_unit_node);
-
   /* If the component type is a RECORD_TYPE that has a self-referential size,
      then use the maximum size for the component size.  */
   if (!gnu_comp_size
       && TREE_CODE (gnu_type) == RECORD_TYPE
       && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
     gnu_comp_size = max_size (TYPE_SIZE (gnu_type), true);
+
+  /* If the array has aliased components and the component size is zero, force
+     the unit size to ensure that the components have distinct addresses.  */
+  if (!gnu_comp_size
+      && Has_Aliased_Components (gnat_array)
+      && integer_zerop (TYPE_SIZE (gnu_type)))
+    gnu_comp_size = bitsize_unit_node;
 
   /* Honor the component size.  This is not needed for bit-packed arrays.  */
   if (gnu_comp_size && !Is_Bit_Packed_Array (gnat_array))
@@ -5066,6 +5065,30 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       if (gnu_type != orig_type && !DECL_P (TYPE_NAME (gnu_type)))
 	create_type_decl (TYPE_NAME (gnu_type), gnu_type, true, debug_info_p,
 			  gnat_array);
+    }
+
+  /* This is a very special case where the array has aliased components and the
+     component size might be zero at run time.  As explained above, we force at
+     least the unit size but we don't want to build a distinct padding type for
+     each invocation (they are not canonicalized if they have variable size) so
+     we cache this special padding type as TYPE_PADDING_FOR_COMPONENT.  */
+  else if (Has_Aliased_Components (gnat_array)
+	   && TREE_CODE (gnu_type) == ARRAY_TYPE
+	   && !TREE_CONSTANT (TYPE_SIZE (gnu_type)))
+    {
+      if (TYPE_PADDING_FOR_COMPONENT (gnu_type))
+	gnu_type = TYPE_PADDING_FOR_COMPONENT (gnu_type);
+      else
+	{
+	  gnu_comp_size
+	    = size_binop (MAX_EXPR, TYPE_SIZE (gnu_type), bitsize_unit_node);
+	  TYPE_PADDING_FOR_COMPONENT (gnu_type)
+	    = maybe_pad_type (gnu_type, gnu_comp_size, 0, gnat_array,
+			      true, false, definition, true);
+	  gnu_type = TYPE_PADDING_FOR_COMPONENT (gnu_type);
+	  create_type_decl (TYPE_NAME (gnu_type), gnu_type, true, debug_info_p,
+			    gnat_array);
+	}
     }
 
   if (Has_Atomic_Components (gnat_array) || Is_Atomic_Or_VFA (gnat_type))
@@ -8109,9 +8132,9 @@ annotate_value (tree gnu_size)
     case MIN_EXPR:		tcode = Min_Expr; break;
     case MAX_EXPR:		tcode = Max_Expr; break;
     case ABS_EXPR:		tcode = Abs_Expr; break;
-    case TRUTH_ANDIF_EXPR:	tcode = Truth_Andif_Expr; break;
-    case TRUTH_ORIF_EXPR:	tcode = Truth_Orif_Expr; break;
+    case TRUTH_ANDIF_EXPR:
     case TRUTH_AND_EXPR:	tcode = Truth_And_Expr; break;
+    case TRUTH_ORIF_EXPR:
     case TRUTH_OR_EXPR:		tcode = Truth_Or_Expr; break;
     case TRUTH_XOR_EXPR:	tcode = Truth_Xor_Expr; break;
     case TRUTH_NOT_EXPR:	tcode = Truth_Not_Expr; break;
@@ -8291,7 +8314,8 @@ annotate_rep (Entity_Id gnat_entity, tree gnu_type)
 				       gnu_list);
 	if (t)
 	  {
-	    tree parent_offset;
+	    tree offset = TREE_VEC_ELT (TREE_VALUE (t), 0);
+	    tree bit_offset = TREE_VEC_ELT (TREE_VALUE (t), 2);
 
 	    /* If we are just annotating types and the type is tagged, the tag
 	       and the parent components are not generated by the front-end so
@@ -8301,31 +8325,46 @@ annotate_rep (Entity_Id gnat_entity, tree gnu_type)
 		&& Is_Tagged_Type (gnat_entity)
 		&& No (Component_Clause (gnat_field)))
 	      {
+		tree parent_bit_offset;
+
 		/* For a component appearing in the current extension, the
 		   offset is the size of the parent.  */
 		if (Is_Derived_Type (gnat_entity)
 		    && Original_Record_Component (gnat_field) == gnat_field)
-		  parent_offset
+		  parent_bit_offset
 		    = UI_To_gnu (Esize (Etype (Base_Type (gnat_entity))),
 				 bitsizetype);
 		else
-		  parent_offset = bitsize_int (POINTER_SIZE);
+		  parent_bit_offset = bitsize_int (POINTER_SIZE);
 
 		if (TYPE_FIELDS (gnu_type))
-		  parent_offset
-		    = round_up (parent_offset,
+		  parent_bit_offset
+		    = round_up (parent_bit_offset,
 				DECL_ALIGN (TYPE_FIELDS (gnu_type)));
+
+		offset
+		  = size_binop (PLUS_EXPR, offset,
+				fold_convert (sizetype,
+					      size_binop (TRUNC_DIV_EXPR,
+							  parent_bit_offset,
+							  bitsize_unit_node)));
 	      }
-	    else
-	      parent_offset = bitsize_zero_node;
+
+	    /* If the field has a variable offset, also compute the normalized
+	       position since it's easier to do on trees here than to deduce
+	       it from the annotated expression of Component_Bit_Offset.  */
+	    if (TREE_CODE (offset) != INTEGER_CST)
+	      {
+		normalize_offset (&offset, &bit_offset, BITS_PER_UNIT);
+		Set_Normalized_Position (gnat_field,
+					 annotate_value (offset));
+		Set_Normalized_First_Bit (gnat_field,
+					  annotate_value (bit_offset));
+	      }
 
 	    Set_Component_Bit_Offset
 	      (gnat_field,
-	       annotate_value
-		 (size_binop (PLUS_EXPR,
-			      bit_from_pos (TREE_VEC_ELT (TREE_VALUE (t), 0),
-					    TREE_VEC_ELT (TREE_VALUE (t), 2)),
-			      parent_offset)));
+	       annotate_value (bit_from_pos (offset, bit_offset)));
 
 	    Set_Esize (gnat_field,
 		       annotate_value (DECL_SIZE (TREE_PURPOSE (t))));
@@ -8334,19 +8373,27 @@ annotate_rep (Entity_Id gnat_entity, tree gnu_type)
 	  {
 	    /* If there is no entry, this is an inherited component whose
 	       position is the same as in the parent type.  */
-	    Entity_Id gnat_orig_field = Original_Record_Component (gnat_field);
+	    Entity_Id gnat_orig = Original_Record_Component (gnat_field);
 
 	    /* If we are just annotating types, discriminants renaming those of
 	       the parent have no entry so deal with them specifically.  */
 	    if (type_annotate_only
-		&& gnat_orig_field == gnat_field
+		&& gnat_orig == gnat_field
 		&& Ekind (gnat_field) == E_Discriminant)
-	      gnat_orig_field = Corresponding_Discriminant (gnat_field);
+	      gnat_orig = Corresponding_Discriminant (gnat_field);
+
+	    if (Known_Normalized_Position (gnat_orig))
+	      {
+		Set_Normalized_Position (gnat_field,
+					 Normalized_Position (gnat_orig));
+		Set_Normalized_First_Bit (gnat_field,
+					  Normalized_First_Bit (gnat_orig));
+	      }
 
 	    Set_Component_Bit_Offset (gnat_field,
-				      Component_Bit_Offset (gnat_orig_field));
+				      Component_Bit_Offset (gnat_orig));
 
-	    Set_Esize (gnat_field, Esize (gnat_orig_field));
+	    Set_Esize (gnat_field, Esize (gnat_orig));
 	  }
       }
 }

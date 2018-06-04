@@ -139,9 +139,12 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 		  break;
 		}
 	    }
+	  temp_override<location_t> l (input_location);
+	  if (loc != UNKNOWN_LOCATION)
+	    input_location = loc;
 	  expr = process_outer_var_ref (expr, tf_warning_or_error, true);
 	  if (!(TREE_TYPE (oexpr)
-		&& TREE_CODE (TREE_TYPE (oexpr)) == REFERENCE_TYPE))
+		&& TYPE_REF_P (TREE_TYPE (oexpr))))
 	    expr = convert_from_reference (expr);
 	}
       break;
@@ -166,7 +169,7 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	    {
 	      /* Look through capture by reference.  */
 	      tree cap = DECL_CAPTURED_VARIABLE (ref);
-	      if (TREE_CODE (TREE_TYPE (cap)) != REFERENCE_TYPE
+	      if (!TYPE_REF_P (TREE_TYPE (cap))
 		  && decl_constant_var_p (cap))
 		{
 		  tree val = RECUR (cap);
@@ -184,6 +187,11 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	}
       break;
     default:
+      if (location_wrapper_p (expr))
+	{
+	  loc = EXPR_LOCATION (expr);
+	  recurse_op[0] = true;
+	}
       break;
     }
 

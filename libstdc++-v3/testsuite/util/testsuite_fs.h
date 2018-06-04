@@ -73,6 +73,16 @@ namespace __gnu_test
     "a", "a/b", "a/b/", "a/b/c", "a/b/c.d", "a/b/..", "a/b/c.", "a/b/.c"
   };
 
+  test_fs::path
+  root_path()
+  {
+#if defined(__MING32__) || defined(__MINGW64__)
+    return L"c:/";
+#else
+    return "/";
+#endif
+  }
+
   // This is NOT supposed to be a secure way to get a unique name!
   // We just need a path that doesn't exist for testing purposes.
   test_fs::path
@@ -111,7 +121,7 @@ namespace __gnu_test
 
     explicit
     scoped_file(const path_type& p = nonexistent_path()) : path(p)
-    { std::ofstream{p.native()}; }
+    { std::ofstream{p.c_str()}; }
 
     scoped_file(path_type p, adopt_file_t) : path(p) { }
 

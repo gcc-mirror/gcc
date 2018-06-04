@@ -139,7 +139,7 @@
 (define_split
   [(set (match_operand:DIDF 0 "register_operand"     "")
 	(match_operand:DIDF 1 "const_double_operand" ""))]
-  "reload_completed"
+  "flag_pic || reload_completed"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
 {

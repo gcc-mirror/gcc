@@ -1,6 +1,7 @@
 /* { dg-lto-do link } */
 /* { dg-require-effective-target fpic } */
 /* { dg-lto-options {{-O3 -flto -flto-partition=1to1 -fPIC -r -nostdlib}} } */
+/* { dg-extra-ld-options "-flinker-output=nolto-rel" } */
 
 struct Foo { int f1, f2, f3, f4, f5; };
 

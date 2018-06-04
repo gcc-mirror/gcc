@@ -79,6 +79,7 @@
 
 #define WORKAROUND_PTXJIT_BUG 1
 #define WORKAROUND_PTXJIT_BUG_2 1
+#define WORKAROUND_PTXJIT_BUG_3 1
 
 /* The various PTX memory areas an object might reside in.  */
 enum nvptx_data_area
@@ -4647,6 +4648,50 @@ prevent_branch_around_nothing (void)
   }
 #endif
 
+#ifdef WORKAROUND_PTXJIT_BUG_3
+/* Insert two membar.cta insns inbetween two subsequent bar.sync insns.  This
+   works around a hang observed at driver version 390.48 for sm_50.  */
+
+static void
+workaround_barsyncs (void)
+{
+  bool seen_barsync = false;
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      if (INSN_P (insn) && recog_memoized (insn) == CODE_FOR_nvptx_barsync)
+	{
+	  if (seen_barsync)
+	    {
+	      emit_insn_before (gen_nvptx_membar_cta (), insn);
+	      emit_insn_before (gen_nvptx_membar_cta (), insn);
+	    }
+
+	  seen_barsync = true;
+	  continue;
+	}
+
+      if (!seen_barsync)
+	continue;
+
+      if (NOTE_P (insn) || DEBUG_INSN_P (insn))
+	continue;
+      else if (INSN_P (insn))
+	switch (recog_memoized (insn))
+	  {
+	  case CODE_FOR_nvptx_fork:
+	  case CODE_FOR_nvptx_forked:
+	  case CODE_FOR_nvptx_joining:
+	  case CODE_FOR_nvptx_join:
+	    continue;
+	  default:
+	    break;
+	  }
+
+      seen_barsync = false;
+    }
+}
+#endif
+
 /* PTX-specific reorganization
    - Split blocks at fork and join instructions
    - Compute live registers
@@ -4728,6 +4773,10 @@ nvptx_reorg (void)
 
 #if WORKAROUND_PTXJIT_BUG_2
   prevent_branch_around_nothing ();
+#endif
+
+#ifdef WORKAROUND_PTXJIT_BUG_3
+  workaround_barsyncs ();
 #endif
 
   regstat_free_n_sets_and_refs ();

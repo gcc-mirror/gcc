@@ -553,6 +553,7 @@ enum gfc_isym_id
   GFC_ISYM_PRODUCT,
   GFC_ISYM_RADIX,
   GFC_ISYM_RAND,
+  GFC_ISYM_RANDOM_INIT,
   GFC_ISYM_RANDOM_NUMBER,
   GFC_ISYM_RANDOM_SEED,
   GFC_ISYM_RANGE,
@@ -3033,7 +3034,6 @@ int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **, bool);
 int gfc_get_ha_symbol (const char *, gfc_symbol **);
 int gfc_get_ha_sym_tree (const char *, gfc_symtree **);
 
-void gfc_new_undo_checkpoint (gfc_undo_change_set &);
 void gfc_drop_last_undo_checkpoint (void);
 void gfc_restore_last_undo_checkpoint (void);
 void gfc_undo_symbols (void);

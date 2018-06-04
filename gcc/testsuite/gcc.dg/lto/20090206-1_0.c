@@ -3,6 +3,7 @@
 /* { dg-lto-options {{-fPIC -r -nostdlib -flto -flto-partition=1to1 -msse2}} } */
 /* { dg-require-effective-target sse2 } */
 /* { dg-suppress-ld-options {-fPIC -msse2} } */
+/* { dg-extra-ld-options "-flinker-output=nolto-rel" } */
 
 typedef short v8hi __attribute__((__vector_size__(16)));
 void func (void) {

@@ -1458,6 +1458,19 @@ package body Checks is
          T_Typ := Typ;
       end if;
 
+      --  If the expression is a function call that returns a limited object
+      --  it cannot be copied. It is not clear how to perform the proper
+      --  discriminant check in this case because the discriminant value must
+      --  be retrieved from the constructed object itself.
+
+      if Nkind (N) = N_Function_Call
+        and then Is_Limited_Type (Typ)
+        and then Is_Entity_Name (Name (N))
+        and then Returns_By_Ref (Entity (Name (N)))
+      then
+         return;
+      end if;
+
       --  Only apply checks when generating code and discriminant checks are
       --  not suppressed. In GNATprove mode, we do not apply the checks, but we
       --  still analyze the expression to possibly issue errors on SPARK code
@@ -3065,7 +3078,17 @@ package body Checks is
                      --  If definitely not in range, warn
 
                      elsif Lov > Hi or else Hiv < Lo then
-                        Bad_Value;
+
+                        --  Ignore out of range values for System.Priority in
+                        --  CodePeer mode since the actual target compiler may
+                        --  provide a wider range.
+
+                        if not CodePeer_Mode
+                          or else Target_Typ /= RTE (RE_Priority)
+                        then
+                           Bad_Value;
+                        end if;
+
                         return;
 
                      --  Otherwise we don't know
@@ -3747,9 +3770,9 @@ package body Checks is
 
       function Aggregate_Discriminant_Val (Disc : Entity_Id) return Node_Id;
 
-      ----------------------------------
-      -- Aggregate_Discriminant_Value --
-      ----------------------------------
+      --------------------------------
+      -- Aggregate_Discriminant_Val --
+      --------------------------------
 
       function Aggregate_Discriminant_Val (Disc : Entity_Id) return Node_Id is
          Assoc : Node_Id;
@@ -8379,6 +8402,12 @@ package body Checks is
    --  Start of processing for Minimize_Eliminate_Overflows
 
    begin
+      --  Default initialize Lo and Hi since these are not guaranteed to be
+      --  set otherwise.
+
+      Lo := No_Uint;
+      Hi := No_Uint;
+
       --  Case where we do not have a signed integer arithmetic operation
 
       if not Is_Signed_Integer_Arithmetic_Op (N) then

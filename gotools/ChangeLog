@@ -1,3 +1,15 @@
+2018-05-09  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-go-tool): Don't copy zstdpkglist.go.
+	* Makefile.in: Rebuild.
+
+2018-05-04  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/85630
+	* Makefile.am (CHECK_ENV): Set GOCACHE.
+	(ECHO_ENV): Update for setting of GOCACHE.
+	* Makefile.in: Rebuild.
+
 2018-21-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* Makefile.am (check-runtime): Pass -test.timeout

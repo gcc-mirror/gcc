@@ -26,7 +26,7 @@
 --  This package does front-end layout of types and objects. The result is
 --  to annotate the tree with information on size and alignment of types
 --  and objects. How much layout is performed depends on the setting of the
---  target dependent parameter Backend_Layout.
+--  target dependent parameter Frontend_Layout.
 
 with Types; use Types;
 
@@ -40,9 +40,9 @@ package Layout is
    procedure Layout_Type (E : Entity_Id);
    --  This procedure may set or adjust the fields Esize, RM_Size and
    --  Alignment in the non-generic type or subtype entity E. If the
-   --  Backend_Layout switch is False, then it is guaranteed that all
+   --  Frontend_Layout switch is True, then it is guaranteed that all
    --  three fields will be properly set on return. Regardless of the
-   --  Backend_Layout value, it is guaranteed that all discrete types
+   --  Frontend_Layout value, it is guaranteed that all discrete types
    --  will have both Esize and RM_Size fields set on return (since
    --  these are static values). Note that Layout_Type is not called
    --  for generic types, since these play no part in code generation,
@@ -53,7 +53,7 @@ package Layout is
    --  a loop parameter (E_Loop_Parameter), or a formal parameter of
    --  a non-generic subprogram (E_In_Parameter, E_In_Out_Parameter,
    --  or E_Out_Parameter). This procedure may set or adjust the
-   --  Esize and Alignment fields of E. If Backend_Layout is False,
+   --  Esize and Alignment fields of E. If Frontend_Layout is True,
    --  then it is guaranteed that both fields will be properly set
    --  on return. If the Esize is still unknown in the latter case,
    --  it means that the object must be allocated dynamically, since

@@ -317,6 +317,13 @@ static const struct attribute_spec nds32_attribute_table[] =
   /* The attribute telling no prologue/epilogue.  */
   { "naked",        0,  0, false, false, false, false, NULL, NULL },
 
+  /* The attribute is used to tell this function to be ROM patch.  */
+  { "indirect_call",0,  0, false, false, false, false, NULL, NULL },
+
+  /* FOR BACKWARD COMPATIBILITY,
+     this attribute also tells no prologue/epilogue.  */
+  { "no_prologue",  0,  0, false, false, false, false, NULL, NULL },
+
   /* The last attribute spec is set to be NULL.  */
   { NULL,           0,  0, false, false, false, false, NULL, NULL }
 };
@@ -345,6 +352,10 @@ nds32_init_machine_status (void)
   /* Initially this function is not under strictly aligned situation.  */
   machine->strict_aligned_p = 0;
 
+  /* Initially this function has no naked and no_prologue attributes.  */
+  machine->attr_naked_p = 0;
+  machine->attr_no_prologue_p = 0;
+
   return machine;
 }
 
@@ -362,6 +373,15 @@ nds32_compute_stack_frame (void)
      needs prologue/epilogue.  */
   cfun->machine->naked_p = 0;
 
+  /* We need to mark whether this function has naked and no_prologue
+     attribute so that we can distinguish the difference if users applies
+     -mret-in-naked-func option.  */
+  cfun->machine->attr_naked_p
+    = lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
+      ? 1 : 0;
+  cfun->machine->attr_no_prologue_p
+    = lookup_attribute ("no_prologue", DECL_ATTRIBUTES (current_function_decl))
+      ? 1 : 0;
 
   /* If __builtin_eh_return is used, we better have frame pointer needed
      so that we can easily locate the stack slot of return address.  */
@@ -432,7 +452,8 @@ nds32_compute_stack_frame (void)
 
   /* If $gp value is required to be saved on stack, it needs 4 bytes space.
      Check whether we are using PIC code genration.  */
-  cfun->machine->gp_size = (flag_pic) ? 4 : 0;
+  cfun->machine->gp_size =
+    (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM)) ? 4 : 0;
 
   /* If $lp value is required to be saved on stack, it needs 4 bytes space.
      Check whether $lp is ever live.  */
@@ -497,7 +518,7 @@ nds32_compute_stack_frame (void)
     }
 
   /* Check if this function can omit prologue/epilogue code fragment.
-     If there is 'naked' attribute in this function,
+     If there is 'no_prologue'/'naked' attribute in this function,
      we can set 'naked_p' flag to indicate that
      we do not have to generate prologue/epilogue.
      Or, if all the following conditions succeed,
@@ -510,14 +531,16 @@ nds32_compute_stack_frame (void)
 		    is no outgoing size.
        condition 3: There is no local_size, which means
 		    we do not need to adjust $sp.  */
-  if (lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
+  if (lookup_attribute ("no_prologue", DECL_ATTRIBUTES (current_function_decl))
+      || lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
       || (cfun->machine->callee_saved_first_gpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_last_gpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_first_fpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_last_fpr_regno == SP_REGNUM
 	  && !df_regs_ever_live_p (FP_REGNUM)
 	  && !df_regs_ever_live_p (LP_REGNUM)
-	  && cfun->machine->local_size == 0))
+	  && cfun->machine->local_size == 0
+	  && !flag_pic))
     {
       /* Set this function 'naked_p' and other functions can check this flag.
 	 Note that in nds32 port, the 'naked_p = 1' JUST means there is no
@@ -1259,6 +1282,32 @@ nds32_emit_stack_v3pop (unsigned Rb,
   REG_NOTES (parallel_insn) = dwarf;
 }
 
+static void
+nds32_emit_load_gp (void)
+{
+  rtx got_symbol, pat;
+
+  /* Initial GLOBAL OFFSET TABLE don't do the scheduling.  */
+  emit_insn (gen_blockage ());
+
+  got_symbol = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+  /* sethi $gp, _GLOBAL_OFFSET_TABLE_ -8 */
+  pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, got_symbol), UNSPEC_GOTINIT);
+  pat = gen_rtx_CONST (SImode, gen_rtx_PLUS (Pmode, pat, GEN_INT (-8)));
+  emit_insn (gen_sethi (pic_offset_table_rtx,pat));
+
+  /* ori $gp, $gp, _GLOBAL_OFFSET_TABLE_ -4 */
+  pat = gen_rtx_UNSPEC (SImode, gen_rtvec (1, got_symbol), UNSPEC_GOTINIT);
+  pat = gen_rtx_CONST (SImode, gen_rtx_PLUS (Pmode, pat, GEN_INT (-4)));
+  emit_insn (gen_lo_sum (pic_offset_table_rtx, pic_offset_table_rtx, pat));
+
+  /* add5.pc $gp */
+  emit_insn (gen_add_pc (pic_offset_table_rtx, pic_offset_table_rtx));
+
+  /* Initial GLOBAL OFFSET TABLE don't do the scheduling.  */
+  emit_insn (gen_blockage ());
+}
+
 /* Function that may creates more instructions
    for large value on adjusting stack pointer.
 
@@ -1342,17 +1391,25 @@ nds32_needs_double_word_align (machine_mode mode, const_tree type)
 }
 
 /* Return true if FUNC is a naked function.  */
-static bool
+bool
 nds32_naked_function_p (tree func)
 {
-  tree t;
+  /* FOR BACKWARD COMPATIBILITY,
+     we need to support 'no_prologue' attribute as well.  */
+  tree t_naked;
+  tree t_no_prologue;
 
   if (TREE_CODE (func) != FUNCTION_DECL)
     abort ();
 
-  t = lookup_attribute ("naked", DECL_ATTRIBUTES (func));
+  /* We have to use lookup_attribute() to check attributes.
+     Because attr_naked_p and attr_no_prologue_p are set in
+     nds32_compute_stack_frame() and the function has not been
+     invoked yet.  */
+  t_naked       = lookup_attribute ("naked", DECL_ATTRIBUTES (func));
+  t_no_prologue = lookup_attribute ("no_prologue", DECL_ATTRIBUTES (func));
 
-  return (t != NULL_TREE);
+  return ((t_naked != NULL_TREE) || (t_no_prologue != NULL_TREE));
 }
 
 /* Function that determine whether a load postincrement is a good thing to use
@@ -1570,6 +1627,11 @@ static void
 nds32_register_passes (void)
 {
   nds32_register_pass (
+    make_pass_nds32_fp_as_gp,
+    PASS_POS_INSERT_BEFORE,
+    "ira");
+
+  nds32_register_pass (
     make_pass_nds32_relax_opt,
     PASS_POS_INSERT_AFTER,
     "mach");
@@ -1635,6 +1697,9 @@ static void
 nds32_conditional_register_usage (void)
 {
   int regno;
+
+  if (TARGET_LINUX_ABI)
+    fixed_regs[TP_REGNUM] = 1;
 
   if (TARGET_HARD_FLOAT)
     {
@@ -1987,6 +2052,16 @@ nds32_function_arg_boundary (machine_mode mode, const_tree type)
 	  : PARM_BOUNDARY);
 }
 
+bool
+nds32_vector_mode_supported_p (machine_mode mode)
+{
+  if (mode == V4QImode
+      || mode == V2HImode)
+    return NDS32_EXT_DSP_P ();
+
+  return false;
+}
+
 /* -- How Scalar Function Values Are Returned.  */
 
 static rtx
@@ -2124,56 +2199,12 @@ static void
 nds32_asm_function_end_prologue (FILE *file)
 {
   fprintf (file, "\t! END PROLOGUE\n");
-
-  /* If frame pointer is NOT needed and -mfp-as-gp is issued,
-     we can generate special directive: ".omit_fp_begin"
-     to guide linker doing fp-as-gp optimization.
-     However, for a naked function, which means
-     it should not have prologue/epilogue,
-     using fp-as-gp still requires saving $fp by push/pop behavior and
-     there is no benefit to use fp-as-gp on such small function.
-     So we need to make sure this function is NOT naked as well.  */
-  if (!frame_pointer_needed
-      && !cfun->machine->naked_p
-      && cfun->machine->fp_as_gp_p)
-    {
-      fprintf (file, "\t! ----------------------------------------\n");
-      fprintf (file, "\t! Guide linker to do "
-		     "link time optimization: fp-as-gp\n");
-      fprintf (file, "\t! We add one more instruction to "
-		     "initialize $fp near to $gp location.\n");
-      fprintf (file, "\t! If linker fails to use fp-as-gp transformation,\n");
-      fprintf (file, "\t! this extra instruction should be "
-		     "eliminated at link stage.\n");
-      fprintf (file, "\t.omit_fp_begin\n");
-      fprintf (file, "\tla\t$fp,_FP_BASE_\n");
-      fprintf (file, "\t! ----------------------------------------\n");
-    }
 }
 
 /* Before rtl epilogue has been expanded, this function is used.  */
 static void
 nds32_asm_function_begin_epilogue (FILE *file)
 {
-  /* If frame pointer is NOT needed and -mfp-as-gp is issued,
-     we can generate special directive: ".omit_fp_end"
-     to claim fp-as-gp optimization range.
-     However, for a naked function,
-     which means it should not have prologue/epilogue,
-     using fp-as-gp still requires saving $fp by push/pop behavior and
-     there is no benefit to use fp-as-gp on such small function.
-     So we need to make sure this function is NOT naked as well.  */
-  if (!frame_pointer_needed
-      && !cfun->machine->naked_p
-      && cfun->machine->fp_as_gp_p)
-    {
-      fprintf (file, "\t! ----------------------------------------\n");
-      fprintf (file, "\t! Claim the range of fp-as-gp "
-		     "link time optimization\n");
-      fprintf (file, "\t.omit_fp_end\n");
-      fprintf (file, "\t! ----------------------------------------\n");
-    }
-
   fprintf (file, "\t! BEGIN EPILOGUE\n");
 }
 
@@ -2200,6 +2231,26 @@ nds32_asm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		? 1
 		: 0);
 
+  if (flag_pic)
+    {
+      fprintf (file, "\tsmw.adm\t$r31, [$r31], $r31, 4\n");
+      fprintf (file, "\tsethi\t%s, hi20(_GLOBAL_OFFSET_TABLE_-8)\n",
+		      reg_names [PIC_OFFSET_TABLE_REGNUM]);
+      fprintf (file, "\tori\t%s, %s, lo12(_GLOBAL_OFFSET_TABLE_-4)\n",
+		      reg_names [PIC_OFFSET_TABLE_REGNUM],
+		      reg_names [PIC_OFFSET_TABLE_REGNUM]);
+
+      if (TARGET_ISA_V3)
+	fprintf (file, "\tadd5.pc\t$gp\n");
+      else
+	{
+	  fprintf (file, "\tmfusr\t$ta, $pc\n");
+	  fprintf (file, "\tadd\t%s, $ta, %s\n",
+			  reg_names [PIC_OFFSET_TABLE_REGNUM],
+			  reg_names [PIC_OFFSET_TABLE_REGNUM]);
+	}
+    }
+
   if (delta != 0)
     {
       if (satisfies_constraint_Is15 (GEN_INT (delta)))
@@ -2224,9 +2275,23 @@ nds32_asm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	}
     }
 
-  fprintf (file, "\tb\t");
-  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
-  fprintf (file, "\n");
+  if (flag_pic)
+    {
+      fprintf (file, "\tla\t$ta, ");
+      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+      fprintf (file, "@PLT\n");
+      fprintf (file, "\t! epilogue\n");
+      fprintf (file, "\tlwi.bi\t%s, [%s], 4\n",
+	       reg_names[PIC_OFFSET_TABLE_REGNUM],
+	       reg_names[STACK_POINTER_REGNUM]);
+      fprintf (file, "\tbr\t$ta\n");
+    }
+  else
+    {
+      fprintf (file, "\tb\t");
+      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+      fprintf (file, "\n");
+    }
 
   final_end_function ();
 }
@@ -2247,10 +2312,12 @@ nds32_function_ok_for_sibcall (tree decl,
      3. We don't want to apply sibling call optimization for indirect
 	sibcall because the pop behavior in epilogue may pollute the
 	content of caller-saved regsiter when the register is used for
-	indirect sibcall.  */
+	indirect sibcall.
+     4. In pic mode, it may use some registers for PLT call.  */
   return (!TARGET_V3PUSH
 	  && (cfun->machine->va_args_size == 0)
-	  && decl);
+	  && decl
+	  && !flag_pic);
 }
 
 /* Determine whether we need to enable warning for function return check.  */
@@ -2566,6 +2633,13 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
     case SYMBOL_REF:
       /* (mem (symbol_ref A)) => [symbol_ref] */
+
+      if (flag_pic || SYMBOL_REF_TLS_MODEL (x))
+	return false;
+
+      if (TARGET_ICT_MODEL_LARGE && nds32_indirect_call_referenced_p (x))
+	return false;
+
       /* If -mcmodel=large, the 'symbol_ref' is not a valid address
 	 during or after LRA/reload phase.  */
       if (TARGET_CMODEL_LARGE
@@ -2577,7 +2651,8 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	 the 'symbol_ref' is not a valid address during or after
 	 LRA/reload phase.  */
       if (TARGET_CMODEL_MEDIUM
-	  && NDS32_SYMBOL_REF_RODATA_P (x)
+	  && (NDS32_SYMBOL_REF_RODATA_P (x)
+	      || CONSTANT_POOL_ADDRESS_P (x))
 	  && (reload_completed
 	      || reload_in_progress
 	      || lra_in_progress))
@@ -2599,6 +2674,10 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	    {
 	      /* Now we see the [ + const_addr ] pattern, but we need
 		 some further checking.  */
+
+	      if (flag_pic)
+		return false;
+
 	      /* If -mcmodel=large, the 'const_addr' is not a valid address
 		 during or after LRA/reload phase.  */
 	      if (TARGET_CMODEL_LARGE
@@ -2675,17 +2754,202 @@ nds32_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
     case LO_SUM:
       /* (mem (lo_sum (reg) (symbol_ref))) */
-      /* (mem (lo_sum (reg) (const))) */
-      gcc_assert (REG_P (XEXP (x, 0)));
-      if (GET_CODE (XEXP (x, 1)) == SYMBOL_REF
-	  || GET_CODE (XEXP (x, 1)) == CONST)
-	return nds32_legitimate_address_p (mode, XEXP (x, 1), strict);
-      else
-	return false;
+      /* (mem (lo_sum (reg) (const (plus (symbol_ref) (reg)))) */
+      /* TLS case: (mem (lo_sum (reg) (const (unspec symbol_ref X)))) */
+      /* The LO_SUM is a valid address if and only if we would like to
+	 generate 32-bit full address memory access with any of following
+	 circumstance:
+	   1. -mcmodel=large.
+	   2. -mcmodel=medium and the symbol_ref references to rodata.  */
+      {
+	rtx sym = NULL_RTX;
+
+	if (flag_pic)
+	  return false;
+
+	if (!REG_P (XEXP (x, 0)))
+	  return false;
+
+	if (GET_CODE (XEXP (x, 1)) == SYMBOL_REF)
+	  sym = XEXP (x, 1);
+	else if (GET_CODE (XEXP (x, 1)) == CONST)
+	  {
+	    rtx plus = XEXP(XEXP (x, 1), 0);
+	    if (GET_CODE (plus) == PLUS)
+	      sym = XEXP (plus, 0);
+	    else if (GET_CODE (plus) == UNSPEC)
+	      sym = XVECEXP (plus, 0, 0);
+	  }
+	else
+	  return false;
+
+	gcc_assert (GET_CODE (sym) == SYMBOL_REF);
+
+	if (TARGET_ICT_MODEL_LARGE
+	    && nds32_indirect_call_referenced_p (sym))
+	  return true;
+
+	if (TARGET_CMODEL_LARGE)
+	  return true;
+	else if (TARGET_CMODEL_MEDIUM
+		 && NDS32_SYMBOL_REF_RODATA_P (sym))
+	  return true;
+	else
+	  return false;
+      }
 
     default:
       return false;
     }
+}
+
+static rtx
+nds32_legitimize_address (rtx x,
+			  rtx oldx ATTRIBUTE_UNUSED,
+			  machine_mode mode ATTRIBUTE_UNUSED)
+{
+  if (nds32_tls_referenced_p (x))
+    x = nds32_legitimize_tls_address (x);
+  else if (flag_pic && SYMBOLIC_CONST_P (x))
+    x = nds32_legitimize_pic_address (x);
+  else if (TARGET_ICT_MODEL_LARGE && nds32_indirect_call_referenced_p (x))
+    x = nds32_legitimize_ict_address (x);
+
+  return x;
+}
+
+static bool
+nds32_legitimate_constant_p (machine_mode mode, rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case CONST_DOUBLE:
+      if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE)
+	  && (mode == DFmode || mode == SFmode))
+	return false;
+      break;
+    case CONST:
+      x = XEXP (x, 0);
+
+      if (GET_CODE (x) == PLUS)
+	{
+	  if (!CONST_INT_P (XEXP (x, 1)))
+	    return false;
+	  x = XEXP (x, 0);
+	}
+
+      if (GET_CODE (x) == UNSPEC)
+	{
+	  switch (XINT (x, 1))
+	    {
+	    case UNSPEC_GOT:
+	    case UNSPEC_GOTOFF:
+	    case UNSPEC_PLT:
+	    case UNSPEC_TLSGD:
+	    case UNSPEC_TLSLD:
+	    case UNSPEC_TLSIE:
+	    case UNSPEC_TLSLE:
+	    case UNSPEC_ICT:
+	      return false;
+	    default:
+	      return true;
+	    }
+	}
+      break;
+    case SYMBOL_REF:
+      /* TLS symbols need a call to resolve in
+	 precompute_register_parameters.  */
+      if (SYMBOL_REF_TLS_MODEL (x))
+	return false;
+      break;
+    default:
+      return true;
+    }
+
+  return true;
+}
+
+/* Reorgnize the UNSPEC CONST and return its direct symbol.  */
+static rtx
+nds32_delegitimize_address (rtx x)
+{
+  x = delegitimize_mem_from_attrs (x);
+
+  if (GET_CODE(x) == CONST)
+    {
+      rtx inner = XEXP (x, 0);
+
+      /* Handle for GOTOFF.  */
+      if (GET_CODE (inner) == PLUS)
+	inner = XEXP (inner, 0);
+
+      if (GET_CODE (inner) == UNSPEC)
+	{
+	  switch (XINT (inner, 1))
+	    {
+	    case UNSPEC_GOTINIT:
+	    case UNSPEC_GOT:
+	    case UNSPEC_GOTOFF:
+	    case UNSPEC_PLT:
+	    case UNSPEC_TLSGD:
+	    case UNSPEC_TLSLD:
+	    case UNSPEC_TLSIE:
+	    case UNSPEC_TLSLE:
+	    case UNSPEC_ICT:
+	      x = XVECEXP (inner, 0, 0);
+	      break;
+	    default:
+	      break;
+	    }
+	}
+    }
+  return x;
+}
+
+static machine_mode
+nds32_vectorize_preferred_simd_mode (scalar_mode mode)
+{
+  if (!NDS32_EXT_DSP_P ())
+    return word_mode;
+
+  switch (mode)
+    {
+    case E_QImode:
+      return V4QImode;
+    case E_HImode:
+      return V2HImode;
+    default:
+      return word_mode;
+    }
+}
+
+static bool
+nds32_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case CONST:
+      return !nds32_legitimate_constant_p (mode, x);
+    case SYMBOL_REF:
+      /* All symbols have to be accessed through gp-relative in PIC mode.  */
+      /* We don't want to force symbol as constant pool in .text section,
+	 because we use the gp-relatived instruction to load in small
+	 or medium model.  */
+      if (flag_pic
+	  || SYMBOL_REF_TLS_MODEL (x)
+	  || TARGET_CMODEL_SMALL
+	  || TARGET_CMODEL_MEDIUM)
+	return true;
+      break;
+    case CONST_INT:
+    case CONST_DOUBLE:
+      if (flag_pic && (lra_in_progress || reload_completed))
+	return true;
+      break;
+    default:
+      return false;
+    }
+  return false;
 }
 
 
@@ -2731,13 +2995,33 @@ nds32_canonicalize_comparison (int *code,
 /* Describing Relative Costs of Operations.  */
 
 static int
-nds32_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
+nds32_register_move_cost (machine_mode mode,
 			  reg_class_t from,
 			  reg_class_t to)
 {
+  /* In garywolf cpu, FPR to GPR is chaper than other cpu.  */
+  if (TARGET_PIPELINE_GRAYWOLF)
+    {
+      if (GET_MODE_SIZE (mode) == 8)
+	{
+	  /* DPR to GPR.  */
+	  if (from == FP_REGS && to != FP_REGS)
+	    return 3;
+	  /* GPR to DPR.  */
+	  if (from != FP_REGS && to == FP_REGS)
+	    return 2;
+	}
+      else
+	{
+	  if ((from == FP_REGS && to != FP_REGS)
+	      || (from != FP_REGS && to == FP_REGS))
+	    return 2;
+	}
+    }
+
   if ((from == FP_REGS && to != FP_REGS)
       || (from != FP_REGS && to == FP_REGS))
-    return 9;
+    return 3;
   else if (from == HIGH_REGS || to == HIGH_REGS)
     return optimize_size ? 6 : 2;
   else
@@ -2825,6 +3109,9 @@ nds32_asm_file_start (void)
 {
   default_file_start ();
 
+  if (flag_pic)
+    fprintf (asm_out_file, "\t.pic\n");
+
   /* Tell assembler which ABI we are using.  */
   fprintf (asm_out_file, "\t! ABI version\n");
   if (TARGET_HARD_FLOAT)
@@ -2835,10 +3122,36 @@ nds32_asm_file_start (void)
   /* Tell assembler that this asm code is generated by compiler.  */
   fprintf (asm_out_file, "\t! This asm file is generated by compiler\n");
   fprintf (asm_out_file, "\t.flag\tverbatim\n");
-  /* Give assembler the size of each vector for interrupt handler.  */
-  fprintf (asm_out_file, "\t! This vector size directive is required "
-			 "for checking inconsistency on interrupt handler\n");
-  fprintf (asm_out_file, "\t.vec_size\t%d\n", nds32_isr_vector_size);
+
+  /* Insert directive for linker to distinguish object's ict flag.  */
+  if (!TARGET_LINUX_ABI)
+    {
+      if (TARGET_ICT_MODEL_LARGE)
+	fprintf (asm_out_file, "\t.ict_model\tlarge\n");
+      else
+	fprintf (asm_out_file, "\t.ict_model\tsmall\n");
+    }
+
+  /* We need to provide the size of each vector for interrupt handler
+     under elf toolchain.  */
+  if (!TARGET_LINUX_ABI)
+    {
+      fprintf (asm_out_file, "\t! This vector size directive is required "
+			     "for checking inconsistency on interrupt handler\n");
+      fprintf (asm_out_file, "\t.vec_size\t%d\n", nds32_isr_vector_size);
+    }
+
+  /* If user enables '-mforce-fp-as-gp' or compiles programs with -Os,
+     the compiler may produce 'la $fp,_FP_BASE_' instruction
+     at prologue for fp-as-gp optimization.
+     We should emit weak reference of _FP_BASE_ to avoid undefined reference
+     in case user does not pass '--relax' option to linker.  */
+  if (!TARGET_LINUX_ABI && (TARGET_FORCE_FP_AS_GP || optimize_size))
+    {
+      fprintf (asm_out_file, "\t! This weak reference is required to do "
+			     "fp-as-gp link time optimization\n");
+      fprintf (asm_out_file, "\t.weak\t_FP_BASE_\n");
+    }
 
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
@@ -2848,6 +3161,49 @@ nds32_asm_file_start (void)
     fprintf (asm_out_file, "\t! ISA family\t\t: %s\n", "V3");
   if (TARGET_ISA_V3M)
     fprintf (asm_out_file, "\t! ISA family\t\t: %s\n", "V3M");
+
+  switch (nds32_cpu_option)
+    {
+    case CPU_N6:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N6");
+      break;
+
+    case CPU_N7:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N7");
+      break;
+
+    case CPU_N8:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N8");
+      break;
+
+    case CPU_E8:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "E8");
+      break;
+
+    case CPU_N9:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N9");
+      break;
+
+    case CPU_N10:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N10");
+      break;
+
+    case CPU_GRAYWOLF:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "Graywolf");
+      break;
+
+    case CPU_N12:
+    case CPU_N13:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "N13");
+      break;
+
+    case CPU_SIMPLE:
+      fprintf (asm_out_file, "\t! Pipeline model\t: %s\n", "SIMPLE");
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 
   if (TARGET_CMODEL_SMALL)
     fprintf (asm_out_file, "\t! Code model\t\t: %s\n", "SMALL");
@@ -2926,7 +3282,63 @@ nds32_asm_file_end (void)
 {
   nds32_asm_file_end_for_isr ();
 
+  /* The NDS32 Linux stack is mapped non-executable by default, so add a
+     .note.GNU-stack section.  */
+  if (TARGET_LINUX_ABI)
+    file_end_indicate_exec_stack ();
+
   fprintf (asm_out_file, "\t! ------------------------------------\n");
+}
+
+static bool
+nds32_asm_output_addr_const_extra (FILE *file, rtx x)
+{
+  if (GET_CODE (x) == UNSPEC)
+    {
+      switch (XINT (x, 1))
+	{
+	case UNSPEC_GOTINIT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  break;
+	case UNSPEC_GOTOFF:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOTOFF", file);
+	  break;
+	case UNSPEC_GOT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOT", file);
+	  break;
+	case UNSPEC_PLT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@PLT", file);
+	  break;
+	case UNSPEC_TLSGD:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@TLSDESC", file);
+	  break;
+	case UNSPEC_TLSLD:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@TLSDESC", file);
+	  break;
+	case UNSPEC_TLSIE:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOTTPOFF", file);
+	  break;
+	case UNSPEC_TLSLE:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@TPOFF", file);
+	  break;
+	case UNSPEC_ICT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@ICT", file);
+	  break;
+	default:
+	  return false;
+	}
+      return true;
+    }
+  else
+    return false;
 }
 
 /* -- Output and Generation of Labels.  */
@@ -2978,6 +3390,18 @@ nds32_print_operand (FILE *stream, rtx x, int code)
 
       /* No need to handle following process, so return immediately.  */
       return;
+
+    case 'v':
+      gcc_assert (CONST_INT_P (x)
+		  && (INTVAL (x) == 0
+		      || INTVAL (x) == 8
+		      || INTVAL (x) == 16
+		      || INTVAL (x) == 24));
+      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) / 8);
+
+      /* No need to handle following process, so return immediately.  */
+      return;
+
     case 'B':
       /* Use exact_log2() to search the 1-bit position.  */
       gcc_assert (CONST_INT_P (x));
@@ -3084,8 +3508,15 @@ nds32_print_operand (FILE *stream, rtx x, int code)
   switch (GET_CODE (x))
     {
     case LABEL_REF:
+      output_addr_const (stream, x);
+      break;
+
     case SYMBOL_REF:
       output_addr_const (stream, x);
+
+      if (!TARGET_LINUX_ABI && nds32_indirect_call_referenced_p (x))
+	fprintf (stream, "@ICT");
+
       break;
 
     case REG:
@@ -3168,6 +3599,17 @@ nds32_print_operand (FILE *stream, rtx x, int code)
       output_addr_const (stream, x);
       break;
 
+    case CONST_VECTOR:
+      fprintf (stream, HOST_WIDE_INT_PRINT_HEX, const_vector_to_hwint (x));
+      break;
+
+    case LO_SUM:
+      /* This is a special case for inline assembly using memory address 'p'.
+	 The inline assembly code is expected to use pesudo instruction
+	 for the operand.  EX: la  */
+      output_addr_const (stream, XEXP(x, 1));
+      break;
+
     default:
       /* Generally, output_addr_const () is able to handle most cases.
 	 We want to see what CODE could appear,
@@ -3179,7 +3621,9 @@ nds32_print_operand (FILE *stream, rtx x, int code)
 }
 
 static void
-nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
+nds32_print_operand_address (FILE *stream,
+			     machine_mode mode ATTRIBUTE_UNUSED,
+			     rtx x)
 {
   rtx op0, op1;
 
@@ -3191,6 +3635,16 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
       /* [ + const_addr], where const_addr = symbol_ref + const_int */
       fputs ("[ + ", stream);
       output_addr_const (stream, x);
+      fputs ("]", stream);
+      break;
+
+    case LO_SUM:
+      /* This is a special case for inline assembly using memory operand 'm'.
+	 The inline assembly code is expected to use pesudo instruction
+	 for the operand.  EX: [ls].[bhw]  */
+      fputs ("[ + ", stream);
+      op1 = XEXP (x, 1);
+      output_addr_const (stream, op1);
       fputs ("]", stream);
       break;
 
@@ -3259,6 +3713,20 @@ nds32_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 			   reg_names[REGNO (op1)],
 			   reg_names[REGNO (XEXP (op0, 0))],
 			   sv);
+	}
+      else if (GET_CODE (op0) == ASHIFT && REG_P (op1))
+	{
+	  /* [Ra + Rb << sv]
+	     In normal, ASHIFT can be converted to MULT like above case.
+	     But when the address rtx does not go through canonicalize_address
+	     defined in fwprop, we'll need this case.  */
+	  int sv = INTVAL (XEXP (op0, 1));
+	  gcc_assert (sv <= 3 && sv >=0);
+
+	  fprintf (stream, "[%s + %s << %d]",
+		   reg_names[REGNO (op1)],
+		   reg_names[REGNO (XEXP (op0, 0))],
+		   sv);
 	}
       else
 	{
@@ -3454,6 +3922,27 @@ nds32_merge_decl_attributes (tree olddecl, tree newdecl)
 static void
 nds32_insert_attributes (tree decl, tree *attributes)
 {
+  /* A "indirect_call" function attribute implies "noinline" and "noclone"
+     for elf toolchain to support ROM patch mechanism.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && lookup_attribute ("indirect_call", *attributes) != NULL)
+    {
+      tree new_attrs = *attributes;
+
+      if (TARGET_LINUX_ABI)
+	error("cannot use indirect_call attribute under linux toolchain");
+
+      if (lookup_attribute ("noinline", new_attrs) == NULL)
+	new_attrs = tree_cons (get_identifier ("noinline"), NULL, new_attrs);
+      if (lookup_attribute ("noclone", new_attrs) == NULL)
+	new_attrs = tree_cons (get_identifier ("noclone"), NULL, new_attrs);
+
+      if (!TREE_PUBLIC (decl))
+	error("indirect_call attribute can't apply for static function");
+
+      *attributes = new_attrs;
+    }
+
   /* For function declaration, we need to check isr-specific attributes:
        1. Call nds32_check_isr_attrs_conflict() to check any conflict.
        2. Check valid integer value for interrupt/exception.
@@ -3598,7 +4087,9 @@ nds32_option_override (void)
     }
   if (TARGET_ISA_V3)
     {
-      /* Under V3 ISA, currently nothing should be strictly set.  */
+      /* If this is ARCH_V3J, we need to enable TARGET_REDUCED_REGS.  */
+      if (nds32_arch_option == ARCH_V3J)
+	target_flags |= MASK_REDUCED_REGS;
     }
   if (TARGET_ISA_V3M)
     {
@@ -3610,6 +4101,9 @@ nds32_option_override (void)
       target_flags &= ~MASK_EXT_PERF2;
       /* Under V3M ISA, we need to strictly disable TARGET_EXT_STRING.  */
       target_flags &= ~MASK_EXT_STRING;
+
+      if (flag_pic)
+	error ("not support -fpic option for v3m toolchain");
     }
 
   /* See if we are using reduced-set registers:
@@ -3627,6 +4121,12 @@ nds32_option_override (void)
 	fixed_regs[r] = call_used_regs[r] = 1;
     }
 
+  /* See if user explicitly would like to use fp-as-gp optimization.
+     If so, we must prevent $fp from being allocated
+     during register allocation.  */
+  if (TARGET_FORCE_FP_AS_GP)
+    fixed_regs[FP_REGNUM] = call_used_regs[FP_REGNUM] = 1;
+
   if (!TARGET_16_BIT)
     {
       /* Under no 16 bit ISA, we need to strictly disable TARGET_V3PUSH.  */
@@ -3643,9 +4143,7 @@ nds32_option_override (void)
 	       "must be enable '-mext-fpu-sp' or '-mext-fpu-dp'");
     }
 
-  /* Currently, we don't support PIC code generation yet.  */
-  if (flag_pic)
-    sorry ("position-independent code not supported");
+  nds32_init_rtx_costs ();
 
   nds32_register_passes ();
 }
@@ -3659,8 +4157,11 @@ nds32_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
 		     vec<const char *> &constraints ATTRIBUTE_UNUSED,
 		     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
 {
-  clobbers.safe_push (gen_rtx_REG (SImode, TA_REGNUM));
-  SET_HARD_REG_BIT (clobbered_regs, TA_REGNUM);
+  if (!flag_inline_asm_r15)
+    {
+      clobbers.safe_push (gen_rtx_REG (SImode, TA_REGNUM));
+      SET_HARD_REG_BIT (clobbered_regs, TA_REGNUM);
+    }
   return NULL;
 }
 
@@ -3687,6 +4188,13 @@ nds32_expand_builtin (tree exp,
   return nds32_expand_builtin_impl (exp, target, subtarget, mode, ignore);
 }
 
+/* Implement TARGET_INIT_LIBFUNCS.  */
+static void
+nds32_init_libfuncs (void)
+{
+  if (TARGET_LINUX_ABI)
+    init_sync_libfuncs (UNITS_PER_WORD);
+}
 
 /* ------------------------------------------------------------------------ */
 
@@ -3770,6 +4278,8 @@ nds32_cpu_cpp_builtins(struct cpp_reader *pfile)
     builtin_define ("__NDS32_GP_DIRECT__");
   if (TARGET_VH)
     builtin_define ("__NDS32_VH__");
+  if (NDS32_EXT_DSP_P ())
+    builtin_define ("__NDS32_EXT_DSP__");
 
   if (TARGET_BIG_ENDIAN)
     builtin_define ("__big_endian__");
@@ -4042,6 +4552,10 @@ nds32_expand_prologue (void)
      The result will be in cfun->machine.  */
   nds32_compute_stack_frame ();
 
+  /* Check frame_pointer_needed again to prevent fp is need after reload.  */
+  if (frame_pointer_needed)
+    cfun->machine->fp_as_gp_p = false;
+
   /* If this is a variadic function, first we need to push argument
      registers that hold the unnamed argument value.  */
   if (cfun->machine->va_args_size != 0)
@@ -4066,7 +4580,7 @@ nds32_expand_prologue (void)
 
   /* If the function is 'naked',
      we do not have to generate prologue code fragment.  */
-  if (cfun->machine->naked_p)
+  if (cfun->machine->naked_p && !flag_pic)
     return;
 
   /* Get callee_first_regno and callee_last_regno.  */
@@ -4195,6 +4709,10 @@ nds32_expand_prologue (void)
 			       -1 * sp_adjust);
     }
 
+  /* Emit gp setup instructions for -fpic.  */
+  if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
+    nds32_emit_load_gp ();
+
   /* Prevent the instruction scheduler from
      moving instructions across the boundary.  */
   emit_insn (gen_blockage ());
@@ -4239,7 +4757,16 @@ nds32_expand_epilogue (bool sibcall_p)
       /* Generate return instruction by using 'return_internal' pattern.
 	 Make sure this instruction is after gen_blockage().  */
       if (!sibcall_p)
-	emit_jump_insn (gen_return_internal ());
+	{
+	  /* We need to further check attributes to determine whether
+	     there should be return instruction at epilogue.
+	     If the attribute naked exists but -mno-ret-in-naked-func
+	     is issued, there is NO need to generate return instruction.  */
+	  if (cfun->machine->attr_naked_p && !flag_ret_in_naked_func)
+	    return;
+
+	  emit_jump_insn (gen_return_internal ());
+	}
       return;
     }
 
@@ -4436,9 +4963,13 @@ nds32_expand_prologue_v3push (void)
   if (cfun->machine->callee_saved_gpr_regs_size > 0)
     df_set_regs_ever_live (FP_REGNUM, 1);
 
+  /* Check frame_pointer_needed again to prevent fp is need after reload.  */
+  if (frame_pointer_needed)
+    cfun->machine->fp_as_gp_p = false;
+
   /* If the function is 'naked',
      we do not have to generate prologue code fragment.  */
-  if (cfun->machine->naked_p)
+  if (cfun->machine->naked_p && !flag_pic)
     return;
 
   /* Get callee_first_regno and callee_last_regno.  */
@@ -4566,6 +5097,10 @@ nds32_expand_prologue_v3push (void)
 			       -1 * sp_adjust);
     }
 
+  /* Emit gp setup instructions for -fpic.  */
+  if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
+    nds32_emit_load_gp ();
+
   /* Prevent the instruction scheduler from
      moving instructions across the boundary.  */
   emit_insn (gen_blockage ());
@@ -4591,9 +5126,19 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
   if (cfun->machine->naked_p)
     {
       /* Generate return instruction by using 'return_internal' pattern.
-	 Make sure this instruction is after gen_blockage().  */
+	 Make sure this instruction is after gen_blockage().
+	 First we need to check this is a function without sibling call.  */
       if (!sibcall_p)
-	emit_jump_insn (gen_return_internal ());
+	{
+	  /* We need to further check attributes to determine whether
+	     there should be return instruction at epilogue.
+	     If the attribute naked exists but -mno-ret-in-naked-func
+	     is issued, there is NO need to generate return instruction.  */
+	  if (cfun->machine->attr_naked_p && !flag_ret_in_naked_func)
+	    return;
+
+	  emit_jump_insn (gen_return_internal ());
+	}
       return;
     }
 
@@ -4755,6 +5300,11 @@ nds32_can_use_return_insn (void)
   /* Prior to reloading, we can't tell how many registers must be saved.
      Thus we can not determine whether this function has null epilogue.  */
   if (!reload_completed)
+    return 0;
+
+  /* If attribute 'naked' appears but -mno-ret-in-naked-func is used,
+     we cannot use return instruction.  */
+  if (cfun->machine->attr_naked_p && !flag_ret_in_naked_func)
     return 0;
 
   sp_adjust = cfun->machine->local_size
@@ -5010,6 +5560,9 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY nds32_function_arg_boundary
 
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P nds32_vector_mode_supported_p
+
 /* -- How Scalar Function Values Are Returned.  */
 
 #undef TARGET_FUNCTION_VALUE
@@ -5087,6 +5640,21 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P nds32_legitimate_address_p
 
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS nds32_legitimize_address
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P nds32_legitimate_constant_p
+
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE nds32_vectorize_preferred_simd_mode
+
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM nds32_cannot_force_const_mem
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS nds32_delegitimize_address
+
 
 /* Anchored Addresses.  */
 
@@ -5146,6 +5714,9 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA nds32_asm_output_addr_const_extra
 
 /* -- Output of Uninitialized Variables.  */
 
@@ -5216,6 +5787,9 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 
 /* Emulating TLS.  */
 
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS TARGET_LINUX_ABI
+
 
 /* Defining coprocessor specifics for MIPS targets.  */
 
@@ -5243,6 +5817,8 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN nds32_expand_builtin
 
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS nds32_init_libfuncs
 
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
 #define TARGET_USE_BLOCKS_FOR_CONSTANT_P nds32_use_blocks_for_constant_p

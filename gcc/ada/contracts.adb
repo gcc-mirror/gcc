@@ -405,7 +405,7 @@ package body Contracts is
          then
             Analyze_Task_Contract (Defining_Entity (Decl));
 
-         --  For type declarations, we need to do the pre-analysis of Iterable
+         --  For type declarations, we need to do the preanalysis of Iterable
          --  aspect specifications.
 
          --  Other type aspects need to be resolved here???

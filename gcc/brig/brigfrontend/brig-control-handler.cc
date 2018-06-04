@@ -53,45 +53,45 @@ brig_directive_control_handler::operator () (const BrigBase *base)
     case BRIG_CONTROL_MAXDYNAMICGROUPSIZE:
       {
 	m_parent.m_cf->m_descriptor.max_dynamic_group_size
-	  = int_constant_value (operands.at (0));
+	  = brig_function::int_constant_value (operands.at (0));
 	break;
       }
     case BRIG_CONTROL_MAXFLATGRIDSIZE:
       {
 	m_parent.m_cf->m_descriptor.max_flat_grid_size
-	  = int_constant_value (operands.at (0));
+	  = brig_function::int_constant_value (operands.at (0));
 	break;
       }
     case BRIG_CONTROL_MAXFLATWORKGROUPSIZE:
       {
 	m_parent.m_cf->m_descriptor.max_flat_workgroup_size
-	  = int_constant_value (operands.at (0));
+	  = brig_function::int_constant_value (operands.at (0));
 	break;
       }
     case BRIG_CONTROL_REQUIREDDIM:
       {
 	m_parent.m_cf->m_descriptor.required_dim
-	  = int_constant_value (operands.at (0));
+	  = brig_function::int_constant_value (operands.at (0));
 	break;
       }
     case BRIG_CONTROL_REQUIREDGRIDSIZE:
       {
 	m_parent.m_cf->m_descriptor.required_grid_size[0]
-	  = int_constant_value (operands.at (0));
+	  = brig_function::int_constant_value (operands.at (0));
 	m_parent.m_cf->m_descriptor.required_grid_size[1]
-	  = int_constant_value (operands.at (1));
+	  = brig_function::int_constant_value (operands.at (1));
 	m_parent.m_cf->m_descriptor.required_grid_size[2]
-	  = int_constant_value (operands.at (2));
+	  = brig_function::int_constant_value (operands.at (2));
 	break;
       }
     case BRIG_CONTROL_REQUIREDWORKGROUPSIZE:
       {
 	m_parent.m_cf->m_descriptor.required_workgroup_size[0]
-	  = int_constant_value (operands.at (0));
+	  = brig_function::int_constant_value (operands.at (0));
 	m_parent.m_cf->m_descriptor.required_workgroup_size[1]
-	  = int_constant_value (operands.at (1));
+	  = brig_function::int_constant_value (operands.at (1));
 	m_parent.m_cf->m_descriptor.required_workgroup_size[2]
-	  = int_constant_value (operands.at (2));
+	  = brig_function::int_constant_value (operands.at (2));
 	break;
       }
     case BRIG_CONTROL_REQUIRENOPARTIALWORKGROUPS:

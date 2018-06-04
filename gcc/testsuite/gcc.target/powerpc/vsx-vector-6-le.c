@@ -14,9 +14,12 @@
    their usage counts being stable.  Therefore, we just ensure at least one
    xxlor instruction was generated.  */
 /* { dg-final { scan-assembler "xxlor" } } */
-/* { dg-final { scan-assembler-times "xvcmpeqdp" 5 } } */
-/* { dg-final { scan-assembler-times "xvcmpgtdp" 8 } } */
-/* { dg-final { scan-assembler-times "xvcmpgedp" 6 } } */
+/* { dg-final { scan-assembler-times "xvcmpeqdp" 4 } } */
+/* { dg-final { scan-assembler-times "xvcmpeqdp." 4 } } */
+/* { dg-final { scan-assembler-times "xvcmpgtdp" 7 } } */
+/* { dg-final { scan-assembler-times "xvcmpgtdp." 7 } } */
+/* { dg-final { scan-assembler-times "xvcmpgedp" 7 } } */
+/* { dg-final { scan-assembler-times "xvcmpgedp." 7 } } */
 /* { dg-final { scan-assembler-times "xvrdpim" 1 } } */
 /* { dg-final { scan-assembler-times "xvmaddadp" 1 } } */
 /* { dg-final { scan-assembler-times "xvmsubadp" 1 } } */
@@ -30,8 +33,15 @@
 /* { dg-final { scan-assembler-times "xvrdpiz" 1 } } */
 /* { dg-final { scan-assembler-times "xvmsubasp" 1 } } */
 /* { dg-final { scan-assembler-times "xvnmaddasp" 1 } } */
+/* { dg-final { scan-assembler-times "xvnmaddadp" 1 } } */
+/* { dg-final { scan-assembler-times "xvnmsubadp" 1 } } */
 /* { dg-final { scan-assembler-times "vmsumshs" 1 } } */
 /* { dg-final { scan-assembler-times "xxland" 13 } } */
+/* { dg-final { scan-assembler-times "xxlxor" 2 } } */
+/* { dg-final { scan-assembler-times "xxsel" 2 } } */
+/* { dg-final { scan-assembler-times "xvrdpip" 1 } } */
+/* { dg-final { scan-assembler-times "xvdivdp" 1 } } */
+/* { dg-final { scan-assembler-times "xvrdpi" 5 } } */
 
 /* Source code for the test in vsx-vector-6.h */
 #include "vsx-vector-6.h"

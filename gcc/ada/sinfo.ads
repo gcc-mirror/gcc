@@ -531,75 +531,89 @@ package Sinfo is
    --  The SPARK RM 6.9 defines two classes of constructs - Ghost entities and
    --  Ghost statements. The intent of the feature is to treat Ghost constructs
    --  as non-existent when Ghost assertion policy Ignore is in effect.
-
+   --
    --  The corresponding nodes which map to Ghost constructs are:
-
+   --
    --    Ghost entities
    --      Declaration nodes
    --      N_Package_Body
    --      N_Subprogram_Body
-
+   --
    --    Ghost statements
    --      N_Assignment_Statement
    --      N_Procedure_Call_Statement
    --      N_Pragma
-
+   --
    --  In addition, the compiler treats instantiations as Ghost entities
-
+   --
    --  To achieve the removal of ignored Ghost constructs, the compiler relies
-   --  on global variable Ghost_Mode and a mechanism called "Ghost regions".
-   --  The values of the global variable are as follows:
-
+   --  on global variables Ghost_Mode and Ignored_Ghost_Region, which comprise
+   --  a mechanism called "Ghost regions".
+   --
+   --  The values of Ghost_Mode are as follows:
+   --
    --    1. Check - All static semantics as defined in SPARK RM 6.9 are in
    --       effect. The Ghost region has mode Check.
-
+   --
    --    2. Ignore - Same as Check, ignored Ghost code is not present in ALI
    --       files, object files, and the final executable. The Ghost region
    --       has mode Ignore.
-
+   --
    --    3. None - No Ghost region is in effect
-
+   --
+   --  The value of Ignored_Ghost_Region captures the node which initiates an
+   --  ignored Ghost region.
+   --
    --  A Ghost region is a compiler operating mode, similar to Check_Syntax,
    --  however a region is much more finely grained and depends on the policy
    --  in effect. The region starts prior to the analysis of a Ghost construct
    --  and ends immediately after its expansion. The region is established as
    --  follows:
-
+   --
    --    1. Declarations - Prior to analysis, if the declaration is subject to
    --       pragma Ghost.
-
+   --
    --    2. Renaming declarations - Same as 1) or when the renamed entity is
    --       Ghost.
-
+   --
    --    3. Completing declarations - Same as 1) or when the declaration is
    --       partially analyzed and the declaration completes a Ghost entity.
-
+   --
    --    4. N_Package_Body, N_Subprogram_Body - Same as 1) or when the body is
    --       partially analyzed and completes a Ghost entity.
-
+   --
    --    5. N_Assignment_Statement - After the left hand side is analyzed and
    --       references a Ghost entity.
-
+   --
    --    6. N_Procedure_Call_Statement - After the name is analyzed and denotes
    --       a Ghost procedure.
-
+   --
    --    7. N_Pragma - During analysis, when the related entity is Ghost or the
    --       pragma encloses a Ghost entity.
-
+   --
    --    8. Instantiations - Save as 1) or when the instantiation is partially
    --       analyzed and the generic template is Ghost.
-
-   --  Routines Mark_And_Set_Ghost_xxx and Set_Ghost_Mode install a new Ghost
-   --  region and routine Restore_Ghost_Mode ends a Ghost region. A region may
-   --  be reinstalled similarly to scopes for decoupled expansion such as the
-   --  generation of dispatch tables or the creation of a predicate function.
-
+   --
+   --  The following routines install a new Ghost region:
+   --
+   --     Install_Ghost_Region
+   --     Mark_And_Set_Ghost_xxx
+   --     Set_Ghost_Mode
+   --
+   --  The following routine ends a Ghost region:
+   --
+   --     Restore_Ghost_Region
+   --
+   --  A region may be reinstalled similarly to scopes for decoupled expansion
+   --  such as the generation of dispatch tables or the creation of a predicate
+   --  function.
+   --
    --  If the mode of a Ghost region is Ignore, any newly created nodes as well
    --  as source entities are marked as ignored Ghost. In additon, the marking
    --  process signals all enclosing scopes that an ignored Ghost node resides
    --  within. The compilation unit where the node resides is also added to an
    --  auxiliary table for post processing.
-
+   --
    --  After the analysis and expansion of all compilation units takes place
    --  as well as the instantiation of all inlined [generic] bodies, the GNAT
    --  driver initiates a separate pass which removes all ignored Ghost nodes
@@ -626,7 +640,7 @@ package Sinfo is
 
    --  The tree after this light expansion should be fully analyzed
    --  semantically, which sometimes requires the insertion of semantic
-   --  pre-analysis, for example for subprogram contracts and pragma
+   --  preanalysis, for example for subprogram contracts and pragma
    --  check/assert. In particular, all expression must have their proper type,
    --  and semantic links should be set between tree nodes (partial to full
    --  view, etc.) Some kinds of nodes should be either absent, or can be
@@ -1758,6 +1772,7 @@ package Sinfo is
    --  Is_Elaboration_Warnings_OK_Node (Flag3-Sem)
    --    Present in the following nodes:
    --
+   --      attribute reference
    --      call marker
    --      entry call statement
    --      function call
@@ -2848,7 +2863,7 @@ package Sinfo is
       --  Einfo.
 
       --  Note: N_Defining_Identifier is an extended node whose fields are
-      --  deliberate layed out to match the layout of fields in an ordinary
+      --  deliberately layed out to match the layout of fields in an ordinary
       --  N_Identifier node allowing for easy alteration of an identifier
       --  node into a defining identifier node. For details, see procedure
       --  Sinfo.CN.Change_Identifier_To_Defining_Identifier.
@@ -4064,6 +4079,7 @@ package Sinfo is
       --  Associated_Node (Node4-Sem)
       --  Is_Elaboration_Checks_OK_Node (Flag1-Sem)
       --  Is_SPARK_Mode_On_Node (Flag2-Sem)
+      --  Is_Elaboration_Warnings_OK_Node (Flag3-Sem)
       --  Header_Size_Added (Flag11-Sem)
       --  Redundant_Use (Flag13-Sem)
       --  Must_Be_Byte_Aligned (Flag14-Sem)
@@ -4136,7 +4152,7 @@ package Sinfo is
       --  makes no attempt to enforce consistency here, so it is up to the
       --  semantic phase to make sure that the aggregate is consistent (i.e.
       --  that it is not a "half-and-half" case that mixes record and array
-      --  syntax. In particular, for a record aggregate, the expressions
+      --  syntax). In particular, for a record aggregate, the expressions
       --  field will be set if there are positional associations.
 
       --  Note: N_Aggregate is not used for all aggregates; in particular,
@@ -4761,31 +4777,6 @@ package Sinfo is
       --  Loop_Parameter_Specification (Node4)
       --  Condition (Node1)
       --  All_Present (Flag15)
-
-      --------------------------------
-      -- 4.5.9 Reduction Expression --
-      --------------------------------
-
-      --  REDUCTION_EXPRESSION ::=
-      --    for LOOP_PARAMETER_SPECIFICATION => COMBINER_FUNCTION_CALL
-      --    for ITERATOR_SPECIFIATION => COMBINER_FUNCTION_CALL
-
-      --  At most one of (Iterator_Specification, Loop_Parameter_Specification)
-      --  is present at a time, in which case the other one is empty.
-
-      --  N_Reduction_Expression
-      --  Sloc points to FOR
-      --  Iterator_Specification (Node2)
-      --  Expression (Node3)
-      --  Loop_Parameter_Specification (Node4)
-      --  plus fields for expression
-
-      --  COMBINER_FUNCTION_CALL => FUNCTION_CALL
-
-      --  A Combiner_Function_Call is either a function call (including an
-      --  operator) with one reduction expression parameter, appearing either
-      --  as a left operand or as the first actual in the parameter list. In
-      --  a reduction expression this is represented as an expression.
 
       --------------------------
       -- 4.6  Type Conversion --
@@ -5648,16 +5639,6 @@ package Sinfo is
 
       --  EXPLICIT_ACTUAL_PARAMETER ::=
       --    EXPRESSION | variable_NAME | REDUCTION_EXPRESSION_PARAMETER
-
-      ------------------------------------------
-      -- 6.4.6 Reduction_Expression_Parameter --
-      ------------------------------------------
-
-      --  REDUCTION_EXPRESSION_PARAMETER ::= <> | < EXPRESSION >
-
-      --  N_Reduction_Expression_Parameter
-      --  Expression (Node3) (Set to Empty if no expression present)
-      --  plus fields for expression
 
       ---------------------------
       -- 6.5  Return Statement --
@@ -8781,8 +8762,6 @@ package Sinfo is
       N_Null,
       N_Qualified_Expression,
       N_Quantified_Expression,
-      N_Reduction_Expression,
-      N_Reduction_Expression_Parameter,
       N_Aggregate,
       N_Allocator,
       N_Case_Expression,
@@ -12172,20 +12151,6 @@ package Sinfo is
         3 => False,   --  unused
         4 => True,    --  Loop_Parameter_Specification (Node4)
         5 => False),  --  Etype (Node5-Sem)
-
-     N_Reduction_Expression =>
-       (1 => False,   --  unused
-        2 => True,    --  Iterator_Specification (Node2)
-        3 => True,    --  Expression (Node3)
-        4 => True,    --  Loop_Parameter_Specification (Node4)
-        5 => False),  --  Etype (Node5-Sem)
-
-     N_Reduction_Expression_Parameter =>
-       (1 => False,    --  unused
-        2 => False,    --  unused
-        3 => True,     --  Expression (Node3)
-        4 => False,    --  unused
-        5 => False),   --  Etype (Node5-Sem)
 
      N_Allocator =>
        (1 => False,   --  Storage_Pool (Node1-Sem)

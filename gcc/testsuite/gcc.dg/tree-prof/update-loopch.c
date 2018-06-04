@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-ipa-profile-blocks-details -fdump-tree-switchlower-blocks-details" } */
+/* { dg-options "-O2 -fdump-ipa-profile-blocks-details -fdump-tree-switchlower1-blocks-details" } */
 int max = 33333;
 int a[8];
 int
@@ -16,7 +16,6 @@ main ()
    edge.  */
 /* autofdo cannot do that precise counts */
 /* { dg-final-use-not-autofdo { scan-ipa-dump "loop depth 1, count 33334" "profile"} } */
-/* { dg-final-use-not-autofdo { scan-tree-dump "loop depth 1, count 33333" "switchlower"} } */
-/* { dg-final-use-not-autofdo { scan-tree-dump-not "loop depth 1, count 33332" "switchlower"} } */
-/* { dg-final-use-not-autofdo { scan-tree-dump "Removing basic block" "switchlower"} } */
-/* { dg-final-use { scan-tree-dump-not "Invalid sum" "switchlower"} } */
+/* { dg-final-use-not-autofdo { scan-tree-dump "loop depth 1, count 33333" "switchlower1"} } */
+/* { dg-final-use-not-autofdo { scan-tree-dump-not "loop depth 1, count 33332" "switchlower1"} } */
+/* { dg-final-use { scan-tree-dump-not "Invalid sum" "switchlower1"} } */

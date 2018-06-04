@@ -611,6 +611,11 @@ i[34567]86-*-elf*)
 	;;
 x86_64-*-elf* | x86_64-*-rtems*)
 	tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
+	case ${host} in
+	  x86_64-*-rtems*)
+	    extra_parts="$extra_parts crti.o crtn.o"
+	    ;;
+	esac
 	;;
 x86_64-*-fuchsia*)
 	tmake_file="$tmake_file t-libgcc-pic"
@@ -973,6 +978,23 @@ moxie-*-elf | moxie-*-moxiebox* | moxie-*-uclinux* | moxie-*-rtems*)
 msp430*-*-elf)
 	tmake_file="$tm_file t-crtstuff t-fdpbit msp430/t-msp430"
         extra_parts="$extra_parts libmul_none.a libmul_16.a libmul_32.a libmul_f5.a"
+	;;
+nds32*-linux*)
+	# Basic makefile fragment and extra_parts for crt stuff.
+	# We also append c-isr library implementation.
+	tmake_file="${tmake_file} t-slibgcc-libgcc"
+	tmake_file="${tmake_file} nds32/t-nds32-glibc nds32/t-crtstuff t-softfp-sfdf t-softfp"
+	# The header file of defining MD_FALLBACK_FRAME_STATE_FOR.
+	md_unwind_header=nds32/linux-unwind.h
+	# Append library definition makefile fragment according to --with-nds32-lib=X setting.
+	case "${with_nds32_lib}" in
+	"" | glibc | uclibc )
+		;;
+	*)
+		echo "Cannot accept --with-nds32-lib=$with_nds32_lib, available values are: glibc uclibc" 1>&2
+		exit 1
+		;;
+	esac
 	;;
 nds32*-elf*)
 	# Basic makefile fragment and extra_parts for crt stuff.

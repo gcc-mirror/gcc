@@ -72,7 +72,8 @@ spread_r8 (gfc_array_r8 *ret, const gfc_array_r8 *source,
 
       /* The front end has signalled that we need to populate the
 	 return array descriptor.  */
-      GFC_DTYPE_COPY_SETRANK(ret,source,rrank);
+      ret->dtype.rank = rrank;
+
       dim = 0;
       rs = 1;
       for (n = 0; n < rrank; n++)

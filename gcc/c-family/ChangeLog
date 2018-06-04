@@ -1,3 +1,111 @@
+2018-06-01  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Bump __cpp_deduction_guides to
+	201703.
+
+2018-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_declaration) <TYPE_DECL>: Generate a forward
+	declaration for a typedef independently of whether the declaration of
+	the subtype is generated.
+
+2018-05-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c/82063
+	* c.opt (-Wno-alloc-size-larger-than): New option.
+
+2018-04-22  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/55976
+	* c-opts.c (c_common_post_options): Set default for warn_return_type
+	for C++/C++ with ObjC extensions only. For C, makes it possible to 
+	differentiate between default (no option), -Wreturn-type, and
+	-Wno-return-type.
+
+2018-05-29  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Winit-list-lifetime): New flag.
+
+2018-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-lex.c (get_fileinfo): Use splay_tree_compare_strings and
+	splay_tree_delete_pointers.
+
+2018-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/85921
+	* c-warn.c (diagnose_mismatched_attributes): Remove unnecessary
+	noinline variable to workaround broken kernel headers.
+
+2018-05-18  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Wdeprecated-copy): New flag.
+
+2018-05-17  Martin Liska  <mliska@suse.cz>
+
+	* c-warn.c (overflow_warning): Do not use
+	space in between 'G_' and '('.
+
+2018-05-09  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (valid_array_size_p): Add complain parameter.
+	* c-common.h: ...which defaults to true.
+
+2018-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85696
+	* c-omp.c (c_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_SHARED for artificial vars with integral type.
+
+2018-05-11  Martin Liska  <mliska@suse.cz>
+
+        PR sanitizer/85556
+	* c-attribs.c (handle_no_sanitize_attribute): Iterate all
+	TREE_LIST values.
+
+2018-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85662
+	* c-common.h (fold_offsetof_1): Removed.
+	(fold_offsetof): Add TYPE argument defaulted to size_type_node and
+	CTX argument defaulted to ERROR_MARK.
+	* c-common.c (fold_offsetof_1): Renamed to ...
+	(fold_offsetof): ... this.  Remove wrapper function.  Add TYPE
+	argument, convert the pointer constant to TYPE and use size_binop
+	with PLUS_EXPR instead of fold_build_pointer_plus if type is not
+	a pointer type.  Adjust recursive calls.
+
+2018-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/85400
+	* c-attribs.c (handle_visibility_attribute): Do not set no_add_attrs.
+
+2018-05-07  Nathan Sidwell  <nathan@acm.org>
+
+	* c.opt (ffor-scope): Remove functionality, issue warning.
+
+2018-05-03  Nathan Sidwell  <nathan@acm.org>
+
+	* c.opt (ffriend-injection): Remove functionality, issue warning.
+
+2018-05-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84258
+	* c-format.c (struct format_check_results): Add field
+	"number_non_char".
+	(check_format_info): Initialize it, and warn if encountered.
+	(check_format_arg): Distinguish between wide char and
+	everything else when detecting arrays of non-char.
+
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (get_corrected_substring): Update for
+	location_get_source_line returning a char_span.  Use a char_span
+	when handling the prefix of the correction.
+	* c-indentation.c (get_visual_column): Update for
+	location_get_source_line returning a char_span.
+	(get_first_nws_vis_column): Likewise.
+
 2018-03-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/84269

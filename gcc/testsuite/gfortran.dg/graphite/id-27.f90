@@ -1,4 +1,5 @@
-! { dg-additional-options "-Ofast" }
+! { dg-do compile }
+! { dg-additional-options "-Ofast -std=legacy" }
 MODULE module_ra_gfdleta
       INTEGER, PARAMETER              :: NBLY=15
       REAL   , SAVE :: EM1(28,180),EM1WDE(28,180),TABLE1(28,180),     &

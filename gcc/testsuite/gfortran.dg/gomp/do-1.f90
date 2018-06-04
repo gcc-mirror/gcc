@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O -fopenmp -fdump-tree-omplower" }
+! { dg-options "-O -fopenmp -fdump-tree-omplower -std=legacy" }
 
 subroutine foo (i, j, k, s, a)
   integer :: i, j, k, s, a(100), l

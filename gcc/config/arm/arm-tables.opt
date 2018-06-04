@@ -25,75 +25,6 @@ Name(processor_type) Type(enum processor_type)
 Known ARM CPUs (for use with the -mcpu= and -mtune= options):
 
 EnumValue
-Enum(processor_type) String(arm2) Value( TARGET_CPU_arm2)
-
-EnumValue
-Enum(processor_type) String(arm250) Value( TARGET_CPU_arm250)
-
-EnumValue
-Enum(processor_type) String(arm3) Value( TARGET_CPU_arm3)
-
-EnumValue
-Enum(processor_type) String(arm6) Value( TARGET_CPU_arm6)
-
-EnumValue
-Enum(processor_type) String(arm60) Value( TARGET_CPU_arm60)
-
-EnumValue
-Enum(processor_type) String(arm600) Value( TARGET_CPU_arm600)
-
-EnumValue
-Enum(processor_type) String(arm610) Value( TARGET_CPU_arm610)
-
-EnumValue
-Enum(processor_type) String(arm620) Value( TARGET_CPU_arm620)
-
-EnumValue
-Enum(processor_type) String(arm7) Value( TARGET_CPU_arm7)
-
-EnumValue
-Enum(processor_type) String(arm7d) Value( TARGET_CPU_arm7d)
-
-EnumValue
-Enum(processor_type) String(arm7di) Value( TARGET_CPU_arm7di)
-
-EnumValue
-Enum(processor_type) String(arm70) Value( TARGET_CPU_arm70)
-
-EnumValue
-Enum(processor_type) String(arm700) Value( TARGET_CPU_arm700)
-
-EnumValue
-Enum(processor_type) String(arm700i) Value( TARGET_CPU_arm700i)
-
-EnumValue
-Enum(processor_type) String(arm710) Value( TARGET_CPU_arm710)
-
-EnumValue
-Enum(processor_type) String(arm720) Value( TARGET_CPU_arm720)
-
-EnumValue
-Enum(processor_type) String(arm710c) Value( TARGET_CPU_arm710c)
-
-EnumValue
-Enum(processor_type) String(arm7100) Value( TARGET_CPU_arm7100)
-
-EnumValue
-Enum(processor_type) String(arm7500) Value( TARGET_CPU_arm7500)
-
-EnumValue
-Enum(processor_type) String(arm7500fe) Value( TARGET_CPU_arm7500fe)
-
-EnumValue
-Enum(processor_type) String(arm7m) Value( TARGET_CPU_arm7m)
-
-EnumValue
-Enum(processor_type) String(arm7dm) Value( TARGET_CPU_arm7dm)
-
-EnumValue
-Enum(processor_type) String(arm7dmi) Value( TARGET_CPU_arm7dmi)
-
-EnumValue
 Enum(processor_type) String(arm8) Value( TARGET_CPU_arm8)
 
 EnumValue
@@ -365,112 +296,94 @@ Name(arm_arch) Type(int)
 Known ARM architectures (for use with the -march= option):
 
 EnumValue
-Enum(arm_arch) String(armv2) Value(0)
+Enum(arm_arch) String(armv4) Value(0)
 
 EnumValue
-Enum(arm_arch) String(armv2a) Value(1)
+Enum(arm_arch) String(armv4t) Value(1)
 
 EnumValue
-Enum(arm_arch) String(armv3) Value(2)
+Enum(arm_arch) String(armv5t) Value(2)
 
 EnumValue
-Enum(arm_arch) String(armv3m) Value(3)
+Enum(arm_arch) String(armv5te) Value(3)
 
 EnumValue
-Enum(arm_arch) String(armv4) Value(4)
+Enum(arm_arch) String(armv5tej) Value(4)
 
 EnumValue
-Enum(arm_arch) String(armv4t) Value(5)
+Enum(arm_arch) String(armv6) Value(5)
 
 EnumValue
-Enum(arm_arch) String(armv5) Value(6)
+Enum(arm_arch) String(armv6j) Value(6)
 
 EnumValue
-Enum(arm_arch) String(armv5t) Value(7)
+Enum(arm_arch) String(armv6k) Value(7)
 
 EnumValue
-Enum(arm_arch) String(armv5e) Value(8)
+Enum(arm_arch) String(armv6z) Value(8)
 
 EnumValue
-Enum(arm_arch) String(armv5te) Value(9)
+Enum(arm_arch) String(armv6kz) Value(9)
 
 EnumValue
-Enum(arm_arch) String(armv5tej) Value(10)
+Enum(arm_arch) String(armv6zk) Value(10)
 
 EnumValue
-Enum(arm_arch) String(armv6) Value(11)
+Enum(arm_arch) String(armv6t2) Value(11)
 
 EnumValue
-Enum(arm_arch) String(armv6j) Value(12)
+Enum(arm_arch) String(armv6-m) Value(12)
 
 EnumValue
-Enum(arm_arch) String(armv6k) Value(13)
+Enum(arm_arch) String(armv6s-m) Value(13)
 
 EnumValue
-Enum(arm_arch) String(armv6z) Value(14)
+Enum(arm_arch) String(armv7) Value(14)
 
 EnumValue
-Enum(arm_arch) String(armv6kz) Value(15)
+Enum(arm_arch) String(armv7-a) Value(15)
 
 EnumValue
-Enum(arm_arch) String(armv6zk) Value(16)
+Enum(arm_arch) String(armv7ve) Value(16)
 
 EnumValue
-Enum(arm_arch) String(armv6t2) Value(17)
+Enum(arm_arch) String(armv7-r) Value(17)
 
 EnumValue
-Enum(arm_arch) String(armv6-m) Value(18)
+Enum(arm_arch) String(armv7-m) Value(18)
 
 EnumValue
-Enum(arm_arch) String(armv6s-m) Value(19)
+Enum(arm_arch) String(armv7e-m) Value(19)
 
 EnumValue
-Enum(arm_arch) String(armv7) Value(20)
+Enum(arm_arch) String(armv8-a) Value(20)
 
 EnumValue
-Enum(arm_arch) String(armv7-a) Value(21)
+Enum(arm_arch) String(armv8.1-a) Value(21)
 
 EnumValue
-Enum(arm_arch) String(armv7ve) Value(22)
+Enum(arm_arch) String(armv8.2-a) Value(22)
 
 EnumValue
-Enum(arm_arch) String(armv7-r) Value(23)
+Enum(arm_arch) String(armv8.3-a) Value(23)
 
 EnumValue
-Enum(arm_arch) String(armv7-m) Value(24)
+Enum(arm_arch) String(armv8.4-a) Value(24)
 
 EnumValue
-Enum(arm_arch) String(armv7e-m) Value(25)
+Enum(arm_arch) String(armv8-m.base) Value(25)
 
 EnumValue
-Enum(arm_arch) String(armv8-a) Value(26)
+Enum(arm_arch) String(armv8-m.main) Value(26)
 
 EnumValue
-Enum(arm_arch) String(armv8.1-a) Value(27)
+Enum(arm_arch) String(armv8-r) Value(27)
 
 EnumValue
-Enum(arm_arch) String(armv8.2-a) Value(28)
+Enum(arm_arch) String(iwmmxt) Value(28)
 
 EnumValue
-Enum(arm_arch) String(armv8.3-a) Value(29)
-
-EnumValue
-Enum(arm_arch) String(armv8.4-a) Value(30)
-
-EnumValue
-Enum(arm_arch) String(armv8-m.base) Value(31)
-
-EnumValue
-Enum(arm_arch) String(armv8-m.main) Value(32)
-
-EnumValue
-Enum(arm_arch) String(armv8-r) Value(33)
-
-EnumValue
-Enum(arm_arch) String(iwmmxt) Value(34)
-
-EnumValue
-Enum(arm_arch) String(iwmmxt2) Value(35)
+Enum(arm_arch) String(iwmmxt2) Value(29)
 
 Enum
 Name(arm_fpu) Type(enum fpu_type)

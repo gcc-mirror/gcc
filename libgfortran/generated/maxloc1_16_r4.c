@@ -54,10 +54,6 @@ maxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
   index_type dim;
   int continue_loop;
 
-#ifdef HAVE_BACK_ARG
-  assert(back == 0);
-#endif
-
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
   dim = (*pdim) - 1;
@@ -107,7 +103,7 @@ maxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
@@ -163,10 +159,14 @@ maxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
 	  *dest = 0;
 	else
 	  {
+#if ! defined HAVE_BACK_ARG
 	    for (n = 0; n < len; n++, src += delta)
 	      {
+#endif
 
 #if defined (GFC_REAL_4_QUIET_NAN)
+     	     for (n = 0; n < len; n++, src += delta)
+	       {
 		if (*src >= maxval)
 		  {
 		    maxval = *src;
@@ -174,10 +174,12 @@ maxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
 		    break;
 		  }
 	      }
+#else
+	    n = 0;
+#endif
 	    for (; n < len; n++, src += delta)
 	      {
-#endif
-		if (*src > maxval)
+		if (back ? *src >= maxval : *src > maxval)
 		  {
 		    maxval = *src;
 		    result = (GFC_INTEGER_16)n + 1;
@@ -246,9 +248,6 @@ mmaxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
-#ifdef HAVE_BACK_ARG
-  assert (back == 0);
-#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -318,7 +317,7 @@ mmaxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
       retarray->offset = 0;
-      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
+      retarray->dtype.rank = rank;
 
       if (alloc_size == 0)
 	{
@@ -396,13 +395,23 @@ mmaxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
 	      result = result2;
 	    else
 #endif
-	    for (; n < len; n++, src += delta, msrc += mdelta)
-	      {
-		if (*msrc && *src > maxval)
-		  {
-		    maxval = *src;
-		    result = (GFC_INTEGER_16)n + 1;
-		  }
+	    if (back)
+	      for (; n < len; n++, src += delta, msrc += mdelta)
+	      	{
+		  if (*msrc && unlikely (*src >= maxval))
+		    {
+		      maxval = *src;
+		      result = (GFC_INTEGER_16)n + 1;
+		    }
+		}
+	    else
+	      for (; n < len; n++, src += delta, msrc += mdelta)
+	        {
+		  if (*msrc && unlikely (*src > maxval))
+		    {
+		      maxval = *src;
+		      result = (GFC_INTEGER_16)n + 1;
+		    }
 	  }
 	*dest = result;
       }
@@ -514,7 +523,7 @@ smaxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 

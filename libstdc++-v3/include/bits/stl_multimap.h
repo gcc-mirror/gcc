@@ -229,7 +229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Allocator-extended default constructor.
       explicit
       multimap(const allocator_type& __a)
-      : _M_t(_Compare(), _Pair_alloc_type(__a)) { }
+      : _M_t(_Pair_alloc_type(__a)) { }
 
       /// Allocator-extended copy constructor.
       multimap(const multimap& __m, const allocator_type& __a)
@@ -243,14 +243,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Allocator-extended initialier-list constructor.
       multimap(initializer_list<value_type> __l, const allocator_type& __a)
-      : _M_t(_Compare(), _Pair_alloc_type(__a))
+      : _M_t(_Pair_alloc_type(__a))
       { _M_t._M_insert_equal(__l.begin(), __l.end()); }
 
       /// Allocator-extended range constructor.
       template<typename _InputIterator>
 	multimap(_InputIterator __first, _InputIterator __last,
 		 const allocator_type& __a)
-	: _M_t(_Compare(), _Pair_alloc_type(__a))
+	: _M_t(_Pair_alloc_type(__a))
 	{ _M_t._M_insert_equal(__first, __last); }
 #endif
 

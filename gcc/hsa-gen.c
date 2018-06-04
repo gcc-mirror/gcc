@@ -3178,23 +3178,6 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
     case NEGATE_EXPR:
       opcode = BRIG_OPCODE_NEG;
       break;
-    case FMA_EXPR:
-      /* There is a native HSA instruction for scalar FMAs but not for vector
-	 ones.  */
-      if (TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE)
-	{
-	  hsa_op_reg *dest
-	    = hsa_cfun->reg_for_gimple_ssa (gimple_assign_lhs (assign));
-	  hsa_op_with_type *op1 = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
-	  hsa_op_with_type *op2 = hsa_reg_or_immed_for_gimple_op (rhs2, hbb);
-	  hsa_op_with_type *op3 = hsa_reg_or_immed_for_gimple_op (rhs3, hbb);
-	  hsa_op_reg *tmp = new hsa_op_reg (dest->m_type);
-	  gen_hsa_binary_operation (BRIG_OPCODE_MUL, tmp, op1, op2, hbb);
-	  gen_hsa_binary_operation (BRIG_OPCODE_ADD, dest, tmp, op3, hbb);
-	  return;
-	}
-      opcode = BRIG_OPCODE_MAD;
-      break;
     case MIN_EXPR:
       opcode = BRIG_OPCODE_MIN;
       break;
@@ -4490,6 +4473,57 @@ gen_hsa_divmod (gcall *call, hsa_bb *hbb)
   insn->set_output_in_type (dest, 0, hbb);
 }
 
+/* Emit instructions that implement FMA, FMS, FNMA or FNMS call STMT.
+   Instructions are appended to basic block HBB.  NEGATE1 is true for
+   FNMA and FNMS.  NEGATE3 is true for FMS and FNMS.  */
+
+static void
+gen_hsa_fma (gcall *call, hsa_bb *hbb, bool negate1, bool negate3)
+{
+  tree lhs = gimple_call_lhs (call);
+  if (lhs == NULL_TREE)
+    return;
+
+  tree rhs1 = gimple_call_arg (call, 0);
+  tree rhs2 = gimple_call_arg (call, 1);
+  tree rhs3 = gimple_call_arg (call, 2);
+
+  hsa_op_reg *dest = hsa_cfun->reg_for_gimple_ssa (lhs);
+  hsa_op_with_type *op1 = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
+  hsa_op_with_type *op2 = hsa_reg_or_immed_for_gimple_op (rhs2, hbb);
+  hsa_op_with_type *op3 = hsa_reg_or_immed_for_gimple_op (rhs3, hbb);
+
+  if (negate1)
+    {
+      hsa_op_reg *tmp = new hsa_op_reg (dest->m_type);
+      gen_hsa_unary_operation (BRIG_OPCODE_NEG, tmp, op1, hbb);
+      op1 = tmp;
+    }
+
+  /* There is a native HSA instruction for scalar FMAs but not for vector
+     ones.  */
+  if (TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE)
+    {
+      hsa_op_reg *tmp = new hsa_op_reg (dest->m_type);
+      gen_hsa_binary_operation (BRIG_OPCODE_MUL, tmp, op1, op2, hbb);
+      gen_hsa_binary_operation (negate3 ? BRIG_OPCODE_SUB : BRIG_OPCODE_ADD,
+				dest, tmp, op3, hbb);
+    }
+  else
+    {
+      if (negate3)
+	{
+	  hsa_op_reg *tmp = new hsa_op_reg (dest->m_type);
+	  gen_hsa_unary_operation (BRIG_OPCODE_NEG, tmp, op3, hbb);
+	  op3 = tmp;
+	}
+      hsa_insn_basic *insn = new hsa_insn_basic (4, BRIG_OPCODE_MAD,
+						 dest->m_type, dest,
+						 op1, op2, op3);
+      hbb->append_insn (insn);
+    }
+}
+
 /* Set VALUE to a shadow kernel debug argument and append a new instruction
    to HBB basic block.  */
 
@@ -5222,6 +5256,22 @@ gen_hsa_insn_for_internal_fn_call (gcall *stmt, hsa_bb *hbb)
     case IFN_FMIN:
     case IFN_FMAX:
       gen_hsa_insns_for_call_of_internal_fn (stmt, hbb);
+      break;
+
+    case IFN_FMA:
+      gen_hsa_fma (stmt, hbb, false, false);
+      break;
+
+    case IFN_FMS:
+      gen_hsa_fma (stmt, hbb, false, true);
+      break;
+
+    case IFN_FNMA:
+      gen_hsa_fma (stmt, hbb, true, false);
+      break;
+
+    case IFN_FNMS:
+      gen_hsa_fma (stmt, hbb, true, true);
       break;
 
     default:

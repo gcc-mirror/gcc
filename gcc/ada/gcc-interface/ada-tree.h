@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -234,6 +234,11 @@ do {							 \
    a full description of the copy in/copy out parameter passing mechanism
    refer to the routine gnat_to_gnu_entity.  */
 #define TYPE_CI_CO_LIST(NODE) TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
+
+/* For an ARRAY_TYPE with variable size, this is the padding type built for
+   the array type when it is itself the component type of another array.  */
+#define TYPE_PADDING_FOR_COMPONENT(NODE) \
+  (TYPE_LANG_SLOT_1 (ARRAY_TYPE_CHECK (NODE)))
 
 /* For a VECTOR_TYPE, this is the representative array type.  */
 #define TYPE_REPRESENTATIVE_ARRAY(NODE) \

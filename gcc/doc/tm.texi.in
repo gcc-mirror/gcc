@@ -4922,6 +4922,8 @@ This macro is irrelevant if there is no separate readonly data section.
 
 @hook TARGET_ASM_RELOC_RW_MASK
 
+@hook TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC
+
 @hook TARGET_ASM_SELECT_SECTION
 
 @defmac USE_SELECT_SECTION_FOR_FUNCTIONS

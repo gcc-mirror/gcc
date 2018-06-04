@@ -54,10 +54,6 @@ minloc1_8_r10 (gfc_array_i8 * const restrict retarray,
   index_type dim;
   int continue_loop;
 
-#ifdef HAVE_BACK_ARG
-  assert(back == 0);
-#endif
-
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
   dim = (*pdim) - 1;
@@ -107,7 +103,7 @@ minloc1_8_r10 (gfc_array_i8 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
@@ -163,10 +159,14 @@ minloc1_8_r10 (gfc_array_i8 * const restrict retarray,
 	  *dest = 0;
 	else
 	  {
+#if ! defined HAVE_BACK_ARG
 	    for (n = 0; n < len; n++, src += delta)
 	      {
+#endif
 
 #if defined (GFC_REAL_10_QUIET_NAN)
+     	   for (n = 0; n < len; n++, src += delta)
+	     {
 		if (*src <= minval)
 		  {
 		    minval = *src;
@@ -174,14 +174,26 @@ minloc1_8_r10 (gfc_array_i8 * const restrict retarray,
 		    break;
 		  }
 	      }
-	    for (; n < len; n++, src += delta)
-	      {
+#else
+	    n = 0;
 #endif
-		if (*src < minval)
-		  {
-		    minval = *src;
-		    result = (GFC_INTEGER_8)n + 1;
-		  }
+	    if (back)
+	      for (; n < len; n++, src += delta)
+	        {
+		  if (unlikely (*src <= minval))
+		    {
+		      minval = *src;
+		      result = (GFC_INTEGER_8)n + 1;
+		    }
+		}
+	    else
+	      for (; n < len; n++, src += delta)
+	        {
+		  if (unlikely (*src < minval))
+		    {
+		      minval = *src;
+		      result = (GFC_INTEGER_8) n + 1;
+		    }
 	      }
 	    
 	    *dest = result;
@@ -246,9 +258,6 @@ mminloc1_8_r10 (gfc_array_i8 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
-#ifdef HAVE_BACK_ARG
-  assert (back == 0);
-#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -318,7 +327,7 @@ mminloc1_8_r10 (gfc_array_i8 * const restrict retarray,
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
       retarray->offset = 0;
-      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
+      retarray->dtype.rank = rank;
 
       if (alloc_size == 0)
 	{
@@ -396,13 +405,23 @@ mminloc1_8_r10 (gfc_array_i8 * const restrict retarray,
 	      result = result2;
 	    else
 #endif
-	    for (; n < len; n++, src += delta, msrc += mdelta)
-	      {
-		if (*msrc && *src < minval)
+	    if (back)
+	      for (; n < len; n++, src += delta, msrc += mdelta)
+	      	{
+		  if (*msrc && unlikely (*src <= minval))
+		    {
+		      minval = *src;
+		      result = (GFC_INTEGER_8)n + 1;
+		    }
+		}
+	      else
+	        for (; n < len; n++, src += delta, msrc += mdelta)
 		  {
-		    minval = *src;
-		    result = (GFC_INTEGER_8)n + 1;
-		  }
+		    if (*msrc && unlikely (*src < minval))
+		      {
+		        minval = *src;
+			result = (GFC_INTEGER_8) n + 1;
+		      }
 	  }
 	*dest = result;
       }
@@ -514,7 +533,7 @@ sminloc1_8_r10 (gfc_array_i8 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 

@@ -4913,7 +4913,7 @@ get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
   else
     *bitstart = *bitpos - bitoffset;
 
-  *bitend = *bitstart + tree_to_uhwi (DECL_SIZE (repr)) - 1;
+  *bitend = *bitstart + tree_to_poly_uint64 (DECL_SIZE (repr)) - 1;
 }
 
 /* Returns true if ADDR is an ADDR_EXPR of a DECL that does not reside
@@ -6521,12 +6521,10 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	      continue;
 
 	    mode = TYPE_MODE (elttype);
-	    if (mode == BLKmode)
-	      bitsize = (tree_fits_uhwi_p (TYPE_SIZE (elttype))
-			 ? tree_to_uhwi (TYPE_SIZE (elttype))
-			 : -1);
-	    else
+	    if (mode != BLKmode)
 	      bitsize = GET_MODE_BITSIZE (mode);
+	    else if (!poly_int_tree_p (TYPE_SIZE (elttype), &bitsize))
+	      bitsize = -1;
 
 	    if (index != NULL_TREE && TREE_CODE (index) == RANGE_EXPR)
 	      {
@@ -8853,67 +8851,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
       return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1, target, unsignedp));
 
-    case FMA_EXPR:
-      {
-	optab opt = fma_optab;
-	gimple *def0, *def2;
-
-	/* If there is no insn for FMA, emit it as __builtin_fma{,f,l}
-	   call.  */
-	if (optab_handler (fma_optab, mode) == CODE_FOR_nothing)
-	  {
-	    tree fn = mathfn_built_in (TREE_TYPE (treeop0), BUILT_IN_FMA);
-	    tree call_expr;
-
-	    gcc_assert (fn != NULL_TREE);
-	    call_expr = build_call_expr (fn, 3, treeop0, treeop1, treeop2);
-	    return expand_builtin (call_expr, target, subtarget, mode, false);
-	  }
-
-	def0 = get_def_for_expr (treeop0, NEGATE_EXPR);
-	/* The multiplication is commutative - look at its 2nd operand
-	   if the first isn't fed by a negate.  */
-	if (!def0)
-	  {
-	    def0 = get_def_for_expr (treeop1, NEGATE_EXPR);
-	    /* Swap operands if the 2nd operand is fed by a negate.  */
-	    if (def0)
-	      std::swap (treeop0, treeop1);
-	  }
-	def2 = get_def_for_expr (treeop2, NEGATE_EXPR);
-
-	op0 = op2 = NULL;
-
-	if (def0 && def2
-	    && optab_handler (fnms_optab, mode) != CODE_FOR_nothing)
-	  {
-	    opt = fnms_optab;
-	    op0 = expand_normal (gimple_assign_rhs1 (def0));
-	    op2 = expand_normal (gimple_assign_rhs1 (def2));
-	  }
-	else if (def0
-		 && optab_handler (fnma_optab, mode) != CODE_FOR_nothing)
-	  {
-	    opt = fnma_optab;
-	    op0 = expand_normal (gimple_assign_rhs1 (def0));
-	  }
-	else if (def2
-		 && optab_handler (fms_optab, mode) != CODE_FOR_nothing)
-	  {
-	    opt = fms_optab;
-	    op2 = expand_normal (gimple_assign_rhs1 (def2));
-	  }
-
-	if (op0 == NULL)
-	  op0 = expand_expr (treeop0, subtarget, VOIDmode, EXPAND_NORMAL);
-	if (op2 == NULL)
-	  op2 = expand_normal (treeop2);
-	op1 = expand_normal (treeop1);
-
-	return expand_ternary_op (TYPE_MODE (type), opt,
-				  op0, op1, op2, target, 0);
-      }
-
     case MULT_EXPR:
       /* If this is a fixed-point operation, then we cannot use the code
 	 below because "expand_mult" doesn't support sat/no-sat fixed-point
@@ -9519,6 +9456,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
       {
 	op0 = expand_normal (treeop0);
 	temp = expand_widen_pattern_expr (ops, op0, NULL_RTX, NULL_RTX,
@@ -9557,6 +9496,18 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case VEC_PACK_FIX_TRUNC_EXPR:
       mode = TYPE_MODE (TREE_TYPE (treeop0));
       goto binop;
+
+    case VEC_PACK_FLOAT_EXPR:
+      mode = TYPE_MODE (TREE_TYPE (treeop0));
+      expand_operands (treeop0, treeop1,
+		       subtarget, &op0, &op1, EXPAND_NORMAL);
+      this_optab = optab_for_tree_code (code, TREE_TYPE (treeop0),
+					optab_default);
+      target = expand_binop (mode, this_optab, op0, op1, target,
+			     TYPE_UNSIGNED (TREE_TYPE (treeop0)),
+			     OPTAB_LIB_WIDEN);
+      gcc_assert (target);
+      return target;
 
     case VEC_PERM_EXPR:
       {
@@ -10296,11 +10247,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  {
 	    poly_int64 offset = mem_ref_offset (exp).force_shwi ();
 	    base = TREE_OPERAND (base, 0);
+	    poly_uint64 type_size;
 	    if (known_eq (offset, 0)
 	        && !reverse
-		&& tree_fits_uhwi_p (TYPE_SIZE (type))
-		&& known_eq (GET_MODE_BITSIZE (DECL_MODE (base)),
-			     tree_to_uhwi (TYPE_SIZE (type))))
+		&& poly_int_tree_p (TYPE_SIZE (type), &type_size)
+		&& known_eq (GET_MODE_BITSIZE (DECL_MODE (base)), type_size))
 	      return expand_expr (build1 (VIEW_CONVERT_EXPR, type, base),
 				  target, tmode, modifier);
 	    if (TYPE_MODE (type) == BLKmode)
@@ -10628,6 +10579,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	   to a larger size.  */
 	must_force_mem = (offset
 			  || mode1 == BLKmode
+			  || (mode == BLKmode
+			      && !int_mode_for_size (bitsize, 1).exists ())
 			  || maybe_gt (bitpos + bitsize,
 				       GET_MODE_BITSIZE (mode2)));
 
@@ -11782,11 +11735,26 @@ do_tablejump (rtx index, machine_mode mode, rtx range, rtx table_label,
     emit_cmp_and_jump_insns (index, range, GTU, NULL_RTX, mode, 1,
 			     default_label, default_probability);
 
-
   /* If index is in range, it must fit in Pmode.
      Convert to Pmode so we can index with it.  */
   if (mode != Pmode)
-    index = convert_to_mode (Pmode, index, 1);
+    {
+      unsigned int width;
+
+      /* We know the value of INDEX is between 0 and RANGE.  If we have a
+	 sign-extended subreg, and RANGE does not have the sign bit set, then
+	 we have a value that is valid for both sign and zero extension.  In
+	 this case, we get better code if we sign extend.  */
+      if (GET_CODE (index) == SUBREG
+	  && SUBREG_PROMOTED_VAR_P (index)
+	  && SUBREG_PROMOTED_SIGNED_P (index)
+	  && ((width = GET_MODE_PRECISION (as_a <scalar_int_mode> (mode)))
+	      <= HOST_BITS_PER_WIDE_INT)
+	  && ! (UINTVAL (range) & (HOST_WIDE_INT_1U << (width - 1))))
+	index = convert_to_mode (Pmode, index, 0);
+      else
+	index = convert_to_mode (Pmode, index, 1);
+    }
 
   /* Don't let a MEM slip through, because then INDEX that comes
      out of PIC_CASE_VECTOR_ADDRESS won't be a valid address,

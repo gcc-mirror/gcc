@@ -51,10 +51,6 @@ VECTOR_MODES (FLOAT, 16);     /*       V8HF  V4SF V2DF */
 VECTOR_MODES (INT, 32);       /* V32QI V16HI V8SI V4DI */
 VECTOR_MODES (FLOAT, 32);     /*       V16HF V8SF V4DF */
 
-/* Paired single.  */
-VECTOR_MODE (FLOAT, SF, 2);   /* The only valid paired-single mode.  */
-VECTOR_MODE (INT, SI, 2);     /* For paired-single permutes.  */
-
 /* Replacement for TImode that only is allowed in GPRs.  We also use PTImode
    for quad memory atomic operations to force getting an even/odd register
    combination.  */

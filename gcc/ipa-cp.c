@@ -4127,7 +4127,9 @@ intersect_with_plats (struct ipcp_param_lattices *plats,
 	  if (aglat->offset - offset == item->offset)
 	    {
 	      gcc_checking_assert (item->value);
-	      if (values_equal_for_ipcp_p (item->value, aglat->values->value))
+	      if (aglat->is_single_const ()
+		  && values_equal_for_ipcp_p (item->value,
+					      aglat->values->value))
 		found = true;
 	      break;
 	    }

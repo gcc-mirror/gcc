@@ -384,7 +384,6 @@ func Goexit() {
 
 // Call all Error and String methods before freezing the world.
 // Used when crashing with panicking.
-// This must match types handled by printany.
 func preprintpanics(p *_panic) {
 	defer func() {
 		if recover() != nil {
@@ -410,8 +409,6 @@ func printpanics(p *_panic) {
 		print("\t")
 	}
 	print("panic: ")
-	// Because of preprintpanics, p.arg cannot be an error or
-	// stringer, so this won't call into user code.
 	printany(p.arg)
 	if p.recovered {
 		print(" [recovered]")

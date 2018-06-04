@@ -229,7 +229,7 @@ package body Ada.Wide_Wide_Text_IO.Decimal_Aux is
    end Puts_Dec;
 
    --------------
-   -- Puts_Dec --
+   -- Puts_LLD --
    --------------
 
    procedure Puts_LLD

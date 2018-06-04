@@ -246,7 +246,7 @@ static GTY (()) hash_table<indirect_string_hasher> *debug_line_str_hash;
    That is, the comp_dir and dwo_name will appear in both places.
 
    2) Strings can use four forms: DW_FORM_string, DW_FORM_strp,
-   DW_FORM_line_strp or DW_FORM_GNU_str_index.
+   DW_FORM_line_strp or DW_FORM_strx/GNU_str_index.
 
    3) GCC chooses the form to use late, depending on the size and
    reference count.
@@ -1657,6 +1657,16 @@ dwarf_OP (enum dwarf_location_atom op)
 	return DW_OP_GNU_reinterpret;
       break;
 
+    case DW_OP_addrx:
+      if (dwarf_version < 5)
+	return DW_OP_GNU_addr_index;
+      break;
+
+    case DW_OP_constx:
+      if (dwarf_version < 5)
+	return DW_OP_GNU_const_index;
+      break;
+
     default:
       break;
     }
@@ -1757,6 +1767,28 @@ dwarf_TAG (enum dwarf_tag tag)
   return tag;
 }
 
+/* And similarly for forms.  */
+static inline enum dwarf_form
+dwarf_FORM (enum dwarf_form form)
+{
+  switch (form)
+    {
+    case DW_FORM_addrx:
+      if (dwarf_version < 5)
+	return DW_FORM_GNU_addr_index;
+      break;
+
+    case DW_FORM_strx:
+      if (dwarf_version < 5)
+	return DW_FORM_GNU_str_index;
+      break;
+
+    default:
+      break;
+    }
+  return form;
+}
+
 static unsigned long int get_base_type_offset (dw_die_ref);
 
 /* Return the size of a location descriptor.  */
@@ -1772,7 +1804,9 @@ size_of_loc_descr (dw_loc_descr_ref loc)
       size += DWARF2_ADDR_SIZE;
       break;
     case DW_OP_GNU_addr_index:
+    case DW_OP_addrx:
     case DW_OP_GNU_const_index:
+    case DW_OP_constx:
       gcc_assert (loc->dw_loc_oprnd1.val_entry->index != NO_INDEX_ASSIGNED);
       size += size_of_uleb128 (loc->dw_loc_oprnd1.val_entry->index);
       break;
@@ -2272,7 +2306,9 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
       break;
 
     case DW_OP_GNU_addr_index:
+    case DW_OP_addrx:
     case DW_OP_GNU_const_index:
+    case DW_OP_constx:
       gcc_assert (loc->dw_loc_oprnd1.val_entry->index != NO_INDEX_ASSIGNED);
       dw2_asm_output_data_uleb128 (loc->dw_loc_oprnd1.val_entry->index,
                                    "(index into .debug_addr)");
@@ -2503,7 +2539,9 @@ output_loc_operands_raw (dw_loc_descr_ref loc)
     {
     case DW_OP_addr:
     case DW_OP_GNU_addr_index:
+    case DW_OP_addrx:
     case DW_OP_GNU_const_index:
+    case DW_OP_constx:
     case DW_OP_implicit_value:
       /* We cannot output addresses in .cfi_escape, only bytes.  */
       gcc_unreachable ();
@@ -3903,10 +3941,10 @@ static inline enum dwarf_location_atom
 dw_addr_op (enum dtprel_bool dtprel)
 {
   if (dtprel == dtprel_true)
-    return (dwarf_split_debug_info ? DW_OP_GNU_const_index
+    return (dwarf_split_debug_info ? dwarf_OP (DW_OP_constx)
             : (DWARF2_ADDR_SIZE == 4 ? DW_OP_const4u : DW_OP_const8u));
   else
-    return dwarf_split_debug_info ? DW_OP_GNU_addr_index : DW_OP_addr;
+    return dwarf_split_debug_info ? dwarf_OP (DW_OP_addrx) : DW_OP_addr;
 }
 
 /* Return a pointer to a newly allocated address location description.  If
@@ -4387,8 +4425,8 @@ AT_class (dw_attr_node *a)
 }
 
 /* Return the index for any attribute that will be referenced with a
-   DW_FORM_GNU_addr_index or DW_FORM_GNU_str_index.  String indices
-   are stored in dw_attr_val.v.val_str for reference counting
+   DW_FORM_addrx/GNU_addr_index or DW_FORM_strx/GNU_str_index.  String
+   indices are stored in dw_attr_val.v.val_str for reference counting
    pruning.  */
 
 static inline unsigned int
@@ -4652,7 +4690,7 @@ set_indirect_string (struct indirect_string_node *node)
   /* Already indirect is a no op.  */
   if (node->form == DW_FORM_strp
       || node->form == DW_FORM_line_strp
-      || node->form == DW_FORM_GNU_str_index)
+      || node->form == dwarf_FORM (DW_FORM_strx))
     {
       gcc_assert (node->label);
       return;
@@ -4668,7 +4706,7 @@ set_indirect_string (struct indirect_string_node *node)
     }
   else
     {
-      node->form = DW_FORM_GNU_str_index;
+      node->form = dwarf_FORM (DW_FORM_strx);
       node->index = NO_INDEX_ASSIGNED;
     }
 }
@@ -4681,7 +4719,7 @@ int
 reset_indirect_string (indirect_string_node **h, void *)
 {
   struct indirect_string_node *node = *h;
-  if (node->form == DW_FORM_strp || node->form == DW_FORM_GNU_str_index)
+  if (node->form == DW_FORM_strp || node->form == dwarf_FORM (DW_FORM_strx))
     {
       free (node->label);
       node->label = NULL;
@@ -5822,7 +5860,8 @@ dwarf2out_die_ref_for_decl (tree decl, const char **sym,
 {
   dw_die_ref die;
 
-  if (flag_wpa && !decl_die_table)
+  if ((flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO)
+      && !decl_die_table)
     return false;
 
   if (TREE_CODE (decl) == BLOCK)
@@ -5832,10 +5871,11 @@ dwarf2out_die_ref_for_decl (tree decl, const char **sym,
   if (!die)
     return false;
 
-  /* During WPA stage we currently use DIEs to store the
-     decl <-> label + offset map.  That's quite inefficient but it
-     works for now.  */
-  if (flag_wpa)
+  /* During WPA stage and incremental linking we currently use DIEs
+     to store the decl <-> label + offset map.  That's quite inefficient
+     but it works for now.  */
+  if (flag_wpa
+      || flag_incremental_link == INCREMENTAL_LINK_LTO)
     {
       dw_die_ref ref = get_AT_ref (die, DW_AT_abstract_origin);
       if (!ref)
@@ -5886,7 +5926,8 @@ dwarf2out_register_external_die (tree decl, const char *sym,
   if (debug_info_level == DINFO_LEVEL_NONE)
     return;
 
-  if (flag_wpa && !decl_die_table)
+  if ((flag_wpa
+       || flag_incremental_link == INCREMENTAL_LINK_LTO) && !decl_die_table)
     decl_die_table = hash_table<decl_die_hasher>::create_ggc (1000);
 
   dw_die_ref die
@@ -5921,7 +5962,8 @@ dwarf2out_register_external_die (tree decl, const char *sym,
 	parent = BLOCK_DIE (ctx);
       else if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
 	       /* Keep the 1:1 association during WPA.  */
-	       && !flag_wpa)
+	       && !flag_wpa
+	       && flag_incremental_link != INCREMENTAL_LINK_LTO)
 	/* Otherwise all late annotations go to the main CU which
 	   imports the original CUs.  */
 	parent = comp_unit_die ();
@@ -5942,7 +5984,7 @@ dwarf2out_register_external_die (tree decl, const char *sym,
   switch (TREE_CODE (decl))
     {
     case TRANSLATION_UNIT_DECL:
-      if (! flag_wpa)
+      if (! flag_wpa && flag_incremental_link != INCREMENTAL_LINK_LTO)
 	{
 	  die = comp_unit_die ();
 	  dw_die_ref import = new_die (DW_TAG_imported_unit, die, NULL_TREE);
@@ -9419,7 +9461,7 @@ size_of_die (dw_die_ref die)
           form = AT_string_form (a);
 	  if (form == DW_FORM_strp || form == DW_FORM_line_strp)
 	    size += DWARF_OFFSET_SIZE;
-	  else if (form == DW_FORM_GNU_str_index)
+	  else if (form == dwarf_FORM (DW_FORM_strx))
 	    size += size_of_uleb128 (AT_index (a));
 	  else
 	    size += strlen (a->dw_attr_val.v.val_str->str) + 1;
@@ -9666,7 +9708,7 @@ value_format (dw_attr_node *a)
 	case DW_AT_entry_pc:
 	case DW_AT_trampoline:
           return (AT_index (a) == NOT_INDEXED
-                  ? DW_FORM_addr : DW_FORM_GNU_addr_index);
+                  ? DW_FORM_addr : dwarf_FORM (DW_FORM_addrx));
 	default:
 	  break;
 	}
@@ -9839,7 +9881,7 @@ value_format (dw_attr_node *a)
       return DW_FORM_data;
     case dw_val_class_lbl_id:
       return (AT_index (a) == NOT_INDEXED
-              ? DW_FORM_addr : DW_FORM_GNU_addr_index);
+              ? DW_FORM_addr : dwarf_FORM (DW_FORM_addrx));
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
     case dw_val_class_loclistsptr:
@@ -10807,7 +10849,7 @@ output_die (dw_die_ref die)
 				   a->dw_attr_val.v.val_str->label,
 				   debug_line_str_section,
 				   "%s: \"%s\"", name, AT_string (a));
-          else if (a->dw_attr_val.v.val_str->form == DW_FORM_GNU_str_index)
+          else if (a->dw_attr_val.v.val_str->form == dwarf_FORM (DW_FORM_strx))
             dw2_asm_output_data_uleb128 (AT_index (a),
                                          "%s: \"%s\"", name, AT_string (a));
           else
@@ -11088,7 +11130,7 @@ add_skeleton_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind,
 
   node = find_AT_string_in_table (str, skeleton_debug_str_hash);
   find_string_form (node);
-  if (node->form == DW_FORM_GNU_str_index)
+  if (node->form == dwarf_FORM (DW_FORM_strx))
     node->form = DW_FORM_strp;
 
   attr.dw_attr = attr_kind;
@@ -28054,7 +28096,7 @@ output_macinfo_op (macinfo_entry *ref)
       node = find_AT_string (ref->info);
       gcc_assert (node
 		  && (node->form == DW_FORM_strp
-		      || node->form == DW_FORM_GNU_str_index));
+		      || node->form == dwarf_form (DW_FORM_strx)));
       dw2_asm_output_data (1, ref->code,
 			   ref->code == DW_MACRO_define_strp
 			   ? "Define macro strp"
@@ -28685,7 +28727,7 @@ index_string (indirect_string_node **h, unsigned int *index)
   indirect_string_node *node = *h;
 
   find_string_form (node);
-  if (node->form == DW_FORM_GNU_str_index && node->refcount > 0)
+  if (node->form == dwarf_FORM (DW_FORM_strx) && node->refcount > 0)
     {
       gcc_assert (node->index == NO_INDEX_ASSIGNED);
       node->index = *index;
@@ -28703,7 +28745,7 @@ output_index_string_offset (indirect_string_node **h, unsigned int *offset)
 {
   indirect_string_node *node = *h;
 
-  if (node->form == DW_FORM_GNU_str_index && node->refcount > 0)
+  if (node->form == dwarf_FORM (DW_FORM_strx) && node->refcount > 0)
     {
       /* Assert that this node has been assigned an index.  */
       gcc_assert (node->index != NO_INDEX_ASSIGNED
@@ -28723,7 +28765,7 @@ output_index_string (indirect_string_node **h, unsigned int *cur_idx)
 {
   struct indirect_string_node *node = *h;
 
-  if (node->form == DW_FORM_GNU_str_index && node->refcount > 0)
+  if (node->form == dwarf_FORM (DW_FORM_strx) && node->refcount > 0)
     {
       /* Assert that the strings are output in the same order as their
          indexes were assigned.  */
@@ -28731,6 +28773,19 @@ output_index_string (indirect_string_node **h, unsigned int *cur_idx)
       assemble_string (node->str, strlen (node->str) + 1);
       *cur_idx += 1;
     }
+  return 1;
+}
+
+/* A helper function for output_indirect_strings.  Counts the number
+   of index strings offsets.  Must match the logic of the functions
+   output_index_string[_offsets] above.  */
+int
+count_index_strings (indirect_string_node **h, unsigned int *last_idx)
+{
+  struct indirect_string_node *node = *h;
+
+  if (node->form == dwarf_FORM (DW_FORM_strx) && node->refcount > 0)
+    *last_idx += 1;
   return 1;
 }
 
@@ -28771,6 +28826,33 @@ output_indirect_strings (void)
 					  output_indirect_string> (DW_FORM_strp);
 
       switch_to_section (debug_str_offsets_section);
+      /* For DWARF5 the .debug_str_offsets[.dwo] section needs a unit
+	 header.  Note that we don't need to generate a label to the
+	 actual index table following the header here, because this is
+	 for the split dwarf case only.  In an .dwo file there is only
+	 one string offsets table (and one debug info section).  But
+	 if we would start using string offset tables for the main (or
+	 skeleton) unit, then we have to add a DW_AT_str_offsets_base
+	 pointing to the actual index after the header.  Split dwarf
+	 units will never have a string offsets base attribute.  When
+	 a split unit is moved into a .dwp file the string offsets can
+	 be found through the .debug_cu_index section table.  */
+      if (dwarf_version >= 5)
+	{
+	  unsigned int last_idx = 0;
+	  unsigned long str_offsets_length;
+
+	  debug_str_hash->traverse_noresize
+	    <unsigned int *, count_index_strings> (&last_idx);
+	  str_offsets_length = last_idx * DWARF_OFFSET_SIZE + 4;
+	  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+	    dw2_asm_output_data (4, 0xffffffff,
+				 "Escape value for 64-bit DWARF extension");
+	  dw2_asm_output_data (DWARF_OFFSET_SIZE, str_offsets_length,
+			       "Length of string offsets unit");
+	  dw2_asm_output_data (2, 5, "DWARF string offsets version");
+	  dw2_asm_output_data (2, 0, "Header zero padding");
+	}
       debug_str_hash->traverse_noresize
 	<unsigned int *, output_index_string_offset> (&offset);
       switch_to_section (debug_str_dwo_section);
@@ -28817,6 +28899,19 @@ output_addr_table_entry (addr_table_entry **slot, unsigned int *cur_index)
       default:
         gcc_unreachable ();
     }
+  return 1;
+}
+
+/* A helper function for dwarf2out_finish.  Counts the number
+   of indexed addresses.  Must match the logic of the functions
+   output_addr_table_entry above.  */
+int
+count_index_addrs (addr_table_entry **slot, unsigned int *last_idx)
+{
+  addr_table_entry *entry = *slot;
+
+  if (entry->refcount > 0)
+    *last_idx += 1;
   return 1;
 }
 
@@ -29684,9 +29779,14 @@ resolve_addr_in_expr (dw_attr_node *a, dw_loc_descr_ref loc)
 	  }
 	break;
       case DW_OP_GNU_addr_index:
+      case DW_OP_addrx:
       case DW_OP_GNU_const_index:
-	if (loc->dw_loc_opc == DW_OP_GNU_addr_index
-            || (loc->dw_loc_opc == DW_OP_GNU_const_index && loc->dtprel))
+      case DW_OP_constx:
+	if ((loc->dw_loc_opc == DW_OP_GNU_addr_index
+	     || loc->dw_loc_opc == DW_OP_addrx)
+	    || ((loc->dw_loc_opc == DW_OP_GNU_const_index
+		 || loc->dw_loc_opc == DW_OP_constx)
+		&& loc->dtprel))
           {
             rtx rtl = loc->dw_loc_oprnd1.val_entry->addr.rtl;
             if (!resolve_one_addr (&rtl))
@@ -30472,7 +30572,9 @@ hash_loc_operands (dw_loc_descr_ref loc, inchash::hash &hstate)
       inchash::add_rtx (val1->v.val_addr, hstate);
       break;
     case DW_OP_GNU_addr_index:
+    case DW_OP_addrx:
     case DW_OP_GNU_const_index:
+    case DW_OP_constx:
       {
         if (loc->dtprel)
           {
@@ -30713,7 +30815,9 @@ compare_loc_operands (dw_loc_descr_ref x, dw_loc_descr_ref y)
     hash_addr:
       return rtx_equal_p (valx1->v.val_addr, valy1->v.val_addr);
     case DW_OP_GNU_addr_index:
+    case DW_OP_addrx:
     case DW_OP_GNU_const_index:
+    case DW_OP_constx:
       {
         rtx ax1 = valx1->val_entry->addr.rtl;
         rtx ay1 = valy1->val_entry->addr.rtl;
@@ -31193,9 +31297,15 @@ dwarf2out_finish (const char *)
     {
       if (have_location_lists)
 	{
-	  if (dwarf_version >= 5)
-	    add_AT_loclistsptr (comp_unit_die (), DW_AT_loclists_base,
-				loc_section_label);
+	  /* Since we generate the loclists in the split DWARF .dwo
+	     file itself, we don't need to generate a loclists_base
+	     attribute for the split compile unit DIE.  That attribute
+	     (and using relocatable sec_offset FORMs) isn't allowed
+	     for a split compile unit.  Only if the .debug_loclists
+	     section was in the main file, would we need to generate a
+	     loclists_base attribute here (for the full or skeleton
+	     unit DIE).  */
+
 	  /* optimize_location_lists calculates the size of the lists,
 	     so index them first, and assign indices to the entries.
 	     Although optimize_location_lists will remove entries from
@@ -31306,8 +31416,12 @@ dwarf2out_finish (const char *)
 	 DWARF5 specifies a small header when address tables are used.  */
       if (dwarf_version >= 5)
 	{
-	  unsigned long addrs_length
-	    = addr_index_table->elements () * DWARF2_ADDR_SIZE + 4;
+	  unsigned int last_idx = 0;
+	  unsigned long addrs_length;
+
+	  addr_index_table->traverse_noresize
+	    <unsigned int *, count_index_addrs> (&last_idx);
+	  addrs_length = last_idx * DWARF2_ADDR_SIZE + 4;
 
 	  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
 	    dw2_asm_output_data (4, 0xffffffff,

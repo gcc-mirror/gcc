@@ -257,8 +257,124 @@ static bool
 nds32_expand_movmemsi_loop_known_size (rtx dstmem, rtx srcmem,
 				       rtx size, rtx alignment)
 {
-  return nds32_expand_movmemsi_loop_unknown_size (dstmem, srcmem,
-						  size, alignment);
+  rtx dst_base_reg, src_base_reg;
+  rtx dst_itr, src_itr;
+  rtx dstmem_m, srcmem_m, dst_itr_m, src_itr_m;
+  rtx dst_end;
+  rtx double_word_mode_loop, byte_mode_loop;
+  rtx tmp;
+  int start_regno;
+  bool align_to_4_bytes = (INTVAL (alignment) & 3) == 0;
+  unsigned HOST_WIDE_INT total_bytes = UINTVAL (size);
+
+  if (TARGET_ISA_V3M && !align_to_4_bytes)
+    return 0;
+
+  if (TARGET_REDUCED_REGS)
+    start_regno = 2;
+  else
+    start_regno = 16;
+
+  dst_itr = gen_reg_rtx (Pmode);
+  src_itr = gen_reg_rtx (Pmode);
+  dst_end = gen_reg_rtx (Pmode);
+  tmp = gen_reg_rtx (QImode);
+
+  double_word_mode_loop = gen_label_rtx ();
+  byte_mode_loop = gen_label_rtx ();
+
+  dst_base_reg = copy_to_mode_reg (Pmode, XEXP (dstmem, 0));
+  src_base_reg = copy_to_mode_reg (Pmode, XEXP (srcmem, 0));
+
+  if (total_bytes < 8)
+    {
+      /* Emit total_bytes less than 8 loop version of movmem.
+	add     $dst_end, $dst, $size
+	move    $dst_itr, $dst
+	.Lbyte_mode_loop:
+	lbi.bi  $tmp, [$src_itr], #1
+	sbi.bi  $tmp, [$dst_itr], #1
+	! Not readch upper bound. Loop.
+	bne     $dst_itr, $dst_end, .Lbyte_mode_loop */
+
+      /* add     $dst_end, $dst, $size */
+      dst_end = expand_binop (Pmode, add_optab, dst_base_reg, size,
+			      NULL_RTX, 0, OPTAB_WIDEN);
+      /* move    $dst_itr, $dst
+	 move    $src_itr, $src */
+      emit_move_insn (dst_itr, dst_base_reg);
+      emit_move_insn (src_itr, src_base_reg);
+
+      /* .Lbyte_mode_loop: */
+      emit_label (byte_mode_loop);
+
+      /* lbi.bi  $tmp, [$src_itr], #1 */
+      nds32_emit_post_inc_load_store (tmp, src_itr, QImode, true);
+
+      /* sbi.bi  $tmp, [$dst_itr], #1 */
+      nds32_emit_post_inc_load_store (tmp, dst_itr, QImode, false);
+      /* ! Not readch upper bound. Loop.
+	 bne     $dst_itr, $dst_end, .Lbyte_mode_loop */
+      emit_cmp_and_jump_insns (dst_itr, dst_end, NE, NULL,
+			       SImode, 1, byte_mode_loop);
+      return true;
+    }
+  else if (total_bytes % 8 == 0)
+    {
+      /* Emit multiple of 8 loop version of movmem.
+
+	 add     $dst_end, $dst, $size
+	 move    $dst_itr, $dst
+	 move    $src_itr, $src
+
+	.Ldouble_word_mode_loop:
+	lmw.bim $tmp-begin, [$src_itr], $tmp-end, #0 ! $src_itr' = $src_itr
+	smw.bim $tmp-begin, [$dst_itr], $tmp-end, #0 ! $dst_itr' = $dst_itr
+	! move will delete after register allocation
+	move    $src_itr, $src_itr'
+	move    $dst_itr, $dst_itr'
+	! Not readch upper bound. Loop.
+	bne     $double_word_end, $dst_itr, .Ldouble_word_mode_loop */
+
+      /* add     $dst_end, $dst, $size */
+      dst_end = expand_binop (Pmode, add_optab, dst_base_reg, size,
+			      NULL_RTX, 0, OPTAB_WIDEN);
+
+      /* move    $dst_itr, $dst
+	 move    $src_itr, $src */
+      emit_move_insn (dst_itr, dst_base_reg);
+      emit_move_insn (src_itr, src_base_reg);
+
+      /* .Ldouble_word_mode_loop: */
+      emit_label (double_word_mode_loop);
+      /* lmw.bim $tmp-begin, [$src_itr], $tmp-end, #0 ! $src_itr' = $src_itr
+	 smw.bim $tmp-begin, [$dst_itr], $tmp-end, #0 ! $dst_itr' = $dst_itr */
+      src_itr_m = src_itr;
+      dst_itr_m = dst_itr;
+      srcmem_m = srcmem;
+      dstmem_m = dstmem;
+      nds32_emit_mem_move_block (start_regno, 2,
+				 &dst_itr_m, &dstmem_m,
+				 &src_itr_m, &srcmem_m,
+				 true);
+      /* move    $src_itr, $src_itr'
+	 move    $dst_itr, $dst_itr' */
+      emit_move_insn (dst_itr, dst_itr_m);
+      emit_move_insn (src_itr, src_itr_m);
+
+      /* ! Not readch upper bound. Loop.
+	 bne     $double_word_end, $dst_itr, .Ldouble_word_mode_loop */
+      emit_cmp_and_jump_insns (dst_end, dst_itr, NE, NULL,
+			       Pmode, 1, double_word_mode_loop);
+    }
+  else
+    {
+      /* Handle size greater than 8, and not a multiple of 8.  */
+      return nds32_expand_movmemsi_loop_unknown_size (dstmem, srcmem,
+						      size, alignment);
+    }
+
+  return true;
 }
 
 static bool
@@ -433,10 +549,8 @@ nds32_expand_movmemsi (rtx dstmem, rtx srcmem, rtx total_bytes, rtx alignment)
 /* Auxiliary function for expand setmem pattern.  */
 
 static rtx
-nds32_gen_dup_4_byte_to_word_value (rtx value)
+nds32_gen_dup_4_byte_to_word_value_aux (rtx value, rtx value4word)
 {
-  rtx value4word = gen_reg_rtx (SImode);
-
   gcc_assert (GET_MODE (value) == QImode || CONST_INT_P (value));
 
   if (CONST_INT_P (value))
@@ -449,36 +563,74 @@ nds32_gen_dup_4_byte_to_word_value (rtx value)
     }
   else
     {
-      /* ! prepare word
-	 andi    $tmp1, $value, 0xff       ! $tmp1  <- 0x000000ab
-	 slli    $tmp2, $tmp1, 8           ! $tmp2  <- 0x0000ab00
-	 or      $tmp3, $tmp1, $tmp2       ! $tmp3  <- 0x0000abab
-	 slli    $tmp4, $tmp3, 16          ! $tmp4  <- 0xabab0000
-	 or      $val4word, $tmp3, $tmp4   ! $value4word  <- 0xabababab  */
+      if (NDS32_EXT_DSP_P ())
+	{
+	  /* ! prepare word
+	     insb    $tmp, $value, 1         ! $tmp  <- 0x0000abab
+	     pkbb16  $tmp6, $tmp2, $tmp2   ! $value4word  <- 0xabababab */
+	  rtx tmp = gen_reg_rtx (SImode);
 
-      rtx tmp1, tmp2, tmp3, tmp4, final_value;
-      tmp1 = expand_binop (SImode, and_optab, value,
-			   gen_int_mode (0xff, SImode),
-			   NULL_RTX, 0, OPTAB_WIDEN);
-      tmp2 = expand_binop (SImode, ashl_optab, tmp1,
-			   gen_int_mode (8, SImode),
-			   NULL_RTX, 0, OPTAB_WIDEN);
-      tmp3 = expand_binop (SImode, ior_optab, tmp1, tmp2,
-			   NULL_RTX, 0, OPTAB_WIDEN);
-      tmp4 = expand_binop (SImode, ashl_optab, tmp3,
-			   gen_int_mode (16, SImode),
-			   NULL_RTX, 0, OPTAB_WIDEN);
+	  convert_move (tmp, value, true);
 
-      final_value = expand_binop (SImode, ior_optab, tmp3, tmp4,
-				  NULL_RTX, 0, OPTAB_WIDEN);
-      emit_move_insn (value4word, final_value);
+	  emit_insn (
+	    gen_insvsi_internal (tmp, gen_int_mode (0x8, SImode), tmp));
+
+	  emit_insn (gen_pkbbsi_1 (value4word, tmp, tmp));
+	}
+      else
+	{
+	  /* ! prepare word
+	     andi    $tmp1, $value, 0xff       ! $tmp1  <- 0x000000ab
+	     slli    $tmp2, $tmp1, 8           ! $tmp2  <- 0x0000ab00
+	     or      $tmp3, $tmp1, $tmp2       ! $tmp3  <- 0x0000abab
+	     slli    $tmp4, $tmp3, 16          ! $tmp4  <- 0xabab0000
+	     or      $val4word, $tmp3, $tmp4   ! $value4word  <- 0xabababab  */
+
+	  rtx tmp1, tmp2, tmp3, tmp4;
+	  tmp1 = expand_binop (SImode, and_optab, value,
+			       gen_int_mode (0xff, SImode),
+			       NULL_RTX, 0, OPTAB_WIDEN);
+	  tmp2 = expand_binop (SImode, ashl_optab, tmp1,
+			       gen_int_mode (8, SImode),
+			       NULL_RTX, 0, OPTAB_WIDEN);
+	  tmp3 = expand_binop (SImode, ior_optab, tmp1, tmp2,
+			       NULL_RTX, 0, OPTAB_WIDEN);
+	  tmp4 = expand_binop (SImode, ashl_optab, tmp3,
+			       gen_int_mode (16, SImode),
+			       NULL_RTX, 0, OPTAB_WIDEN);
+
+	  emit_insn (gen_iorsi3 (value4word, tmp3, tmp4));
+	}
     }
 
   return value4word;
 }
 
 static rtx
-emit_setmem_word_loop (rtx itr, rtx size, rtx value)
+nds32_gen_dup_4_byte_to_word_value (rtx value)
+{
+  rtx value4word = gen_reg_rtx (SImode);
+  nds32_gen_dup_4_byte_to_word_value_aux (value, value4word);
+
+  return value4word;
+}
+
+static rtx
+nds32_gen_dup_8_byte_to_double_word_value (rtx value)
+{
+  rtx value4doubleword = gen_reg_rtx (DImode);
+
+  nds32_gen_dup_4_byte_to_word_value_aux (
+    value, nds32_di_low_part_subreg(value4doubleword));
+
+  emit_move_insn (nds32_di_high_part_subreg(value4doubleword),
+		  nds32_di_low_part_subreg(value4doubleword));
+  return value4doubleword;
+}
+
+
+static rtx
+emit_setmem_doubleword_loop (rtx itr, rtx size, rtx value)
 {
   rtx word_mode_label = gen_label_rtx ();
   rtx word_mode_end_label = gen_label_rtx ();
@@ -487,9 +639,9 @@ emit_setmem_word_loop (rtx itr, rtx size, rtx value)
   rtx word_mode_end = gen_reg_rtx (SImode);
   rtx size_for_word = gen_reg_rtx (SImode);
 
-  /* and     $size_for_word, $size, #~3  */
+  /* and     $size_for_word, $size, #~0x7  */
   size_for_word = expand_binop (SImode, and_optab, size,
-				gen_int_mode (~3, SImode),
+				gen_int_mode (~0x7, SImode),
 				NULL_RTX, 0, OPTAB_WIDEN);
 
   emit_move_insn (byte_mode_size, size);
@@ -501,8 +653,8 @@ emit_setmem_word_loop (rtx itr, rtx size, rtx value)
   word_mode_end = expand_binop (Pmode, add_optab, itr, size_for_word,
 				NULL_RTX, 0, OPTAB_WIDEN);
 
-  /* andi    $byte_mode_size, $size, 3  */
-  byte_mode_size_tmp = expand_binop (SImode, and_optab, size, GEN_INT (3),
+  /* andi    $byte_mode_size, $size, 0x7  */
+  byte_mode_size_tmp = expand_binop (SImode, and_optab, size, GEN_INT (0x7),
 				     NULL_RTX, 0, OPTAB_WIDEN);
 
   emit_move_insn (byte_mode_size, byte_mode_size_tmp);
@@ -512,9 +664,9 @@ emit_setmem_word_loop (rtx itr, rtx size, rtx value)
   /*   ! word-mode set loop
        smw.bim $value4word, [$dst_itr], $value4word, 0
        bne     $word_mode_end, $dst_itr, .Lword_mode  */
-  emit_insn (gen_unaligned_store_update_base_w (itr,
-						itr,
-						value));
+  emit_insn (gen_unaligned_store_update_base_dw (itr,
+						 itr,
+						 value));
   emit_cmp_and_jump_insns (word_mode_end, itr, NE, NULL,
 			   Pmode, 1, word_mode_label);
 
@@ -566,7 +718,7 @@ emit_setmem_byte_loop (rtx itr, rtx size, rtx value, bool need_end)
 static bool
 nds32_expand_setmem_loop (rtx dstmem, rtx size, rtx value)
 {
-  rtx value4word;
+  rtx value4doubleword;
   rtx value4byte;
   rtx dst;
   rtx byte_mode_size;
@@ -609,7 +761,7 @@ nds32_expand_setmem_loop (rtx dstmem, rtx size, rtx value)
      or      $tmp3, $tmp1, $tmp2             ! $tmp3  <- 0x0000abab
      slli    $tmp4, $tmp3, 16                ! $tmp4  <- 0xabab0000
      or      $val4word, $tmp3, $tmp4         ! $value4word  <- 0xabababab  */
-  value4word = nds32_gen_dup_4_byte_to_word_value (value);
+  value4doubleword = nds32_gen_dup_8_byte_to_double_word_value (value);
 
   /*   and     $size_for_word, $size, #-4
        beqz    $size_for_word, .Lword_mode_end
@@ -622,7 +774,7 @@ nds32_expand_setmem_loop (rtx dstmem, rtx size, rtx value)
        smw.bim $value4word, [$dst], $value4word, 0
        bne     $word_mode_end, $dst, .Lword_mode
      .Lword_mode_end:  */
-  byte_mode_size = emit_setmem_word_loop (dst, size, value4word);
+  byte_mode_size = emit_setmem_doubleword_loop (dst, size, value4doubleword);
 
   /*   beqz    $byte_mode_size, .Lend
        add     $byte_mode_end, $dst, $byte_mode_size
@@ -633,8 +785,8 @@ nds32_expand_setmem_loop (rtx dstmem, rtx size, rtx value)
        bne     $byte_mode_end, $dst, .Lbyte_mode
      .Lend: */
 
-  value4byte = simplify_gen_subreg (QImode, value4word, SImode,
-				    subreg_lowpart_offset (QImode, SImode));
+  value4byte = simplify_gen_subreg (QImode, value4doubleword, DImode,
+				    subreg_lowpart_offset (QImode, DImode));
 
   emit_setmem_byte_loop (dst, byte_mode_size, value4byte, false);
 
@@ -651,14 +803,15 @@ nds32_expand_setmem_loop_v3m (rtx dstmem, rtx size, rtx value)
   rtx byte_loop_size = gen_reg_rtx (SImode);
   rtx remain_size = gen_reg_rtx (SImode);
   rtx new_base_reg;
-  rtx value4byte, value4word;
+  rtx value4byte, value4doubleword;
   rtx byte_mode_size;
   rtx last_byte_loop_label = gen_label_rtx ();
 
   size = force_reg (SImode, size);
 
-  value4word = nds32_gen_dup_4_byte_to_word_value (value);
-  value4byte = simplify_gen_subreg (QImode, value4word, SImode, 0);
+  value4doubleword = nds32_gen_dup_8_byte_to_double_word_value (value);
+  value4byte = simplify_gen_subreg (QImode, value4doubleword, DImode,
+				    subreg_lowpart_offset (QImode, DImode));
 
   emit_move_insn (byte_loop_size, size);
   emit_move_insn (byte_loop_base, base_reg);
@@ -686,9 +839,9 @@ nds32_expand_setmem_loop_v3m (rtx dstmem, rtx size, rtx value)
   emit_insn (gen_subsi3 (remain_size, size, need_align_bytes));
 
   /* Set memory word by word. */
-  byte_mode_size = emit_setmem_word_loop (new_base_reg,
-					  remain_size,
-					  value4word);
+  byte_mode_size = emit_setmem_doubleword_loop (new_base_reg,
+						remain_size,
+						value4doubleword);
 
   emit_move_insn (byte_loop_base, new_base_reg);
   emit_move_insn (byte_loop_size, byte_mode_size);

@@ -4196,6 +4196,7 @@ extern tree build_constructor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
 extern tree build_constructor_va (tree, int, ...);
+extern tree build_clobber (tree);
 extern tree build_real_from_int_cst (tree, const_tree);
 extern tree build_complex (tree, tree, tree);
 extern tree build_complex_inf (tree, bool);
@@ -4850,7 +4851,7 @@ extern tree tree_strip_sign_nop_conversions (tree);
 extern const_tree strip_invariant_refs (const_tree);
 extern tree lhd_gcc_personality (void);
 extern void assign_assembler_name_if_needed (tree);
-extern void warn_deprecated_use (tree, tree);
+extern bool warn_deprecated_use (tree, tree);
 extern void cache_integer_cst (tree);
 extern const char *combined_fn_name (combined_fn);
 

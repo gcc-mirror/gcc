@@ -193,9 +193,9 @@ package body Prepcomp is
       end if;
    end Check_Symbols;
 
-   ------------------------------
-   -- Parse_Preprocessing_Data --
-   ------------------------------
+   -----------------------------------
+   -- Parse_Preprocessing_Data_File --
+   -----------------------------------
 
    procedure Parse_Preprocessing_Data_File (N : File_Name_Type) is
       OK            : Boolean := False;

@@ -38,6 +38,15 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	      /* Silvermont.  */
 	      assert (__builtin_cpu_is ("silvermont"));
 	      break;
+	    case 0x5c:
+	    case 0x5f:
+	      /* Goldmont.  */
+	      assert (__builtin_cpu_is ("goldmont"));
+	      break;
+	    case 0x7a:
+	      /* Goldmont Plus.  */
+	      assert (__builtin_cpu_is ("goldmont-plus"));
+	      break;
 	    case 0x57:
 	      /* Knights Landing.  */
 	      assert (__builtin_cpu_is ("knl"));

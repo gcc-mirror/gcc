@@ -277,7 +277,7 @@ package System.Object_Reader is
       Sec : Object_Section) return Mapped_Stream;
    --  Create a stream for section Sec
 
-   procedure Get_Memory_Bounds
+   procedure Get_Xcode_Bounds
      (Obj   : in out Object_File;
       Low, High : out uint64);
    --  Return the low and high addresses of the code for the object file. Can
@@ -434,8 +434,8 @@ private
       Size       : uint64 := 0;
       --  Length of the section in bytes
 
-      Flag_Alloc : Boolean := False;
-      --  True if the section is mapped in memory by the OS loader
+      Flag_Xcode : Boolean := False;
+      --  True if the section is advertised to contain executable code
    end record;
 
    Null_Section : constant Object_Section := (0, 0, 0, 0, False);

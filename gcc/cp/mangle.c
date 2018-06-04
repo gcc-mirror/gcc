@@ -1555,6 +1555,10 @@ struct releasing_vec
   releasing_vec (vec_t *v): v(v) { }
   releasing_vec (): v(make_tree_vector ()) { }
 
+  /* Copy constructor is deliberately declared but not defined,
+     copies must always be elided.  */
+  releasing_vec (const releasing_vec &);
+
   vec_t &operator* () const { return *v; }
   vec_t *operator-> () const { return v; }
   vec_t *get () const { return v; }
@@ -2155,11 +2159,7 @@ write_type (tree type)
       type = TYPE_MAIN_VARIANT (type);
       if (TREE_CODE (type) == FUNCTION_TYPE
 	  || TREE_CODE (type) == METHOD_TYPE)
-	{
-	  type = build_ref_qualified_type (type, type_memfn_rqual (type_orig));
-	  type = build_exception_variant (type,
-					  TYPE_RAISES_EXCEPTIONS (type_orig));
-	}
+	type = cxx_copy_lang_qualifiers (type, type_orig);
 
       /* According to the C++ ABI, some library classes are passed the
 	 same as the scalar type of their single member and use the same
@@ -3071,7 +3071,7 @@ write_expression (tree expr)
     }
   else if (INDIRECT_REF_P (expr)
 	   && TREE_TYPE (TREE_OPERAND (expr, 0))
-	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == REFERENCE_TYPE)
+	   && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (expr, 0))))
     {
       write_expression (TREE_OPERAND (expr, 0));
     }
@@ -3209,7 +3209,7 @@ write_expression (tree expr)
 	 don't actually want to output a mangling code for the `&'.  */
       if (TREE_CODE (expr) == ADDR_EXPR
 	  && TREE_TYPE (expr)
-	  && TREE_CODE (TREE_TYPE (expr)) == REFERENCE_TYPE)
+	  && TYPE_REF_P (TREE_TYPE (expr)))
 	{
 	  expr = TREE_OPERAND (expr, 0);
 	  if (DECL_P (expr))
@@ -3473,7 +3473,7 @@ write_template_arg (tree node)
   if (REFERENCE_REF_P (node))
     node = TREE_OPERAND (node, 0);
   if (TREE_CODE (node) == NOP_EXPR
-      && TREE_CODE (TREE_TYPE (node)) == REFERENCE_TYPE)
+      && TYPE_REF_P (TREE_TYPE (node)))
     {
       /* Template parameters can be of reference type. To maintain
 	 internal consistency, such arguments use a conversion from
@@ -3866,8 +3866,7 @@ mangle_decl (const tree decl)
   if (id != DECL_NAME (decl)
       /* Don't do this for a fake symbol we aren't going to emit anyway.  */
       && TREE_CODE (decl) != TYPE_DECL
-      && !DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
-      && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
+      && !DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
     {
       int save_ver = flag_abi_version;
       tree id2 = NULL_TREE;

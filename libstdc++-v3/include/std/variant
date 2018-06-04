@@ -249,7 +249,7 @@ namespace __variant
   template<typename _Variant, size_t _Np>
     void
     __erased_dtor(_Variant&& __v)
-    { std::_Destroy(std::__addressof(__get<_Np>(__v))); }
+    { std::_Destroy(std::__addressof(__variant::__get<_Np>(__v))); }
 
   template<typename _Lhs, typename _Rhs>
     void
@@ -289,7 +289,7 @@ namespace __variant
     size_t
     __erased_hash(void* __t)
     {
-      return std::hash<remove_cv_t<remove_reference_t<_Tp>>>{}(
+      return std::hash<__remove_cvref_t<_Tp>>{}(
 	  __variant::__ref_cast<_Tp>(__t));
     }
 
@@ -838,9 +838,8 @@ namespace __variant
       decltype(auto)
       static constexpr __visit_invoke(_Visitor&& __visitor, _Variants... __vars)
       {
-	return __invoke(std::forward<_Visitor>(__visitor),
-			std::get<__indices>(
-			    std::forward<_Variants>(__vars))...);
+	return std::__invoke(std::forward<_Visitor>(__visitor),
+	    std::get<__indices>(std::forward<_Variants>(__vars))...);
       }
 
       static constexpr auto
@@ -1389,7 +1388,7 @@ namespace __variant
 
       using _Result_type =
 	decltype(std::forward<_Visitor>(__visitor)(
-	    get<0>(std::forward<_Variants>(__variants))...));
+	    std::get<0>(std::forward<_Variants>(__variants))...));
 
       constexpr auto& __vtable = __detail::__variant::__gen_vtable<
 	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;

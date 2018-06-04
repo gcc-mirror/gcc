@@ -121,8 +121,14 @@ vnearbyint_f (vector float arg)
   return vec_nearbyint (arg);
 }
 
+static vector float
+vrint_f (vector float arg)
+{
+  return vec_rint (arg);
+}
+
 static vector double
-vrint (vector double arg)
+vrint_d (vector double arg)
 {
   return vec_rint (arg);
 }
@@ -159,9 +165,9 @@ static struct
   { {  1.0,  2.0 },	{  1.1,  1.7 },		vnearbyint_d,	"vnearbyint_d" },
   { { -1.0, -2.0 },	{ -1.1, -1.7 },		vnearbyint_d,	"vnearbyint_d" },
   { { -2.0,  2.0 },	{ -1.5,  1.5 },		vnearbyint_d,	"vnearbyint_d" },
-  { {  1.0,  2.0 },	{  1.1,  1.7 },		vrint,		"vrint" },
-  { { -1.0, -2.0 },	{ -1.1, -1.7 },		vrint,		"vrint" },
-  { { -2.0,  2.0 },	{ -1.5,  1.5 },		vrint,		"vrint" },
+  { {  1.0,  2.0 },	{  1.1,  1.7 },		vrint_d,	"vrint_d" },
+  { { -1.0, -2.0 },	{ -1.1, -1.7 },		vrint_d,	"vrint_d" },
+  { { -2.0,  2.0 },	{ -1.5,  1.5 },		vrint_d,	"vrint_d" },
 
   { {  2.0,  4.0 },	{  4.0, 16.0 },		vsqrt_d,	"vsqrt_d" },
 };
@@ -213,6 +219,9 @@ static struct
   { {  1.0,  2.0, -3.0, 3.0 },	{  1.1,  1.7, -3.1, 3.1 },	vnearbyint_f,	"vnearbyint_f" },
   { { -1.0, -2.0, -3.0, 3.0 },	{ -1.1, -1.7, -2.9, 2.9 },	vnearbyint_f,	"vnearbyint_f" },
   { { -2.0,  2.0, -3.0, 3.0 },	{ -1.5,  1.5, -2.55, 3.49 },	vnearbyint_f,	"vnearbyint_f" },
+  { {  10.0,  18.0, 30.0, 40.0 }, {  10.1,  17.7, 30.0, 40.01 }, vrint_f,	"vrint_f" },
+  { { -11.0, -18.0, -30.0, -40.0 }, { -11.1, -17.7, -30.0, -40.01 }, vrint_f,	"vrint_f" },
+  
   { {  2.0,  4.0 },	{  4.0, 16.0 },		vsqrt_f,	"vsqrt_f" },
 };
 

@@ -98,10 +98,10 @@ overflow_warning (location_t loc, tree value, tree expr)
 
     case REAL_CST:
       warnfmt = (expr
-		 ? G_ ("floating point overflow in expression %qE "
-		       "of type %qT results in %qE")
-		 : G_ ("floating point overflow in expression of type %qT "
-		       "results in %qE"));
+		 ? G_("floating point overflow in expression %qE "
+		      "of type %qT results in %qE")
+		 : G_("floating point overflow in expression of type %qT "
+		      "results in %qE"));
       break;
 
     case FIXED_CST:
@@ -2246,18 +2246,16 @@ diagnose_mismatched_attributes (tree olddecl, tree newdecl)
 		       newdecl);
 
   /* Diagnose inline __attribute__ ((noinline)) which is silly.  */
-  const char *noinline = "noinline";
-
   if (DECL_DECLARED_INLINE_P (newdecl)
       && DECL_UNINLINABLE (olddecl)
-      && lookup_attribute (noinline, DECL_ATTRIBUTES (olddecl)))
+      && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
     warned |= warning (OPT_Wattributes, "inline declaration of %qD follows "
-		       "declaration with attribute %qs", newdecl, noinline);
+		       "declaration with attribute %<noinline%>", newdecl);
   else if (DECL_DECLARED_INLINE_P (olddecl)
 	   && DECL_UNINLINABLE (newdecl)
 	   && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
     warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "%qs follows inline declaration", newdecl, noinline);
+		       "%<noinline%> follows inline declaration", newdecl);
 
   return warned;
 }

@@ -1055,3 +1055,11 @@ Support MOVDIRI built-in functions and code generation.
 mmovdir64b
 Target Report Mask(ISA_MOVDIR64B) Var(ix86_isa_flags2) Save
 Support MOVDIR64B built-in functions and code generation.
+
+mwaitpkg
+Target Report Mask(ISA_WAITPKG) Var(ix86_isa_flags2) Save
+Support WAITPKG built-in functions and code generation.
+
+mcldemote
+Target Report Mask(ISA_CLDEMOTE) Var(ix86_isa_flags2) Save
+Support CLDEMOTE built-in functions and code generation.

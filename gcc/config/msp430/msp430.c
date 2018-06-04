@@ -1855,6 +1855,17 @@ msp430_allocate_stack_slots_for_args (void)
   return ! is_naked_func ();
 }
 
+#undef TARGET_WARN_FUNC_RETURN
+#define TARGET_WARN_FUNC_RETURN msp430_warn_func_return
+
+static bool
+msp430_warn_func_return (tree decl)
+{
+  /* Naked functions are implemented entirely in assembly, including the
+     return sequence, so suppress warnings about this.  */
+  return !is_naked_func (decl);
+}
+
 /* Verify MSP430 specific attributes.  */
 #define TREE_NAME_EQ(NAME, STR) (strcmp (IDENTIFIER_POINTER (NAME), (STR)) == 0)
 
@@ -3404,6 +3415,9 @@ msp430_output_labelref (FILE *file, const char *name)
 	    name = "__mulsi2";
 	}
     }
+
+  if (user_label_prefix[0] != 0)
+    fputs (user_label_prefix, file);
 
   fputs (name, file);
 }

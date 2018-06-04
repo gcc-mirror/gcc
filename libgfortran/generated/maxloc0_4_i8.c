@@ -47,7 +47,6 @@ maxloc0_4_i8 (gfc_array_i4 * const restrict retarray,
   index_type rank;
   index_type n;
 
-  assert(back == 0);
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -55,7 +54,7 @@ maxloc0_4_i8 (gfc_array_i4 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
-      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
+      retarray->dtype.rank = 1;
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
     }
@@ -101,13 +100,9 @@ maxloc0_4_i8 (gfc_array_i4 * const restrict retarray,
 #endif
   while (base)
     {
-      do
-	{
 	  /* Implementation start.  */
 
 #if defined(GFC_INTEGER_8_QUIET_NAN)
-	}
-      while (0);
       if (unlikely (!fast))
 	{
 	  do
@@ -126,15 +121,29 @@ maxloc0_4_i8 (gfc_array_i4 * const restrict retarray,
 	  if (likely (fast))
 	    continue;
 	}
-      else do
-	{
+      else
 #endif
-	  if (*base > maxval)
-	    {
-	      maxval = *base;
-	      for (n = 0; n < rank; n++)
-		dest[n * dstride] = count[n] + 1;
-	    }
+        if (back)
+      	  do
+            {
+	      if (unlikely (*base >= maxval))
+	       {
+	         maxval = *base;
+	      	 for (n = 0; n < rank; n++)
+		   dest[n * dstride] = count[n] + 1;
+	       }
+	     base += sstride[0];
+	   }
+         while (++count[0] != extent[0]);
+       else
+         do
+	   {
+	     if (unlikely (*base > maxval))
+	       {
+	         maxval = *base;
+		 for (n = 0; n < rank; n++)
+		   dest[n * dstride] = count[n] + 1;
+	       }
 	  /* Implementation end.  */
 	  /* Advance to the next element.  */
 	  base += sstride[0];
@@ -167,7 +176,6 @@ maxloc0_4_i8 (gfc_array_i4 * const restrict retarray,
   }
 }
 
-
 extern void mmaxloc0_4_i8 (gfc_array_i4 * const restrict, 
 	gfc_array_i8 * const restrict, gfc_array_l1 * const restrict,
 	GFC_LOGICAL_4);
@@ -190,7 +198,6 @@ mmaxloc0_4_i8 (gfc_array_i4 * const restrict retarray,
   index_type n;
   int mask_kind;
 
-  assert(back == 0);
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -198,7 +205,7 @@ mmaxloc0_4_i8 (gfc_array_i4 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank - 1, 1);
-      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
+      retarray->dtype.rank = 1;
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
     }
@@ -261,12 +268,8 @@ mmaxloc0_4_i8 (gfc_array_i4 * const restrict retarray,
 #endif
   while (base)
     {
-      do
-	{
 	  /* Implementation start.  */
 
-	}
-      while (0);
       if (unlikely (!fast))
 	{
 	  do
@@ -294,14 +297,28 @@ mmaxloc0_4_i8 (gfc_array_i4 * const restrict retarray,
 	  if (likely (fast))
 	    continue;
 	}
-      else do
-	{
-	  if (*mbase && *base > maxval)
+      else
+        if (back)
+	  do
 	    {
-	      maxval = *base;
-	      for (n = 0; n < rank; n++)
-		dest[n * dstride] = count[n] + 1;
+	      if (*mbase && *base >= maxval)
+	        {
+	          maxval = *base;
+	          for (n = 0; n < rank; n++)
+		    dest[n * dstride] = count[n] + 1;
+		}
+	      base += sstride[0];
 	    }
+	  while (++count[0] != extent[0]);
+	else
+	  do
+	    {
+	      if (*mbase && unlikely (*base > maxval))
+	        {
+		  maxval = *base;
+		  for (n = 0; n < rank; n++)
+		    dest[n * dstride] = count[n] + 1;
+	        }
 	  /* Implementation end.  */
 	  /* Advance to the next element.  */
 	  base += sstride[0];
@@ -366,7 +383,7 @@ smaxloc0_4_i8 (gfc_array_i4 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
-      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
+      retarray->dtype.rank = 1;
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
     }

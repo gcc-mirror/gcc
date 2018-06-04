@@ -915,6 +915,8 @@ extern GTY(()) tree gfor_fndecl_sr_kind;
 extern GTY(()) tree gfor_fndecl_ieee_procedure_entry;
 extern GTY(()) tree gfor_fndecl_ieee_procedure_exit;
 
+/* RANDOM_INIT.  */
+extern GTY(()) tree gfor_fndecl_random_init;
 
 /* True if node is an integer constant.  */
 #define INTEGER_CST_P(node) (TREE_CODE(node) == INTEGER_CST)

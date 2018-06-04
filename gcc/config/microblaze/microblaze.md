@@ -41,6 +41,8 @@
   (UNSPEC_CMP		104)    ;; signed compare
   (UNSPEC_CMPU		105)    ;; unsigned compare
   (UNSPEC_TLS           106)    ;; jump table
+  (UNSPEC_SET_TEXT      107)    ;; set text start
+  (UNSPEC_TEXT          108)    ;; data text relative
 ])
 
 (define_c_enum "unspec" [
@@ -1848,7 +1850,7 @@
   {
     gcc_assert (GET_MODE (operands[0]) == Pmode);
 
-    if (!flag_pic)
+    if (!flag_pic || TARGET_PIC_DATA_TEXT_REL)
       emit_jump_insn (gen_tablejump_internal1 (operands[0], operands[1]));
     else
       emit_jump_insn (gen_tablejump_internal3 (operands[0], operands[1]));
@@ -2053,7 +2055,8 @@
   {
     rtx addr = XEXP (operands[0], 0);
 
-    if (flag_pic == 2 && GET_CODE (addr) == SYMBOL_REF 
+    if (flag_pic == 2 && !TARGET_PIC_DATA_TEXT_REL
+    && GET_CODE (addr) == SYMBOL_REF
 	&& !SYMBOL_REF_LOCAL_P (addr)) 
       {
         rtx temp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_PLT);
@@ -2156,7 +2159,8 @@
   {
     rtx addr = XEXP (operands[1], 0);
 
-    if (flag_pic == 2 && GET_CODE (addr) == SYMBOL_REF
+    if (flag_pic == 2 && !TARGET_PIC_DATA_TEXT_REL
+    && GET_CODE (addr) == SYMBOL_REF
 	&& !SYMBOL_REF_LOCAL_P (addr)) 
       {
         rtx temp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_PLT);
@@ -2312,6 +2316,18 @@
   "mfs\t%0,rpc\n\taddik\t%0,%0,_GLOBAL_OFFSET_TABLE_+8"
   [(set_attr "type" "multi")
    (set_attr "length" "12")])
+
+;; The insn to set TEXT.
+;; The hardcoded number "8" accounts for $pc difference
+;; between "mfs" and "addik" instructions.
+(define_insn "set_text"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+    (unspec:SI[(const_int 0)] UNSPEC_SET_TEXT))]
+  ""
+  "mfs\t%0,rpc\n\taddik\t%0,%0,8@TXTPCREL"
+  [(set_attr "type" "multi")
+   (set_attr "length" "12")])
+
 
 ;; This insn gives the count of leading number of zeros for the second
 ;; operand and stores the result in first operand.

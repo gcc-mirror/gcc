@@ -387,7 +387,20 @@ match_data_constant (gfc_expr **result)
       return m;
     }
   else if (m == MATCH_YES)
-    gfc_free_expr (*result);
+    {
+      /* F2018:R845 data-stmt-constant is initial-data-target.
+	 A data-stmt-constant shall be ... initial-data-target if and
+	 only if the corresponding data-stmt-object has the POINTER
+	 attribute. ...  If data-stmt-constant is initial-data-target
+	 the corresponding data statement object shall be
+	 data-pointer-initialization compatible (7.5.4.6) with the initial
+	 data target; the data statement object is initially associated
+	 with the target.  */
+      if ((*result)->symtree->n.sym->attr.save
+	  && (*result)->symtree->n.sym->attr.target)
+	return m;
+      gfc_free_expr (*result);
+    }
 
   gfc_current_locus = old_loc;
 
@@ -1401,7 +1414,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	     not have the allocatable, pointer, or optional attributes,
 	     according to J3/04-007, section 5.1.  */
 	  if (sym->attr.allocatable == 1
-	      && !gfc_notify_std (GFC_STD_F2008_TS, "Variable %qs at %L with "
+	      && !gfc_notify_std (GFC_STD_F2018, "Variable %qs at %L with "
 				  "ALLOCATABLE attribute in procedure %qs "
 				  "with BIND(C)", sym->name,
 				  &(sym->declared_at),
@@ -1409,7 +1422,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	    retval = false;
 
 	  if (sym->attr.pointer == 1
-	      && !gfc_notify_std (GFC_STD_F2008_TS, "Variable %qs at %L with "
+	      && !gfc_notify_std (GFC_STD_F2018, "Variable %qs at %L with "
 				  "POINTER attribute in procedure %qs "
 				  "with BIND(C)", sym->name,
 				  &(sym->declared_at),
@@ -1434,7 +1447,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	      retval = false;
 	    }
 	  else if (sym->attr.optional == 1
-		   && !gfc_notify_std (GFC_STD_F2008_TS, "Variable %qs "
+		   && !gfc_notify_std (GFC_STD_F2018, "Variable %qs "
 				       "at %L with OPTIONAL attribute in "
 				       "procedure %qs which is BIND(C)",
 				       sym->name, &(sym->declared_at),
@@ -1445,7 +1458,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	     either assumed size or explicit shape. Deferred shape is already
 	     covered by the pointer/allocatable attribute.  */
 	  if (sym->as != NULL && sym->as->type == AS_ASSUMED_SHAPE
-	      && !gfc_notify_std (GFC_STD_F2008_TS, "Assumed-shape array %qs "
+	      && !gfc_notify_std (GFC_STD_F2018, "Assumed-shape array %qs "
 				  "at %L as dummy argument to the BIND(C) "
 				  "procedure %qs at %L", sym->name,
 				  &(sym->declared_at),
@@ -2418,7 +2431,7 @@ variable_decl (int elem)
 	    }
 
 	  if (not_constant)
-	    { 
+	    {
 	      gfc_error ("Explicit shaped array with nonconstant bounds at %C");
 	      m = MATCH_ERROR;
 	      goto cleanup;
@@ -2522,13 +2535,12 @@ variable_decl (int elem)
       gfc_find_symbol (name, gfc_current_ns, 1, &sym);
       if (sym != NULL && sym->attr.cray_pointee)
 	{
-	  sym->ts.type = current_ts.type;
-	  sym->ts.kind = current_ts.kind;
-	  sym->ts.u.cl = cl;
-	  sym->ts.u.derived = current_ts.u.derived;
-	  sym->ts.is_c_interop = current_ts.is_c_interop;
-	  sym->ts.is_iso_c = current_ts.is_iso_c;
 	  m = MATCH_YES;
+	  if (!gfc_add_type (sym, &current_ts, &gfc_current_locus))
+	    {
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 
 	  /* Check to see if we have an array specification.  */
 	  if (cp_as != NULL)
@@ -3846,8 +3858,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	      gfc_error ("Assumed type at %C is not allowed for components");
 	      return MATCH_ERROR;
 	    }
-	  if (!gfc_notify_std (GFC_STD_F2008_TS, "Assumed type "
-			       "at %C"))
+	  if (!gfc_notify_std (GFC_STD_F2018, "Assumed type at %C"))
 	    return MATCH_ERROR;
 	  ts->type = BT_ASSUMED;
 	  return MATCH_YES;
@@ -9961,8 +9972,12 @@ gfc_match_derived_decl (void)
 
   if (!gensym->attr.generic && gensym->ts.type != BT_UNKNOWN)
     {
-      gfc_error ("Derived type name %qs at %C already has a basic type "
-		 "of %s", gensym->name, gfc_typename (&gensym->ts));
+      if (gensym->ts.u.derived)
+	gfc_error ("Derived type name %qs at %C already has a basic type "
+		   "of %s", gensym->name, gfc_typename (&gensym->ts));
+      else
+	gfc_error ("Derived type name %qs at %C already has a basic type",
+		   gensym->name);
       return MATCH_ERROR;
     }
 

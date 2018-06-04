@@ -263,6 +263,7 @@ if $GLIBCXX_IS_NATIVE; then
 
   AC_CHECK_FUNCS(__cxa_thread_atexit_impl __cxa_thread_atexit)
   AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
+  AC_CHECK_FUNCS(_wfopen)
 
   # For iconv support.
   AM_ICONV
@@ -419,6 +420,7 @@ GLIBCXX_CHECK_GTHREADS
 
 # For Filesystem TS.
 AC_CHECK_HEADERS([fcntl.h dirent.h sys/statvfs.h utime.h])
+AC_CHECK_FUNCS(link readlink symlink)
 GLIBCXX_ENABLE_FILESYSTEM_TS
 GLIBCXX_CHECK_FILESYSTEM_DEPS
 

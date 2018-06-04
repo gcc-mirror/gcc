@@ -55,9 +55,9 @@ package body Get_Targ is
       return 8;
    end Get_Char_Size;
 
-   -----------------
-   -- Get_Wchar_T --
-   -----------------
+   ----------------------
+   -- Get_Wchar_T_Size --
+   ----------------------
 
    function Get_Wchar_T_Size return Pos is
    begin

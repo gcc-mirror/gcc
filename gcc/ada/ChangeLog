@@ -1,3 +1,2284 @@
+2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: If this is
+	not a definition, retrieve the expression only if it's a compile-time
+	known value if we are just annotating types.
+
+	* gcc-interface/utils.c (convert): Do not try to upcast properly for a
+	conversion between tagged types in type_annotate_only mode.
+
+2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_PADDING_FOR_COMPONENT): New macro.
+	* gcc-interface/decl.c (gnat_to_gnu_component_type): Cache the padding
+	type built for an aliased component with variable size.
+
+2018-05-31  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* doc/gnat_ugn/project-manager-figure.png: Delete.
+
+2018-05-31  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* vxworks-arm-link.spec, vxworks-e500-link.spec,
+	vxworks-gnat-crtbe-link.spec, vxworks-smp-arm-link.spec,
+	vxworks-smp-e500-link.spec, vxworks-smp-ppc-link.spec,
+	vxworks-smp-x86-link.spec: New files.
+
+2018-05-31  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gnatvsn.adb: Re-center the copyright header.
+	* indepsw-darwin.adb: Adjust the starting copyright year to 2011.
+
+2018-05-31  Fedor Rybin  <frybin@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document Stubs_Subdir in
+	gnattest section on user guide.
+
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_String_Literal): If the type is a string type
+	whose component subtype has a static predicate, ensure that the
+	predicate is applied to each character by expanding the string into the
+	equivalent aggregate. This is also done if the component subtype is
+	constrained.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Remove obsolete code.
+
+2018-05-31  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Check_Missing_Return): Handle procedures with no
+	explicit spec.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): In the by-reference case, if
+	the type of the parameter is an unconstrained array type, convert
+	to the type of the actual before the type of the formal only if the
+	conversion was suppressed earlier.  Use in_param and gnu_actual_type
+	local variables throughout, and uniform spelling for In Out or Out.
+	Also remove dead code in the component-by-reference case.
+
+2018-05-31  Frederic Konrad  <konrad@adacore.com>
+
+	* tracebak.c (STOP_FRAME): Harden condition.
+	(is_return_from, EXTRA_STOP_CONDITION): New helpers for VxWorks in RTP
+	mode.
+
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Discriminant_Check): Do not apply discriminant
+	check to a call to a build-in-place function, given that the return
+	object is limited and cannot be copied.
+
+2018-05-31  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-atopri.ads: Update comment on __atomic_compare_exchange
+	builtins.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): If this is a function call and
+	there is no target, also create a temporary for the return value for
+	an allocator if the type is an unconstrained record type with default
+	discriminant.
+
+2018-05-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Find_Transient_Context): An iteration scheme is a valid
+	boudary for a transient scope.
+
+2018-05-31  Valentine Reboul  <reboul@adacore.com>
+
+	* gnatvsn.ads: Rename "GPL" version to "Community".
+
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: Improve documentation for the Is_Unsigned_Type entity
+	flag.
+
+2018-05-31  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Replace call to Unique_Defining_Entity
+	with a semantically equivalent call to Defining_Entity.
+
+2018-05-31  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Set Etype on the rewritten
+	Max_Queue_Length expression.
+
+2018-05-31  Sergey Rybin  <rybin@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: gnatelim does not need
+	that the main unit to be built before the call, now it computes the
+	closure of the main unit itself.
+	* gnat_ugn.texi: Regenerate.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Structural_Record_Layout): Set First to false
+	after having listed the fields of the parent type, if any.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <discrete_type>: Do not
+	deal with the ___XP suffix for packed array types here...
+	<E_Array_Subtype>: ...or here when processing the implementation type
+	but when processing the original type instead.  Do not reuse the DECL
+	of the implementation type for the original type.  Tidy up.
+
+2018-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Object_Size_Clause): Declare.
+	* einfo.adb (Object_Size_Clause): New function.
+	* gcc-interface/utils.c (maybe_pad_type): Test Has_Size_Clause before
+	retrieving Size_Clause and post the warning on the object size clause
+	if Has_Object_Size_Clause is true.
+
+2018-05-31  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Find_Primitive_Eq): New subprogram.
+	* exp_ch4.adb (Expand_Composite_Equality): Use the new subprogram
+	Find_Primitive_Eq to search for the primitive of types whose underlying
+	type is a tagged type.
+
+2018-05-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma.Check_Loop_Pragma_Placement): Inverse
+	order of treatment between nodes recognized as loop pragmas (or
+	generated from one) and block statements.
+
+2018-05-31  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/s-osprim__posix2008.adb (Clock): Implement using
+	clock_gettime.
+
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.ads, exp_unst.adb (In_Synchronized_Unit): New predicate to
+	mark subprograms that cannot be eliminated because they must be treated
+	as reachable from outside the current unit. This includes entry bodies
+	and protected operations.
+
+2018-05-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Modular_Addition, Expand_Modular_Subtraction):
+	Convert all operands of the generated code to Standard.Unsigned, to
+	prevent spurious visibility errors. This is needed when the generated
+	expansion involves a modular index type of an array type, and the index
+	type is not immediately visible.
+
+2018-05-30  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads (Package_Instantiation): Update comment after a routine
+	that uses this field has been renamed.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch11.adb (Replace_Raise_By_Goto): The transfomation is legal even
+	if the local raise statement includes a string expression. This
+	expression might be picked up by an outer handler or discarded, but
+	plays no role in this transformation.
+
+2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb, exp_unst.adb, freeze.adb, libgnat/a-direct.adb: Minor
+	reformatting.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Handle the semantic Procedure_To_Call
+	field in relevant nodes: Allocate, Free, and return statements.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Do not traverse a Component_Association
+	that has not been analyzed, as will be the case for a nested aggregate
+	that is expanded into individual assignments.
+
+2018-05-30  Justin Squirek  <squirek@adacore.com>
+
+	* aspects.adb, aspects.ads: Register new aspect.
+	* par-prag.adb (Prag): Register new pragma.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing for new
+	aspect similar to Aspect_Max_Queue_Length.
+	* sem_prag.adb, sem_prag.ads (Analyze_Pragma): Register new pragma and
+	set it to use the same processing as Pragma_Max_Queue_Length.
+	* snames.ads-tmpl: Move definition of Name_Max_Entry_Queue_Depth so
+	that it can be processed as a pragma in addition to a restriction and
+	add an entry for the pragma itself.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Object_Declaration): A pragma Thread_Local_Storage
+	is now legal on a variable of composite type initialized with an
+	aggregate that is fully static and requires no elaboration code.
+	* exp_aggr.adb (Convert_To_Positional): Recognize additional cases of
+	nested aggregates that are compile-time static, so they can be used to
+	initialize variables declared with Threqd_Local_Storage.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Add documentation on
+	Thread_Local_Storage.
+	* gnat_rm.texi: Regenerate.
+
+2018-05-30  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Policy_In_Effect): Take into account CodePeer and
+	GNATprove modes.
+
+2018-05-30  Justin Squirek  <squirek@adacore.com>
+
+	* libgnat/a-direct.adb, libgnat/a-direct.ads (Name_Case_Equivalence):
+	Add implementation.
+	(Start_Search): Modify to use Start_Search_Internal
+	(Start_Search_Internal): Add to break out an extra flag for searching
+	case insensative due to the potential for directories within the same
+	OS to allow different casing schemes.
+	* sysdep.c (__gnat_name_case_equivalence): Add as a default fallback
+	for when the more precise solution fails.
+
+2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, exp_ch5.adb, exp_ch7.adb, exp_unst.adb, sem_eval.adb:
+	Minor reformatting.
+
+2018-05-30  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-comlin.ads (Value_Callback, Define_Switch): New.
+	* libgnat/g-comlin.adb: Add corresponding implementation.
+
+2018-05-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_res.adb, sem_util.adb: Fix several typos.
+
+2018-05-30  Olivier Hainque  <hainque@adacore.com>
+
+	* vx_crtbegin_attr.c (CTOR_ATTRIBUTE, DTOR_ATTRIBUTE): Empty.
+	(eh_registration_ctors, eh_registration_tors): New static variables,
+	forced in a .ctors/.dtors section, respectively, with priority.
+
+2018-05-30  Bob Duff  <duff@adacore.com>
+
+	* aspects.ads, contracts.adb, exp_util.adb, expander.adb, expander.ads,
+	freeze.adb, inline.adb, lib-xref.adb, sem.ads, sem_aggr.adb,
+	sem_attr.adb, sem_ch13.adb, sem_ch3.adb, sem_ch5.adb, sem_ch6.adb,
+	sem_ch8.adb, sem_dim.adb, sem_elab.adb, sem_res.adb, sem_res.ads,
+	sinfo.ads: Spell preanalysis, preanalyze correctly.
+
+2018-05-30  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-sestin.ads: Rework documentation comments.
+
+2018-05-30  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb, exp_aggr.adb, exp_ch7.adb, exp_util.adb, lib.adb,
+	sem_ch13.adb, sem_ch4.adb, sem_res.adb, sem_util.adb
+	(Has_Original_Node): Refactor to use Is_Rewrite_Substitution.
+
+2018-05-30  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Remove conjuncts that are always true.
+
+2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Is_Atomic_Object): Cleaned up. Split the entity logic
+	in a separate routine.
+	(Is_Atomic_Object_Entity): New routine.
+	(Is_Atomic_Prefix): Cleaned up.
+	(Is_Synchronized_Object): Check that the object is atomic, or its type
+	is atomic.
+	(Object_Has_Atomic_Components): Removed.
+	* sem_util.ads (Is_Atomic_Object): Reword the comment on usage.
+	(Is_Atomic_Object_Entity): New routine.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): The flag
+	Needs_Activation_Record is only needed on a subprogram type, not on a
+	pointer to such.
+	* sem_res.adb (Resolve_Selected_Component): If the context type and the
+	component type are anonymous access to subprograms, use the component
+	type to obtain the proper value of Needs_Activation_Record flag for the
+	expression.
+
+2018-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Add
+	comment about the memset case.
+
+2018-05-30  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Element_Loop): Remove the code
+	to analyze the Elmt_Decl, because it gets analyzed in the wrong scope.
+	We need to analyze it as part of analyzing the block, so that if the
+	call to Element that initializes Elmt_Decl returns on the secondary
+	stack, the block will ss_mark/ss_release. This block is inside the
+	loop; we don't want to leak memory until the loop exits.  The purpose
+	of analyzing Elmt_Decl first was to catch the error of modifying it,
+	which is illegal because it's a loop parameter. The above causes us to
+	miss that error.  Therefore, we add a flag Is_Loop_Parameter, and set
+	it on the Element entity, so we end up with an E_Variable node with the
+	flag set.
+	* einfo.ads, einfo.adb (Is_Loop_Parameter): New flag.
+	* sem_ch5.adb (Diagnose_Non_Variable_Lhs): Give the "assignment to loop
+	parameter not allowed" error if Is_Loop_Parameter.
+	* sem_util.adb (Is_Variable): Return False if Is_Loop_Parameter, to
+	trigger the call to Diagnose_Non_Variable_Lhs.
+
+2018-05-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check):
+	* sem_eval.adb (Check_Non_Static_Context, Out_Of_Range): Ignore out of
+	range values for System.Priority in CodePeer mode since the actual
+	target compiler may provide a wider range.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb: Search specification of main unit as well, for
+	unnesting.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): The statement part of
+	a package body that is a compilation unit may contain blocks that
+	declare local subprograms.  In Subprogram_Unnesting Mode such
+	subprograms must be handled as nested inside the (implicit) elaboration
+	procedure that executes that statement part. To handle properly uplevel
+	references we construct that subprogram explicitly, to contain blocks
+	and inner subprograms, The statement part of the compilation unit
+	becomes a call to this subprogram. This is only done if blocks are
+	present in the statement list of the body.
+
+2018-05-30  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb: Minor comment fix.
+
+2018-05-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Handle properly subprogram instantiations
+	that have no corresponding body and appear as attributes of the
+	corresponding wrapper package declaration.
+	(Register_Subprogram): New subprogram, used for subprogram bodies and
+	for subprogram instantiations to enter callable entity into Subp table.
+
+2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/s-secsta.adb: Reimplement the secondary stack support.
+	* libgnat/s-secsta.ads: Update the documentation of all routines in the
+	public part of the package.  Reimplement the private part of the
+	package to account for the new secondary stack structure.  Add types
+	and subprograms for testing purposes.  Add several documentation
+	sections.
+
+2018-05-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb, exp_ch3.adb, exp_ch4.adb, exp_ch7.adb, exp_unst.adb,
+	exp_util.adb, exp_util.ads, libgnat/a-calcon.adb, libgnat/a-calcon.ads,
+	libgnat/s-os_lib.adb, repinfo.adb, sem_ch3.adb, sem_disp.adb,
+	sem_disp.ads, sem_util.adb: Minor reformatting.
+
+2018-05-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Move special flags for Ada runtime files
+	from here...
+	* Makefile.rtl: ... to here.  Update comments.  Protect call to
+	"GCC_FOR_TARGET" in case target_os isn't defined.
+
+2018-05-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Move target pair settings from here...
+	* Makefile.rtl: ... to here.
+	(setup-rts): New target.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (Alphabetical
+	List of All Switches): Replace "modules" with "units".
+	(Subprogram Inlining Control): Likewise.
+	* gnat_ugn.texi: Regenerate.
+	* usage.adb (Usage): Fix description of -gnatn switch.
+
+2018-05-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Fix typos.
+
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer_Call): Attach to tree the reference to
+	the finalizer procedure in the At_End handler, for use in LLVM
+	generation.
+
+2018-05-29  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq, Expand_Composite_Equality): Use the new
+	subprogram Inherits_From_Tagged_Full_View to identify more reliably
+	untagged private types completed with a derivation of an untagged
+	private whose full view is a tagged type.
+	* sem_util.ads, sem_util.adb (Inherits_From_Tagged_Full_View): New
+	subprogram.
+	(Collect_Primitive_Operations): Handle untagged private types completed
+	with a derivation of an untagged private type whose full view is a
+	tagged type. In such case, collecting the list of primitives we may
+	find two equality primitives: one associated with the untagged private
+	and another associated with the ultimate tagged type (and we must
+	remove from the returned list this latter one).
+
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Handle statement sequences that include an
+	At_End handler.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Entities): Also recurse into blocks without label.
+
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Do not generate push/pop for
+	exceptions if subprogram unnesting is in effect, because these branch
+	nodes are relevant only in the presence of nested subprograms.
+
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* libgnat/s-fatgen.adb (Succ, Pred):  Raise Constraint_Error
+	unconditionally when applied to the largest positive (resp. largest
+	negative) value of a floating-point type.
+
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb: Clarify use of Activation_Record_Component:
+	discriminants and exceptions are never components of such.  The flag
+	Needs_Activation_Record is set on subprogram types, not on access to
+	them.
+
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Set scope of component of subtype.
+
+2018-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Exclude selected components whose prefix
+	carry no type. Such selected components appear in unit names that are
+	child units, both in the specification and possibly in an end label for
+	the unit, and they do not contain any relevant uplevel references.
+
+2018-05-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-calend.ads, libgnat/a-calend.adb (Epoch_Offset): Make it a
+	function.
+
+2018-05-29  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/system-vxworks7-ppc-rtp.ads: New file.
+	* libgnat/system-vxworks7-ppc-kernel.ads: New file.
+	* libgnat/system-vxworks7-e500-rtp.ads: New file.
+	* libgnat/system-vxworks7-e500-kernel.ads: New file.
+	* libgnat/system-vxworks7-x86-rtp.ads: New file.
+	* libgnat/system-vxworks-ppc64-kernel.ads: Rename as ...
+	* libgnat/system-vxworks7-ppc64-kernel.ads: and adjust name of
+	gnat-crtbe link spec to use the vx7 variant.
+
+2018-05-29  Olivier Hainque  <hainque@adacore.com>
+
+	* vx_crtbegin.inc: Use a consistent naming convention for the
+	registration/deregistration functions across RTP or kernel.  Remove the
+	ctor/dtor attribute setting based on RTP/kernel, expect the optional
+	attribute extension to be provided by includers instead.
+	* vx_crtbegin.c: Mere inclusion of vx_crtbegin.inc with empty attribute
+	extension for the registration/deregistration functions.
+	* vx_crtbegin_attr.c: New file. Include vx_crtbegin.inc with explicit
+	constructor/destructor attribute extensions.
+	* vx_crtbegin_array.c: New file. Include vx_crtbegin.inc with empty
+	attribute extensions and declare _ctors/_dtors arrays.
+	* vx_crtbegin_auto.c: Remove.
+	* libgnat/system-vxworks7-aarch64-rtp-smp.ads: Use
+	vxworks7-gnat-crtbe-link.spec.
+	* libgnat/system-vxworks7-aarch64.ads: Likewise.
+	* libgnat/system-vxworks7-e500-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc64-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-x86-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-rtp-smp.ads: Likewise.
+
+2018-05-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* ali.adb: Minor reformatting.
+
+2018-05-29  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/gnat_ugn/platform_specific_information.rst: Update package
+	requirements for 32bit GNAT on x86_64-linux.
+	* gnat_ugn.texi: Regenerate.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (Debugging
+	Control): Adjust description of -gnatRj.
+	* gnat_ugn.texi: Regenerate.
+	* opt.ads (List_Representation_Info_To_JSON): Likewise.
+	* repinfo.adb (List_Rep_Info): Do not automatically create a file
+	if List_Representation_Info_To_JSON is true.
+	* switch-c.adb (Scan_Front_End_Switches) <R>: Remove incompatibility
+	check between -gnatRj and -gnatRs.
+	* usage.adb (Usage): Adjust description of -gnatRj.
+
+2018-05-29  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/s-os_lib.adb (Normalize_Pathname): Fix handling of ".." in
+	the root directory.
+
+2018-05-29  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/s-os_lib.adb: Minor reformatting.
+
+2018-05-29  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/a-calend.adb (Epoch_Offset): Move from body to ...
+	* libgnat/a-calend.ads (Epoch_Offset): to private part of spec
+	* libgnat/a-calcon.ads (To_Unix_Nano_Time): New function spec.
+	* libgnat/a-calcon.adb (To_Unix_Nano_Time): New function body.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.ads (JSON format): Document new pair for components.
+	* repinfo.adb (Derived_Discriminant): New function.
+	(List_Structural_Record_Layout): Add Outer_Ent parameter and pass it
+	in recursive calls. If the record type is the parent of an extension,
+	find and list the derived discriminant from the extension, if any.
+	(List_Component_Layout): List the Discriminant_Number in JSON mode.
+	(List_Record_Info): Adjust call to List_Structural_Record_Layout.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (Alphabetical
+	List of All Switches): Document -gnatRj.
+	(Debugging Control): Likewise.
+	* gnat_ugn.texi: Regenerate.
+	* opt.ads (List_Representation_Info_To_JSON): New boolean variable.
+	* osint-c.adb (Create_Repinfo_File): Use the .json instead of .rep
+	extension if List_Representation_Info_To_JSON is true.
+	* repinfo.ads: Document the JSON output format.
+	* repinfo.adb (List_Location): New procedure.
+	(List_Array_Info): Add support for JSON output.
+	(List_Entities): Likewise.
+	(Unop): Likewise.
+	(Binop): Likewise.
+	(Print_Expr): Likewise.
+	(List_Linker_Section): Likewise.
+	(List_Mechanisms): Likewise.
+	(List_Name): Likewise.
+	(List_Object_Info): Likewise.
+	(List_Record_Info): Likewise.
+	(List_Component_Layout): Likewise.  Add Indent parameter.
+	(List_Structural_Record_Layout): New procedure.
+	(List_Attr): Add support for JSON output.
+	(List_Type_Info): Likewise.
+	(Write_Unknown_Val): Likewise.
+	* switch-c.adb (Scan_Front_End_Switches) <R>: Deal with 'j'.
+	* usage.adb (Usage): List -gnatRj.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Component_Layout): New procedure extracted from...
+	(List_Record_Layout): ...here.  Invoke it.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (Write_Unknown_Val): New procedure.
+	(List_GCC_Expression): Call it.
+	(List_Record_Layout): Likewise.
+	(Write_Val): Likewise.
+
+2018-05-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* exp_ch4.adb (Expand_N_Op_Abs): Clear Do_Overflow_Check when inserting
+	code to do check.
+
+2018-05-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Do not use new function from s-casuti yet.
+	This breaks build of cross compilers with older versions of GNAT, so
+	better avoid it.
+
+2018-05-29  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-taprop.ads (Monotonic_Clock): Refine documentation to
+	reflect reality.
+
+2018-05-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* exp_ch4.adb (Expand_N_Op_Abs): Always do range check against 'First.
+
+2018-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Entities): Do not list the Linker_Section for
+	subprograms here...
+	(List_Mechanisms): ...but here instead.  Use consistent name output
+	and formatting conventions.
+
+2018-05-29  Bob Duff  <duff@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Cleanup: avoid use of global var; call new
+	To_Lower function.
+	* libgnat/s-casuti.ads, libgnat/s-casuti.adb (To_Upper, To_Lower,
+	To_Mixed): New functions.
+	* osint.adb: Cleanup: use Is_Directory_Separator, which correctly
+	allows both '\' and '/' on Windows.
+
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.ads: Minor fixes and tweaks in comments.
+
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_GCC_Expression): Remove Valop and replace calls to
+	it with calls to Unop.
+
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.ads (TCode): Adjust range.
+	(Truth_Andif_Expr): Remove.
+	(Truth_Orif_Expr): Likewise.
+	(Truth_And_Expr .. Dynamic_Val): Adjust value.
+	* repinfo.adb (Print_Expr): Remove handling of Truth_{And,Or}if_Expr.
+	(Rep_Value): Likewise.
+	* repinfo.h (Truth_Andif_Expr): Remove.
+	(Truth_Orif_Expr): Likewise.
+	(Truth_And_Expr .. Dynamic_Val): Adjust value.
+	* gcc-interface/decl.c (annotate_value) <TRUTH_ANDIF_EXPR>: Fall
+	through to TRUTH_AND_EXPR case.
+	<TRUTH_ORIF_EXPR>: Fall through to TRUTH_OR_EXPR case.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): For indexed components and attribute
+	references, examine index expressions or associated expressions as well
+	to record uplevel references.
+	(Vist_Node): For function and procedure calls, if a formal is an
+	unconstrained array and the actual is constrained, check whether bounds
+	of actual have uplevel references.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb: Exceptions can be uplevel references, and thus
+	they can appear as components of activation records.
+	* exp_unst.adb (Visit_Node): A reference to an exception may be an
+	uplevel reference.
+
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Composite_Equality): Compute whether the size
+	depends on a discriminant manually instead of using the predicate
+	Size_Depends_On_Discriminant in the array type case.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Check_Static_Type): For a record subtype, check
+	discriminant constraints as well.
+	(Visit_Node): For a selected component, check type of prefix, as is
+	done for indexed components and slices.
+
+2018-05-28  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Real_Range_Check): Add a temporary to store the integer
+	value when converting a float value to a fixed-point value. This is
+	required for CCG because it handles fixed-point types by means of
+	unsigned integer type variables. The range check is now performed using
+	the integer value stored in this temporary.
+
+2018-05-28  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Is_OK_Volatile_Context): Add attributes First, Last and
+	Length as valid non-interfering contexts for SPARK.
+
+2018-05-28  Claire Dross  <dross@adacore.com>
+
+	* sem_disp.ads, sem_disp.adb (Inheritance_Utilities): Package for
+	generic inheritance utilities.
+	(Generic_Inherited_Subprograms): Generic version of
+	Inherited_Subprograms, generic in Find_Dispatching_Type function.
+	(Generic_Is_Overriding_Subprogram): Generic version of
+	Is_Overriding_Subprogram, generic in Find_Dispatching_Type function.
+	(Inherited_Subprograms): Instance of Generic_Inherited_Subprograms with
+	Sem_Disp.Find_Dispatching_Type.
+	(Is_Overriding_Subprogram): Instance of
+	Generic_Is_Overriding_Subprogram with Sem_Disp.Find_Dispatching_Type.
+	(Inheritance_Utilities_Inst): Instance of Inheritance_Utilities
+	with Sem_Disp.Find_Dispatching_Type.
+
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Composite_Equality): For a composite (or FP)
+	component type, do not expand array equality using the unconstrained
+	base type, except for the case where the bounds of the type depend on a
+	discriminant.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Needs_Activation_Record): New flag on
+	access-to-subprogram types, to indicate that an indirect call through
+	such a type requires an activation record when compiling for LLVM.
+	* sem_ch3.adb (Access_Subprogram_Declaration): Set new flag as needed.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Real_Range_Check): Specialize float-to-fixed conversions
+	when bounds of fixed type are static, to remove some spuerfluous
+	implicit conversions and provide an accurate result when converting
+	back and forth between the fixed point type and a floating point type.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Prevent creation of empty
+	activation records.
+
+2018-05-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* exp_unst.adb (Check_Static_Type): Add argument to indicate node to be
+	replaced, if any; all callers changed.
+	(Note_Uplevel_Ref): Likewise.  Also replace reference to deferred
+	constant with private view so we take the address of that entity.
+	(Note_Uplevel_Bound): Add argument to indicate node to be replaced, if
+	any; all callers changed.  Handle N_Indexed_Component like
+	N_Attribute_Reference.  Add N_Type_Conversion case.
+	(Visit_Node): Indexed references can be uplevel if the type isn't
+	static.
+	(Unnest_Subprograms): Don't rewrite if no reference given.  If call has
+	been relocated, set first_named pointer in original node as well.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Flatten): Copy tree of expression in a component
+	association with a range or a set of discrete choices, rather than
+	relocating the node. This avoids inconsistencies in the tree when
+	handling nested subprograms with uplevel references for LLVM.
+
+2018-05-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_util.adb (Possible_Bit_Aligned_Component): Always return False in
+	codepeer mode.
+
+2018-05-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb: Fix typo.
+
+2018-05-28  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-convec.adb (Query_Element): Minor cleanup: remove an
+	unnecessary use of 'Unrestricted_Access.
+
+2018-05-28  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* repinfo.adb (Expr_Value_S): New routine.
+	(List_Linker_Section): Properly extract the value of the section
+	argument.
+
+2018-05-28  Patrick Bernardi  <bernardi@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Update the
+	description of the -D binder switch to reflect current usage.
+	* gnat_ugn.texi: Regenerate.
+
+2018-05-28  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb: Minor reformatting
+
+2018-05-28  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch3.adb
+	(Build_Initialization_Call): Add logic to pass the appropriate actual to match
+	 new formal.
+	(Init_Formals): Add new formal *_skip_null_excluding_check
+	* exp_util.adb, exp_util.ads
+	(Enclosing_Init_Proc): Added to fetch the enclosing Init_Proc from the current
+	 scope.
+	(Inside_Init_Proc): Refactored to use Enclosing_Init_Proc
+	(Needs_Conditional_Null_Excluding_Check): Added to factorize the predicate
+	 used to determine how to generate an Init_Proc for a given type.
+	(Needs_Constant_Address): Minor reformatting
+	* sem_res.adb
+	(Resolve_Null): Add logic to generate a conditional check in certain cases
+
+2018-05-28  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb, gnatlink.adb, sem_ch6.adb, sem_res.adb, sem_util.adb:
+	Minor reformatting.
+
+2018-05-28  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Process_Atomic_Independent_Shared_Volatile): Include
+	the declarations of single concurrent types because they fall in the
+	category of full type and object declarations.
+
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (Compute_Max_Length): Skip _Parent component.
+	(List_Record_Layout): Likewise.
+
+2018-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Function_Result): Add a warning if a postcondition
+	includes a call to function to which it applies. This may mean an
+	omission of an attribute reference 'Result, in particular if the
+	function is pqrameterless.
+
+2018-05-28  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Find_Expanded_Name): Add extra guard to make sure the
+	misresolved package name is not a case of mistaken identity.
+
+2018-05-28  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Range): Re-resolve the low bound of a range in
+	GNATprove mode, as the order of resolution (low then high) means that
+	all the information is not available when resolving the low bound the
+	first time.
+
+2018-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Array_Info): Start with an explicit blank line and
+	end with the linker section, if any.
+	(List_Entities): Do not output the linker section for record types,
+	array types and variables.
+	(Print_Expr): Factor out common processing for unary operators and
+	special values.  Adjust and reorder the various cases.
+	(List_Object_Info): End with the linker section, if any.
+	(List_Record_Info): Likewise.
+	(List_Type_Info): Do not start with a blank line.
+
+2018-05-25  Nicolas Roche  <roche@adacore.com>
+
+	* libgnat/s-valrea.adb (Scan_Real): Abort computation once it is sure
+	that the result will be either -infinite or +infinite.
+
+2018-05-25  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnat/s-parame.ads, libgnat/s-parame__vxworks.ads,
+	libgnat/s-parame__ae653.ads, libgnat/s-parame__hpux.ads (Size_Type):
+	Expand range of type to match the address space of the target.
+	(Task_Storage_Size): Remove unused type.
+
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Set_Mixed_Mode_Operand): If the operand is an expression
+	of a fixed point type and the parent is a multiplying operation,
+	resolve the operand with its own type because the context will impose a
+	resulting type on the result of the multiplication by means of
+	approriate conversion.
+
+2018-05-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): Ensure that the analysis of
+	the in-place initialization aggregate created for pragmas
+	Initialize_Scalars or Normalize_Scalars is performed with checks
+	suppressed.
+
+2018-05-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Positional): Bump default for
+	Max_Others_Replicate to 32. Update comments.
+	* osint.ads (Unknown_Attributes): No longer pretend this is a constant.
+	(No_File_Info_Cache): Initialize separately.
+	* osint.adb (No_File_Info_Cache): Update initializer.
+
+2018-05-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Membership_Op): Allow the use of the membership
+	test when the left operand is a class-wide interface and the right
+	operand is not a class-wide type.
+	* exp_ch4.adb (Tagged_Membership): Adding support for interface as the
+	left operand.
+
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Flatten): A quantified expression cannot be duplicated
+	in an others clause to prevent visibility issues with the generated
+	loop variable.
+	(Component_OK_For_Backend): Return false for a quantified expression.
+	(Check_Static_Component): Ditto.
+
+2018-05-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/s-secsta.adb (SS_Allocate): Reimplemented.
+	(SS_Allocate_Dynamic): New routine. The allocation logic is now split
+	into three distring cases rather than in one loop which attempts to
+	handle all three cases. This rewrite eliminates an issue where the last
+	frame of the stack cannot be freed, thus causing the memory range of a
+	new frame to approach the overflow point of the memory index type.
+	Since the overflow is logically treated as a
+	too-much-memory-on-the-stack scenario, it causes a bogus Storage_Error.
+	(SS_Allocate_Static): New routine. The routine factorizes the static
+	secondary stack-related code from the former SS_Allocate.
+
+2018-05-25  Sergey Rybin  <rybin@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Add description of '-U'
+	option for gnatelim.
+
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not create
+	Class_Wide_Clone_Body when analyzing a subprogram_body_stub: the clone
+	is created when the proper body of the stub is analyzed.
+	* sem_util.adb (ZBuild_Class_Wide_Clone_Body): If the subprogram body
+	is the proper body of a subunit, the cloned body must be inserted in
+	the declarative list that contains the stub.
+
+2018-05-25  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): Add guard in check to
+	generate code for 6.5(8-10) so that we don't get an assertion error
+	when dealing with an incomplete return type.
+
+2018-05-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* pprint.adb (Expression_Name): Strip too long expressions to avoid
+	carrying very large strings.
+
+2018-05-25  Patrick Bernardi  <bernardi@adacore.com>
+
+	* switch-b.adb (Scan_Binder_Switches): binder switch -Q accepts Natural
+	numbers.
+
+2018-05-25  Doug Rupp  <rupp@adacore.com>
+
+	* tracebak.c (aarch64-linux): Implement.
+
+2018-05-25  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb: Minor reformatting.
+
+2018-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Iterate_Call_Parameters): Fix code convention and
+	assertions.
+
+2018-05-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb, einfo.ads, exp_ch3.adb, exp_ch8.adb, exp_unst.adb,
+	pprint.adb, sem_ch12.adb, sem_ch3.adb, sem_prag.adb, sem_util.adb:
+	Minor reformatting.
+
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Instance_Exists): New function, subsidiary of
+	Validate_Derived_Type_Instance, to verify that all interfaces
+	implemented by the formal type are also implemented by the actual. The
+	verification is complicated when an interface of the formal is declared
+	in a generic unit and the actual is declared in an instance of it.
+	There is currently no mechanism to relate an interface declared within
+	a generic to the corresponding interface in an instance, so we must
+	traverse the list of interfaces of the actual, looking for a name
+	match, and verifying that that interface is declared in an instance.
+
+2018-05-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Iterate_Call_Parameters): Rewrite with extra
+	assertions; replace function versions of Next_Formal/Next_Actual with
+	their procedural versions (which are more concise).
+
+2018-05-25  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-osinte__aix.ads, libgnarl/s-osinte__android.ads,
+	libgnarl/s-osinte__darwin.ads, libgnarl/s-osinte__freebsd.ads,
+	libgnarl/s-osinte__hpux.ads, libgnarl/s-osinte__kfreebsd-gnu.ads,
+	libgnarl/s-osinte__linux.ads, libgnarl/s-osinte__lynxos178e.ads,
+	libgnarl/s-osinte__qnx.ads, libgnarl/s-osinte__rtems.ads
+	(Relative_Timed_Wait): Remove.
+	* libgnarl/s-tpopmo.adb (Timed_Sleep, Timed_Delay): Rewrite to allow
+	for incremental looping. Remove references to Rel_Time and
+	Relative_Timed_Wait.
+	* libgnat/s-osprim__posix.adb, libgnat/s-osprim__posix2008.adb
+	(Timed_Delay): Make separate.
+	* libgnat/s-optide.adb: New separate procedure.
+	* libgnat/s-osprim.ads (Max_System_Delay): New constant.
+	* libgnat/s-osprim__lynxos.ads (Max_Sensible_Delay): Set to 6 months.
+	(Max_System_Delay): New constant.
+
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Verify that the actual
+	for a formal derived type implements all the interfaces declared for
+	the formal.
+
+2018-05-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Check_Applicable_Policy): Deal specially with CodePeer
+	and GNATprove modes when applicable policy is Ignore.
+
+2018-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Enumeration_Type): Do not give integer size to a
+	boolean type with convention C.
+	* libgnat/i-cexten.ads (bool): Change to boolean with convention C.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Add new local variable
+	FOREIGN and use it throughout the function.
+	<E_Enumeration_Type>: Set precision 1 on boolean types with foreign
+	convention.
+	<E_Enumeration_Subtype>: Likewise for subtypes.
+	<E_Record_Type>: Force the size of a storage unit on empty classes.
+	* gcc-interface/utils.c (make_type_from_size) <BOOLEAN_TYPE>: Skip
+	boolean types with precision 1 if the size is the expected one.
+
+2018-05-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* pprint.adb (Expression_Name): Do not print non ASCII characters.
+
+2018-05-25  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-strunb__shared.ads, libgnat/a-stwiun__shared.ads,
+	libgnat/a-stzunb__shared.ads: (Initialize, Adjust): Add pragma Inline.
+
+2018-05-25  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads: Minor comment fix.
+
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Restrict check for uplevel references in
+	prefixes of array attributes, to prefixes that are entity names whose
+	type is constrained.
+	(Note_Uplevel_Bound): Verify that the bound is declared in an enclosing
+	subprogram, as itype created for loops in pre/postcondition may appear
+	in loops at the library level.
+
+2018-05-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): The predicate function
+	declaration is inserted into the tree and analyzed at that point, so
+	should not be reinserted when the body is constructed. Inside a
+	generic, ensure that the body is not inserted twice in the tree.
+
+2018-05-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Check_Grouping): Modify test to ignore statements and
+	declarations not coming from source.
+
+2018-05-25  Fedor Rybin  <frybin@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document new switch
+	--copy-environment for gnattest.
+
+2018-05-24  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_elab.adb (Non_Private_View): Simplify by removing a local Result
+	variable.
+	* sem_prag.adb (Get_Base_Subprogram): Same as above.
+
+2018-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Set_Normalized_First_Bit): Declare.
+	(Set_Normalized_Position): Likewise.
+	* repinfo.adb (List_Record_Layout): Do not use irregular output for a
+	variable position.  Fix minor spacing issue.
+	* gcc-interface/decl.c (annotate_rep): If a field has a variable
+	offset, compute the normalized position and annotate it in addition to
+	the bit offset.
+
+2018-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu):
+	Constify and rename variables.  Fix formatting.
+	(gnat_to_gnu) <N_Exception_Handler>: Minor tweak.
+	<N_Raise_Statement>: Likewise.
+
+2018-05-24  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch8.adb (Build_Body_For_Renaming): Adding support to build the
+	body of a variant record equality renaming.
+	(Expand_N_Subprogram_Renaming_Declaration): Adapt the code to the new
+	implementation of Build_Body_For_Renaming.
+	* exp_ch3.ads (Build_Variant_Record_Equality): New library level
+	function that factorizes the functionality needed by
+	Build_Body_For_Renaming and Expand_Freeze_Record_Type to build the body
+	of a variant record equality subprogram.
+	* exp_ch3.adb (Build_Variant_Record_Equality): New subprogram.
+	(Build_Variant_Record_Equality): New local procedure of
+	Expand_Freeze_Record_Type containing all the code specific for freezing
+	the record type that cannot be place in the new library level function.
+
+2018-05-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Is_Activation_Record): New flag on
+	in_parameters, used when unesting subprograms for LLVM, to indicate
+	that a generated parameter carries the activation record from the
+	enclosing subprogram.
+	* exp_unst.adb (Check_Static_Type): Handle array attributes of types
+	whose bounds may contain up-level references that need to be added to
+	an activation recoord.
+	(Add_Extra_Formal): Set Is_Activation_Record on new formal.
+
+2018-05-24  Yannick Moy  <moy@adacore.com>
+
+	* pprint.adb (Expression_Image): Improve the printing of expressions,
+	by taking more cases into account, in particular qualified expressions
+	and aggregates.  Also count more the number of parentheses to close
+	after the expression.
+
+2018-05-24  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Is_Visible_Component): For untagged types add missing
+	check for renamed discriminants.
+	* sem_ch4.adb (Analyze_Overloaded_Selected_Component,
+	Analyze_Selected_Component, Check_Misspelled_Selector): For calls to
+	Is_Visible_Component pass the associated selector node to allow
+	checking renamed discriminants on untagged types.
+
+2018-05-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Use_Type): Do not assign the Prev_Use_Clause
+	link to a use_type clause if this would cause an infinite loop in the
+	machinery that detects redundant use clauses. This may happen when the
+	redundant clauses appear in the context of a child unit and the context
+	of its parent.
+
+2018-05-24  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sinfo.ads: Fix grammar in comment.
+
+2018-05-24  Justin Squirek  <squirek@adacore.com>
+
+	* einfo.ads, einfo.adb (Append_Entity): Modified to use Link_Entities
+	and manage doubly-linked entity chain.
+	(Nested_Scenarios): Removed entity field used for optimization during
+	 elaboration to make room for the new field Prev_Entity.
+	(Link_Entities): Added to replace redundant calls to Set_Next_Entity
+	and Set_Prev_Entity as well as centralize changes to the entity chain.
+	(Predicated_Parent): Modified to use Node38.
+	(Prev_Entity): Added to fetch new node field Prev_Entity in all entity
+	types.
+	(Remove_Entity): Moved from sem_util.
+	(Set_Nested_Scenarios): Deleted.
+	(Set_Predicated_Parent): Modified to use Node38.
+	(Set_Prev_Entity): Added to set Prev_Entity field.
+	(Set_Validated_Object): Modified to use Node38.
+	(Unlink_Next_Entity): Added to process Prev_Entity when an unlinking
+	action is required.
+	(Validated_Object): Modified to use Node38.
+	(Write_Field36_Name): Remove Nested_Scenarios, Validated_Object, and
+	predicated parent cases.
+	(Write_Field38_Name): Add predicated parent and Validated_Object cases.
+	* sem_ch3.adb (Process_Subtype): Add guard to protect against
+	inappropriate marking of Predicated_Parent to non-itype subtypes.
+	(Make_Class_Wide_Type): Preserve Prev_Entity field and set in new type.
+	(Copy_And_Swap): Add setting of Prev_Entity.
+	(Build_derived_Record_Type): Replace Set_Next_Entity w/ Link_Entities.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Replace Set_Next_Entity
+	w/ Link_Entities.
+	(New_Overloaded_Entity): Remove block created to search for previous
+	entities in the entity chain with relevant calls to Prev_Entity as well
+	as replace duplicated code from Remove_Entity_And_Homonym with a call
+	to that subprogram.
+	* sem_ch7.adb (Exchange_Declarations): Replace Set_Next_Entity w/
+	Link_Entities.
+	* sem_elab.adb (Find_And_Process_Nested_Scenarios): Remove global and
+	initial subprogram declarations related to Nested_Scenarios.
+	(Process_Nested_Scenarios): Deleted.
+	(Save_Scenario): Deleted.
+	(Traverse_Body): Remove optimization for Nested_Scenarios so as to free
+	node space in the entity tree.
+	* sem_util.adb, sem_util.ads (Remove_Entity): Moved to einfo.
+	(Remove_Entity_And_Homonym): Added to separate functionality of
+	Remove_Entity from the homonym chain directly.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Replace Set_Next_Entity
+	w/ Link_Entities and Unlink_Next_Entity.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Replace Set_Next_Entity w/
+	Link_Entities.
+	* exp_ch6.adb (Replace_Renaming_Declaration_Id): Replace
+	Set_Next_Entity w/ Link_Entities.
+	* exp_disp.adb (Expand_Dispatching_Call): Replace Set_Next_Entity w/
+	Link_Entities and Unlink_Next_Entity.
+	* exp_spark.adb (Expand_SPARK_N_Object_Renaming_Declaration): Replace
+	call to Remove_Entity with its new incarnation.
+	* exp_util.adb (New_Class_Wide_Subtype): Add setting of Prev_Entity.
+	* freeze.adb (Freeze_Record_Type): Replace Set_Next_Entity w/
+	Link_Entities.
+
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch10.adb (Expand_Limited_With_Clause): Update the call to
+	Install_Limited_Withed_Unit.
+	(Expand_With_Clause): Update the call to Install_Withed_Unit.
+	(Implicit_With_On_Parent): Update the call to Install_Withed_Unit.
+	(Install_Context_Clauses): Update the call to Install_Withed_Unit.
+	(Install_Limited_Context_Clauses): Update the calls to
+	 Install_Limited_Withed_Unit.
+	(Install_Limited_Withed_Unit): Renamed to better illustrate its
+	purpose.
+	(Install_Private_With_Clauses): Update the calls to Install_Withed_Unit
+	and Install_Limited_Withed_Unit.
+	(Install_With_Clause): Uninstall a limited with clause if a [private]
+	with clause is given for the same package.
+	(Install_Withed_Unit): Renamed to better illustrate its purpose.
+	(Remove_Limited_With_Unit): New routine.
+
+2018-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* raise-gcc.c (__gnat_SEH_error_handler): Remove prototype.
+	(__gnat_personality_seh0): Adjust and beef up comments, and
+	fix formatting throughout.
+	(__gnat_adjust_context): Deal minimally with version 2.
+	* seh_init.c (__gnat_map_SEH): Fix formatting.
+	(_gnat_SEH_error_handler): Adjust comments.
+	(__gnat_install_SEH_handler): Fix formatting.
+
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb, sem_ch3.adb, sem_res.adb: Minor reformatting.
+
+2018-05-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Flatten): Add a warning on an others clause in an array
+	aggregate with static bounds when named associations cover all index
+	positions and the others clause is redundant.
+
+2018-05-24  Raphael Amiard  <amiard@adacore.com>
+
+	* libgnat/a-cohama.ads: Add documentation.
+
+2018-05-24  Raphael Amiard  <amiard@adacore.com>
+
+	* libgnat/a-convec.ads: Add documentation.
+
+2018-05-24  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Ignore raising an error in
+	expansion for limited tagged types when the node to be expanded is a
+	raise expression due to it not representing a valid object.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Add exception to error
+	message regarding assignments to limited types to ignore genereated
+	code.
+
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (New_Class_Wide_Subtype): Capture and restore relevant
+	Ghost-related attributes of the class-wide subtype because the copy
+	clobbers them.
+
+2018-05-24  Justin Squirek  <squirek@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Add guard to protect against
+	marking use clauses as effective when the reference appears within
+	generated code.
+
+2018-05-24  Cyrille Comar  <comar@adacore.com>
+
+	* doc/gnat_rm/the_gnat_library.rst: Fix typos.
+	* gnat_rm.texi: Regenerate.
+
+2018-05-24  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb (Expand_Cleanup_Actions): Create a mark unconditionally
+	for build-in-place functions with a caller-unknown-size result.
+	(Create_Finalizer): For build-in-place functions with a
+	caller-unknown-size result, check at run time whether we need to
+	release the secondary stack.
+
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Use the full view of an internally
+	generated incomplete type.
+
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* expander.adb (Expand): Update the save and restore of the Ghost
+	region.
+	* exp_ch3.adb (Freeze_Type): Likewise.
+	* exp_disp.adb (Make_DT): Likewise.
+	* exp_util.adb (Build_DIC_Procedure_Body): Likewise.
+	(Build_DIC_Procedure_Declaration): Likewise.
+	(Build_Invariant_Procedure_Body): Likewise.
+	(Build_Invariant_Procedure_Declaration): Likewise.
+	(Make_Predicate_Call): Likewise.
+	* freeze.adb (Add_To_Result): Insert the freeze action of a living
+	entity prior to the start of the enclosing ignored Ghost region.
+	(Freeze_Entity): Update the save and restore of the Ghost region.
+	* ghost.adb (Install_Ghost_Mode): Reimplemented.
+	(Install_Ghost_Region): New routine.
+	(Mark_And_Set_Ghost_Assignment): Install a region rather than a mode.
+	(Mark_And_Set_Ghost_Body): Likewise.
+	(Mark_And_Set_Ghost_Completion): Likewise.
+	(Mark_And_Set_Ghost_Declaration): Likewise.
+	(Mark_And_Set_Ghost_Instantiation): Likewise.
+	(Mark_And_Set_Ghost_Procedure_Call): Likewise.
+	(Name_To_Ghost_Mode): New routine.
+	(Restore_Ghost_Region): New routine.
+	* ghost.ads (Install_Ghost_Region): New routine.
+	(Restore_Ghost_Region): New routine.
+	* opt.ads: Add new global variable Ignored_Ghost_Region.
+	* rtsfind.adb (Load_RTU): Update the save and restore of the Ghost
+	region. Install a clean region.
+	* sem.adb (Analyze): Likewise.
+	(Do_Analyze): Likewise.
+	* sem_ch3.adb (Analyze_Object_Declaration): Likewise
+	(Derive_Progenitor_Subprograms): Use local variable Iface_Alias to
+	capture the ultimate alias of the current primitive.
+	(Process_Full_View): Update the save and restore of the Ghost region.
+	Do not inherit DIC and invariant procedures.
+	* sem_ch5.adb (Analyze_Assignment): Update the save and restore of the
+	Ghost region.
+	* sem_ch6.adb (Analyze_Procedure_Call): Likewise.
+	(Analyze_Subprogram_Body_Helper): Likewise.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Likewise.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Likewise.
+	(Analyze_Subprogram_Instantiation): Likewise.
+	(Instantiate_Package_Body): Likewise.
+	(Instantiate_Subprogram_Body): Likewise.
+	* sem_ch13.adb (Build_Predicate_Functions): Likewise.
+	(Build_Predicate_Function_Declaration): Likewise.
+	* sem_disp.adb
+	(Add_Dispatching_Operation): Do not consider DIC and invariant
+	procedures.
+	(Check_Dispatching_Operation): Use Add_Dispatching_Operation to collect
+	a dispatching subprogram.
+	(Check_Operation_From_Private_View): Likewise.
+	(Override_Dispatching_Operation): Likewise.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part): Update the save
+	and restore of the Ghost region.
+	(Analyze_Initial_Condition_In_Decl_Part): Likewise.
+	(Analyze_Pragma): Update the save and restore of the Ghost region.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Likewise.
+	* sem_util.adb (Is_Suitable_Primitive): New routine.
+	* sem_util.ads (Is_Suitable_Primitive): New routine.
+	* sinfo.ads: Update the section of Ghost regions.
+
+2018-05-24  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Contract_Cases):
+	Change "condition" to "case guard" after renaming in the contract
+	grammar.
+	* gnat_rm.texi: Regenerate.
+
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Expand_Static_Predicates_In_Choices): Indicate that the
+	construct with discrete choices no longer contains a subtype with
+	predicates since the expansion already handled this case.
+
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Wrap_Imported_Subprogram): Generate an unchecked
+	conversion to the return type to avoid a side effect where an imported
+	relocated function generates a new anonymous access type, whose
+	accessibility level does not agree with with that of the wrapper.
+
+2018-05-24  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Abstract_Interface_List): Add missing support for
+	private types whose full view is a synchronized type.
+	* sem_ch3.adb (Build_Derived_Private_Type): Skip building the full
+	derivation of a private type parent type is a task type with
+	discriminants as gigi does not use such type directly.
+
+2018-05-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Build_Variable_Reference_Marker): Do not create a
+	variable marker when the reference appears in the formal part of a
+	compilation unit instance because there is no place to insert it.
+	(In_Compilation_Instance_Formal_Part): New routine.
+
+2018-05-24  Piotr Trojanek  <trojanek@adacore.com>
+
+	* layout.ads, repinfo.ads: Fix references to renamed Backend_Layout
+	configuration parameter.
+
+2018-05-24  Doug Rupp  <rupp@adacore.com>
+
+	* argv-lynxos178-raven-cert.c: New file.
+	* libgnat/system-lynxos178-x86.ads: New file.
+
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_disp.adb, freeze.adb, gnat1drv.adb, sem_ch5.adb, sem_spark.adb:
+	Minor reformattings.
+
+2018-05-23  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (win32_wait): Properly free the handle/pid lists when
+	WaitForMultipleObjects fails (return WAIT_FAILED).
+
+2018-05-23  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (win32_wait): Add missing parentheses.
+
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Check_Large_Modular_Array): Moved to Freeze.
+	(Expand_N_Object_Declaration): Do not check for a large modular array
+	here.
+	* freeze.adb (Check_Large_Modular_Array): Moved from Exp_Ch3.
+	(Freeze_Object_Declaration): Code cleanup. Check for a large modular
+	array.
+	* sem_ch3.adb: Minor reformatting.
+
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: New attribute on types: Predicated_Parent, to simplify the
+	retrieval of the applicable predicate function to an itype created for
+	a constrained array component.
+	* einfo.adb: Subprograms for Predicated_Parent.
+	(Predicate_Function): Use new attribute.
+	* exp_util.adb (Make_Predicate_Call): If the predicate function is not
+	available for a subtype, retrieve it from the base type, which may have
+	been frozen after the subtype declaration and not captured by the
+	subtype declaration.
+	* sem_aggr.adb (Resolve_Array_Aggregate): An Others association is
+	legal within a generated initiqlization procedure, as may happen with a
+	predicate check on a component, when the predicate function applies to
+	the base type of the component.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Clean up inheritance of
+	predicates for subtype declarations and for subtype indications in
+	other contexts.
+	(Process_Subtype): Likewise. Handle properly the case of a private type
+	with unknown discriminants whose full view is an unconstrained array.
+	Use Predicated_Parent to indicate source of predicate function on an
+	itype whose parent is itself an itype.
+	(Complete_Private_Subtype): If the private view has unknown
+	discriminants and the full view is an unconstrained array, set base
+	type of completion to the full view of parent.
+	(Inherit_Predicate_Flags): Prevent double assignment of predicate
+	function and flags.
+	(Build_Subtype): For a constrained array component, propagate predicate
+	information from original component type declaration.
+
+2018-05-23  Boris Yakobowski  <yakobowski@adacore.com>
+
+	* libgnat/a-ngelfu.ads (Arctanh, Arccoth): Fix faulty preconditions.
+
+2018-05-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* checks.adb (Minimize_Eliminate_Overflows): Default initialize Lo and
+	Hi.
+	* sem_elab.adb: Make "out" parameters instead of "in out" when
+	relevant.
+
+2018-05-23  Bob Duff  <duff@adacore.com>
+
+	* gnatbind.adb (List_Applicable_Restrictions): Add
+	No_Implementation_Restrictions to the list of restrictions not to list.
+	Remove double negative "not No_Restriction_List".  Comment the
+	commentary that is output, so it won't cause errors if used directly in
+	a gnat.adc.
+
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Inherit_Class_Wide_Pre): Refine legality check on
+	class-wide precondition on a type extension when ancestor does not have
+	a class-wide precondition.  Previously the compiler accepted such a
+	precondition when the ancestor had a class-wide postcondition.
+
+2018-05-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_attr.adb (Valid_Scalars): Do not invoke Error_Attr_P to report
+	the warning on occurrences of this attribute whose evaluation is always
+	true (since that subprogram aborts processing the attribute). In
+	addition, replace the node by its boolean result 'True' (required
+	because the backend has no knowledge of this attribute).
+
+2018-05-23  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-convec.adb: (Insert, Insert_Space): Suppress warnings. The
+	code in question is not reachable in the case where Count_Type'Last is
+	out of range.
+
+2018-05-23  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Clarify meaning of
+	local pragma Warnings Off without On.
+	* gnat_rm.texi: Regenerate.
+
+2018-05-23  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/g-excact.ads (Is_Foreign_Exception): New predicate.
+	* libgnat/g-excact.adb: Implement.
+
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): If a subtype indication
+	is present, verify its legality when the domain of iteration is a
+	GNAT-specific formal container, as is already done for arrays and
+	predefined containers.
+
+2018-05-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Enclosing_Declaration): Fix the case of a named number
+	declaration, which was not taken into account.
+
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* debug.adb: Switch -gnatd_s is now used to stop elaboration checks on
+	synchronized suspension.
+	* rtsfind.ads: Add entries for units Ada.Synchronous_Barriers and
+	Ada.Synchronous_Task_Control and routines Suspend_Until_True and
+	Wait_For_Release.
+	* sem_elab.adb: Document switch -gnatd_s.
+	(In_Task_Body): New routine.
+	(Is_Potential_Scenario): Code cleanup. Stop the traversal of a task
+	body when the current construct denotes a synchronous suspension call,
+	and restriction No_Entry_Calls_In_Elaboration_Code or switch -gnatd_s
+	is in effect.
+	(Is_Synchronous_Suspension_Call): New routine.
+	* switch-c.adb (Scan_Front_End_Switches): Switch -gnatJ now sets switch
+	-gnatd_s.
+
+2018-05-23  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Restrict the initialization of
+	External_Tag and Expanded_Name to an empty string to the case where
+	both pragmas apply (i.e. No_Tagged_Streams and Discard_Names), since
+	restricted runtimes are compiled with pragma Discard_Names.
+	* doc/gnat_rm/implementation_defined_pragmas.rst,
+	doc/gnat_rm/implementation_defined_characteristics.rst: Add
+	documentation.
+	* gnat_rm.texi: Regenerate.
+
+2018-05-23  Maroua Maalej  <maalej@adacore.com>
+
+	* sem_spark.adb: Fix of some permission rules of pointers in SPARK.
+
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Preanalyze_Range): The pre-analysis of the domain of
+	iteration of an Ada2012 loop is performed to determine the type of the
+	domain, but full analysis is performed once the loop is rewritten as a
+	while-loop during expansion. The pre-analysis suppresses expansion; it
+	must also suppress the generation of freeze nodes, which may otherwise
+	appear in the wrong scope before rewritting.
+
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb: Update the section on suppressing elaboration warnings.
+
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Is_Elaboration_Checks_OK_Id): Use predicate
+	Is_Elaboration_Target.
+	(Is_Elaboration_Target): New routine.
+	(Is_Elaboration_Warnings_OK_Id): Use predicate Is_Elaboration_Target.
+	(Set_Is_Elaboration_Checks_OK_Id): Use predicate Is_Elaboration_Target.
+	(Set_Is_Elaboration_Warnings_OK_Id): Use predicate
+	Is_Elaboration_Target.
+	* einfo.ads: Add new synthesized attribute Is_Elaboration_Target along
+	with occurrences in nodes.
+	(Is_Elaboration_Target): New routine.
+	* sem_prag.adb (Analyze_Pragma): Suppress elaboration warnings when an
+	elaboration target is subject to pragma Warnings (Off, ...).
+
+2018-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Type_Info): Remove obsolete stuff.
+
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Flag304 is now Is_Elaboration_Warnings_OK_Id.
+	(Is_Elaboration_Warnings_OK_Id): New routine.
+	(Set_Is_Elaboration_Warnings_OK_Id): New routine.
+	(Write_Entity_Flags): Output Flag304.
+	* einfo.ads: Add new attribute Is_Elaboration_Warnings_OK_Id along with
+	occurrences in entities.
+	(Is_Elaboration_Warnings_OK_Id): New routine along with pragma Inline.
+	(Set_Is_Elaboration_Warnings_OK_Id): New routine along with pragma
+	Inline.
+	* sem_attr.adb (Analyze_Access_Attribute): Capture the state of
+	elaboration warnings.
+	* sem_ch3.adb (Analyze_Object_Declaration): Capture the state of
+	elaboration warnings.
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration): Capture the
+	state of elaboration warnings.
+	(Analyze_Subprogram_Body_Helper): Capture the state of elaboration
+	warnings.
+	(Analyze_Subprogram_Declaration): Capture the state of elaboration
+	warnings.
+	* sem_ch9.adb (Analyze_Entry_Declaration): Capture the state of
+	elaboration warnings.
+	(Analyze_Single_Task_Declaration): Capture the state of elaboration
+	warnings.
+	(Analyze_Task_Type_Declaration): Capture the state of elaboration
+	warnings.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Capture the state
+	of elaboration warnings.
+	(Analyze_Generic_Subprogram_Declaration): Capture the state of
+	elaboration warnings.
+	* sem_elab.adb: Add a section on suppressing elaboration warnings.
+	Type Processing_Attributes includes component Suppress_Warnings
+	intended to suppress any elaboration warnings along a path in the
+	graph.  Update Initial_State to include a value for this component.
+	Types Target_Attributes and Task_Attriutes include component
+	Elab_Warnings_OK to indicate whether the target or task has elaboration
+	warnings enabled.  component Elab_Warnings_OK.
+	(Build_Access_Marker): Propagate attribute
+	Is_Elaboration_Warnings_OK_Node from the attribute to the generated
+	call marker.
+	(Extract_Instantiation_Attributes): Set the value for Elab_Warnings_OK.
+	(Extract_Target_Attributes): Set the value for Elab_Warnings_OK.
+	(Extract_Task_Attributes): Set the value for Elab_Warnings_OK.
+	(Process_Conditional_ABE_Access): Suppress futher elaboration warnings
+	when already in this mode or when the attribute or target have warnings
+	suppressed.
+	(Process_Conditional_ABE_Activation_Impl): Do not emit any diagnostics
+	if warnings are suppressed.
+	(Process_Conditional_ABE_Call): Suppress further elaboration warnings
+	when already in this mode, or the target or call have warnings
+	suppressed.
+	(Process_Conditional_ABE_Call_Ada): Do not emit any diagnostics if
+	warnings are suppressed.
+	(Process_Conditional_ABE_Call_SPARK): Do not emit any diagnostics if
+	warnings are suppressed.
+	(Process_Conditional_ABE_Instantiation): Suppress further elaboration
+	warnings when already in this mode or when the instantiation has
+	warnings suppressed.
+	(Process_Conditional_ABE_Instantiation_Ada): Do not emit any
+	diagnostics if warnings are suppressed.
+	(Process_Conditional_ABE_Variable_Assignment_Ada): Use the more
+	specific Is_Elaboration_Warnings_OK_Id rather than Warnings_Off.
+	(Process_Conditional_ABE_Variable_Assignment_SPARK): Use the more
+	specific Is_Elaboration_Warnings_OK_Id rather than Warnings_Off.
+	(Process_Task_Object): Suppress further elaboration warnings when
+	already in this mode, or when the object, activation call, or task type
+	have warnings suppressed. Update the processing state to indicate that
+	the path goes through a task body.
+	* sinfo.adb (Is_Elaboration_Warnings_OK_Node): Accept attribute
+	references.
+	(Set_Is_Elaboration_Warnings_OK_Node): Accept attribute references.
+	* sinfo.ads: Attribute Is_Elaboration_Warnings_OK_Node now applies to
+	attribute references.
+
+2018-05-23  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+
+2018-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): If expression is an
+	anonymous_access_to_ subprogram formal, apply a conversion to force an
+	accsssibility check that will fail statically, enforcing 3.10.2 (13).
+
+2018-05-23  Daniel Mercier  <mercier@adacore.com>
+
+	* gnat1drv.adb: Turn off length expansion in CodePeer mode.
+
+2018-05-23  Bob Duff  <duff@adacore.com>
+
+	* freeze.adb: (Check_Address_Clause): Deal with build-in-place
+	aggregates in addition to build-in-place calls.
+
+2018-05-23  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+	* sem_ch3.adb: Likewise.
+	* sinfo.ads: Likewise.
+
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): Do not optimize scalar array
+	initialization when the component type has predicates.
+	* exp_ch4.adb (Expand_N_Allocator): Do not optimize scalar array
+	allocation when the component type has predicates.
+
+2018-05-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb, exp_disp.adb, sem_ch3.adb, sem_ch6.adb, sem_prag.adb:
+	Minor reformatting.
+
+2018-05-22  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Propagate flags from the
+	original function spec into the generated function spec due to
+	expansion of expression functions during analysis.
+	(Analyze_Subprogram_Body_Helper): Modify check on formal parameter
+	references from the body to the subprogram spec in the case of
+	expression functions because of inconsistances related to having a
+	generated body.
+	* libgnarl/s-osinte__android.ads: Flag parameters as unused.
+	* libgnarl/s-osinte__lynxos178e.ads: Likewise.
+	* libgnarl/s-osinte__qnx.adb: Likewise.
+	* libgnarl/s-osinte__qnx.ads: Likewise.
+
+2018-05-22  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (HAVE_ADJUST_CONTEXT_FOR_RAISE): Don't define on VxWorks7 for
+	AArch64.
+
+2018-05-22  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/a-except.adb (Exception_Propagation.Propagate_Exception):
+	Expect an Exception_Occurence object, not an Access.
+	(Complete_And_Propagate_Occurrence): Adjust accordingly.
+	(Raise_From_Signal_Handler): Likewise.
+	(Reraise_Occurrence_No_Defer): If we have a Machine_Occurrence
+	available in the provided occurrence object, just re-propagate the
+	latter as a bare "raise;" would do.
+	* libgnat/a-exexpr.adb (Propagate_Exception): Adjust to spec change.
+	* libgnat/a-exstat.adb (String_To_EO): Initialize X.Machine_Occurrence
+	to null, to mark that the occurrence we're crafting from the stream
+	contents is not being propagated (yet).
+
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Initialize_Ctrl_Record_Component): Insert the generated
+	code for a transient component in line with the rest of the
+	initialization code, rather than before the aggregate. This ensures
+	that the component has proper visibility of the discriminants.
+
+2018-05-22  Jerome Lambourg  <lambourg@adacore.com>
+
+	* adaint.c: Reorganize QNX-specific macros, use syspage to retreive the
+	number of CPUs.
+
+2018-05-22  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sigtramp-qnx.c: Properly restore link register in signal trampoline.
+
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Strip away any
+	conversions before extracting the value of the expression.
+	* exp_ch3.adb (Default_Initialize_Object): Optimize the default
+	initialization of an array of scalars.
+	(Get_Simple_Init_Val): Add processing for array types. Remove the
+	processing of strings because this case is already handled by the array
+	case.
+	(Needs_Simple_Initialization): Moved to Sem_Util.
+	(Simple_Init_Array_Type): New routine.
+	(Simple_Init_Initialize_Scalars_Type): Reimplemented to use the new
+	facilities from Sem_Util.
+	(Simple_Initialization_OK): New routine.
+	* exp_ch3.ads (Needs_Simple_Initialization): Moved to Sem_Util.
+	* exp_ch4.adb (Expand_N_Allocator): Optimize the default allocation of
+	an array of scalars.
+	* sem_prag.adb (Analyze_Float_Value): New routine.
+	(Analyze_Integer_Value): New routine.
+	(Analyze_Pragma): Reimplement the analysis of pragma Initialize_Scalars
+	to handled the extended form of the pragma.
+	(Analyze_Type_Value_Pair): New routine.
+	* sem_util.adb: Add invalid value-related data structures.
+	(Examine_Array_Bounds): New routine.
+	(Has_Static_Array_Bounds): Reimplemented.
+	(Has_Static_Non_Empty_Array_Bounds): New routine.
+	(Invalid_Scalar_Value): New routine.
+	(Needs_Simple_Initialization): Moved from Exp_Ch3.
+	(Set_Invalid_Scalar_Value): New routines.
+	* sem_util.ads (Has_Static_Non_Empty_Array_Bounds): New routine.
+	(Invalid_Scalar_Value): New routine.
+	(Needs_Simple_Initialization): Moved from Exp_Ch3.
+	(Set_Invalid_Scalar_Value): New routines.
+	* snames.ads-tmpl: Add names for the salar type families used by pragma
+	Initialize_Scalars.
+
+2018-05-22  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Initialize the External_Tag with an empty
+	string when pragma No_Tagged_Streams is applicable to the tagged type,
+	and initialize the Expanded_Name with an empty string when pragma
+	Discard_Names is applicable to the tagged type.
+
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Conformance): Add RM reference for rule that a
+	formal subprogram is never subtype conformqnt, and thus cannot be the
+	prefix of 'Access.  Reject as well the attribute when applied to a
+	renaming of a formal subprogram.
+
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_Array_Init_Proc): Update the call to
+	Needs_Simple_Initialization.
+	(Build_Init_Statements): Update the call to Get_Simple_Init_Val.
+	(Check_Subtype_Bounds): Renamed to Extract_Subtype_Bounds. Update the
+	profile and comment on usage.
+	(Default_Initialize_Object): Do not use New_Copy_Tree to set the proper
+	Sloc of a value obtained from aspect Default_Value because this could
+	potentially replicate large trees. The proper Sloc is now set in
+	Get_Simple_Init_Val.
+	(Get_Simple_Init_Val): Reorganized by breaking the various cases into
+	separate routines. Eliminate the use of global variables.
+	(Init_Component): Update the call to Get_Simple_Init_Val.
+	(Needs_Simple_Initialization): Update the parameter profile and all
+	uses of T.
+	(Simple_Init_Defaulted_Type): Copy the value of aspect Default_Value
+	and set the proper Sloc.
+	* exp_ch3.ads (Get_Simple_Init_Val): Update the parameter profile and
+	comment on usage.
+	(Needs_Simple_Initialization): Update the parameter profile.
+
+2018-05-22  Patrick Bernardi  <bernardi@adacore.com>
+
+	* sem_ch3.adb (Build_Discriminant_Constraints): Raise an error if the
+	user tries to use a subtype indication as a discriminant constraint.
+
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.ads, exp_ch4.adb, exp_util.adb, expander.adb: Remove mention
+	of N_Reduction_Expression and N_Reduction_Expression_Parameter.
+	* par-ch4.adb: Remove parsing routines for reduction expressions.
+	* sem.adb, sinfo.ads, sinfo.adb, sem_ch4.ads, sem_ch4.adb, sem_res.adb,
+	sem_spark.adb, sprint.adb: Remove analysis routines for reduction
+	expressions.
+
+2018-05-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Check_Frozen_Renaming): Do not emit error in
+	Relaxed_RM_Semantics mode.
+
+2018-05-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* comperr.adb (Delete_SCIL_Files): Take into account
+	N_Generic_Package_Renaming_Declaration.
+
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Search_Derivation_Levels): Whenever a parent type is
+	private, use the full view if available, because it may include renamed
+	discriminants whose values are stored in the corresponding
+	Stored_Constraint.
+
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb: New attribute Hidden_In_Formal_Instance,
+	defined on packages that are actuals for formal packages, in order to
+	set/reset the visibility of the formals of a formal package with given
+	actuals, when there are subsequent uses of those formals in the
+	enclosing generic, as required by RN 12.7 (10).
+	* atree.ads, atree.adb: Add operations for Elist30.
+	* atree.h: Add Elist30.
+	* sem_ch12.adb (Analyze_Formal_Package_Instantiation): Collect formals
+	that are not defaulted and are thus not visible within the current
+	instance.
+	(Check_Formal_Packages): Reset visibility of formals of a formal
+	package that are not defaulted, on exit from current instance.
+
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Input_Output): Emit an error when a non-null,
+	non-'Result output appears in the output list of a function.
+
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Build_Array_VS_Func): Reimplemented.
+	(Build_Record_VS_Func): Reimplemented.
+	(Expand_N_Attribute): Reimplement the handling of attribute
+	'Valid_Scalars.
+	* sem_attr.adb (Analyze_Attribute): Reimplement the handling of
+	attribute 'Valid_Scalars.
+	* sem_util.adb (Scalar_Part_Present): Reimplemented.
+	(Validated_View): New routine.
+	* sem_util.ads (Scalar_Part_Present): Update the parameter profile and
+	comment on usage.
+	(Validated_View): New routine.
+	* doc/gnat_rm/implementation_defined_attributes.rst: Update the
+	documentation of attribute 'Valid_Scalars.
+	* gnat_rm.texi: Regenerate.
+
+2018-05-22  Bob Duff  <duff@adacore.com>
+
+	* binde.adb: (Choose): Ignore a pragma Elaborate_Body that appears in
+	the spec of a SAL_Interface package.
+
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): When analyzing delayed aspects of an
+	entity E within a generic unit, indicate that there are no remaining
+	delayed aspects after invoking Analyze_Aspects_At_Freeze_Point. The
+	entity E is not frozen yet but the aspects should not be reanalyzed at
+	the freeze point, which may be outside of the generic and may not have
+	the proper visibility.
+
+2018-05-22  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Add documentation for
+	the new --split-line-before-record, --indent-named-statements and
+	--no-align-modes gnatpp switches.
+
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Handle properly
+	a second argument that is a constant of a given string value.
+
+2018-05-22  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-vxworks-target.inc: Align stack to 128bits on AArch64.
+
+2018-05-22  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sigtramp-qnx.c: Fix stack alignment issue in the signal trampoline.
+
+2018-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Fixed_Point_Type): If the first subtype has
+	delayed aspects, analyze them now, os that the representation of the
+	type (size, bounds) can be computed and validated.
+
+2018-05-22  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-dwalin.adb (Enable_Cache): Skip symbols outside of the
+	executable code section boundaries.
+
+2018-05-22  Javier Miranda  <miranda@adacore.com>
+
+	* locales.c: New implementation for the Ada.Locales package.
+	* libgnat/a-locale.ads: Remove comment indicating that this is not
+	implemented.
+	* doc/gnat_rm/standard_library_routines.rst: Remove comment indicating
+	that this is not implemented.
+	* gnat_rm.texi: Regenerate.
+
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb, freeze.adb, pprint.adb, sem_ch4.adb, sem_res.adb: Minor
+	reformattings.
+
+2018-05-22  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch12.adb (In_Same_Declarative_Part): Moved to sem_util.
+	(Freeze_Subprogram_Body, Install_Body): Modify calls to
+	In_Same_Declarative_Part.
+	* sem_prag.adb (Analyze_Pragma-Pragma_Pure_Function): Add check to
+	verify pragma declaration is within the same declarative list with
+	corresponding error message.
+	* sem_util.adb, sem_util.ads (In_Same_Declarative_Part): Moved from
+	sem_ch12.adb and generalized to be useful outside the scope of
+	freezing.
+
+2018-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Declaration): Set the proper
+	categorization of the unit after processing the aspects in case one of
+	its aspects is converted into a categorization pragma.
+
+2018-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Warn_Overlay): Do not emit a wawrning on an object
+	declaration with an explicit address clause and a type with default
+	initialization, if the declaration carries an aspect
+	Suppress_Initialization.
+
+2018-05-21  Daniel Mercier  <mercier@adacore.com>
+
+	* pprint.adb: Use mixed case for attribute names.
+
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body): Rename the call to
+	Analyze_Aspect_Specifications_On_Body_Or_Stub.
+	(Analyze_Subprogram_Body_Helper): Rename the calls to
+	Analyze_Aspect_Specifications_On_Body_Or_Stub.
+	* sem_ch9.adb (Analyze_Entry_Body): Rename the call to
+	Analyze_Aspect_Specifications_On_Body_Or_Stub.
+	* sem_ch10.adb: Add with and use clause for Sem_Ch13.
+	(Analyze_Package_Body_Stub): Add constant Id. Decorate the package stub
+	prior to analyzing its aspects.
+	(Analyze_Protected_Body_Stub): Add constant Id. Decorate the package
+	stub prior to analyzing its aspects. Save and restore the configuration
+	switches.
+	(Analyze_Task_Body_Stub): Add constant Id. Decorate the package stub
+	prior to analyzing its aspects.
+	* sem_ch13.adb (Analyze_Aspect_Specifications_On_Body_Or_Stub): Renamed
+	to Analyze_Aspects_On_Subprogram_Body_Or_Stub.
+	* sem_ch13.ads (Analyze_Aspect_Specifications_On_Body_Or_Stub): Renamed
+	to Analyze_Aspects_On_Subprogram_Body_Or_Stub.
+	* sem_prag.adb: Code reformatting.
+	(Analyze_Refined_Depends_Global_Post): Consider task body stubs.
+
+2018-05-21  Jerome Lambourg  <lambourg@adacore.com>
+
+	* gcc-interface/Makefile.in: Add g-soliop__qnx.ads to the runtime build
+	for QNX.
+
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_cg.adb: Remove with and use clause for Exp_Disp.
+	* exp_ch9.adb: Remove with and use clause for Exp_Disp.
+	* exp_disp.adb (Is_Predefined_Dispatching_Operation): Moved to Sem_Util.
+	(Is_Predefined_Interface_Primitive): Moved to Sem_Util.
+	(Is_Predefined_Internal_Operation): Moved to Sem_Util.
+	* exp_disp.ads (Is_Predefined_Dispatching_Operation): Moved to Sem_Util.
+	(Is_Predefined_Interface_Primitive): Moved to Sem_Util.
+	(Is_Predefined_Internal_Operation): Moved to Sem_Util.
+	* exp_dist.adb: Remove with and use clause for Exp_Disp.
+	* freeze.adb: Remove with and use clause for Exp_Disp.
+	* sem_cat.adb: Remove with and use clause for Exp_Disp.
+	* sem_ch6.adb: Remove with and use clause for Exp_Disp.
+	* sem_ch12.adb: Remove with and use clause for Exp_Disp.
+	* sem_elab.adb (Check_Overriding_Primitive): Do not process predefined
+	primitives.
+	* sem_util.adb: Remove with and use clause for Exp_Disp.
+	(Is_Predefined_Dispatching_Operation): Moved from Exp_Disp.
+	(Is_Predefined_Interface_Primitive): Moved from Exp_Disp.
+	(Is_Predefined_Internal_Operation): Moved from Exp_Disp.
+	* sem_util.ads (Is_Predefined_Dispatching_Operation): Moved from
+	Exp_Disp.
+	(Is_Predefined_Interface_Primitive): Moved from Exp_Disp.
+	(Is_Predefined_Internal_Operation): Moved from Exp_Disp.
+
+2018-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): Improve error message on an illegal
+	type conversion whose expression has a limited view of a type.
+
+2018-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Build_Formal_Container_Iteration): If source has
+	explicit name for iterator loop, preserve that name in expanded
+	construct, for possible use in exit statements.
+
+2018-05-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Analyze_Membership_Op): Avoid compiler crash when the
+	spec of a unit has Ada 2012 membership tests with multiple choices and
+	the unit body is not compiled under Ada 2012 mode.
+
+2018-05-21  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-vxworks-target.inc: Set cfa_reg properly from sigcontext
+	pregs.
+	(CFI_COMMON_REGS): Restore LR jic probed from prologue.
+	(REGNO_PC_OFFSET): Change to correct value for Aarch64.
+
+2018-05-21  Jose Ruiz  <ruiz@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst, exp_attr.adb,
+	libgnarl/s-tassta.adb: Minor typo fixes
+
+2018-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_One_Call): Recognize complex cases where an
+	indexed call originally in prefix forn is itself the prefix of a
+	further call.
+
+2018-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.adb (Is_Null_Range): Clarify access to the full view of a
+	type.
+	(Not_Null_Range): Same as above.
+
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb: Minor reformatting.
+	* exp_ch6.adb: Likewise.
+	* freeze.adb: Likewise.
+	* inline.adb: Likewise.
+	* sem_util.adb: Likewise.
+
+2018-05-21  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call.Process_Formals): Use a type
+	conversion instead of an unchecked type conversion when inlining a
+	return statement, unless type qualification is required (for character
+	and string literal) or no check can result from the conversion (for
+	access types).
+	* opt.ads: Update comment.
+
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Install the elaboration
+	model of the compilation unit spec, if any.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Install the elaboration
+	model of the compilation unit spec, if any.
+	* sem_ch10.adb (Analyze_Subunit): Install the elaboration model of the
+	parent compilation unit spec, if any.
+	* sem_elab.adb (Check_Elaboration_Scenarios): Restore the elaboration
+	model of the main unit.
+	(Is_Same_Unit): The routine now uses Unit_Entity.
+	(Is_Subunit): Removed.
+	(Normalize_Unit): Removed.
+	(Unit_Entity): New routine.
+	* sem_prag.adb (Analyze_Pragma): Reimplement the handling of pragma
+	Elaboration_Checks. The analysis now ensures that the pragma appears at
+	the configuration level, and on the initial declaration of a unit.
+	Other placements are either flagged as illegal, or ignored.
+	(Check_Duplicate_Elaboration_Checks_Pragma): New routine.
+	(Ignore_Elaboration_Checks_Pragma): New routine.
+	* sem_util.adb (Install_Elaboration_Model): New routine.
+	* sem_util.ads (Install_Elaboration_Model): New routine.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Update the
+	documentation of pragma Elaboration_Checks.
+	* gnat_rm.texi: Regenerate.
+
+2018-05-21  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-trasym__dwarf.adb (Executable_Name): Return argv[0] instead
+	of empty string when argv[0] couldn't be found on PATH.
+	(Enable_Cache): Raise Program_Error instead of attempting a null
+	pointer dereference when the Exec_Module initialization failed.
+
+2018-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnarl/a-reatim.ads (Clock_Time): Remove External aspect.
+	* libgnarl/a-taside.ads (Tasking_State): Likewise.
+	* libgnat/a-calend.ads (Clock_Time): Likewise.
+
+2018-05-21  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Procedure_Call): Refine test to recognize prefix
+	call notation in inlined call in GNATprove mode.
+
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Is_External_State): An abstract state is also external
+	when it is declared with option "synchronous".
+	* einfo.ads: Update the documentation of synthesized attribute
+	Is_External_State.
+	* sem_util.adb (Find_Simple_Properties): New routine.
+	(Is_Enabled_External_Property): New routine.
+	(State_Has_Enabled_Property): Reimplemented. The two flavors of option
+	External have precedence over option Synchronous when determining
+	whether a property is in effect.
+
+2018-05-21  Yannick Moy  <moy@adacore.com>
+
+	* sem_eval.adb (Static_Length): Take into account case of variable of
+	subtype string literal.
+
+2018-05-21  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-objrea.ads (Get_Memory_Bounds): Rename as Get_Xcode_Bounds.
+	(Object_Section): Rename Flag_Alloc component as Flag_Xcode.
+	* libgnat/s-objrea.adb (Get_Xcode_Bounds): Adjust to new subprogram and
+	component name.
+	(Get_Section, ELF case): Set Flag_Xcode from SHF_EXECINSTR.
+	* libgnat/s-dwalin.adb (Open): Adjust to the Get_Memory_Bounds name
+	change.
+
+2018-05-21  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-dwalin.ads (Dwarf_Context): Change type of Load_Address to
+	Address, and type of Low, High to Storage_Offset.
+	(Low): Rename as Low_Address and convey that the return value is a
+	runtime reference accounting for a load address.
+	* libgnat/s-dwalin.adb (Read_Aranges_Entry): Adjust to the
+	address/offset type changes.
+	(Aranges_Lookup): Likewise.
+	(Symbolic_Address): Likewise.
+	(Symbolic_Traceback): Likewise.
+	(Dump_Cache): Likewise.
+	(Is_Inside): Likewise.
+	(Open): Likewise.
+	(Set_Load_Address): Likewise.
+	(Low_Address): Likewise, and account for C.Load_Address.
+	* libgnat/s-trasym__dwarf.adb (Lt): Use Low_Address instead of Low.
+	(Multi_Module_Symbolic_Traceback): Compare address in traceback
+	with module Low_Address instead of Low.
+
+2018-05-21  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-dwalin.ads (Dwarf_Context): Rename Load_Slide as
+	Load_Address.
+	* libgnat/s-dwalin.adb (Is_Inside): Adjust accordingly.
+	(Set_Load_Address): Likewise.
+	(Symbolic_Traceback): Likewise.
+
+2018-05-21  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-trasym__dwarf.adb (Add_Module_To_Cache): Expect a
+	Load_Address argument and pass it down to Init_Module.
+	* libgnat/s-tsmona__linux.adb (Build_Cache_For_All_Modules): Pass
+	lm.l_addr as the Load_Address to Add_Module_To_Cache.
+
+2018-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb (Has_Discriminants): Stronger assertion.
+	(Set_Has_Discriminants): Stronger assertion.
+	* sem_ch13.adb (Push_Scope_And_Install_Discriminants): Adapt to respect
+	the stronger assertion on Has_Discriminant.
+	(Uninstall_Discriminants_And_Pop_Scope): Same as above.
+	* sem_util.adb (New_Copy_Tree): Same as above.
+	* sem_ch7.adb (Generate_Parent_References): Prevent calls to
+	Has_Discriminant on non-type entities that might happen when the
+	compiled code has errors.
+	* sem_ch3.adb (Derived_Type_Declaration): Only call
+	Set_Has_Discriminant on type entities.
+
+2018-05-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Unnest all subprograms relevant for
+	code generation.
+
+2018-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib.ads: Fix typo in enumeration in comment.
+
+2018-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case Scalar_Storage_Order): The
+	attribute reference is legal within a generic unit when the prefix is a
+	formal private type.
+
+2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Establish_Transient_Scope): Code cleanup. Do not
+	delegate the secondary stack management when there is no suitable
+	transient context, and the transient scope was intended to manage the
+	secondary stack because this causes premature reclamation. Change the
+	transient scope creation logic by special casing assignment statements
+	of controlled components for type initialization procedures.
+	(Find_Node_To_Be_Wrapped): Renamed to Find_Transient_Context. Update
+	the comment on usage.
+	(Find_Transient_Context): Change the initinte loop into a while loop.
+	Iterations schemes and iterator specifications are not valid transient
+	contexts because they rely on special processing. Assignment statements
+	are now treated as a normal transient context, special cases are
+	handled by the caller. Add special processing for pragma Check.
+	(Is_OK_Construct): Removed. Its functionality has been merged in
+	routine Find_Transient_Context.
+	* sem_ch5.adb (Check_Call): Reimplemented. Add code to properly
+	retrieve the subprogram being invoked. Use a more accurate predicate
+	(Requires_Transient_Scope) to determine that the function will emply
+	the secondary stack.
+
+2018-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* ada_get_targ.adb: Fix subprogram body headers.
+	* adabkend.adb: Likewise.
+	* checks.adb: Likewise.
+	* exp_ch3.adb: Likewise.
+	* exp_ch5.adb: Likewise.
+	* exp_ch9.adb: Likewise.
+	* exp_dist.adb: Likewise.
+	* exp_tss.adb: Likewise.
+	* inline.adb: Likewise.
+	* lib-writ.adb: Likewise.
+	* lib-xref-spark_specific.adb: Likewise.
+	* libgnarl/s-osinte__darwin.adb: Likewise.
+	* libgnarl/s-stusta.adb: Likewise.
+	* libgnarl/s-taprop__solaris.adb: Likewise.
+	* libgnarl/s-tposen.adb: Likewise.
+	* libgnarl/s-vxwext__kernel-smp.adb: Likewise.
+	* libgnarl/s-vxwext__kernel.adb: Likewise.
+	* libgnat/a-btgbso.adb: Likewise.
+	* libgnat/a-cfdlli.adb: Likewise.
+	* libgnat/a-cfhama.adb: Likewise.
+	* libgnat/a-cfinve.adb: Likewise.
+	* libgnat/a-cimutr.adb: Likewise.
+	* libgnat/a-coboho.adb: Likewise.
+	* libgnat/a-cofove.adb: Likewise.
+	* libgnat/a-cofuve.adb: Likewise.
+	* libgnat/a-comutr.adb: Likewise.
+	* libgnat/a-exexda.adb: Likewise.
+	* libgnat/a-tags.adb: Likewise.
+	* libgnat/a-tideau.adb: Likewise.
+	* libgnat/a-wtdeau.adb: Likewise.
+	* libgnat/a-ztdeau.adb: Likewise.
+	* libgnat/g-alleve.adb: Likewise.
+	* libgnat/s-excdeb.adb: Likewise.
+	* libgnat/s-parint.adb: Likewise.
+	* libgnat/s-shasto.adb: Likewise.
+	* libgnat/s-traceb__hpux.adb: Likewise.
+	* prepcomp.adb: Likewise.
+	* sem_ch4.adb: Likewise.
+	* sem_ch6.adb: Likewise.
+	* sem_dist.adb: Likewise.
+	* sem_prag.adb: Likewise.
+	* sem_util.adb: Likewise.
+	* sinfo.adb: Likewise.
+	* switch.adb: Likewise.
+
+2018-05-04  John Marino  <gnugcc@marino.st>
+
+	PR ada/85635
+	* link.c (BSD platforms): Add missing backslash.
+
 2018-04-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/85540

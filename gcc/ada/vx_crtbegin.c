@@ -30,10 +30,10 @@
  ****************************************************************************/
 
 /* crtbegin kind of file for ehframe registration/deregistration
-   purposes on VxWorks.  This variant exposes the ctor/dtor functions
-   as visible entities so they're picked by the WRS muncher.  */
+   purposes on VxWorks.  This variant exposes just the ctor/dtor functions
+   without any particular attribute.  */
 
-#define CDTOR_VISIBILITY
+#define CTOR_ATTRIBUTE
+#define DTOR_ATTRIBUTE
+
 #include "vx_crtbegin.inc"
-
-

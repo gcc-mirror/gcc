@@ -3044,14 +3044,14 @@ expand_asm_stmt (gasm *stmt)
 
       generating_concat_p = 0;
 
-      if ((TREE_CODE (val) == INDIRECT_REF
-	   && allows_mem)
+      if ((TREE_CODE (val) == INDIRECT_REF && allows_mem)
 	  || (DECL_P (val)
 	      && (allows_mem || REG_P (DECL_RTL (val)))
 	      && ! (REG_P (DECL_RTL (val))
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
 	  || ! allows_reg
-	  || is_inout)
+	  || is_inout
+	  || TREE_ADDRESSABLE (type))
 	{
 	  op = expand_expr (val, NULL_RTX, VOIDmode,
 			    !allows_reg ? EXPAND_MEMORY : EXPAND_WRITE);
@@ -3060,7 +3060,7 @@ expand_asm_stmt (gasm *stmt)
 
 	  if (! allows_reg && !MEM_P (op))
 	    error ("output number %d not directly addressable", i);
-	  if ((! allows_mem && MEM_P (op))
+	  if ((! allows_mem && MEM_P (op) && GET_MODE (op) != BLKmode)
 	      || GET_CODE (op) == CONCAT)
 	    {
 	      rtx old_op = op;
@@ -3582,6 +3582,26 @@ expand_return (tree retval, tree bounds)
     }
 }
 
+/* Expand a clobber of LHS.  If LHS is stored it in a multi-part
+   register, tell the rtl optimizers that its value is no longer
+   needed.  */
+
+static void
+expand_clobber (tree lhs)
+{
+  if (DECL_P (lhs))
+    {
+      rtx decl_rtl = DECL_RTL_IF_SET (lhs);
+      if (decl_rtl && REG_P (decl_rtl))
+	{
+	  machine_mode decl_mode = GET_MODE (decl_rtl);
+	  if (maybe_gt (GET_MODE_SIZE (decl_mode),
+			REGMODE_NATURAL_SIZE (decl_mode)))
+	    emit_clobber (decl_rtl);
+	}
+    }
+}
+
 /* A subroutine of expand_gimple_stmt, expanding one gimple statement
    STMT that doesn't require special handling for outgoing edges.  That
    is no tailcalls and no GIMPLE_COND.  */
@@ -3687,7 +3707,7 @@ expand_gimple_stmt_1 (gimple *stmt)
 	    if (TREE_CLOBBER_P (rhs))
 	      /* This is a clobber to mark the going out of scope for
 		 this LHS.  */
-	      ;
+	      expand_clobber (lhs);
 	    else
 	      expand_assignment (lhs, rhs,
 				 gimple_assign_nontemporal_move_p (
@@ -4182,7 +4202,6 @@ expand_debug_expr (tree exp)
 	case SAD_EXPR:
 	case WIDEN_MULT_PLUS_EXPR:
 	case WIDEN_MULT_MINUS_EXPR:
-	case FMA_EXPR:
 	  goto ternary;
 
 	case TRUTH_ANDIF_EXPR:
@@ -5082,8 +5101,11 @@ expand_debug_expr (tree exp)
     case REALIGN_LOAD_EXPR:
     case VEC_COND_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_FLOAT_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_TRUNC_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
     case VEC_UNPACK_FLOAT_LO_EXPR:
     case VEC_UNPACK_HI_EXPR:
@@ -5169,9 +5191,6 @@ expand_debug_expr (tree exp)
 				      ? ASHIFT : PLUS, mode, op0, op1);
 	}
       return NULL;
-
-    case FMA_EXPR:
-      return simplify_gen_ternary (FMA, mode, inner_mode, op0, op1, op2);
 
     default:
     flag_unsupported:

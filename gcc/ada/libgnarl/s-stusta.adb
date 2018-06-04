@@ -158,9 +158,9 @@ package body System.Stack_Usage.Tasking is
 
    end Report_Impl;
 
-   ---------------------
-   -- Report_All_Task --
-   ---------------------
+   ----------------------
+   -- Report_All_Tasks --
+   ----------------------
 
    procedure Report_All_Tasks is
    begin

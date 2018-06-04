@@ -52,9 +52,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations is
       end return;
    end Copy;
 
-   ----------------
-   -- Difference --
-   ----------------
+   --------------------
+   -- Set_Difference --
+   --------------------
 
    procedure Set_Difference (Target : in out Set_Type; Source : Set_Type) is
       Tgt, Src : Count_Type;
@@ -197,9 +197,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations is
       end return;
    end Set_Difference;
 
-   ------------------
-   -- Intersection --
-   ------------------
+   ----------------------
+   -- Set_Intersection --
+   ----------------------
 
    procedure Set_Intersection
      (Target : in out Set_Type;
@@ -328,9 +328,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations is
       end return;
    end Set_Intersection;
 
-   ---------------
-   -- Is_Subset --
-   ---------------
+   ----------------
+   -- Set_Subset --
+   ----------------
 
    function Set_Subset
      (Subset : Set_Type;
@@ -384,9 +384,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations is
       end;
    end Set_Subset;
 
-   -------------
-   -- Overlap --
-   -------------
+   -----------------
+   -- Set_Overlap --
+   -----------------
 
    function Set_Overlap (Left, Right : Set_Type) return Boolean is
    begin
@@ -424,9 +424,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations is
       end;
    end Set_Overlap;
 
-   --------------------------
-   -- Symmetric_Difference --
-   --------------------------
+   ------------------------------
+   -- Set_Symmetric_Difference --
+   ------------------------------
 
    procedure Set_Symmetric_Difference
      (Target : in out Set_Type;
@@ -600,9 +600,9 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations is
       end return;
    end Set_Symmetric_Difference;
 
-   -----------
-   -- Union --
-   -----------
+   ---------------
+   -- Set_Union --
+   ---------------
 
    procedure Set_Union (Target : in out Set_Type; Source : Set_Type) is
       Hint : Count_Type := 0;

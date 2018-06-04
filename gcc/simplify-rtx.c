@@ -5891,6 +5891,60 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 		return simplify_gen_binary (VEC_CONCAT, mode, newop0, newop1);
 	    }
 
+	  /* Replace:
+
+	      (vec_merge:outer (vec_duplicate:outer x:inner)
+			       (subreg:outer y:inner 0)
+			       (const_int N))
+
+	     with (vec_concat:outer x:inner y:inner) if N == 1,
+	     or (vec_concat:outer y:inner x:inner) if N == 2.
+
+	     Implicitly, this means we have a paradoxical subreg, but such
+	     a check is cheap, so make it anyway.
+
+	     Only applies for vectors of two elements.  */
+	  if (GET_CODE (op0) == VEC_DUPLICATE
+	      && GET_CODE (op1) == SUBREG
+	      && GET_MODE (op1) == GET_MODE (op0)
+	      && GET_MODE (SUBREG_REG (op1)) == GET_MODE (XEXP (op0, 0))
+	      && paradoxical_subreg_p (op1)
+	      && subreg_lowpart_p (op1)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op0)), 2)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op1)), 2)
+	      && IN_RANGE (sel, 1, 2))
+	    {
+	      rtx newop0 = XEXP (op0, 0);
+	      rtx newop1 = SUBREG_REG (op1);
+	      if (sel == 2)
+		std::swap (newop0, newop1);
+	      return simplify_gen_binary (VEC_CONCAT, mode, newop0, newop1);
+	    }
+
+	  /* Same as above but with switched operands:
+		Replace (vec_merge:outer (subreg:outer x:inner 0)
+					 (vec_duplicate:outer y:inner)
+			       (const_int N))
+
+	     with (vec_concat:outer x:inner y:inner) if N == 1,
+	     or (vec_concat:outer y:inner x:inner) if N == 2.  */
+	  if (GET_CODE (op1) == VEC_DUPLICATE
+	      && GET_CODE (op0) == SUBREG
+	      && GET_MODE (op0) == GET_MODE (op1)
+	      && GET_MODE (SUBREG_REG (op0)) == GET_MODE (XEXP (op1, 0))
+	      && paradoxical_subreg_p (op0)
+	      && subreg_lowpart_p (op0)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op1)), 2)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op0)), 2)
+	      && IN_RANGE (sel, 1, 2))
+	    {
+	      rtx newop0 = SUBREG_REG (op0);
+	      rtx newop1 = XEXP (op1, 0);
+	      if (sel == 2)
+		std::swap (newop0, newop1);
+	      return simplify_gen_binary (VEC_CONCAT, mode, newop0, newop1);
+	    }
+
 	  /* Replace (vec_merge (vec_duplicate x) (vec_duplicate y)
 				 (const_int n))
 	     with (vec_concat x y) or (vec_concat y x) depending on value

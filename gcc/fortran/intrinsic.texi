@@ -262,6 +262,7 @@ Some basic guidelines for editing this document:
 * @code{RADIX}:         RADIX,     Base of a data model
 * @code{RAN}:           RAN,       Real pseudo-random number
 * @code{RAND}:          RAND,      Real pseudo-random number
+* @code{RANDOM_INIT}:   RANDOM_INIT, Initialize pseudo-random number generator
 * @code{RANDOM_NUMBER}: RANDOM_NUMBER, Pseudo-random number
 * @code{RANDOM_SEED}:   RANDOM_SEED, Initialize a pseudo-random number sequence
 * @code{RANGE}:         RANGE,     Decimal exponent range
@@ -9991,8 +9992,10 @@ locations of the maximum element along each row of the array in the
 @var{DIM} direction.  If @var{MASK} is present, only the elements for
 which @var{MASK} is @code{.TRUE.} are considered.  If more than one
 element in the array has the maximum value, the location returned is
-that of the first such element in array element order.  If the array has
-zero size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
+that of the first such element in array element order if the
+@var{BACK} is not present, or if it false; otherwise, the location
+returned is that of the first such element. If the array has zero
+size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
 the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the
 result value for that row is zero.
@@ -10000,14 +10003,15 @@ result value for that row is zero.
 @item @emph{Standard}:
 Fortran 95 and later; @var{ARRAY} of @code{CHARACTER} and the
 @var{KIND} argument are available in Fortran 2003 and later.
+The @var{BACK} argument is available in Fortran 2008 and later.
 
 @item @emph{Class}:
 Transformational function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{RESULT = MAXLOC(ARRAY, DIM [, MASK] [,KIND])}
-@item @code{RESULT = MAXLOC(ARRAY [, MASK] [,KIND])}
+@item @code{RESULT = MAXLOC(ARRAY, DIM [, MASK] [,KIND] [,BACK])}
+@item @code{RESULT = MAXLOC(ARRAY [, MASK] [,KIND] [,BACK])}
 @end multitable
 
 @item @emph{Arguments}:
@@ -10021,6 +10025,7 @@ inclusive.  It may not be an optional dummy argument.
 and conformable with @var{ARRAY}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
 expression indicating the kind parameter of the result.
+@item @var{BACK} @tab (Optional) A scalar of type @code{LOGICAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -10343,7 +10348,9 @@ locations of the minimum element along each row of the array in the
 @var{DIM} direction.  If @var{MASK} is present, only the elements for
 which @var{MASK} is @code{.TRUE.} are considered.  If more than one
 element in the array has the minimum value, the location returned is
-that of the first such element in array element order.  If the array has
+that of the first such element in array element order if the
+@var{BACK} is not present, or if it false; otherwise, the location
+returned is that of the first such element.  If the array has
 zero size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
 the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the
@@ -10352,14 +10359,15 @@ result value for that row is zero.
 @item @emph{Standard}:
 Fortran 95 and later; @var{ARRAY} of @code{CHARACTER} and the
 @var{KIND} argument are available in Fortran 2003 and later.
+The @var{BACK} argument is available in Fortran 2008 and later.
 
 @item @emph{Class}:
 Transformational function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{RESULT = MINLOC(ARRAY, DIM [, MASK] [,KIND])}
-@item @code{RESULT = MINLOC(ARRAY [, MASK], [,KIND])}
+@item @code{RESULT = MINLOC(ARRAY, DIM [, MASK] [,KIND] [,BACK])}
+@item @code{RESULT = MINLOC(ARRAY [, MASK], [,KIND] [,BACK])}
 @end multitable
 
 @item @emph{Arguments}:
@@ -10373,6 +10381,7 @@ inclusive.  It may not be an optional dummy argument.
 and conformable with @var{ARRAY}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
 expression indicating the kind parameter of the result.
+@item @var{BACK} @tab (Optional) A scalar of type @code{LOGICAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -11590,6 +11599,60 @@ end program test_rand
 @end table
 
 
+@node RANDOM_INIT
+@section @code{RANDOM_INIT} --- Initialize a pseudo-random number generator
+@fnindex RANDOM_INIT
+@cindex random number generation, initialization
+
+@table @asis
+@item @emph{Description}:
+Initializes the state of the pseudorandom number generator used by 
+@code{RANDOM_NUMBER}.
+
+@item @emph{Standard}:
+Fortran 2018
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@code{CALL RANDOM_INIT(REPEATABLE, IMAGE_DISTINCT)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .20 .75
+@item @var{REPEATABLE} @tab Shall be a scalar with a @code{LOGICAL} type,
+and it is @code{INTENT(IN)}.  If it is @code{.true.}, the seed is set to
+a processor-dependent value that is the same each time @code{RANDOM_INIT}
+is called from the same image.  The term ``same image'' means a single
+instance of program execution.  The sequence of random numbers is different
+for repeated execution of the program.  If it is @code{.false.}, the seed
+is set to a processor-dependent value.
+@item @var{IMAGE_DISTINCT} @tab Shall be a scalar with a
+@code{LOGICAL} type, and it is @code{INTENT(IN)}.  If it is @code{.true.},
+the seed is set to a processor-dependent value that is distinct from th
+seed set by a call to @code{RANDOM_INIT} in another image.  If it is
+@code{.false.}, the seed is set value that does depend which image called
+@code{RANDOM_INIT}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program test_random_seed
+  implicit none
+  real x(3), y(3)
+  call random_init(.true., .true.)
+  call random_number(x)
+  call random_init(.true., .true.)
+  call random_number(y)
+  ! x and y are the same sequence
+  if (any(x /= y)) call abort
+end program test_random_seed
+@end smallexample
+
+@item @emph{See also}:
+@ref{RANDOM_NUMBER}, @ref{RANDOM_SEED}
+@end table
+
 
 @node RANDOM_NUMBER
 @section @code{RANDOM_NUMBER} --- Pseudo-random number
@@ -11635,7 +11698,7 @@ end program
 @end smallexample
 
 @item @emph{See also}:
-@ref{RANDOM_SEED}
+@ref{RANDOM_SEED}, @ref{RANDOM_INIT}
 @end table
 
 
@@ -11705,7 +11768,7 @@ end program test_random_seed
 @end smallexample
 
 @item @emph{See also}:
-@ref{RANDOM_NUMBER}
+@ref{RANDOM_NUMBER}, @ref{RANDOM_INIT}
 @end table
 
 

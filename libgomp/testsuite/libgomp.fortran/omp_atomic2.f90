@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+
   real, dimension (20) :: r
   integer, dimension (20) :: d
   integer :: i, j, k, n

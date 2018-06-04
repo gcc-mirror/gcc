@@ -56,6 +56,9 @@
   UNSPECV_FRFLAGS
   UNSPECV_FSFLAGS
 
+  ;; Interrupt handler instructions.
+  UNSPECV_MRET
+
   ;; Blockage and synchronization.
   UNSPECV_BLOCKAGE
   UNSPECV_FENCE
@@ -64,6 +67,7 @@
 
 (define_constants
   [(RETURN_ADDR_REGNUM		1)
+   (GP_REGNUM 			3)
    (T0_REGNUM			5)
    (T1_REGNUM			6)
    (S0_REGNUM			8)
@@ -1504,7 +1508,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
-(define_insn_and_split "<optab>si3_mask"
+(define_insn_and_split "*<optab>si3_mask"
   [(set (match_operand:SI     0 "register_operand" "= r")
 	(any_shift:SI
 	    (match_operand:SI 1 "register_operand" "  r")
@@ -1523,7 +1527,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
-(define_insn_and_split "<optab>si3_mask_1"
+(define_insn_and_split "*<optab>si3_mask_1"
   [(set (match_operand:SI     0 "register_operand" "= r")
 	(any_shift:SI
 	    (match_operand:SI 1 "register_operand" "  r")
@@ -1559,7 +1563,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "<optab>di3_mask"
+(define_insn_and_split "*<optab>di3_mask"
   [(set (match_operand:DI     0 "register_operand" "= r")
 	(any_shift:DI
 	    (match_operand:DI 1 "register_operand" "  r")
@@ -1579,7 +1583,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "<optab>di3_mask_1"
+(define_insn_and_split "*<optab>di3_mask_1"
   [(set (match_operand:DI     0 "register_operand" "= r")
 	(any_shift:DI
 	    (match_operand:DI 1 "register_operand" "  r")
@@ -2267,12 +2271,17 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec_volatile [(const_int 0)] UNSPECV_FRFLAGS))]
   "TARGET_HARD_FLOAT"
-  "frflags %0")
+  "frflags\t%0")
 
 (define_insn "riscv_fsflags"
   [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSFLAGS)]
   "TARGET_HARD_FLOAT"
-  "fsflags %0")
+  "fsflags\t%0")
+
+(define_insn "riscv_mret"
+  [(unspec_volatile [(const_int 0)] UNSPECV_MRET)]
+  ""
+  "mret")
 
 (define_insn "stack_tie<mode>"
   [(set (mem:BLK (scratch))

@@ -370,6 +370,15 @@ build_base_path (enum tree_code code,
       goto indout;
     }
 
+  if (!COMPLETE_TYPE_P (probe))
+    {
+      if (complain & tf_error)
+	error ("cannot convert from %qT to base class %qT because %qT is "
+	       "incomplete", BINFO_TYPE (d_binfo), BINFO_TYPE (binfo),
+	       BINFO_TYPE (d_binfo));
+      return error_mark_node;
+    }
+
   /* If we're in an NSDMI, we don't have the full constructor context yet
      that we need for converting to a virtual base, so just build a stub
      CONVERT_EXPR and expand it later in bot_replace.  */
@@ -417,7 +426,7 @@ build_base_path (enum tree_code code,
     {
       expr = cp_build_fold_indirect_ref (expr);
       expr = build_simple_base_path (expr, binfo);
-      if (rvalue)
+      if (rvalue && lvalue_p (expr))
 	expr = move (expr);
       if (want_pointer)
 	expr = build_address (expr);
@@ -2436,7 +2445,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
   over_return = TREE_TYPE (TREE_TYPE (overrider_target));
   base_return = TREE_TYPE (TREE_TYPE (target_fn));
 
-  if (POINTER_TYPE_P (over_return)
+  if (INDIRECT_TYPE_P (over_return)
       && TREE_CODE (over_return) == TREE_CODE (base_return)
       && CLASS_TYPE_P (TREE_TYPE (over_return))
       && CLASS_TYPE_P (TREE_TYPE (base_return))
@@ -3045,7 +3054,7 @@ one_inheriting_sig (tree t, tree ctor, tree *parms, int nparms)
   if (nparms == 0)
     return;
   if (nparms == 1
-      && TREE_CODE (parms[0]) == REFERENCE_TYPE)
+      && TYPE_REF_P (parms[0]))
     {
       tree parm = TYPE_MAIN_VARIANT (TREE_TYPE (parms[0]));
       if (parm == t || parm == DECL_CONTEXT (ctor))
@@ -3454,7 +3463,7 @@ check_field_decls (tree t, tree *access_decls,
 		     "a member of a union", x);
 	      continue;
 	    }
-	  if (TREE_CODE (type) == REFERENCE_TYPE
+	  if (TYPE_REF_P (type)
 	      && TREE_CODE (x) == FIELD_DECL)
 	    {
 	      error ("non-static data member %q+D in a union may not "
@@ -3508,7 +3517,7 @@ check_field_decls (tree t, tree *access_decls,
 	CLASSTYPE_NON_STD_LAYOUT (t) = 1;
 
       /* If this is of reference type, check if it needs an init.  */
-      if (TREE_CODE (type) == REFERENCE_TYPE)
+      if (TYPE_REF_P (type))
 	{
 	  CLASSTYPE_NON_LAYOUT_POD_P (t) = 1;
 	  CLASSTYPE_NON_STD_LAYOUT (t) = 1;
@@ -3586,7 +3595,7 @@ check_field_decls (tree t, tree *access_decls,
 		     "and %<mutable%>", x);
 	      continue;
 	    }
-	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	  if (TYPE_REF_P (type))
 	    {
 	      error ("member %q+D cannot be declared as a %<mutable%> "
 		     "reference", x);
@@ -4460,13 +4469,8 @@ build_clone (tree fn, tree name)
      type.  */
   if (DECL_HAS_IN_CHARGE_PARM_P (clone))
     {
-      tree basetype;
-      tree parmtypes;
-      tree exceptions;
-
-      exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (clone));
-      basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
-      parmtypes = TYPE_ARG_TYPES (TREE_TYPE (clone));
+      tree basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
+      tree parmtypes = TYPE_ARG_TYPES (TREE_TYPE (clone));
       /* Skip the `this' parameter.  */
       parmtypes = TREE_CHAIN (parmtypes);
       /* Skip the in-charge parameter.  */
@@ -4485,12 +4489,11 @@ build_clone (tree fn, tree name)
 	= build_method_type_directly (basetype,
 				      TREE_TYPE (TREE_TYPE (clone)),
 				      parmtypes);
-      if (exceptions)
-	TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone),
-						     exceptions);
       TREE_TYPE (clone)
 	= cp_build_type_attribute_variant (TREE_TYPE (clone),
 					   TYPE_ATTRIBUTES (TREE_TYPE (fn)));
+      TREE_TYPE (clone)
+	= cxx_copy_lang_qualifiers (TREE_TYPE (clone), TREE_TYPE (fn));
     }
 
   /* Copy the function parameters.  */
@@ -4678,11 +4681,6 @@ adjust_clone_args (tree decl)
 	    {
 	      /* A default parameter has been added. Adjust the
 		 clone's parameters.  */
-	      tree exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (clone));
-	      tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (clone));
-	      tree basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
-	      tree type;
-
 	      clone_parms = orig_decl_parms;
 
 	      if (DECL_HAS_VTT_PARM_P (clone))
@@ -4692,13 +4690,15 @@ adjust_clone_args (tree decl)
 					   clone_parms);
 		  TREE_TYPE (clone_parms) = TREE_TYPE (orig_clone_parms);
 		}
-	      type = build_method_type_directly (basetype,
-						 TREE_TYPE (TREE_TYPE (clone)),
-						 clone_parms);
-	      if (exceptions)
-		type = build_exception_variant (type, exceptions);
-	      if (attrs)
+
+	      tree basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
+	      tree type
+		= build_method_type_directly (basetype,
+					      TREE_TYPE (TREE_TYPE (clone)),
+					      clone_parms);
+	      if (tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (clone)))
 		type = cp_build_type_attribute_variant (type, attrs);
+	      type = cxx_copy_lang_qualifiers (type, TREE_TYPE (clone));
 	      TREE_TYPE (clone) = type;
 
 	      clone_parms = NULL_TREE;
@@ -4884,7 +4884,7 @@ default_ctor_p (tree fn)
 	  && sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (fn)));
 }
 
-/* Returns true iff class T has a user-defined constructor that can be called
+/* Returns true iff class T has a user-provided constructor that can be called
    with more than zero arguments.  */
 
 bool
@@ -4896,7 +4896,7 @@ type_has_user_nondefault_constructor (tree t)
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     {
       tree fn = *iter;
-      if (!DECL_ARTIFICIAL (fn)
+      if (user_provided_p (fn)
 	  && (TREE_CODE (fn) == TEMPLATE_DECL
 	      || (skip_artificial_parms_for (fn, DECL_ARGUMENTS (fn))
 		  != NULL_TREE)))
@@ -5017,7 +5017,7 @@ vbase_has_user_provided_move_assign (tree type)
     for (ovl_iterator iter (get_class_binding_direct
 			    (type, assign_op_identifier));
 	 iter; ++iter)
-      if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
+      if (user_provided_p (*iter) && move_fn_p (*iter))
 	return true;
 
   /* Do any of its bases?  */
@@ -5171,6 +5171,40 @@ classtype_has_move_assign_or_move_ctor_p (tree t, bool user_p)
   return false;
 }
 
+/* If T, a class, has a user-provided copy constructor, copy assignment
+   operator, or destructor, returns that function.  Otherwise, null.  */
+
+tree
+classtype_has_user_copy_or_dtor (tree t)
+{
+  if (!CLASSTYPE_LAZY_COPY_CTOR (t))
+    for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+      {
+	tree fn = *iter;
+	if (user_provided_p (fn) && copy_fn_p (fn))
+	  return fn;
+      }
+
+  if (!CLASSTYPE_LAZY_COPY_ASSIGN (t))
+    for (ovl_iterator iter (get_class_binding_direct
+			    (t, assign_op_identifier));
+	 iter; ++iter)
+      {
+	tree fn = *iter;
+	if (user_provided_p (fn) && copy_fn_p (fn))
+	  return fn;
+      }
+
+  if (!CLASSTYPE_LAZY_DESTRUCTOR (t))
+    {
+      tree fn = CLASSTYPE_DESTRUCTOR (t);
+      if (user_provided_p (fn))
+	return fn;
+    }
+
+  return NULL_TREE;
+}
+
 /* Nonzero if we need to build up a constructor call when initializing an
    object of this class, either because it has a user-declared constructor
    or because it doesn't have a default constructor (so we need to give an
@@ -5201,6 +5235,7 @@ type_build_ctor_call (tree t)
     {
       tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
+	  || TREE_DEPRECATED (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
     }
@@ -5228,6 +5263,7 @@ type_build_dtor_call (tree t)
     {
       tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
+	  || TREE_DEPRECATED (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
     }
@@ -5585,7 +5621,7 @@ check_bases_and_members (tree t)
 	    continue;
 
 	  type = TREE_TYPE (field);
-	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	  if (TYPE_REF_P (type))
 	    warning_at (DECL_SOURCE_LOCATION (field),
 			OPT_Wuninitialized, "non-static reference %q#D "
 			"in class without a constructor", field);
@@ -6445,8 +6481,7 @@ find_flexarrays (tree t, flexmems_t *fmem, bool base_p,
 	 members if it hasn't been yet.  */
       tree eltype = fldtype;
       while (TREE_CODE (eltype) == ARRAY_TYPE
-	     || TREE_CODE (eltype) == POINTER_TYPE
-	     || TREE_CODE (eltype) == REFERENCE_TYPE)
+	     || INDIRECT_TYPE_P (eltype))
 	eltype = TREE_TYPE (eltype);
 
       if (RECORD_OR_UNION_TYPE_P (eltype))
@@ -7060,7 +7095,7 @@ finish_struct (tree t, tree attributes)
       if (processing_template_decl)
 	{
 	  tree f = next_initializable_field (TYPE_FIELDS (t));
-	  if (f && TREE_CODE (TREE_TYPE (f)) == POINTER_TYPE)
+	  if (f && TYPE_PTR_P (TREE_TYPE (f)))
 	    {
 	      f = next_initializable_field (DECL_CHAIN (f));
 	      if (f && same_type_p (TREE_TYPE (f), size_type_node))
@@ -7108,7 +7143,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
   switch (TREE_CODE (instance))
     {
     case INDIRECT_REF:
-      if (POINTER_TYPE_P (TREE_TYPE (instance)))
+      if (INDIRECT_TYPE_P (TREE_TYPE (instance)))
 	return NULL_TREE;
       else
 	return RECUR (TREE_OPERAND (instance, 0));
@@ -7205,7 +7240,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	      return TREE_TYPE (TREE_TYPE (instance));
 	    }
 	}
-      else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
+      else if (TYPE_REF_P (TREE_TYPE (instance)))
 	{
 	  /* We only need one hash table because it is always left empty.  */
 	  if (!fixed_type_or_null_ref_ht)
@@ -7278,7 +7313,7 @@ resolves_to_fixed_type_p (tree instance, int* nonnull)
   fixed = fixed_type_or_null (instance, nonnull, &cdtorp);
   if (fixed == NULL_TREE)
     return 0;
-  if (POINTER_TYPE_P (t))
+  if (INDIRECT_TYPE_P (t))
     t = TREE_TYPE (t);
   if (!same_type_ignoring_top_level_qualifiers_p (t, fixed))
     return 0;
@@ -7427,8 +7462,8 @@ pop_class_stack (void)
     --current_class_stack[current_class_depth - 1].hidden;
 }
 
-/* Returns 1 if the class type currently being defined is either T or
-   a nested type of T.  Returns the type from the current_class_stack,
+/* If the class type currently being defined is either T or
+   a nested type of T, returns the type from the current_class_stack,
    which might be equivalent to but not equal to T in case of
    constrained partial specializations.  */
 

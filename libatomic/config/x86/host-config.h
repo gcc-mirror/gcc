@@ -25,13 +25,39 @@
 #if HAVE_IFUNC
 #include <cpuid.h>
 
-extern unsigned int libat_feat1_ecx HIDDEN;
-extern unsigned int libat_feat1_edx HIDDEN;
+#ifdef __x86_64__
+# define FEAT1_REGISTER ecx
+#else
+# define FEAT1_REGISTER edx
+#endif
+
+/* Value of the CPUID feature register FEAT1_REGISTER for the cmpxchg
+   bit for IFUNC_COND1 below.  */
+extern unsigned int __libat_feat1 HIDDEN;
+
+/* Initialize libat_feat1 and return its value.  */
+unsigned int __libat_feat1_init (void) HIDDEN;
+
+/* Return the value of the relevant feature register for the relevant
+   cmpxchg bit, or 0 if there is no CPUID support.  */
+static inline unsigned int
+__attribute__ ((const))
+load_feat1 (void)
+{
+  /* See the store in __libat_feat1_init.  */
+  unsigned int feat1 = __atomic_load_n (&__libat_feat1, __ATOMIC_RELAXED);
+  if (feat1 == 0)
+    /* Assume that initialization has not happened yet.  This may get
+       called repeatedly if the CPU does not have any feature bits at
+       all.  */
+    feat1 = __libat_feat1_init ();
+  return feat1;
+}
 
 #ifdef __x86_64__
-# define IFUNC_COND_1	(libat_feat1_ecx & bit_CMPXCHG16B)
+# define IFUNC_COND_1	(load_feat1 () & bit_CMPXCHG16B)
 #else
-# define IFUNC_COND_1	(libat_feat1_edx & bit_CMPXCHG8B)
+# define IFUNC_COND_1	(load_feat1 () & bit_CMPXCHG8B)
 #endif
 
 #ifdef __x86_64__

@@ -1,7 +1,7 @@
 // { dg-lto-do link }
 // { dg-require-effective-target fpic }
 // { dg-lto-options {{-fPIC -flto -flto-partition=1to1 -O2}} }
-// { dg-extra-ld-options "-O2 -fPIC -flto -flto-partition=1to1 -r -nostdlib" }
+// { dg-extra-ld-options "-O2 -fPIC -flto -flto-partition=1to1 -r -nostdlib -flinker-output=nolto-rel" }
 
 typedef long int ptrdiff_t;
 extern "C"

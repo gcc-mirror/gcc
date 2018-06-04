@@ -138,8 +138,8 @@ template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
     template<typename _InputIterator>
       basic_string(_InputIterator __begin, _InputIterator __end,
 		   const _Allocator& __a = _Allocator())
-      : _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__begin,
-								   __end)),
+      : _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__begin, __end)),
 	      __gnu_debug::__base(__end), __a) { }
 
 #if __cplusplus < 201103L

@@ -107,6 +107,8 @@ internal_fn_name (enum internal_fn fn)
   return internal_fn_name_array[(int) fn];
 }
 
+extern internal_fn lookup_internal_fn (const char *);
+
 /* Return the ECF_* flags for function FN.  */
 
 extern const int internal_fn_flags_array[];

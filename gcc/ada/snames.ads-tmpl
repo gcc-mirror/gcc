@@ -588,6 +588,7 @@ package Snames is
    Name_Machine_Attribute              : constant Name_Id := N + $; -- GNAT
    Name_Main                           : constant Name_Id := N + $; -- GNAT
    Name_Main_Storage                   : constant Name_Id := N + $; -- GNAT
+   Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $; -- Ada 12
    Name_Max_Queue_Length               : constant Name_Id := N + $; -- GNAT
    Name_Memory_Size                    : constant Name_Id := N + $; -- Ada 83
    Name_No_Body                        : constant Name_Id := N + $; -- GNAT
@@ -776,7 +777,6 @@ package Snames is
    Name_Link_Name                      : constant Name_Id := N + $;
    Name_Low_Order_First                : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
-   Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $;
    Name_Max_Entry_Queue_Length         : constant Name_Id := N + $;
    Name_Max_Size                       : constant Name_Id := N + $;
    Name_Mechanism                      : constant Name_Id := N + $;
@@ -1136,6 +1136,30 @@ package Snames is
    Name_Concurrent                         : constant Name_Id := N + $;
    Name_Sequential                         : constant Name_Id := N + $;
    Last_Partition_Elaboration_Policy_Name  : constant Name_Id := N + $;
+
+   --  Names of recognized scalar families for pragma Initialize_Scalars
+
+   Name_Short_Float                    : constant Name_Id := N + $; -- GNAT
+   Name_Float                          : constant Name_Id := N + $; -- GNAT
+   Name_Long_Float                     : constant Name_Id := N + $; -- GNAT
+   Name_Long_Long_Float                : constant Name_Id := N + $; -- GNAT
+   Name_Signed_8                       : constant Name_Id := N + $; -- GNAT
+   Name_Signed_16                      : constant Name_Id := N + $; -- GNAT
+   Name_Signed_32                      : constant Name_Id := N + $; -- GNAT
+   Name_Signed_64                      : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_8                     : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_16                    : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_32                    : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_64                    : constant Name_Id := N + $; -- GNAT
+
+   subtype Scalar_Id is Name_Id range
+     Name_Short_Float .. Name_Unsigned_64;
+
+   subtype Float_Scalar_Id is Name_Id range
+     Name_Short_Float .. Name_Long_Long_Float;
+
+   subtype Integer_Scalar_Id is Name_Id range
+     Name_Signed_8 .. Name_Unsigned_64;
 
    --  Names of recognized checks for pragma Suppress
 
@@ -1938,6 +1962,7 @@ package Snames is
       Pragma_Machine_Attribute,
       Pragma_Main,
       Pragma_Main_Storage,
+      Pragma_Max_Entry_Queue_Depth,
       Pragma_Max_Queue_Length,
       Pragma_Memory_Size,
       Pragma_No_Body,

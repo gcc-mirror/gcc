@@ -370,12 +370,14 @@ MOSTLYCLEANFILES = \
 @NATIVE_TRUE@	export LD_LIBRARY_PATH; \
 @NATIVE_TRUE@	GOROOT=$${abs_libgodir}; \
 @NATIVE_TRUE@	export GOROOT; \
+@NATIVE_TRUE@	GOCACHE=$(abs_builddir)/gocache-test; \
+@NATIVE_TRUE@	export GOCACHE; \
 @NATIVE_TRUE@	fl1="FA"; fl2="IL"; fl="$${fl1}$${fl2}";
 
 
 # ECHO_ENV is a variant of CHECK_ENV to put into a testlog file.
 # It assumes that abs_libgodir is set.
-@NATIVE_TRUE@ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' CC='$(abs_builddir)/check-gcc' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GOROOT=`echo $${abs_libgodir}`
+@NATIVE_TRUE@ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' CC='$(abs_builddir)/check-gcc' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GOROOT=`echo $${abs_libgodir} GOCACHE='$(abs_builddir)/gocache-test'`
 all: all-am
 
 .SUFFIXES:
@@ -809,7 +811,6 @@ mostlyclean-local:
 @NATIVE_TRUE@	$(MKDIR_P) check-go-dir/src/cmd/go
 @NATIVE_TRUE@	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/go/internal check-go-dir/src/cmd/go/
-@NATIVE_TRUE@	cp $(libgodir)/zstdpkglist.go check-go-dir/src/cmd/go/internal/load/
 @NATIVE_TRUE@	cp $(libgodir)/zdefaultcc.go check-go-dir/src/cmd/go/internal/cfg/
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/go/testdata check-go-dir/src/cmd/go/
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/internal check-go-dir/src/cmd/

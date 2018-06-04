@@ -611,9 +611,7 @@
     return 0;
 
   /* Consider all constants with -msoft-float to be easy.  */
-  if ((TARGET_SOFT_FLOAT
-      || (TARGET_HARD_FLOAT && (TARGET_SINGLE_FLOAT && ! TARGET_DOUBLE_FLOAT)))
-      && mode != DImode)
+  if (TARGET_SOFT_FLOAT && mode != DImode)
     return 1;
 
   /* 0.0D is not all zero bits.  */
@@ -690,11 +688,6 @@
 (define_predicate "easy_vector_constant"
   (match_code "const_vector")
 {
-  /* As the paired vectors are actually FPRs it seems that there is
-     no easy way to load a CONST_VECTOR without using memory.  */
-  if (TARGET_PAIRED_FLOAT)
-    return false;
-
   /* Because IEEE 128-bit floating point is considered a vector type
      in order to pass it in VSX registers, it might use this function
      instead of easy_fp_constant.  */
@@ -1840,7 +1833,7 @@
        DFmode in 32-bit if -msoft-float since it splits into two separate
        instructions.  */
     case E_DFmode:
-      if ((!TARGET_POWERPC64 && !TARGET_DF_FPR) || !TARGET_P9_FUSION)
+      if ((!TARGET_POWERPC64 && !TARGET_HARD_FLOAT) || !TARGET_P9_FUSION)
 	return 0;
       break;
 
@@ -1900,7 +1893,7 @@
        into two separate instructions.  Do allow fusion if we have hardware
        floating point.  */
     case E_DFmode:
-      if (!TARGET_POWERPC64 && !TARGET_DF_FPR)
+      if (!TARGET_POWERPC64 && !TARGET_HARD_FLOAT)
 	return 0;
       break;
 

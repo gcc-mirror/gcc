@@ -1580,7 +1580,13 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
     }
   else if (RECORD_OR_UNION_TYPE_P (type))
     {
-      gcc_checking_assert (COMPLETE_TYPE_P (type));
+      /* Incomplete types must be skipped here.  */
+      if (!COMPLETE_TYPE_P (type))
+	{
+	  hstate.add_int (RECORD_TYPE);
+	  return;
+	}
+
       hashval_t *val = optimizer->m_type_hash_cache.get (type);
 
       if (!val)
@@ -1591,8 +1597,6 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
 	  hashval_t hash;
 
 	  hstate2.add_int (RECORD_TYPE);
-	  gcc_assert (COMPLETE_TYPE_P (type));
-
 	  for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
 	    if (TREE_CODE (f) == FIELD_DECL)
 	      {
@@ -1979,8 +1983,8 @@ sem_variable::equals (tree t1, tree t2)
 
 	/* Type of the offset on MEM_REF does not matter.  */
 	return return_with_debug (sem_variable::equals (x1, x2)
-			          && wi::to_offset  (y1)
-				     == wi::to_offset  (y2));
+			          && known_eq (wi::to_poly_offset (y1),
+					       wi::to_poly_offset (y2)));
       }
     case ADDR_EXPR:
     case FDESC_EXPR:
