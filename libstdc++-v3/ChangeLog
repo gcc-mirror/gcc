@@ -1,5 +1,11 @@
 2018-06-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/85930
+	* include/bits/shared_ptr_base.h [!__cpp_rtti]: Include <typeinfo>
+	unconditionally. Remove redundant declaration.
+	[!__cpp_rtti] (_Sp_make_shared_tag::_S_ti): Fix location of
+	alignment-specifier.
+
 	* include/bits/postypes.h (fpos): Define special members as defaulted.
 
 	PR libstdc++/85930
