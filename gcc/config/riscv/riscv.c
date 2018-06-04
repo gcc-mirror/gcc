@@ -3502,23 +3502,45 @@ riscv_save_restore_reg (machine_mode mode, int regno,
    of the frame.  */
 
 static void
-riscv_for_each_saved_reg (HOST_WIDE_INT sp_offset, riscv_save_restore_fn fn)
+riscv_for_each_saved_reg (HOST_WIDE_INT sp_offset, riscv_save_restore_fn fn,
+			  bool epilogue, bool maybe_eh_return)
 {
   HOST_WIDE_INT offset;
 
   /* Save the link register and s-registers. */
   offset = cfun->machine->frame.gp_sp_offset - sp_offset;
-  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
-	riscv_save_restore_reg (word_mode, regno, offset, fn);
+	bool handle_reg = TRUE;
+
+	/* If this is a normal return in a function that calls the eh_return
+	   builtin, then do not restore the eh return data registers as that
+	   would clobber the return value.  But we do still need to save them
+	   in the prologue, and restore them for an exception return, so we
+	   need special handling here.  */
+	if (epilogue && !maybe_eh_return && crtl->calls_eh_return)
+	  {
+	    unsigned int i, regnum;
+
+	    for (i = 0; (regnum = EH_RETURN_DATA_REGNO (i)) != INVALID_REGNUM;
+		 i++)
+	      if (regno == regnum)
+		{
+		  handle_reg = FALSE;
+		  break;
+		}
+	  }
+
+	if (handle_reg)
+	  riscv_save_restore_reg (word_mode, regno, offset, fn);
 	offset -= UNITS_PER_WORD;
       }
 
   /* This loop must iterate over the same space as its companion in
      riscv_compute_frame_info.  */
   offset = cfun->machine->frame.fp_sp_offset - sp_offset;
-  for (int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+  for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
       {
 	machine_mode mode = TARGET_DOUBLE_FLOAT ? DFmode : SFmode;
@@ -3694,7 +3716,7 @@ riscv_expand_prologue (void)
 			    GEN_INT (-step1));
       RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
       size -= step1;
-      riscv_for_each_saved_reg (size, riscv_save_reg);
+      riscv_for_each_saved_reg (size, riscv_save_reg, false, false);
     }
 
   frame->mask = mask; /* Undo the above fib.  */
@@ -3756,11 +3778,11 @@ riscv_adjust_libcall_cfi_epilogue ()
   return dwarf;
 }
 
-/* Expand an "epilogue" or "sibcall_epilogue" pattern; SIBCALL_P
-   says which.  */
+/* Expand an "epilogue", "sibcall_epilogue", or "eh_return_internal" pattern;
+   style says which.  */
 
 void
-riscv_expand_epilogue (bool sibcall_p)
+riscv_expand_epilogue (int style)
 {
   /* Split the frame into two.  STEP1 is the amount of stack we should
      deallocate before restoring the registers.  STEP2 is the amount we
@@ -3771,7 +3793,8 @@ riscv_expand_epilogue (bool sibcall_p)
   unsigned mask = frame->mask;
   HOST_WIDE_INT step1 = frame->total_size;
   HOST_WIDE_INT step2 = 0;
-  bool use_restore_libcall = !sibcall_p && riscv_use_save_libcall (frame);
+  bool use_restore_libcall = ((style == NORMAL_RETURN)
+			      && riscv_use_save_libcall (frame));
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
   rtx insn;
 
@@ -3781,14 +3804,14 @@ riscv_expand_epilogue (bool sibcall_p)
 
   if (cfun->machine->naked_p)
     {
-      gcc_assert (!sibcall_p);
+      gcc_assert (style == NORMAL_RETURN);
 
       emit_jump_insn (gen_return ());
 
       return;
     }
 
-  if (!sibcall_p && riscv_can_use_return_insn ())
+  if ((style == NORMAL_RETURN) && riscv_can_use_return_insn ())
     {
       emit_jump_insn (gen_return ());
       return;
@@ -3863,7 +3886,8 @@ riscv_expand_epilogue (bool sibcall_p)
     frame->mask = 0; /* Temporarily fib that we need not save GPRs.  */
 
   /* Restore the registers.  */
-  riscv_for_each_saved_reg (frame->total_size - step2, riscv_restore_reg);
+  riscv_for_each_saved_reg (frame->total_size - step2, riscv_restore_reg,
+			    true, style == EXCEPTION_RETURN);
 
   if (use_restore_libcall)
     {
@@ -3902,14 +3926,14 @@ riscv_expand_epilogue (bool sibcall_p)
     }
 
   /* Add in the __builtin_eh_return stack adjustment. */
-  if (crtl->calls_eh_return)
+  if ((style == EXCEPTION_RETURN) && crtl->calls_eh_return)
     emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 			      EH_RETURN_STACKADJ_RTX));
 
   /* Return from interrupt.  */
   if (cfun->machine->interrupt_handler_p)
     emit_insn (gen_riscv_mret ());
-  else if (!sibcall_p)
+  else if (style != SIBCALL_RETURN)
     emit_jump_insn (gen_simple_return_internal (ra));
 }
 
