@@ -1,5 +1,10 @@
 2018-06-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/69615
+	* fold-const.c (merge_ranges): If range1 is - [x, x] and x is the
+	maximum or minimum of the type, try to merge it also as if
+	range1 is + [-, x - 1] or + [x + 1, -].
+
 	PR c++/86025
 	* tree.c (inchash::add_expr): Handle IDENTIFIER_NODE.
 

@@ -5084,6 +5084,29 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
       tem = high0, high0 = high1, high1 = tem;
     }
 
+  /* If the second range is != high1 where high1 is the type maximum of
+     the type, try first merging with < high1 range.  */
+  if (low1
+      && high1
+      && TREE_CODE (low1) == INTEGER_CST
+      && (TREE_CODE (TREE_TYPE (low1)) == INTEGER_TYPE
+	  || (TREE_CODE (TREE_TYPE (low1)) == ENUMERAL_TYPE
+	      && known_eq (TYPE_PRECISION (TREE_TYPE (low1)),
+			   GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (low1))))))
+      && operand_equal_p (low1, high1, 0))
+    {
+      if (tree_int_cst_equal (low1, TYPE_MAX_VALUE (TREE_TYPE (low1)))
+	  && merge_ranges (pin_p, plow, phigh, in0_p, low0, high0,
+			   !in1_p, NULL_TREE, range_predecessor (low1)))
+	return true;
+      /* Similarly for the second range != low1 where low1 is the type minimum
+	 of the type, try first merging with > low1 range.  */
+      if (tree_int_cst_equal (low1, TYPE_MIN_VALUE (TREE_TYPE (low1)))
+	  && merge_ranges (pin_p, plow, phigh, in0_p, low0, high0,
+			   !in1_p, range_successor (low1), NULL_TREE))
+	return true;
+    }
+
   /* Now flag two cases, whether the ranges are disjoint or whether the
      second range is totally subsumed in the first.  Note that the tests
      below are simplified by the ones above.  */
