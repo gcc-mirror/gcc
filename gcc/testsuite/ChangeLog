@@ -1,3 +1,10 @@
+2018-06-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/store_merging_21.c: New test.
+	* gnat.dg/opt71b.adb: Likewise.
+	* gnat.dg/opt71.adb: Rename into...
+	* gnat.dg/opt71a.adb: ...this.
+
 2018-06-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85955

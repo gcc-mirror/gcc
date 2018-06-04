@@ -1,3 +1,12 @@
+2018-06-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-store-merging.c (struct merged_store_group): Move up
+	bit_insertion field and declare can_be_merged_into method.
+	(merged_store_group::can_be_merged_into): New method.
+	(imm_store_chain_info::coalesce_immediate): Call it to decide whether
+	consecutive non-overlapping stores can be merged.  Turn MEM_REF stores
+	into BIT_INSERT_EXPR stores if the group contains a non-MEM_REF store.
+
 2018-06-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85955

@@ -1426,6 +1426,7 @@ struct merged_store_group
   unsigned int load_align[2];
   unsigned int first_order;
   unsigned int last_order;
+  bool bit_insertion;
 
   auto_vec<store_immediate_info *> stores;
   /* We record the first and last original statements in the sequence because
@@ -1435,10 +1436,10 @@ struct merged_store_group
   gimple *first_stmt;
   unsigned char *val;
   unsigned char *mask;
-  bool bit_insertion;
 
   merged_store_group (store_immediate_info *);
   ~merged_store_group ();
+  bool can_be_merged_into (store_immediate_info *);
   void merge_into (store_immediate_info *);
   void merge_overlapping (store_immediate_info *);
   bool apply_stores ();
@@ -1851,8 +1852,47 @@ merged_store_group::~merged_store_group ()
     XDELETEVEC (val);
 }
 
+/* Return true if the store described by INFO can be merged into the group.  */
+
+bool
+merged_store_group::can_be_merged_into (store_immediate_info *info)
+{
+  /* Do not merge bswap patterns.  */
+  if (info->rhs_code == LROTATE_EXPR)
+    return false;
+
+  /* The canonical case.  */
+  if (info->rhs_code == stores[0]->rhs_code)
+    return true;
+
+  /* BIT_INSERT_EXPR is compatible with INTEGER_CST.  */
+  if (info->rhs_code == BIT_INSERT_EXPR && stores[0]->rhs_code == INTEGER_CST)
+    return true;
+
+  if (stores[0]->rhs_code == BIT_INSERT_EXPR && info->rhs_code == INTEGER_CST)
+    return true;
+
+  /* We can turn MEM_REF into BIT_INSERT_EXPR for bit-field stores.  */
+  if (info->rhs_code == MEM_REF
+      && (stores[0]->rhs_code == INTEGER_CST
+	  || stores[0]->rhs_code == BIT_INSERT_EXPR)
+      && info->bitregion_start == stores[0]->bitregion_start
+      && info->bitregion_end == stores[0]->bitregion_end)
+    return true;
+
+  if (stores[0]->rhs_code == MEM_REF
+      && (info->rhs_code == INTEGER_CST
+	  || info->rhs_code == BIT_INSERT_EXPR)
+      && info->bitregion_start == stores[0]->bitregion_start
+      && info->bitregion_end == stores[0]->bitregion_end)
+    return true;
+
+  return false;
+}
+
 /* Helper method for merge_into and merge_overlapping to do
    the common part.  */
+
 void
 merged_store_group::do_merge (store_immediate_info *info)
 {
@@ -2673,12 +2713,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	 Merge it into the current store group.  There can be gaps in between
 	 the stores, but there can't be gaps in between bitregions.  */
       else if (info->bitregion_start <= merged_store->bitregion_end
-	       && info->rhs_code != LROTATE_EXPR
-	       && (info->rhs_code == merged_store->stores[0]->rhs_code
-		   || (info->rhs_code == INTEGER_CST
-		       && merged_store->stores[0]->rhs_code == BIT_INSERT_EXPR)
-		   || (info->rhs_code == BIT_INSERT_EXPR
-		       && merged_store->stores[0]->rhs_code == INTEGER_CST)))
+	       && merged_store->can_be_merged_into (info))
 	{
 	  store_immediate_info *infof = merged_store->stores[0];
 
@@ -2696,21 +2731,41 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	      std::swap (info->ops[0], info->ops[1]);
 	      info->ops_swapped_p = true;
 	    }
-	  if ((infof->ops[0].base_addr
-	       ? compatible_load_p (merged_store, info, base_addr, 0)
-	       : !info->ops[0].base_addr)
-	      && (infof->ops[1].base_addr
-		  ? compatible_load_p (merged_store, info, base_addr, 1)
-		  : !info->ops[1].base_addr)
-	      && check_no_overlap (m_store_info, i, info->rhs_code,
-				   MAX (merged_store->last_order,
-					info->order),
-				   MAX (merged_store->start
-					+ merged_store->width,
-					info->bitpos + info->bitsize)))
+	  if (check_no_overlap (m_store_info, i, info->rhs_code,
+				MAX (merged_store->last_order,
+				     info->order),
+				MAX (merged_store->start
+				     + merged_store->width,
+				     info->bitpos + info->bitsize)))
 	    {
-	      merged_store->merge_into (info);
-	      goto done;
+	      /* Turn MEM_REF into BIT_INSERT_EXPR for bit-field stores.  */
+	      if (info->rhs_code == MEM_REF && infof->rhs_code != MEM_REF)
+		{
+		  info->rhs_code = BIT_INSERT_EXPR;
+		  info->ops[0].val = gimple_assign_rhs1 (info->stmt);
+		  info->ops[0].base_addr = NULL_TREE;
+		}
+	      else if (infof->rhs_code == MEM_REF && info->rhs_code != MEM_REF)
+		{
+		  store_immediate_info *infoj;
+		  unsigned int j;
+		  FOR_EACH_VEC_ELT (merged_store->stores, j, infoj)
+		    {
+		      infoj->rhs_code = BIT_INSERT_EXPR;
+		      infoj->ops[0].val = gimple_assign_rhs1 (infoj->stmt);
+		      infoj->ops[0].base_addr = NULL_TREE;
+		    }
+		}
+	      if ((infof->ops[0].base_addr
+		   ? compatible_load_p (merged_store, info, base_addr, 0)
+		   : !info->ops[0].base_addr)
+		  && (infof->ops[1].base_addr
+		      ? compatible_load_p (merged_store, info, base_addr, 1)
+		      : !info->ops[1].base_addr))
+		{
+		  merged_store->merge_into (info);
+		  goto done;
+		}
 	    }
 	}
 
