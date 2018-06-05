@@ -36,4 +36,9 @@
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "\
-%{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s crtbegin.o%s}"
+%{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s \
+  %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
