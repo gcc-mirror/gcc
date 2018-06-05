@@ -1,5 +1,12 @@
 2018-06-05  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/47618
+	* libgcov-driver-system.c (replace_filename_variables): New
+        function.
+	(gcov_exit_open_gcda_file): Use it.
+
+2018-06-05  Martin Liska  <mliska@suse.cz>
+
 	* libgcov-driver.c (gcov_compute_histogram): Remove usage
 	of gcov_ctr_summary.
 	(compute_summary): Do it just for a single summary.

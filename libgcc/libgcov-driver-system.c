@@ -136,6 +136,74 @@ create_file_directory (char *filename)
 #endif
 }
 
+/* Replace filename variables in FILENAME.  We currently support expansion:
+
+   %p - process ID
+   %q{ENV} - value of environment variable ENV
+   */
+
+static char *
+replace_filename_variables (char *filename)
+{
+  char buffer[16];
+  char empty[] = "";
+  for (char *p = filename; *p != '\0'; p++)
+    {
+      unsigned length = strlen (filename);
+      if (*p == '%' && *(p + 1) != '\0')
+	{
+	  unsigned start = p - filename;
+	  p++;
+	  char *replacement = NULL;
+	  switch (*p)
+	    {
+	    case 'p':
+	      sprintf (buffer, "%d", getpid ());
+	      replacement = buffer;
+	      p++;
+	      break;
+	    case 'q':
+	      if (*(p + 1) == '{')
+		{
+		  p += 2;
+		  char *e = strchr (p, '}');
+		  if (e)
+		    {
+		      *e = '\0';
+		      replacement = getenv (p);
+		      if (replacement == NULL)
+			replacement = empty;
+		      p = e + 1;
+		    }
+		  else
+		    return filename;
+		}
+	      break;
+	    default:
+	      return filename;
+	    }
+
+	  /* Concat beginning of the path, replacement and
+	     ending of the path.  */
+	  unsigned end = length - (p - filename);
+	  unsigned repl_length = strlen (replacement);
+
+	  char *buffer = (char *)xmalloc (start + end + repl_length + 1);
+	  char *buffer_ptr = buffer;
+	  buffer_ptr = (char *)mempcpy (buffer_ptr, filename, start);
+	  buffer_ptr = (char *)mempcpy (buffer_ptr, replacement, repl_length);
+	  buffer_ptr = (char *)mempcpy (buffer_ptr, p, end);
+	  *buffer_ptr = '\0';
+
+	  free (filename);
+	  filename = buffer;
+	  p = buffer + start + repl_length;
+	}
+    }
+
+  return filename;
+}
+
 static void
 allocate_filename_struct (struct gcov_filename *gf)
 {
@@ -223,6 +291,8 @@ gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
 	*dst++ = '/';
     }
   strcpy (dst, fname);
+
+  gf->filename = replace_filename_variables (gf->filename);
 
   if (!gcov_open (gf->filename))
     {
