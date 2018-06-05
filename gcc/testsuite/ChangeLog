@@ -1,3 +1,8 @@
+2018-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85976
+	* g++.dg/cpp0x/alias-decl-64.C: New test.
+
 2018-06-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86046
