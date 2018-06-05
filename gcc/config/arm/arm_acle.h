@@ -38,35 +38,35 @@ __arm_cdp (const unsigned int __coproc, const unsigned int __opc1,
 	   const unsigned int __CRd, const unsigned int __CRn,
 	   const unsigned int __CRm, const unsigned int __opc2)
 {
-  return __builtin_arm_cdp (__coproc, __opc1, __CRd, __CRn, __CRm, __opc2);
+  __builtin_arm_cdp (__coproc, __opc1, __CRd, __CRn, __CRm, __opc2);
 }
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_ldc (const unsigned int __coproc, const unsigned int __CRd,
 	   const void * __p)
 {
-  return __builtin_arm_ldc (__coproc, __CRd, __p);
+  __builtin_arm_ldc (__coproc, __CRd, __p);
 }
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_ldcl (const unsigned int __coproc, const unsigned int __CRd,
 	    const void * __p)
 {
-  return __builtin_arm_ldcl (__coproc, __CRd, __p);
+  __builtin_arm_ldcl (__coproc, __CRd, __p);
 }
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_stc (const unsigned int __coproc, const unsigned int __CRd,
 	   void * __p)
 {
-  return __builtin_arm_stc (__coproc, __CRd, __p);
+  __builtin_arm_stc (__coproc, __CRd, __p);
 }
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_stcl (const unsigned int __coproc, const unsigned int __CRd,
 	    void * __p)
 {
-  return __builtin_arm_stcl (__coproc, __CRd, __p);
+  __builtin_arm_stcl (__coproc, __CRd, __p);
 }
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
@@ -74,7 +74,7 @@ __arm_mcr (const unsigned int __coproc, const unsigned int __opc1,
 	   uint32_t __value, const unsigned int __CRn, const unsigned int __CRm,
 	   const unsigned int __opc2)
 {
-  return __builtin_arm_mcr (__coproc, __opc1, __value, __CRn, __CRm, __opc2);
+  __builtin_arm_mcr (__coproc, __opc1, __value, __CRn, __CRm, __opc2);
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
@@ -90,35 +90,35 @@ __arm_cdp2 (const unsigned int __coproc, const unsigned int __opc1,
 	    const unsigned int __CRd, const unsigned int __CRn,
 	    const unsigned int __CRm, const unsigned int __opc2)
 {
-  return __builtin_arm_cdp2 (__coproc, __opc1, __CRd, __CRn, __CRm, __opc2);
+  __builtin_arm_cdp2 (__coproc, __opc1, __CRd, __CRn, __CRm, __opc2);
 }
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_ldc2 (const unsigned int __coproc, const unsigned int __CRd,
 	    const void * __p)
 {
-  return __builtin_arm_ldc2 (__coproc, __CRd, __p);
+  __builtin_arm_ldc2 (__coproc, __CRd, __p);
 }
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_ldc2l (const unsigned int __coproc, const unsigned int __CRd,
 	     const void * __p)
 {
-  return __builtin_arm_ldc2l (__coproc, __CRd, __p);
+  __builtin_arm_ldc2l (__coproc, __CRd, __p);
 }
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_stc2 (const unsigned int __coproc, const unsigned int __CRd,
 	    void * __p)
 {
-  return __builtin_arm_stc2 (__coproc, __CRd, __p);
+  __builtin_arm_stc2 (__coproc, __CRd, __p);
 }
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_stc2l (const unsigned int __coproc, const unsigned int __CRd,
 	     void * __p)
 {
-  return __builtin_arm_stc2l (__coproc, __CRd, __p);
+  __builtin_arm_stc2l (__coproc, __CRd, __p);
 }
 
 __extension__ static __inline void __attribute__ ((__always_inline__))
@@ -126,7 +126,7 @@ __arm_mcr2 (const unsigned int __coproc, const unsigned int __opc1,
 	    uint32_t __value, const unsigned int __CRn,
 	    const unsigned int __CRm, const unsigned int __opc2)
 {
-  return __builtin_arm_mcr2 (__coproc, __opc1, __value, __CRn, __CRm, __opc2);
+  __builtin_arm_mcr2 (__coproc, __opc1, __value, __CRn, __CRm, __opc2);
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
@@ -143,7 +143,7 @@ __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_mcrr (const unsigned int __coproc, const unsigned int __opc1,
 	    uint64_t __value, const unsigned int __CRm)
 {
-  return __builtin_arm_mcrr (__coproc, __opc1, __value, __CRm);
+  __builtin_arm_mcrr (__coproc, __opc1, __value, __CRm);
 }
 
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
@@ -159,7 +159,7 @@ __extension__ static __inline void __attribute__ ((__always_inline__))
 __arm_mcrr2 (const unsigned int __coproc, const unsigned int __opc1,
 	    uint64_t __value, const unsigned int __CRm)
 {
-  return __builtin_arm_mcrr2 (__coproc, __opc1, __value, __CRm);
+  __builtin_arm_mcrr2 (__coproc, __opc1, __value, __CRm);
 }
 
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
