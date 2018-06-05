@@ -29302,7 +29302,8 @@ one of the arguments delivered to the program to contain a space).
 @itemx @var{file}?@var{cookie}
 A mapping file consisting of space-separated module-name, filename
 pairs, one per line.  Only the mappings for the direct imports and any
-module export name need be provided.
+module export name need be provided.  If other mappings are provided,
+they override those stored in any imported BMI files.
 
 @end table
 
@@ -29315,7 +29316,7 @@ all non-blank lines are significant, unless a cookie is specified, in
 which case only lines beginning with the cookie are significant.  The
 cookie must be separated by whitespace from the module name.  Be aware
 that @samp{?} and @samp{|} characters are often significant to the
-shell, and will need quoting.
+shell, and therefore may need quoting.
 
 The mapper is connected to or loaded lazily, when the first module
 mapping is required.  The networking protocols are only supported on
@@ -29324,10 +29325,10 @@ provided.
 
 Messages consist of whitespace-separated tokens and a possible final
 filename.  As filenames are the last item on a line, they may contain
-spaces without difficulty.  All non-ascii names are expected to be
-UTF8 encoded.  Each line is terminated by a line-feed (@code{0xa})
-character.  The server should accept and respond to the following
-commands:
+embeded or trailing spaces without difficulty (they cannot begin with
+a space).  All non-ascii characters are expected to be UTF8 encoded.  Each
+line is terminated by a line-feed (@code{0xa}) character.  The server
+should accept and respond to the following commands:
 
 @table @gcctabopt
 
@@ -29347,7 +29348,8 @@ Request for an asynchronous response.  The response is as for a
 non-asynchronous query, except it is prefixed by @samp{OK
 @var{module}}, so it may be linked to the orignal request.   If there
 is no outstanding ASYNC query, an error response of @samp{ERROR
-[@var{msg}]} should be given.
+[@var{msg}]} should be given.  Asynchronous requests need not be
+responded to in order.
 
 @item ASYNC @var{query}
 An asynchronous query.  The @var{query} is as above, but the response
@@ -29453,8 +29455,9 @@ connect to the same socket.
 
 When delivering paths to the compiler, paths relative to the
 compiler's working directory should be used.  A compiler may embed the
-path to a nested BMI file in an output BMI.  Such a path reduces the
-server traffic, but may require the build system to recreate the same
+path of a direct import BMI file into an output BMI.  The path will be
+relative to the output BMI's path.  Such a path reduces the server
+traffic, but may require the build system to recreate the same
 directory structure across parellelized build systems.
 
 The default oracle generates BMI files in the current directory,
