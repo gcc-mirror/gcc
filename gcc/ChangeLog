@@ -1,5 +1,14 @@
 2018-06-05  Richard Biener  <rguenther@suse.de>
 
+	* tree-cfg.c (struct locus_discrim_map): Store line, not location.
+	(locus_discrim_hasher::hash): Adjust.
+	(locus_discrim_hasher::equal): Likewise.
+	(next_discriminator_for_locus): Work on line directly.
+	(same_line_p): Pass in expanded locus1 as well.
+	(assign_discriminators): Avoid redundant location expansions.
+
+2018-06-05  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/86046
 	* tree-ssa.c (maybe_optimize_var): Clear DECL_GIMPLE_REG_P
 	if required after clearing TREE_ADDRESSABLE.

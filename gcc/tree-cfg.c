@@ -110,7 +110,7 @@ struct replace_decls_d
 /* Hash table to store last discriminator assigned for each locus.  */
 struct locus_discrim_map
 {
-  location_t locus;
+  int location_line;
   int discriminator;
 };
 
@@ -129,7 +129,7 @@ struct locus_discrim_hasher : free_ptr_hash <locus_discrim_map>
 inline hashval_t
 locus_discrim_hasher::hash (const locus_discrim_map *item)
 {
-  return LOCATION_LINE (item->locus);
+  return item->location_line;
 }
 
 /* Equality function for the locus-to-discriminator map.  A and B
@@ -139,7 +139,7 @@ inline bool
 locus_discrim_hasher::equal (const locus_discrim_map *a,
 			     const locus_discrim_map *b)
 {
-  return LOCATION_LINE (a->locus) == LOCATION_LINE (b->locus);
+  return a->location_line == b->location_line;
 }
 
 static hash_table<locus_discrim_hasher> *discriminator_per_locus;
@@ -1168,21 +1168,20 @@ gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
    profiling.  */
 
 static int
-next_discriminator_for_locus (location_t locus)
+next_discriminator_for_locus (int line)
 {
   struct locus_discrim_map item;
   struct locus_discrim_map **slot;
 
-  item.locus = locus;
+  item.location_line = line;
   item.discriminator = 0;
-  slot = discriminator_per_locus->find_slot_with_hash (
-      &item, LOCATION_LINE (locus), INSERT);
+  slot = discriminator_per_locus->find_slot_with_hash (&item, line, INSERT);
   gcc_assert (slot);
   if (*slot == HTAB_EMPTY_ENTRY)
     {
       *slot = XNEW (struct locus_discrim_map);
       gcc_assert (*slot);
-      (*slot)->locus = locus;
+      (*slot)->location_line = line;
       (*slot)->discriminator = 0;
     }
   (*slot)->discriminator++;
@@ -1192,23 +1191,22 @@ next_discriminator_for_locus (location_t locus)
 /* Return TRUE if LOCUS1 and LOCUS2 refer to the same source line.  */
 
 static bool
-same_line_p (location_t locus1, location_t locus2)
+same_line_p (location_t locus1, expanded_location *from, location_t locus2)
 {
-  expanded_location from, to;
+  expanded_location to;
 
   if (locus1 == locus2)
     return true;
 
-  from = expand_location (locus1);
   to = expand_location (locus2);
 
-  if (from.line != to.line)
+  if (from->line != to.line)
     return false;
-  if (from.file == to.file)
+  if (from->file == to.file)
     return true;
-  return (from.file != NULL
+  return (from->file != NULL
           && to.file != NULL
-          && filename_cmp (from.file, to.file) == 0);
+          && filename_cmp (from->file, to.file) == 0);
 }
 
 /* Assign discriminators to each basic block.  */
@@ -1228,17 +1226,23 @@ assign_discriminators (void)
       if (locus == UNKNOWN_LOCATION)
 	continue;
 
+      expanded_location locus_e = expand_location (locus);
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  gimple *first = first_non_label_stmt (e->dest);
 	  gimple *last = last_stmt (e->dest);
-	  if ((first && same_line_p (locus, gimple_location (first)))
-	      || (last && same_line_p (locus, gimple_location (last))))
+	  if ((first && same_line_p (locus, &locus_e,
+				     gimple_location (first)))
+	      || (last && same_line_p (locus, &locus_e,
+				       gimple_location (last))))
 	    {
 	      if (e->dest->discriminator != 0 && bb->discriminator == 0)
-		bb->discriminator = next_discriminator_for_locus (locus);
+		bb->discriminator
+		  = next_discriminator_for_locus (locus_e.line);
 	      else
-		e->dest->discriminator = next_discriminator_for_locus (locus);
+		e->dest->discriminator
+		  = next_discriminator_for_locus (locus_e.line);
 	    }
 	}
     }
