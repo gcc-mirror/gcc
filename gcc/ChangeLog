@@ -18,7 +18,7 @@
 
 	PR gcov-profile/47618
 	* doc/invoke.texi: Document how -fprofile-dir format
-        is extended.
+	is extended.
 
 2018-06-05  Richard Biener  <rguenther@suse.de>
 
@@ -166,16 +166,16 @@
 
 2018-06-04  Sebastian Peryt  <sebastian.peryt@intel.com>
 
-        * config/i386/cldemoteintrin.h: Change define from _X86INTRIN_H_INCLUDED
-        to _IMMINTRIN_H_INCLUDED.
-        * config/i386/pconfigintrin.h: Ditto.
-        * config/i386/waitpkgintrin.h: Ditto.
-        * config/i386/immintrin.h: Add includes for sgxintrin.h,
-        pconfigintrin.h, waitpkgintrin.h and cldemoteintrin.h.
-        * config/i386/x86intrin.h: Remove includes for mintrin.h, xmmintrin.h,
-        emmintrin.h, pmmintrin.h, tmmintrin.h, smmintrin.h, wmmintrin.h,
-        bmiintrin.h, bmi2intrin.h, lzcntintrin.h, sgxintrin.h, pconfigintrin.h,
-        waitpkgintrin.h and cldemoteintrin.h.
+	* config/i386/cldemoteintrin.h: Change define from _X86INTRIN_H_INCLUDED
+	to _IMMINTRIN_H_INCLUDED.
+	* config/i386/pconfigintrin.h: Ditto.
+	* config/i386/waitpkgintrin.h: Ditto.
+	* config/i386/immintrin.h: Add includes for sgxintrin.h,
+	pconfigintrin.h, waitpkgintrin.h and cldemoteintrin.h.
+	* config/i386/x86intrin.h: Remove includes for mintrin.h, xmmintrin.h,
+	emmintrin.h, pmmintrin.h, tmmintrin.h, smmintrin.h, wmmintrin.h,
+	bmiintrin.h, bmi2intrin.h, lzcntintrin.h, sgxintrin.h, pconfigintrin.h,
+	waitpkgintrin.h and cldemoteintrin.h.
 
 2018-06-04  Richard Biener  <rguenther@suse.de>
 
@@ -396,8 +396,7 @@
 	(find_func_clobbers): Likewise.
 	(ipa_pta_execute): Likewise.
 	(create_variable_info_for): For functions that are ifunc_resolver
-	resolve to a varinfo that contains the result of the resolver
-	call.
+	resolve to a varinfo that contains the result of the resolver call.
 	(associate_varinfo_to_alias): Do not treat ifunc resolvers as
 	aliases.
 
@@ -721,7 +720,7 @@
 
 2018-05-29  Martin Liska  <mliska@suse.cz>
 
-        PR gcov-profile/85759
+	PR gcov-profile/85759
 	* doc/gcov.texi: Document GCOV_ERROR_FILE and GCOV_EXIT_AT_ERROR
 	env variables.
 
@@ -990,8 +989,8 @@
 
 2018-05-25  Jason Merrill  <jason@redhat.com>
 
-        PR c++/80485 - inline function non-zero address.
-        * symtab.c (nonzero_address): Check DECL_COMDAT.
+	PR c++/80485 - inline function non-zero address.
+	* symtab.c (nonzero_address): Check DECL_COMDAT.
 
 2018-05-25  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -1243,10 +1242,10 @@
 
 2018-05-24  Roger Sayle  <roger@nextmovesoftware.com>
 
-        * fold-const.c (tree_nonzero_bits): New function.
-        * fold-const.h (tree_nonzero_bits): Likewise.
-        * match.pd (POPCOUNT): New patterns to fold BUILTIN_POPCOUNT and
-        friends.  POPCOUNT(x&1) => x&1, POPCOUNT(x)==0 => x==0, etc.
+	* fold-const.c (tree_nonzero_bits): New function.
+	* fold-const.h (tree_nonzero_bits): Likewise.
+	* match.pd (POPCOUNT): New patterns to fold BUILTIN_POPCOUNT and
+	friends.  POPCOUNT(x&1) => x&1, POPCOUNT(x)==0 => x==0, etc.
 
 2018-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -1543,7 +1542,7 @@
 	* calls.c (maybe_warn_nonstring_arg): Fix a typo in a comment.
 
 2018-05-22  Jackson Woodruff  <jackson.woodruff@arm.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-ldpstp.md: Replace uses of
 	aarch64_mem_pair_operand with memory_operand and delete operand swapping
@@ -1556,7 +1555,7 @@
 	Define prototype.
 
 2018-05-22  Jackson Woodruff  <jackson.woodruff@arm.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md: New patterns to generate stp
 	and ldp.
@@ -2030,7 +2029,7 @@
 
 	PR middle-end/85817
 	* ipa-pure-const.c (malloc_candidate_p): Remove the check integer_zerop
-	for retval and return false if all args to phi are zero.	
+	for retval and return false if all args to phi are zero.
 
 2018-05-18  Richard Biener  <rguenther@suse.de>
 
@@ -2047,7 +2046,7 @@
 
 	* doc/invoke.texi: Move -floop-unroll-and-jam documentation
 	directly after that of -floop-interchange. Indicate that both
-	options are enabled by default when specifying -O3. 
+	options are enabled by default when specifying -O3.
 
 2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -2271,13 +2270,13 @@
 	_mm512_setzero): New intrinsics.
 
 2018-05-17  James Greenhalgh  <james.greenhalgh@arm.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_vector_init): Modify
 	code generation for cases where splatting a value is not useful.
 	* simplify-rtx.c (simplify_ternary_operation): Simplify
-	vec_merge across a vec_duplicate and a paradoxical subreg forming a vector
-	mode to a vec_concat.
+	vec_merge across a vec_duplicate and a paradoxical subreg forming
+	a vector mode to a vec_concat.
 
 2018-05-17  Olga Makhotina  <olga.makhotina@intel.com>
 
@@ -2497,8 +2496,8 @@
 2018-05-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR ipa/85734
-	* ipa-pure-const.c (warn_function_malloc): Pass value of known_finite param
-	as true in call to suggest_attribute.
+	* ipa-pure-const.c (warn_function_malloc): Pass value of known_finite
+	param as true in call to suggest_attribute.
 
 2018-05-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -2739,7 +2738,7 @@
 
 2018-05-11  Martin Liska  <mliska@suse.cz>
 
-        PR sanitizer/85556
+	PR sanitizer/85556
 	* doc/extend.texi: Document LLVM style format for no_sanitize
 	attribute.
 
@@ -3091,7 +3090,8 @@
 	(thunderxt88_prefetch_tune): Likewise.
 	(thunderx_prefetch_tune): Likewise.
 	(thunderx2t99_prefetch_tune): Likewise.
-	(qdf24xx_prefetch_tune): Likewise. Set prefetch_dynamic_strides to false.
+	(qdf24xx_prefetch_tune): Likewise. Set prefetch_dynamic_strides
+	to false.
 	(aarch64_override_options_internal): Update to set
 	PARAM_PREFETCH_DYNAMIC_STRIDES.
 	* doc/invoke.texi (prefetch-dynamic-strides): Document new option.
@@ -3134,7 +3134,8 @@
 	(thunderxt88_prefetch_tune): Likewise.
 	(thunderx_prefetch_tune): Likewise.
 	(thunderx2t99_prefetch_tune): Likewise.
-	(qdf24xx_prefetch_tune): Likewise. Set prefetch_dynamic_strides to false.
+	(qdf24xx_prefetch_tune): Likewise. Set prefetch_dynamic_strides
+	to false.
 	(aarch64_override_options_internal): Update to set
 	PARAM_PREFETCH_DYNAMIC_STRIDES.
 	* doc/invoke.texi (prefetch-dynamic-strides): Document new option.
@@ -4130,9 +4131,9 @@
 
 2018-04-20  Carl Love  <cel@us.ibm.com>
 
-        PR target/83402
-        * config/rs6000/rs6000-c.c (rs6000_gimple_fold_builtin): Add
-        size check for arg0.
+	PR target/83402
+	* config/rs6000/rs6000-c.c (rs6000_gimple_fold_builtin): Add
+	size check for arg0.
 
 2018-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
@@ -4193,7 +4194,7 @@
 2018-04-19  Toon Moene  <toon@moene.org>
 
 	* doc/invoke.texi: Add -floop-unroll-and-jam to options enabled
-	by -O3. 
+	by -O3.
 
 2018-04-19  Jakub Jelinek  <jakub@redhat.com>
 
@@ -4244,7 +4245,7 @@
 
 2018-04-19  Sebastian Peryt  <sebastian.peryt@intel.com>
 
-	* common/config/i386/i386-common.c 
+	* common/config/i386/i386-common.c
 	(OPTION_MASK_ISA_MOVDIRI_SET, OPTION_MASK_ISA_MOVDIR64B_SET,
 	OPTION_MASK_ISA_MOVDIRI_UNSET,
 	OPTION_MASK_ISA_MOVDIR64B_UNSET): New defines.
@@ -4258,7 +4259,7 @@
 	(VOID, PVOID, PCVOID)): New function types.
 	* config/i386/i386-builtin.def (__builtin_ia32_directstoreu_u32,
 	__builtin_ia32_directstoreu_u64,
-	 __builtin_ia32_movdir64b): New builtins.
+	__builtin_ia32_movdir64b): New builtins.
 	* config/i386/i386-c.c (__MOVDIRI__, __MOVDIR64B__): New.
 	* config/i386/i386.c (ix86_target_string): Added -mmovdir64b
 	and -mmovdiri.
@@ -4494,7 +4495,7 @@
 	PR ipa/85329
 	* multiple_target.c (create_dispatcher_calls): Set apostrophes
 	for target_clone error message.  Make default implementation
-        clone to be a local declaration.
+	clone to be a local declaration.
 	(separate_attrs): Add new argument and check for an empty
 	string.
 	(expand_target_clones): Handle it.
@@ -4596,7 +4597,7 @@
 	* cfgloopanal.c (expected_loop_iterations_unbounded): Add
 	by_profile_only parameter.
 	* cfgloopmanip.c (scale_loop_profile): Further scale loop's profile
-        information if the loop was predicted to iterate too many times.
+	information if the loop was predicted to iterate too many times.
 	* cfgloop.h (expected_loop_iterations_unbounded): Update prototype
 
 2018-04-13  Jan Hubicka  <hubicka@ucw.cz>
@@ -5838,7 +5839,8 @@
 2018-03-27  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/81863
-	* config/arm/arm.c (arm_valid_symbolic_address): Handle arm_word_relocations
+	* config/arm/arm.c (arm_valid_symbolic_address): Handle
+	arm_word_relocations.
 
 2018-03-27  Cesar Philippidis  <cesar@codesourcery.com>
 
@@ -6348,7 +6350,7 @@
 
 2018-03-15  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* config/nios2/nios2.md (movsi_internal): Fix thinko in 
+	* config/nios2/nios2.md (movsi_internal): Fix thinko in
 	split predicate.
 
 2018-03-15  Jakub Jelinek  <jakub@redhat.com>
@@ -6458,8 +6460,7 @@
 	(layout::get_state_at_point): Likewise.
 	(layout::get_x_bound_for_row): Likewise.
 	(layout::print_line): Likewise.
-	(diagnostic_show_locus): Likewise for locals "last_line" and
-	"row".
+	(diagnostic_show_locus): Likewise for locals "last_line" and "row".
 	(selftest::diagnostic_show_locus_c_tests): Call test_line_span.
 	* input.c (selftest::test_linenum_comparisons): New function.
 	(selftest::input_c_tests): Call it.
@@ -7092,29 +7093,29 @@
 
 2018-03-06  Claudiu Zissulescu  <claziss@synopsys.com>
 
-	 * config/arc/arc.c (arc_finalize_pic): Remove function.
-	 (arc_must_save_register): We use single base PIC register, remove
-	 checks to save/restore the PIC register.
-	 (arc_expand_prologue): Likewise.
-	 * config/arc/arc-protos.h (arc_set_default_type_attributes):
-	 Remove.
-	 (arc_verify_short): Likewise.
-	 (arc_attr_type): Likewise.
-	 * config/arc/arc.c (arc_set_default_type_attributes): Remove.
-	 (walk_stores): Likewise.
-	 (arc_address_cost): Make it static.
-	 (arc_verify_short): Likewise.
-	 (branch_dest): Likewise.
-	 (arc_attr_type): Likewise.
-	 * config/arc/arc.c (TARGET_ADJUST_INSN_LENGTH): Remove.
-	 (TARGET_INSN_LENGTH_PARAMETERS): Likewise.
-	 (arc_final_prescan_insn): Remove inserting the nops due to
-	 hardware hazards.  It is done in reorg step.
-	 (insn_length_variant_t): Remove.
-	 (insn_length_parameters_t): Likewise.
-	 (arc_insn_length_parameters): Likewise.
-	 (arc_get_insn_variants): Likewise.
-	 * config/arc/arc.h (TARGET_UPSIZE_DBR): Remove.
+	* config/arc/arc.c (arc_finalize_pic): Remove function.
+	(arc_must_save_register): We use single base PIC register, remove
+	checks to save/restore the PIC register.
+	(arc_expand_prologue): Likewise.
+	* config/arc/arc-protos.h (arc_set_default_type_attributes):
+	Remove.
+	(arc_verify_short): Likewise.
+	(arc_attr_type): Likewise.
+	* config/arc/arc.c (arc_set_default_type_attributes): Remove.
+	(walk_stores): Likewise.
+	(arc_address_cost): Make it static.
+	(arc_verify_short): Likewise.
+	(branch_dest): Likewise.
+	(arc_attr_type): Likewise.
+	* config/arc/arc.c (TARGET_ADJUST_INSN_LENGTH): Remove.
+	(TARGET_INSN_LENGTH_PARAMETERS): Likewise.
+	(arc_final_prescan_insn): Remove inserting the nops due to
+	hardware hazards.  It is done in reorg step.
+	(insn_length_variant_t): Remove.
+	(insn_length_parameters_t): Likewise.
+	(arc_insn_length_parameters): Likewise.
+	(arc_get_insn_variants): Likewise.
+	* config/arc/arc.h (TARGET_UPSIZE_DBR): Remove.
 
 2018-03-06  Jakub Jelinek  <jakub@redhat.com>
 
@@ -7202,7 +7203,8 @@
 	* config/i386/immintrin.h (_wbinvd): New intrinsic.
 	* config/i386/pconfigintrin.h: New file.
 	* config/i386/wbnoinvdintrin.h: Ditto.
-	* config/i386/x86intrin.h: Add headers pconfigintrin.h and wbnoinvdintrin.h.
+	* config/i386/x86intrin.h: Add headers pconfigintrin.h and
+	wbnoinvdintrin.h.
 	* doc/invoke.texi (-mpconfig, -mwbnoinvd): New.
 
 2018-03-05  Richard Biener  <rguenther@suse.de>
@@ -7710,7 +7712,7 @@
 
 2018-02-26  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        PR target/84521
+	PR target/84521
 	* common/config/aarch64/aarch64-common.c
 	(aarch_option_optimization_table[]): Switch
 	off fomit-frame-pointer
@@ -7955,7 +7957,7 @@
 	(format_string, format_plain): Similarly.
 	* gimple-ssa-sprintf.c (sprintf_dom_walker::handle_gimple_call): Query
 	the EVRP range analyzer for range data rather than using global data.
-	* gimple-ssa-sprintf.c: Include alloc-pool.h, vr-values.h and 
+	* gimple-ssa-sprintf.c: Include alloc-pool.h, vr-values.h and
 	gimple-ssa-evrp-analyze.h
 	(class sprintf_dom_walker): Add after_dom_children member function.
 	Add evrp_range_analyzer member.
@@ -8375,7 +8377,7 @@
 
 2018-02-13  Jeff Law  <law@redhat.com>
 
- 	* config/rl/rl78.c (rl78_attribute_table): Fix terminator and
+	* config/rl/rl78.c (rl78_attribute_table): Fix terminator and
 	entry for "vector".
 
 	* config/rl78/rl78.c (rl78_handle_func_attribute): Mark
@@ -8444,7 +8446,7 @@
 	* config/rl78/rl78.c (add_vector_labels): New function.
 	* config/rl78/rl78.c (rl78_handle_vector_attribute): New function.
 	* config/rl78/rl78.c (rl78_start_function): Call add_vector_labels.
-	* config/rl78/rl78.c (rl78_handle_func_attribute): Removed the assert 
+	* config/rl78/rl78.c (rl78_handle_func_attribute): Removed the assert
 	which checks that no arguments are passed.
 	* config/rl78/rl78.c (rl78_attribute_table): Add "vector" attribute.
 	* doc/extend.texi: Documentation for the new attribute.
@@ -9091,8 +9093,7 @@
 	(fix<uns>_trunc<IEEE128:mode><QHI:mode>2): Likewise.
 	(fctiw<u>z_<mode>_smallint): Rename fctiw<u>z_<mode>_smallint to
 	fix<uns>_trunc<SFDF:mode>si2_p8.
-	(fix_trunc<SFDF:mode><QHI:mode>2_internal): Delete, no longer
-	used.
+	(fix_trunc<SFDF:mode><QHI:mode>2_internal): Delete, no longer used.
 	(fixuns_trunc<SFDF:mode><QHI:mode>2_internal): Likewise.
 	(fix<uns>_<mode>_mem): Likewise.
 	(fctiw<u>z_<mode>_mem): Likewise.
@@ -9875,7 +9876,7 @@
 
 2018-01-26  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.c (rl78_addsi3_internal): If operand 2 is const 
+	* config/rl78/rl78.c (rl78_addsi3_internal): If operand 2 is const
 	avoid addition with 0 and use incw and decw where possible.
 
 2018-01-26  Richard Biener  <rguenther@suse.de>
@@ -10213,7 +10214,8 @@
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78-protos.h (rl78_split_movdi): New function declaration.
+	* config/rl78/rl78-protos.h (rl78_split_movdi): New function
+	declaration.
 	* config/rl78/rl78.md (movdi): New define_expand.
 	* config/rl78/rl78.c (rl78_split_movdi): New function.
 
@@ -10962,7 +10964,7 @@
 	* config/i386/i386.c (print_reg): Print the name of the full
 	integer register without '%'.
 	(ix86_print_operand): Handle 'V'.
-	 * doc/extend.texi: Document 'V' modifier.
+	* doc/extend.texi: Document 'V' modifier.
 
 2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 
