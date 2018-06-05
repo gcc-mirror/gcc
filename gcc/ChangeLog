@@ -1,5 +1,11 @@
 2018-06-05  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/86046
+	* tree-ssa.c (maybe_optimize_var): Clear DECL_GIMPLE_REG_P
+	if required after clearing TREE_ADDRESSABLE.
+
+2018-06-05  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/86047
 	* tree-ssa-loop.c (for_each_index): Glob handling of all
 	decls and constants and really handle all of them.

@@ -1565,6 +1565,12 @@ maybe_optimize_var (tree var, bitmap addresses_taken, bitmap not_reg_needs,
 	  || !bitmap_bit_p (not_reg_needs, DECL_UID (var))))
     {
       TREE_ADDRESSABLE (var) = 0;
+      /* If we cleared TREE_ADDRESSABLE make sure DECL_GIMPLE_REG_P
+         is unset if we cannot rewrite the var into SSA.  */
+      if ((TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE
+	   || TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE)
+	  && bitmap_bit_p (not_reg_needs, DECL_UID (var)))
+	DECL_GIMPLE_REG_P (var) = 0;
       if (is_gimple_reg (var))
 	bitmap_set_bit (suitable_for_renaming, DECL_UID (var));
       if (dump_file)
