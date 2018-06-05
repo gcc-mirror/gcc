@@ -2060,7 +2060,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // wchar_t, char16_t and char32_t are integral types but are neither
-  // signed integer types not unsigned integer types, so must be
+  // signed integer types nor unsigned integer types, so must be
   // transformed to the integer type with the smallest rank that has the
   // same size and signedness.
   // Use the partial specialization for enumeration types to do that,
