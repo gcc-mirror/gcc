@@ -616,10 +616,10 @@
 
 2018-05-24  Roger Sayle  <roger@nextmovesoftware.com>
 
-        * gcc.dg/fold-popcount-1.c: New testcase.
-        * gcc.dg/fold-popcount-2.c: New testcase.
-        * gcc.dg/fold-popcount-3.c: New testcase.
-        * gcc.dg/fold-popcount-4.c: New testcase.
+	* gcc.dg/fold-popcount-1.c: New testcase.
+	* gcc.dg/fold-popcount-2.c: New testcase.
+	* gcc.dg/fold-popcount-3.c: New testcase.
+	* gcc.dg/fold-popcount-4.c: New testcase.
 
 2018-05-24  Marek Polacek  <polacek@redhat.com>
 
@@ -920,12 +920,12 @@
 2018-05-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	ChangeLog for r260480
-        * gfortran.dg/graphite/block-2.f: Adjust testcase for new gfortran
-        warnings for deleted and obsolescent features.
-        * gfortran.dg/graphite/id-19.f: Ditto.
-        * gfortran.dg/graphite/id-20.f: Ditto.
-        * gfortran.dg/graphite/id-27.f90: Ditto.
-        * gfortran.dg/graphite/pr82449.f: Ditto.
+	* gfortran.dg/graphite/block-2.f: Adjust testcase for new gfortran
+	warnings for deleted and obsolescent features.
+	* gfortran.dg/graphite/id-19.f: Ditto.
+	* gfortran.dg/graphite/id-20.f: Ditto.
+	* gfortran.dg/graphite/id-27.f90: Ditto.
+	* gfortran.dg/graphite/pr82449.f: Ditto.
 
 2018-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -1299,7 +1299,7 @@
 
 2018-05-11  Martin Liska  <mliska@suse.cz>
 
-        PR sanitizer/85556
+	PR sanitizer/85556
 	* c-c++-common/ubsan/attrib-6.c: New test.
 
 2018-05-10  Steven G. Kargl  <kargl@gcc.gnu.org>
@@ -1543,12 +1543,12 @@
 2018-05-06  Michael Eager  <eager@eagercon.com>
 
 	* gcc.target/microblaze/others/picdtr.c: Correct option
-	 -fPIE -mpic-data-is-text-relative.
+	-fPIE -mpic-data-is-text-relative.
 
 2018-05-06  Andrew Sadek  <andrew.sadek.se@gmail.com>
 
 	* gcc.target/microblaze/others/picdtr.c: Add test for
-	 -fPIE -mpic-data-is-text-relative.
+	-fPIE -mpic-data-is-text-relative.
 
 2018-05-06  Andre Vehreschild  <vehre@gcc.gnu.org>
 
@@ -1711,7 +1711,7 @@
 
 2018-05-01  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
-        PR tree-optimization/82665
+	PR tree-optimization/82665
 	* gcc.dg/tree-ssa/pr82665.c: New test.
 
 2018-04-30  David Malcolm  <dmalcolm@redhat.com>
@@ -2343,11 +2343,11 @@
 
 2018-04-13  Andreas Krebbel  <krebbel@linux.ibm.com>
 
-        PR testsuite/85326
-        * gcc.target/s390/pr77822-1.C: Rename to ...
-        * gcc.target/s390/pr77822-1.c: ... this. Add asm scan check.
-        * gcc.target/s390/pr77822-2.c: Add asm scan check.
-        * gcc.target/s390/s390.exp: Remove C from testcase regexps.
+	PR testsuite/85326
+	* gcc.target/s390/pr77822-1.C: Rename to ...
+	* gcc.target/s390/pr77822-1.c: ... this. Add asm scan check.
+	* gcc.target/s390/pr77822-2.c: Add asm scan check.
+	* gcc.target/s390/s390.exp: Remove C from testcase regexps.
 
 2018-04-13  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -3680,7 +3680,7 @@
 	* g++.dg/cpp2a/desig7.C: New test.
 
 2018-03-16  Mark Doffman  <mark.doffman@codethink.co.uk>
-            Jim MacArthur  <jim.macarthur@codethink.co.uk>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
 
 	* gfortran.dg/automatic_1.f90: New test.
 	* gfortran.dg/automatic_repeat.f90: New test
@@ -4915,9 +4915,9 @@
 
 2018-02-20  Jeff Law  <law@redhat.com>
 
-        PR middle-end/82123
-        PR tree-optimization/81592
-        PR middle-end/79257
+	PR middle-end/82123
+	PR tree-optimization/81592
+	PR middle-end/79257
 	* gcc.dg/pr81592.c: New test.
 	* gcc.dg/pr82123.c: New test.
 	* gcc.dg/builtin-unreachable-6.c: Turn off VRP.
@@ -7346,7 +7346,8 @@
 	* gfortran.fortran-torture/execute/intrinsic_dprod.f90: Likewise.
 	* gfortran.fortran-torture/execute/intrinsic_dummy.f90: Likewise.
 	* gfortran.fortran-torture/execute/intrinsic_eoshift.f90: Likewise.
-	* gfortran.fortran-torture/execute/intrinsic_fraction_exponent.f90: Likewise.
+	* gfortran.fortran-torture/execute/intrinsic_fraction_exponent.f90:
+	Likewise.
 	* gfortran.fortran-torture/execute/intrinsic_index.f90: Likewise.
 	* gfortran.fortran-torture/execute/intrinsic_integer.f90: Likewise.
 	* gfortran.fortran-torture/execute/intrinsic_leadz.f90: Likewise.
@@ -7641,7 +7642,7 @@
 
 2018-02-14  Carl Love  <cel@us.ibm.com>
 
-        * gcc.target/powerpc/builtins-4-int128-runnable.c
+	* gcc.target/powerpc/builtins-4-int128-runnable.c
 	(dg-require-effective-target): Change vsx_hw to p8vector_hw.
 	(dg-options): Change -maltivec -mvsx to -mpower8-vector.
 
