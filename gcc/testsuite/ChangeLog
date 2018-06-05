@@ -1,3 +1,9 @@
+2018-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/81497
+	* g++.target/arm/arm.exp: New file.
+	* g++.target/arm/pr81497.C: Likewise.
+
 2018-06-05  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/htm-builtins-compile-4.c: New test.
