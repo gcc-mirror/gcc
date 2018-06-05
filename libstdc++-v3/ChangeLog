@@ -1,3 +1,11 @@
+2018-06-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/read_symlink.cc: XFAIL for
+	mingw* targets.
+	* testsuite/27_io/filesystem/operations/symlink_status.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/read_symlink.cc:
+	Likewise.
+
 2018-06-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_tempbuf.h
