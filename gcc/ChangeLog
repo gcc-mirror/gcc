@@ -1,3 +1,9 @@
+2018-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_cmse.h (cmse_nsfptr_create): Change typeof to
+	__typeof__.
+	(cmse_check_pointed_object): Likewise.
+
 2018-06-05  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/47618

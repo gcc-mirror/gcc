@@ -1,3 +1,7 @@
+2018-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/cmse/cmse-1c99.c: New test.
+
 2018-06-05  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/85701
