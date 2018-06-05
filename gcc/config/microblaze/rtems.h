@@ -35,3 +35,7 @@
   %{mbig-endian:-EB --oformat=elf32-microblaze} \
   %{mlittle-endian:-EL --oformat=elf32-microblazeel} \
   %{mxl-gp-opt:%{G*}} %{!mxl-gp-opt: -G 0}"
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+%{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s crtbegin.o%s}"

@@ -38,3 +38,7 @@
 
 /* Use the default */
 #undef LINK_GCC_C_SEQUENCE_SPEC
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+%{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s crtbegin.o%s}"
