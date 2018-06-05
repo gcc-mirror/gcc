@@ -1,3 +1,11 @@
+2018-06-05  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/79924
+	* gcc.target/aarch64/mgeneral-regs_1.c: Update error message.
+	* gcc.target/aarch64/mgeneral-regs_2.c: Ditto.
+	* gcc.target/aarch64/mgeneral-regs_3.c: Ditto.
+	* gcc.target/aarch64/nofp_1.c: Ditto.
+
 2018-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/cmse/cmse-1c99.c: New test.
