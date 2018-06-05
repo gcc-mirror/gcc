@@ -1149,7 +1149,7 @@
   {
     if (!TARGET_FLOAT)
       {
-	aarch64_err_no_fpadvsimd (<MODE>mode, "code");
+	aarch64_err_no_fpadvsimd (<MODE>mode);
 	FAIL;
       }
 

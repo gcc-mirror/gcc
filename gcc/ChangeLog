@@ -1,3 +1,16 @@
+2018-06-05  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/79924
+	* config/aarch64/aarch64-protos.h (aarch64_err_no_fpadvsimd): Remove
+	second argument.
+	* config/aarch64/aarch64-protos..c (aarch64_err_no_fpadvsimd):
+	Remove second argument, change how error is called.
+	(aarch64_layout_arg): Remove second argument from
+	aarch64_err_no_fpadvsimd call.
+	(aarch64_init_cumulative_args): Ditto.
+	(aarch64_gimplify_va_arg_expr): Ditto.
+	* config/aarch64/aarch64.md (mov<mode>): Ditto.
+
 2018-06-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (simple_return_indirect_internal): New expander.

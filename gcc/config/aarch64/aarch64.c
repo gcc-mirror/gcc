@@ -1077,13 +1077,22 @@ aarch64_gen_far_branch (rtx * operands, int pos_label, const char * dest,
 }
 
 void
-aarch64_err_no_fpadvsimd (machine_mode mode, const char *msg)
+aarch64_err_no_fpadvsimd (machine_mode mode)
 {
-  const char *mc = FLOAT_MODE_P (mode) ? "floating-point" : "vector";
   if (TARGET_GENERAL_REGS_ONLY)
-    error ("%qs is incompatible with %s %s", "-mgeneral-regs-only", mc, msg);
+    if (FLOAT_MODE_P (mode))
+      error ("%qs is incompatible with the use of floating-point types",
+	     "-mgeneral-regs-only");
+    else
+      error ("%qs is incompatible with the use of vector types",
+	     "-mgeneral-regs-only");
   else
-    error ("%qs feature modifier is incompatible with %s %s", "+nofp", mc, msg);
+    if (FLOAT_MODE_P (mode))
+      error ("%qs feature modifier is incompatible with the use of"
+	     " floating-point types", "+nofp");
+    else
+      error ("%qs feature modifier is incompatible with the use of"
+	     " vector types", "+nofp");
 }
 
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.
@@ -3519,7 +3528,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
   if (allocate_nvrn)
     {
       if (!TARGET_FLOAT)
-	aarch64_err_no_fpadvsimd (mode, "argument");
+	aarch64_err_no_fpadvsimd (mode);
 
       if (nvrn + nregs <= NUM_FP_ARG_REGS)
 	{
@@ -3661,7 +3670,7 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
       int nregs ATTRIBUTE_UNUSED; /* Likewise.  */
       if (aarch64_vfp_is_call_or_return_candidate (TYPE_MODE (type), type,
 						   &mode, &nregs, NULL))
-	aarch64_err_no_fpadvsimd (TYPE_MODE (type), "return type");
+	aarch64_err_no_fpadvsimd (TYPE_MODE (type));
     }
   return;
 }
@@ -12254,7 +12263,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
       /* TYPE passed in fp/simd registers.  */
       if (!TARGET_FLOAT)
-	aarch64_err_no_fpadvsimd (mode, "varargs");
+	aarch64_err_no_fpadvsimd (mode);
 
       f_top = build3 (COMPONENT_REF, TREE_TYPE (f_vrtop),
 		      unshare_expr (valist), f_vrtop, NULL_TREE);
