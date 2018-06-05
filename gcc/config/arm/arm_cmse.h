@@ -173,7 +173,7 @@ cmse_nonsecure_caller (void)
 #define CMSE_MPU_NONSECURE	16
 #define CMSE_NONSECURE		18
 
-#define cmse_nsfptr_create(p) ((typeof ((p))) ((__INTPTR_TYPE__) (p) & ~1))
+#define cmse_nsfptr_create(p) ((__typeof__ ((p))) ((__INTPTR_TYPE__) (p) & ~1))
 
 #define cmse_is_nsfptr(p) (!((__INTPTR_TYPE__) (p) & 1))
 
@@ -187,7 +187,7 @@ __extension__ void *
 cmse_check_address_range (void *, size_t, int);
 
 #define cmse_check_pointed_object(p, f) \
-  ((typeof ((p))) cmse_check_address_range ((p), sizeof (*(p)), (f)))
+  ((__typeof__ ((p))) cmse_check_address_range ((p), sizeof (*(p)), (f)))
 
 #endif /* __ARM_FEATURE_CMSE & 1 */
 
