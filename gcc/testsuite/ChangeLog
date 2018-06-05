@@ -1,3 +1,8 @@
+2018-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86047
+	* gcc.dg/pr86047.c: New testcase.
+
 2018-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/81497
