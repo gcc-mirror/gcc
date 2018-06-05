@@ -289,7 +289,7 @@
    OB_DEF_VAR (<variant name>, <standard builtin name>, <flags>, <fntype>) */
 
 
-B_DEF      (tbeginc,                    tbeginc,            0,                  B_HTM,              0,                  BT_FN_INT)
+B_DEF      (tbeginc,                    tbeginc,            0,                  B_HTM,              0,                  BT_FN_VOID)
 B_DEF      (tbegin,                     tbegin,             returns_twice_attr, B_HTM,              0,                  BT_FN_INT_VOIDPTR)
 B_DEF      (tbegin_nofloat,             tbegin_nofloat,     returns_twice_attr, B_HTM,              0,                  BT_FN_INT_VOIDPTR)
 B_DEF      (tbegin_retry,               tbegin_retry,       returns_twice_attr, B_HTM,              0,                  BT_FN_INT_VOIDPTR_INT)
