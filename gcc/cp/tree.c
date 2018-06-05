@@ -3881,6 +3881,14 @@ cp_tree_equal (tree t1, tree t2)
 				     DEFERRED_NOEXCEPT_ARGS (t2)));
       break;
 
+    case USING_DECL:
+      if (DECL_DEPENDENT_P (t1) && DECL_DEPENDENT_P (t2))
+	return (cp_tree_equal (USING_DECL_SCOPE (t1),
+			       USING_DECL_SCOPE (t2))
+		&& cp_tree_equal (DECL_NAME (t1),
+				  DECL_NAME (t2)));
+      return false;
+
     default:
       break;
     }

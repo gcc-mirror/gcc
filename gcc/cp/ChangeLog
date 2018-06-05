@@ -8,6 +8,11 @@
 	variable for its result.  Fix a condition.
 	(build_new): Use fold_non_dependent_expr.  Tweak a condition.
 
+	2018-06-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85976
+	* tree.c (cp_tree_equal): Handle USING_DECL.
+
 2018-06-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85731 - wrong error with qualified-id in template.
