@@ -7431,10 +7431,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    case OMP_CLAUSE_DEFAULT_UNSPECIFIED:
 	      break;
 	    case OMP_CLAUSE_DEFAULT_SHARED:
-	      /* const vars may be specified in firstprivate clause.  */
-	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+	      if (VAR_P (t)
+		  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+		  && TREE_STATIC (t)
 		  && cxx_omp_const_qual_no_mutable (t))
-		break;
+		{
+		  tree ctx = CP_DECL_CONTEXT (t);
+		  /* const qualified static data members without mutable
+		     member may be specified in firstprivate clause.  */
+		  if (TYPE_P (ctx) && MAYBE_CLASS_TYPE_P (ctx))
+		    break;
+		}
 	      share_name = "shared";
 	      break;
 	    case OMP_CLAUSE_DEFAULT_PRIVATE:
@@ -7449,6 +7456,16 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"%qE is predetermined %qs for %qs",
 			omp_clause_printable_decl (t), share_name,
 			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_SHARED
+		   && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FIRSTPRIVATE
+		   && cxx_omp_const_qual_no_mutable (t))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<const%> qualified %qE without %<mutable%> member "
+			"may appear only in %<shared%> or %<firstprivate%> "
+			"clauses", omp_clause_printable_decl (t));
 	      remove = true;
 	    }
 	}

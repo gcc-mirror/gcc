@@ -1969,10 +1969,10 @@ cxx_omp_predetermined_sharing_1 (tree decl)
 	return OMP_CLAUSE_DEFAULT_SHARED;
     }
 
-  /* Const qualified vars having no mutable member are predetermined
-     shared.  */
-  if (cxx_omp_const_qual_no_mutable (decl))
-    return OMP_CLAUSE_DEFAULT_SHARED;
+  /* this may not be specified in data-sharing clauses, still we need
+     to predetermined it firstprivate.  */
+  if (decl == current_class_ptr)
+    return OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }

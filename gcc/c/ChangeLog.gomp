@@ -1,3 +1,10 @@
+2018-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Remove no longer needed special
+	case that predetermined const qualified vars may be specified in
+	firstprivate clause.  Complain if const qualified vars are mentioned
+	in data-sharing clauses other than firstprivate or shared.
+
 2018-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (c_finish_omp_clauses): Use error_at with

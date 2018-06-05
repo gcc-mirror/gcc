@@ -1,3 +1,19 @@
+2018-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/appendix-a/a.24.1.c: Update from OpenMP examples.  Add
+	shared(c) clause.
+	* gcc.dg/gomp/clause-1.c: Adjust expected diagnostics for const
+	qualified vars without mutable member no longer being predeterined
+	shared.
+	* gcc.dg/gomp/sharing-1.c: Likewise.
+	* g++.dg/gomp/clause-3.C: Likewise.
+	* g++.dg/gomp/member-2.C: Likewise.
+	* g++.dg/gomp/predetermined-1.C: Likewise.
+	* g++.dg/gomp/private-1.C: Likewise.
+	* g++.dg/gomp/sharing-1.C: Likewise.
+	* g++.dg/gomp/sharing-2.C: Likewise.  Add a few tests with aggregate
+	const static data member without mutable elements.
+
 2018-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/simd-1.c: New test.

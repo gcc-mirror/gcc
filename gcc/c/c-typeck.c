@@ -14027,10 +14027,6 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		case OMP_CLAUSE_DEFAULT_UNSPECIFIED:
 		  break;
 		case OMP_CLAUSE_DEFAULT_SHARED:
-		  /* const vars may be specified in firstprivate clause.  */
-		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
-		      && TREE_READONLY (t))
-		    break;
 		  share_name = "shared";
 		  break;
 		case OMP_CLAUSE_DEFAULT_PRIVATE:
@@ -14045,6 +14041,15 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			    "%qE is predetermined %qs for %qs",
 			    t, share_name,
 			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		}
+	      else if (TREE_READONLY (t)
+		       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_SHARED
+		       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FIRSTPRIVATE)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<const%> qualified %qE may appear only in "
+			    "%<shared%> or %<firstprivate%> clauses", t);
 		  remove = true;
 		}
 	    }

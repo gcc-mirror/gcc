@@ -1,3 +1,14 @@
+2018-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cxx_omp_predetermined_sharing_1): Don't return
+	OMP_CLAUSE_DEFAULT_SHARED for const qualified decls with no mutable
+	member.  Return OMP_CLAUSE_DEFAULT_FIRSTPRIVATE for this pointer.
+	* semantics.c (finish_omp_clauses): Only handle static data members
+	in the special case that const qualified vars may be specified in
+	firstprivate clause.  Complain if const qualified vars without mutable
+	members are mentioned in data-sharing clauses other than firstprivate
+	or shared.
+
 2018-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.c (finish_omp_reduction_clause): Use error_at with

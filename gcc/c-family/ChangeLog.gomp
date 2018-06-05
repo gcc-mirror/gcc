@@ -1,3 +1,8 @@
+2018-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_predetermined_sharing): Don't return
+	OMP_CLAUSE_DEFAULT_SHARED for const qualified decls.
+
 2018-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (c_finish_omp_atomic): Replace bool seq_cst argument with

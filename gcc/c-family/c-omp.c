@@ -1753,11 +1753,6 @@ c_omp_declare_simd_clauses_to_decls (tree fndecl, tree clauses)
 enum omp_clause_default_kind
 c_omp_predetermined_sharing (tree decl)
 {
-  /* Variables with const-qualified type having no mutable member
-     are predetermined shared.  */
-  if (TREE_READONLY (decl))
-    return OMP_CLAUSE_DEFAULT_SHARED;
-
   /* Predetermine artificial variables holding integral values, those
      are usually result of gimplify_one_sizepos or SAVE_EXPR
      gimplification.  */
