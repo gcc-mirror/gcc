@@ -1,3 +1,9 @@
+2018-06-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/47618
+	* doc/invoke.texi: Document how -fprofile-dir format
+        is extended.
+
 2018-06-05  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfgcleanup.c (cleanup_control_flow_pre): For edge

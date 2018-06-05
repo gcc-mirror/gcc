@@ -11343,6 +11343,20 @@ and its related options.  Both absolute and relative paths can be used.
 By default, GCC uses the current directory as @var{path}, thus the
 profile data file appears in the same directory as the object file.
 
+When an executable is run in a massive parallel environment, it is recommended
+to save profile to different folders.  That can be done with variables
+in @var{path} that are exported during run-time:
+
+@table @gcctabopt
+
+@item %p
+process ID.
+
+@item %q@{VAR@}
+value of environment variable @var{VAR}
+
+@end table
+
 @item -fprofile-generate
 @itemx -fprofile-generate=@var{path}
 @opindex fprofile-generate
