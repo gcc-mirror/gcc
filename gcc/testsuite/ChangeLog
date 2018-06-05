@@ -1,3 +1,7 @@
+2018-06-05  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/htm-builtins-compile-4.c: New test.
+
 2018-06-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/store_merging_21.c: New test.
