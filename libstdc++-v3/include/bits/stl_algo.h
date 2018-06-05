@@ -1621,7 +1621,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename iterator_traits<_ForwardIterator>::difference_type
 	_DistanceType;
 
-      _Temporary_buffer<_ForwardIterator, _ValueType> __buf(__first, __last);
+      _Temporary_buffer<_ForwardIterator, _ValueType>
+	__buf(__first, std::distance(__first, __last));
       return
 	std::__stable_partition_adaptive(__first, __last, __pred,
 					 _DistanceType(__buf.requested_size()),
@@ -2540,7 +2541,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _DistanceType __len2 = std::distance(__middle, __last);
 
       typedef _Temporary_buffer<_BidirectionalIterator, _ValueType> _TmpBuf;
-      _TmpBuf __buf(__first, __last);
+      _TmpBuf __buf(__first, __len1 + __len2);
 
       if (__buf.begin() == 0)
 	std::__merge_without_buffer
@@ -4998,7 +4999,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	_DistanceType;
 
       typedef _Temporary_buffer<_RandomAccessIterator, _ValueType> _TmpBuf;
-      _TmpBuf __buf(__first, __last);
+      _TmpBuf __buf(__first, std::distance(__first, __last));
 
       if (__buf.begin() == 0)
 	std::__inplace_stable_sort(__first, __last, __comp);

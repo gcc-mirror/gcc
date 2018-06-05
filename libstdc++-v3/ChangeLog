@@ -1,3 +1,13 @@
+2018-06-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tempbuf.h
+	(_Temporary_buffer(_FwdIte, _FwdIte)): Delete, replaced by...
+	(_Temporary_buffer(_FwdIte, size_type)): ...this, new.
+	* include/ext/memory (temporary_buffer<>(_FwdIte, _FwdIte)): Adapt.
+	* include/bits/stl_algo.h (__stable_partition): Adapt.
+	(__inplace_merge): Adapt.
+	(__stable_sort): Adapt.
+
 2018-06-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85930
