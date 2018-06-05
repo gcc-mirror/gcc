@@ -1,3 +1,13 @@
+2018-06-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (simple_return_indirect_internal): New expander.
+	(*simple_return_indirect_internal<mode>): Rename from
+	simple_return_indirect_internal.  Use W mode iterator.
+	(rstorssp): New expander.
+	(*rstorssp<mode>): Rename from rstorssp.  Use P mode iterator.
+	(clrssbsy): New expander.
+	(*clrssbsy<mode>): Rename from clrssbsy.  Use P mode iterator.
+
 2018-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/arm_cmse.h (cmse_nsfptr_create): Change typeof to
