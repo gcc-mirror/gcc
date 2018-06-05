@@ -5994,6 +5994,12 @@ gfc_resolve_oacc_declare (gfc_namespace *ns)
 	for (n = oc->clauses->lists[list]; n; n = n->next)
 	  {
 	    n->sym->mark = 0;
+	    if (n->sym->attr.function || n->sym->attr.subroutine)
+	      {
+		gfc_error ("Object %qs is not a variable at %L",
+			   n->sym->name, &oc->loc);
+		continue;
+	      }
 	    if (n->sym->attr.flavor == FL_PARAMETER)
 	      {
 		gfc_error ("PARAMETER object %qs is not allowed at %L",
