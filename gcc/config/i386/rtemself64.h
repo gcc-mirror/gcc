@@ -34,6 +34,10 @@
     }						\
   while (0)
 
+#undef LINK_SPEC
+#define LINK_SPEC \
+  "%{shared:-shared}"
+
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "\
 %{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s \
