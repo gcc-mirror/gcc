@@ -1,3 +1,12 @@
+2018-06-05  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2018-06-05  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-builtin-types.def: Add void function type.
+	* config/s390/s390-builtins.def: Use the function type for the
+	tbeginc builtin.
+
 2018-06-04  Martin Sebor  <msebor@redhat.com>
 
 	PR c/85623
