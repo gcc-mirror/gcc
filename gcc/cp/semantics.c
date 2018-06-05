@@ -2098,6 +2098,8 @@ finish_qualified_id_expr (tree qualifying_class,
 	 non-type template argument handling.  */
       if (processing_template_decl
 	  && (!currently_open_class (qualifying_class)
+	      || TREE_CODE (expr) == IDENTIFIER_NODE
+	      || TREE_CODE (expr) == TEMPLATE_ID_EXPR
 	      || TREE_CODE (expr) == BIT_NOT_EXPR))
 	expr = build_qualified_name (TREE_TYPE (expr),
 				     qualifying_class, expr,
