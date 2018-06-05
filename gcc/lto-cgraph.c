@@ -1657,7 +1657,7 @@ input_refs (struct lto_input_block *ib,
 }
 	    
 
-static struct gcov_ctr_summary lto_gcov_summary;
+static gcov_summary lto_gcov_summary;
 
 /* Input profile_info from IB.  */
 static void
@@ -1715,7 +1715,7 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
   struct cgraph_node *node;
   struct cgraph_edge *edge;
   gcov_type saved_sum_all = 0;
-  gcov_ctr_summary *saved_profile_info = 0;
+  gcov_summary *saved_profile_info = 0;
   int saved_scale = 0;
 
   /* Find unit with maximal number of runs.  If we ever get serious about
