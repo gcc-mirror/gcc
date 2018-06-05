@@ -1801,7 +1801,7 @@ read_count_file (void)
 	{
 	  struct gcov_summary summary;
 	  gcov_read_summary (&summary);
-	  object_runs += summary.ctrs[GCOV_COUNTER_ARCS].runs;
+	  object_runs += summary.runs;
 	  program_count++;
 	}
       else if (tag == GCOV_TAG_FUNCTION && !length)

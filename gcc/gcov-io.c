@@ -446,8 +446,7 @@ gcov_write_tag_length (gcov_unsigned_t tag, gcov_unsigned_t length)
 GCOV_LINKAGE void
 gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
 {
-  unsigned ix, h_ix, bv_ix, h_cnt = 0;
-  const struct gcov_ctr_summary *csum;
+  unsigned h_ix, bv_ix, h_cnt = 0;
   unsigned histo_bitvector[GCOV_HISTOGRAM_BITVECTOR_SIZE];
 
   /* Count number of non-zero histogram entries, and fill in a bit vector
@@ -455,38 +454,29 @@ gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
      counters.  */
   for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
     histo_bitvector[bv_ix] = 0;
-  csum = &summary->ctrs[GCOV_COUNTER_ARCS];
   for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-    if (csum->histogram[h_ix].num_counters)
+    if (summary->histogram[h_ix].num_counters)
       {
 	histo_bitvector[h_ix / 32] |= 1 << (h_ix % 32);
 	h_cnt++;
       }
   gcov_write_tag_length (tag, GCOV_TAG_SUMMARY_LENGTH (h_cnt));
   gcov_write_unsigned (summary->checksum);
-  for (csum = summary->ctrs, ix = GCOV_COUNTERS_SUMMABLE; ix--; csum++)
+
+  gcov_write_unsigned (summary->num);
+  gcov_write_unsigned (summary->runs);
+  gcov_write_counter (summary->sum_all);
+  gcov_write_counter (summary->run_max);
+  gcov_write_counter (summary->sum_max);
+  for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
+    gcov_write_unsigned (histo_bitvector[bv_ix]);
+  for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
     {
-      gcov_write_unsigned (csum->num);
-      gcov_write_unsigned (csum->runs);
-      gcov_write_counter (csum->sum_all);
-      gcov_write_counter (csum->run_max);
-      gcov_write_counter (csum->sum_max);
-      if (ix != GCOV_COUNTER_ARCS)
-        {
-          for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
-            gcov_write_unsigned (0);
-          continue;
-        }
-      for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
-        gcov_write_unsigned (histo_bitvector[bv_ix]);
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        {
-          if (!csum->histogram[h_ix].num_counters)
-            continue;
-          gcov_write_unsigned (csum->histogram[h_ix].num_counters);
-          gcov_write_counter (csum->histogram[h_ix].min_value);
-          gcov_write_counter (csum->histogram[h_ix].cum_value);
-        }
+      if (!summary->histogram[h_ix].num_counters)
+	continue;
+      gcov_write_unsigned (summary->histogram[h_ix].num_counters);
+      gcov_write_counter (summary->histogram[h_ix].min_value);
+      gcov_write_counter (summary->histogram[h_ix].cum_value);
     }
 }
 #endif /* IN_LIBGCOV */
@@ -598,68 +588,64 @@ gcov_read_string (void)
 GCOV_LINKAGE void
 gcov_read_summary (struct gcov_summary *summary)
 {
-  unsigned ix, h_ix, bv_ix, h_cnt = 0;
-  struct gcov_ctr_summary *csum;
+  unsigned h_ix, bv_ix, h_cnt = 0;
   unsigned histo_bitvector[GCOV_HISTOGRAM_BITVECTOR_SIZE];
   unsigned cur_bitvector;
 
   summary->checksum = gcov_read_unsigned ();
-  for (csum = summary->ctrs, ix = GCOV_COUNTERS_SUMMABLE; ix--; csum++)
+  summary->num = gcov_read_unsigned ();
+  summary->runs = gcov_read_unsigned ();
+  summary->sum_all = gcov_read_counter ();
+  summary->run_max = gcov_read_counter ();
+  summary->sum_max = gcov_read_counter ();
+  memset (summary->histogram, 0,
+	  sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+  for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
     {
-      csum->num = gcov_read_unsigned ();
-      csum->runs = gcov_read_unsigned ();
-      csum->sum_all = gcov_read_counter ();
-      csum->run_max = gcov_read_counter ();
-      csum->sum_max = gcov_read_counter ();
-      memset (csum->histogram, 0,
-              sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
-      for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
-        {
-          histo_bitvector[bv_ix] = gcov_read_unsigned ();
+      histo_bitvector[bv_ix] = gcov_read_unsigned ();
 #if IN_LIBGCOV
-          /* When building libgcov we don't include system.h, which includes
-             hwint.h (where popcount_hwi is declared). However, libgcov.a
-             is built by the bootstrapped compiler and therefore the builtins
-             are always available.  */
-          h_cnt += __builtin_popcount (histo_bitvector[bv_ix]);
+      /* When building libgcov we don't include system.h, which includes
+	 hwint.h (where popcount_hwi is declared). However, libgcov.a
+	 is built by the bootstrapped compiler and therefore the builtins
+	 are always available.  */
+      h_cnt += __builtin_popcount (histo_bitvector[bv_ix]);
 #else
-          h_cnt += popcount_hwi (histo_bitvector[bv_ix]);
+      h_cnt += popcount_hwi (histo_bitvector[bv_ix]);
 #endif
-        }
-      bv_ix = 0;
-      h_ix = 0;
-      cur_bitvector = 0;
-      while (h_cnt--)
-        {
-          /* Find the index corresponding to the next entry we will read in.
-             First find the next non-zero bitvector and re-initialize
-             the histogram index accordingly, then right shift and increment
-             the index until we find a set bit.  */
-          while (!cur_bitvector)
-            {
-              h_ix = bv_ix * 32;
-              if (bv_ix >= GCOV_HISTOGRAM_BITVECTOR_SIZE)
-                gcov_error ("corrupted profile info: summary histogram "
-                            "bitvector is corrupt");
-              cur_bitvector = histo_bitvector[bv_ix++];
-            }
-          while (!(cur_bitvector & 0x1))
-            {
-              h_ix++;
-              cur_bitvector >>= 1;
-            }
-          if (h_ix >= GCOV_HISTOGRAM_SIZE)
-            gcov_error ("corrupted profile info: summary histogram "
-                        "index is corrupt");
+    }
+  bv_ix = 0;
+  h_ix = 0;
+  cur_bitvector = 0;
+  while (h_cnt--)
+    {
+      /* Find the index corresponding to the next entry we will read in.
+	 First find the next non-zero bitvector and re-initialize
+	 the histogram index accordingly, then right shift and increment
+	 the index until we find a set bit.  */
+      while (!cur_bitvector)
+	{
+	  h_ix = bv_ix * 32;
+	  if (bv_ix >= GCOV_HISTOGRAM_BITVECTOR_SIZE)
+	    gcov_error ("corrupted profile info: summary histogram "
+			"bitvector is corrupt");
+	  cur_bitvector = histo_bitvector[bv_ix++];
+	}
+      while (!(cur_bitvector & 0x1))
+	{
+	  h_ix++;
+	  cur_bitvector >>= 1;
+	}
+      if (h_ix >= GCOV_HISTOGRAM_SIZE)
+	gcov_error ("corrupted profile info: summary histogram "
+		    "index is corrupt");
 
-          csum->histogram[h_ix].num_counters = gcov_read_unsigned ();
-          csum->histogram[h_ix].min_value = gcov_read_counter ();
-          csum->histogram[h_ix].cum_value = gcov_read_counter ();
-          /* Shift off the index we are done with and increment to the
-             corresponding next histogram entry.  */
-          cur_bitvector >>= 1;
-          h_ix++;
-        }
+      summary->histogram[h_ix].num_counters = gcov_read_unsigned ();
+      summary->histogram[h_ix].min_value = gcov_read_counter ();
+      summary->histogram[h_ix].cum_value = gcov_read_counter ();
+      /* Shift off the index we are done with and increment to the
+	 corresponding next histogram entry.  */
+      cur_bitvector >>= 1;
+      h_ix++;
     }
 }
 
@@ -921,7 +907,7 @@ static void gcov_histogram_merge (gcov_bucket_type *tgt_histo,
    the minimum counter value in that working set.  */
 
 GCOV_LINKAGE void
-compute_working_sets (const struct gcov_ctr_summary *summary,
+compute_working_sets (const gcov_summary *summary,
                       gcov_working_set_t *gcov_working_sets)
 {
   gcov_type working_set_cum_values[NUM_GCOV_WORKING_SETS];

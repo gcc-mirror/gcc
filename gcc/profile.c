@@ -84,7 +84,7 @@ struct bb_profile_info {
 
 /* Counter summary from the last set of coverage counts read.  */
 
-const struct gcov_ctr_summary *profile_info;
+const gcov_summary *profile_info;
 
 /* Counter working set information computed from the current counter
    summary. Not initialized unless profile_info summary is non-NULL.  */

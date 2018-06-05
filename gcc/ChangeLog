@@ -1,5 +1,37 @@
 2018-06-05  Martin Liska  <mliska@suse.cz>
 
+	* auto-profile.c (read_autofdo_file): Do not use
+	gcov_ctr_summary struct.
+	(afdo_callsite_hot_enough_for_early_inline): Likewise.
+	* coverage.c (struct counts_entry): Likewise.
+	(read_counts_file): Read just single summary entry.
+	(get_coverage_counts): Use gcov_summary struct.
+	* coverage.h (get_coverage_counts): Likewise.
+	* gcov-dump.c (dump_working_sets): Likewise.
+	(tag_summary): Dump just single summary.
+	* gcov-io.c (gcov_write_summary): Write just histogram
+	summary.
+	(gcov_read_summary): Read just single summary.
+	(compute_working_sets): Use gcov_summary struct.
+	* gcov-io.h (GCOV_TAG_SUMMARY_LENGTH): Remove usage
+	of GCOV_COUNTERS_SUMMABLE.
+	(GCOV_COUNTERS_SUMMABLE): Remove.
+	(GCOV_FIRST_VALUE_COUNTER): Replace with
+	GCOV_COUNTER_V_INTERVAL.
+	(struct gcov_ctr_summary): Remove.
+	(struct gcov_summary): Directly use fields of former
+	gcov_ctr_summary.
+	(compute_working_sets): Use gcov_summary struct.
+	* gcov.c (read_count_file): Do not use ctrs fields.
+	* lto-cgraph.c (merge_profile_summaries): Use gcov_summary
+	struct.
+	* lto-streamer.h (struct GTY): Make profile_info gcov_summary
+	struct.
+	* profile.c: Likewise.
+	* profile.h: Likewise.
+
+2018-06-05  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/84846
 	* gcov.c (output_lines): Print working directory only
 	in intermediate format.

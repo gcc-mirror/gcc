@@ -1,3 +1,16 @@
+2018-06-05  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (gcov_compute_histogram): Remove usage
+	of gcov_ctr_summary.
+	(compute_summary): Do it just for a single summary.
+	(merge_one_data): Likewise.
+	(merge_summary): Simplify as we read just single summary.
+	(dump_one_gcov): Pass proper argument.
+	* libgcov-util.c (compute_one_gcov): Simplify as we have just
+	single summary.
+	(gcov_info_count_all_cold): Likewise.
+	(calculate_overlap): Likewise.
+
 2018-06-02  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Monk Chiang  <sh.chiang04@gmail.com>
 
