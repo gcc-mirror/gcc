@@ -613,7 +613,7 @@ x86_64-*-elf* | x86_64-*-rtems*)
 	tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
 	case ${host} in
 	  x86_64-*-rtems*)
-	    extra_parts="$extra_parts crti.o crtn.o"
+	    extra_parts="$extra_parts crti.o crtn.o crtbeginS.o crtendS.o"
 	    ;;
 	esac
 	;;

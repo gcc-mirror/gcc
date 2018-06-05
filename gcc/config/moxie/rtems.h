@@ -38,3 +38,7 @@
 #undef PTRDIFF_TYPE
 #undef WCHAR_TYPE
 #undef WCHAR_TYPE_SIZE
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+%{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s crtbegin.o%s}"

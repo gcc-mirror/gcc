@@ -34,3 +34,7 @@
     } while (0)
 
 #define ARM_DEFAULT_SHORT_ENUMS false
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+%{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s crtbegin.o%s}"

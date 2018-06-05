@@ -36,3 +36,7 @@
 	builtin_assert ("system=rtems");	\
     }						\
   while (0)
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+%{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s crtbegin.o%s}"

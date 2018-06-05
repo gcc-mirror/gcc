@@ -37,3 +37,7 @@ do {                                    \
 
    This is done so RTEMS targets have Thread Local Storage like Linux.  */
 #define TARGET_LINUX_ABI 1
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+%{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s crtbegin.o%s}"

@@ -30,11 +30,15 @@
  * Dummy start/end specification to let linker work as
  * needed by autoconf scripts using this compiler.
  */
+#if 0
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "crt0.o%s"
+#define STARTFILE_SPEC "%{!qrtems: crt0.o%s}"
+#endif
 
+#if 0
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC   ""
+#endif
 
 /*
  * Some targets do not set up LIB_SPECS, override it, here.

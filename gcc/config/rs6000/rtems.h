@@ -72,6 +72,11 @@
     }							\
   while (0)
 
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+%{!nostdlib: %{!qrtems: crt0.o%s} ecrti.o%s crtbegin.o%s}"
+
 /* Copy and paste from linux64.h and freebsd64.h */
 #undef RELOCATABLE_NEEDS_FIXUP
 #define RELOCATABLE_NEEDS_FIXUP \

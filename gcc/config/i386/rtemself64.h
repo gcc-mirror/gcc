@@ -1,5 +1,6 @@
-/* Definitions for rtems targeting a v850 using ELF.
-   Copyright (C) 2012-2018 Free Software Foundation, Inc.
+/* Definitions for rtems targeting an x86_64 using ELF.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
+   Contributed by Joel Sherrill (joel@OARcorp.com).
 
    This file is part of GCC.
 
@@ -27,19 +28,26 @@
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-      builtin_define( "__rtems__" );		\
-      builtin_assert( "system=rtems" );		\
+	builtin_define ("__rtems__");		\
+	builtin_define ("__USE_INIT_FINI__");	\
+	builtin_assert ("system=rtems");	\
     }						\
   while (0)
 
-/* Map mv850e1 and mv850es to mv850e to match MULTILIB_MATCHES */
-#undef  ASM_SPEC
-#define ASM_SPEC "%{mv850es:-mv850e} \
-%{mv850e1:-mv850e} \
-%{!mv850es:%{!mv850e1:%{mv*:-mv%*}} \
-%{m8byte-align:-m8byte-align} \
-%{mgcc-abi:-mgcc-abi}}"
+#undef LINK_SPEC
+#define LINK_SPEC \
+  "%{shared:-shared}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "\
-%{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s crtbegin.o%s}"
+%{!nostdlib: %{!qrtems: crt0.o%s} crti.o%s \
+  %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+
+/* Use -fPIC by default unless specified otherwise */
+#undef CC1_SPEC
+#define CC1_SPEC \
+  "%{!fno-pic:%{!fno-PIC:%{!fpic:%{!fPIC: -fPIC}}}}"
