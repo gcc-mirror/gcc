@@ -42,3 +42,8 @@
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+
+/* Use -fPIC by default unless specified otherwise */
+#undef CC1_SPEC
+#define CC1_SPEC \
+  "%{!fno-pic:%{!fno-PIC:%{!fpic:%{!fPIC: -fPIC}}}}"
