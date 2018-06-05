@@ -1,5 +1,16 @@
 2018-06-05  Richard Biener  <rguenther@suse.de>
 
+	* tree-cfgcleanup.c (cleanup_control_flow_pre): For edge
+	removal pretend DOM info isn't available so we do not update
+	it and only remove edges, not dominated blocks.  Actually free
+	DOM info in case we removed something.  Remove unreachable blocks.
+	(mfb_keep_latches): Work with either DOM info or marked backedges.
+	(cleanup_tree_cfg_noloop): Do not remove unreachable blocks
+	first.  Mark backedges if DOM info isn't available.
+	(Re-)compute DOM info after cleanup_control_flow_pre.
+
+2018-06-05  Richard Biener  <rguenther@suse.de>
+
 	* tree-cfg.c (struct locus_discrim_map): Store line, not location.
 	(locus_discrim_hasher::hash): Adjust.
 	(locus_discrim_hasher::equal): Likewise.
