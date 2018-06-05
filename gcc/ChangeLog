@@ -1,3 +1,9 @@
+2018-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86047
+	* tree-ssa-loop.c (for_each_index): Glob handling of all
+	decls and constants and really handle all of them.
+
 2018-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/81497
