@@ -1707,23 +1707,19 @@ cmp_type_location (const void *p1_, const void *p2_)
 
   tree tname1 = TYPE_NAME (*p1);
   tree tname2 = TYPE_NAME (*p2);
+  expanded_location xloc1 = expand_location (DECL_SOURCE_LOCATION (tname1));
+  expanded_location xloc2 = expand_location (DECL_SOURCE_LOCATION (tname2));
 
-  const char *f1 = DECL_SOURCE_FILE (tname1);
-  const char *f2 = DECL_SOURCE_FILE (tname2);
-
+  const char *f1 = lbasename (xloc1.file);
+  const char *f2 = lbasename (xloc2.file);
   int r = strcmp (f1, f2);
   if (r == 0)
     {
-      int l1 = DECL_SOURCE_LINE (tname1);
-      int l2 = DECL_SOURCE_LINE (tname2);
-      if (l1 == l2)
-       {
-	 int l1 = DECL_SOURCE_COLUMN (tname1);
-	 int l2 = DECL_SOURCE_COLUMN (tname2);
-	 return l1 - l2;
-       }
-      else
-       return l1 - l2;
+      int l1 = xloc1.line;
+      int l2 = xloc2.line;
+      if (l1 != l2)
+	return l1 - l2;
+      return xloc1.column - xloc2.column;
     }
   else
     return r;

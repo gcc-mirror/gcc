@@ -1,3 +1,7 @@
+2018-06-05  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (cmp_type_location): Expand locations only once.
+
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lang.opt (lto_linker_output): Add nolto-rel.
