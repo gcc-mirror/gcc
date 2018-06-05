@@ -16662,25 +16662,25 @@ vector unsigned char vec_ldl (int, const unsigned char *);
 
 vector float vec_loge (vector float);
 
-vector unsigned char vec_lvsl (int, const volatile unsigned char *);
-vector unsigned char vec_lvsl (int, const volatile signed char *);
-vector unsigned char vec_lvsl (int, const volatile unsigned short *);
-vector unsigned char vec_lvsl (int, const volatile short *);
-vector unsigned char vec_lvsl (int, const volatile unsigned int *);
-vector unsigned char vec_lvsl (int, const volatile int *);
-vector unsigned char vec_lvsl (int, const volatile unsigned long *);
-vector unsigned char vec_lvsl (int, const volatile long *);
-vector unsigned char vec_lvsl (int, const volatile float *);
+vector unsigned char vec_lvsl (int, const unsigned char *);
+vector unsigned char vec_lvsl (int, const signed char *);
+vector unsigned char vec_lvsl (int, const unsigned short *);
+vector unsigned char vec_lvsl (int, const short *);
+vector unsigned char vec_lvsl (int, const unsigned int *);
+vector unsigned char vec_lvsl (int, const int *);
+vector unsigned char vec_lvsl (int, const unsigned long *);
+vector unsigned char vec_lvsl (int, const long *);
+vector unsigned char vec_lvsl (int, const float *);
 
-vector unsigned char vec_lvsr (int, const volatile unsigned char *);
-vector unsigned char vec_lvsr (int, const volatile signed char *);
-vector unsigned char vec_lvsr (int, const volatile unsigned short *);
-vector unsigned char vec_lvsr (int, const volatile short *);
-vector unsigned char vec_lvsr (int, const volatile unsigned int *);
-vector unsigned char vec_lvsr (int, const volatile int *);
-vector unsigned char vec_lvsr (int, const volatile unsigned long *);
-vector unsigned char vec_lvsr (int, const volatile long *);
-vector unsigned char vec_lvsr (int, const volatile float *);
+vector unsigned char vec_lvsr (int, const unsigned char *);
+vector unsigned char vec_lvsr (int, const signed char *);
+vector unsigned char vec_lvsr (int, const unsigned short *);
+vector unsigned char vec_lvsr (int, const short *);
+vector unsigned char vec_lvsr (int, const unsigned int *);
+vector unsigned char vec_lvsr (int, const int *);
+vector unsigned char vec_lvsr (int, const unsigned long *);
+vector unsigned char vec_lvsr (int, const long *);
+vector unsigned char vec_lvsr (int, const float *);
 
 vector float vec_madd (vector float, vector float, vector float);
 
@@ -18210,8 +18210,8 @@ vector double vec_ld (int, const vector double *);
 vector double vec_ld (int, const double *);
 vector double vec_ldl (int, const vector double *);
 vector double vec_ldl (int, const double *);
-vector unsigned char vec_lvsl (int, const volatile double *);
-vector unsigned char vec_lvsr (int, const volatile double *);
+vector unsigned char vec_lvsl (int, const double *);
+vector unsigned char vec_lvsr (int, const double *);
 vector double vec_madd (vector double, vector double, vector double);
 vector double vec_max (vector double, vector double);
 vector signed long vec_mergeh (vector signed long, vector signed long);

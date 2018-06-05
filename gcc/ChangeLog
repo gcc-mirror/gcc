@@ -1,3 +1,8 @@
+2018-06-05  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Remove
+	volatile qualifier from vec_lvsl and vec_lvsr argument prototypes.
+
 2018-06-05  Steve Ellcey  <sellcey@cavium.com>
 
 	PR target/79924
