@@ -1,3 +1,18 @@
+2018-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86008
+	* include/bits/quoted_string.h (_Quoted_string<basic_string_view, C>):
+	Define new partial specialization.
+	* include/std/iomanip (quoted(basic_string_view<C,T>, C, C)): Define
+	new overload.
+	(operator<<(basic_ostream<C,T>&, const _Quoted_string<S,C>&)): Use
+	value not reference for iteration.
+	* testsuite/27_io/manipulators/standard/char/quoted.cc: Adjust
+	comment.
+	* testsuite/27_io/manipulators/standard/char/quoted_sv.cc: New test.
+	* testsuite/27_io/manipulators/standard/wchar_t/quoted.cc: Adjust
+	comment.
+
 2018-06-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits: Fix comment typos.
