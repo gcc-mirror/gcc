@@ -1,3 +1,12 @@
+2018-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc/config/msp430/msp430.c (msp430_attr): Allow interrupt handlers
+	to be static and remove check on interrupt attribute name.
+
+	gcc/testsuite/gcc.target/msp430/
+	* function-attributes-4.c: New test.
+	* static-interrupts.c: New test.
+
 2018-06-05  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Remove
