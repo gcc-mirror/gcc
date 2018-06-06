@@ -200,6 +200,17 @@ int dot_symbols;
    of this machine mode.  */
 scalar_int_mode rs6000_pmode;
 
+/* Note whether IEEE 128-bit floating point was passed or returned, either as
+   the __float128/_Float128 explicit type, or when long double is IEEE 128-bit
+   floating point.  We changed the default C++ mangling for these types and we
+   may want to generate a weak alias of the old mangling (U10__float128) to the
+   new mangling (u9__ieee128).  */
+static bool rs6000_passes_ieee128;
+
+/* Generate the manged name (i.e. U10__float128) used in GCC 8.1, and not the
+   name used in current releases (i.e. u9__ieee128).  */
+static bool ieee128_mangling_gcc_8_1;
+
 /* Width in bits of a pointer.  */
 unsigned rs6000_pointer_size;
 
@@ -1973,6 +1984,11 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET rs6000_starting_frame_offset
+
+#if TARGET_ELF && RS6000_WEAK
+#undef TARGET_ASM_GLOBALIZE_DECL_NAME
+#define TARGET_ASM_GLOBALIZE_DECL_NAME rs6000_globalize_decl_name
+#endif
 
 
 /* Processor table.  */
@@ -11108,6 +11124,12 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 			  && (TYPE_MAIN_VARIANT (return_type)
 			      == long_double_type_node))))
 		rs6000_passes_long_double = true;
+
+	      /* Note if we passed or return a IEEE 128-bit type.  We changed
+		 the mangling for these types, and we may need to make an alias
+		 with the old mangling.  */
+	      if (FLOAT128_IEEE_P (return_mode))
+		rs6000_passes_ieee128 = true;
 	    }
 	  if (ALTIVEC_OR_VSX_VECTOR_MODE (return_mode))
 	    rs6000_passes_vector = true;
@@ -11559,6 +11581,12 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 		  || (type != NULL
 		      && TYPE_MAIN_VARIANT (type) == long_double_type_node)))
 	    rs6000_passes_long_double = true;
+
+	  /* Note if we passed or return a IEEE 128-bit type.  We changed the
+	     mangling for these types, and we may need to make an alias with
+	     the old mangling.  */
+	  if (FLOAT128_IEEE_P (mode))
+	    rs6000_passes_ieee128 = true;
 	}
       if (named && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
 	rs6000_passes_vector = true;
@@ -16355,14 +16383,21 @@ rs6000_init_builtins (void)
      __ieee128.  */
   if (TARGET_FLOAT128_TYPE)
     {
-      ibm128_float_type_node = make_node (REAL_TYPE);
-      TYPE_PRECISION (ibm128_float_type_node) = 128;
-      SET_TYPE_MODE (ibm128_float_type_node, IFmode);
-      layout_type (ibm128_float_type_node);
+      if (TARGET_IEEEQUAD || !TARGET_LONG_DOUBLE_128)
+	{
+	  ibm128_float_type_node = make_node (REAL_TYPE);
+	  TYPE_PRECISION (ibm128_float_type_node) = 128;
+	  SET_TYPE_MODE (ibm128_float_type_node, IFmode);
+	  layout_type (ibm128_float_type_node);
+	}
+      else
+	ibm128_float_type_node = long_double_type_node;
+
       lang_hooks.types.register_builtin_type (ibm128_float_type_node,
 					      "__ibm128");
 
-      ieee128_float_type_node = float128_type_node;
+      ieee128_float_type_node
+	= TARGET_IEEEQUAD ? long_double_type_node : float128_type_node;
       lang_hooks.types.register_builtin_type (ieee128_float_type_node,
 					      "__ieee128");
     }
@@ -32117,7 +32152,7 @@ rs6000_mangle_type (const_tree type)
   if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IBM_P (TYPE_MODE (type)))
     return "g";
   if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IEEE_P (TYPE_MODE (type)))
-    return "u9__ieee128";
+    return ieee128_mangling_gcc_8_1 ? "U10__float128" : "u9__ieee128";
 
   /* For all other types, use the default mangling.  */
   return NULL;
@@ -38726,6 +38761,40 @@ rs6000_starting_frame_offset (void)
     return 0;
   return RS6000_STARTING_FRAME_OFFSET;
 }
+
+
+/* Create an alias for a mangled name where we have changed the mangling (in
+   GCC 8.1, we used U10__float128, and now we use u9__ieee128).  This is called
+   via the target hook TARGET_ASM_GLOBALIZE_DECL_NAME.  */
+
+#if TARGET_ELF && RS6000_WEAK
+static void
+rs6000_globalize_decl_name (FILE * stream, tree decl)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+
+  targetm.asm_out.globalize_label (stream, name);
+
+  if (rs6000_passes_ieee128 && name[0] == '_' && name[1] == 'Z')
+    {
+      tree save_asm_name = DECL_ASSEMBLER_NAME (decl);
+      const char *old_name;
+
+      ieee128_mangling_gcc_8_1 = true;
+      lang_hooks.set_decl_assembler_name (decl);
+      old_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      SET_DECL_ASSEMBLER_NAME (decl, save_asm_name);
+      ieee128_mangling_gcc_8_1 = false;
+
+      if (strcmp (name, old_name) != 0)
+	{
+	  fprintf (stream, "\t.weak %s\n", old_name);
+	  fprintf (stream, "\t.set %s,%s\n", old_name, name);
+	}
+    }
+}
+#endif
+
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
