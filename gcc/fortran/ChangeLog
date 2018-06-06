@@ -1,3 +1,10 @@
+2018-06-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85641
+	* frontend-passes.c (is_fe_temp): Add prototype.
+	(realloc_string_callback): Early return for frontend-generated
+	temporary.
+
 2018-06-05  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/85701
