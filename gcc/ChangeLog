@@ -1,3 +1,23 @@
+2018-06-05  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_passes_ieee128): New boolean to
+	track if we pass or return IEEE 128-bit floating point.
+	(ieee128_mangling_gcc_8_1): New boolean to say whether to generate
+	C++ mangling that is compatible with GCC 8.1.
+	(TARGET_ASM_GLOBALIZE_DECL_NAME): Override target hook.
+	(init_cumulative_args): Note if we pass or return IEEE 128-bit
+	floating point types.
+	(rs6000_function_arg_advance_1): Likewise.
+	(rs6000_mangle_type): Optionally generate mangled names that match
+	what GCC 8.1 generated for IEEE 128-bit floating point types.
+	(rs6000_globalize_decl_name): If we have an external function that
+	passes or returns IEEE 128-bit types, generate a weak reference
+	from the mangled name used in GCC 8.1 to the current mangled
+	name.
+	(rs6000_init_builtins): Make __ibm128 use the long double type if
+	long double is IBM extended double.  Make __float128 use the long
+	double type if long double is IEEE 128-bit.
+
 2018-06-06  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.c (enum riscv_privilege_levels): New.

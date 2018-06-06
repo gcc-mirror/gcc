@@ -1,3 +1,9 @@
+2018-06-06  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/85657
+	* g++.dg/pr85657.C: Only test whether __ibm128 and long double can
+	be used in templates.  Don't check for them in overloaded functions.
+
 2018-06-06  Jim Wilson  <jimw@sifive.com>
 
 	* gcc.target/riscv/interrupt-5.c (sub3): Add new test.
