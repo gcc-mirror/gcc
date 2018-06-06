@@ -1,3 +1,10 @@
+2018-06-06  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/85657
+	* gcc.target/powerpc/pr85657-4.c: New tests.
+	* gcc.target/powerpc/pr85657-5.c: Likewise.
+	* gcc.target/powerpc/pr85657-6.c: Likewise.
+
 2018-06-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/85641
