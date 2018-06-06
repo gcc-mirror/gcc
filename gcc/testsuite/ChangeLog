@@ -1,3 +1,10 @@
+2018-06-06  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3.c: Move tests requiring -mvsx
+	to builtins-4.c.
+	* gcc.target/powerpc/builtins-4.c: New test file for tests
+	that need -mvsx.
+
 2018-06-06  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/85657
