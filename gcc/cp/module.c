@@ -6715,11 +6715,11 @@ module_mapper::module_mapper (location_t loc, const char *option)
 
   if (errmsg)
     {
-      error_at (loc, "failed %s of mapper %qs", errmsg, name ? name : option);
       errno = err;
-      inform (loc, err < 0 ? "%s" : err > 0 ? "%m"
-	      : "here's a nickel, kid.  Get yourself a real computer",
-	      hstrerror (-err));
+      error_at (loc, err <= 0 ? "failed %s of mapper %qs: %s"
+		: "failed %s of mapper %qs: %m",
+		errmsg, name ? name : option,
+		err < 0 ? hstrerror (-err) : "Facility not provided");
       kill (loc);
       return;
     }

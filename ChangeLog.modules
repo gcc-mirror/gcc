@@ -1,5 +1,17 @@
 2018-06-06  Nathan Sidwell  <nathan@acm.org>
 
+	Better pex-unix.
+	libiberty/
+	* pex-unix.c (VFORK_STRING): Replace with ...
+	(IS_FAKE_VFORK): ... this.
+	(pex_child_error): Delete, fold into ...
+	(pex_unix_exec_child): ... here.  Inform parent, when really vforking.
+	gcc/cp/
+	* module.c (module_mapper::module_mapper): Merge error message.
+	gcc/testsuite/
+	* g++.dg/modules/bad-mapper-1.C: Adjust.
+	* g++.dg/modules/bad-mapper-{2,3}.C: New.
+
 	gcc/cp/
 	* module.c (module_mapper::module_mapper): Ignore sigpipe.
 	(module_mapper::kill): Restore sigpipe.

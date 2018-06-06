@@ -60,9 +60,9 @@ extern int errno;
 #endif
 
 #ifdef vfork /* Autoconf may define this to fork for us. */
-# define VFORK_STRING "fork"
+# define IS_FAKE_VFORK 1
 #else
-# define VFORK_STRING "vfork"
+# define IS_FAKE_VFORK 0
 #endif
 #ifdef HAVE_VFORK_H
 #include <vfork.h>
@@ -298,8 +298,6 @@ pex_wait (struct pex_obj *obj, pid_t pid, int *status, struct pex_time *time)
 #endif /* ! defined (HAVE_WAITPID) */
 #endif /* ! defined (HAVE_WAIT4) */
 
-static void pex_child_error (struct pex_obj *, const char *, const char *, int)
-     ATTRIBUTE_NORETURN;
 static int pex_unix_open_read (struct pex_obj *, const char *, int);
 static int pex_unix_open_write (struct pex_obj *, const char *, int, int);
 static pid_t pex_unix_exec_child (struct pex_obj *, int, const char *,
@@ -364,28 +362,6 @@ static int
 pex_unix_close (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd)
 {
   return close (fd);
-}
-
-/* Report an error from a child process.  We don't use stdio routines,
-   because we might be here due to a vfork call.  */
-
-static void
-pex_child_error (struct pex_obj *obj, const char *executable,
-		 const char *errmsg, int err)
-{
-  int retval = 0;
-#define writeerr(s) retval |= (write (STDERR_FILE_NO, s, strlen (s)) < 0)
-  writeerr (obj->pname);
-  writeerr (": error trying to exec '");
-  writeerr (executable);
-  writeerr ("': ");
-  writeerr (errmsg);
-  writeerr (": ");
-  writeerr (xstrerror (err));
-  writeerr ("\n");
-#undef writeerr
-  /* Exit with -2 if the error output failed, too.  */
-  _exit (retval == 0 ? -1 : -2);
 }
 
 /* Execute a child.  */
@@ -590,14 +566,9 @@ static pid_t
 pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 		     char * const * argv, char * const * env,
                      int in, int out, int errdes,
-		     int toclose, const char **errmsg, int *err)
+		     int toclose, const char **errmsg_ptr, int *err_ptr)
 {
-  pid_t pid;
-
-  /* We declare these to be volatile to avoid warnings from gcc about
-     them being clobbered by vfork.  */
-  volatile int sleep_interval;
-  volatile int retries;
+  pid_t pid = -1;
 
   /* We vfork and then set environ in the child before calling execvp.
      This clobbers the parent's environ so we need to restore it.
@@ -605,8 +576,18 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
      environment as a parameter, but that may have portability issues.  */
   char **save_environ = environ;
 
-  sleep_interval = 1;
-  pid = -1;
+  /* If we are using a true vfork, these allow the child to convey an
+     error to the parent immediately -- rather than discover it later
+     when trying to communicate.  */
+  volatile int child_errno = 0;
+  const char *volatile child_bad_fn = NULL;
+
+  const char *bad_fn = NULL;
+
+  /* We declare these to be volatile to avoid warnings from gcc about
+     them being clobbered by vfork.  */
+  volatile int sleep_interval = 1;
+  volatile int retries;
   for (retries = 0; retries < 4; ++retries)
     {
       pid = vfork ();
@@ -618,66 +599,94 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 
   switch (pid)
     {
-    case -1:
-      *err = errno;
-      *errmsg = VFORK_STRING;
-      return (pid_t) -1;
-
     case 0:
       /* Child process.  */
-      if (in != STDIN_FILE_NO)
+      if (!bad_fn && in != STDIN_FILE_NO)
 	{
 	  if (dup2 (in, STDIN_FILE_NO) < 0)
-	    pex_child_error (obj, executable, "dup2", errno);
-	  if (close (in) < 0)
-	    pex_child_error (obj, executable, "close", errno);
+	    bad_fn = "dup2";
+	  else if (close (in) < 0)
+	    bad_fn = "close";
 	}
-      if (out != STDOUT_FILE_NO)
+      if (!bad_fn && out != STDOUT_FILE_NO)
 	{
 	  if (dup2 (out, STDOUT_FILE_NO) < 0)
-	    pex_child_error (obj, executable, "dup2", errno);
-	  if (close (out) < 0)
-	    pex_child_error (obj, executable, "close", errno);
+	    bad_fn = "dup2";
+	  else if (close (out) < 0)
+	    bad_fn = "close";
 	}
-      if (errdes != STDERR_FILE_NO)
+      if (!bad_fn && errdes != STDERR_FILE_NO)
 	{
 	  if (dup2 (errdes, STDERR_FILE_NO) < 0)
-	    pex_child_error (obj, executable, "dup2", errno);
-	  if (close (errdes) < 0)
-	    pex_child_error (obj, executable, "close", errno);
+	    bad_fn = "dup2";
+	  else if (close (errdes) < 0)
+	    bad_fn = "close";
 	}
-      if (toclose >= 0)
+      if (!bad_fn && toclose >= 0)
 	{
 	  if (close (toclose) < 0)
-	    pex_child_error (obj, executable, "close", errno);
+	    bad_fn = "close";
 	}
-      if ((flags & PEX_STDERR_TO_STDOUT) != 0)
+      if (!bad_fn && (flags & PEX_STDERR_TO_STDOUT) != 0)
 	{
 	  if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
-	    pex_child_error (obj, executable, "dup2", errno);
+	    bad_fn = "dup2";
+	}
+      if (!bad_fn)
+	{
+	  if (env)
+	    /* NOTE: In a standard vfork implementation this clobbers
+	       the parent's copy of environ "too" (in reality there's
+	       only one copy).  This is ok as we restore it below.  */
+	    environ = (char**) env;
+	  if ((flags & PEX_SEARCH) != 0)
+	    {
+	      execvp (executable, to_ptr32 (argv));
+	      bad_fn = "execvp";
+	    }
+	  else
+	    {
+	      execv (executable, to_ptr32 (argv));
+	      bad_fn = "execv";
+	    }
 	}
 
-      if (env)
-	{
-	  /* NOTE: In a standard vfork implementation this clobbers the
-	     parent's copy of environ "too" (in reality there's only one copy).
-	     This is ok as we restore it below.  */
-	  environ = (char**) env;
-	}
+      /* Something failed, report an error.  We don't use stdio
+	 routines, because we might be here due to a vfork call.  */
+      {
+	ssize_t retval = 0;
+	int err = errno;
 
-      if ((flags & PEX_SEARCH) != 0)
-	{
-	  execvp (executable, to_ptr32 (argv));
-	  pex_child_error (obj, executable, "execvp", errno);
-	}
-      else
-	{
-	  execv (executable, to_ptr32 (argv));
-	  pex_child_error (obj, executable, "execv", errno);
-	}
+	if (IS_FAKE_VFORK)
+	  {
+	    /* The parent will not see our scream above, so write to
+	       stdout.  */
+#define writeerr(s) (retval |= write (STDERR_FILE_NO, s, strlen (s)))
+	    writeerr (obj->pname);
+	    writeerr (": error trying to exec '");
+	    writeerr (executable);
+	    writeerr ("': ");
+	    writeerr (bad_fn);
+	    writeerr (": ");
+	    writeerr (xstrerror (err));
+	    writeerr ("\n");
+#undef writeerr
+	  }
+	else
+	  {
+	    child_bad_fn = bad_fn;
+	    child_errno = err;
+	  }
 
+	/* Exit with -2 if the error output failed, too.  */
+	_exit (retval < 0 ? -2 : -1);
+      }
       /* NOTREACHED */
       return (pid_t) -1;
+
+    case -1:
+      bad_fn = IS_FAKE_VFORK ? "fork" : "vfork";
+      /* FALLTHROUGH */
 
     default:
       /* Parent process.  */
@@ -689,32 +698,30 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	 the child's copy of environ.  */
       environ = save_environ;
 
-      if (in != STDIN_FILE_NO)
+      if (!IS_FAKE_VFORK)
 	{
-	  if (close (in) < 0)
+	  int err = child_errno;
+	  if (err != 0)
 	    {
-	      *err = errno;
-	      *errmsg = "close";
-	      return (pid_t) -1;
+	      /* The child managed to give us an error, before failing to
+		 start.  Use that.  */
+	      errno = err;
+	      bad_fn = child_bad_fn;
 	    }
 	}
-      if (out != STDOUT_FILE_NO)
+
+      if (!bad_fn && in != STDIN_FILE_NO && close (in) < 0)
+	bad_fn = "close";
+      if (!bad_fn && out != STDOUT_FILE_NO && close (out) < 0)
+	bad_fn = "close";
+      if (!bad_fn && errdes != STDERR_FILE_NO && close (errdes) < 0)
+	bad_fn = "close";
+
+      if (bad_fn)
 	{
-	  if (close (out) < 0)
-	    {
-	      *err = errno;
-	      *errmsg = "close";
-	      return (pid_t) -1;
-	    }
-	}
-      if (errdes != STDERR_FILE_NO)
-	{
-	  if (close (errdes) < 0)
-	    {
-	      *err = errno;
-	      *errmsg = "close";
-	      return (pid_t) -1;
-	    }
+	  *err_ptr = errno;
+	  *errmsg_ptr = bad_fn;
+	  return (pid_t) -1;
 	}
 
       return pid;
