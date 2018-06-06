@@ -1,3 +1,7 @@
+2018-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/torture/pr86066.c: New test.
+
 2018-06-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86062
