@@ -1912,7 +1912,7 @@ func isValidFieldName(fieldName string) bool {
 // This limitation may be lifted in a future version.
 func StructOf(fields []StructField) Type {
 	var (
-		hash       = uint32(0)
+		hash       = uint32(12)
 		size       uintptr
 		typalign   int8
 		comparable = true
@@ -1997,7 +1997,7 @@ func StructOf(fields []StructField) Type {
 		}
 		fset[name] = struct{}{}
 
-		repr = append(repr, (" " + ft.String())...)
+		repr = append(repr, (" " + *ft.string)...)
 		if f.tag != nil {
 			repr = append(repr, (" " + strconv.Quote(*f.tag))...)
 		}
