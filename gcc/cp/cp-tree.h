@@ -6548,6 +6548,7 @@ extern bool parsing_default_capturing_generic_lambda_in_template (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
 extern location_t defarg_location (tree);
 extern void maybe_show_extern_c_location (void);
+extern bool literal_integer_zerop (const_tree);
 
 /* in pt.c */
 extern bool check_template_shadow		(tree);

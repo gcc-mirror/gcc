@@ -2350,7 +2350,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 {
   tree result;
   tree orig_fn;
-  vec<tree, va_gc> *orig_args = NULL;
+  vec<tree, va_gc> *orig_args = *args;
 
   if (fn == error_mark_node)
     return error_mark_node;
@@ -2522,6 +2522,22 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	      sizeof_pointer_memaccess_warning
 		(sizeof_arg_loc, fn, *args,
 		 sizeof_arg, same_type_ignoring_top_level_qualifiers_p);
+	    }
+
+	  if ((complain & tf_warning)
+	      && TREE_CODE (fn) == FUNCTION_DECL
+	      && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
+	      && DECL_FUNCTION_CODE (fn) == BUILT_IN_MEMSET
+	      && vec_safe_length (*args) == 3
+	      && !any_type_dependent_arguments_p (*args))
+	    {
+	      tree arg0 = (*orig_args)[0];
+	      tree arg1 = (*orig_args)[1];
+	      tree arg2 = (*orig_args)[2];
+	      int literal_mask = ((literal_integer_zerop (arg1) << 1)
+				  | (literal_integer_zerop (arg2) << 2));
+	      arg2 = instantiate_non_dependent_expr (arg2);
+	      warn_for_memset (input_location, arg0, arg2, literal_mask);
 	    }
 
 	  /* A call to a namespace-scope function.  */

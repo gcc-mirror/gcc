@@ -1,3 +1,11 @@
+2018-06-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85710 - ICE with -Wmemset-elt-size.
+	* semantics.c (finish_call_expr): Call warn_for_memset here.
+	* parser.c (cp_parser_postfix_expression): Not here.
+	(literal_integer_zerop): No longer static.
+	* pt.c (build_non_dependent_expr): Don't wrap CONST_DECL.
+
 2018-06-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/85976
