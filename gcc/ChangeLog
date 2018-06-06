@@ -18,6 +18,23 @@
 	long double is IBM extended double.  Make __float128 use the long
 	double type if long double is IEEE 128-bit.
 
+	PR target/85657
+	* config/rs6000/rs6000-builtin.def (BU_IBM128_2): New helper
+	macro for __ibm128 built-in functions.
+	(PACK_IF): Add __ibm128 pack/unpack functions.
+	(UNPACK_IF): Likewise.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Do not
+	enable long double built-in functions if long double is IEEE
+	128-bit floating point.
+	(rs6000_invalid_builtin): Update long double built-in function
+	error message.
+	(rs6000_expand_builtin): For PACK_IF and UNPACK_IF built-in
+	functions, adjust the built-in function to use the long double
+	built-in function if __ibm128 and long double are the same type.
+	* doc/extend.texi (PowerPC builtins): Update documention for
+	__builtin_{,un}pack_longdouble.  Add documentation for
+	__builtin_{,un}pack_ibm128.
+
 2018-06-06  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.c (enum riscv_privilege_levels): New.
