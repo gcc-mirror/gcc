@@ -15064,7 +15064,8 @@ ix86_expand_split_stack_prologue (void)
   HOST_WIDE_INT allocate;
   unsigned HOST_WIDE_INT args_size;
   rtx_code_label *label;
-  rtx limit, current, allocate_rtx, call_insn, call_fusage;
+  rtx limit, current, allocate_rtx, call_fusage;
+  rtx_insn *call_insn;
   rtx scratch_reg = NULL_RTX;
   rtx_code_label *varargs_label = NULL;
   rtx fn;
@@ -15234,7 +15235,7 @@ ix86_expand_split_stack_prologue (void)
   if (!TARGET_64BIT)
     add_reg_note (call_insn, REG_ARGS_SIZE, GEN_INT (0));
   /* Indicate that this function can't jump to non-local gotos.  */
-  make_reg_eh_region_note_nothrow_nononlocal (as_a <rtx_insn *> (call_insn));
+  make_reg_eh_region_note_nothrow_nononlocal (call_insn);
 
   /* In order to make call/return prediction work right, we now need
      to execute a return instruction.  See
@@ -28466,7 +28467,7 @@ construct_plt_address (rtx symbol)
   return tmp;
 }
 
-rtx
+rtx_insn *
 ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 		  rtx callarg2,
 		  rtx pop, bool sibcall)
@@ -28681,11 +28682,11 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 
   if (vec_len > 1)
     call = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (vec_len, vec));
-  call = emit_call_insn (call);
+  rtx_insn *call_insn = emit_call_insn (call);
   if (use)
-    CALL_INSN_FUNCTION_USAGE (call) = use;
+    CALL_INSN_FUNCTION_USAGE (call_insn) = use;
 
-  return call;
+  return call_insn;
 }
 
 /* Return true if the function being called was marked with attribute
