@@ -1,3 +1,21 @@
+2018-06-04  Carl Love  <cel@us.ibm.com>
+
+	* gcc/config/rs6000/vsx.md (first_match_index_<mode>): Calculate index
+	using natural element order.  Use gen_lshrsi3 instead of gen_ashrsi3
+	as it is slightly cheaper.
+	(first_match_or_eos_index_<mode>):
+	Calculate index using natural element order.
+	(first_match_index_<mode>):
+	Calculate index using natural element order.
+	(first_match_or_eos_index_<mode>):
+	Calculate index using natural order.
+	(define_insn vclzlsbb): Change to define_insn vclzlsbb_<mode>.
+	for BE and LE modes.
+	* gcc/config/rs6000/rs6000-c.c: Rename P9V_BUILTIN_VCLZLSBB,
+	P9V_BUILTIN_VCLZLSBB_V16QI.
+	* gcc/config/rs6000/rs6000-builtin.def: Make VCLZLSBB mode
+	specific.
+
 2018-06-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Adjust
