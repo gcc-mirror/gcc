@@ -2560,13 +2560,14 @@ class module_mapper {
   FILE *from;   /* Read from mapper.  */
   FILE *to;	/* Write to mapper.  */
   pex_obj *pex; /* If it's a subprocess.  */
+  sighandler_t sigpipe; /* Sig pipe disposition.  */
 
   char *buffer; /* Line buffer.  */
   size_t size;  /* Allocated size of buffer.  */
   char *pos;	/* Read/Write point in buffer.  */
   char *end;	/* Ending NUL byte.  */
   char *start;  /* Start of current response line.  */
-  bool batching;/* batching requests or responses.  */
+  bool batching;/* Batching requests or responses.  */
 
 private:
   /* Construction always succeeds, but may result in a dead mapper.  */
@@ -6452,7 +6453,7 @@ module_state::announce (const char *what) const
    ipv4.  */
 
 module_mapper::module_mapper (location_t loc, const char *option)
-  : name (NULL), from (NULL), to (NULL), pex (NULL),
+  : name (NULL), from (NULL), to (NULL), pex (NULL), sigpipe (SIG_IGN),
     /* Exercise buffer expansion code.  */
     buffer (NULL), size (MODULE_STAMP ? 3 : 200), pos (NULL), end (NULL),
     start (NULL), batching (false)
@@ -6656,7 +6657,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	}
       argv[arg_no] = NULL;
 
-      pex = pex_init (PEX_USE_PIPES, name, NULL);
+      pex = pex_init (PEX_USE_PIPES, progname, NULL);
       to = pex_input_pipe (pex, false);
       if (!to)
 	{
@@ -6686,8 +6687,6 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    XDELETEVEC (argv[0]);
 	}
 
-      name = writable;
-
       if (!errmsg)
 	{
 	  from = pex_read_output (pex, false);
@@ -6699,18 +6698,19 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      to = NULL;
 	    }
 	}
+      name = writable;
     }
 
   if (!name)
     {
       /* Try a mapping file.  */
-      name = writable;
-      from = fopen (name, "r");
+      from = fopen (writable, "r");
       if (!from)
 	{
 	  err = errno;
 	  errmsg = "opening";
 	}
+      name = writable;
     }
 
   if (errmsg)
@@ -6738,6 +6738,10 @@ module_mapper::module_mapper (location_t loc, const char *option)
     {
       /* A server, say Hello!.  */
       setvbuf (to, NULL, _IONBF, 0); /* We write whole buffers.  */
+#ifdef SIGPIPE
+      /* We need to ignore sig pipe for a while.  */
+      sigpipe = signal (SIGPIPE, SIG_IGN);
+#endif
       if (!handshake (loc, cookie ? cookie + 1 : main_input_filename))
 	kill (loc);
     }
@@ -6817,6 +6821,11 @@ module_mapper::kill (location_t loc)
   else if (from && !is_file ())
     fclose (from);
 
+#ifdef SIGPIPE
+  if (sigpipe != SIG_IGN)
+    /* Restore sigpipe.  */
+    signal (SIGPIPE, sigpipe);
+#endif
   from = to = NULL;
 
   XDELETEVEC (buffer);
@@ -6919,6 +6928,7 @@ module_mapper::get_response (location_t loc)
 		err = "end of file";
 	      if (err)
 		error_at (loc, "unexpected %s from mapper %qs", err, name);
+	      start = NULL;
 	      return -1;
 	    }
 
@@ -6954,11 +6964,14 @@ module_mapper::get_response (location_t loc)
 void
 module_mapper::response_unexpected (location_t loc)
 {
-  /* Restore the whitespace we zapped tokenizing.  */
-  for (char *ptr = start; ptr != pos; ptr++)
-    if (!*ptr)
-      *ptr = ' ';
-  error_at (loc, "mapper response malformed: %qs", start);
+  if (start)
+    {
+      /* Restore the whitespace we zapped tokenizing.  */
+      for (char *ptr = start; ptr != pos; ptr++)
+	if (!*ptr)
+	  *ptr = ' ';
+      error_at (loc, "mapper response malformed: %qs", start);
+    }
   pos = end;
 }
 
@@ -9954,7 +9967,7 @@ finish_module ()
 
 /* Try and exec ourselves to repeat the preamble scan with
    foreknowledge of where it ends.  Sure, this way of doing it sucks,
-   performance wise,  but that's one of the ways of encouraging them
+   performance wise,  but that's one of the ways of encouraging users
    to explicitly disambiguate the difficult case.  */
 
 void
