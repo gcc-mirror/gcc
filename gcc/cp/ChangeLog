@@ -1,5 +1,9 @@
 2018-06-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86060 - ICE on range for with -std=c++98.
+	* parser.c (cp_parser_init_statement): Don't clobber *decl after
+	pedwarn.
+
 	PR c++/85710 - ICE with -Wmemset-elt-size.
 	* semantics.c (finish_call_expr): Call warn_for_memset here.
 	* parser.c (cp_parser_postfix_expression): Not here.
