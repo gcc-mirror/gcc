@@ -1,3 +1,8 @@
+2018-06-04  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-8-p9-runnable.c: Add additional
+	debug print statements.  Fix a few formating issues.
+
 2018-06-06  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/85657
