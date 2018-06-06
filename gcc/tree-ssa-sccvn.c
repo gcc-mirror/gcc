@@ -2270,14 +2270,16 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       /* Apply an extra offset to the inner MEM_REF of the RHS.  */
       if (maybe_ne (extra_off, 0))
 	{
-	  if (rhs.length () < 2
-	      || rhs[0].opcode != MEM_REF
-	      || known_eq (rhs[0].off, -1))
+	  if (rhs.length () < 2)
 	    return (void *)-1;
-	  rhs[0].off += extra_off;
-	  rhs[0].op0 = int_const_binop (PLUS_EXPR, rhs[0].op0,
-					build_int_cst (TREE_TYPE (rhs[0].op0),
-						       extra_off));
+	  int ix = rhs.length () - 2;
+	  if (rhs[ix].opcode != MEM_REF
+	      || known_eq (rhs[ix].off, -1))
+	    return (void *)-1;
+	  rhs[ix].off += extra_off;
+	  rhs[ix].op0 = int_const_binop (PLUS_EXPR, rhs[ix].op0,
+					 build_int_cst (TREE_TYPE (rhs[ix].op0),
+							extra_off));
 	}
 
       /* We need to pre-pend vr->operands[0..i] to rhs.  */

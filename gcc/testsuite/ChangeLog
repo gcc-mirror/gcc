@@ -1,3 +1,8 @@
+2018-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86062
+	* g++.dg/tree-ssa/pr86062.C: New testcase.
+
 2018-06-05  Steve Ellcey  <sellcey@cavium.com>
 
 	PR target/79924

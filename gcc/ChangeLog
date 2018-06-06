@@ -1,3 +1,10 @@
+2018-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86062
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle arbitrary
+	component refs ontop
+	of to be offsetted base.
+
 2018-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc/config/msp430/msp430.c (msp430_attr): Allow interrupt handlers
