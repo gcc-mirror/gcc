@@ -535,7 +535,7 @@ namespace std
 // Most of the following conditions are due to limitations in the current
 // implementation.
 #if __cplusplus >= 201103L && _GLIBCXX_USE_CXX11_ABI			\
-  && _GLIBCXX_USE_DUAL_ABI && __cpp_transactional_memory >= 201505L	\
+  && _GLIBCXX_USE_DUAL_ABI && __cpp_transactional_memory >= 201500L	\
   &&  !_GLIBCXX_FULLY_DYNAMIC_STRING && _GLIBCXX_USE_WEAK_REF		\
   && _GLIBCXX_USE_ALLOCATOR_NEW
 #define _GLIBCXX_TXN_SAFE transaction_safe

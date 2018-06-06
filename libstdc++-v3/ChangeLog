@@ -1,3 +1,9 @@
+2018-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86068
+	* include/bits/c++config: Check __cpp_transactional_memory >= 201500L
+	rather than __cpp_transactional_memory >= 201505L.
+
 2018-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86008

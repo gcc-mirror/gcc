@@ -981,7 +981,7 @@ c_cpp_builtins (cpp_reader *pfile)
       if (flag_tm)
 	/* Use a value smaller than the 201505 specified in
 	   the TS, since we don't yet support atomic_cancel.  */
-	cpp_define (pfile, "__cpp_transactional_memory=210500");
+	cpp_define (pfile, "__cpp_transactional_memory=201500");
       if (flag_sized_deallocation)
 	cpp_define (pfile, "__cpp_sized_deallocation=201309");
       if (aligned_new_threshold)
