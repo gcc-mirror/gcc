@@ -14,3 +14,8 @@ void __attribute__ ((interrupt, naked))
 sub2 (void)
 { /* { dg-error "are mutually exclusive" } */
 }
+
+void __attribute__ ((interrupt ("hypervisor")))
+sub3 (void)
+{ /* { dg-warning "argument to" } */
+}
