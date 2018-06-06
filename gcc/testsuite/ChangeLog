@@ -1,3 +1,21 @@
+2018-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86038
+	* gcc.dg/pr86038.c: New testcase.
+
+	2018-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85934
+	* gcc.target/i386/pr85934.c: New testcase.
+
+	2018-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85863
+	* gfortran.fortran-torture/compile/pr85863.f: New testcase.
+
 2018-06-05  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline

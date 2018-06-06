@@ -1,3 +1,36 @@
+2018-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86038
+	* tracer.c (find_best_successor): Check probability for
+	being initialized, bail out if not.
+
+	2018-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85964
+	* tracer.c (better_p): Drop initialized count check, we only
+	call the function with initialized counts now.
+	(find_best_successor): Do find a best edge if one
+	has uninitialized count.
+	(find_best_predecessor): Likewise.  Do BB frequency check only
+	if count is initialized.
+
+	2018-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85934
+	* tree-vect-generic.c (expand_vector_operations_1): Hoist
+	vector boolean check before scalar optimization.
+
+	2018-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85863
+	* tree-vect-stmts.c (vect_is_simple_cond): Only widen invariant
+	comparisons when vectype is specified.
+	(vectorizable_condition): Do not specify vectype for
+	vect_is_simple_cond when SLP vectorizing.
+
 2018-06-05  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
