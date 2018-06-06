@@ -1,3 +1,8 @@
+2018-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h (__shared_count): Remove redundant
+	move of const value.
+
 2018-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86068
