@@ -1,3 +1,10 @@
+2018-06-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85977
+	* g++.dg/cpp0x/initlist102.C: New test.
+	* g++.dg/cpp0x/initlist103.C: New test.
+	* g++.dg/cpp0x/initlist104.C: New test.
+
 2018-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/torture/pr86066.c: New test.

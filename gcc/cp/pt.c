@@ -20370,6 +20370,22 @@ type_unification_real (tree tparms,
 	    if (check_non_deducible_conversion (parm, arg, strict, flags,
 						explain_p))
 	      return 1;
+
+	    if (BRACE_ENCLOSED_INITIALIZER_P (arg)
+		&& (TREE_CODE (parm) == ARRAY_TYPE || is_std_init_list (parm)))
+	      {
+		tree elt, elttype;
+		unsigned int i;
+
+		if (TREE_CODE (parm) == ARRAY_TYPE)
+		  elttype = TREE_TYPE (parm);
+		else
+		  elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (parm), 0);
+		FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (arg), i, elt)
+		  if (check_non_deducible_conversion (elttype, elt, strict,
+						      flags, explain_p))
+		    return 1;
+	      }
 	  }
 
       /* Now substitute into the default template arguments.  */
@@ -21404,24 +21420,30 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	    return unify_success (explain_p);
 	}
 
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (arg), i, elt)
-	{
-	  int elt_strict = strict;
+      if (strict != DEDUCE_EXACT
+	  && TYPE_P (elttype)
+	  && !uses_deducible_template_parms (elttype))
+	/* If ELTTYPE has no deducible template parms, skip deduction from
+	   the list elements.  */;
+      else
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (arg), i, elt)
+	  {
+	    int elt_strict = strict;
 
-	  if (elt == error_mark_node)
-	    return unify_invalid (explain_p);
+	    if (elt == error_mark_node)
+	      return unify_invalid (explain_p);
 
-	  if (!BRACE_ENCLOSED_INITIALIZER_P (elt))
-	    {
-	      tree type = TREE_TYPE (elt);
-	      if (type == error_mark_node)
-		return unify_invalid (explain_p);
-	      /* It should only be possible to get here for a call.  */
-	      gcc_assert (elt_strict & UNIFY_ALLOW_OUTER_LEVEL);
-	      elt_strict |= maybe_adjust_types_for_deduction
-		(DEDUCE_CALL, &elttype, &type, elt);
-	      elt = type;
-	    }
+	    if (!BRACE_ENCLOSED_INITIALIZER_P (elt))
+	      {
+		tree type = TREE_TYPE (elt);
+		if (type == error_mark_node)
+		  return unify_invalid (explain_p);
+		/* It should only be possible to get here for a call.  */
+		gcc_assert (elt_strict & UNIFY_ALLOW_OUTER_LEVEL);
+		elt_strict |= maybe_adjust_types_for_deduction
+		  (DEDUCE_CALL, &elttype, &type, elt);
+		elt = type;
+	      }
 
 	  RECUR_AND_CHECK_FAILURE (tparms, targs, elttype, elt, elt_strict,
 				   explain_p);
