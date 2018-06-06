@@ -1,3 +1,17 @@
+2018-06-06  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (enum riscv_privilege_levels): New.
+	(struct machine_function): New field interrupt_mode.
+	(riscv_handle_type_attribute): New function.  Add forward declaration.
+	(riscv_attribute_table) <interrupt>: Use riscv_handle_type_attribute.
+	(riscv_expand_epilogue): Check interrupt_mode field.
+	(riscv_set_current_function): Check interrupt attribute args and
+	set interrupt_mode field.
+	* config/riscv/riscv.md (UNSPECV_SRET, UNSPECV_URET): New.
+	(riscv_sret, riscv_uret): New.
+	* doc/extend.texi (RISC-V Function Attributes) <interrupt>: Document
+	new arguments to interrupt attribute.
+
 2018-06-06  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/63177

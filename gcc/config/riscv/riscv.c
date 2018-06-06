@@ -122,6 +122,10 @@ struct GTY(())  riscv_frame_info {
   HOST_WIDE_INT arg_pointer_offset;
 };
 
+enum riscv_privilege_levels {
+  USER_MODE, SUPERVISOR_MODE, MACHINE_MODE
+};
+
 struct GTY(())  machine_function {
   /* The number of extra stack bytes taken up by register varargs.
      This area is allocated by the callee at the very top of the frame.  */
@@ -132,6 +136,8 @@ struct GTY(())  machine_function {
 
   /* True if current function is an interrupt function.  */
   bool interrupt_handler_p;
+  /* For an interrupt handler, indicates the privilege level.  */
+  enum riscv_privilege_levels interrupt_mode;
 
   /* True if attributes on current function have been checked.  */
   bool attributes_checked_p;
@@ -282,6 +288,7 @@ static const struct riscv_tune_info optimize_size_tune_info = {
 };
 
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
+static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 
 /* Defining target-specific uses of __attribute__.  */
 static const struct attribute_spec riscv_attribute_table[] =
@@ -294,7 +301,8 @@ static const struct attribute_spec riscv_attribute_table[] =
   { "naked",	0,  0, true, false, false, false,
     riscv_handle_fndecl_attribute, NULL },
   /* This attribute generates prologue/epilogue for interrupt handlers.  */
-  { "interrupt", 0, 0, false, true, true, false, NULL, NULL },
+  { "interrupt", 0, 1, false, true, true, false,
+    riscv_handle_type_attribute, NULL },
 
   /* The last attribute spec is set to be NULL.  */
   { NULL,	0,  0, false, false, false, false, NULL, NULL }
@@ -2721,6 +2729,47 @@ riscv_handle_fndecl_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
+/* Verify type based attributes.  NODE is the what the attribute is being
+   applied to.  NAME is the attribute name.  ARGS are the attribute args.
+   FLAGS gives info about the context.  NO_ADD_ATTRS should be set to true if
+   the attribute should be ignored.  */
+
+static tree
+riscv_handle_type_attribute (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
+			     int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+{
+  /* Check for an argument.  */
+  if (is_attribute_p ("interrupt", name))
+    {
+      if (args)
+	{
+	  tree cst = TREE_VALUE (args);
+	  const char *string;
+
+	  if (TREE_CODE (cst) != STRING_CST)
+	    {
+	      warning (OPT_Wattributes,
+		       "%qE attribute requires a string argument",
+		       name);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
+
+	  string = TREE_STRING_POINTER (cst);
+	  if (strcmp (string, "user") && strcmp (string, "supervisor")
+	      && strcmp (string, "machine"))
+	    {
+	      warning (OPT_Wattributes,
+		       "argument to %qE attribute is not \"user\", \"supervisor\", or \"machine\"",
+		       name);
+	      *no_add_attrs = true;
+	    }
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* Return true if function TYPE is an interrupt function.  */
 static bool
 riscv_interrupt_type_p (tree type)
@@ -3932,7 +3981,16 @@ riscv_expand_epilogue (int style)
 
   /* Return from interrupt.  */
   if (cfun->machine->interrupt_handler_p)
-    emit_insn (gen_riscv_mret ());
+    {
+      enum riscv_privilege_levels mode = cfun->machine->interrupt_mode;
+
+      if (mode == MACHINE_MODE)
+	emit_insn (gen_riscv_mret ());
+      else if (mode == SUPERVISOR_MODE)
+	emit_insn (gen_riscv_sret ());
+      else
+	emit_insn (gen_riscv_uret ());
+    }
   else if (style != SIBCALL_RETURN)
     emit_jump_insn (gen_simple_return_internal (ra));
 }
@@ -4494,14 +4552,32 @@ riscv_set_current_function (tree decl)
 
   if (cfun->machine->interrupt_handler_p)
     {
-      tree args = TYPE_ARG_TYPES (TREE_TYPE (decl));
       tree ret = TREE_TYPE (TREE_TYPE (decl));
+      tree args = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      tree attr_args
+	= TREE_VALUE (lookup_attribute ("interrupt",
+					TYPE_ATTRIBUTES (TREE_TYPE (decl))));
 
       if (TREE_CODE (ret) != VOID_TYPE)
 	error ("%qs function cannot return a value", "interrupt");
 
       if (args && TREE_CODE (TREE_VALUE (args)) != VOID_TYPE)
 	error ("%qs function cannot have arguments", "interrupt");
+
+      if (attr_args && TREE_CODE (TREE_VALUE (attr_args)) != VOID_TYPE)
+	{
+	  const char *string = TREE_STRING_POINTER (TREE_VALUE (attr_args));
+
+	  if (!strcmp (string, "user"))
+	    cfun->machine->interrupt_mode = USER_MODE;
+	  else if (!strcmp (string, "supervisor"))
+	    cfun->machine->interrupt_mode = SUPERVISOR_MODE;
+	  else /* Must be "machine".  */
+	    cfun->machine->interrupt_mode = MACHINE_MODE;
+	}
+      else
+	/* Interrupt attributes are machine mode by default.  */
+	cfun->machine->interrupt_mode = MACHINE_MODE;
     }
 
   /* Don't print the above diagnostics more than once.  */

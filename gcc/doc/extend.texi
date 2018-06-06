@@ -5147,6 +5147,17 @@ depended upon to work reliably and are not supported.
 Use this attribute to indicate that the specified function is an interrupt
 handler.  The compiler generates function entry and exit sequences suitable
 for use in an interrupt handler when this attribute is present.
+
+You can specify the kind of interrupt to be handled by adding an optional
+parameter to the interrupt attribute like this:
+
+@smallexample
+void f (void) __attribute__ ((interrupt ("user")));
+@end smallexample
+
+Permissible values for this parameter are @code{user}, @code{supervisor},
+and @code{machine}.  If there is no parameter, then it defaults to
+@code{machine}.
 @end table
 
 @node RL78 Function Attributes

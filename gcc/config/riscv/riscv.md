@@ -58,6 +58,8 @@
 
   ;; Interrupt handler instructions.
   UNSPECV_MRET
+  UNSPECV_SRET
+  UNSPECV_URET
 
   ;; Blockage and synchronization.
   UNSPECV_BLOCKAGE
@@ -2297,6 +2299,16 @@
   [(unspec_volatile [(const_int 0)] UNSPECV_MRET)]
   ""
   "mret")
+
+(define_insn "riscv_sret"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SRET)]
+  ""
+  "sret")
+
+(define_insn "riscv_uret"
+  [(unspec_volatile [(const_int 0)] UNSPECV_URET)]
+  ""
+  "uret")
 
 (define_insn "stack_tie<mode>"
   [(set (mem:BLK (scratch))
