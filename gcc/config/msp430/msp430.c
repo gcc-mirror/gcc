@@ -1878,11 +1878,9 @@ msp430_attr (tree * node,
 {
   gcc_assert (DECL_P (* node));
 
+  /* Only the interrupt attribute takes an argument.  */
   if (args != NULL)
     {
-      /* Only the interrupt attribute takes an argument.  */
-      gcc_assert (TREE_NAME_EQ (name, ATTR_INTR));
-
       tree value = TREE_VALUE (args);
 
       switch (TREE_CODE (value))
@@ -1927,13 +1925,12 @@ msp430_attr (tree * node,
       if (TREE_CODE (TREE_TYPE (* node)) == FUNCTION_TYPE
 	  && ! VOID_TYPE_P (TREE_TYPE (TREE_TYPE (* node))))
 	message = "interrupt handlers must be void";
-
-      if (! TREE_PUBLIC (* node))
-	message = "interrupt handlers cannot be static";
-
-      /* Ensure interrupt handlers never get optimised out.  */
-      TREE_USED (* node) = 1;
-      DECL_PRESERVE_P (* node) = 1;
+      else
+	{
+	  /* Ensure interrupt handlers never get optimised out.  */
+	  TREE_USED (* node) = 1;
+	  DECL_PRESERVE_P (* node) = 1;
+	}
     }
   else if (TREE_NAME_EQ (name, ATTR_REENT))
     {
