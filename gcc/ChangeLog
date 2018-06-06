@@ -1,3 +1,11 @@
+2018-06-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/i386/i386-protos.h (ix86_expand_call): Strengthen return
+	type from "rtx" to "rtx_insn *".
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Likewise
+	for local "call_insn", removing cast.
+	(ix86_expand_call): Likewise, introducing a "call_insn" local.
+
 2018-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/86066
