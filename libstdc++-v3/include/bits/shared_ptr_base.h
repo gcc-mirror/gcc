@@ -534,6 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       using __allocator_type = __alloc_rebind<_Alloc, _Sp_counted_ptr_inplace>;
 
+      // Alloc parameter is not a reference so doesn't alias anything in __args
       template<typename... _Args>
 	_Sp_counted_ptr_inplace(_Alloc __a, _Args&&... __args)
 	: _M_impl(__a)
@@ -653,8 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  typename _Sp_cp_type::__allocator_type __a2(__a);
 	  auto __guard = std::__allocate_guarded(__a2);
 	  _Sp_cp_type* __mem = __guard.get();
-	  ::new (__mem) _Sp_cp_type(std::move(__a),
-				    std::forward<_Args>(__args)...);
+	  ::new (__mem) _Sp_cp_type(__a, std::forward<_Args>(__args)...);
 	  _M_pi = __mem;
 	  __guard = nullptr;
 	}
