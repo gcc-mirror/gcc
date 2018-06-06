@@ -1811,6 +1811,15 @@ BU_VSX_OVERLOAD_1 (VUNSIGNEDE,  "vunsignede")
 BU_VSX_OVERLOAD_1 (VUNSIGNEDO,  "vunsignedo")
 
 /* VSX builtins that are handled as special cases.  */
+
+
+/* NON-TRADITIONAL BEHAVIOR HERE: Besides introducing the
+   __builtin_vec_ld and __builtin_vec_st built-in functions,
+   the VSX_BUILTIN_VEC_LD and VSX_BUILTIN_VEC_ST symbolic constants
+   introduced below are also affiliated with the __builtin_vec_vsx_ld
+   and __builtin_vec_vsx_st functions respectively.  This unnatural
+   binding is formed with explicit calls to the def_builtin function
+   found in rs6000.c.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")
 BU_VSX_OVERLOAD_X (ST,	     "st")
 BU_VSX_OVERLOAD_X (XL,	     "xl")

@@ -1,3 +1,10 @@
+2018-06-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-builtin.def (VSX_BUILTIN_VEC_LD,
+	VSX_BUILTIN_VEC_ST): Add comment to explain non-traditional uses.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Remove
+	several redundant entries.
+
 2018-06-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/i386/i386-protos.h (ix86_expand_call): Strengthen return
