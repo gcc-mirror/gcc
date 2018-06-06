@@ -1,3 +1,10 @@
+2018-06-06  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Adjust
+	indentation and line wrap for many prototypes.  Add missing
+	@smallexample directives around block of prototypes for vec_xl and
+	vec_xst.
+
 2018-06-05  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_passes_ieee128): New boolean to
