@@ -8510,7 +8510,7 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 
   *comp_vectype = vectype1 ? vectype1 : vectype2;
   /* Invariant comparison.  */
-  if (! *comp_vectype)
+  if (! *comp_vectype && vectype)
     {
       tree scalar_type = TREE_TYPE (lhs);
       /* If we can widen the comparison to match vectype do so.  */
@@ -8622,7 +8622,7 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   else_clause = gimple_assign_rhs3 (stmt);
 
   if (!vect_is_simple_cond (cond_expr, stmt_info->vinfo,
-			    &comp_vectype, &dts[0], vectype)
+			    &comp_vectype, &dts[0], slp_node ? NULL : vectype)
       || !comp_vectype)
     return false;
 
