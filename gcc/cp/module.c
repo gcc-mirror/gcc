@@ -100,6 +100,8 @@ Classes used:
 
    dumper - logger
 
+   data - buffer
+
    bytes - data streamer
    bytes_in : bytes - scalar reader
    bytes_out : bytes - scalar writer
@@ -260,32 +262,25 @@ struct nodel_ptr_hash : pointer_hash<T>, typed_noop_remove <T *>
 typedef simple_hashmap_traits<nodel_ptr_hash<void>, int> ptr_int_traits;
 typedef hash_map<void *,signed,ptr_int_traits> ptr_int_hash_map;
 
-/* Byte streamer base.   Buffer with read/write position and smarts
-   for single bits.  */
+/* Variable length buffer. */
 
-class bytes {
+class data {
 public:
   char *buffer;		/* Buffer being transferred.  */
   /* Although size_t would be the usual size, we know we never get
      more than 4GB of buffer -- because that's the limit of the
      encapsulation format.  */
   unsigned size;	/* Allocated size of buffer.  */
-protected:
   unsigned pos;		/* Position in buffer.  */
-  uint32_t bit_val;	/* Bit buffer.  */
-  unsigned bit_pos;	/* Next bit in bit buffer.  */
 
-public:
-  bytes ()
-    :buffer (NULL), size (0), pos (4), bit_val (0), bit_pos (0)
-  {}
-  ~bytes () 
+  data ()
+    :buffer (NULL), size (0), pos (0)
   {
-    gcc_checking_assert (!size);
   }
-
-protected:
-  unsigned calc_crc () const;
+  ~data ()
+  {
+    gcc_checking_assert (!buffer);
+  }
 
 public:
   void extend (size_t);
@@ -295,19 +290,83 @@ public:
     buffer = NULL;
     size = 0;
   }
-  
-public:
-  // FIXME should be bytes_out
-  bool streaming_p () const
+
+protected:
+  char *use (unsigned count)
   {
-    return buffer != NULL;
+    char *res = &buffer[pos];
+    pos += count;
+    return res;
   }
+public:
+  char *write (unsigned count);
+  const char *read (unsigned count);
+  void unuse (unsigned count)
+  {
+    pos -= count;
+  }
+};
+
+/* Extend the buffer to size A.  It is either not allocated, or
+   smaller than A.  */
+
+void
+data::extend (size_t a)
+{
+  gcc_checking_assert (a > size);
+  buffer = XRESIZEVAR (char, buffer, a);
+  size = a;
+}
+
+/* Emit COUNT bytes.  Extend buffer as necessary and return pointer to
+   space.  Return pointer to writable data.  */
+
+char *
+data::write (unsigned count)
+{
+  if (size < pos + count)
+    extend ((pos + count) * 3/2);
+  return use (count);
+}
+
+/* Consume COUNT bytes of data.  Check there is sufficient data.
+   Return pointer to consumed data.  */
+
+const char *data::read (unsigned count)
+{
+  if (size - pos < count)
+    return NULL;
+  return use (count);
+}
+
+/* Byte streamer base.   Buffer with read/write position and smarts
+   for single bits.  */
+
+class bytes : public data {
+public:
+  typedef data parent;
+
+protected:
+  uint32_t bit_val;	/* Bit buffer.  */
+  unsigned bit_pos;	/* Next bit in bit buffer.  */
+
+public:
+  bytes ()
+    :parent (), bit_val (0), bit_pos (0)
+  {}
+  ~bytes () 
+  {
+  }
+
+protected:
+  unsigned calc_crc () const;
 
 protected:
   /* Begin streaming.  Set buffer postion for crc  */
   void begin ()
   {
-    gcc_checking_assert (!buffer && !size && pos == 4);
+    gcc_checking_assert (!buffer && !size);
+    pos = 4;
   }
   /* Complete streaming.  Release the buffer.  */
   void end ()
@@ -326,21 +385,6 @@ protected:
     bit_val = 0;
     return bytes;
   }
-
-protected:
-  /* Consume BYTES bytes.  Return pointer to start of used bytes.
-     Does NOT check if the bytes are available.  */
-  char *use (unsigned bytes)
-  {
-    char *res = &buffer[pos];
-    pos += bytes;
-    return res;
-  }
-  /* Rewind BYTES bytes.  */
-  void unuse (unsigned bytes)
-  {
-    pos -= bytes;
-  }
 };
 
 /* Calculate the crc32 of the buffer.  Note the CRC is stored in the
@@ -353,17 +397,6 @@ bytes::calc_crc () const
   for (size_t ix = 4; ix < size; ix++)
     crc = crc32_byte (crc, buffer[ix]);
   return crc;
-}
-
-/* Extend the buffer to size A.  It is either not allocated, or
-   smaller than A.  */
-
-void
-bytes::extend (size_t a)
-{
-  gcc_checking_assert (a > size);
-  buffer = XRESIZEVAR (char, buffer, a);
-  size = a;
 }
 
 class elf_in;
@@ -398,33 +431,13 @@ public:
   {
     return pos != size;
   }
+
 public:
   bool check_crc () const;
   /* We store the CRC in the first 4 bytes, using host endianness.  */
   unsigned get_crc () const
   {
     return *(const unsigned *)&buffer[0];
-  }
-
-private:
-  /* Consume BYTES bytes of data.  Check there is sufficient data.  if
-     AVAIL is non-NULL, allow consuming less data.  Update *AVAIL with
-     count of consumption.  Return pointer to consumed data.  */
-  const char *use (unsigned bytes, unsigned *avail = NULL)
-  {
-    unsigned space = size - pos;
-    if (space < bytes)
-      {
-	bytes = space;
-	if (!avail)
-	  {
-	    set_overrun ();
-	    return NULL;
-	  }
-      }
-    if (avail)
-      *avail = bytes;
-    return parent::use (bytes);
   }
 
 public:
@@ -491,6 +504,12 @@ public:
   }
 
 public:
+  bool streaming_p () const
+  {
+    return buffer != NULL;
+  }
+
+public:
   void set_crc (unsigned *crc_ptr);
 
 public:
@@ -498,10 +517,6 @@ public:
   void begin ();
   /* Finish writing.  Spill to section by number.  */
   unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL);
-
-private:
-  /* Generate space for S bytes, return pointer to them.  */
-  char *use (unsigned S);
 
 public:
   void u32 (unsigned);  /* Write uncompressed integer.  */
@@ -593,17 +608,6 @@ bytes_in::bfill ()
   bit_val = u32 ();
 }
 
-/* Emit BYTES bytes.  Extend buffer as necessary and return pointer to
-   space.  */
-
-char *
-bytes_out::use (unsigned bytes)
-{
-  if (size < pos + bytes)
-    extend ((pos + bytes) * 3/2);
-  return parent::use (bytes);
-}
-
 /* Bools are packed into bytes.  You cannot mix bools and non-bools.
    You must call bflush before emitting another type.  So batch your
    bools.
@@ -647,7 +651,7 @@ bytes_in::b ()
 void
 bytes_out::u32 (unsigned val)
 {
-  char *ptr = use (4);
+  char *ptr = write (4);
   ptr[0] = val;
   ptr[1] = val >> 8;
   ptr[2] = val >> 16;
@@ -658,13 +662,15 @@ unsigned
 bytes_in::u32 ()
 {
   unsigned val = 0;
-  if (const char *ptr = use (4))
+  if (const char *ptr = read (4))
     {
       val |= (unsigned char)ptr[0];
       val |= (unsigned char)ptr[1] << 8;
       val |= (unsigned char)ptr[2] << 16;
       val |= (unsigned char)ptr[3] << 24;
     }
+  else
+    set_overrun ();
 
   return val;
 }
@@ -674,15 +680,17 @@ bytes_in::u32 ()
 void
 bytes_out::c (unsigned char v)
 {
-  *use (1) = v;
+  *write (1) = v;
 }
 
 int
 bytes_in::c ()
 {
   int v = 0;
-  if (const char *ptr = use (1))
+  if (const char *ptr = read (1))
     v = (unsigned char)ptr[0];
+  else
+    set_overrun ();
   return v;
 }
 
@@ -692,7 +700,7 @@ bytes_in::c ()
 void
 bytes_out::i (int v)
 {
-  char *ptr = use (1);
+  char *ptr = write (1);
   if (v <= 0x3f && v >= -0x40)
     *ptr = v & 0x7f;
   else
@@ -706,7 +714,7 @@ bytes_out::i (int v)
 	for (probe = v >> 8; probe < -0x8; probe >>= 8)
 	  bytes++;
       *ptr = 0x80 | bytes << 4 | (probe & 0xf);
-      for (ptr = use (++bytes); bytes--; v >>= 8)
+      for (ptr = write (++bytes); bytes--; v >>= 8)
 	ptr[bytes] = v & 0xff;
     }
 }
@@ -715,7 +723,7 @@ int
 bytes_in::i ()
 {
   int v = 0;
-  if (const char *ptr = use (1))
+  if (const char *ptr = read (1))
     {
       v = *ptr & 0xff;
       if (v & 0x80)
@@ -724,20 +732,25 @@ bytes_in::i ()
 	  v &= 0xf;
 	  if (v & 0x8)
 	    v |= -1 ^ 0x7;
-	  if ((ptr = use (++bytes)))
+	  if ((ptr = read (++bytes)))
 	    while (bytes--)
 	      v = (v << 8) | (*ptr++ & 0xff);
+	  else
+	    set_overrun ();
 	}
       else if (v & 0x40)
 	v |= -1 ^ 0x3f;
     }
+  else
+    set_overrun ();
+
   return v;
 }
 
 void
 bytes_out::u (unsigned v)
 {
-  char *ptr = use (1);
+  char *ptr = write (1);
   if (v <= 0x7f)
     *ptr = v;
   else
@@ -747,7 +760,7 @@ bytes_out::u (unsigned v)
       for (probe = v >> 8; probe > 0xf; probe >>= 8)
 	bytes++;
       *ptr = 0x80 | bytes << 4 | probe;
-      for (ptr = use (++bytes); bytes--; v >>= 8)
+      for (ptr = write (++bytes); bytes--; v >>= 8)
 	ptr[bytes] = v & 0xff;
     }
 }
@@ -757,18 +770,22 @@ bytes_in::u ()
 {
   unsigned v = 0;
 
-  if (const char *ptr = use (1))
+  if (const char *ptr = read (1))
     {
       v = *ptr & 0xff;
       if (v & 0x80)
 	{
 	  unsigned bytes = (v >> 4) & 0x7;
 	  v &= 0xf;
-	  if ((ptr = use (++bytes)))
+	  if ((ptr = read (++bytes)))
 	    while (bytes--)
 	      v = (v << 8) | (*ptr++ & 0xff);
+	  else
+	    set_overrun ();
 	}
     }
+  else
+    set_overrun ();
 
   return v;
 }
@@ -776,7 +793,7 @@ bytes_in::u ()
 void
 bytes_out::wi (HOST_WIDE_INT v)
 {
-  char *ptr = use (1);
+  char *ptr = write (1);
   if (v <= 0x3f && v >= -0x40)
     *ptr = v & 0x7f;
   else
@@ -790,7 +807,7 @@ bytes_out::wi (HOST_WIDE_INT v)
 	for (probe = v >> 8; probe < -0x8; probe >>= 8)
 	  bytes++;
       *ptr = 0x80 | bytes << 4 | (probe & 0xf);
-      for (ptr = use (++bytes); bytes--; v >>= 8)
+      for (ptr = write (++bytes); bytes--; v >>= 8)
 	ptr[bytes] = v & 0xff;
     }
 }
@@ -799,7 +816,7 @@ HOST_WIDE_INT
 bytes_in::wi ()
 {
   HOST_WIDE_INT v = 0;
-  if (const char *ptr = use (1))
+  if (const char *ptr = read (1))
     {
       v = *ptr & 0xff;
       if (v & 0x80)
@@ -808,13 +825,18 @@ bytes_in::wi ()
 	  v &= 0xf;
 	  if (v & 0x8)
 	    v |= -1 ^ 0x7;
-	  if ((ptr = use (++bytes)))
+	  if ((ptr = read (++bytes)))
 	    while (bytes--)
 	      v = (v << 8) | (*ptr++ & 0xff);
+	  else
+	    set_overrun ();
 	}
       else if (v & 0x40)
 	v |= -1 ^ 0x3f;
     }
+  else
+    set_overrun ();
+
   return v;
 }
 
@@ -857,13 +879,15 @@ bytes_in::z ()
 void
 bytes_out::buf (const char *buf, size_t len)
 {
-  memcpy (use (len), buf, len);
+  memcpy (write (len), buf, len);
 }
 
 const char *
 bytes_in::buf (size_t len)
 {
-  const char *ptr = use (len);
+  const char *ptr = read (len);
+  if (!ptr)
+    set_overrun ();
 
   return ptr;
 }
@@ -909,7 +933,7 @@ bytes_out::printf (const char *format, ...)
 
  again:
   va_start (args, format);
-  char *ptr = use (len);
+  char *ptr = write (len);
   size_t actual = vsnprintf (ptr, len, format, args) + 1;
   va_end (args);
   if (actual > len)
@@ -1132,7 +1156,7 @@ private:
   unsigned size;
 
 protected:
-  bytes strings;  /* String table.  */
+  data strings;  /* String table.  */
 
   public:
   elf_in (FILE *s, int e)
@@ -1157,7 +1181,7 @@ protected:
 
 public:
   /* Read section by number.  */
-  bool read (bytes *, unsigned snum, unsigned type = SHT_PROGBITS);
+  bool read (data *, unsigned snum, unsigned type = SHT_PROGBITS);
   /* Find section by name.  */
   unsigned find (const char *name);
 
@@ -1429,7 +1453,7 @@ elf_in::read (void *buffer, size_t size)
 /* Read section SNUM of TYPE.  Return data buffer, or NULL on error.  */
 
 bool
-elf_in::read (bytes *b, unsigned snum, unsigned type)
+elf_in::read (data *b, unsigned snum, unsigned type)
 {
   if (!snum || snum >= sections->length ())
     return false;

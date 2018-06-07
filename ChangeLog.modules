@@ -1,6 +1,11 @@
 2018-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (struct data): Resurrect.  Move buffer extension here.
+	Update users.
+	(class bytes): Derive from data.
+
+	gcc/cp/
 	* module.c (struct data): Delete.  Move into ...
 	(struct bytes): ... here.  Update uses.
 
