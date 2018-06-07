@@ -1,3 +1,9 @@
+2018-06-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/85318
+	* c-decl.c (check_for_loop_decls): Add -Wc90-c99-compat warning about
+	for loop initial declarations.
+
 2018-05-30  David Pagan  <dave.pagan@oracle.com>
 
 	PR c/55976
