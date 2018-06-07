@@ -7,9 +7,11 @@ LIB2ADDEH += $(srcdir)/config/vxlib.c $(srcdir)/config/vxlib-tls.c
 # This ensures that the correct target headers are used; some VxWorks
 # system headers have names that collide with GCC's internal (host)
 # headers, e.g. regs.h. Make sure the local libgcc headers still
-# prevail (e.g. unwind.h).
-LIBGCC2_INCLUDES = -nostdinc \
-  -I. -I$(VSB_DIR)/h -I$(VSB_DIR)/share/h \
+# prevail (e.g. unwind.h), and that gcc provided header files intended
+# to be user visible eventually are visible as well.
+LIBGCC2_INCLUDES = -nostdinc -I. \
+  -I$(VSB_DIR)/h -I$(VSB_DIR)/share/h \
+  -I$(MULTIBUILDTOP)../../gcc/include \
   `case "/$(MULTIDIR)" in \
       */mrtp*) echo -I$(VSB_DIR)/usr/h/public -I$(VSB_DIR)/usr/h ;; \
       *) echo -I$(VSB_DIR)/krnl/h/system -I$(VSB_DIR)/krnl/h/public ;; \

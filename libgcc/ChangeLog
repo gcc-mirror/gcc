@@ -1,3 +1,10 @@
+2018-06-07  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC_INCLUDES): Add
+	-I$(MULTIBUILDTOP)../../gcc/include.
+	* config/t-vxworks7: Likewise. Reformat a bit to match
+	the t-vxworks layout.
+
 2018-06-07  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* config/i386/cpuinfo.h (processor_types): Add INTEL_TREMONT.
