@@ -57,6 +57,8 @@ static bool has_dimen_vector_ref (gfc_expr *);
 static int matmul_temp_args (gfc_code **, int *,void *data);
 static int index_interchange (gfc_code **, int*, void *);
 
+static bool is_fe_temp (gfc_expr *e);
+
 #ifdef CHECKING_P
 static void check_locus (gfc_namespace *);
 #endif
@@ -252,6 +254,9 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   if (expr1->ts.type != BT_CHARACTER
       || !gfc_expr_attr(expr1).allocatable
       || !expr1->ts.deferred)
+    return 0;
+
+  if (is_fe_temp (expr1))
     return 0;
 
   expr2 = gfc_discard_nops (co->expr2);
