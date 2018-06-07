@@ -1,3 +1,8 @@
+2018-06-07  Carl Love  <cel@us.ibm.com>
+
+        * gcc.target/powerpc/vsu/vec-cntlz-lsbb-2.c (dg-error): Update expected
+        error message.
+
 2018-06-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c/85318
