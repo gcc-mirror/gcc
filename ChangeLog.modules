@@ -1,5 +1,8 @@
 2018-06-07  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (struct data): Make buffer a pointer.  Redo interface.
+
 	Change integer on-disk format.
 	gcc/cp/
 	* module.c (bytes_{in,out}::{i,u,wi}): Reimplement.

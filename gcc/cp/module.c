@@ -267,9 +267,15 @@ typedef hash_map<void *,signed,ptr_int_traits> ptr_int_hash_map;
 
 struct data {
   size_t size;
-  char buffer[1];
+  char *buffer;
 
-private:
+public:
+  data ()
+    :size (0), buffer (NULL)
+  {
+  }
+
+  private:
   unsigned calc_crc () const;
 
 public:
@@ -283,11 +289,12 @@ public:
 
 public:
   /* new & delete semantics don't quite work.  */
-  static data *extend (data *, size_t);
-  static data *release (data *d)
+  void extend (size_t);
+  void release ()
   {
-    free (d);
-    return NULL;
+    free (buffer);
+    buffer = NULL;
+    size = 0;
   }
 };
 
@@ -338,16 +345,14 @@ data::check_crc () const
 }
 
 /* Extend the buffer to size A.  It is either not allocated, or
-   smaller than A.  Returns the new buffer object.  */
+   smaller than A.  */
 
-data *
-data::extend (data *c, size_t a)
+void
+data::extend (size_t a)
 {
-  gcc_checking_assert (!c || a > c->size);
-  c = XRESIZEVAR (data, c, offsetof (data, buffer) + a);
-  c->size = a;
-
-  return c;
+  gcc_checking_assert (a > size);
+  buffer = XRESIZEVAR (char, buffer, a);
+  size = a;
 }
 
 /* Encapsulated Lazy Records Of Named Declarations.
@@ -561,16 +566,16 @@ private:
   unsigned size;
 
 protected:
-  data *strings;  /* String table.  */
+  data strings;  /* String table.  */
 
   public:
   elf_in (FILE *s, int e)
-    :parent (s, e), size (0), strings (NULL)
+    :parent (s, e), size (0), strings ()
   {
   }
   ~elf_in ()
   {
-    gcc_checking_assert (!strings);
+    gcc_checking_assert (!strings.buffer);
   }
 
 public:
@@ -586,7 +591,7 @@ protected:
 
 public:
   /* Read section by number.  */
-  data *read (unsigned snum, unsigned type = SHT_PROGBITS);
+  bool read (data &, unsigned snum, unsigned type = SHT_PROGBITS);
   /* Find section by name.  */
   unsigned find (const char *name);
 
@@ -594,7 +599,7 @@ public:
   /* Release the string table, when we're done with it.  */
   void release ()
   {
-    strings = data::release (strings);
+    strings.release ();
   }
   /* Release string table, and all section information but those
      specified.  */
@@ -619,7 +624,7 @@ public:
      returns non-NULL.  */
   const char *name (unsigned offset)
   {
-    return &strings->buffer[offset < strings->size ? offset : 0];
+    return &strings.buffer[offset < strings.size ? offset : 0];
   }
 };
 
@@ -702,7 +707,7 @@ public:
 
 public:
   /* Add a section with contents or strings.  */
-  unsigned add (bool strings_p, unsigned name, const data *);
+  unsigned add (const data &, bool strings_p, unsigned name);
 
 public:
   /* Begin and end writing.  */
@@ -784,25 +789,25 @@ elf_in::read (void *buffer, size_t size)
 
 /* Read section SNUM of TYPE.  Return data buffer, or NULL on error.  */
 
-data *
-elf_in::read (unsigned snum, unsigned type)
+bool
+elf_in::read (struct data &b, unsigned snum, unsigned type)
 {
   if (!snum || snum >= sections->length ())
-    return NULL;
+    return false;
   const isection *sec = &(*sections)[snum];
   if (sec->type != type)
-    return NULL;
+    return false;
   if (fseek (stream, sec->offset, SEEK_SET))
     {
       set_error (errno);
-      return NULL;
+      return false;
     }
 
-  data *b = data::extend (NULL, sec->size);
-  if (read (b->buffer, b->size))
-    return b;
-  b = data::release (b);
-  return NULL;
+  b.extend (sec->size);
+  if (read (b.buffer, b.size))
+    return true;
+  b.release ();
+  return false;
 }
 
 /* Find a section NAME and TYPE.  Return section number or 0 on
@@ -909,15 +914,15 @@ elf_in::begin (location_t loc)
 
   if (strndx)
     {
-      strings = read (strndx, SHT_STRTAB);
+      read (strings, strndx, SHT_STRTAB);
       /* The string table should be at least one byte, with NUL chars
 	 at either end.  */
-      if (strings && !(strings->size && !strings->buffer[0]
-		       && !strings->buffer[strings->size - 1]))
-	strings = data::release (strings);
+      if (!(strings.size && !strings.buffer[0]
+	    && !strings.buffer[strings.size - 1]))
+	strings.release ();
     }
 
-  if (!strings)
+  if (!strings.size)
     goto malformed;
 
   return true;
@@ -1116,7 +1121,7 @@ elf_out::write (const void *buffer, size_t size)
    failure (0 is the undef section).  */
 
 unsigned
-elf_out::add (bool strings_p, unsigned name, const data *data)
+elf_out::add (const data &data, bool strings_p, unsigned name)
 {
   uint32_t off = pad ();
   if (!off)
@@ -1124,11 +1129,11 @@ elf_out::add (bool strings_p, unsigned name, const data *data)
   /* DATA will have included space for a CRC.  We don't care about tht
      for string sections.  */
   uint32_t disp = strings_p ? 4 : 0;
-  if (!write (data->buffer + disp, data->size - disp))
+  if (!write (data.buffer + disp, data.size - disp))
     return 0;
 
   return add (strings_p ? SHT_STRTAB : SHT_PROGBITS,
-	      name, off, data->size - disp,
+	      name, off, data.size - disp,
 	      strings_p ? SHF_STRINGS : SHF_NONE);
 }
 
@@ -1237,36 +1242,36 @@ elf_out::end ()
 
 class bytes {
 protected:
-  struct data *data;	/* Buffer being read/written.  */
+  struct data data;	/* Buffer being read/written.  */
   size_t pos;		/* Position in buffer.  */
   uint32_t bit_val;	/* Bit buffer.  */
   unsigned bit_pos;	/* Next bit in bit buffer.  */
 
 public:
   bytes ()
-    :data (NULL), pos (4), bit_val (0), bit_pos (0)
+    :data (), pos (4), bit_val (0), bit_pos (0)
   {}
   ~bytes () 
   {
-    gcc_checking_assert (!data);
+    gcc_checking_assert (!data.size);
   }
 
 public:
   bool streaming_p () const
   {
-    return data != NULL;
+    return data.buffer;
   }
 
 protected:
   /* Begin streaming.  Set buffer postion for crc  */
   void begin ()
   {
-    gcc_checking_assert (!data && pos == 4);
+    gcc_checking_assert (!data.buffer && !data.size && pos == 4);
   }
   /* Complete streaming.  Release the buffer.  */
   void end ()
   {
-    data = data::release (data);
+    data.release ();
   }
 
 protected:
@@ -1286,7 +1291,7 @@ protected:
      Does NOT check if the bytes are available.  */
   char *use (unsigned bytes)
   {
-    char *res = &data->buffer[pos];
+    char *res = &data.buffer[pos];
     pos += bytes;
     return res;
   }
@@ -1333,12 +1338,12 @@ public:
   /* Return true if there is unread data.  */
   bool more_p () const
   {
-    return pos != data->size;
+    return pos != data.size;
   }
   /* Return the buffer's CRC.  */
   unsigned get_crc () const
   {
-    return data->get_crc ();
+    return data.get_crc ();
   }
 
 private:
@@ -1347,7 +1352,7 @@ private:
      count of consumption.  Return pointer to consumed data.  */
   const char *use (unsigned bytes, unsigned *avail = NULL)
   {
-    unsigned space = data->size - pos;
+    unsigned space = data.size - pos;
     if (space < bytes)
       {
 	bytes = space;
@@ -1495,8 +1500,8 @@ bytes_in::bfill ()
 char *
 bytes_out::use (unsigned bytes)
 {
-  if (data->size < pos + bytes)
-    data = data::extend (data, (pos + bytes) * 3/2);
+  if (data.size < pos + bytes)
+    data.extend ((pos + bytes) * 3/2);
   return parent::use (bytes);
 }
 
@@ -1835,11 +1840,11 @@ bytes_in::begin (location_t loc, elf_in *source, unsigned snum, const char *name
 {
   parent::begin ();
 
-  data = source->read (snum);
+  source->read (data, snum);
 
-  if (!data || !data->check_crc ())
+  if (!data.size || !data.check_crc ())
     {
-      data = data::release (data);
+      data.release ();
       source->set_error (elf::E_BAD_DATA);
       if (name)
 	error_at (loc, "section %qs is missing or corrupted", name);
@@ -1856,7 +1861,7 @@ void
 bytes_out::begin ()
 {
   parent::begin ();
-  data = data::extend (0, 200);
+  data.extend (200);
 }
 
 /* Finish writing buffer.  Stream out to SINK as named section NAME.
@@ -1869,9 +1874,9 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
   lengths[3] += pos;
   spans[3]++;
 
-  data->size = pos;
-  data->set_crc (crc_ptr);
-  unsigned sec_num = sink->add (!crc_ptr, name, data);
+  data.size = pos;
+  data.set_crc (crc_ptr);
+  unsigned sec_num = sink->add (data, !crc_ptr, name);
   parent::end ();
 
   return sec_num;
