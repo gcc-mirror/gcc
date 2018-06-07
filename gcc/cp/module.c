@@ -121,6 +121,11 @@ Classes used:
 
    module_mapper - mapper object
 
+   The ELROND objects use FILE * handling.  It may be worth
+   investigating using mmap, when available, which I guess would
+   reduce copying.  It would restrict the ability to freeze files
+   actively being read when a dependency needs to be opened.
+
    I have a confession: tri-valued bools are not the worst thing in
    this file.  */
 
@@ -1253,15 +1258,6 @@ public:
   }
 
 protected:
-  /* Maximum bytes needed for a SIZE-byte integer in sleb or uleb
-     encodings.  Each 7 input bytes need an additional byte of output,
-     rounded up.  */
-  static unsigned leb_bytes (unsigned size)
-  {
-    return size + (size + 6) / 7;
-  }
-
-protected:
   /* Begin streaming.  Set buffer postion for crc  */
   void begin ()
   {
@@ -1586,160 +1582,135 @@ bytes_in::c ()
   return v;
 }
 
-/* Ints are written as sleb128.  When reading we must be careful to
-   cope with slebs right at the end of the buffer.
-
-   I suppose we could always write buffers to have sufficient tail
-   padding?  */
+/* Ints 7-bit as a byte. Otherwise a 3bit count of following bytes in
+   big-endian form.  4 bits are in the first byte.  */
 
 void
 bytes_out::i (int v)
 {
-  unsigned max = leb_bytes (sizeof (v));
-  char *ptr = use (max);
-  unsigned count = 0;
-
-  int end = v < 0 ? -1 : 0;
-  bool more;
-  do
+  char *ptr = use (1);
+  if (v <= 0x3f && v >= -0x40)
+    *ptr = v & 0x7f;
+  else
     {
-      unsigned byte = v & 127;
-      v >>= 6; /* Signed shift.  */
-      more = v != end;
-      ptr[count++] = byte | (more << 7);
-      v >>= 1; /* Signed shift.  */
+      unsigned bytes = 0;
+      int probe;
+      if (v >= 0)
+	for (probe = v >> 8; probe > 0x7; probe >>= 8)
+	  bytes++;
+      else
+	for (probe = v >> 8; probe < -0x8; probe >>= 8)
+	  bytes++;
+      *ptr = 0x80 | bytes << 4 | (probe & 0xf);
+      for (ptr = use (++bytes); bytes--; v >>= 8)
+	ptr[bytes] = v & 0xff;
     }
-  while (more);
-  unuse (max - count);
 }
 
 int
 bytes_in::i ()
 {
   int v = 0;
-  unsigned max = leb_bytes (sizeof (v));
-  const char *ptr = use (max, &max);
-  unsigned count = 0;
-
-  unsigned bit = 0;
-  unsigned byte;
-  do
+  if (const char *ptr = use (1))
     {
-      if (count == max)
+      v = *ptr & 0xff;
+      if (v & 0x80)
 	{
-	  set_overrun ();
-	  return 0;
+	  unsigned bytes = (v >> 4) & 0x7;
+	  v &= 0xf;
+	  if (v & 0x8)
+	    v |= -1 ^ 0x7;
+	  if ((ptr = use (++bytes)))
+	    while (bytes--)
+	      v = (v << 8) | (*ptr++ & 0xff);
 	}
-      byte = ptr[count++];
-      v |= (byte & 127) << bit;
-      bit += 7;
+      else if (v & 0x40)
+	v |= -1 ^ 0x3f;
     }
-  while (byte & 128);
-  unuse (max - count);
-
-  if (byte & 0x40 && bit < sizeof (v) * 8)
-    v |= ~(unsigned)0 << bit;
-
   return v;
 }
-
-/* Unsigned are written as uleb128.  */
 
 void
 bytes_out::u (unsigned v)
 {
-  unsigned max = leb_bytes (sizeof (v));
-  char *ptr = use (max);
-  unsigned count = 0;
-
-  bool more;
-  do
+  char *ptr = use (1);
+  if (v <= 0x7f)
+    *ptr = v;
+  else
     {
-      unsigned byte = v & 127;
-      v >>= 7;
-      more = v != 0;
-      ptr[count++] = byte | (more << 7);
+      unsigned bytes = 0;
+      unsigned probe;
+      for (probe = v >> 8; probe > 0xf; probe >>= 8)
+	bytes++;
+      *ptr = 0x80 | bytes << 4 | probe;
+      for (ptr = use (++bytes); bytes--; v >>= 8)
+	ptr[bytes] = v & 0xff;
     }
-  while (more);
-  unuse (max - count);
 }
 
 unsigned
 bytes_in::u ()
 {
   unsigned v = 0;
-  unsigned max = leb_bytes (sizeof (v));
-  const char *ptr = use (max, &max);
-  unsigned count = 0;
 
-  unsigned bit = 0;
-  unsigned byte;
-  do
+  if (const char *ptr = use (1))
     {
-      if (count == max)
+      v = *ptr & 0xff;
+      if (v & 0x80)
 	{
-	  set_overrun ();
-	  return 0;
+	  unsigned bytes = (v >> 4) & 0x7;
+	  v &= 0xf;
+	  if ((ptr = use (++bytes)))
+	    while (bytes--)
+	      v = (v << 8) | (*ptr++ & 0xff);
 	}
-      byte = ptr[count++];
-      v |= (byte & 127) << bit;
-      bit += 7;
     }
-  while (byte & 128);
-  unuse (max - count);
 
   return v;
 }
 
-/* Wide Ints are written as sleb128.  */
-
 void
 bytes_out::wi (HOST_WIDE_INT v)
 {
-  unsigned max = leb_bytes (sizeof (v));
-  char *ptr = use (max);
-  unsigned count = 0;
-
-  int end = v < 0 ? -1 : 0;
-  bool more;
-  do
+  char *ptr = use (1);
+  if (v <= 0x3f && v >= -0x40)
+    *ptr = v & 0x7f;
+  else
     {
-      unsigned byte = v & 127;
-      v >>= 6; /* Signed shift.  */
-      more = v != end;
-      ptr[count++] = byte | (more << 7);
-      v >>= 1; /* Signed shift.  */
+      unsigned bytes = 0;
+      HOST_WIDE_INT probe;
+      if (v >= 0)
+	for (probe = v >> 8; probe > 0x7; probe >>= 8)
+	  bytes++;
+      else
+	for (probe = v >> 8; probe < -0x8; probe >>= 8)
+	  bytes++;
+      *ptr = 0x80 | bytes << 4 | (probe & 0xf);
+      for (ptr = use (++bytes); bytes--; v >>= 8)
+	ptr[bytes] = v & 0xff;
     }
-  while (more);
-  unuse (max - count);
 }
 
 HOST_WIDE_INT
 bytes_in::wi ()
 {
   HOST_WIDE_INT v = 0;
-  unsigned max = leb_bytes (sizeof (v));
-  const char *ptr = use (max, &max);
-  unsigned count = 0;
-
-  unsigned bit = 0;
-  unsigned byte;
-  do
+  if (const char *ptr = use (1))
     {
-      if (count == max)
+      v = *ptr & 0xff;
+      if (v & 0x80)
 	{
-	  set_overrun ();
-	  return 0;
+	  unsigned bytes = (v >> 4) & 0x7;
+	  v &= 0xf;
+	  if (v & 0x8)
+	    v |= -1 ^ 0x7;
+	  if ((ptr = use (++bytes)))
+	    while (bytes--)
+	      v = (v << 8) | (*ptr++ & 0xff);
 	}
-      byte = ptr[count++];
-      v |= (unsigned HOST_WIDE_INT)(byte & 127) << bit;
-      bit += 7;
+      else if (v & 0x40)
+	v |= -1 ^ 0x3f;
     }
-  while (byte & 128);
-  unuse (max - count);
-
-  if (byte & 0x40 && bit < sizeof (v) * 8)
-    v |= ~(unsigned HOST_WIDE_INT)0 << bit;
   return v;
 }
 
@@ -3069,9 +3040,9 @@ set_bmi_repo (char *r)
    we are.  */
 
 static const char *
-make_bmi_path (const char *to)
+maybe_add_bmi_prefix (const char *to)
 {
-  if (bmi_repo)
+  if (bmi_repo && !IS_ABSOLUTE_PATH (to))
     {
       size_t len = strlen (to);
       if (bmi_path_alloc < bmi_repo_length + len + 2)
@@ -3089,8 +3060,11 @@ make_bmi_path (const char *to)
   return to;
 }
 
+/* If BMI path TO begins with the prefix, return a pointer to the
+   trailing suffix.  Otherwise return TO.  */
+
 static char *
-drop_bmi_prefix (char *to)
+maybe_strip_bmi_prefix (char *to)
 {
   if (bmi_repo)
     {
@@ -6854,7 +6828,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      }
 	    
 	    starting = false;
-	    file = xstrdup (drop_bmi_prefix (file));
+	    file = xstrdup (maybe_strip_bmi_prefix (file));
 	    module_state *state
 	      = module_state::insert_mapping (get_identifier (mod), file);
 	    if (state->filename != file)
@@ -7208,7 +7182,7 @@ module_mapper::bmi_resp (const module_state *state)
 
     case 0: /* BMI $bmifile  */
       filename = response_token (state->from_loc, true);
-      filename = drop_bmi_prefix (filename);
+      filename = maybe_strip_bmi_prefix (filename);
       response_eol (state->from_loc);
       break;
 
@@ -9236,7 +9210,7 @@ module_state::maybe_defrost ()
       if (!lazy_open)
 	freeze_an_elf ();
       dump () && dump ("Defrosting %s", filename);
-      from->defrost (make_bmi_path (filename));
+      from->defrost (maybe_add_bmi_prefix (filename));
       lazy_open--;
     }
 }
@@ -9668,7 +9642,7 @@ module_state::do_import (char const *fname, bool check_crc)
   int e = ENOENT;
   if (filename)
     {
-      stream = fopen (make_bmi_path (filename), "rb");
+      stream = fopen (maybe_add_bmi_prefix (filename), "rb");
       e = errno;
     }
 
@@ -9954,7 +9928,7 @@ finish_module ()
       int e = ENOENT;
       if (state->filename)
 	{
-	  stream = fopen (make_bmi_path (state->filename), "wb");
+	  stream = fopen (maybe_add_bmi_prefix (state->filename), "wb");
 	  e = errno;
 	}
       unsigned n = dump.push (state);

@@ -1,5 +1,10 @@
 2018-06-07  Nathan Sidwell  <nathan@acm.org>
 
+	Change integer on-disk format.
+	gcc/cp/
+	* module.c (bytes_{in,out}::{i,u,wi}): Reimplement.
+	(make_bmi_path): Don't prefix absolute paths.
+
 	BMI repo directory
 	libiberty/
 	* pex-unix.c: Fixup optimization issues.
