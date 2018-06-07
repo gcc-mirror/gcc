@@ -725,10 +725,25 @@ msp430_mcu_name (void)
   if (target_mcu)
     {
       unsigned int i;
-      static char mcu_name [64];
+      unsigned int start_upper;
+      unsigned int end_upper;
+      static char mcu_name[64];
 
-      snprintf (mcu_name, sizeof (mcu_name) - 1, "__%s__", target_mcu);
-      for (i = strlen (mcu_name); i--;)
+      /* The 'i' in the device name symbol for msp430i* devices must be lower
+	 case, to match the expected symbol in msp430.h.  */
+      if (strncmp (target_mcu, "msp430i", 7) == 0)
+	{
+	  snprintf (mcu_name, sizeof (mcu_name) - 1, "__MSP430i%s__",
+		    target_mcu + 7);
+	  start_upper = 9;
+	}
+      else
+	{
+	  snprintf (mcu_name, sizeof (mcu_name) - 1, "__%s__", target_mcu);
+	  start_upper = 2;
+	}
+      end_upper = strlen (mcu_name) - 2;
+      for (i = start_upper; i < end_upper; i++)
 	mcu_name[i] = TOUPPER (mcu_name[i]);
       return mcu_name;
     }

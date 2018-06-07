@@ -1,3 +1,13 @@
+2018-06-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc/config/msp430/msp430.c (msp430_mcu_name): Set the "i" in the
+	symbol defined for msp430i* devices to be lower case.
+
+	gcc/testsuite/gcc.target/msp430/
+	* msp430i-device-symbol.c: New test.
+	* msp430f-device-symbol.c: New test.
+	* msp430.h: New test header file.
+
 2018-06-07  Richard Biener  <rguenther@suse.de>
 
 	* graphite-sese-to-poly.c (extract_affine): Avoid unneded
