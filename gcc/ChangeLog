@@ -1,3 +1,10 @@
+2018-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85935
+	* graphite-scop-detection.c (find_params_in_bb): Analyze
+	condition operands with respect to the correct loop.  Assert
+	the analysis doesn't fail.
+
 2018-06-04  Carl Love  <cel@us.ibm.com>
 
 	* gcc/config/rs6000/vsx.md (first_match_index_<mode>): Calculate index

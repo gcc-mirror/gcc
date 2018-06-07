@@ -1,3 +1,8 @@
+2018-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85935
+	* gcc.dg/graphite/pr85935.c: New testcase.
+
 2018-06-04  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-8-p9-runnable.c: Add additional
