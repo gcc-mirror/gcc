@@ -1,5 +1,10 @@
 2018-06-07  Carl Love  <cel@us.ibm.com>
 
+	* gcc.target/powerpc/builtins-3-p9-runnable.c: Add debug print
+	statements.
+
+2018-06-07  Carl Love  <cel@us.ibm.com>
+
         * gcc.target/powerpc/vsu/vec-cntlz-lsbb-2.c (dg-error): Update expected
         error message.
 

@@ -5214,8 +5214,9 @@
    UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTH))]
   "TARGET_P9_VECTOR"
 {
-  int vals[16] = {15, 14, 0, 0, 13, 12, 0, 0, 11, 10, 0, 0, 9, 8, 0, 0};
   int i;
+  int vals_le[16] = {15, 14, 0, 0, 13, 12, 0, 0, 11, 10, 0, 0, 9, 8, 0, 0};
+  int vals_be[16] = {7, 6, 0, 0, 5, 4, 0, 0, 3, 2, 0, 0, 1, 0, 0, 0};
 
   rtx rvals[16];
   rtx mask = gen_reg_rtx (V16QImode);
@@ -5223,11 +5224,15 @@
   rtvec v;
 
   for (i = 0; i < 16; i++)
-    rvals[i] = GEN_INT (vals[i]);
+    if (!BYTES_BIG_ENDIAN)
+      rvals[i] = GEN_INT (vals_le[i]);
+    else
+      rvals[i] = GEN_INT (vals_be[i]);
 
   /* xvcvhpsp - vector convert F16 to vector F32 requires the four F16
      inputs in half words 1,3,5,7 (IBM numbering).  Use xxperm to move
-     src half words 0,1,2,3 for the conversion instruction.  */
+     src half words 0,1,2,3 (LE), src half words 4,5,6,7 (BE) for the
+     conversion instruction.  */
   v = gen_rtvec_v (16, rvals);
   emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vperm_v8hiv16qi (tmp, operands[1],
@@ -5244,7 +5249,9 @@
 	UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTL))]
   "TARGET_P9_VECTOR"
 {
-  int vals[16] = {7, 6, 0, 0, 5, 4, 0, 0, 3, 2, 0, 0, 1, 0, 0, 0};
+  int vals_le[16] = {7, 6, 0, 0, 5, 4, 0, 0, 3, 2, 0, 0, 1, 0, 0, 0};
+  int vals_be[16] = {15, 14, 0, 0, 13, 12, 0, 0, 11, 10, 0, 0, 9, 8, 0, 0};
+
   int i;
   rtx rvals[16];
   rtx mask = gen_reg_rtx (V16QImode);
@@ -5252,11 +5259,15 @@
   rtvec v;
 
   for (i = 0; i < 16; i++)
-    rvals[i] = GEN_INT (vals[i]);
+    if (!BYTES_BIG_ENDIAN)
+      rvals[i] = GEN_INT (vals_le[i]);
+    else
+      rvals[i] = GEN_INT (vals_be[i]);
 
   /* xvcvhpsp - vector convert F16 to vector F32 requires the four F16
      inputs in half words 1,3,5,7 (IBM numbering).  Use xxperm to move
-     src half words 4,5,6,7 for the conversion instruction.  */
+     src half words 4,5,6,7 (LE), src half words 0,1,2,3 (BE) for the
+     conversion instruction.  */
   v = gen_rtvec_v (16, rvals);
   emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vperm_v8hiv16qi (tmp, operands[1],
