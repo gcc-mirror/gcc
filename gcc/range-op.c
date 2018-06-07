@@ -1401,6 +1401,25 @@ operator_bitwise_and::apply_mask_to_range (irange &r, const irange& val,
       r.set_range (type, mask, mask);
       return true;
     }
+  // FIXME   This following approach is flawed when the sign bit is set
+  // void boo (char t);
+  // int foo(char c) {
+  //   char t = c & 0xf0;
+  //   boo (t);
+  // }
+  // This is because the unsigned range we find when applying the mask is
+  // [16, 240], and when we cast back to a signed value we get a ange of
+  // [-128, -16][0, 0][16, 127] char
+  // We lose the information that the signed value SHOULD be [16, 112]
+  // as the unsigned range alone goes from 16-240.  we need to treat 
+  // each subrange seperately, doing all the positives and then all the
+  // negatives, and maiking sure 0 isnt in any of the ranges. we'll
+  // add that in later.
+  //  Also note this is currently only working on the range as a whole, not
+  //  for each subrange.. which is also flawed :-P
+  //
+  //  Perhaps revert to the striaght VRP version until we think this through
+  //  better and do a more complete job.
 
   // Process the entire range as if it were unsigned, then convert back at 
   // the end if need be.
