@@ -1,3 +1,8 @@
+2018-06-07  Carl Love  <cel@us.ibm.com>
+
+	* gcc/config/rs6000/vsx.md (vextract_fp_from_shorth,
+	vextract_fp_from_shortl): Add BE support.
+
 2018-06-07  Paul Koning  <ni1d@arrl.net>
 
 	* compare-elim.c (try_merge_compare): Don't merge compare if
