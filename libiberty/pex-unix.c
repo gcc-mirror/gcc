@@ -573,12 +573,16 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
   /* We vfork and then set environ in the child before calling execvp.
      This clobbers the parent's environ so we need to restore it.
      It would be nice to use one of the exec* functions that takes an
-     environment as a parameter, but that may have portability issues.  */
-  char **save_environ = environ;
+     environment as a parameter, but that may have portability
+     issues.  It is marked volatile so the child doesn't consider it a
+     dead variable and therefore clobber where ever it is stored.  */
+  char **volatile save_environ = environ;
 
   /* If we are using a true vfork, these allow the child to convey an
      error to the parent immediately -- rather than discover it later
-     when trying to communicate.  */
+     when trying to communicate.  Notice we're already in undefined
+     territory by not immediately calling execv[p] or _exit in the
+     child. */
   volatile int child_errno = 0;
   const char *volatile child_bad_fn = NULL;
 
@@ -685,7 +689,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
       return (pid_t) -1;
 
     case -1:
-      bad_fn = IS_FAKE_VFORK ? "fork" : "vfork";
+      child_bad_fn = IS_FAKE_VFORK ? "fork" : "vfork";
       /* FALLTHROUGH */
 
     default:
@@ -698,16 +702,16 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	 the child's copy of environ.  */
       environ = save_environ;
 
+      /* bad_fn may have been clobbered by the child, because it
+	 becoes dead there.  */
+      bad_fn = child_bad_fn;
       if (!IS_FAKE_VFORK)
 	{
 	  int err = child_errno;
 	  if (err != 0)
-	    {
-	      /* The child managed to give us an error, before failing to
-		 start.  Use that.  */
-	      errno = err;
-	      bad_fn = child_bad_fn;
-	    }
+	    /* The child managed to give us an error, before failing to
+	       start.  Use that.  */
+	    errno = err;
 	}
 
       if (!bad_fn && in != STDIN_FILE_NO && close (in) < 0)

@@ -2530,6 +2530,12 @@ bool module_state_hash::equal (const value_type existing,
 /* Mapper name.  */
 static const char *module_mapper_name;
 
+/* BMI repository path and workspace.  */
+static char *bmi_repo;
+static size_t bmi_repo_length;
+static char *bmi_path;
+static size_t bmi_path_alloc;
+
 /* Global trees.  */
 const std::pair<tree *, unsigned> module_state::global_trees[] =
   {
@@ -3032,6 +3038,72 @@ noisy_p ()
   diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
 
   return true;
+}
+
+/* Set the bmi repo.  Strip trailing '/', '.' becomes NULL.  */
+
+static void
+set_bmi_repo (char *r)
+{
+  XDELETEVEC (bmi_repo);
+  XDELETEVEC (bmi_path);
+  bmi_path_alloc = 0;
+
+  bmi_repo = NULL;
+  bmi_repo_length = 0;
+  if (r)
+    {
+      size_t len = strlen (r);
+      if (len > 1 && IS_DIR_SEPARATOR (r[len-1]))
+	r[--len] = 0;
+      if (0 != strcmp (r, "."))
+	{
+	  bmi_repo = XNEWVEC (char, len + 1);
+	  memcpy (bmi_repo, r, len + 1);
+	  bmi_repo_length = len;
+	}
+    }
+}
+
+/* TO is a repo-relative name.  Provide one that we may use from where
+   we are.  */
+
+static const char *
+make_bmi_path (const char *to)
+{
+  if (bmi_repo)
+    {
+      size_t len = strlen (to);
+      if (bmi_path_alloc < bmi_repo_length + len + 2)
+	{
+	  XDELETEVEC (bmi_path);
+	  bmi_path_alloc = bmi_repo_length + len * 2 + 2;
+	  bmi_path = XNEWVEC (char, bmi_path_alloc);
+	  memcpy (bmi_path, bmi_repo, bmi_repo_length);
+	  bmi_path[bmi_repo_length] = DIR_SEPARATOR;
+	}
+      memcpy (&bmi_path[bmi_repo_length + 1], to, len + 1);
+      to = bmi_path;
+    }
+  
+  return to;
+}
+
+static char *
+drop_bmi_prefix (char *to)
+{
+  if (bmi_repo)
+    {
+      if (0 == strncmp (to, bmi_repo, bmi_repo_length))
+	{
+	  char *res = to;
+	  for (size_t probe = bmi_repo_length;
+	       IS_DIR_SEPARATOR (to[probe]);)
+	    res = &to[++probe];
+	  to = res;
+	}
+    }
+  return to;
 }
 
 /* Instrumentation gathered writing bytes.  */
@@ -6750,6 +6822,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
       /* A mapping file.  Read it.  */
       dump () && dump ("Reading mapping file %s", name);
 
+      bool starting = true;
       for (int r; (r = get_response (loc)) >= 0;)
 	if (r)
 	  {
@@ -6769,20 +6842,28 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      }
 
 	    if (!response_eol (loc, ignore))
-	      ;
-	    else if (file)
+	      continue;
+
+	    if (!file)
+	      continue;
+
+	    if (starting && 0 == strcmp (mod, "$root"))
 	      {
-		file = xstrdup (file);
-		module_state *state
-		  = module_state::insert_mapping (get_identifier (mod), file);
-		if (state->filename != file)
-		  {
-		    if (strcmp (state->filename, file))
-		      warning_at (loc, 0,
-				  "ignoring conflicting mapping of %qE to %qs",
-				  state->name, file);
-		    free (file);
-		  }
+		set_bmi_repo (file);
+		continue;
+	      }
+	    
+	    starting = false;
+	    file = xstrdup (drop_bmi_prefix (file));
+	    module_state *state
+	      = module_state::insert_mapping (get_identifier (mod), file);
+	    if (state->filename != file)
+	      {
+		if (strcmp (state->filename, file))
+		  warning_at (loc, 0,
+			      "ignoring conflicting mapping of %qE to %qs",
+			      state->name, file);
+		free (file);
 	      }
 	  }
       fclose (from);
@@ -7077,12 +7158,19 @@ module_mapper::handshake (location_t loc, const char *cookie)
       break;
 
     case 0: /* HELLO $ver $attr */
-      if (char *ver = response_token (loc))
-	dump () && dump ("Connected to mapper version %s", ver);
-      /* Read, ignore attribs.  */
-      response_token (loc);
-      response_eol (loc);
-      ok = true;
+      {
+	if (char *ver = response_token (loc))
+	  dump () && dump ("Connected to mapper version %s", ver);
+	/* Read, ignore attribs.  */
+	response_token (loc);
+	char *repo = response_token (loc, true);
+	if (response_eol (loc))
+	  {
+	    if (repo)
+	      set_bmi_repo (repo);
+	    ok = true;
+	  }
+      }
       break;
 
     case 1: /* ERROR $msg */
@@ -7120,6 +7208,7 @@ module_mapper::bmi_resp (const module_state *state)
 
     case 0: /* BMI $bmifile  */
       filename = response_token (state->from_loc, true);
+      filename = drop_bmi_prefix (filename);
       response_eol (state->from_loc);
       break;
 
@@ -7278,74 +7367,6 @@ module_state::get_option_string  ()
   return opt_str;
 }
 
-/* Make pathname TO relative to FROM.  */
-
-static char *
-relativize_import (const char *from, char *&real_from, char *to)
-{
-  char *real_to = NULL;
-
-  if (IS_ABSOLUTE_PATH (from) == IS_ABSOLUTE_PATH (to))
-    {
-      size_t last_dir = strlen (from);
-      while (last_dir && !IS_DIR_SEPARATOR (from[last_dir]))
-	last_dir--;
-      if (0 == strncmp (from, to, last_dir))
-	{
-	  /* TO is in FROM's dir, or a subpath thereof.   It's
-	     directly reachable by removing the LAST_DIR prefix.  */
-	  memmove (to, to + last_dir, strlen (to + last_dir) + 1);
-	  return to;
-	}
-    }
-  
-  /* These are not directly comparable.  Figure the real paths and
-     process them.  */
-  if (!real_from)
-    real_from = lrealpath (from);
-  if (real_from)
-    real_to = lrealpath (to);
-
-  if (real_to
-      /* lrealpath can simply return a copy.  */
-      && IS_ABSOLUTE_PATH (real_from)
-      && IS_ABSOLUTE_PATH (real_to))
-    {
-      size_t last_dir = 0;
-      for (size_t pos = 0; real_from[pos]; pos++)
-	if (real_from[pos] != real_to[pos])
-	  break;
-	else if (IS_DIR_SEPARATOR (real_from[pos]))
-	  /* Canonicalization will have canonicalized the dir
-	     separator, so we don't need to consider two different
-	     ones in the two paths.  */
-	  last_dir = pos + 1;
-
-      unsigned dir_count = 0;
-      for (size_t pos = last_dir; real_from[pos]; pos++)
-	if (IS_DIR_SEPARATOR (real_from[pos]))
-	  dir_count++;
-
-      size_t to_len = strlen (real_to + last_dir);
-      char *rel_path = XNEWVEC (char, to_len + 1 + 3 * dir_count);
-      size_t pos = 0;
-      while (dir_count--)
-	{
-	  rel_path[pos++] = '.';
-	  rel_path[pos++] = '.';
-	  rel_path[pos++] = DIR_SEPARATOR;
-	}
-
-      memcpy (rel_path + pos, real_to + last_dir, to_len + 1);
-      free (real_to);
-      return rel_path;
-    }
-
-  /* Give up.  The importer will ask the mapper.  */
-  to[0] = 0;
-  return to;
-}
-
 /* A human-readable README section.  It is a STRTAB that may be
    extracted with:
      readelf -p.gnu.c++.README $(module).nms */
@@ -7378,12 +7399,8 @@ module_state::write_readme (elf_out *to, const char *options)
     {
       module_state *state = (*modules)[ix];
       if (state->direct)
-	{
-	  state->filename
-	    = relativize_import (filename, real_from, state->filename);
-	  readme.printf ("import:%s %s",
-			 IDENTIFIER_POINTER (state->name), state->filename);
-	}
+	readme.printf ("import:%s %s",
+		       IDENTIFIER_POINTER (state->name), state->filename);
     }
   if (real_from)
     free (real_from);
@@ -9219,7 +9236,7 @@ module_state::maybe_defrost ()
       if (!lazy_open)
 	freeze_an_elf ();
       dump () && dump ("Defrosting %s", filename);
-      from->defrost (filename);
+      from->defrost (make_bmi_path (filename));
       lazy_open--;
     }
 }
@@ -9651,7 +9668,7 @@ module_state::do_import (char const *fname, bool check_crc)
   int e = ENOENT;
   if (filename)
     {
-      stream = fopen (filename, "rb");
+      stream = fopen (make_bmi_path (filename), "rb");
       e = errno;
     }
 
@@ -9937,7 +9954,7 @@ finish_module ()
       int e = ENOENT;
       if (state->filename)
 	{
-	  stream = fopen (state->filename, "wb");
+	  stream = fopen (make_bmi_path (state->filename), "wb");
 	  e = errno;
 	}
       unsigned n = dump.push (state);
@@ -9962,6 +9979,7 @@ finish_module ()
       state->release ();
     }
 
+  set_bmi_repo (NULL);
   module_mapper::fini (input_location);
 }
 

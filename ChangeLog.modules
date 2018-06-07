@@ -1,3 +1,19 @@
+2018-06-07  Nathan Sidwell  <nathan@acm.org>
+
+	BMI repo directory
+	libiberty/
+	* pex-unix.c: Fixup optimization issues.
+	gcc/cp/
+	* cxx-module-mapper.sh: Add repo to HELLO.
+	* module.c (bmi_repo, bmi_repo_length, bmi_path, bmi_path_alloc): New.
+	(set_bmi_repo, make_bmi_path, drop_bmi_prefix): New.
+	(module_mapper::{handshake,module_mapper}): Repo location from file.
+	(relativize_import): Delete.
+	(module_state::{write_readme,maybe_defrost,do_import,finish_module):
+	Adjust.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Document bmi repo.
+
 2018-06-06  Nathan Sidwell  <nathan@acm.org>
 
 	Better pex-unix.

@@ -132,7 +132,7 @@ cmd () {
 	(HELLO)
 	    if test "$2" = $VERSION ; then
 		main="$4"
-		resp="HELLO $VERSION 0"
+		resp="HELLO $VERSION 0 ."
 	    else
 		resp="ERROR Bad version (expect $VERSION)"
 	    fi

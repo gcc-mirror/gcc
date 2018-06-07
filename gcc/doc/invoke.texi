@@ -29270,12 +29270,14 @@ operand may have one of the following forms:
 @item @var{number}
 @itemx @var{number}?@var{cookie}
 A file number associated with a bidirectional streaming socket.  The spawning
-environment must have made this available.  
+environment must have made this available.  FIXME: I am considering
+removing this alternative.
 
 @item @var{number},@var{number}
 @itemx @var{number},@var{number}?@var{cookie}
 Two file numbers associated with read and write pipes.  The spawning
-environment must have made these available.
+environment must have made these available.  FIXME: I am considering
+removing this alternative.
 
 @item @var{hostname}:@var{port}
 @itemx :@var{port}
@@ -29303,7 +29305,9 @@ one of the arguments delivered to the program to contain a space).
 A mapping file consisting of space-separated module-name, filename
 pairs, one per line.  Only the mappings for the direct imports and any
 module export name need be provided.  If other mappings are provided,
-they override those stored in any imported BMI files.
+they override those stored in any imported BMI files.  A repository
+root may be specified in the mapping file by using @samp{$root} as the
+module name in the first active line.
 
 @end table
 
@@ -29341,7 +29345,8 @@ of @samp{BMI @var{bmipath}}, @samp{SEARCH @var{srcbase}} or
 fulfilable, the response is @samp{ERROR [@var{msg}]}.  Usually an
 error response will cause compilation to terminate.  When the a
 multi-part query is given, the first possible response should be
-given.
+given.  FIXME Only BMI is currently used, the others may well change
+or be removed.
 
 @item AWAIT
 Request for an asynchronous response.  The response is as for a
@@ -29369,7 +29374,7 @@ for @var{module}.  The response should be @samp{BMI @var{bmipath}}.
 @item HELLO @var{ver} @var{flags} @var{cookie}
 This is the first command.  It informs the server of the name of the
 source being compiled.  Response is either @samp{OK
-@var{ver} @var{flags}}, or @samp{ERROR @var{msg}}.
+@var{ver} @var{flags} @var{repopath}}, or @samp{ERROR @var{msg}}.
 
 @item HELP [@var{cmd}]
 A help request.  The response is @samp{HELP [@var{msg}]}.
@@ -29453,12 +29458,15 @@ the environment (such as working directory) in which that is
 operating.  As it may parallelize builds, several compilations may
 connect to the same socket.
 
-When delivering paths to the compiler, paths relative to the
-compiler's working directory should be used.  A compiler may embed the
-path of a direct import BMI file into an output BMI.  The path will be
-relative to the output BMI's path.  Such a path reduces the server
-traffic, but may require the build system to recreate the same
-directory structure across parellelized build systems.
+When delivering paths to the compiler, paths relative to the a
+repository-root directory should be used.  This server informs the
+compiler of this root in the initial handshake, using a path relative
+to the compiler's working directory, or an absolute one.  Compilers
+may embed the path of a direct import BMI file into an output BMI.
+This path will be relative to the repository.  Such a path reduces the
+server traffic, but requires the build system to recreate the same
+directory structure within the repository across a parellelized build
+system.
 
 The default oracle generates BMI files in the current directory,
 mapping @samp{.} to @samp{-} and appending a @samp{.nms} suffix.  It will
