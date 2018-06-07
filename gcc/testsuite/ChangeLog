@@ -1,3 +1,8 @@
+2018-06-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/86045
+	* gfortran.dg/pr86045.f90: New test.
+
 2018-06-07  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp0x/range-for9.C: Adjust dg-error.
