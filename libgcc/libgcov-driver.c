@@ -72,9 +72,8 @@ struct gcov_summary_buffer
 struct gcov_filename
 {
   char *filename;  /* filename buffer */
-  size_t max_length;  /* maximum filename length */
   int strip; /* leading chars to strip from filename */
-  size_t prefix; /* chars to prepend to filename */
+  char *prefix; /* prefix string */
 };
 
 static struct gcov_fn_buffer *
@@ -259,15 +258,13 @@ static struct gcov_fn_buffer *fn_buffer;
 static struct gcov_summary_buffer *sum_buffer;
 
 /* This function computes the program level summary and the histo-gram.
-   It computes and returns CRC32 and stored summary in THIS_PRG.
-   Also determines the longest filename length of the info files.  */
+   It computes and returns CRC32 and stored summary in THIS_PRG.  */
 
 #if !IN_GCOV_TOOL
 static
 #endif
 gcov_unsigned_t
-compute_summary (struct gcov_info *list, struct gcov_summary *this_prg,
-		 size_t *max_length)
+compute_summary (struct gcov_info *list, struct gcov_summary *this_prg)
 {
   struct gcov_info *gi_ptr;
   const struct gcov_fn_info *gfi_ptr;
@@ -278,13 +275,8 @@ compute_summary (struct gcov_info *list, struct gcov_summary *this_prg,
 
   /* Find the totals for this execution.  */
   memset (this_prg, 0, sizeof (*this_prg));
-  *max_length = 0;
   for (gi_ptr = list; gi_ptr; gi_ptr = gi_ptr->next)
     {
-      size_t len = strlen (gi_ptr->filename);
-      if (len > *max_length)
-	*max_length = len;
-      
       crc32 = crc32_unsigned (crc32, gi_ptr->stamp);
       crc32 = crc32_unsigned (crc32, gi_ptr->n_functions);
 
@@ -799,7 +791,7 @@ gcov_do_dump (struct gcov_info *list, int run_counted)
   struct gcov_summary all_prg;
   struct gcov_summary this_prg;
 
-  crc32 = compute_summary (list, &this_prg, &gf.max_length);
+  crc32 = compute_summary (list, &this_prg);
 
   allocate_filename_struct (&gf);
 #if !GCOV_LOCKED
@@ -808,9 +800,12 @@ gcov_do_dump (struct gcov_info *list, int run_counted)
 
   /* Now merge each file.  */
   for (gi_ptr = list; gi_ptr; gi_ptr = gi_ptr->next)
-    dump_one_gcov (gi_ptr, &gf, run_counted, crc32, &all_prg, &this_prg);
+    {
+      dump_one_gcov (gi_ptr, &gf, run_counted, crc32, &all_prg, &this_prg);
+      free (gf.filename);
+    }
 
-  free (gf.filename);
+  free (gf.prefix);
 }
 
 #if IN_GCOV_TOOL

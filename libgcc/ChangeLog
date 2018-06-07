@@ -1,3 +1,20 @@
+2018-06-07  Martin Liska  <mliska@suse.cz>
+
+        PR bootstrap/86057
+	* libgcov-driver-system.c (replace_filename_variables): Use
+        memcpy instead of mempcpy.
+	(allocate_filename_struct): Do not allocate filename, allocate
+        prefix and set it.
+	(gcov_exit_open_gcda_file): Allocate memory for gf->filename
+        here and properly copy content into it.
+	* libgcov-driver.c (struct gcov_filename): Remove max_length
+        field, change prefix from size_t into char *.
+	(compute_summary): Do not calculate longest filename.
+	(gcov_do_dump): Release memory of gf.filename after each file.
+	* libgcov-util.c (compute_summary): Use new signature of
+        compute_summary.
+	(calculate_overlap): Likewise.
+
 2018-06-05  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/47618
