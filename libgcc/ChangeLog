@@ -1,5 +1,10 @@
 2018-06-07  Martin Liska  <mliska@suse.cz>
 
+	* libgcov-driver.c: Rename cs_all to all and assign it from
+        all_prg.
+
+2018-06-07  Martin Liska  <mliska@suse.cz>
+
         PR bootstrap/86057
 	* libgcov-driver-system.c (replace_filename_variables): Use
         memcpy instead of mempcpy.

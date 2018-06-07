@@ -573,7 +573,7 @@ merge_summary (const char *filename __attribute__ ((unused)), int run_counted,
 {
 #if !GCOV_LOCKED 
   /* summary for all instances of program.  */ 
-  struct gcov_summary *cs_all;
+  struct gcov_summary *all;
 #endif 
 
   /* Merge the summary.  */
@@ -593,7 +593,7 @@ merge_summary (const char *filename __attribute__ ((unused)), int run_counted,
   else
     gcov_histogram_merge (prg->histogram, this_prg->histogram);
 #if !GCOV_LOCKED
-  all = &all_prg->ctrs[t_ix];
+  all = all_prg;
   if (!all->runs && prg->runs)
     {
       all->num = prg->num;
