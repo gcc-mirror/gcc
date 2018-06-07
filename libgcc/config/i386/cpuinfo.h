@@ -50,6 +50,7 @@ enum processor_types
   INTEL_KNM,
   INTEL_GOLDMONT,
   INTEL_GOLDMONT_PLUS,
+  INTEL_TREMONT,
   CPU_TYPE_MAX
 };
 

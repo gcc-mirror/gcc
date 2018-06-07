@@ -1,3 +1,7 @@
+2018-06-07  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/funcspec-56.inc: Test arch=tremont.
+
 2018-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69615
