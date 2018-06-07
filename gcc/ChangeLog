@@ -1,3 +1,11 @@
+2018-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69615
+	* tree-ssa-reassoc.c (optimize_range_tests_var_bound): If rhs2 is lhs
+	of a cast from a same precision integral SSA_NAME in a bb dominated
+	by first_bb, retry with rhs2 set to the rhs1 of the cast.  Don't emit
+	cast to utype if rhs2 has already a compatible type.
+
 2018-06-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/85935
