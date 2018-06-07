@@ -1,3 +1,8 @@
+2018-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85684
+	* gcc.target/i386/xgetsetbv.c: Check also variable arguments.
+
 2018-06-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
