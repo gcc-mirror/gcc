@@ -1,3 +1,12 @@
+2018-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85684
+	* config/i386/i386.c (ix86_expand_builtin) <case IX86_BUILTIN_RDPID>:
+	Generate SImode target register for null target.
+	<case IX86_BUILTIN_XGETBV>: Ditto.
+	<case IX86_BUILTIN_XSETBV>: Optimize LSHIFTRT generation.
+	* config/i386/xsaveintrin.h (_xgetbv): Add missing return.
+
 2018-06-07  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
