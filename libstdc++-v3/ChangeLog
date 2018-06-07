@@ -1,3 +1,11 @@
+2018-06-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++11/debug.cc
+	(_Safe_iterator_base::_M_detach()): Reset state only if needed.
+	(_Safe_iterator_base::_M_detach_single()): Likewise.
+	(_Safe_local_iterator_base::_M_detach()): Reset state only if needed.
+	(_Safe_local_iterator_base::_M_detach_single()): Likewise.
+
 2018-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_base.h (__shared_count): Remove redundant
