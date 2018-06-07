@@ -1,4 +1,4 @@
-/* { dg-options "-mxl-gp-opt -G 16" } */
+/* { dg-options "-mxl-gp-opt -G 16 -fno-pic" } */
 
 /* { dg-final { scan-assembler "\.sbss\[^2]+" } } */
 struct test_s {

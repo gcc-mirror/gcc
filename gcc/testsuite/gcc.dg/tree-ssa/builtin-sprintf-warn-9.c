@@ -38,8 +38,8 @@ char *ptr;
    of the operand even when it's not constant (i.e., makes use of
    inlining and constant propagation information).  */
 
-int i (int x) { return x; }
-const char* s (const char *str) { return str; }
+static int i (int x) { return x; }
+static const char* s (const char *str) { return str; }
 
 /* Function to "generate" a unique unknown number (as far as GCC can
    tell) each time it's called.  It prevents the optimizer from being
@@ -48,7 +48,7 @@ const char* s (const char *str) { return str; }
 extern int value (void);
 
 /* Return a value in the range [MIN, MAX].  */
-int range (int min, int max)
+static int range (int min, int max)
 {
   int val = value ();
   return val < min || max < val ? min : val;

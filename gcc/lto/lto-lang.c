@@ -879,8 +879,28 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   switch (flag_lto_linker_output)
     {
     case LTO_LINKER_OUTPUT_REL: /* .o: incremental link producing LTO IL  */
+      /* Configure compiler same way as normal frontend would do with -flto:
+	 this way we read the trees (declarations & types), symbol table,
+	 optimization summaries and link them. Subsequently we output new LTO
+	 file.  */
+      flag_lto = "";
+      flag_incremental_link = INCREMENTAL_LINK_LTO;
       flag_whole_program = 0;
-      flag_incremental_link = 1;
+      flag_wpa = 0;
+      flag_generate_lto = 1;
+      /* It would be cool to produce .o file directly, but our current
+	 simple objects does not contain the lto symbol markers.  Go the slow
+	 way through the asm file.  */
+      lang_hooks.lto.begin_section = lhd_begin_section;
+      lang_hooks.lto.append_data = lhd_append_data;
+      lang_hooks.lto.end_section = lhd_end_section;
+      if (flag_ltrans)
+	error ("-flinker-output=rel and -fltrans are mutually exclussive");
+      break;
+
+    case LTO_LINKER_OUTPUT_NOLTOREL: /* .o: incremental link producing asm  */
+      flag_whole_program = 0;
+      flag_incremental_link = INCREMENTAL_LINK_NOLTO;
       break;
 
     case LTO_LINKER_OUTPUT_DYN: /* .so: PID library */
@@ -1269,7 +1289,8 @@ lto_init (void)
   in_lto_p = true;
 
   /* We need to generate LTO if running in WPA mode.  */
-  flag_generate_lto = (flag_wpa != NULL);
+  flag_generate_lto = (flag_incremental_link == INCREMENTAL_LINK_LTO
+		       || flag_wpa != NULL);
 
   /* Create the basic integer types.  */
   build_common_tree_nodes (flag_signed_char);

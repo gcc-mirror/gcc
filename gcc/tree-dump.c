@@ -683,10 +683,6 @@ dequeue_and_dump (dump_info_p di)
     case SWITCH_EXPR:
       dump_child ("cond", TREE_OPERAND (t, 0));
       dump_child ("body", TREE_OPERAND (t, 1));
-      if (TREE_OPERAND (t, 2))
-        {
-      	  dump_child ("labl", TREE_OPERAND (t,2));
-        }
       break;
     case OMP_CLAUSE:
       {
@@ -736,8 +732,7 @@ dump_node (const_tree t, dump_flags_t flags, FILE *stream)
   di.flags = flags;
   di.node = t;
   di.nodes = splay_tree_new (splay_tree_compare_pointers, 0,
-			     (splay_tree_delete_value_fn)
-			     (void (*) (void)) free);
+			     splay_tree_delete_pointers);
 
   /* Queue up the first node.  */
   queue (&di, t, DUMP_NONE);

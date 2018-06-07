@@ -179,7 +179,7 @@ int main()
 	vector long long int vec_ll_int_expected, vec_ll_int_result;
 	vector long long unsigned int vec_ll_uns_int0, vec_ll_uns_int1;
 	vector long long unsigned int vec_ll_uns_int_expected, vec_ll_uns_int_result;
-	vector float  vec_flt, vec_flt_result, vec_flt_expected;
+	vector float  vec_flt0, vec_flt1, vec_flt_result, vec_flt_expected;
 	vector double vec_dble0, vec_dble1, vec_dble_result, vec_dble_expected;
 
 	vec_int = (vector signed int){ -1, 3, -5, 1234567 };
@@ -188,7 +188,7 @@ int main()
 	vec_unint = (vector unsigned int){ 9, 11, 15, 2468013579 };
 	vec_ll_uns_int0 = (vector unsigned long long int){ 102, 9753108642 };
 	vec_ll_uns_int1 = (vector unsigned long long int){ 23, 29 };
-	vec_flt = (vector float){ -21., 3.5, -53., 78. };
+	vec_flt0 = (vector float){ -21., 3.5, -53., 78. };
 	vec_dble0 = (vector double){ 34.0, 97.0 };
 	vec_dble1 = (vector double){ 214.0, -5.5 };
 
@@ -202,7 +202,7 @@ int main()
 	test_result_dp(vec_dble_result, vec_dble_expected);
 
 	vec_dble_expected = (vector double){-21.000000, -53.000000};
-	vec_dble_result = vec_doublee (vec_flt);
+	vec_dble_result = vec_doublee (vec_flt0);
 	test_result_dp(vec_dble_result, vec_dble_expected);
 
 
@@ -216,7 +216,7 @@ int main()
 	test_result_dp(vec_dble_result, vec_dble_expected);
 
 	vec_dble_expected = (vector double){3.500000, 78.000000};
-	vec_dble_result = vec_doubleo (vec_flt);
+	vec_dble_result = vec_doubleo (vec_flt0);
 	test_result_dp(vec_dble_result, vec_dble_expected);
 
 
@@ -230,7 +230,7 @@ int main()
 	test_result_dp(vec_dble_result, vec_dble_expected);
 
 	vec_dble_expected = (vector double){-53.000000, 78.000000};
-	vec_dble_result = vec_doublel (vec_flt);
+	vec_dble_result = vec_doublel (vec_flt0);
 	test_result_dp(vec_dble_result, vec_dble_expected);
 
 
@@ -244,7 +244,7 @@ int main()
 	test_result_dp(vec_dble_result, vec_dble_expected);
 
 	vec_dble_expected = (vector double){-21.000000, 3.500000};
-	vec_dble_result = vec_doubleh (vec_flt);
+	vec_dble_result = vec_doubleh (vec_flt0);
 	test_result_dp(vec_dble_result, vec_dble_expected);
 
 	/* conversion of integer vector to single precision float vector */
@@ -283,9 +283,9 @@ int main()
 	test_result_sp(ODD, vec_flt_result, vec_flt_expected);
 
 	/* Convert single precision float to int */
-	vec_flt = (vector float){-14.30, 34.00, 22.00, 97.00};
+	vec_flt0 = (vector float){-14.30, 34.00, 22.00, 97.00};
 	vec_int_expected = (vector signed int){-14, 34, 22, 97};
-	vec_int_result = vec_signed (vec_flt);
+	vec_int_result = vec_signed (vec_flt0);
 	test_int_result (ALL, vec_int_result, vec_int_expected);
 
 	/* Convert double precision float to long long int */
@@ -305,6 +305,13 @@ int main()
 	vec_int_expected = (vector signed int){0, -124, 0, 81234};
 	vec_int_result = vec_signedo (vec_dble0);
 	test_int_result (ODD, vec_int_result, vec_int_expected);
+
+	/* Convert single precision float to  unsigned int */
+	vec_flt0 = (vector float){124.930, 8134.49, 23.3, 45.4};
+	vec_uns_int_expected = (vector unsigned int){124, 8134, 23, 45};
+	vec_uns_int_result = vec_unsigned (vec_flt0);
+	test_unsigned_int_result (ALL, vec_uns_int_result,
+				  vec_uns_int_expected);
 
 	/* Convert double precision float to long long unsigned int */
 	vec_dble0 = (vector double){124.930, 8134.49};

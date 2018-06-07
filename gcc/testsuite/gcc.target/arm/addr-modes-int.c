@@ -1,7 +1,7 @@
-/* { dg-options "-O2 -march=armv7-a" } */
-/* { dg-add-options arm_neon } */
-/* { dg-require-effective-target arm_neon_ok } */
 /* { dg-do compile } */
+/* { dg-options "-O2 -march=armv7-a" } */
+/* { dg-require-effective-target arm_neon_ok } */
+/* { dg-add-options arm_neon } */
 
 #include "addr-modes.h"
 

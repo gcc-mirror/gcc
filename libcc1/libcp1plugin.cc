@@ -3046,7 +3046,8 @@ plugin_build_unary_type_expr (cc1_plugin::connection *self,
       break;
 
     default:
-      result = cxx_sizeof_or_alignof_type (type, opcode, true);
+      /* Use the C++11 alignof semantics.  */
+      result = cxx_sizeof_or_alignof_type (type, opcode, true, true);
     }
 
   if (template_dependent_p)

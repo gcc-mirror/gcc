@@ -1735,11 +1735,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       if (sym->attr.subref_array_pointer)
 	{
 	  gcc_assert (e->expr_type == EXPR_VARIABLE);
-	  tmp = e->symtree->n.sym->ts.type == BT_CLASS
-	      ? gfc_class_data_get (e->symtree->n.sym->backend_decl)
-	      : e->symtree->n.sym->backend_decl;
-	  tmp = gfc_get_element_type (TREE_TYPE (tmp));
-	  tmp = fold_convert (gfc_array_index_type, size_in_bytes (tmp));
+	  tmp = gfc_get_array_span (se.expr, e);
+
 	  gfc_conv_descriptor_span_set (&se.pre, desc, tmp);
 	}
 
@@ -1907,7 +1904,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 
       attr = gfc_expr_attr (e);
       if (sym->ts.type == BT_CHARACTER && e->ts.type == BT_CHARACTER
-	  && (attr.allocatable || attr.pointer || attr.dummy))
+	  && (attr.allocatable || attr.pointer || attr.dummy)
+	  && POINTER_TYPE_P (TREE_TYPE (se.expr)))
 	{
 	  /* These are pointer types already.  */
 	  tmp = fold_convert (TREE_TYPE (sym->backend_decl), se.expr);
@@ -3641,10 +3639,13 @@ gfc_trans_forall_loop (forall_info *forall_tmp, tree body,
       /* The exit condition.  */
       cond = fold_build2_loc (input_location, LE_EXPR, logical_type_node,
 			      count, build_int_cst (TREE_TYPE (count), 0));
+
+      /* PR 83064 means that we cannot use annot_expr_parallel_kind until
+       the autoparallelizer can hande this.  */
       if (forall_tmp->do_concurrent)
 	cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		       build_int_cst (integer_type_node,
-				      annot_expr_parallel_kind),
+				      annot_expr_ivdep_kind),
 		       integer_zero_node);
 
       tmp = build1_v (GOTO_EXPR, exit_label);

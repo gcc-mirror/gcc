@@ -1268,7 +1268,7 @@ symbol_rank (gfc_symbol *sym)
 {
   gfc_array_spec *as = NULL;
 
-  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym) && CLASS_DATA (sym)->as)
+  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
     as = CLASS_DATA (sym)->as;
   else
     as = sym->as;

@@ -52,7 +52,6 @@ void test_memcpy_cst (void *d, const void *s)
   } while (0)
 
   T (a, a, 0);
-  T (a, s = a, 3);           /* { dg-warning "\\\[-Wrestrict" "memcpy" } */
 
   /* This isn't detected because memcpy calls with small power-of-2 sizes
      are intentionally folded into safe copies equivalent to memmove.
@@ -62,19 +61,6 @@ void test_memcpy_cst (void *d, const void *s)
   T (a, a + 1, 1);           /* { dg-warning "\\\[-Wrestrict" "memcpy with a small power of 2 size" { xfail *-*-* } } */
   T (a, a + 3, 3);
   T (a, a + 3, 5);           /* { dg-warning "\\\[-Wrestrict" "memcpy" } */
-
-  {
-    char a[3] = { 1, 2, 3 };
-
-    /* Verify that a call to memcpy with an exact overlap is diagnosed
-       (also tested above) but an excplicit one to __builtin_memcpy is
-       not.  See bug 32667 for the rationale.  */
-    (memcpy)(a, a, sizeof a);   /* { dg-warning "source argument is the same as destination" "memcpy" } */
-    sink (a);
-
-    __builtin_memcpy (a, a, sizeof a);
-    sink (a);
-  }
 
   {
     char a[3][7];
@@ -114,11 +100,6 @@ void test_memcpy_cst (void *d, const void *s)
     void *d = x.a;
     const void *s = x.b;
     memcpy (d, s, sizeof x.a);
-    sink (&x);
-
-    d = x.a;
-    s = x.a;
-    memcpy (d, s, sizeof x.a);    /* { dg-warning "\\\[-Wrestrict" "memcpy" } */
     sink (&x);
 
     d = x.a + 4;
@@ -447,20 +428,8 @@ void test_memcpy_var (char *d, const char *s)
 {
   size_t n = unsigned_value ();
 
+  /* Since no copying takes place no warning should be issued.  */
   memcpy (d, d, 0);
-  sink (d);
-
-  memcpy (d, d, n);               /* { dg-warning "source argument is the same as destination" "memcpy" } */
-  sink (d);
-
-  memcpy (d, &d[0], n);           /* { dg-warning "source argument is the same as destination" "memcpy" } */
-  sink (d);
-
-  memcpy (&d[0], d,  n);          /* { dg-warning "source argument is the same as destination" "memcpy" } */
-  sink (d);
-
-  s = d;
-  memcpy (d, s, n);               /* { dg-warning "source argument is the same as destination" "memcpy" } */
   sink (d);
 
   /* The following overlaps if n is greater than 1.  */
@@ -498,10 +467,6 @@ void test_memcpy_var (char *d, const char *s)
 
   s = d + 5;
   n = 7;
-  memcpy (d, s, n);               /* { dg-warning "\\\[-Wrestrict" "memcpy" } */
-
-  n = UR (0, 1);
-  s = d;
   memcpy (d, s, n);               /* { dg-warning "\\\[-Wrestrict" "memcpy" } */
 }
 
@@ -941,7 +906,7 @@ void test_strncpy_range (char *d, size_t n)
 
   /* The following overlaps except in the unlikely case that value ()
      is zero, so it's diagnosed.  */
-  T ("012", a, a, n);             /* { dg-warning "source argument is the same as destination " "strncpy" } */
+  T ("012", a, a, n);             /* { dg-warning "\\\[-Wrestrict]" "strncpy" } */
 }
 
 

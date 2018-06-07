@@ -71,6 +71,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "intl.h"
 #include "file-prefix-map.h" /* remap_macro_filename()  */
+#include "gomp-constants.h"
+#include "omp-general.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -3172,13 +3174,12 @@ check_access (tree exp, tree, tree, tree dstwrite,
 			  exp, func, range[0], dstsize);
 	    }
 	  else if (tree_int_cst_equal (range[0], range[1]))
-	    warning_at (loc, opt,
-			(integer_onep (range[0])
-			 ? G_("%K%qD writing %E byte into a region "
-			      "of size %E overflows the destination")
-			 : G_("%K%qD writing %E bytes into a region "
-			      "of size %E overflows the destination")),
-			exp, func, range[0], dstsize);
+	    warning_n (loc, opt, tree_to_uhwi (range[0]),
+		       "%K%qD writing %E byte into a region "
+		       "of size %E overflows the destination",
+		       "%K%qD writing %E bytes into a region "
+		       "of size %E overflows the destination",
+		       exp, func, range[0], dstsize);
 	  else if (tree_int_cst_sign_bit (range[1]))
 	    {
 	      /* Avoid printing the upper bound if it's invalid.  */
@@ -3273,10 +3274,9 @@ check_access (tree exp, tree, tree, tree dstwrite,
       location_t loc = tree_nonartificial_location (exp);
 
       if (tree_int_cst_equal (range[0], range[1]))
-	warning_at (loc, opt,
-		    (tree_int_cst_equal (range[0], integer_one_node)
-		     ? G_("%K%qD reading %E byte from a region of size %E")
-		     : G_("%K%qD reading %E bytes from a region of size %E")),
+	warning_n (loc, opt, tree_to_uhwi (range[0]),
+		   "%K%qD reading %E byte from a region of size %E",
+		   "%K%qD reading %E bytes from a region of size %E",
 		    exp, func, range[0], slen);
       else if (tree_int_cst_sign_bit (range[1]))
 	{
@@ -3379,7 +3379,7 @@ compute_objsize (tree dest, int ostype)
   type = TYPE_MAIN_VARIANT (type);
 
   if (TREE_CODE (type) == ARRAY_TYPE
-      && !array_at_struct_end_p (dest))
+      && !array_at_struct_end_p (TREE_OPERAND (dest, 0)))
     {
       /* Return the constant size unless it's zero (that's a zero-length
 	 array likely at the end of a struct).  */
@@ -3652,12 +3652,16 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
   set_mem_align (src_mem, src_align);
 
   /* Copy word part most expediently.  */
-  dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx,
-				     CALL_EXPR_TAILCALL (exp)
-				     && (endp == 0 || target == const0_rtx)
-				     ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL,
+  enum block_op_methods method = BLOCK_OP_NORMAL;
+  if (CALL_EXPR_TAILCALL (exp) && (endp == 0 || target == const0_rtx))
+    method = BLOCK_OP_TAILCALL;
+  if (endp == 1 && target != const0_rtx)
+    method = BLOCK_OP_NO_LIBCALL_RET;
+  dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx, method,
 				     expected_align, expected_size,
 				     min_size, max_size, probable_max_size);
+  if (dest_addr == pc_rtx)
+    return NULL_RTX;
 
   if (dest_addr == 0)
     {
@@ -3779,7 +3783,17 @@ expand_builtin_strcpy (tree exp, rtx target)
 		    src, destsize);
     }
 
-  return expand_builtin_strcpy_args (dest, src, target);
+  if (rtx ret = expand_builtin_strcpy_args (dest, src, target))
+    {
+      /* Check to see if the argument was declared attribute nonstring
+	 and if so, issue a warning since at this point it's not known
+	 to be nul-terminated.  */
+      tree fndecl = get_callee_fndecl (exp);
+      maybe_warn_nonstring_arg (fndecl, exp);
+      return ret;
+    }
+
+  return NULL_RTX;
 }
 
 /* Helper function to do the actual work for expand_builtin_strcpy.  The
@@ -3800,7 +3814,7 @@ expand_builtin_strcpy_args (tree dest, tree src, rtx target)
    mode MODE if that's convenient).  */
 
 static rtx
-expand_builtin_stpcpy (tree exp, rtx target, machine_mode mode)
+expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 {
   tree dst, src;
   location_t loc = EXPR_LOCATION (exp);
@@ -3875,6 +3889,25 @@ expand_builtin_stpcpy (tree exp, rtx target, machine_mode mode)
 
       return expand_movstr (dst, src, target, /*endp=*/2);
     }
+}
+
+/* Expand a call EXP to the stpcpy builtin and diagnose uses of nonstring
+   arguments while being careful to avoid duplicate warnings (which could
+   be issued if the expander were to expand the call, resulting in it
+   being emitted in expand_call().  */
+
+static rtx
+expand_builtin_stpcpy (tree exp, rtx target, machine_mode mode)
+{
+  if (rtx ret = expand_builtin_stpcpy_1 (exp, target, mode))
+    {
+      /* The call has been successfully expanded.  Check for nonstring
+	 arguments and issue warnings as appropriate.  */
+      maybe_warn_nonstring_arg (get_callee_fndecl (exp), exp);
+      return ret;
+    }
+
+  return NULL_RTX;
 }
 
 /* Check a call EXP to the stpncpy built-in for validity.
@@ -4572,14 +4605,14 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
 	}
     }
 
-  /* Check to see if the argument was declared attribute nonstring
-     and if so, issue a warning since at this point it's not known
-     to be nul-terminated.  */
   tree fndecl = get_callee_fndecl (exp);
-  maybe_warn_nonstring_arg (fndecl, exp);
-
   if (result)
     {
+      /* Check to see if the argument was declared attribute nonstring
+	 and if so, issue a warning since at this point it's not known
+	 to be nul-terminated.  */
+      maybe_warn_nonstring_arg (fndecl, exp);
+
       /* Return the value in the proper mode for this function.  */
       machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
       if (GET_MODE (result) == mode)
@@ -4676,14 +4709,14 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 					 arg2_rtx, TREE_TYPE (len), arg3_rtx,
 					 MIN (arg1_align, arg2_align));
 
-  /* Check to see if the argument was declared attribute nonstring
-     and if so, issue a warning since at this point it's not known
-     to be nul-terminated.  */
   tree fndecl = get_callee_fndecl (exp);
-  maybe_warn_nonstring_arg (fndecl, exp);
-
   if (result)
     {
+      /* Check to see if the argument was declared attribute nonstring
+	 and if so, issue a warning since at this point it's not known
+	 to be nul-terminated.  */
+      maybe_warn_nonstring_arg (fndecl, exp);
+
       /* Return the value in the proper mode for this function.  */
       mode = TYPE_MODE (TREE_TYPE (exp));
       if (GET_MODE (result) == mode)
@@ -5070,18 +5103,24 @@ expand_builtin_alloca (tree exp)
   return result;
 }
 
-/* Emit a call to __asan_allocas_unpoison call in EXP.  Replace second argument
-   of the call with virtual_stack_dynamic_rtx because in asan pass we emit a
-   dummy value into second parameter relying on this function to perform the
-   change.  See motivation for this in comment to handle_builtin_stack_restore
-   function.  */
+/* Emit a call to __asan_allocas_unpoison call in EXP.  Add to second argument
+   of the call virtual_stack_dynamic_rtx - stack_pointer_rtx, which is the
+   STACK_DYNAMIC_OFFSET value.  See motivation for this in comment to
+   handle_builtin_stack_restore function.  */
 
 static rtx
 expand_asan_emit_allocas_unpoison (tree exp)
 {
   tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx top = expand_expr (arg0, NULL_RTX, ptr_mode, EXPAND_NORMAL);
-  rtx bot = convert_memory_address (ptr_mode, virtual_stack_dynamic_rtx);
+  rtx bot = expand_expr (arg1, NULL_RTX, ptr_mode, EXPAND_NORMAL);
+  rtx off = expand_simple_binop (Pmode, MINUS, virtual_stack_dynamic_rtx,
+				 stack_pointer_rtx, NULL_RTX, 0,
+				 OPTAB_LIB_WIDEN);
+  off = convert_modes (ptr_mode, Pmode, off, 0);
+  bot = expand_simple_binop (ptr_mode, PLUS, bot, off, NULL_RTX, 0,
+			     OPTAB_LIB_WIDEN);
   rtx ret = init_one_libfunc ("__asan_allocas_unpoison");
   ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode,
 				 top, ptr_mode, bot, ptr_mode);
@@ -6620,6 +6659,74 @@ expand_stack_save (void)
   return ret;
 }
 
+/* Emit code to get the openacc gang, worker or vector id or size.  */
+
+static rtx
+expand_builtin_goacc_parlevel_id_size (tree exp, rtx target, int ignore)
+{
+  const char *name;
+  rtx fallback_retval;
+  rtx_insn *(*gen_fn) (rtx, rtx);
+  switch (DECL_FUNCTION_CODE (get_callee_fndecl (exp)))
+    {
+    case BUILT_IN_GOACC_PARLEVEL_ID:
+      name = "__builtin_goacc_parlevel_id";
+      fallback_retval = const0_rtx;
+      gen_fn = targetm.gen_oacc_dim_pos;
+      break;
+    case BUILT_IN_GOACC_PARLEVEL_SIZE:
+      name = "__builtin_goacc_parlevel_size";
+      fallback_retval = const1_rtx;
+      gen_fn = targetm.gen_oacc_dim_size;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (oacc_get_fn_attrib (current_function_decl) == NULL_TREE)
+    {
+      error ("%qs only supported in OpenACC code", name);
+      return const0_rtx;
+    }
+
+  tree arg = CALL_EXPR_ARG (exp, 0);
+  if (TREE_CODE (arg) != INTEGER_CST)
+    {
+      error ("non-constant argument 0 to %qs", name);
+      return const0_rtx;
+    }
+
+  int dim = TREE_INT_CST_LOW (arg);
+  switch (dim)
+    {
+    case GOMP_DIM_GANG:
+    case GOMP_DIM_WORKER:
+    case GOMP_DIM_VECTOR:
+      break;
+    default:
+      error ("illegal argument 0 to %qs", name);
+      return const0_rtx;
+    }
+
+  if (ignore)
+    return target;
+
+  if (target == NULL_RTX)
+    target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+
+  if (!targetm.have_oacc_dim_size ())
+    {
+      emit_move_insn (target, fallback_retval);
+      return target;
+    }
+
+  rtx reg = MEM_P (target) ? gen_reg_rtx (GET_MODE (target)) : target;
+  emit_insn (gen_fn (reg, GEN_INT (dim)));
+  if (reg != target)
+    emit_move_insn (target, reg);
+
+  return target;
+}
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -7032,11 +7139,44 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	return target;
       break;
 
+    /* Expand it as BUILT_IN_MEMCMP_EQ first. If not successful, change it 
+       back to a BUILT_IN_STRCMP. Remember to delete the 3rd paramater
+       when changing it to a strcmp call.  */
+    case BUILT_IN_STRCMP_EQ:
+      target = expand_builtin_memcmp (exp, target, true);
+      if (target)
+	return target;
+
+      /* Change this call back to a BUILT_IN_STRCMP.  */
+      TREE_OPERAND (exp, 1) 
+	= build_fold_addr_expr (builtin_decl_explicit (BUILT_IN_STRCMP));
+
+      /* Delete the last parameter.  */
+      unsigned int i;
+      vec<tree, va_gc> *arg_vec;
+      vec_alloc (arg_vec, 2);
+      for (i = 0; i < 2; i++)
+	arg_vec->quick_push (CALL_EXPR_ARG (exp, i));
+      exp = build_call_vec (TREE_TYPE (exp), CALL_EXPR_FN (exp), arg_vec);
+      /* FALLTHROUGH */
+
     case BUILT_IN_STRCMP:
       target = expand_builtin_strcmp (exp, target);
       if (target)
 	return target;
       break;
+
+    /* Expand it as BUILT_IN_MEMCMP_EQ first. If not successful, change it
+       back to a BUILT_IN_STRNCMP.  */
+    case BUILT_IN_STRNCMP_EQ:
+      target = expand_builtin_memcmp (exp, target, true);
+      if (target)
+	return target;
+
+      /* Change it back to a BUILT_IN_STRNCMP.  */
+      TREE_OPERAND (exp, 1) 
+	= build_fold_addr_expr (builtin_decl_explicit (BUILT_IN_STRNCMP));
+      /* FALLTHROUGH */
 
     case BUILT_IN_STRNCMP:
       target = expand_builtin_strncmp (exp, target, mode);
@@ -7750,6 +7890,10 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	 folding.  */
       break;
 
+    case BUILT_IN_GOACC_PARLEVEL_ID:
+    case BUILT_IN_GOACC_PARLEVEL_SIZE:
+      return expand_builtin_goacc_parlevel_id_size (exp, target, ignore);
+
     default:	/* just do library call, if unknown builtin */
       break;
     }
@@ -8000,6 +8144,7 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2)
     {
       tree op0 = TREE_OPERAND (inner, 0);
       tree op1 = TREE_OPERAND (inner, 1);
+      arg1 = save_expr (arg1);
 
       op0 = build_builtin_expect_predicate (loc, op0, arg1, arg2);
       op1 = build_builtin_expect_predicate (loc, op1, arg1, arg2);
@@ -8121,6 +8266,9 @@ fold_builtin_sincos (location_t loc,
       call = builtin_save_expr (call);
     }
 
+  tree ptype = build_pointer_type (type);
+  arg1 = fold_convert (ptype, arg1);
+  arg2 = fold_convert (ptype, arg2);
   return build2 (COMPOUND_EXPR, void_type_node,
 		 build2 (MODIFY_EXPR, void_type_node,
 			 build_fold_indirect_ref_loc (loc, arg1),
@@ -8255,21 +8403,6 @@ fold_builtin_abs (location_t loc, tree arg, tree type)
 
   arg = fold_convert_loc (loc, type, arg);
   return fold_build1_loc (loc, ABS_EXPR, type, arg);
-}
-
-/* Fold a call to fma, fmaf, or fmal with arguments ARG[012].  */
-
-static tree
-fold_builtin_fma (location_t loc, tree arg0, tree arg1, tree arg2, tree type)
-{
-  /* ??? Only expand to FMA_EXPR if it's directly supported.  */
-  if (validate_arg (arg0, REAL_TYPE)
-      && validate_arg (arg1, REAL_TYPE)
-      && validate_arg (arg2, REAL_TYPE)
-      && optab_handler (fma_optab, TYPE_MODE (type)) != CODE_FOR_nothing)
-    return fold_build3_loc (loc, FMA_EXPR, type, arg0, arg1, arg2);
-
-  return NULL_TREE;
 }
 
 /* Fold a call to builtin carg(a+bi) -> atan2(b,a).  */
@@ -9177,10 +9310,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
     CASE_FLT_FN (BUILT_IN_SINCOS):
       return fold_builtin_sincos (loc, arg0, arg1, arg2);
 
-    CASE_FLT_FN (BUILT_IN_FMA):
-    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
-      return fold_builtin_fma (loc, arg0, arg1, arg2, type);
-
     CASE_FLT_FN (BUILT_IN_REMQUO):
       if (validate_arg (arg0, REAL_TYPE)
 	  && validate_arg (arg1, REAL_TYPE)
@@ -9573,7 +9702,7 @@ fold_builtin_strpbrk (location_t loc, tree s1, tree s2, tree type)
       if (p2[0] == '\0')
 	/* strpbrk(x, "") == NULL.
 	   Evaluate and ignore s1 in case it had side-effects.  */
-	return omit_one_operand_loc (loc, TREE_TYPE (s1), integer_zero_node, s1);
+	return omit_one_operand_loc (loc, type, integer_zero_node, s1);
 
       if (p2[1] != '\0')
 	return NULL_TREE;  /* Really call strpbrk.  */

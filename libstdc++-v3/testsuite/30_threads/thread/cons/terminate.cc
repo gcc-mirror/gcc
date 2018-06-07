@@ -25,10 +25,19 @@
 #include <thread>
 #include <exception>
 #include <cstdlib>
+#if !_GLIBCXX_USE_C99_STDLIB && defined _GLIBCXX_HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 void handle_terminate()
 {
+#if _GLIBCXX_USE_C99_STDLIB
   std::_Exit(0);
+#elif defined _GLIBCXX_HAVE_UNISTD_H
+  _exit(0);
+#else
+  std::exit(0);
+#endif
 }
 
 void f() { throw 1; }
@@ -38,7 +47,9 @@ test01()
 {
   std::set_terminate(handle_terminate);
   std::thread t(f);
+  // This should call the terminate handler and exit with zero status:
   t.join();
+  // Should not reach here:
   std::abort();
 }
 

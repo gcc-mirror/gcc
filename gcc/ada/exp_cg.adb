@@ -26,7 +26,6 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
-with Exp_Disp; use Exp_Disp;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Tss;  use Exp_Tss;
 with Lib;      use Lib;

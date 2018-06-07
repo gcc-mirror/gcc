@@ -1710,7 +1710,7 @@ invocation expands to its argument; but if the variable argument does
 not have any tokens, the @code{@w{__VA_OPT__}} expands to nothing:
 
 @smallexample
-#define eprintf(format, @dots{}) \\
+#define eprintf(format, @dots{}) \
   fprintf (stderr, format __VA_OPT__(,) __VA_ARGS__)
 @end smallexample
 

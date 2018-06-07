@@ -294,6 +294,8 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
 	}
       if (lra_dump_file != NULL)
 	fprintf (lra_dump_file, "  Spill r%d into hr%d\n", regno, hard_regno);
+      add_to_hard_reg_set (&hard_regs_spilled_into,
+			   lra_reg_info[regno].biggest_mode, hard_regno);
       /* Update reserved_hard_regs.  */
       for (r = lra_reg_info[regno].live_ranges; r != NULL; r = r->next)
 	for (p = r->start; p <= r->finish; p++)

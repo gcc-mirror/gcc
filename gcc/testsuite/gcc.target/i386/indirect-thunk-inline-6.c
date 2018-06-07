@@ -10,7 +10,8 @@ foo (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*bar@GOT" } } */
+/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*bar@GOT" { target x32 } } } */
+/* { dg-final { scan-assembler "mov(?:l|q)\[ \t\]*bar@GOT" { target { ! x32 } } } } */
 /* { dg-final { scan-assembler-times "jmp\[ \t\]*\.LIND" 2 } } */
 /* { dg-final { scan-assembler-times "call\[ \t\]*\.LIND" 2 } } */
 /* { dg-final { scan-assembler-times {\tpause} 1 } } */

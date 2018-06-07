@@ -30,7 +30,7 @@
  ****************************************************************************/
 
 /*  This unit contains support for SEH (Structured Exception Handling).
-    Right now the only implementation is for Win32.  */
+    Right now the only implementation is for Win32 and Cygwin.  */
 
 #if defined (_WIN32) || (defined (__CYGWIN__) && defined (__SEH__))
 /* Include system headers, before system.h poisons malloc.  */
@@ -64,8 +64,7 @@ extern struct Exception_Data storage_error;
 extern struct Exception_Data tasking_error;
 extern struct Exception_Data _abort_signal;
 
-#define Raise_From_Signal_Handler \
-                      ada__exceptions__raise_from_signal_handler
+#define Raise_From_Signal_Handler ada__exceptions__raise_from_signal_handler
 extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *)
   ATTRIBUTE_NORETURN;
 
@@ -81,8 +80,8 @@ EXCEPTION_DISPOSITION __gnat_SEH_error_handler
 struct Exception_Data *
 __gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg);
 
-/* Convert an SEH exception to an Ada one.  Return the exception ID
-   and set MSG with the corresponding message.  */
+/* Convert an SEH exception to an Ada one.  Return the exception ID and set
+   MSG to the corresponding message.  */
 
 struct Exception_Data *
 __gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg)
@@ -90,19 +89,18 @@ __gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg)
   switch (ExceptionRecord->ExceptionCode)
     {
     case EXCEPTION_ACCESS_VIOLATION:
-      /* If the failing address isn't maximally-aligned or if the page
-	 before the faulting page is not accessible, this is a program error.
-      */
+      /* If the failing address isn't maximally aligned or if the page before
+	 the faulting page is not accessible, this is a program error.  */
       if ((ExceptionRecord->ExceptionInformation[1] & 3) != 0
 	  || IsBadCodePtr
-	  ((FARPROC)(ExceptionRecord->ExceptionInformation[1] + 4096)))
+	     ((FARPROC)(ExceptionRecord->ExceptionInformation[1] + 4096)))
 	{
 	  *msg = "EXCEPTION_ACCESS_VIOLATION";
 	  return &program_error;
 	}
       else
 	{
-	  /* otherwise it is a stack overflow  */
+	  /* Otherwise this is a stack overflow.  */
 	  *msg = "stack overflow or erroneous memory access";
 	  return &storage_error;
 	}
@@ -175,6 +173,8 @@ __gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg)
 
 #if !(defined (_WIN64) && defined (__SEH__))
 
+/* The "fake" exception handler to be associated with the .text section.  */
+
 EXCEPTION_DISPOSITION
 __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
 			  void *EstablisherFrame ATTRIBUTE_UNUSED,
@@ -192,45 +192,47 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
       msg = "unhandled signal";
     }
 
-#if ! defined (_WIN64)
+#if !defined (_WIN64)
   /* This call is important as it avoids locking the second time we catch a
-     signal. Note that this routine is documented as internal to Windows and
-     should not be used.  */
-
+     signal; it's equivalent to RtlUnwind (EstablisherFrame, NULL, NULL, 0);
+     Note that this routine is documented as internal to Windows and should
+     not be used.  */
   _global_unwind2 (EstablisherFrame);
-  /* Call equivalent to RtlUnwind (EstablisherFrame, NULL, NULL, 0); */
 #endif
 
   Raise_From_Signal_Handler (exception, msg);
 }
+
 #endif /* !(defined (_WIN64) && defined (__SEH__)) */
 
 #if defined (_WIN64)
-/*  On x86_64 windows exception mechanism is no more based on a chained list
-    of handlers addresses on the stack. Instead unwinding information is used
-    to retrieve the exception handler (similar to ZCX GCC mechanism). So in
-    order to register an exception handler we need to put in the final
-    executable some unwinding information. This information might be present
-    statically in the image file inside the .pdata section or registered
-    through RtlAddFunctionTable API. Currently the GCC toolchain does not
-    generate the .pdata information for each function. As we don't need to
-    handle SEH exceptions except for signal handling we are registering a
-    "fake" unwinding data that associate a SEH exception handler to the
-    complete .text section. As we never return from the handler, the system
-    does not try to do the final unwinding using the pdata information. The
-    unwinding is handled by the runtime using either the GNAT SJLJ mechanism
-    or the ZCX GCC mechanism.
+
+/*  On x86-64/Windows the EH mechanism is no more based on a chained list of
+    handlers addresses on the stack.  Instead unwinding information is used
+    to retrieve the exception handler (similar to DWARF2 unwinding).  So in
+    order to register an exception handler, we need to put in the binary
+    some unwinding information.  This information can be present statically
+    in the image file inside the .pdata section or registered through the
+    RtlAddFunctionTable API.  In the case where the GCC toolchain does not
+    generate the .pdata information for each function, we don't really need
+    to handle SEH exceptions except for signal handling, so we register a
+    "fake" unwinding data that associates a SEH exception handler with the
+    complete .text section.  As we never return from the handler, the system
+    does not try to do the final unwinding using the .pdata information and
+    the unwinding is handled by the runtime using the GNAT or GCC mechanism.
 
     Solutions based on SetUnhandledExceptionFilter have been discarded as this
-    function is mostly disabled on last Windows versions.
+    function is mostly disabled on latest Windows versions.
+
     Using AddVectoredExceptionHandler should also be discarded as it overrides
     all SEH exception handlers that might be present in the program itself and
-    the loaded DLL (for example it results in unexpected behaviors in the
-    Win32 subsystem.  */
+    the loaded DLL; for example it results in unexpected behavior in the Win32
+    subsystem.  */
 
 #ifndef __SEH__
-  /* Don't use this trick when SEH are emitted by gcc, as it will conflict with
-     them.  */
+
+  /* Do not use this trick when GCC generates the .pdata information, since it
+     is not necessary and will conflict with the per-function data.  */
 asm
 (
  " .section .rdata, \"dr\"\n"
@@ -250,19 +252,21 @@ asm
  "\n"
  " .text\n"
 );
+
 #endif /* __SEH__ */
 
+/* Nothing to do, the handler is either not used or statically installed by
+   the asm statement just above.  */
 void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
 {
-  /* Nothing to do, the handler is statically installed by the asm statement
-     just above.  */
 }
 
 #else /* defined (_WIN64) */
-/*  Install the Win32 SEH exception handler. Note that the caller must have
-    allocated 8 bytes on the stack and pass the pointer to this stack
-    space. This is needed as the SEH exception handler must be on the stack of
-    the thread.
+
+/*  Install the Win32 SEH exception handler.  Note that the caller must have
+    allocated 8 bytes on the stack and pass the pointer to this stack space.
+    This is needed as the SEH exception handler must be on the stack of the
+    thread.
 
        int buf[2];
 
@@ -271,31 +275,32 @@ void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
        main();
 
    This call must be done before calling the main procedure or the thread
-   entry. The stack space must exists during all the main run.  */
+   entry.  The stack space must exist during the entire main run.  */
 
 void
 __gnat_install_SEH_handler (void *ER)
 {
   int *ptr;
 
-  /* put current handler in ptr */
-
+  /* Put current handler in PTR.  */
   asm ("mov %%fs:(0),%0" : "=r" (ptr));
 
   ((int *)ER)[0] = (int)ptr;                       /* previous handler */
   ((int *)ER)[1] = (int)__gnat_SEH_error_handler;  /* new handler */
 
-  /* ER is the new handler, set fs:(0) with this value */
-
+  /* ER is the new handler, set fs:(0) to this value.  */
   asm volatile ("mov %0,%%fs:(0)": : "r" (ER));
 }
+
 #endif
 
 #else /* defined (_WIN32) */
-/* For all non Windows targets we provide a dummy SEH install handler.  */
+
+/* For all non-Windows targets we provide a dummy SEH install handler.  */
 void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
 {
 }
+
 #endif
 
 #ifdef __cplusplus

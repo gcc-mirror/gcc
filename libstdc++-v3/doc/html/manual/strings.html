@@ -70,7 +70,8 @@
    </p><pre class="programlisting">
    char toLower (char c)
    {
-      return std::tolower(c);
+      // std::tolower(c) is undefined if c &lt; 0 so cast to unsigned char.
+      return std::tolower((unsigned char)c);
    } </pre><p>(Thanks to James Kanze for assistance and suggestions on all of this.)
    </p><p>Another common operation is trimming off excess whitespace.  Much
       like transformations, this task is trivial with the use of string's

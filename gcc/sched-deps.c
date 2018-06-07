@@ -2897,7 +2897,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 			 && code == SET);
 
   /* Group compare and branch insns for macro-fusion.  */
-  if (targetm.sched.macro_fusion_p
+  if (!deps->readonly
+      && targetm.sched.macro_fusion_p
       && targetm.sched.macro_fusion_p ())
     sched_macro_fuse_insns (insn);
 

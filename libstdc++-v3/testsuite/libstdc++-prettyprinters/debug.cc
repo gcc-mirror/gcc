@@ -19,7 +19,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#define _GLIBCXX_DEBUG
+#ifndef _GLIBCXX_DEBUG
+# define _GLIBCXX_DEBUG
+#endif
 
 #include <string>
 #include <deque>
@@ -96,7 +98,7 @@ main()
   v.push_back(1);
   v.push_back(2);
   std::vector<int>::iterator viter0;
-// { dg-final { note-test viter0 {invalid iterator} } }
+// { dg-final { note-test viter0 {non-dereferenceable iterator for std::vector} } }
   std::vector<int>::iterator viter1 = v.begin();
   std::vector<int>::iterator viter2 = viter1 + 1;
   v.erase(viter1);

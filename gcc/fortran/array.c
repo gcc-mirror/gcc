@@ -533,7 +533,7 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
       as->type = AS_ASSUMED_RANK;
       as->rank = -1;
 
-      if (!gfc_notify_std (GFC_STD_F2008_TS, "Assumed-rank array at %C"))
+      if (!gfc_notify_std (GFC_STD_F2018, "Assumed-rank array at %C"))
 	goto cleanup;
 
       if (!match_codim)
@@ -2003,6 +2003,20 @@ gfc_resolve_character_array_constructor (gfc_expr *expr)
 
 got_charlen:
 
+  /* Early exit for zero size arrays. */
+  if (expr->shape)
+    {
+      mpz_t size;
+      HOST_WIDE_INT arraysize;
+
+      gfc_array_size (expr, &size);
+      arraysize = mpz_get_ui (size);
+      mpz_clear (size);
+
+      if (arraysize == 0)
+	return true;
+    }
+
   found_length = -1;
 
   if (expr->ts.u.cl->length == NULL)
@@ -2032,7 +2046,8 @@ got_charlen:
 	  else
 	    return true;
 
-	  gcc_assert (current_length != -1);
+	  if (current_length < 0)
+	    current_length = 0;
 
 	  if (found_length == -1)
 	    found_length = current_length;

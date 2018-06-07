@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2013-2017 Free Software Foundation, Inc.
+# Copyright (C) 2013-2018 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -708,7 +708,6 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libatomic')
         self.add_dir ('libbacktrace')
         self.add_dir ('libcc1')
-        # libcilkrts is imported from upstream.
         self.add_dir ('libcpp', LibCppFilter())
         self.add_dir ('libdecnumber')
         # libffi is imported from upstream.

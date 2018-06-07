@@ -4676,7 +4676,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
       if (val && INDIRECT_REF_P (val)
           && TREE_CONSTANT (TREE_OPERAND (val, 0)))
 	{
-	  ret = fold_convert_loc (location, argtype, fold_offsetof_1 (arg));
+	  ret = fold_offsetof (arg, argtype);
 	  goto return_build_unary_op;
 	}
 
@@ -4821,6 +4821,10 @@ c_mark_addressable (tree exp, bool array_ref_p)
 	break;
 
       case COMPOUND_LITERAL_EXPR:
+	TREE_ADDRESSABLE (x) = 1;
+	TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (x)) = 1;
+	return true;
+
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (x) = 1;
 	return true;
@@ -9208,12 +9212,14 @@ output_init_element (location_t loc, tree value, tree origtype,
 		      "enum conversion in initialization is invalid in C++");
     }
 
-  /* If this field is empty (and not at the end of structure),
-     don't do anything other than checking the initializer.  */
+  /* If this field is empty and does not have side effects (and is not at
+     the end of structure), don't do anything other than checking the
+     initializer.  */
   if (field
       && (TREE_TYPE (field) == error_mark_node
 	  || (COMPLETE_TYPE_P (TREE_TYPE (field))
 	      && integer_zerop (TYPE_SIZE (TREE_TYPE (field)))
+	      && !TREE_SIDE_EFFECTS (new_value)
 	      && (TREE_CODE (constructor_type) == ARRAY_TYPE
 		  || DECL_CHAIN (field)))))
     return;
@@ -10127,13 +10133,13 @@ c_finish_return (location_t loc, tree retval, tree origtype)
   if (!retval)
     {
       current_function_returns_null = 1;
-      if ((warn_return_type || flag_isoc99)
+      if ((warn_return_type >= 0 || flag_isoc99)
 	  && valtype != NULL_TREE && TREE_CODE (valtype) != VOID_TYPE)
 	{
 	  bool warned_here;
 	  if (flag_isoc99)
 	    warned_here = pedwarn
-	      (loc, 0,
+	      (loc, warn_return_type >= 0 ? OPT_Wreturn_type : 0,
 	       "%<return%> with no value, in function returning non-void");
 	  else
 	    warned_here = warning_at
@@ -10151,7 +10157,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
       bool warned_here;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
 	warned_here = pedwarn
-	  (xloc, 0,
+	  (xloc, warn_return_type >= 0 ? OPT_Wreturn_type : 0,
 	   "%<return%> with a value, in function returning void");
       else
 	warned_here = pedwarn
@@ -11348,7 +11354,8 @@ build_binary_op (location_t location, enum tree_code code,
 	  converted = 1;
 	}
       else if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE
-		|| code0 == VECTOR_TYPE)
+		|| (code0 == VECTOR_TYPE
+		    && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE))
 	       && code1 == INTEGER_TYPE)
 	{
 	  doing_shift = true;
@@ -11406,7 +11413,8 @@ build_binary_op (location_t location, enum tree_code code,
 	  converted = 1;
 	}
       else if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE
-		|| code0 == VECTOR_TYPE)
+		|| (code0 == VECTOR_TYPE
+		    && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE))
 	       && code1 == INTEGER_TYPE)
 	{
 	  doing_shift = true;
@@ -11500,6 +11508,13 @@ build_binary_op (location_t location, enum tree_code code,
           intt = c_common_type_for_size (GET_MODE_BITSIZE
 					 (SCALAR_TYPE_MODE
 					  (TREE_TYPE (type0))), 0);
+	  if (!intt)
+	    {
+	      error_at (location, "could not find an integer type "
+				  "of the same size as %qT",
+			TREE_TYPE (type0));
+	      return error_mark_node;
+	    }
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;
@@ -11661,6 +11676,13 @@ build_binary_op (location_t location, enum tree_code code,
           intt = c_common_type_for_size (GET_MODE_BITSIZE
 					 (SCALAR_TYPE_MODE
 					  (TREE_TYPE (type0))), 0);
+	  if (!intt)
+	    {
+	      error_at (location, "could not find an integer type "
+				  "of the same size as %qT",
+			TREE_TYPE (type0));
+	      return error_mark_node;
+	    }
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;

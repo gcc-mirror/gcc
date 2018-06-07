@@ -1417,6 +1417,9 @@ record_store (rtx body, bb_info_t bb_info)
       return 0;
     }
 
+  if (known_eq (width, 0))
+    return 0;
+
   if (group_id >= 0)
     {
       /* In the restrictive case where the base is a constant or the

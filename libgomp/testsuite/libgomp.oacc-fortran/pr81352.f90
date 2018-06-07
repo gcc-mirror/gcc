@@ -13,7 +13,7 @@ program foo
      enddo
   enddo
 
-  if (any(a(1:3,1:3).ne.2)) call abort
+  if (any(a(1:3,1:3).ne.2)) STOP 1
 
   !$acc end parallel
 

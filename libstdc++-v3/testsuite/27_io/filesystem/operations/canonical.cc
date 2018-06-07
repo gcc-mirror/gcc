@@ -41,7 +41,7 @@ test01()
   VERIFY( !ec );
 
   ec = bad_ec;
-  p2 = canonical( fs::current_path() / "." / (p.native() + "////././."), ec );
+  p2 = canonical( fs::current_path() / "." / (p.string() + "////././."), ec );
   compare_paths( p2, fs::current_path()/p );
   VERIFY( !ec );
 

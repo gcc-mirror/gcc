@@ -486,10 +486,28 @@ AC_CACHE_CHECK([for __attribute__((visibility("hidden")))],
 
 if test $libgcc_cv_hidden_visibility_attribute = yes; then
     vis_hide='-fvisibility=hidden -DHIDE_EXPORTS'
+    AC_DEFINE_UNQUOTED(AS_HIDDEN_DIRECTIVE, $asm_hidden_op, [Define to the .hidden-like directive if it exists.])
 else
     vis_hide=
 fi
 AC_SUBST(vis_hide)
+
+# Check for .cfi_sections .debug_frame support.
+AC_CACHE_CHECK([for .cfi_sections .debug_frame],
+    libgcc_cv_cfi_sections_directive, [
+	echo 'int foo (int, char *);' > conftest.c
+	echo 'int bar (int x) { char *y = __builtin_alloca (x); return foo (x + 1, y) + 1; }' >> conftest.c
+	libgcc_cv_cfi_sections_directive=no
+	if AC_TRY_COMMAND(${CC-cc} -Werror -g -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions -S conftest.c -o conftest.s 1>&AS_MESSAGE_LOG_FD); then
+	    if grep "\\.cfi_sections.*\\.debug_frame" conftest.s >/dev/null; then
+		libgcc_cv_cfi_sections_directive=yes
+	    fi
+	fi
+	rm -f conftest.*
+    ])
+if test $libgcc_cv_cfi_sections_directive = yes; then
+    AC_DEFINE(HAVE_AS_CFI_SECTIONS, 1, [Define to 1 if the assembler supports .cfi_sections .debug_frame directive.])
+fi
 
 # See if we have thread-local storage.  We can only test assembler
 # since link-time and run-time tests require the newly built

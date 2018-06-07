@@ -403,7 +403,7 @@ const struct attribute_spec c_common_attribute_table[] =
 			      0, 0, true, false, false, false,
 			      handle_no_address_safety_analysis_attribute,
 			      NULL },
-  { "no_sanitize",	      1, 1, true, false, false, false,
+  { "no_sanitize",	      1, -1, true, false, false, false,
 			      handle_no_sanitize_attribute, NULL },
   { "no_sanitize_address",    0, 0, true, false, false, false,
 			      handle_no_sanitize_address_attribute, NULL },
@@ -438,8 +438,6 @@ const struct attribute_spec c_common_attribute_table[] =
   { "returns_nonnull",        0, 0, false, true, true, false,
 			      handle_returns_nonnull_attribute, NULL },
   { "omp declare simd",       0, -1, true,  false, false, false,
-			      handle_omp_declare_simd_attribute, NULL },
-  { "cilk simd function",     0, -1, true,  false, false, false,
 			      handle_omp_declare_simd_attribute, NULL },
   { "simd",		      0, 1, true,  false, false, false,
 			      handle_simd_attribute, NULL },
@@ -685,22 +683,26 @@ static tree
 handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
 			      bool *no_add_attrs)
 {
+  unsigned int flags = 0;
   *no_add_attrs = true;
-  tree id = TREE_VALUE (args);
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       return NULL_TREE;
     }
 
-  if (TREE_CODE (id) != STRING_CST)
+  for (; args; args = TREE_CHAIN (args))
     {
-      error ("no_sanitize argument not a string");
-      return NULL_TREE;
-    }
+      tree id = TREE_VALUE (args);
+      if (TREE_CODE (id) != STRING_CST)
+	{
+	  error ("no_sanitize argument not a string");
+	  return NULL_TREE;
+	}
 
-  char *string = ASTRDUP (TREE_STRING_POINTER (id));
-  unsigned int flags = parse_no_sanitize_attribute (string);
+      char *string = ASTRDUP (TREE_STRING_POINTER (id));
+      flags |= parse_no_sanitize_attribute (string);
+    }
 
   add_no_sanitize_value (*node, flags);
 
@@ -1817,6 +1819,12 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
 
   /* Log2 of specified alignment.  */
   int pow2align = check_user_alignment (align_expr, true);
+  if (pow2align == -1
+      || !check_cxx_fundamental_alignment_constraints (*node, pow2align, flags))
+    {
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
 
   /* The alignment in bits corresponding to the specified alignment.  */
   unsigned bitalign = (1U << pow2align) * BITS_PER_UNIT;
@@ -1826,10 +1834,7 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
   unsigned curalign = 0;
   unsigned lastalign = 0;
 
-  if (pow2align == -1
-      || !check_cxx_fundamental_alignment_constraints (*node, pow2align, flags))
-    *no_add_attrs = true;
-  else if (is_type)
+  if (is_type)
     {
       if ((flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	/* OK, modify the type in place.  */;
@@ -2298,13 +2303,12 @@ handle_visibility_attribute (tree *node, tree name, tree args,
 
 static tree
 handle_tls_model_attribute (tree *node, tree name, tree args,
-			    int ARG_UNUSED (flags), bool *no_add_attrs)
+			    int ARG_UNUSED (flags),
+			    bool *ARG_UNUSED (no_add_attrs))
 {
   tree id;
   tree decl = *node;
   enum tls_model kind;
-
-  *no_add_attrs = true;
 
   if (!VAR_P (decl) || !DECL_THREAD_LOCAL_P (decl))
     {
@@ -3193,8 +3197,13 @@ handle_nonstring_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 
       if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	{
+	  /* Accept the attribute on arrays and pointers to all three
+	     narrow character types.  */
 	  tree eltype = TREE_TYPE (type);
-	  if (eltype == char_type_node)
+	  eltype = TYPE_MAIN_VARIANT (eltype);
+	  if (eltype == char_type_node
+	      || eltype == signed_char_type_node
+	      || eltype == unsigned_char_type_node)
 	    return NULL_TREE;
 	}
 

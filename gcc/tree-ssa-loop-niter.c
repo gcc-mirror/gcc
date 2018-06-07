@@ -2356,11 +2356,11 @@ number_of_iterations_exit_assumptions (struct loop *loop, edge exit,
 
   tree iv0_niters = NULL_TREE;
   if (!simple_iv_with_niters (loop, loop_containing_stmt (stmt),
-			      op0, &iv0, &iv0_niters, false))
+			      op0, &iv0, safe ? &iv0_niters : NULL, false))
     return false;
   tree iv1_niters = NULL_TREE;
   if (!simple_iv_with_niters (loop, loop_containing_stmt (stmt),
-			      op1, &iv1, &iv1_niters, false))
+			      op1, &iv1, safe ? &iv1_niters : NULL, false))
     return false;
   /* Give up on complicated case.  */
   if (iv0_niters && iv1_niters)

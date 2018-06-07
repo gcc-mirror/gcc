@@ -612,6 +612,16 @@ oacc_get_fn_attrib (tree fn)
   return lookup_attribute (OACC_FN_ATTRIB, DECL_ATTRIBUTES (fn));
 }
 
+/* Return true if FN is an OpenMP or OpenACC offloading function.  */
+
+bool
+offloading_function_p (tree fn)
+{
+  tree attrs = DECL_ATTRIBUTES (fn);
+  return (lookup_attribute ("omp declare target", attrs)
+	  || lookup_attribute ("omp target entrypoint", attrs));
+}
+
 /* Extract an oacc execution dimension from FN.  FN must be an
    offloaded function or routine that has already had its execution
    dimensions lowered to the target-specific values.  */

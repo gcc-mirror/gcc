@@ -35,6 +35,21 @@ void test_cstdio (void)
 
   EOF; // { dg-error "'EOF' was not declared" }
   // { dg-message "'EOF' is defined in header '<cstdio>'; did you forget to '#include <cstdio>'?" "" { target *-*-* } .-1 }
+
+  fopen ("test.txt"); // { dg-error "'fopen' was not declared" }
+  // { dg-message "'#include <cstdio>'" "" { target *-*-* } .-1 }
+
+  printf ("test\n"); // { dg-error "'printf' was not declared" }
+  // { dg-message "'#include <cstdio>'" "" { target *-*-* } .-1 }
+  
+  char tmp[16];
+  sprintf (tmp, "test\n");  // { dg-error "'sprintf' was not declared" }
+  // { dg-message "'#include <cstdio>'" "" { target *-*-* } .-1 }
+  snprintf (tmp, 16, "test\n");  // { dg-error "'snprintf' was not declared" }
+  // { dg-message "'#include <cstdio>'" "" { target *-*-* } .-1 }
+
+  getchar ();  // { dg-error "'getchar' was not declared" }
+  // { dg-message "'#include <cstdio>'" "" { target *-*-* } .-1 }
 }
 
 /* Missing <cerrno>.  */
@@ -60,6 +75,64 @@ int test_INT_MAX (void)
   // { dg-error "'INT_MAX' was not declared" "" { target *-*-* } INT_MAX_line }
   // { dg-bogus "__INT_MAX__" "" { target *-*-* } INT_MAX_line }
   // { dg-message "'INT_MAX' is defined in header '<climits>'; did you forget to '#include <climits>'?" "" { target *-*-* } INT_MAX_line }
+}
+
+/* Missing <cstring>.  */
+
+void test_cstring (char *dest, char *src)
+{
+  memchr(dest, 'a', 4); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  memcmp(dest, src, 4); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  memcpy(dest, src, 4); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  memmove(dest, src, 4); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  memset(dest, 'a', 4); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strcat(dest, "test"); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strchr("test", 'e'); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strcmp(dest, "test"); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strcpy(dest, "test"); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strlen("test"); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strncat(dest, "test", 3); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strncmp(dest, "test", 3); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strncpy(dest, "test", 3); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strrchr("test", 'e'); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strspn(dest, "test"); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+  strstr(dest, "test"); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstring>'" "" { target *-*-* } .-1 }
+}
+
+/* Missing <cassert>.  */
+
+void test_cassert (int a, int b)
+{
+  assert (a == b); // { dg-error "was not declared" }
+  // { dg-message "'#include <cassert>'" "" { target *-*-* } .-1 }
+}
+
+/* Missing <cstdlib>.  */
+
+void test_cstdlib (void *q)
+{
+  void *ptr = malloc (64); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
+  free (ptr); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
+  q = realloc (q, 1024); // { dg-error "was not declared" }
+  // { dg-message "'#include <cstdlib>'" "" { target *-*-* } .-1 }
 }
 
 /* Verify that we don't offer suggestions to stdlib globals names when

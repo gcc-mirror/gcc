@@ -182,13 +182,14 @@
   emit_move_insn (shmt, gen_rtx_ASHIFT (SImode, offset, GEN_INT (3)));
 
   rtx word = gen_reg_rtx (SImode);
-  emit_move_insn (word, gen_rtx_ASHIFT (SImode, tmp, shmt));
+  emit_move_insn (word, gen_rtx_ASHIFT (SImode, tmp,
+					gen_lowpart (QImode, shmt)));
 
   tmp = gen_reg_rtx (SImode);
   emit_insn (gen_atomic_fetch_orsi (tmp, aligned_mem, word, model));
 
   emit_move_insn (gen_lowpart (SImode, result),
 		  gen_rtx_LSHIFTRT (SImode, tmp,
-				    gen_lowpart (SImode, shmt)));
+				    gen_lowpart (QImode, shmt)));
   DONE;
 })

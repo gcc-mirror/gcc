@@ -1,3 +1,26 @@
+2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* simple-object.h (simple_object_copy_lto_debug_sections): Add rename
+	parameter.
+
+2018-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* splay-tree.h (splay_tree_compare_strings,
+	splay_tree_delete_pointers): Declare new utility functions.
+
+2018-05-24  Tom Rix  <trix@juniper.net>
+
+	* dwarf2.def (DW_FORM_strx*, DW_FORM_addrx*): New.
+
+2018-05-02  Alan Modra  <amodra@gmail.com>
+
+	* ansidecl.h (ATTRIBUTE_NONSTRING): Define.
+
+2018-05-01  Sriraman Tallam  <tmsriram@google.com>
+
+	* plugin-api.h: Add plugin API to get the list of wrap
+	symbols.
+
 2018-02-09  Alexandre Oliva <aoliva@redhat.com>
 
 	* dwarf2.def (DW_AT_GNU_entry_view): New.

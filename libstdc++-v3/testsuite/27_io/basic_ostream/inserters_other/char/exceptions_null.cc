@@ -37,19 +37,12 @@ void test3()
   ostringstream stream;
   stream.exceptions(ios_base::badbit);
 
-  // The library throws the new definition of std::ios::failure
-#if _GLIBCXX_USE_CXX11_ABI
-    typedef std::ios_base::failure exception_type;
-#else
-    typedef std::exception exception_type;
-#endif
-
   try
     {
       stream << static_cast<streambuf*>(0);
       VERIFY( false );
     }
-  catch (exception_type&)
+  catch (std::ios_base::failure&)
     {
     }
 

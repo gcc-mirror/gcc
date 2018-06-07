@@ -729,6 +729,8 @@ BASIC_FILE_H
 CSTDIO_H
 SECTION_FLAGS
 WERROR
+ENABLE_FLOAT128_FALSE
+ENABLE_FLOAT128_TRUE
 thread_header
 glibcxx_PCHFLAGS
 GLIBCXX_BUILD_PCH_FALSE
@@ -1598,8 +1600,7 @@ Optional Features:
                           enable C++11 threads support [default=auto]
   --enable-libstdcxx-filesystem-ts
                           turns on ISO/IEC TS 18822 support [default=auto]
-  --enable-cet            enable Intel CET in target libraries
-                          [default=default]
+  --enable-cet            enable Intel CET in target libraries [default=no]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -11607,7 +11608,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11610 "configure"
+#line 11611 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11713,7 +11714,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11716 "configure"
+#line 11717 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15399,7 +15400,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15402 "configure"
+#line 15403 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15434,7 +15435,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15437 "configure"
+#line 15438 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15469,7 +15470,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15472 "configure"
+#line 15473 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15505,7 +15506,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15508 "configure"
+#line 15509 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15586,7 +15587,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15589 "configure"
+#line 15590 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15628,7 +15629,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15631 "configure"
+#line 15632 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15662,7 +15663,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15665 "configure"
+#line 15666 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15684,15 +15685,13 @@ $as_echo_n "checking for __float128... " >&6; }
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-
-$as_echo "#define _GLIBCXX_USE_FLOAT128 1" >>confdefs.h
-
       enable_float128=yes
     else
       enable_float128=no
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_float128" >&5
 $as_echo "$enable_float128" >&6; }
+
     rm -f conftest*
 
   ac_ext=c
@@ -28126,6 +28125,17 @@ eval as_val=\$$as_ac_var
    if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+  for ac_func in _wfopen
+do :
+  ac_fn_c_check_func "$LINENO" "_wfopen" "ac_cv_func__wfopen"
+if test "x$ac_cv_func__wfopen" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE__WFOPEN 1
 _ACEOF
 
 fi
@@ -53350,6 +53360,19 @@ _ACEOF
 fi
 done
 
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
     ;;
 
   *-fuchsia*)
@@ -66100,6 +66123,30 @@ done
 
   CXXFLAGS="$ac_save_CXXFLAGS"
 
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+    for ac_func in _wfopen
+do :
+  ac_fn_c_check_func "$LINENO" "_wfopen" "ac_cv_func__wfopen"
+if test "x$ac_cv_func__wfopen" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE__WFOPEN 1
+_ACEOF
+
+fi
+done
+
     ;;
   *-netbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
@@ -66267,6 +66314,19 @@ $as_echo "$ac_ld_relro" >&6; }
       $as_echo "#define HAVE_ISNANL 1" >>confdefs.h
 
     fi
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
     ;;
   *-qnx6.1* | *-qnx6.2*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
@@ -79989,6 +80049,19 @@ fi
 
 done
 
+for ac_func in link readlink symlink
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
 
    # Check whether --enable-libstdcxx-filesystem-ts was given.
 if test "${enable_libstdcxx_filesystem_ts+set}" = set; then :
@@ -81120,12 +81193,12 @@ CPU_OPT_BITS_RANDOM=config/${cpu_opt_bits_random}
 if test "${enable_cet+set}" = set; then :
   enableval=$enable_cet;
       case "$enableval" in
-       yes|no|default) ;;
+       yes|no|auto) ;;
        *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
                           esac
 
 else
-  enable_cet=default
+  enable_cet=no
 fi
 
 
@@ -81135,7 +81208,7 @@ $as_echo_n "checking for CET support... " >&6; }
 case "$host" in
   i[34567]86-*-linux* | x86_64-*-linux*)
     case "$enable_cet" in
-      default)
+      auto)
 	# Check if target supports multi-byte NOPs
 	# and if assembler supports CET insn.
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -81189,7 +81262,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     ;;
 esac
 if test x$enable_cet = xyes; then
-  CET_FLAGS="-fcf-protection -mcet"
+  CET_FLAGS="-fcf-protection -mshstk"
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -81220,6 +81293,15 @@ fi
 else
   GLIBCXX_BUILD_PCH_TRUE='#'
   GLIBCXX_BUILD_PCH_FALSE=
+fi
+
+
+    if test $enable_float128 = yes; then
+  ENABLE_FLOAT128_TRUE=
+  ENABLE_FLOAT128_FALSE='#'
+else
+  ENABLE_FLOAT128_TRUE='#'
+  ENABLE_FLOAT128_FALSE=
 fi
 
 
@@ -81618,7 +81700,7 @@ $as_echo "$gxx_include_dir" >&6; }
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi
@@ -81764,6 +81846,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_BUILD_PCH_TRUE}" && test -z "${GLIBCXX_BUILD_PCH_FALSE}"; then
   as_fn_error "conditional \"GLIBCXX_BUILD_PCH\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_FLOAT128_TRUE}" && test -z "${ENABLE_FLOAT128_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_FLOAT128\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_ALLOCATOR_NEW_TRUE}" && test -z "${ENABLE_ALLOCATOR_NEW_FALSE}"; then

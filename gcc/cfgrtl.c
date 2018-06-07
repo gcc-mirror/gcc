@@ -4361,6 +4361,18 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
   if (e->dest == dest)
     return e;
 
+  if (e->flags & EDGE_CROSSING
+      && BB_PARTITION (e->src) == BB_PARTITION (dest)
+      && simplejump_p (BB_END (src)))
+    {
+      if (dump_file)
+	fprintf (dump_file,
+	  	 "Removing crossing jump while redirecting edge form %i to %i\n",
+		 e->src->index, dest->index);
+      delete_insn (BB_END (src));
+      e->flags |= EDGE_FALLTHRU;
+    }
+
   if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
       && (ret = try_redirect_by_replacing_jump (e, dest, true)))
     {
@@ -4424,8 +4436,9 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
   else
     ret = redirect_branch_edge (e, dest);
 
+  fixup_partition_crossing (ret);
   /* We don't want simplejumps in the insn stream during cfglayout.  */
-  gcc_assert (!simplejump_p (BB_END (src)));
+  gcc_assert (!simplejump_p (BB_END (src)) || CROSSING_JUMP_P (BB_END (src)));
 
   df_set_bb_dirty (src);
   return ret;

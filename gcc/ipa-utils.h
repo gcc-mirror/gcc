@@ -55,6 +55,7 @@ bool ipa_propagate_frequency (struct cgraph_node *node);
 struct odr_type_d;
 typedef odr_type_d *odr_type;
 void build_type_inheritance_graph (void);
+void rebuild_type_inheritance_graph (void);
 void update_type_inheritance_graph (void);
 vec <cgraph_node *>
 possible_polymorphic_call_targets (tree, HOST_WIDE_INT,

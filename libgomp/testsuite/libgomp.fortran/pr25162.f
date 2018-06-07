@@ -34,7 +34,7 @@ C$OMP END PARALLEL
 C$OMP THREADPRIVATE(/TESTCOM/)
       INTEGER K
       DO K = 1, 10
-         IF (K.NE.BPRIM(K)) CALL ABORT
+         IF (K.NE.BPRIM(K)) STOP 1
       END DO
       RETURN
       END

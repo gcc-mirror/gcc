@@ -86,10 +86,10 @@ AARCH64_CORE("thunderx2t99",  thunderx2t99,  thunderx2t99, 8_1A,  AARCH64_FL_FOR
 AARCH64_CORE("cortex-a55",  cortexa55, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa53, 0x41, 0xd05, -1)
 AARCH64_CORE("cortex-a75",  cortexa75, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa73, 0x41, 0xd0a, -1)
 
-/* ARMv8.3-A Architecture Processors.  */
+/* ARMv8.4-A Architecture Processors.  */
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("saphira",     saphira,    falkor,    8_3A,  AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_CRYPTO | AARCH64_FL_RCPC, saphira,   0x51, 0xC01, -1)
+AARCH64_CORE("saphira",     saphira,    falkor,    8_4A,  AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_CRYPTO | AARCH64_FL_RCPC, saphira,   0x51, 0xC01, -1)
 
 /* ARMv8-A big.LITTLE implementations.  */
 

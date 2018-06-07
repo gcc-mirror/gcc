@@ -78,7 +78,11 @@ enum arm_type_qualifiers
   /* Lane indices - must be within range of previous argument = a vector.  */
   qualifier_lane_index = 0x200,
   /* Lane indices for single lane structure loads and stores.  */
-  qualifier_struct_load_store_lane_index = 0x400
+  qualifier_struct_load_store_lane_index = 0x400,
+  /* A void pointer.  */
+  qualifier_void_pointer = 0x800,
+  /* A const void pointer.  */
+  qualifier_const_void_pointer = 0x802
 };
 
 /*  The qualifier_internal allows generation of a unary builtin from
@@ -202,7 +206,7 @@ arm_cdp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum arm_type_qualifiers
 arm_ldc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_unsigned_immediate,
-      qualifier_unsigned_immediate, qualifier_const_pointer };
+      qualifier_unsigned_immediate, qualifier_const_void_pointer };
 #define LDC_QUALIFIERS \
   (arm_ldc_qualifiers)
 
@@ -210,7 +214,7 @@ arm_ldc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum arm_type_qualifiers
 arm_stc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_unsigned_immediate,
-      qualifier_unsigned_immediate, qualifier_pointer };
+      qualifier_unsigned_immediate, qualifier_void_pointer };
 #define STC_QUALIFIERS \
   (arm_stc_qualifiers)
 
@@ -1095,19 +1099,25 @@ arm_init_builtin (unsigned int fcode, arm_builtin_datum *d,
       if (qualifiers & qualifier_pointer && VECTOR_MODE_P (op_mode))
 	op_mode = GET_MODE_INNER (op_mode);
 
-      eltype = arm_simd_builtin_type
-	(op_mode,
-	 (qualifiers & qualifier_unsigned) != 0,
-	 (qualifiers & qualifier_poly) != 0);
-      gcc_assert (eltype != NULL);
+      /* For void pointers we already have nodes constructed by the midend.  */
+      if (qualifiers & qualifier_void_pointer)
+	eltype = qualifiers & qualifier_const
+		 ? const_ptr_type_node : ptr_type_node;
+      else
+	{
+	  eltype
+	    = arm_simd_builtin_type (op_mode,
+				     (qualifiers & qualifier_unsigned) != 0,
+				     (qualifiers & qualifier_poly) != 0);
+	  gcc_assert (eltype != NULL);
 
-      /* Add qualifiers.  */
-      if (qualifiers & qualifier_const)
-	eltype = build_qualified_type (eltype, TYPE_QUAL_CONST);
+	  /* Add qualifiers.  */
+	  if (qualifiers & qualifier_const)
+	    eltype = build_qualified_type (eltype, TYPE_QUAL_CONST);
 
-      if (qualifiers & qualifier_pointer)
-	eltype = build_pointer_type (eltype);
-
+	  if (qualifiers & qualifier_pointer)
+	    eltype = build_pointer_type (eltype);
+	}
       /* If we have reached arg_num == 0, we are at a non-void
 	 return type.  Otherwise, we are still processing
 	 arguments.  */
@@ -2592,7 +2602,7 @@ arm_expand_builtin (tree exp,
 	  icode = CODE_FOR_set_fpscr;
 	  arg0 = CALL_EXPR_ARG (exp, 0);
 	  op0 = expand_normal (arg0);
-	  pat = GEN_FCN (icode) (op0);
+	  pat = GEN_FCN (icode) (force_reg (SImode, op0));
 	}
       emit_insn (pat);
       return target;
@@ -2600,7 +2610,9 @@ arm_expand_builtin (tree exp,
     case ARM_BUILTIN_CMSE_NONSECURE_CALLER:
       target = gen_reg_rtx (SImode);
       op0 = arm_return_addr (0, NULL_RTX);
-      emit_insn (gen_addsi3 (target, op0, const1_rtx));
+      emit_insn (gen_andsi3 (target, op0, const1_rtx));
+      op1 = gen_rtx_EQ (SImode, target, const0_rtx);
+      emit_insn (gen_cstoresi4 (target, op1, target, const0_rtx));
       return target;
 
     case ARM_BUILTIN_TEXTRMSB:

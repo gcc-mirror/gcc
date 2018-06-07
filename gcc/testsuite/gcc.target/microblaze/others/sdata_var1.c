@@ -1,4 +1,4 @@
-/* { dg-options "-mxl-gp-opt" } */
+/* { dg-options "-mxl-gp-opt -fno-pic" } */
 
 /* { dg-final { scan-assembler "\.sbss\[^2]+" } } */
 typedef int Boolean;

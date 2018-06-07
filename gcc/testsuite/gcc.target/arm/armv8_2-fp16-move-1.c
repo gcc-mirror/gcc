@@ -1,7 +1,8 @@
 /* { dg-do compile }  */
 /* { dg-require-effective-target arm_v8_2a_fp16_scalar_ok }  */
-/* { dg-options "-O2 -mfloat-abi=hard" }  */
+/* { dg-options "-O2" }  */
 /* { dg-add-options arm_v8_2a_fp16_scalar }  */
+/* { dg-additional-options "-mfloat-abi=hard" } */
 
 __fp16
 test_load_1 (__fp16* a)

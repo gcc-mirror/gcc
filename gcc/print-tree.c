@@ -377,6 +377,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	fputs (" function-specific-opt", file);
       if (code == FUNCTION_DECL && DECL_DECLARED_INLINE_P (node))
 	fputs (" autoinline", file);
+      if (code == FUNCTION_DECL && DECL_UNINLINABLE (node))
+	fputs (" uninlinable", file);
       if (code == FUNCTION_DECL && DECL_BUILT_IN (node))
 	fputs (" built-in", file);
       if (code == FUNCTION_DECL && DECL_STATIC_CHAIN (node))

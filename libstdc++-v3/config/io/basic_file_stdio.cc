@@ -249,6 +249,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __ret;
   }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+  __basic_file<char>*
+  __basic_file<char>::open(const wchar_t* __name, ios_base::openmode __mode)
+  {
+    __basic_file* __ret = NULL;
+    const char* __c_mode = fopen_mode(__mode);
+    if (__c_mode && !this->is_open())
+      {
+	wchar_t __wc_mode[4] = { };
+	int __i = 0;
+	do
+	  {
+	    switch(__c_mode[__i]) {
+	    case 'a': __wc_mode[__i] = L'a'; break;
+	    case 'b': __wc_mode[__i] = L'b'; break;
+	    case 'r': __wc_mode[__i] = L'r'; break;
+	    case 'w': __wc_mode[__i] = L'w'; break;
+	    case '+': __wc_mode[__i] = L'+'; break;
+	    default: return __ret;
+	    }
+	  }
+	while (__c_mode[++__i]);
+
+	if ((_M_cfile = _wfopen(__name, __wc_mode)))
+	  {
+	    _M_cfile_created = true;
+	    __ret = this;
+	  }
+      }
+    return __ret;
+  }
+#endif
+
   bool
   __basic_file<char>::is_open() const throw ()
   { return _M_cfile != 0; }

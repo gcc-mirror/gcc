@@ -1156,7 +1156,7 @@ package body Inline is
          Append (Body_To_Analyze, Declarations (N));
       end if;
 
-      --  The body to inline is pre-analyzed. In GNATprove mode we must disable
+      --  The body to inline is preanalyzed. In GNATprove mode we must disable
       --  full analysis as well so that light expansion does not take place
       --  either, and name resolution is unaffected.
 
@@ -1669,9 +1669,9 @@ package body Inline is
          --  rewritten (the analysis of the non-inlined body will handle these
          --  pragmas).  A new internal name is associated with Body_To_Inline.
 
-         -----------------------------
-         -- Generate_Body_To_Inline --
-         -----------------------------
+         ------------------------------
+         -- Generate_Subprogram_Body --
+         ------------------------------
 
          procedure Generate_Subprogram_Body
            (N              : Node_Id;
@@ -2482,26 +2482,42 @@ package body Inline is
                end if;
 
                --  Because of the presence of private types, the views of the
-               --  expression and the context may be different, so place an
-               --  unchecked conversion to the context type to avoid spurious
+               --  expression and the context may be different, so place
+               --  a type conversion to the context type to avoid spurious
                --  errors, e.g. when the expression is a numeric literal and
                --  the context is private. If the expression is an aggregate,
                --  use a qualified expression, because an aggregate is not a
-               --  legal argument of a conversion. Ditto for numeric literals
-               --  and attributes that yield a universal type, because those
-               --  must be resolved to a specific type.
+               --  legal argument of a conversion. Ditto for numeric, character
+               --  and string literals, and attributes that yield a universal
+               --  type, because those must be resolved to a specific type.
 
-               if Nkind_In (Expression (N), N_Aggregate, N_Null)
+               if Nkind_In (Expression (N), N_Aggregate,
+                                            N_Character_Literal,
+                                            N_Null,
+                                            N_String_Literal)
                  or else Yields_Universal_Type (Expression (N))
                then
                   Ret :=
                     Make_Qualified_Expression (Sloc (N),
                       Subtype_Mark => New_Occurrence_Of (Ret_Type, Sloc (N)),
                       Expression   => Relocate_Node (Expression (N)));
-               else
+
+               --  Use an unchecked type conversion between access types, for
+               --  which a type conversion would not always be valid, as no
+               --  check may result from the conversion.
+
+               elsif Is_Access_Type (Ret_Type) then
                   Ret :=
                     Unchecked_Convert_To
                       (Ret_Type, Relocate_Node (Expression (N)));
+
+               --  Otherwise use a type conversion, which may trigger a check
+
+               else
+                  Ret :=
+                    Make_Type_Conversion (Sloc (N),
+                      Subtype_Mark => New_Occurrence_Of (Ret_Type, Sloc (N)),
+                      Expression   => Relocate_Node (Expression (N)));
                end if;
 
                if Nkind (Targ) = N_Defining_Identifier then

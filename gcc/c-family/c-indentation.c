@@ -70,9 +70,7 @@ get_visual_column (expanded_location exploc, location_t loc,
       return false;
     }
 
-  int line_len;
-  const char *line = location_get_source_line (exploc.file, exploc.line,
-					       &line_len);
+  char_span line = location_get_source_line (exploc.file, exploc.line);
   if (!line)
     return false;
   unsigned int vis_column = 0;
@@ -112,12 +110,11 @@ get_first_nws_vis_column (const char *file, int line_num,
 {
   gcc_assert (first_nws);
 
-  int line_len;
-  const char *line = location_get_source_line (file, line_num, &line_len);
+  char_span line = location_get_source_line (file, line_num);
   if (!line)
     return false;
   unsigned int vis_column = 0;
-  for (int i = 1; i < line_len; i++)
+  for (size_t i = 1; i < line.length (); i++)
     {
       unsigned char ch = line[i - 1];
 

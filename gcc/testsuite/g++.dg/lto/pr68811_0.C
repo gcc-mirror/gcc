@@ -1,6 +1,6 @@
 // { dg-lto-do link }
 /* { dg-lto-options { { -O2 -w } { -w } } } */
-// { dg-extra-ld-options "-r -nostdlib" }
+// { dg-extra-ld-options "-r -nostdlib -flinker-output=nolto-rel" }
 extern "C" char *strcpy(char *, const char *);
 char InitXPCOMGlue_lastSlash;
 void InitXPCOMGlue() { strcpy(&InitXPCOMGlue_lastSlash, ".so"); }

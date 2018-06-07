@@ -11,7 +11,7 @@ int foo(t1 *);
 void test_1 () {
   t2 pos;
 
-  foo (&pos); // { dg-error "cannot convert 't2\\*' {aka 's2\\*'} to 't1\\*' {aka 's1\\*'} for argument '1' to 'int foo\\(t1\\*\\)'" }
+  foo (&pos); // { dg-error "cannot convert 't2\\*' {aka 's2\\*'} to 't1\\*' {aka 's1\\*'}" }
 }
 
 /* Exercise %T.  */

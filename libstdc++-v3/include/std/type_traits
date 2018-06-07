@@ -37,18 +37,6 @@
 
 #include <bits/c++config.h>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-# if defined (__UINT_LEAST16_TYPE__) && defined(__UINT_LEAST32_TYPE__)
-namespace std
-{
-  typedef __UINT_LEAST16_TYPE__ uint_least16_t;
-  typedef __UINT_LEAST32_TYPE__ uint_least32_t;
-}
-# else
-#  include <cstdint>
-# endif
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1576,12 +1564,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_unsigned<long long>
     { typedef unsigned long long __type; };
 
-#if defined(_GLIBCXX_USE_WCHAR_T) && !defined(__WCHAR_UNSIGNED__)
-  template<>
-    struct __make_unsigned<wchar_t> : __make_unsigned<__WCHAR_TYPE__>
-    { };
-#endif
-
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_0>
@@ -1612,36 +1594,77 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class __make_unsigned_selector<_Tp, true, false>
     {
-      typedef __make_unsigned<typename remove_cv<_Tp>::type> __unsignedt;
-      typedef typename __unsignedt::__type __unsigned_type;
-      typedef __match_cv_qualifiers<_Tp, __unsigned_type> __cv_unsigned;
+      using __unsigned_type
+	= typename __make_unsigned<typename remove_cv<_Tp>::type>::__type;
 
     public:
-      typedef typename __cv_unsigned::__type __type;
+      using __type
+	= typename __match_cv_qualifiers<_Tp, __unsigned_type>::__type;
     };
 
+  class __make_unsigned_selector_base
+  {
+  protected:
+    template<typename...> struct _List { };
+
+    template<typename _Tp, typename... _Up>
+      struct _List<_Tp, _Up...> : _List<_Up...>
+      { static constexpr size_t __size = sizeof(_Tp); };
+
+    template<size_t _Sz, typename _Tp, bool = (_Sz <= _Tp::__size)>
+      struct __select;
+
+    template<size_t _Sz, typename _Uint, typename... _UInts>
+      struct __select<_Sz, _List<_Uint, _UInts...>, true>
+      { using __type = _Uint; };
+
+    template<size_t _Sz, typename _Uint, typename... _UInts>
+      struct __select<_Sz, _List<_Uint, _UInts...>, false>
+      : __select<_Sz, _List<_UInts...>>
+      { };
+  };
+
+  // Choose unsigned integer type with the smallest rank and same size as _Tp
   template<typename _Tp>
     class __make_unsigned_selector<_Tp, false, true>
+    : __make_unsigned_selector_base
     {
       // With -fshort-enums, an enum may be as small as a char.
-      typedef unsigned char __smallest;
-      static const bool __b0 = sizeof(_Tp) <= sizeof(__smallest);
-      static const bool __b1 = sizeof(_Tp) <= sizeof(unsigned short);
-      static const bool __b2 = sizeof(_Tp) <= sizeof(unsigned int);
-      static const bool __b3 = sizeof(_Tp) <= sizeof(unsigned long);
-      typedef conditional<__b3, unsigned long, unsigned long long> __cond3;
-      typedef typename __cond3::type __cond3_type;
-      typedef conditional<__b2, unsigned int, __cond3_type> __cond2;
-      typedef typename __cond2::type __cond2_type;
-      typedef conditional<__b1, unsigned short, __cond2_type> __cond1;
-      typedef typename __cond1::type __cond1_type;
+      using _UInts = _List<unsigned char, unsigned short, unsigned int,
+			   unsigned long, unsigned long long>;
 
-      typedef typename conditional<__b0, __smallest, __cond1_type>::type
-	__unsigned_type;
-      typedef __match_cv_qualifiers<_Tp, __unsigned_type> __cv_unsigned;
+      using __unsigned_type = typename __select<sizeof(_Tp), _UInts>::__type;
 
     public:
-      typedef typename __cv_unsigned::__type __type;
+      using __type
+	= typename __match_cv_qualifiers<_Tp, __unsigned_type>::__type;
+    };
+
+  // wchar_t, char16_t and char32_t are integral types but are neither
+  // signed integer types nor unsigned integer types, so must be
+  // transformed to the unsigned integer type with the smallest rank.
+  // Use the partial specialization for enumeration types to do that.
+#if defined(_GLIBCXX_USE_WCHAR_T)
+  template<>
+    struct __make_unsigned<wchar_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<wchar_t, false, true>::__type;
+    };
+#endif
+
+  template<>
+    struct __make_unsigned<char16_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<char16_t, false, true>::__type;
+    };
+
+  template<>
+    struct __make_unsigned<char32_t>
+    {
+      using __type
+	= typename __make_unsigned_selector<char32_t, false, true>::__type;
     };
 
   // Given an integral/enum type, return the corresponding unsigned
@@ -1686,21 +1709,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_signed<unsigned long long>
     { typedef signed long long __type; };
 
-#if defined(_GLIBCXX_USE_WCHAR_T) && defined(__WCHAR_UNSIGNED__)
-  template<>
-    struct __make_signed<wchar_t> : __make_signed<__WCHAR_TYPE__>
-    { };
-#endif
-
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-  template<>
-    struct __make_signed<char16_t> : __make_signed<uint_least16_t>
-    { };
-  template<>
-    struct __make_signed<char32_t> : __make_signed<uint_least32_t>
-    { };
-#endif
-
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_0>
@@ -1731,14 +1739,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class __make_signed_selector<_Tp, true, false>
     {
-      typedef __make_signed<typename remove_cv<_Tp>::type> __signedt;
-      typedef typename __signedt::__type __signed_type;
-      typedef __match_cv_qualifiers<_Tp, __signed_type> __cv_signed;
+      using __signed_type
+	= typename __make_signed<typename remove_cv<_Tp>::type>::__type;
 
     public:
-      typedef typename __cv_signed::__type __type;
+      using __type
+	= typename __match_cv_qualifiers<_Tp, __signed_type>::__type;
     };
 
+  // Choose signed integer type with the smallest rank and same size as _Tp
   template<typename _Tp>
     class __make_signed_selector<_Tp, false, true>
     {
@@ -1746,6 +1755,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       typedef typename __make_signed_selector<__unsigned_type>::__type __type;
+    };
+
+  // wchar_t, char16_t and char32_t are integral types but are neither
+  // signed integer types nor unsigned integer types, so must be
+  // transformed to the signed integer type with the smallest rank.
+  // Use the partial specialization for enumeration types to do that.
+#if defined(_GLIBCXX_USE_WCHAR_T)
+  template<>
+    struct __make_signed<wchar_t>
+    {
+      using __type
+	= typename __make_signed_selector<wchar_t, false, true>::__type;
+    };
+#endif
+
+  template<>
+    struct __make_signed<char16_t>
+    {
+      using __type
+	= typename __make_signed_selector<char16_t, false, true>::__type;
+    };
+
+  template<>
+    struct __make_signed<char32_t>
+    {
+      using __type
+	= typename __make_signed_selector<char32_t, false, true>::__type;
     };
 
   // Given an integral/enum type, return the corresponding signed
@@ -2092,6 +2128,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __declval<_Tp>(0);
     }
 
+  // __remove_cvref_t (std::remove_cvref_t for C++11).
+  template<typename _Tp>
+    using __remove_cvref_t
+     = typename remove_cv<typename remove_reference<_Tp>::type>::type;
+
   /// result_of
   template<typename _Signature>
     class result_of;
@@ -2193,8 +2234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename _Class, typename _Arg>
     struct __result_of_memobj<_Res _Class::*, _Arg>
     {
-      typedef typename remove_cv<typename remove_reference<
-        _Arg>::type>::type _Argval;
+      typedef __remove_cvref_t<_Arg> _Argval;
       typedef _Res _Class::* _MemPtr;
       typedef typename conditional<__or_<is_same<_Argval, _Class>,
         is_base_of<_Class, _Argval>>::value,
@@ -2209,8 +2249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename _Class, typename _Arg, typename... _Args>
     struct __result_of_memfun<_Res _Class::*, _Arg, _Args...>
     {
-      typedef typename remove_cv<typename remove_reference<
-        _Arg>::type>::type _Argval;
+      typedef __remove_cvref_t<_Arg> _Argval;
       typedef _Res _Class::* _MemPtr;
       typedef typename conditional<__or_<is_same<_Argval, _Class>,
         is_base_of<_Class, _Argval>>::value,
@@ -2399,8 +2438,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Internal type trait that allows us to sfinae-protect tuple_cat.
   template<typename _Tp>
     struct __is_tuple_like
-    : public __is_tuple_like_impl<typename remove_cv<
-      typename remove_reference<_Tp>::type>::type>::type
+    : public __is_tuple_like_impl<__remove_cvref_t<_Tp>>::type
     { };
 
   template<typename _Tp>
@@ -2942,6 +2980,17 @@ template <typename _From, typename _To>
     big    = __ORDER_BIG_ENDIAN__,
     native = __BYTE_ORDER__
   };
+
+  /// Remove references and cv-qualifiers.
+  template<typename _Tp>
+    struct remove_cvref
+    {
+      using type = __remove_cvref_t<_Tp>;
+    };
+
+  template<typename _Tp>
+    using remove_cvref_t = __remove_cvref_t<_Tp>;
+
 #endif // C++2a
 
 _GLIBCXX_END_NAMESPACE_VERSION

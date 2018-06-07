@@ -1192,6 +1192,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	      *tp = gimple_fold_indirect_ref (ptr);
 	      if (! *tp)
 	        {
+		  type = remap_type (type, id);
 		  if (TREE_CODE (ptr) == ADDR_EXPR)
 		    {
 		      *tp
@@ -3854,7 +3855,6 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
     case MINUS_EXPR:
     case MULT_EXPR:
     case MULT_HIGHPART_EXPR:
-    case FMA_EXPR:
 
     case ADDR_SPACE_CONVERT_EXPR:
     case FIXED_CONVERT_EXPR:
@@ -3924,9 +3924,12 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
     case VEC_UNPACK_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
     case VEC_UNPACK_FLOAT_LO_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_FLOAT_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
     case VEC_DUPLICATE_EXPR:

@@ -137,7 +137,7 @@
   [(set (match_operand:SQ 0 "s_register_operand" "")
 	(mult:SQ (match_operand:SQ 1 "s_register_operand" "")
 		 (match_operand:SQ 2 "s_register_operand" "")))]
-  "TARGET_32BIT && arm_arch3m"
+  "TARGET_32BIT"
 {
   rtx tmp1 = gen_reg_rtx (DImode);
   rtx tmp2 = gen_reg_rtx (SImode);
@@ -159,7 +159,7 @@
   [(set (match_operand:SA 0 "s_register_operand" "")
 	(mult:SA (match_operand:SA 1 "s_register_operand" "")
 		 (match_operand:SA 2 "s_register_operand" "")))]
-  "TARGET_32BIT && arm_arch3m"
+  "TARGET_32BIT"
 {
   rtx tmp1 = gen_reg_rtx (DImode);
   rtx tmp2 = gen_reg_rtx (SImode);
@@ -178,7 +178,7 @@
   [(set (match_operand:USA 0 "s_register_operand" "")
 	(mult:USA (match_operand:USA 1 "s_register_operand" "")
 		  (match_operand:USA 2 "s_register_operand" "")))]
-  "TARGET_32BIT && arm_arch3m"
+  "TARGET_32BIT"
 {
   rtx tmp1 = gen_reg_rtx (DImode);
   rtx tmp2 = gen_reg_rtx (SImode);

@@ -1,6 +1,7 @@
 int foo;
 typedef long unsigned int size_t;
 typedef short unsigned int wchar_t;
+extern int swprintf (wchar_t *wcs, size_t maxlen, const wchar_t *format, ...);
 struct tm
 {
   int tm_mday;

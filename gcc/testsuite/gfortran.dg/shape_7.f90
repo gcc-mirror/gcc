@@ -27,5 +27,5 @@ Program Main
  if (any (ubound((X2)) /= [5,2])) STOP 12
 End Program Main
 
-! { dg-final { scan-tree-dump-times "abort" 0 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_stop" 0 "original" } }
 

@@ -15,5 +15,5 @@ program test
   end do
   !$acc end parallel loop
 
-  if (var .ne. n) call abort
+  if (var .ne. n) STOP 1
 end program test

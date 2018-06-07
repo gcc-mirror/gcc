@@ -432,6 +432,9 @@ static unsigned bbg_stamp;
 /* Supports has_unexecuted_blocks functionality.  */
 static unsigned bbg_supports_has_unexecuted_blocks;
 
+/* Working directory in which a TU was compiled.  */
+static const char *bbg_cwd;
+
 /* Name and file pointer of the input file for the count data (gcda).  */
 
 static char *da_file_name;
@@ -458,6 +461,10 @@ static int flag_unconditional = 0;
    be turned off by the -n option.  */
 
 static int flag_gcov_file = 1;
+
+/* Output to stdout instead to a gcov file.  */
+
+static int flag_use_stdout = 0;
 
 /* Output progress indication if this is true.  This is off by default
    and can be turned on by the -d option.  */
@@ -828,6 +835,7 @@ print_usage (int error_p)
   fnotice (file, "  -p, --preserve-paths            Preserve all pathname components\n");
   fnotice (file, "  -r, --relative-only             Only show data for relative sources\n");
   fnotice (file, "  -s, --source-prefix DIR         Source prefix to elide\n");
+  fnotice (file, "  -t, --stdout                    Output to stdout instead of a file\n");
   fnotice (file, "  -u, --unconditional-branches    Show unconditional branch counts too\n");
   fnotice (file, "  -v, --version                   Print version number, then exit\n");
   fnotice (file, "  -w, --verbose                   Print verbose informations\n");
@@ -871,6 +879,7 @@ static const struct option options[] =
   { "object-directory",     required_argument, NULL, 'o' },
   { "object-file",          required_argument, NULL, 'o' },
   { "source-prefix",        required_argument, NULL, 's' },
+  { "stdout",		    no_argument,       NULL, 't' },
   { "unconditional-branches", no_argument,     NULL, 'u' },
   { "display-progress",     no_argument,       NULL, 'd' },
   { "hash-filenames",	    no_argument,       NULL, 'x' },
@@ -885,7 +894,7 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  const char *opts = "abcdfhijklmno:prs:uvwx";
+  const char *opts = "abcdfhijklmno:prs:tuvwx";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -948,6 +957,9 @@ process_args (int argc, char **argv)
 	  break;
 	case 'w':
 	  flag_verbose = 1;
+	  break;
+	case 't':
+	  flag_use_stdout = 1;
 	  break;
 	case 'v':
 	  print_version ();
@@ -1037,6 +1049,7 @@ output_intermediate_file (FILE *gcov_file, source_info *src)
 {
   fprintf (gcov_file, "version:%s\n", version_string);
   fprintf (gcov_file, "file:%s\n", src->name);    /* source file name */
+  fprintf (gcov_file, "cwd:%s\n", bbg_cwd);
 
   std::sort (src->functions.begin (), src->functions.end (),
 	     function_line_start_cmp ());
@@ -1151,7 +1164,6 @@ process_file (const char *file_name)
 	function_info **slot = fn_map.get (needle);
 	if (slot)
 	  {
-	    gcc_assert ((*slot)->end_line == (*it)->end_line);
 	    (*slot)->is_group = 1;
 	    (*it)->is_group = 1;
 	  }
@@ -1290,7 +1302,7 @@ generate_results (const char *file_name)
 	file_name = canonicalize_name (file_name);
     }
 
-  if (flag_gcov_file && flag_intermediate_format)
+  if (flag_gcov_file && flag_intermediate_format && !flag_use_stdout)
     {
       /* Open the intermediate file.  */
       gcov_intermediate_filename = get_gcov_intermediate_filename (file_name);
@@ -1322,7 +1334,9 @@ generate_results (const char *file_name)
 	}
 
       accumulate_line_counts (src);
-      function_summary (&src->coverage, "File");
+
+      if (!flag_use_stdout)
+	function_summary (&src->coverage, "File");
       total_lines += src->coverage.lines;
       total_executed += src->coverage.lines_executed;
       if (flag_gcov_file)
@@ -1330,14 +1344,25 @@ generate_results (const char *file_name)
 	  if (flag_intermediate_format)
 	    /* Output the intermediate format without requiring source
 	       files.  This outputs a section to a *single* file.  */
-	    output_intermediate_file (gcov_intermediate_file, src);
+	    output_intermediate_file ((flag_use_stdout
+				       ? stdout : gcov_intermediate_file), src);
 	  else
-	    output_gcov_file (file_name, src);
-	  fnotice (stdout, "\n");
+	    {
+	      if (flag_use_stdout)
+		{
+		  if (src->coverage.lines)
+		    output_lines (stdout, src);
+		}
+	      else
+		{
+		  output_gcov_file (file_name, src);
+		  fnotice (stdout, "\n");
+		}
+	    }
 	}
     }
 
-  if (flag_gcov_file && flag_intermediate_format)
+  if (flag_gcov_file && flag_intermediate_format && !flag_use_stdout)
     {
       /* Now we've finished writing the intermediate file.  */
       fclose (gcov_intermediate_file);
@@ -1551,6 +1576,7 @@ read_graph_file (void)
 	       bbg_file_name, v, e);
     }
   bbg_stamp = gcov_read_unsigned ();
+  bbg_cwd = xstrdup (gcov_read_string ());
   bbg_supports_has_unexecuted_blocks = gcov_read_unsigned ();
 
   function_info *fn = NULL;
@@ -1775,7 +1801,7 @@ read_count_file (void)
 	{
 	  struct gcov_summary summary;
 	  gcov_read_summary (&summary);
-	  object_runs += summary.ctrs[GCOV_COUNTER_ARCS].runs;
+	  object_runs += summary.runs;
 	  program_count++;
 	}
       else if (tag == GCOV_TAG_FUNCTION && !length)
@@ -2957,7 +2983,14 @@ output_lines (FILE *gcov_file, const source_info *src)
 	{
 	  fns = src->get_functions_at_location (line_num);
 	  if (fns.size () > 1)
-	    line_start_group = fns[0]->end_line;
+	    {
+	      /* It's possible to have functions that partially overlap,
+		 thus take the maximum end_line of functions starting
+		 at LINE_NUM.  */
+	      for (unsigned i = 0; i < fns.size (); i++)
+		if (fns[i]->end_line > line_start_group)
+		  line_start_group = fns[i]->end_line;
+	    }
 	  else if (fns.size () == 1)
 	    {
 	      function_info *fn = fns[0];

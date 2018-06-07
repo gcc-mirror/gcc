@@ -71,6 +71,20 @@ baz (void)
 {
   return cmse_nonsecure_caller ();
 }
+/* { dg-final { scan-assembler "baz:" } } */
+/* { dg-final { scan-assembler "__acle_se_baz:" } } */
+/* { dg-final { scan-assembler-not "\tcmse_nonsecure_caller" } } */
+/* Look for an andsi of 1 with a register in function baz, ie.
+
+;; Function baz<anything>
+<any line without '('>
+(insn <anything but '('> (set (reg<any register modifier>:SI <anything but ')'>)
+     (and:SI (reg<any register modifier>:SI <anything but ')'>)
+	     (const_int 1 <anything but ')'>)<anything but '('>
+   <optional: (nil)<anything but '('>>
+(insn
+*/
+/* { dg-final { scan-rtl-dump "\n;; Function baz\[^\n\]*\[^(\]+\[^;\]*\n\\(insn \[^(\]+ \\(set \\(reg\[^:\]*:SI \[^)\]+\\)\[^(\]*\\(and:SI \\(reg\[^:\]*:SI \[^)\]+\\)\[^(\]*\\((const_int 1|reg\[^:\]*:SI) \[^)\]+\\)\[^(\]+(\\(nil\\)\[^(\]+)?\\(insn" expand } } */
 
 typedef int __attribute__ ((cmse_nonsecure_call)) (int_nsfunc_t) (void);
 
@@ -86,6 +100,11 @@ qux (int_nsfunc_t * callback)
 {
   fp = cmse_nsfptr_create (callback);
 }
+/* { dg-final { scan-assembler "qux:" } } */
+/* { dg-final { scan-assembler "__acle_se_qux:" } } */
+/* { dg-final { scan-assembler "bic" } } */
+/* { dg-final { scan-assembler "push\t\{r4, r5, r6" } } */
+/* { dg-final { scan-assembler "msr\tAPSR_nzcvq" } } */
 
 int call_callback (void)
 {
@@ -94,13 +113,4 @@ int call_callback (void)
   else
     return default_callback ();
 }
-/* { dg-final { scan-assembler "baz:" } } */
-/* { dg-final { scan-assembler "__acle_se_baz:" } } */
-/* { dg-final { scan-assembler "qux:" } } */
-/* { dg-final { scan-assembler "__acle_se_qux:" } } */
-/* { dg-final { scan-assembler-not "\tcmse_nonsecure_caller" } } */
-/* { dg-final { scan-rtl-dump "and.*reg.*const_int 1" expand } } */
-/* { dg-final { scan-assembler "bic" } } */
-/* { dg-final { scan-assembler "push\t\{r4, r5, r6" } } */
-/* { dg-final { scan-assembler "msr\tAPSR_nzcvq" } } */
 /* { dg-final { scan-assembler-times "bl\\s+__gnu_cmse_nonsecure_call" 1 } } */

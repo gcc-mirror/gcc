@@ -15,8 +15,6 @@ foo (void)
 /* { dg-final { scan-assembler-times {\tlfence} 1 } } */
 /* { dg-final { scan-assembler "jmp\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler "call\[ \t\]*\.LIND" } } */
-/* { dg-final { scan-assembler "jmp\[ \t\]*__x86_indirect_thunk" { target { ! x32 } } } } */
-/* { dg-final { scan-assembler "__x86_indirect_thunk:" { target { ! x32 } }  } } */
-/* { dg-final { scan-assembler "call\[ \t\]*__x86_indirect_thunk_(r|e)ax" { target { x32 } }  } } */
-/* { dg-final { scan-assembler "__x86_indirect_thunk_(r|e)ax:" { target { x32 } }  } } */
-/* { dg-final { scan-assembler-not "pushq\[ \t\]%rax" { target x32 } } } */
+/* { dg-final { scan-assembler "call\[ \t\]*__x86_indirect_thunk_(r|e)ax" } } */
+/* { dg-final { scan-assembler "__x86_indirect_thunk_(r|e)ax:" } } */
+/* { dg-final { scan-assembler-not "pushq\[ \t\]%rax" } } */

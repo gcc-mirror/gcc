@@ -28,7 +28,7 @@
   !$omp end single
   !$omp end parallel
   do i = 1, n
-    if (a(i) /= i + 1) call abort
+    if (a(i) /= i + 1) STOP 1
   end do
 end
 real function foo (x)

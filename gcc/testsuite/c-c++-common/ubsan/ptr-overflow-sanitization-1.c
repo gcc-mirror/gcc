@@ -25,9 +25,9 @@ void foo(void)
   p2 = p + 2;
 
   p = b - SMAX; /* pointer overflow check is needed */
-  p2 = p + (SMAX - 2); /* b - 2: pointer overflow check is needed */
-  p2 = p + (SMAX - 1); /* b - 1: pointer overflow check is needed */
-  p2 = p + SMAX; /* b: pointer overflow check is needed */
+  p2 = p + (SMAX - 2); /* b - 2: no need to check this  */
+  p2 = p + (SMAX - 1); /* b - 1: no need to check this */
+  p2 = p + SMAX; /* b: no need to check this */
   p2++; /* b + 1 */
 
   p = c;
@@ -75,4 +75,4 @@ void negative_to_negative (char *ptr)
   p2 += 5;
 }
 
-/* { dg-final { scan-tree-dump-times "__ubsan_handle_pointer_overflow" 17 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "__ubsan_handle_pointer_overflow" 14 "optimized" } } */

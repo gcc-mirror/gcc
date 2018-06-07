@@ -45,6 +45,9 @@ EnumValue
 Enum(abi_type) String(ilp32) Value(ABI_ILP32)
 
 EnumValue
+Enum(abi_type) String(ilp32e) Value(ABI_ILP32E)
+
+EnumValue
 Enum(abi_type) String(ilp32f) Value(ABI_ILP32F)
 
 EnumValue
@@ -106,6 +109,11 @@ mexplicit-relocs
 Target Report Mask(EXPLICIT_RELOCS)
 Use %reloc() operators, rather than assembly macros, to load addresses.
 
+mrelax
+Target Bool Var(riscv_mrelax) Init(1)
+Take advantage of linker relaxations to reduce the number of instructions
+required to materialize symbol addresses.
+
 Mask(64BIT)
 
 Mask(MUL)
@@ -117,3 +125,5 @@ Mask(HARD_FLOAT)
 Mask(DOUBLE_FLOAT)
 
 Mask(RVC)
+
+Mask(RVE)

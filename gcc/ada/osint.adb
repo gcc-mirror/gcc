@@ -250,8 +250,7 @@ package body Osint is
       Attr : aliased File_Attributes;
    end record;
 
-   No_File_Info_Cache : constant File_Info_Cache :=
-                          (No_File, Unknown_Attributes);
+   No_File_Info_Cache : constant File_Info_Cache := (No_File, (others => 0));
 
    package File_Name_Hash_Table is new GNAT.HTable.Simple_HTable (
      Header_Num => File_Hash_Num,
@@ -831,9 +830,7 @@ package body Osint is
                   Add_Suffix := False;
                   exit;
 
-               elsif Name_Buffer (J) = '/' or else
-                     Name_Buffer (J) = Directory_Separator
-               then
+               elsif Is_Directory_Separator (Name_Buffer (J)) then
                   exit;
                end if;
             end loop;
@@ -906,9 +903,7 @@ package body Osint is
                      Add_Suffix := False;
                      exit;
 
-                  elsif Canonical_Name (J) = '/' or else
-                        Canonical_Name (J) = Directory_Separator
-                  then
+                  elsif Is_Directory_Separator (Canonical_Name (J)) then
                      exit;
                   end if;
                end loop;
@@ -1502,7 +1497,7 @@ package body Osint is
       --  Add a directory separator at the end of the directory if necessary
       --  so that we can directly append a file to the directory
 
-      if Search_Dir (Search_Dir'Last) /= Directory_Separator then
+      if not Is_Directory_Separator (Search_Dir (Search_Dir'Last)) then
          Local_Search_Dir :=
            new String'(Search_Dir & String'(1 => Directory_Separator));
       else
@@ -1554,7 +1549,7 @@ package body Osint is
                raise Program_Error;
             end if;
 
-            if Buffer (Path_Len) /= Directory_Separator then
+            if not Is_Directory_Separator (Buffer (Path_Len)) then
                Path_Len := Path_Len + 1;
                Buffer (Path_Len) := Directory_Separator;
             end if;
@@ -1965,9 +1960,7 @@ package body Osint is
       Fptr := File_Name'First;
 
       for J in reverse File_Name'Range loop
-         if File_Name (J) = Directory_Separator
-           or else File_Name (J) = '/'
-         then
+         if Is_Directory_Separator (File_Name (J)) then
             if J = File_Name'Last then
                Fail ("File name missing");
             end if;
@@ -2222,8 +2215,7 @@ package body Osint is
       --  Ditto for suffix, e.g. in "gcc-4.1", the suffix is "-4.1"
 
       for J in reverse 1 .. Name_Len loop
-         if Name_Buffer (J) = '/'
-           or else Name_Buffer (J) = Directory_Separator
+         if Is_Directory_Separator (Name_Buffer (J))
            or else Name_Buffer (J) = ':'
          then
             Start_Of_Prefix := J + 1;

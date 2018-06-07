@@ -63,27 +63,34 @@ fail_formatted (const location &loc, const char *fmt, ...)
 }
 
 /* Implementation detail of ASSERT_STREQ.
-   Compare val_expected and val_actual with strcmp.  They ought
-   to be non-NULL; fail gracefully if either are NULL.  */
+   Compare val1 and val2 with strcmp.  They ought
+   to be non-NULL; fail gracefully if either or both are NULL.  */
 
 void
 assert_streq (const location &loc,
-	      const char *desc_expected, const char *desc_actual,
-	      const char *val_expected, const char *val_actual)
+	      const char *desc_val1, const char *desc_val2,
+	      const char *val1, const char *val2)
 {
-  /* If val_expected is NULL, the test is buggy.  Fail gracefully.  */
-  if (val_expected == NULL)
-    fail_formatted (loc, "ASSERT_STREQ (%s, %s) expected=NULL",
-		    desc_expected, desc_actual);
-  /* If val_actual is NULL, fail with a custom error message.  */
-  if (val_actual == NULL)
-    fail_formatted (loc, "ASSERT_STREQ (%s, %s) expected=\"%s\" actual=NULL",
-		    desc_expected, desc_actual, val_expected);
-  if (strcmp (val_expected, val_actual) == 0)
-    pass (loc, "ASSERT_STREQ");
+  /* If val1 or val2 are NULL, fail with a custom error message.  */
+  if (val1 == NULL)
+    if (val2 == NULL)
+      fail_formatted (loc, "ASSERT_STREQ (%s, %s) val1=NULL val2=NULL",
+		      desc_val1, desc_val2);
+    else
+      fail_formatted (loc, "ASSERT_STREQ (%s, %s) val1=NULL val2=\"%s\"",
+		      desc_val1, desc_val2, val2);
   else
-    fail_formatted (loc, "ASSERT_STREQ (%s, %s) expected=\"%s\" actual=\"%s\"",
-		    desc_expected, desc_actual, val_expected, val_actual);
+    if (val2 == NULL)
+      fail_formatted (loc, "ASSERT_STREQ (%s, %s) val1=\"%s\" val2=NULL",
+		      desc_val1, desc_val2, val1);
+    else
+      {
+	if (strcmp (val1, val2) == 0)
+	  pass (loc, "ASSERT_STREQ");
+	else
+	  fail_formatted (loc, "ASSERT_STREQ (%s, %s) val1=\"%s\" val2=\"%s\"",
+			  desc_val1, desc_val2, val1, val2);
+      }
 }
 
 /* Implementation detail of ASSERT_STR_CONTAINS.
@@ -288,6 +295,10 @@ test_assertions ()
   ASSERT_EQ (1, 1);
   ASSERT_EQ_AT (SELFTEST_LOCATION, 1, 1);
   ASSERT_NE (1, 2);
+  ASSERT_GT (2, 1);
+  ASSERT_GT_AT (SELFTEST_LOCATION, 2, 1);
+  ASSERT_LT (1, 2);
+  ASSERT_LT_AT (SELFTEST_LOCATION, 1, 2);
   ASSERT_STREQ ("test", "test");
   ASSERT_STREQ_AT (SELFTEST_LOCATION, "test", "test");
   ASSERT_STR_CONTAINS ("foo bar baz", "bar");

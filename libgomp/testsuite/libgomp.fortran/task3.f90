@@ -21,6 +21,6 @@ program F03_2_7_1d
    !$omp end parallel
    if (sum /= NT) then
       print *, "FAIL - sum == ", sum, " (expected ", NT, ")"
-      call abort
+      STOP 1
    end if
 end program F03_2_7_1d

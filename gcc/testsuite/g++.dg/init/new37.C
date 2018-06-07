@@ -32,7 +32,7 @@ template <typename T>
 void *
 callnew_fail_3()
 {
-  return new T[2][T::n]; // { dg-error "size of array has non-integral type" }
+  return new T[2][T::n]; // { dg-error "size of array has non-integral type|converted constant expression" }
 }
 
 struct T1 {

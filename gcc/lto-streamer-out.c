@@ -2120,6 +2120,9 @@ output_function (struct cgraph_node *node)
      debug info.  */
   if (gimple_has_body_p (function))
     {
+      /* Fixup loops if required to match discovery done in the reader.  */
+      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
       streamer_write_uhwi (ob, 1);
       output_struct_function_base (ob, fn);
 
@@ -2177,6 +2180,7 @@ output_function (struct cgraph_node *node)
 
       output_cfg (ob, fn);
 
+      loop_optimizer_finalize ();
       pop_cfun ();
    }
   else
@@ -2356,24 +2360,14 @@ prune_offload_funcs (void)
   if (!offload_funcs)
     return;
 
-  unsigned int write_index = 0;
-  for (unsigned read_index = 0; read_index < vec_safe_length (offload_funcs);
-       read_index++)
-    {
-      tree fn_decl = (*offload_funcs)[read_index];
-      bool remove_p = cgraph_node::get (fn_decl) == NULL;
-      if (remove_p)
-	continue;
+  unsigned ix, ix2;
+  tree *elem_ptr;
+  VEC_ORDERED_REMOVE_IF (*offload_funcs, ix, ix2, elem_ptr,
+			 cgraph_node::get (*elem_ptr) == NULL);
 
-      DECL_PRESERVE_P (fn_decl) = 1;
-
-      if (write_index != read_index)
-	(*offload_funcs)[write_index] = (*offload_funcs)[read_index];
-
-      write_index++;
-    }
-
-  offload_funcs->truncate (write_index);
+  tree fn_decl;
+  FOR_EACH_VEC_ELT (*offload_funcs, ix, fn_decl)
+    DECL_PRESERVE_P (fn_decl) = 1;
 }
 
 /* Main entry point from the pass manager.  */
@@ -2412,7 +2406,9 @@ lto_output (void)
 		}
 	      decl_state = lto_new_out_decl_state ();
 	      lto_push_out_decl_state (decl_state);
-	      if (gimple_has_body_p (node->decl) || !flag_wpa
+	      if (gimple_has_body_p (node->decl)
+		  || (!flag_wpa
+		      && flag_incremental_link != INCREMENTAL_LINK_LTO)
 		  /* Thunks have no body but they may be synthetized
 		     at WPA time.  */
 		  || DECL_ARGUMENTS (node->decl))
@@ -2444,7 +2440,8 @@ lto_output (void)
 	      decl_state = lto_new_out_decl_state ();
 	      lto_push_out_decl_state (decl_state);
 	      if (DECL_INITIAL (node->decl) != error_mark_node
-		  || !flag_wpa)
+		  || (!flag_wpa
+		      && flag_incremental_link != INCREMENTAL_LINK_LTO))
 		output_constructor (node);
 	      else
 		copy_function_or_variable (node);

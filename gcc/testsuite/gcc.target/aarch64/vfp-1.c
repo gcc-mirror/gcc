@@ -32,7 +32,7 @@ void test_sf() {
   /* { dg-final { scan-assembler "fsqrt\ts\[0-9\]*" } } */
   f1 = sqrtf (f1);
   /* cmpsf */
-  /* { dg-final { scan-assembler "fcmp\ts\[0-9\]*" } } */
+  /* { dg-final { scan-assembler "fcmpe\ts\[0-9\]*" } } */
   if (f1 < f2)
     cond1 = 1;
   else
@@ -64,7 +64,7 @@ void test_df() {
   /* { dg-final { scan-assembler "fsqrt\td\[0-9\]*" } } */
   d1 = sqrt (d1);
   /* cmpdf */
-  /* { dg-final { scan-assembler "fcmp\td\[0-9\]*" } } */
+  /* { dg-final { scan-assembler "fcmpe\td\[0-9\]*" } } */
   if (d1 < d2)
     cond1 = 1;
   else
@@ -82,13 +82,13 @@ void test_convert () {
   /* { dg-final { scan-assembler "fcvt\ts\[0-9\]*" } } */
   f1 = d1;
   /* fixsfsi2 */
-  /* { dg-final { scan-assembler "fcvtzs\tw\[0-9\], s\[0-9\]*" } } */
+  /* { dg-final { scan-assembler "fcvtzs\ts\[0-9\], s\[0-9\]*" } } */
   i1 = f1;
   /* fixdfsi2 */
   /* { dg-final { scan-assembler "fcvtzs\tw\[0-9\], d\[0-9\]*" } } */
   i1 = d1;
   /* fixunsfsi2 */
-  /* { dg-final { scan-assembler "fcvtzu\tw\[0-9\], s\[0-9\]*" } } */
+  /* { dg-final { scan-assembler "fcvtzu\ts\[0-9\], s\[0-9\]*" } } */
   u1 = f1;
   /* fixunsdfsi2 */
   /* { dg-final { scan-assembler "fcvtzu\tw\[0-9\], d\[0-9\]*" } } */

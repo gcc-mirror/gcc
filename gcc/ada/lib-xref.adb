@@ -666,7 +666,7 @@ package body Lib.Xref is
 
       --  Do not generate references if we are within a postcondition sub-
       --  program, because the reference does not comes from source, and the
-      --  pre-analysis of the aspect has already created an entry for the ALI
+      --  preanalysis of the aspect has already created an entry for the ALI
       --  file at the proper source location.
 
       if Chars (Current_Scope) = Name_uPostconditions then

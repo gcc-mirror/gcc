@@ -32,7 +32,6 @@
    RS6000_BUILTIN_D -- DST builtins
    RS6000_BUILTIN_H -- HTM builtins
    RS6000_BUILTIN_P -- Altivec, VSX, ISA 2.07 vector predicate builtins
-   RS6000_BUILTIN_Q -- Paired floating point VSX predicate builtins
    RS6000_BUILTIN_X -- special builtins
 
    Each of the above macros takes 4 arguments:
@@ -72,10 +71,6 @@
 
 #ifndef RS6000_BUILTIN_P
   #error "RS6000_BUILTIN_P is not defined."
-#endif
-
-#ifndef RS6000_BUILTIN_Q
-  #error "RS6000_BUILTIN_Q is not defined."
 #endif
 
 #ifndef RS6000_BUILTIN_X
@@ -549,47 +544,6 @@
 		     | RS6000_BTC_VOID),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
-/* Paired floating point convenience macros.  */
-#define BU_PAIRED_1(ENUM, NAME, ATTR, ICODE)				\
-  RS6000_BUILTIN_1 (PAIRED_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_paired_" NAME,		/* NAME */	\
-		    RS6000_BTM_PAIRED,			/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_UNARY),				\
-		    CODE_FOR_ ## ICODE)			/* ICODE */
-
-#define BU_PAIRED_2(ENUM, NAME, ATTR, ICODE)				\
-  RS6000_BUILTIN_2 (PAIRED_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_paired_" NAME,		/* NAME */	\
-		    RS6000_BTM_PAIRED,			/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_BINARY),				\
-		    CODE_FOR_ ## ICODE)			/* ICODE */
-
-#define BU_PAIRED_3(ENUM, NAME, ATTR, ICODE)				\
-  RS6000_BUILTIN_3 (PAIRED_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_paired_" NAME,		/* NAME */	\
-		    RS6000_BTM_PAIRED,			/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_TERNARY),				\
-		    CODE_FOR_ ## ICODE)			/* ICODE */
-
-#define BU_PAIRED_P(ENUM, NAME, ATTR, ICODE)				\
-  RS6000_BUILTIN_Q (PAIRED_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_paired_" NAME,		/* NAME */	\
-		    RS6000_BTM_PAIRED,			/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_PREDICATE),				\
-		    CODE_FOR_ ## ICODE)			/* ICODE */
-
-#define BU_PAIRED_X(ENUM, NAME, ATTR)					\
-  RS6000_BUILTIN_X (PAIRED_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_paired_" NAME,		/* NAME */	\
-		    RS6000_BTM_PAIRED,			/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_SPECIAL),				\
-		    CODE_FOR_nothing)			/* ICODE */
-
 #define BU_SPECIAL_X(ENUM, NAME, MASK, ATTR)				\
   RS6000_BUILTIN_X (ENUM,				/* ENUM */	\
 		    NAME,				/* NAME */	\
@@ -615,17 +569,6 @@
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
-
-/* Miscellaneous builtins for instructions added prior to ISA 2.04.  These
-   operate on floating point registers.  */
-#define BU_FP_MISC_1(ENUM, NAME, ATTR, ICODE)				\
-  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
-		    "__builtin_" NAME,			/* NAME */	\
-		    RS6000_BTM_HARD_FLOAT,		/* MASK */	\
-		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
-		     | RS6000_BTC_UNARY),				\
-		    CODE_FOR_ ## ICODE)			/* ICODE */
-
 /* Miscellaneous builtins for instructions added in ISA 2.06.  These
    instructions don't require either the DFP or VSX options, just the basic ISA
    2.06 (popcntd) enablement since they operate on general purpose
@@ -642,6 +585,15 @@
   RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
 		    "__builtin_" NAME,			/* NAME */	\
 		    RS6000_BTM_POPCNTD,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P7_POWERPC64_MISC_2(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_POPCNTD					\
+		    | RS6000_BTM_POWERPC64,		/* MASK */	\
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
@@ -672,6 +624,17 @@
 		    "__builtin_" NAME,			/* NAME */	\
 		    (RS6000_BTM_HARD_FLOAT		/* MASK */	\
 		     | RS6000_BTM_LDBL128),				\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* 128-bit __ibm128 floating point builtins (use -mfloat128 to indicate that
+   __ibm128 is available).  */
+#define BU_IBM128_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    (RS6000_BTM_HARD_FLOAT		/* MASK */	\
+		     | RS6000_BTM_FLOAT128),				\
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
@@ -1086,14 +1049,14 @@ BU_ALTIVEC_2 (VMULEUB,	      "vmuleub",	CONST,	vec_widen_umult_even_v16qi)
 BU_ALTIVEC_2 (VMULESB,	      "vmulesb",	CONST,	vec_widen_smult_even_v16qi)
 BU_ALTIVEC_2 (VMULEUH,	      "vmuleuh",	CONST,	vec_widen_umult_even_v8hi)
 BU_ALTIVEC_2 (VMULESH,	      "vmulesh",	CONST,	vec_widen_smult_even_v8hi)
-BU_ALTIVEC_2 (VMULEUW,	      "vmuleuw",	CONST,	vec_widen_umult_even_v4si)
-BU_ALTIVEC_2 (VMULESW,	      "vmulesw",	CONST,	vec_widen_smult_even_v4si)
+BU_P8V_AV_2 (VMULEUW,	      "vmuleuw",	CONST,	vec_widen_umult_even_v4si)
+BU_P8V_AV_2 (VMULESW,	      "vmulesw",	CONST,	vec_widen_smult_even_v4si)
 BU_ALTIVEC_2 (VMULOUB,	      "vmuloub",	CONST,	vec_widen_umult_odd_v16qi)
 BU_ALTIVEC_2 (VMULOSB,	      "vmulosb",	CONST,	vec_widen_smult_odd_v16qi)
 BU_ALTIVEC_2 (VMULOUH,	      "vmulouh",	CONST,	vec_widen_umult_odd_v8hi)
 BU_ALTIVEC_2 (VMULOSH,	      "vmulosh",	CONST,	vec_widen_smult_odd_v8hi)
-BU_ALTIVEC_2 (VMULOUW,	      "vmulouw",	CONST,	vec_widen_umult_odd_v4si)
-BU_ALTIVEC_2 (VMULOSW,	      "vmulosw",	CONST,	vec_widen_smult_odd_v4si)
+BU_P8V_AV_2 (VMULOUW,	      "vmulouw",	CONST,	vec_widen_umult_odd_v4si)
+BU_P8V_AV_2 (VMULOSW,	      "vmulosw",	CONST,	vec_widen_smult_odd_v4si)
 BU_ALTIVEC_2 (VNOR,	      "vnor",		CONST,	norv4si3)
 BU_ALTIVEC_2 (VOR,	      "vor",		CONST,	iorv4si3)
 BU_ALTIVEC_2 (VPKUHUM,	      "vpkuhum",	CONST,	altivec_vpkuhum)
@@ -1210,20 +1173,6 @@ BU_ALTIVEC_P (VCMPGTSB_P,     "vcmpgtsb_p",	CONST,	vector_gt_v16qi_p)
 BU_ALTIVEC_P (VCMPGTUB_P,     "vcmpgtub_p",	CONST,	vector_gtu_v16qi_p)
 
 /* AltiVec builtins that are handled as special cases.  */
-BU_ALTIVEC_X (ST_INTERNAL_4si,  "st_internal_4si",  MEM)
-BU_ALTIVEC_X (LD_INTERNAL_4si,  "ld_internal_4si",  MEM)
-BU_ALTIVEC_X (ST_INTERNAL_8hi,	"st_internal_8hi",  MEM)
-BU_ALTIVEC_X (LD_INTERNAL_8hi,	"ld_internal_8hi",  MEM)
-BU_ALTIVEC_X (ST_INTERNAL_16qi,	"st_internal_16qi", MEM)
-BU_ALTIVEC_X (LD_INTERNAL_16qi,	"ld_internal_16qi", MEM)
-BU_ALTIVEC_X (ST_INTERNAL_4sf,	"st_internal_16qi", MEM)
-BU_ALTIVEC_X (LD_INTERNAL_4sf,	"ld_internal_4sf",  MEM)
-BU_ALTIVEC_X (ST_INTERNAL_2df,	"st_internal_4sf",  MEM)
-BU_ALTIVEC_X (LD_INTERNAL_2df,	"ld_internal_2df",  MEM)
-BU_ALTIVEC_X (ST_INTERNAL_2di,	"st_internal_2di",  MEM)
-BU_ALTIVEC_X (LD_INTERNAL_2di,	"ld_internal_2di",  MEM)
-BU_ALTIVEC_X (ST_INTERNAL_1ti,	"st_internal_1ti",  MEM)
-BU_ALTIVEC_X (LD_INTERNAL_1ti,	"ld_internal_1ti",  MEM)
 BU_ALTIVEC_X (MTVSCR,		"mtvscr",	    MISC)
 BU_ALTIVEC_X (MFVSCR,		"mfvscr",	    MISC)
 BU_ALTIVEC_X (DSSALL,		"dssall",	    MISC)
@@ -1241,8 +1190,8 @@ BU_ALTIVEC_X (LVXL_V4SI,	"lvxl_v4si",	    MEM)
 BU_ALTIVEC_X (LVXL_V8HI,	"lvxl_v8hi",	    MEM)
 BU_ALTIVEC_X (LVXL_V16QI,	"lvxl_v16qi",	    MEM)
 BU_ALTIVEC_X (LVX,		"lvx",		    MEM)
-BU_ALTIVEC_X (LVX_V2DF,		"lvx_v2df",	    MEM)
 BU_ALTIVEC_X (LVX_V1TI,		"lvx_v1ti",	    MEM)
+BU_ALTIVEC_X (LVX_V2DF,		"lvx_v2df",	    MEM)
 BU_ALTIVEC_X (LVX_V2DI,		"lvx_v2di",	    MEM)
 BU_ALTIVEC_X (LVX_V4SF,		"lvx_v4sf",	    MEM)
 BU_ALTIVEC_X (LVX_V4SI,		"lvx_v4si",	    MEM)
@@ -1873,6 +1822,15 @@ BU_VSX_OVERLOAD_1 (VUNSIGNEDE,  "vunsignede")
 BU_VSX_OVERLOAD_1 (VUNSIGNEDO,  "vunsignedo")
 
 /* VSX builtins that are handled as special cases.  */
+
+
+/* NON-TRADITIONAL BEHAVIOR HERE: Besides introducing the
+   __builtin_vec_ld and __builtin_vec_st built-in functions,
+   the VSX_BUILTIN_VEC_LD and VSX_BUILTIN_VEC_ST symbolic constants
+   introduced below are also affiliated with the __builtin_vec_vsx_ld
+   and __builtin_vec_vsx_st functions respectively.  This unnatural
+   binding is formed with explicit calls to the def_builtin function
+   found in rs6000.c.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")
 BU_VSX_OVERLOAD_X (ST,	     "st")
 BU_VSX_OVERLOAD_X (XL,	     "xl")
@@ -1880,9 +1838,6 @@ BU_VSX_OVERLOAD_X (XL_BE,    "xl_be")
 BU_VSX_OVERLOAD_X (XST,	     "xst")
 BU_VSX_OVERLOAD_X (XST_BE,   "xst_be")
 
-/* 1 argument builtins pre ISA 2.04.  */
-BU_FP_MISC_1 (FCTID,		"fctid",	CONST,  lrintdfdi2)
-BU_FP_MISC_1 (FCTIW,		"fctiw",	CONST,	lrintsfsi2)
 
 /* 2 argument CMPB instructions added in ISA 2.05. */
 BU_P6_2 (CMPB_32,        "cmpb_32",	CONST,	cmpbsi3)
@@ -2008,6 +1963,8 @@ BU_P8V_AV_P (VCMPEQUD_P,	"vcmpequd_p",	CONST,	vector_eq_v2di_p)
 BU_P8V_AV_P (VCMPGTSD_P,	"vcmpgtsd_p",	CONST,	vector_gt_v2di_p)
 BU_P8V_AV_P (VCMPGTUD_P,	"vcmpgtud_p",	CONST,	vector_gtu_v2di_p)
 
+BU_P8V_AV_3 (VPERMXOR,		"vpermxor",	CONST, 	altivec_vpermxor)
+
 /* ISA 2.05 overloaded 2 argument functions.  */
 BU_P6_OVERLOAD_2 (CMPB, "cmpb")
 
@@ -2069,6 +2026,7 @@ BU_P8V_OVERLOAD_3 (VADDECUQ,	"vaddecuq")
 BU_P8V_OVERLOAD_3 (VADDEUQM,	"vaddeuqm")
 BU_P8V_OVERLOAD_3 (VSUBECUQ,	"vsubecuq")
 BU_P8V_OVERLOAD_3 (VSUBEUQM,	"vsubeuqm")
+BU_P8V_OVERLOAD_3 (VPERMXOR,   "vpermxor")
 
 /* ISA 3.0 vector overloaded 2-argument functions. */
 BU_P9V_AV_2 (VSLV,		"vslv",			CONST, vslv)
@@ -2256,7 +2214,9 @@ BU_P9V_64BIT_AV_X (STXVL,	"stxvl",	MISC)
 BU_P9V_64BIT_AV_X (XST_LEN_R,	"xst_len_r",	MISC)
 
 /* 1 argument vector functions added in ISA 3.0 (power9). */
-BU_P9V_AV_1 (VCLZLSBB, "vclzlsbb",		CONST,	vclzlsbb)
+BU_P9V_AV_1 (VCLZLSBB_V16QI, "vclzlsbb_v16qi",	CONST,	vclzlsbb_v16qi)
+BU_P9V_AV_1 (VCLZLSBB_V8HI, "vclzlsbb_v8hi",	CONST,	vclzlsbb_v8hi)
+BU_P9V_AV_1 (VCLZLSBB_V4SI, "vclzlsbb_v4si",	CONST,	vclzlsbb_v4si)
 BU_P9V_AV_1 (VCTZLSBB_V16QI, "vctzlsbb_v16qi",	CONST,	vctzlsbb_v16qi)
 BU_P9V_AV_1 (VCTZLSBB_V8HI, "vctzlsbb_v8hi",	CONST,	vctzlsbb_v8hi)
 BU_P9V_AV_1 (VCTZLSBB_V4SI, "vctzlsbb_v4si",	CONST,	vctzlsbb_v4si)
@@ -2321,13 +2281,9 @@ BU_P9V_OVERLOAD_1 (VCTZLSBB,	"vctzlsbb")
 
 /* 2 argument extended divide functions added in ISA 2.06.  */
 BU_P7_MISC_2 (DIVWE,		"divwe",	CONST,	dive_si)
-BU_P7_MISC_2 (DIVWEO,		"divweo",	CONST,	diveo_si)
 BU_P7_MISC_2 (DIVWEU,		"divweu",	CONST,	diveu_si)
-BU_P7_MISC_2 (DIVWEUO,		"divweuo",	CONST,	diveuo_si)
-BU_P7_MISC_2 (DIVDE,		"divde",	CONST,	dive_di)
-BU_P7_MISC_2 (DIVDEO,		"divdeo",	CONST,	diveo_di)
-BU_P7_MISC_2 (DIVDEU,		"divdeu",	CONST,	diveu_di)
-BU_P7_MISC_2 (DIVDEUO,		"divdeuo",	CONST,	diveuo_di)
+BU_P7_POWERPC64_MISC_2 (DIVDE,	"divde",	CONST,	dive_di)
+BU_P7_POWERPC64_MISC_2 (DIVDEU,	"divdeu",	CONST,	diveu_di)
 
 /* 1 argument DFP (decimal floating point) functions added in ISA 2.05.  */
 BU_DFP_MISC_1 (DXEX,		"dxex",		CONST,	dfp_dxex_dd)
@@ -2348,7 +2304,7 @@ BU_DFP_MISC_2 (DSCRIQ,		"dscriq",	CONST,	dfp_dscri_td)
 /* 0 argument void function that we pretend was added in ISA 2.06.
    It's a special nop recognized by 2018+ firmware for P7 and up,
    with speculation barrier semantics.  */
-BU_P7_MISC_X (SPEC_BARRIER,	"rs6000_speculation_barrier",	MISC)
+BU_P7_MISC_X (SPEC_BARRIER,	"ppc_speculation_barrier",	MISC)
 
 /* 1 argument BCD functions added in ISA 2.06.  */
 BU_P7_MISC_1 (CDTBCD,		"cdtbcd",	CONST,	cdtbcd)
@@ -2380,6 +2336,9 @@ BU_P9_64BIT_MISC_0 (DARN,	"darn",			MISC, darn)
 
 BU_LDBL128_2 (PACK_TF,		"pack_longdouble",	CONST,	packtf)
 BU_LDBL128_2 (UNPACK_TF,	"unpack_longdouble",	CONST,	unpacktf)
+
+BU_IBM128_2 (PACK_IF,		"pack_ibm128",		CONST,	packif)
+BU_IBM128_2 (UNPACK_IF,		"unpack_ibm128",	CONST,	unpackif)
 
 BU_P7_MISC_2 (PACK_V1TI,	"pack_vector_int128",	CONST,	packv1ti)
 BU_P7_MISC_2 (UNPACK_V1TI,	"unpack_vector_int128",	CONST,	unpackv1ti)
@@ -2500,44 +2459,6 @@ BU_HTM_V1 (SET_TEXASR,	"set_texasr",	SPR,	nothing)
 BU_HTM_0  (GET_TEXASRU,	"get_texasru",	SPR,	nothing)
 BU_HTM_V1 (SET_TEXASRU,	"set_texasru",	SPR,	nothing)
 
-
-/* 3 argument paired floating point builtins.  */
-BU_PAIRED_3 (MSUB,            "msub",           FP, 	fmsv2sf4)
-BU_PAIRED_3 (MADD,            "madd",           FP, 	fmav2sf4)
-BU_PAIRED_3 (MADDS0,          "madds0",         FP, 	paired_madds0)
-BU_PAIRED_3 (MADDS1,          "madds1",         FP, 	paired_madds1)
-BU_PAIRED_3 (NMSUB,           "nmsub",          FP, 	nfmsv2sf4)
-BU_PAIRED_3 (NMADD,           "nmadd",          FP, 	nfmav2sf4)
-BU_PAIRED_3 (SUM0,            "sum0",           FP, 	paired_sum0)
-BU_PAIRED_3 (SUM1,            "sum1",           FP, 	paired_sum1)
-BU_PAIRED_3 (SELV2SF4,        "selv2sf4",       CONST, 	selv2sf4)
-
-/* 2 argument paired floating point builtins.  */
-BU_PAIRED_2 (DIVV2SF3,	      "divv2sf3",	FP,	divv2sf3)
-BU_PAIRED_2 (ADDV2SF3,	      "addv2sf3",	FP,	addv2sf3)
-BU_PAIRED_2 (SUBV2SF3,	      "subv2sf3",	FP,	subv2sf3)
-BU_PAIRED_2 (MULV2SF3,	      "mulv2sf3",	FP,	mulv2sf3)
-BU_PAIRED_2 (MULS0,	      "muls0",		FP,	paired_muls0)
-BU_PAIRED_2 (MULS1,	      "muls1",		FP,	paired_muls1)
-BU_PAIRED_2 (MERGE00,	      "merge00",	CONST,	paired_merge00)
-BU_PAIRED_2 (MERGE01,	      "merge01",	CONST,	paired_merge01)
-BU_PAIRED_2 (MERGE10,	      "merge10",	CONST,	paired_merge10)
-BU_PAIRED_2 (MERGE11,	      "merge11",	CONST,	paired_merge11)
-
-/* 1 argument paired floating point builtin functions.  */
-BU_PAIRED_1 (ABSV2SF2,	      "absv2sf2",	CONST,	absv2sf2)
-BU_PAIRED_1 (NABSV2SF2,	      "nabsv2sf2",	CONST,	nabsv2sf2)
-BU_PAIRED_1 (NEGV2SF2,	      "negv2sf2",	CONST,	negv2sf2)
-BU_PAIRED_1 (SQRTV2SF2,	      "sqrtv2sf2",	FP,	sqrtv2sf2)
-BU_PAIRED_1 (RESV2SF,	      "resv2sf2",	FP,	resv2sf2)
-
-/* PAIRED builtins that are handled as special cases.  */
-BU_PAIRED_X (STX,	      "stx",		MISC)
-BU_PAIRED_X (LX,	      "lx",		MISC)
-
-/* Paired predicates.  */
-BU_PAIRED_P (CMPU0,	"cmpu0",	CONST,	paired_cmpu0)
-BU_PAIRED_P (CMPU1,	"cmpu1",	CONST,	paired_cmpu1)
 
 /* Power7 builtins, that aren't VSX instructions.  */
 BU_SPECIAL_X (POWER7_BUILTIN_BPERMD, "__builtin_bpermd", RS6000_BTM_POPCNTD,

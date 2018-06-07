@@ -73,7 +73,7 @@ struct counts_entry : pointer_hash <counts_entry>
   unsigned lineno_checksum;
   unsigned cfg_checksum;
   gcov_type *counts;
-  struct gcov_ctr_summary summary;
+  gcov_summary summary;
 
   /* hash_table support.  */
   static inline hashval_t hash (const counts_entry *);
@@ -185,7 +185,7 @@ static void
 read_counts_file (void)
 {
   gcov_unsigned_t fn_ident = 0;
-  struct gcov_summary summary;
+  gcov_summary summary;
   unsigned new_summary = 1;
   gcov_unsigned_t tag;
   int is_error = 0;
@@ -241,27 +241,21 @@ read_counts_file (void)
       else if (tag == GCOV_TAG_PROGRAM_SUMMARY)
 	{
 	  struct gcov_summary sum;
-	  unsigned ix;
 
 	  if (new_summary)
 	    memset (&summary, 0, sizeof (summary));
 
 	  gcov_read_summary (&sum);
-	  for (ix = 0; ix != GCOV_COUNTERS_SUMMABLE; ix++)
-	    {
-	      summary.ctrs[ix].runs += sum.ctrs[ix].runs;
-	      summary.ctrs[ix].sum_all += sum.ctrs[ix].sum_all;
-	      if (summary.ctrs[ix].run_max < sum.ctrs[ix].run_max)
-		summary.ctrs[ix].run_max = sum.ctrs[ix].run_max;
-	      summary.ctrs[ix].sum_max += sum.ctrs[ix].sum_max;
-	    }
+	  summary.runs += sum.runs;
+	  summary.sum_all += sum.sum_all;
+	  if (summary.run_max < sum.run_max)
+	    summary.run_max = sum.run_max;
+	  summary.sum_max += sum.sum_max;
           if (new_summary)
-            memcpy (summary.ctrs[GCOV_COUNTER_ARCS].histogram,
-                    sum.ctrs[GCOV_COUNTER_ARCS].histogram,
-                    sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+	    memcpy (summary.histogram, sum.histogram,
+		sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
           else
-            gcov_histogram_merge (summary.ctrs[GCOV_COUNTER_ARCS].histogram,
-                                  sum.ctrs[GCOV_COUNTER_ARCS].histogram);
+	    gcov_histogram_merge (summary.histogram, sum.histogram);
 	  new_summary = 0;
 	}
       else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
@@ -282,8 +276,8 @@ read_counts_file (void)
 	      entry->ctr = elt.ctr;
 	      entry->lineno_checksum = lineno_checksum;
 	      entry->cfg_checksum = cfg_checksum;
-              if (elt.ctr < GCOV_COUNTERS_SUMMABLE)
-                entry->summary = summary.ctrs[elt.ctr];
+	      if (elt.ctr == GCOV_COUNTER_ARCS)
+		entry->summary = summary;
               entry->summary.num = n_counts;
 	      entry->counts = XCNEWVEC (gcov_type, n_counts);
 	    }
@@ -306,23 +300,16 @@ read_counts_file (void)
 	      counts_hash = NULL;
 	      break;
 	    }
-	  else if (elt.ctr >= GCOV_COUNTERS_SUMMABLE)
-	    {
-	      error ("cannot merge separate %s counters for function %u",
-		     ctr_names[elt.ctr], fn_ident);
-	      goto skip_merge;
-	    }
 	  else
 	    {
-	      entry->summary.runs += summary.ctrs[elt.ctr].runs;
-	      entry->summary.sum_all += summary.ctrs[elt.ctr].sum_all;
-	      if (entry->summary.run_max < summary.ctrs[elt.ctr].run_max)
-		entry->summary.run_max = summary.ctrs[elt.ctr].run_max;
-	      entry->summary.sum_max += summary.ctrs[elt.ctr].sum_max;
+	      entry->summary.runs += summary.runs;
+	      entry->summary.sum_all += summary.sum_all;
+	      if (entry->summary.run_max < summary.run_max)
+		entry->summary.run_max = summary.run_max;
+	      entry->summary.sum_max += summary.sum_max;
 	    }
 	  for (ix = 0; ix != n_counts; ix++)
 	    entry->counts[ix] += gcov_read_counter ();
-	skip_merge:;
 	}
       gcov_sync (offset, length);
       if ((is_error = gcov_is_error ()))
@@ -345,7 +332,7 @@ read_counts_file (void)
 gcov_type *
 get_coverage_counts (unsigned counter, unsigned expected,
                      unsigned cfg_checksum, unsigned lineno_checksum,
-		     const struct gcov_ctr_summary **summary)
+		     const gcov_summary **summary)
 {
   counts_entry *entry, elt;
 
@@ -1269,6 +1256,7 @@ coverage_init (const char *filename)
 	  gcov_write_unsigned (GCOV_NOTE_MAGIC);
 	  gcov_write_unsigned (GCOV_VERSION);
 	  gcov_write_unsigned (bbg_file_stamp);
+	  gcov_write_string (getpwd ());
 
 	  /* Do not support has_unexecuted_blocks for Ada.  */
 	  gcov_write_unsigned (strcmp (lang_hooks.name, "GNU Ada") != 0);

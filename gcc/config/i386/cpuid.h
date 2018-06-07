@@ -67,6 +67,7 @@
 
 /* %ebx  */
 #define bit_CLZERO	(1 << 0)
+#define bit_WBNOINVD	(1 << 9)
 
 /* Extended Features (%eax == 7) */
 /* %ebx */
@@ -97,6 +98,7 @@
 #define bit_AVX512VBMI	(1 << 1)
 #define bit_PKU	(1 << 3)
 #define bit_OSPKE	(1 << 4)
+#define bit_WAITPKG	(1 << 5)
 #define bit_AVX512VBMI2	(1 << 6)
 #define bit_SHSTK	(1 << 7)
 #define bit_GFNI	(1 << 8)
@@ -106,12 +108,15 @@
 #define bit_AVX512BITALG	(1 << 12)
 #define bit_AVX512VPOPCNTDQ	(1 << 14)
 #define bit_RDPID	(1 << 22)
+#define bit_MOVDIRI	(1 << 27)
+#define bit_MOVDIR64B	(1 << 28)
+#define bit_CLDEMOTE	(1 << 25)
 
 /* %edx */
 #define bit_AVX5124VNNIW (1 << 2)
 #define bit_AVX5124FMAPS (1 << 3)
 #define bit_IBT	(1 << 20)
-
+#define bit_PCONFIG	(1 << 18)
 /* XFEATURE_ENABLED_MASK register bits (%eax == 13, %ecx == 0) */
 #define bit_BNDREGS     (1 << 3)
 #define bit_BNDCSR      (1 << 4)

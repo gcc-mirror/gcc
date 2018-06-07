@@ -3708,16 +3708,6 @@ ipa_check_create_edge_args (void)
     ipa_vr_hash_table = hash_table<ipa_vr_ggc_hash_traits>::create_ggc (37);
 }
 
-/* Frees all dynamically allocated structures that the argument info points
-   to.  */
-
-void
-ipa_free_edge_args_substructures (struct ipa_edge_args *args)
-{
-  vec_free (args->jump_functions);
-  *args = ipa_edge_args ();
-}
-
 /* Free all ipa_edge structures.  */
 
 void

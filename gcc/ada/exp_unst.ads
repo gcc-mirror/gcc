@@ -683,12 +683,18 @@ package Exp_Unst is
    --  function returns the level of nesting (Subp = 1, subprograms that
    --  are immediately nested within Subp = 2, etc.).
 
+   function In_Synchronized_Unit (Subp : Entity_Id) return Boolean;
+   --  Predicate to identify subprograms declared in task and protected types.
+   --  These subprograms are called from outside the compilation and therefore
+   --  must be considered reachable (and cannot be eliminated) because we must
+   --  generate code for them.
+
    function Subp_Index (Sub : Entity_Id) return SI_Type;
    --  Given the entity for a subprogram, return corresponding Subp's index
 
    procedure Unnest_Subprograms (N : Node_Id);
    --  Called to unnest subprograms. If we are in unnest subprogram mode, this
-   --  is the call that traverses the tree N and locates all the library level
+   --  is the call that traverses the tree N and locates all the library-level
    --  subprograms with nested subprograms to process them.
 
 end Exp_Unst;

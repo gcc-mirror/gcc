@@ -4,14 +4,14 @@
 
 int& bad1()
 {
-  int x = 0;		// { dg-error "reference to local variable" }
-  return x;
+  int x = 0;
+  return x;		// { dg-error "reference to local variable" }
 }
 
 int* bad2()
 {
-  int x = 0;		// { dg-error "address of local variable" }
-  return &x;
+  int x = 0;
+  return &x;		// { dg-error "address of local variable" }
 }
 
 const int& bad4()

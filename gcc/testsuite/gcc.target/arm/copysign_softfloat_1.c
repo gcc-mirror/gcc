@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target arm_thumb2_ok } */
-/* { dg-add-options arm_arch_v6t2 } */
-/* { dg-additional-options "-O2 --save-temps" } */
+/* { dg-additional-options "-mthumb -O2 --save-temps" } */
 
 extern void abort (void);
 

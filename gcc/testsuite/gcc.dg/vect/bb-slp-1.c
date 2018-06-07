@@ -54,5 +54,5 @@ int main (void)
   return 0;
 }
 
+/* { dg-final { scan-tree-dump-not "can't force alignment" "slp1" } } */
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp1" } } */
-  

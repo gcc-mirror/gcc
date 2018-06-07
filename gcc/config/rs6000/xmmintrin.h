@@ -58,6 +58,18 @@
 #define _XMMINTRIN_H_INCLUDED
 
 #include <altivec.h>
+
+/* Avoid collisions between altivec.h and strict adherence to C++ and
+   C11 standards.  This should eventually be done inside altivec.h itself,
+   but only after testing a full distro build.  */
+#if defined(__STRICT_ANSI__) && (defined(__cplusplus) || \
+				 (defined(__STDC_VERSION__) &&	\
+				  __STDC_VERSION__ >= 201112L))
+#undef vector
+#undef pixel
+#undef bool
+#endif
+
 #include <assert.h>
 
 /* We need type definitions from the MMX header file.  */
@@ -438,13 +450,15 @@ _mm_max_ss (__m128 __A, __m128 __B)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_min_ps (__m128 __A, __m128 __B)
 {
-  return ((__m128)vec_min ((__v4sf)__A,(__v4sf) __B));
+  __m128 m = (__m128) vec_vcmpgtfp ((__v4sf) __B, (__v4sf) __A);
+  return vec_sel (__B, __A, m);
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_max_ps (__m128 __A, __m128 __B)
 {
-  return ((__m128)vec_max ((__v4sf)__A, (__v4sf)__B));
+  __m128 m = (__m128) vec_vcmpgtfp ((__v4sf) __A, (__v4sf) __B);
+  return vec_sel (__B, __A, m);
 }
 
 /* Perform logical bit-wise operations on 128-bit values.  */
@@ -1398,11 +1412,11 @@ _mm_max_pi16 (__m64 __A, __m64 __B)
 {
 #if _ARCH_PWR8
   __vector signed short a, b, r;
-  __vector bool short c;
+  __vector __bool short c;
 
   a = (__vector signed short)vec_splats (__A);
   b = (__vector signed short)vec_splats (__B);
-  c = (__vector bool short)vec_cmpgt (a, b);
+  c = (__vector __bool short)vec_cmpgt (a, b);
   r = vec_sel (b, a, c);
   return (__builtin_unpack_vector_int128 ((__vector __int128_t)r, 0));
 #else
@@ -1436,11 +1450,11 @@ _mm_max_pu8 (__m64 __A, __m64 __B)
 {
 #if _ARCH_PWR8
   __vector unsigned char a, b, r;
-  __vector bool char c;
+  __vector __bool char c;
 
   a = (__vector unsigned char)vec_splats (__A);
   b = (__vector unsigned char)vec_splats (__B);
-  c = (__vector bool char)vec_cmpgt (a, b);
+  c = (__vector __bool char)vec_cmpgt (a, b);
   r = vec_sel (b, a, c);
   return (__builtin_unpack_vector_int128 ((__vector __int128_t)r, 0));
 #else
@@ -1472,11 +1486,11 @@ _mm_min_pi16 (__m64 __A, __m64 __B)
 {
 #if _ARCH_PWR8
   __vector signed short a, b, r;
-  __vector bool short c;
+  __vector __bool short c;
 
   a = (__vector signed short)vec_splats (__A);
   b = (__vector signed short)vec_splats (__B);
-  c = (__vector bool short)vec_cmplt (a, b);
+  c = (__vector __bool short)vec_cmplt (a, b);
   r = vec_sel (b, a, c);
   return (__builtin_unpack_vector_int128 ((__vector __int128_t)r, 0));
 #else
@@ -1510,11 +1524,11 @@ _mm_min_pu8 (__m64 __A, __m64 __B)
 {
 #if _ARCH_PWR8
   __vector unsigned char a, b, r;
-  __vector bool char c;
+  __vector __bool char c;
 
   a = (__vector unsigned char)vec_splats (__A);
   b = (__vector unsigned char)vec_splats (__B);
-  c = (__vector bool char)vec_cmplt (a, b);
+  c = (__vector __bool char)vec_cmplt (a, b);
   r = vec_sel (b, a, c);
   return (__builtin_unpack_vector_int128 ((__vector __int128_t)r, 0));
 #else

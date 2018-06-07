@@ -899,11 +899,13 @@ cxx_pretty_printer::multiplicative_expression (tree e)
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
     case TRUNC_MOD_EXPR:
+    case EXACT_DIV_EXPR:
+    case RDIV_EXPR:
       multiplicative_expression (TREE_OPERAND (e, 0));
       pp_space (this);
       if (code == MULT_EXPR)
 	pp_star (this);
-      else if (code == TRUNC_DIV_EXPR)
+      else if (code != TRUNC_MOD_EXPR)
 	pp_slash (this);
       else
 	pp_modulo (this);
@@ -1113,6 +1115,8 @@ cxx_pretty_printer::expression (tree t)
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
     case TRUNC_MOD_EXPR:
+    case EXACT_DIV_EXPR:
+    case RDIV_EXPR:
       multiplicative_expression (t);
       break;
 
@@ -1698,7 +1702,7 @@ cxx_pretty_printer::abstract_declarator (tree t)
 {
   if (TYPE_PTRMEM_P (t))
     pp_cxx_right_paren (this);
-  else if (POINTER_TYPE_P (t))
+  else if (INDIRECT_TYPE_P (t))
     {
       if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
@@ -2391,7 +2395,7 @@ pp_cxx_offsetof_expression_1 (cxx_pretty_printer *pp, tree t)
     {
     case ARROW_EXPR:
       if (TREE_CODE (TREE_OPERAND (t, 0)) == STATIC_CAST_EXPR
-	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0))))
+	  && INDIRECT_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0))))
 	{
 	  pp->type_id (TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 0))));
 	  pp_cxx_separate_with (pp, ',');

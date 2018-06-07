@@ -33,6 +33,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  * from the function.  */
 
 	.text
+	cfi_startproc()
+	cfi_offset(%rbp, -16)
+	cfi_def_cfa(%rbp, 16)
 MS2SYSV_STUB_BEGIN(resms64fx_17)
 	mov	-0x68(%rsi),%r15
 MS2SYSV_STUB_BEGIN(resms64fx_16)
@@ -48,7 +51,9 @@ MS2SYSV_STUB_BEGIN(resms64fx_12)
 	SSE_RESTORE
 	mov	-0x38(%rsi),%rsi
 	leaveq
+	cfi_def_cfa(%rsp, 8)
 	ret
+	cfi_endproc()
 MS2SYSV_STUB_END(resms64fx_12)
 MS2SYSV_STUB_END(resms64fx_13)
 MS2SYSV_STUB_END(resms64fx_14)

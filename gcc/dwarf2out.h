@@ -161,7 +161,8 @@ enum dw_val_class
   dw_val_class_const_implicit,
   dw_val_class_unsigned_const_implicit,
   dw_val_class_file_implicit,
-  dw_val_class_view_list
+  dw_val_class_view_list,
+  dw_val_class_symview
 };
 
 /* Describe a floating point constant value, or a vector constant value.  */
@@ -233,6 +234,7 @@ struct GTY(()) dw_val_node {
 	} GTY ((tag ("dw_val_class_vms_delta"))) val_vms_delta;
       dw_discr_value GTY ((tag ("dw_val_class_discr_value"))) val_discr_value;
       dw_discr_list_ref GTY ((tag ("dw_val_class_discr_list"))) val_discr_list;
+      char * GTY ((tag ("dw_val_class_symview"))) val_symbolic_view;
     }
   GTY ((desc ("%1.val_class"))) v;
 };

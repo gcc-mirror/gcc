@@ -44,6 +44,7 @@
 #include "config.h"
 #include "gstdint.h"
 #include "libgomp-plugin.h"
+#include "gomp-constants.h"
 
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
@@ -367,6 +368,7 @@ extern unsigned int gomp_num_teams_var;
 extern int gomp_debug_var;
 extern int goacc_device_num;
 extern char *goacc_device_type;
+extern int goacc_default_dims[GOMP_DIM_MAX];
 
 enum gomp_task_kind
 {

@@ -27,7 +27,7 @@ subroutine check ()
     else
       err = (Y(i) - Z(i)) / Z(i)
     end if
-    if (err > EPS .or. err < -EPS) call abort
+    if (err > EPS .or. err < -EPS) STOP 1
   end do
 end subroutine
 

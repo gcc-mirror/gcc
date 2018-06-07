@@ -102,9 +102,11 @@ along with GCC; see the file COPYING3.  If not see
 #define UNITS_PER_FP_REG (TARGET_DOUBLE_FLOAT ? 8 : 4)
 
 /* The largest type that can be passed in floating-point registers.  */
-#define UNITS_PER_FP_ARG					\
-  (riscv_abi == ABI_ILP32 || riscv_abi == ABI_LP64 ? 0 :	\
-   riscv_abi == ABI_ILP32F || riscv_abi == ABI_LP64F ? 4 : 8)	\
+#define UNITS_PER_FP_ARG						\
+  ((riscv_abi == ABI_ILP32 || riscv_abi == ABI_ILP32E			\
+    || riscv_abi == ABI_LP64)						\
+   ? 0 									\
+   : ((riscv_abi == ABI_ILP32F || riscv_abi == ABI_LP64F) ? 4 : 8))
 
 /* Set the sizes of the core types.  */
 #define SHORT_TYPE_SIZE 16
@@ -124,13 +126,13 @@ along with GCC; see the file COPYING3.  If not see
 #define FUNCTION_BOUNDARY (TARGET_RVC ? 16 : 32)
 
 /* The smallest supported stack boundary the calling convention supports.  */
-#define MIN_STACK_BOUNDARY (2 * BITS_PER_WORD)
+#define STACK_BOUNDARY (TARGET_RVE ? BITS_PER_WORD : 2 * BITS_PER_WORD)
 
 /* The ABI stack alignment.  */
-#define ABI_STACK_BOUNDARY 128
+#define ABI_STACK_BOUNDARY (TARGET_RVE ? BITS_PER_WORD : 128)
 
 /* There is no point aligning anything to a rounder boundary than this.  */
-#define BIGGEST_ALIGNMENT STACK_BOUNDARY
+#define BIGGEST_ALIGNMENT 128
 
 /* The user-level ISA permits unaligned accesses, but they are not required
    of the privileged architecture.  */
@@ -260,7 +262,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Internal macros to classify an ISA register's type.  */
 
 #define GP_REG_FIRST 0
-#define GP_REG_LAST  31
+#define GP_REG_LAST  (TARGET_RVE ? 15 : 31)
 #define GP_REG_NUM   (GP_REG_LAST - GP_REG_FIRST + 1)
 
 #define FP_REG_FIRST 32
@@ -482,7 +484,7 @@ enum reg_class
    `crtl->outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
-#define STACK_BOUNDARY riscv_stack_boundary
+#define PREFERRED_STACK_BOUNDARY riscv_stack_boundary
 
 /* Symbolic macros for the registers used to return integer and floating
    point values.  */
@@ -490,7 +492,7 @@ enum reg_class
 #define GP_RETURN GP_ARG_FIRST
 #define FP_RETURN (UNITS_PER_FP_ARG == 0 ? GP_RETURN : FP_ARG_FIRST)
 
-#define MAX_ARGS_IN_REGISTERS 8
+#define MAX_ARGS_IN_REGISTERS (TARGET_RVE ? 6 : 8)
 
 /* Symbolic macros for the first/last argument registers.  */
 
@@ -536,11 +538,11 @@ typedef struct {
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   memset (&(CUM), 0, sizeof (CUM))
 
-#define EPILOGUE_USES(REGNO)	((REGNO) == RETURN_ADDR_REGNUM)
+#define EPILOGUE_USES(REGNO)	riscv_epilogue_uses (REGNO)
 
 /* Align based on stack boundary, which might have been set by the user.  */
 #define RISCV_STACK_ALIGN(LOC) \
-  (((LOC) + ((STACK_BOUNDARY/8)-1)) & -(STACK_BOUNDARY/8))
+  (((LOC) + ((PREFERRED_STACK_BOUNDARY/8)-1)) & -(PREFERRED_STACK_BOUNDARY/8))
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
@@ -636,7 +638,9 @@ typedef struct {
    and maybe make use of that.  */
 #define SLOW_BYTE_ACCESS 1
 
-#define SHIFT_COUNT_TRUNCATED 1
+/* Using SHIFT_COUNT_TRUNCATED is discouraged, so we handle this with patterns
+   in the md file instead.  */
+#define SHIFT_COUNT_TRUNCATED 0
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
@@ -868,6 +872,7 @@ extern unsigned riscv_stack_boundary;
 
 #define ABI_SPEC \
   "%{mabi=ilp32:ilp32}" \
+  "%{mabi=ilp32e:ilp32e}" \
   "%{mabi=ilp32f:ilp32f}" \
   "%{mabi=ilp32d:ilp32d}" \
   "%{mabi=lp64:lp64}" \

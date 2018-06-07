@@ -1,7 +1,7 @@
 /* PR lto/81406 */
 /* { dg-lto-do link } */
 /* { dg-lto-options { { -O2 -g -flto } } } */
-/* { dg-extra-ld-options { -g -r -nostdlib } } */
+/* { dg-extra-ld-options { -g -r -nostdlib -flinker-output=nolto-rel } } */
 
 int a;
 int *foo (void);

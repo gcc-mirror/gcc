@@ -132,8 +132,7 @@ count_insns (basic_block bb)
 static bool
 better_p (const_edge e1, const_edge e2)
 {
-  if (e1->count ().initialized_p () && e2->count ().initialized_p ()
-      && ((e1->count () > e2->count ()) || (e1->count () < e2->count  ())))
+  if ((e1->count () > e2->count ()) || (e1->count () < e2->count ()))
     return e1->count () > e2->count ();
   /* This is needed to avoid changes in the decision after
      CFG is modified.  */
@@ -152,12 +151,16 @@ find_best_successor (basic_block bb)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!best || better_p (e, best))
-      best = e;
+    {
+      if (!e->count ().initialized_p ())
+	return NULL;
+      if (!best || better_p (e, best))
+	best = e;
+    }
   if (!best || ignore_bb_p (best->dest))
     return NULL;
-  if (best->probability.initialized_p ()
-      && best->probability.to_reg_br_prob_base () <= probability_cutoff)
+  if (!best->probability.initialized_p ()
+      || best->probability.to_reg_br_prob_base () <= probability_cutoff)
     return NULL;
   return best;
 }
@@ -172,12 +175,17 @@ find_best_predecessor (basic_block bb)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->preds)
-    if (!best || better_p (e, best))
-      best = e;
+    {
+      if (!e->count ().initialized_p ())
+	return NULL;
+      if (!best || better_p (e, best))
+	best = e;
+    }
   if (!best || ignore_bb_p (best->src))
     return NULL;
-  if (EDGE_FREQUENCY (best) * REG_BR_PROB_BASE
-      < bb->count.to_frequency (cfun) * branch_ratio_cutoff)
+  if (bb->count.initialized_p ()
+      && (best->count ().to_frequency (cfun) * REG_BR_PROB_BASE
+	  < bb->count.to_frequency (cfun) * branch_ratio_cutoff))
     return NULL;
   return best;
 }

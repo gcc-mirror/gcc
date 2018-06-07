@@ -17,5 +17,5 @@
 	e = e + 1
       end if
 !$omp end parallel
-      if (e.ne.0) call abort
+      if (e.ne.0) STOP 1
       end

@@ -263,18 +263,21 @@ now defaults to zero.
 </p><p>New --enable-libstdcxx-verbose configure option</p><p>
   The --enable-libstdcxx-time configure option becomes unnecessary given a
   sufficiently recent glibc.
-</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_490"></a><code class="constant">4.9</code></h3></div></div></div><p> Implementation of <code class="classname">regex</code> completed. </p><p> C++14 library and TS implementations are added. </p><p> <code class="function">copy_exception</code> deprecated. </p><p> <code class="classname">__gnu_cxx::array_allocator</code> deprecated. </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_50"></a><code class="constant">5</code></h3></div></div></div><p>
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_490"></a><code class="constant">4.9</code></h3></div></div></div><p> Implementation of <code class="classname">regex</code> completed. </p><p> C++14 library and TS implementations are added. </p><p> <code class="function">copy_exception</code> deprecated. </p><p> <code class="classname">__gnu_cxx::array_allocator</code> deprecated. </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_51"></a><code class="constant">5</code></h3></div></div></div><p>
   ABI transition adds new implementations of several components, using the
   <code class="code">abi_tag</code> attribute and the <code class="code">__cxx11</code> inline
   namespace to distinguish the new entities from the old ones.
 </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
     Use of the new or old ABI can be selected per-translation unit with the
-    <span class="symbol">_GLIBCXX_USE_CXX11_ABI</span> macro.
+    <a class="xref" href="using_macros.html" title="Macros">Macros</a>.
   </p></li><li class="listitem"><p>
     New non-reference-counted <code class="classname">string</code> implementation.
   </p></li><li class="listitem"><p>
     New <code class="classname">list</code> implementation containing a new
     data member in order to provide O(1) <code class="function">size()</code>.
+  </p></li><li class="listitem"><p>
+    New <code class="classname">ios_base::failure</code> implementation inheriting
+    from <code class="classname">system_error</code>.
   </p></li></ul></div><p>
   C++11 support completed (movable iostreams, new I/O manipulators,
   Unicode conversion utilities, atomic operations for
@@ -290,4 +293,67 @@ now defaults to zero.
   <code class="classname">has_trivial_default_constructor</code>,
   <code class="classname">has_trivial_copy_constructor</code> and
   <code class="classname">has_trivial_copy_assign</code> deprecated.
+</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="api.rel_53"></a><code class="constant">5.3</code></h4></div></div></div><p> Experimental implementation of the C++ Filesystem TS added. </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_61"></a><code class="constant">6</code></h3></div></div></div><p> C++14 support completed. </p><p>
+  Support for mathematical special functions (ISO/IEC 29124:2010) added.
+</p><p>
+  Assertions to check function preconditions can be enabled by defining the
+  <a class="xref" href="using_macros.html" title="Macros">Macros</a>.
+  The initial set of assertions are a subset of the checks enabled by
+  the Debug Mode, but without the ABI changes and changes to algorithmic
+  complexity that are caused by enabling the full Debug Mode.
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_71"></a><code class="constant">7</code></h3></div></div></div><p>
+  The type of exception thrown by iostreams changed to the <code class="code">cxx11</code>
+  ABI version of <code class="classname">std::ios_base::failure</code>.
+</p><p>
+  Experimental C++17 support added, including most new library features.
+  The meaning of <code class="classname">shared_ptr&lt;T[]&gt;</code> changed to
+  match the C++17 semantics.
+</p><p>
+  <a class="xref" href="using_macros.html" title="Macros">Macros</a> added.
+</p><p>
+  <code class="classname">has_trivial_default_constructor</code>,
+  <code class="classname">has_trivial_copy_constructor</code> and
+  <code class="classname">has_trivial_copy_assign</code> removed.
+</p><p> Profile Mode was deprecated. </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="api.rel_73"></a><code class="constant">7.3</code></h4></div></div></div><p>
+  Including new C++14 or C++17 headers without a suitable <code class="option">-std</code>
+  no longer causes compilation to fail via <code class="literal">#error</code>.
+  Instead the header is simply empty and doesn't define anything.
+</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_81"></a><code class="constant">8</code></h3></div></div></div><p>
+  The exceptions thrown by iostreams can now be caught by handlers for either
+  version of <code class="classname">std::ios_base::failure</code>.
+</p><p>
+  Experimental implementation of the C++17 Filesystem library added.
+</p><p>
+  AddressSanitizer annotations added to <code class="classname">std::vector</code>
+  to detect out-of-range accesses to the unused capacity of a vector.
+</p><p>
+  <code class="function">std::char_traits&lt;char16_t&gt;::to_int_type(u'\uFFFF')</code>
+  now returns <code class="literal">0xFFFD</code>, as <code class="literal">0xFFFF</code> is
+  used for <code class="function">std::char_traits&lt;char16_t&gt;::eof()</code>.
+</p><p>
+  The extension allowing arithmetic on
+  <code class="classname">std::atomic&lt;void*&gt;</code> and types like
+  <code class="classname">std::atomic&lt;R(*)()&gt;</code> was deprecated.
+</p><p>
+  The <code class="function">std::uncaught_exception</code> function was deprecated
+  for C++17 mode.
+</p><p>
+  The nested typedefs <span class="type">std::hash::result_type</span> and
+  <span class="type">std::hash::argument_type</span> were deprecated for C++17 mode.
+</p><p>
+  The deprecated iostream members <span class="type">ios_base::io_state</span>,
+  <span class="type">ios_base::open_mode</span>, <span class="type">ios_base::seek_dir</span>, and
+  <code class="function">basic_streambuf::stossc</code> were removed for C++17 mode.
+</p><p>
+  The non-standard C++0x <code class="function">std::copy_exception</code> function
+  was removed.
+</p><p>
+  For <code class="option">-std=c++11</code>, <code class="option">-std=c++14</code>, and
+  <code class="option">-std=c++17</code> modes the <code class="filename">&lt;complex.h&gt;</code>
+  header no longer includes the C99 <code class="filename">&lt;complex.h&gt;</code>
+  header.
+</p><p>
+  For the non-default <code class="option">--enable-symvers=gnu-versioned-namespace</code>
+  configuration, the shared library SONAME has been changed to
+  <code class="filename">libstdc++.so.8</code>.
 </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="abi.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="backwards.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ABI Policy and Guidelines </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Backwards Compatibility</td></tr></table></div></body></html>

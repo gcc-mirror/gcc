@@ -334,7 +334,8 @@ vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_masks *dest_rgm,
 	{
 	  tree src = src_rgm->masks[i / 2];
 	  tree dest = dest_rgm->masks[i];
-	  tree_code code = (i & 1 ? VEC_UNPACK_HI_EXPR
+	  tree_code code = ((i & 1) == (BYTES_BIG_ENDIAN ? 0 : 1)
+			    ? VEC_UNPACK_HI_EXPR
 			    : VEC_UNPACK_LO_EXPR);
 	  gassign *stmt;
 	  if (dest_masktype == unpack_masktype)
@@ -1559,7 +1560,7 @@ static tree
 get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
 {
   struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-  gimple *dr_stmt = DR_STMT (dr);
+  gimple *dr_stmt = vect_dr_stmt (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
@@ -1630,7 +1631,7 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
   tree niters_type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
   gimple_seq stmts = NULL, new_stmts = NULL;
   tree iters, iters_name;
-  gimple *dr_stmt = DR_STMT (dr);
+  gimple *dr_stmt = vect_dr_stmt (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   unsigned int target_align = DR_TARGET_ALIGNMENT (dr);
@@ -2699,7 +2700,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 /* Function vect_create_cond_for_niters_checks.
 
    Create a conditional expression that represents the run-time checks for
-   loop's niter.  The loop is guaranteed to to terminate if the run-time
+   loop's niter.  The loop is guaranteed to terminate if the run-time
    checks hold.
 
    Input:

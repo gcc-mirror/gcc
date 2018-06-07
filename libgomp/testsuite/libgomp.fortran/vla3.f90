@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
 
   call test
 contains
@@ -161,7 +162,7 @@ contains
     call check (size (k, 3), 3, l)
     call check (size (k), 15, l)
 !$omp end parallel
-    if (l) call abort
+    if (l) STOP 1
   end subroutine foo
 
   subroutine test

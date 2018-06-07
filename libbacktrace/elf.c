@@ -1086,11 +1086,18 @@ elf_zlib_fetch (const unsigned char **ppin, const unsigned char *pinend,
       return 0;
     }
 
+#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) \
+    && defined(__ORDER_BIG_ENDIAN__) \
+    && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ \
+        || __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
   /* We've ensured that PIN is aligned.  */
   next = *(const uint32_t *)pin;
 
-#if __BYTE_ORDER == __ORDER_BIG_ENDIAN
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
   next = __builtin_bswap32 (next);
+#endif
+#else
+  next = pin[0] | (pin[1] << 8) | (pin[2] << 16) | (pin[3] << 24);
 #endif
 
   val |= (uint64_t)next << bits;

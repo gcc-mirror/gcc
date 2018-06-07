@@ -24,7 +24,7 @@ end
   b = 20
   a(1:5) = max (a(1:5), b(1:5))
 !$omp end parallel workshare
-  if (any (a(1:5) .ne. 20)) call abort
-  if (any (a(6:10) .ne. 10)) call abort
-  if (.not. foo_seen .or. .not. bar_seen) call abort
+  if (any (a(1:5) .ne. 20)) STOP 1
+  if (any (a(6:10) .ne. 10)) STOP 2
+  if (.not. foo_seen .or. .not. bar_seen) STOP 3
 end

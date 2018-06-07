@@ -19,7 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 # Compiler flags to use when compiling 'libgcc2.c'
-HOST_LIBGCC2_CFLAGS = -O2
+HOST_LIBGCC2_CFLAGS = -O2 -fwrapv
 
 
 #LIB1ASMSRC   = nds32/lib1asmsrc-newlib.S

@@ -455,6 +455,8 @@ expandargv (int *argcp, char ***argvp)
       file_argc = 0;
       while (file_argv[file_argc])
 	++file_argc;
+      /* Free the original option's memory.  */
+      free ((*argvp)[i]);
       /* Now, insert FILE_ARGV into ARGV.  The "+1" below handles the
 	 NULL terminator at the end of ARGV.  */ 
       *argvp = ((char **) 

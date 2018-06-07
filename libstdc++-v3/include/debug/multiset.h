@@ -104,6 +104,7 @@ namespace __debug
       : _Base(__m, __a) { }
 
       multiset(multiset&& __m, const allocator_type& __a)
+      noexcept( noexcept(_Base(std::move(__m._M_base()), __a)) )
       : _Safe(std::move(__m._M_safe()), __a),
 	_Base(std::move(__m._M_base()), __a) { }
 
@@ -114,8 +115,8 @@ namespace __debug
       template<typename _InputIterator>
 	multiset(_InputIterator __first, _InputIterator __last,
 		 const allocator_type& __a)
-	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								     __last)),
+	: _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __a) { }
 
       ~multiset() = default;
@@ -129,8 +130,8 @@ namespace __debug
 	multiset(_InputIterator __first, _InputIterator __last,
 		 const _Compare& __comp = _Compare(),
 		 const _Allocator& __a = _Allocator())
-	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
-								     __last)),
+	: _Base(__gnu_debug::__base(
+		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last),
 		__comp, __a) { }
 

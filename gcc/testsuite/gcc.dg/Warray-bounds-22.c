@@ -11,13 +11,13 @@
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 typedef __SIZE_TYPE__    size_t;
 
-extern ptrdiff_t signed_value (void)
+static ptrdiff_t signed_value (void)
 {
   extern volatile ptrdiff_t signed_value_source;
   return signed_value_source;
 }
 
-ptrdiff_t signed_range (ptrdiff_t min, ptrdiff_t max)
+static ptrdiff_t signed_range (ptrdiff_t min, ptrdiff_t max)
 {
   ptrdiff_t val = signed_value ();
   return val < min || max < val ? min : val;

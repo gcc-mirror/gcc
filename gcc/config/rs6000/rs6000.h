@@ -67,10 +67,6 @@
 #define PPC405_ERRATUM77 0
 #endif
 
-#ifndef TARGET_PAIRED_FLOAT
-#define TARGET_PAIRED_FLOAT 0
-#endif
-
 #ifdef HAVE_AS_POPCNTB
 #define ASM_CPU_POWER5_SPEC "-mpower5"
 #else
@@ -110,7 +106,8 @@
 /* Common ASM definitions used by ASM_SPEC among the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
    provide the default assembler options if the user uses -mcpu=native, so if
-   you make changes here, make them also there.  */
+   you make changes here, make them also there.  PR63177: Do not pass -mpower8
+   to the assembler if -mpower9-vector was also used.  */
 #define ASM_CPU_SPEC \
 "%{!mcpu*: \
   %{mpowerpc64*: -mppc64} \
@@ -124,7 +121,7 @@
 %{mcpu=power6: %(asm_cpu_power6) -maltivec} \
 %{mcpu=power6x: %(asm_cpu_power6) -maltivec} \
 %{mcpu=power7: %(asm_cpu_power7)} \
-%{mcpu=power8: %(asm_cpu_power8)} \
+%{mcpu=power8: %{!mpower9-vector: %(asm_cpu_power8)}} \
 %{mcpu=power9: %(asm_cpu_power9)} \
 %{mcpu=a2: -ma2} \
 %{mcpu=powerpc: -mppc} \
@@ -173,6 +170,7 @@
 %{maltivec: -maltivec} \
 %{mvsx: -mvsx %{!maltivec: -maltivec} %{!mcpu*: %(asm_cpu_power7)}} \
 %{mpower8-vector|mcrypto|mdirect-move|mhtm: %{!mcpu*: %(asm_cpu_power8)}} \
+%{mpower9-vector: %{!mcpu*|mcpu=power8: %(asm_cpu_power9)}} \
 -many"
 
 #define CPP_DEFAULT_SPEC ""
@@ -382,15 +380,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define TARGET_DEFAULT (MASK_MULTIPLE)
 
-/* FPU operations supported. 
-   Each use of TARGET_SINGLE_FLOAT or TARGET_DOUBLE_FLOAT must 
-   also test TARGET_HARD_FLOAT.  */
-#define TARGET_SINGLE_FLOAT 1
-#define TARGET_DOUBLE_FLOAT 1
-#define TARGET_SINGLE_FPU   0
-#define TARGET_SIMPLE_FPU   0
-#define TARGET_XILINX_FPU   0
-
 /* Define generic processor types based upon current deployment.  */
 #define PROCESSOR_COMMON    PROCESSOR_PPC601
 #define PROCESSOR_POWERPC   PROCESSOR_PPC604
@@ -525,15 +514,6 @@ extern int rs6000_vector_align[];
    ? rs6000_vector_align[(MODE)]					\
    : (int)GET_MODE_BITSIZE ((MODE)))
 
-/* Determine the element order to use for vector instructions.  By
-   default we use big-endian element order when targeting big-endian,
-   and little-endian element order when targeting little-endian.  For
-   programs being ported from BE Power to LE Power, it can sometimes
-   be useful to use big-endian element order when targeting little-endian.
-   This is set via -maltivec=be, for example.  */
-#define VECTOR_ELT_ORDER_BIG                                  \
-  (BYTES_BIG_ENDIAN || (rs6000_altivec_element_order == 2))
-
 /* Element number of the 64-bit value in a 128-bit vector that can be accessed
    with scalar instructions.  */
 #define VECTOR_ELEMENT_SCALAR_64BIT	((BYTES_BIG_ENDIAN) ? 0 : 1)
@@ -571,14 +551,12 @@ extern int rs6000_vector_align[];
 #endif
 
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
-   Enable 32-bit fcfid's on any of the switches for newer ISA machines or
-   XILINX.  */
+   Enable 32-bit fcfid's on any of the switches for newer ISA machines.  */
 #define TARGET_FCFID	(TARGET_POWERPC64				\
 			 || TARGET_PPC_GPOPT	/* 970/power4 */	\
 			 || TARGET_POPCNTB	/* ISA 2.02 */		\
 			 || TARGET_CMPB		/* ISA 2.05 */		\
-			 || TARGET_POPCNTD	/* ISA 2.06 */		\
-			 || TARGET_XILINX_FPU)
+			 || TARGET_POPCNTD)	/* ISA 2.06 */
 
 #define TARGET_FCTIDZ	TARGET_FCFID
 #define TARGET_STFIWX	TARGET_PPC_GFXOPT
@@ -626,11 +604,8 @@ extern int rs6000_vector_align[];
 /* ISA 3.0 has new min/max functions that don't need fast math that are being
    phased in.  Min/max using FSEL or XSMAXDP/XSMINDP do not return the correct
    answers if the arguments are not in the normal range.  */
-#define TARGET_MINMAX_SF	(TARGET_SF_FPR && TARGET_PPC_GFXOPT	\
-				 && (TARGET_P9_MINMAX || !flag_trapping_math))
-
-#define TARGET_MINMAX_DF	(TARGET_DF_FPR && TARGET_PPC_GFXOPT	\
-				 && (TARGET_P9_MINMAX || !flag_trapping_math))
+#define TARGET_MINMAX	(TARGET_HARD_FLOAT && TARGET_PPC_GFXOPT		\
+			 && (TARGET_P9_MINMAX || !flag_trapping_math))
 
 /* In switching from using target_flags to using rs6000_isa_flags, the options
    machinery creates OPTION_MASK_<xxx> instead of MASK_<xxx>.  For now map
@@ -695,45 +670,32 @@ extern int rs6000_vector_align[];
 /* For power systems, we want to enable Altivec and VSX builtins even if the
    user did not use -maltivec or -mvsx to allow the builtins to be used inside
    of #pragma GCC target or the target attribute to change the code level for a
-   given system.  The Paired builtins are only enabled if you configure the
-   compiler for those builtins, and those machines don't support altivec or
-   VSX.  */
+   given system.  */
 
-#define TARGET_EXTRA_BUILTINS	(!TARGET_PAIRED_FLOAT			 \
-				 && ((TARGET_POWERPC64			 \
-				      || TARGET_PPC_GPOPT /* 970/power4 */ \
-				      || TARGET_POPCNTB	  /* ISA 2.02 */ \
-				      || TARGET_CMPB	  /* ISA 2.05 */ \
-				      || TARGET_POPCNTD	  /* ISA 2.06 */ \
-				      || TARGET_ALTIVEC			 \
-				      || TARGET_VSX			 \
-				      || TARGET_HARD_FLOAT)))
+#define TARGET_EXTRA_BUILTINS	(TARGET_POWERPC64			 \
+				 || TARGET_PPC_GPOPT /* 970/power4 */	 \
+				 || TARGET_POPCNTB   /* ISA 2.02 */	 \
+				 || TARGET_CMPB      /* ISA 2.05 */	 \
+				 || TARGET_POPCNTD   /* ISA 2.06 */	 \
+				 || TARGET_ALTIVEC			 \
+				 || TARGET_VSX				 \
+				 || TARGET_HARD_FLOAT)
 
 /* E500 cores only support plain "sync", not lwsync.  */
 #define TARGET_NO_LWSYNC (rs6000_cpu == PROCESSOR_PPC8540 \
 			  || rs6000_cpu == PROCESSOR_PPC8548)
 
 
-/* Whether SF/DF operations are supported by the normal floating point unit
-   (or the vector/scalar unit).  */
-#define TARGET_SF_FPR	(TARGET_HARD_FLOAT && TARGET_SINGLE_FLOAT)
-#define TARGET_DF_FPR	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
-
-/* Whether SF/DF operations are supported by any hardware.  */
-#define TARGET_SF_INSN	TARGET_SF_FPR
-#define TARGET_DF_INSN	TARGET_DF_FPR
-
 /* Which machine supports the various reciprocal estimate instructions.  */
-#define TARGET_FRES	(TARGET_HARD_FLOAT && TARGET_PPC_GFXOPT \
-			 && TARGET_SINGLE_FLOAT)
+#define TARGET_FRES	(TARGET_HARD_FLOAT && TARGET_PPC_GFXOPT)
 
-#define TARGET_FRE	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT \
+#define TARGET_FRE	(TARGET_HARD_FLOAT \
 			 && (TARGET_POPCNTB || VECTOR_UNIT_VSX_P (DFmode)))
 
 #define TARGET_FRSQRTES	(TARGET_HARD_FLOAT && TARGET_POPCNTB \
-			 && TARGET_PPC_GFXOPT && TARGET_SINGLE_FLOAT)
+			 && TARGET_PPC_GFXOPT)
 
-#define TARGET_FRSQRTE	(TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT \
+#define TARGET_FRSQRTE	(TARGET_HARD_FLOAT \
 			 && (TARGET_PPC_GFXOPT || VECTOR_UNIT_VSX_P (DFmode)))
 
 /* Conditions to allow TOC fusion for loading/storing integers.  */
@@ -747,18 +709,14 @@ extern int rs6000_vector_align[];
 				 && TARGET_TOC_FUSION			\
 				 && (TARGET_CMODEL != CMODEL_SMALL)	\
 				 && TARGET_POWERPC64			\
-				 && TARGET_HARD_FLOAT			\
-				 && TARGET_SINGLE_FLOAT			\
-				 && TARGET_DOUBLE_FLOAT)
+				 && TARGET_HARD_FLOAT)
 
 /* Macro to say whether we can do optimizations where we need to do parts of
    the calculation in 64-bit GPRs and then is transfered to the vector
-   registers.  Do not allow -maltivec=be for these optimizations, because it
-   adds to the complexity of the code.  */
+   registers.  */
 #define TARGET_DIRECT_MOVE_64BIT	(TARGET_DIRECT_MOVE		\
 					 && TARGET_P8_VECTOR		\
-					 && TARGET_POWERPC64		\
-					 && (rs6000_altivec_element_order != 2))
+					 && TARGET_POWERPC64)
 
 /* Whether the various reciprocal divide/square root estimate instructions
    exist, and whether we should automatically generate code for the instruction
@@ -863,7 +821,6 @@ extern unsigned char rs6000_recip_bits[];
 #define UNITS_PER_FP_WORD 8
 #define UNITS_PER_ALTIVEC_WORD 16
 #define UNITS_PER_VSX_WORD 16
-#define UNITS_PER_PAIRED_WORD 8
 
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"
@@ -1169,9 +1126,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define INT_REGNO_P(N) \
   ((N) <= 31 || (N) == ARG_POINTER_REGNUM || (N) == FRAME_POINTER_REGNUM)
 
-/* PAIRED SIMD registers are just the FPRs.  */
-#define PAIRED_SIMD_REGNO_P(N) ((N) >= 32 && (N) <= 63)
-
 /* True if register is the CA register.  */
 #define CA_REGNO_P(N) ((N) == CA_REGNO)
 
@@ -1231,9 +1185,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define ALTIVEC_OR_VSX_VECTOR_MODE(MODE)				\
   (ALTIVEC_VECTOR_MODE (MODE) || VSX_VECTOR_MODE (MODE)			\
    || (MODE) == V2DImode || (MODE) == V1TImode)
-
-#define PAIRED_VECTOR_MODE(MODE)        \
-         ((MODE) == V2SFmode)            
 
 /* Post-reload, we can't use any new AltiVec registers, as we already
    emitted the vrsave mask.  */
@@ -2484,8 +2435,8 @@ extern int frame_pointer_needed;
 #define RS6000_BTC_SAT		RS6000_BTC_MISC	/* saturate sets VSCR.  */
 
 /* Builtin targets.  For now, we reuse the masks for those options that are in
-   target flags, and pick two random bits for paired and ldbl128, which
-   aren't in target_flags.  */
+   target flags, and pick a random bit for ldbl128, which isn't in
+   target_flags.  */
 #define RS6000_BTM_ALWAYS	0		/* Always enabled.  */
 #define RS6000_BTM_ALTIVEC	MASK_ALTIVEC	/* VMX/altivec vectors.  */
 #define RS6000_BTM_CMPB		MASK_CMPB	/* ISA 2.05: compare bytes.  */
@@ -2495,7 +2446,6 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_P9_MISC	MASK_P9_MISC	/* ISA 3.0 misc. non-vector */
 #define RS6000_BTM_CRYPTO	MASK_CRYPTO	/* crypto funcs.  */
 #define RS6000_BTM_HTM		MASK_HTM	/* hardware TM funcs.  */
-#define RS6000_BTM_PAIRED	MASK_MULHW	/* 750CL paired insns.  */
 #define RS6000_BTM_FRE		MASK_POPCNTB	/* FRE instruction.  */
 #define RS6000_BTM_FRES		MASK_PPC_GFXOPT	/* FRES instruction.  */
 #define RS6000_BTM_FRSQRTE	MASK_PPC_GFXOPT	/* FRSQRTE instruction.  */
@@ -2506,6 +2456,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_HARD_FLOAT	MASK_SOFT_FLOAT	/* Hardware floating point.  */
 #define RS6000_BTM_LDBL128	MASK_MULTIPLE	/* 128-bit long double.  */
 #define RS6000_BTM_64BIT	MASK_64BIT	/* 64-bit addressing.  */
+#define RS6000_BTM_POWERPC64	MASK_POWERPC64	/* 64-bit registers.  */
 #define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
 #define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
 
@@ -2526,6 +2477,7 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_DFP			\
 				 | RS6000_BTM_HARD_FLOAT		\
 				 | RS6000_BTM_LDBL128			\
+				 | RS6000_BTM_POWERPC64			\
 				 | RS6000_BTM_FLOAT128			\
 				 | RS6000_BTM_FLOAT128_HW)
 
@@ -2539,7 +2491,6 @@ extern int frame_pointer_needed;
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 #define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
@@ -2550,7 +2501,6 @@ extern int frame_pointer_needed;
 #define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_Q(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 #define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
 
 enum rs6000_builtins
@@ -2568,27 +2518,21 @@ enum rs6000_builtins
 #undef RS6000_BUILTIN_D
 #undef RS6000_BUILTIN_H
 #undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_Q
 #undef RS6000_BUILTIN_X
 
 enum rs6000_builtin_type_index
 {
   RS6000_BTI_NOT_OPAQUE,
-  RS6000_BTI_opaque_V2SI,
-  RS6000_BTI_opaque_V2SF,
-  RS6000_BTI_opaque_p_V2SI,
   RS6000_BTI_opaque_V4SI,
-  RS6000_BTI_V16QI,
+  RS6000_BTI_V16QI,              /* __vector signed char */
   RS6000_BTI_V1TI,
-  RS6000_BTI_V2SI,
-  RS6000_BTI_V2SF,
   RS6000_BTI_V2DI,
   RS6000_BTI_V2DF,
   RS6000_BTI_V4HI,
   RS6000_BTI_V4SI,
   RS6000_BTI_V4SF,
   RS6000_BTI_V8HI,
-  RS6000_BTI_unsigned_V16QI,
+  RS6000_BTI_unsigned_V16QI,     /* __vector unsigned char */
   RS6000_BTI_unsigned_V1TI,
   RS6000_BTI_unsigned_V8HI,
   RS6000_BTI_unsigned_V4SI,
@@ -2596,8 +2540,14 @@ enum rs6000_builtin_type_index
   RS6000_BTI_bool_char,          /* __bool char */
   RS6000_BTI_bool_short,         /* __bool short */
   RS6000_BTI_bool_int,           /* __bool int */
-  RS6000_BTI_bool_long,		 /* __bool long */
-  RS6000_BTI_pixel,              /* __pixel */
+  RS6000_BTI_bool_long_long,     /* __bool long long */
+  RS6000_BTI_pixel,              /* __pixel (16 bits arranged as 4
+				    channels of 1, 5, 5, and 5 bits
+				    respectively as packed with the
+				    vpkpx insn.  __pixel is only
+				    meaningful as a vector type.
+				    There is no corresponding scalar
+				    __pixel data type.)  */
   RS6000_BTI_bool_V16QI,         /* __vector __bool char */
   RS6000_BTI_bool_V8HI,          /* __vector __bool short */
   RS6000_BTI_bool_V4SI,          /* __vector __bool int */
@@ -2607,11 +2557,11 @@ enum rs6000_builtin_type_index
   RS6000_BTI_unsigned_long,      /* long_unsigned_type_node */
   RS6000_BTI_long_long,	         /* long_long_integer_type_node */
   RS6000_BTI_unsigned_long_long, /* long_long_unsigned_type_node */
-  RS6000_BTI_INTQI,	         /* intQI_type_node */
+  RS6000_BTI_INTQI,	         /* (signed) intQI_type_node */
   RS6000_BTI_UINTQI,		 /* unsigned_intQI_type_node */
   RS6000_BTI_INTHI,	         /* intHI_type_node */
   RS6000_BTI_UINTHI,		 /* unsigned_intHI_type_node */
-  RS6000_BTI_INTSI,		 /* intSI_type_node */
+  RS6000_BTI_INTSI,		 /* intSI_type_node (signed) */
   RS6000_BTI_UINTSI,		 /* unsigned_intSI_type_node */
   RS6000_BTI_INTDI,		 /* intDI_type_node */
   RS6000_BTI_UINTDI,		 /* unsigned_intDI_type_node */
@@ -2630,16 +2580,11 @@ enum rs6000_builtin_type_index
 };
 
 
-#define opaque_V2SI_type_node         (rs6000_builtin_types[RS6000_BTI_opaque_V2SI])
-#define opaque_V2SF_type_node         (rs6000_builtin_types[RS6000_BTI_opaque_V2SF])
-#define opaque_p_V2SI_type_node       (rs6000_builtin_types[RS6000_BTI_opaque_p_V2SI])
 #define opaque_V4SI_type_node         (rs6000_builtin_types[RS6000_BTI_opaque_V4SI])
 #define V16QI_type_node               (rs6000_builtin_types[RS6000_BTI_V16QI])
 #define V1TI_type_node                (rs6000_builtin_types[RS6000_BTI_V1TI])
 #define V2DI_type_node                (rs6000_builtin_types[RS6000_BTI_V2DI])
 #define V2DF_type_node                (rs6000_builtin_types[RS6000_BTI_V2DF])
-#define V2SI_type_node                (rs6000_builtin_types[RS6000_BTI_V2SI])
-#define V2SF_type_node                (rs6000_builtin_types[RS6000_BTI_V2SF])
 #define V4HI_type_node                (rs6000_builtin_types[RS6000_BTI_V4HI])
 #define V4SI_type_node                (rs6000_builtin_types[RS6000_BTI_V4SI])
 #define V4SF_type_node                (rs6000_builtin_types[RS6000_BTI_V4SF])
@@ -2652,7 +2597,7 @@ enum rs6000_builtin_type_index
 #define bool_char_type_node           (rs6000_builtin_types[RS6000_BTI_bool_char])
 #define bool_short_type_node          (rs6000_builtin_types[RS6000_BTI_bool_short])
 #define bool_int_type_node            (rs6000_builtin_types[RS6000_BTI_bool_int])
-#define bool_long_type_node           (rs6000_builtin_types[RS6000_BTI_bool_long])
+#define bool_long_long_type_node      (rs6000_builtin_types[RS6000_BTI_bool_long_long])
 #define pixel_type_node               (rs6000_builtin_types[RS6000_BTI_pixel])
 #define bool_V16QI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V16QI])
 #define bool_V8HI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V8HI])

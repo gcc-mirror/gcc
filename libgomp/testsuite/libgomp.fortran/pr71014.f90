@@ -16,5 +16,5 @@ program pr71014
       end do
     end associate
   end do
-  if (any(s /= t)) call abort
+  if (any(s /= t)) STOP 1
 end program pr71014

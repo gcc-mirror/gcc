@@ -314,7 +314,7 @@ x)
 	    aix | android | darwin | dragonfly | freebsd | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
 		tag1=nonmatchingtag
 		;;
-	    386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | ppc64 | ppc64le | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le | ppc | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64)
+	    386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le·| nios2 | ppc | ppc64 | ppc64le | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64)
 		tag1=nonmatchingtag
 		;;
 	    esac
@@ -326,7 +326,7 @@ x)
 	    aix | android | darwin | dragonfly | freebsd | linux | nacl | netbsd | openbsd | plan9 | solaris | windows)
 		tag2=nonmatchingtag
 		;;
-	    386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | ppc64 | ppc64le | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le | ppc | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64)
+	    386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le·| nios2 | ppc | ppc64 | ppc64le | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64)
 		tag2=nonmatchingtag
 		;;
 	    esac
@@ -506,9 +506,13 @@ localname() {
 
 {
 	text="T"
-	case "$goarch" in
-	ppc64*) text="[TD]" ;;
-	esac
+
+	# On systems using PPC64 ELF ABI v1 function symbols show up
+	# as descriptors in the data section.  We assume that $goarch
+	# distinguishes v1 (ppc64) from v2 (ppc64le).
+	if test "$goos" != "aix" && test "$goarch" = "ppc64"; then
+	    text="[TD]"
+	fi
 
 	symtogo='sed -e s/_test\([^A-Za-z0-9]\)/XXXtest\1/ -e s/.*_\([^_]*\.\)/\1/ -e s/XXXtest/_test/'
 

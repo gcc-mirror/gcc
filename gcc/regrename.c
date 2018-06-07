@@ -1661,7 +1661,8 @@ build_def_use (basic_block bb)
 	     (6) For any non-earlyclobber write we find in an operand, make
 	         a new chain or mark the hard register as live.
 	     (7) For any REG_UNUSED, close any chains we just opened.
-	     (8) For any REG_CFA_RESTORE, kill any chain containing it.
+	     (8) For any REG_CFA_RESTORE or REG_CFA_REGISTER, kill any chain
+	         containing its dest.
 
 	     We cannot deal with situations where we track a reg in one mode
 	     and see a reference in another mode; these will cause the chain
@@ -1703,14 +1704,18 @@ build_def_use (basic_block bb)
 		     and we must instead make sure to make the operand visible
 		     to the machinery that tracks hard registers.  */
 		  machine_mode i_mode = recog_data.operand_mode[i];
-		  machine_mode matches_mode = recog_data.operand_mode[matches];
-		  if (matches >= 0
-		      && maybe_ne (GET_MODE_SIZE (i_mode),
-				   GET_MODE_SIZE (matches_mode))
-		      && !verify_reg_in_set (op, &live_in_chains))
+		  if (matches >= 0)
 		    {
-		      untracked_operands |= 1 << i;
-		      untracked_operands |= 1 << matches;
+		      machine_mode matches_mode
+			= recog_data.operand_mode[matches];
+
+		      if (maybe_ne (GET_MODE_SIZE (i_mode),
+				    GET_MODE_SIZE (matches_mode))
+			  && !verify_reg_in_set (op, &live_in_chains))
+			{
+			  untracked_operands |= 1 << i;
+			  untracked_operands |= 1 << matches;
+			}
 		    }
 		}
 #ifdef STACK_REGS
@@ -1878,10 +1883,20 @@ build_def_use (basic_block bb)
 	      }
 
 	  /* Step 8: Kill the chains involving register restores.  Those
-	     should restore _that_ register.  */
+	     should restore _that_ register.  Similar for REG_CFA_REGISTER.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	    if (REG_NOTE_KIND (note) == REG_CFA_RESTORE)
-	      scan_rtx (insn, &XEXP (note, 0), NO_REGS, mark_all_read, OP_IN);
+	    if (REG_NOTE_KIND (note) == REG_CFA_RESTORE
+		|| REG_NOTE_KIND (note) == REG_CFA_REGISTER)
+	      {
+		rtx *x = &XEXP (note, 0);
+		if (!*x)
+		  x = &PATTERN (insn);
+		if (GET_CODE (*x) == PARALLEL)
+		  x = &XVECEXP (*x, 0, 0);
+		if (GET_CODE (*x) == SET)
+		  x = &SET_DEST (*x);
+		scan_rtx (insn, x, NO_REGS, mark_all_read, OP_IN);
+	      }
 	}
       else if (DEBUG_BIND_INSN_P (insn)
 	       && !VAR_LOC_UNKNOWN_P (INSN_VAR_LOCATION_LOC (insn)))

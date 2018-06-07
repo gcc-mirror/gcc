@@ -161,7 +161,7 @@
 --  code for the pragma is generated.
 
 ------------------
--- Pre-Analysis --
+-- Preanalysis --
 ------------------
 
 --  For certain kind of expressions, such as aggregates, we need to defer
@@ -186,17 +186,17 @@
 --  expanded code for "new Thing (Function_Call)".
 
 --  To remedy this situation we introduce a flag that signals whether we want a
---  full analysis (i.e. expansion is enabled) or a pre-analysis which performs
+--  full analysis (i.e. expansion is enabled) or a preanalysis which performs
 --  Analysis and Resolution but no expansion.
 
---  After the complete pre-analysis of an expression has been carried out we
+--  After the complete preanalysis of an expression has been carried out we
 --  can transform the expression and then carry out the full three stage
 --  (Analyze-Resolve-Expand) cycle on the transformed expression top-down so
 --  that the expansion of inner expressions happens inside the newly generated
 --  node for the parent expression.
 
 --  Note that the difference between processing of default expressions and
---  pre-analysis of other expressions is that we do carry out freezing in
+--  preanalysis of other expressions is that we do carry out freezing in
 --  the latter but not in the former (except for static scalar expressions).
 --  The routine that performs preanalysis and corresponding resolution is
 --  called Preanalyze_And_Resolve and is in Sem_Res.
@@ -214,12 +214,12 @@ package Sem is
    -----------------------------
 
    Full_Analysis : Boolean := True;
-   --  Switch to indicate if we are doing a full analysis or a pre-analysis.
+   --  Switch to indicate if we are doing a full analysis or a preanalysis.
    --  In normal analysis mode (Analysis-Expansion for instructions or
    --  declarations) or (Analysis-Resolution-Expansion for expressions) this
    --  flag is set. Note that if we are not generating code the expansion phase
    --  merely sets the Analyzed flag to True in this case. If we are in
-   --  Pre-Analysis mode (see above) this flag is set to False then the
+   --  Preanalysis mode (see above) this flag is set to False then the
    --  expansion phase is skipped.
    --
    --  When this flag is False the flag Expander_Active is also False (the
@@ -688,9 +688,9 @@ package Sem is
    --  Determine whether preanalysis is active at the point of invocation
 
    procedure Preanalyze (N : Node_Id);
-   --  Performs a pre-analysis of node N. During pre-analysis no expansion is
-   --  carried out for N or its children. For more info on pre-analysis read
-   --  the spec of Sem.
+   --  Performs a preanalysis of node N. During preanalysis no expansion is
+   --  carried out for N or its children. See above for more info on
+   --  preanalysis.
 
    generic
       with procedure Action (Item : Node_Id);

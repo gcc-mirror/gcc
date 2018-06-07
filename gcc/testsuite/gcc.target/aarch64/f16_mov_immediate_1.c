@@ -45,5 +45,5 @@ __fp16 f5 ()
 }
 
 /* { dg-final { scan-assembler-times "mov\tw\[0-9\]+, #?19520"           3 } } */
-/* { dg-final { scan-assembler-times "movi\tv\[0-9\]+\\\.2s, 0xbc, lsl 8"  1 } } */
-/* { dg-final { scan-assembler-times "movi\tv\[0-9\]+\\\.2s, 0x4c, lsl 8"  1 } } */
+/* { dg-final { scan-assembler-times "movi\tv\[0-9\]+\\\.4h, 0xbc, lsl 8"  1 } } */
+/* { dg-final { scan-assembler-times "movi\tv\[0-9\]+\\\.4h, 0x4c, lsl 8"  1 } } */

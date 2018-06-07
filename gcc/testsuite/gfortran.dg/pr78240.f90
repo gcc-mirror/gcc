@@ -7,9 +7,10 @@
 ! to the error handling routine for non-constant array-specs in DATA list
 ! initializers.
 !
-
+! Error message update with patch for PR fortran/83633
+!
 program p
-  integer x(n)    /1/   ! { dg-error "cannot appear in the expression" }
+  integer x(n)    /1/   ! { dg-error "array with nonconstant bounds" }
 end
 ! { dg-prune-output "module or main program" }
 ! { dg-prune-output "Nonconstant array" }

@@ -555,10 +555,10 @@ check_result (arith rc, gfc_expr *x, gfc_expr *r, gfc_expr **rp)
       val = ARITH_OK;
     }
 
-  if (val != ARITH_OK)
-    gfc_free_expr (r);
-  else
+  if (val == ARITH_OK || val == ARITH_OVERFLOW)
     *rp = r;
+  else
+    gfc_free_expr (r);
 
   return val;
 }
@@ -1603,8 +1603,12 @@ eval_intrinsic (gfc_intrinsic_op op,
   if (rc != ARITH_OK)
     {
       gfc_error (gfc_arith_error (rc), &op1->where);
+      if (rc == ARITH_OVERFLOW)
+	goto done;
       return NULL;
     }
+
+done:
 
   gfc_free_expr (op1);
   gfc_free_expr (op2);

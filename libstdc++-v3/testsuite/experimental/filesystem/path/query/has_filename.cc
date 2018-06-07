@@ -1,4 +1,4 @@
-// { dg-options "-lstdc++fs" }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
@@ -22,7 +22,6 @@
 // 8.4.9 path decomposition [path.decompose]
 
 #include <experimental/filesystem>
-#include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_fs.h>
 

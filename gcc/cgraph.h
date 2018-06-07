@@ -530,6 +530,9 @@ public:
   /* Set when symbol can be streamed into bytecode for offloading.  */
   unsigned offloadable : 1;
 
+  /* Set when symbol is an IFUNC resolver.  */
+  unsigned ifunc_resolver : 1;
+
 
   /* Ordering of all symtab entries.  */
   int order;
@@ -2222,10 +2225,7 @@ public:
   void dump (FILE *f);
 
   /* Dump symbol table to stderr.  */
-  inline DEBUG_FUNCTION void debug (void)
-  {
-    dump (stderr);
-  }
+  void DEBUG_FUNCTION debug (void);
 
   /* Return true if assembler names NAME1 and NAME2 leads to the same symbol
      name.  */
@@ -2889,6 +2889,7 @@ cgraph_node::only_called_directly_or_aliased_p (void)
 {
   gcc_assert (!global.inlined_to);
   return (!force_output && !address_taken
+	  && !ifunc_resolver
 	  && !used_from_other_partition
 	  && !DECL_VIRTUAL_P (decl)
 	  && !DECL_STATIC_CONSTRUCTOR (decl)

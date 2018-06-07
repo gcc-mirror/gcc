@@ -45,11 +45,15 @@
 (define_mode_iterator VSQIHIDI [V4QI V2HI QI HI DI])
 (define_mode_iterator VQIHIDI [V4QI V2HI DI])
 
+;; A list of the modes that are up to double-word long.
+(define_mode_iterator ANYF [(SF "TARGET_FPU_SINGLE")
+			    (DF "TARGET_FPU_DOUBLE")])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes.
 ;;----------------------------------------------------------------------------
 
-(define_mode_attr size [(QI "b") (HI "h") (SI "w")])
+(define_mode_attr size [(QI "b") (HI "h") (SI "w") (SF "s") (DF "d")])
 
 (define_mode_attr byte [(QI "1") (HI "2") (SI "4") (V4QI "4") (V2HI "4")])
 
@@ -61,10 +65,56 @@
 ;; Code iterators.
 ;;----------------------------------------------------------------------------
 
+;; shifts
+(define_code_iterator shift_rotate [ashift ashiftrt lshiftrt rotatert])
+
+(define_code_iterator shifts [ashift ashiftrt lshiftrt])
+
+(define_code_iterator shiftrt [ashiftrt lshiftrt])
+
+(define_code_iterator sat_plus [ss_plus us_plus])
+
+(define_code_iterator all_plus [plus ss_plus us_plus])
+
+(define_code_iterator sat_minus [ss_minus us_minus])
+
+(define_code_iterator all_minus [minus ss_minus us_minus])
+
+(define_code_iterator plus_minus [plus minus])
+
+(define_code_iterator extend [sign_extend zero_extend])
+
+(define_code_iterator sumax [smax umax])
+
+(define_code_iterator sumin [smin umin])
+
+(define_code_iterator sumin_max [smax umax smin umin])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes.
 ;;----------------------------------------------------------------------------
 
+;; shifts
+(define_code_attr shift
+  [(ashift "ashl") (ashiftrt "ashr") (lshiftrt "lshr") (rotatert "rotr")])
+
+(define_code_attr su
+  [(ashiftrt "") (lshiftrt "u") (sign_extend "s") (zero_extend "u")])
+
+(define_code_attr zs
+  [(sign_extend "s") (zero_extend "z")])
+
+(define_code_attr uk
+  [(plus "") (ss_plus "k") (us_plus "uk")
+   (minus "") (ss_minus "k") (us_minus "uk")])
+
+(define_code_attr opcode
+  [(plus "add") (minus "sub") (smax "smax") (umax "umax") (smin "smin") (umin "umin")])
+
+(define_code_attr add_rsub
+  [(plus "a") (minus "rs")])
+
+(define_code_attr add_sub
+  [(plus "a") (minus "s")])
 
 ;;----------------------------------------------------------------------------

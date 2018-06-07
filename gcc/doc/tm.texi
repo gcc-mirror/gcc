@@ -7491,6 +7491,14 @@ when the target cannot support (some kinds of) dynamic relocations
 in read-only sections even in executables.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC (void)
+Return true to generate ADDR_DIF_VEC table
+or false to generate ADDR_VEC table for jumps in case of -fPIC.
+
+The default version of this function returns true if flag_pic
+equals true and false otherwise
+@end deftypefn
+
 @deftypefn {Target Hook} {section *} TARGET_ASM_SELECT_SECTION (tree @var{exp}, int @var{reloc}, unsigned HOST_WIDE_INT @var{align})
 Return the section into which @var{exp} should be placed.  You can
 assume that @var{exp} is either a @code{VAR_DECL} node or a constant of

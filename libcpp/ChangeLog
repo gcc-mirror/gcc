@@ -1,3 +1,23 @@
+2018-05-23  Jason Merrill  <jason@redhat.com>
+
+	* system.h: #include <new> earlier.
+
+2018-05-17  Jason Merrill  <jason@redhat.com>
+
+	* line-map.c (linemap_init): Use placement new.
+	* system.h: #include <new>.
+
+2018-03-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (compare): New function on linenum_type.
+
+2018-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR preprocessor/84517
+	* lex.c (is_macro_not_literal_suffix): New function.
+	(lex_raw_string, lex_string): Use is_macro_not_literal_suffix to
+	decide when to issue -Wliteral-suffix warnings.
+
 2018-02-16  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/82939

@@ -205,6 +205,11 @@ no)	;;
 *)	gcc_gxx_include_dir=$with_gxx_include_dir ;;
 esac])
 
+# If both --with-sysroot and --with-gxx-include-dir are passed, we interpolate
+# the former in the latter and, upon success, compute gcc_gxx_include_dir as
+# relative to the sysroot.
+gcc_gxx_include_dir_add_sysroot=0
+
 # This logic must match libstdc++-v3/acinclude.m4:GLIBCXX_EXPORT_INSTALL_INFO.
 if test x${gcc_gxx_include_dir} = x; then
   if test x${enable_version_specific_runtime_libs} = xyes; then
@@ -216,15 +221,10 @@ if test x${gcc_gxx_include_dir} = x; then
     fi
     gcc_gxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libstdcxx_incdir"
   fi
-fi
-
-gcc_gxx_include_dir_add_sysroot=0
-if test "${with_sysroot+set}" = set; then
+elif test "${with_sysroot+set}" = set; then
   gcc_gxx_without_sysroot=`expr "${gcc_gxx_include_dir}" : "${with_sysroot}"'\(.*\)'`
   if test "${gcc_gxx_without_sysroot}"; then
-    if test x${with_sysroot} != x/; then
-      gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
-    fi
+    gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
     gcc_gxx_include_dir_add_sysroot=1
   fi
 fi
@@ -2953,6 +2953,34 @@ if test $gcc_cv_as_eh_frame = buggy; then
   [Define if your assembler mis-optimizes .eh_frame data.])
 fi
 
+# Test if the assembler supports the section flag 'e' or #exclude for
+# specifying an excluded section.
+gcc_GAS_CHECK_FEATURE([section exclude flag], gcc_cv_as_section_exclude_e,
+ [2,22,51], [--fatal-warnings],
+ [.section foo1,"e"
+  .byte 0,0,0,0])
+if test $gcc_cv_as_section_exclude_e = no; then
+  case "${target}" in
+    # Solaris as uses #exclude instead.
+    *-*-solaris2*)
+      case "${target}" in
+	sparc*-*-solaris2*)
+	  conftest_s='.section "foo1", #exclude'
+	  ;;
+	i?86-*-solaris2* | x86_64-*-solaris2*)
+	  conftest_s='.section foo1, #exclude'
+	  ;;      
+      esac
+      ;;
+    esac
+  gcc_GAS_CHECK_FEATURE([section exclude flag], gcc_cv_as_section_exclude_hash,,,
+    [$conftest_s
+     .byte 0,0,0,0])
+fi
+AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_EXCLUDE,
+  [`if test $gcc_cv_as_section_exclude_e = yes || test $gcc_cv_as_section_exclude_hash = yes; then echo 1; else echo 0; fi`],
+[Define if your assembler supports specifying the exclude section flag.])
+
 gcc_GAS_CHECK_FEATURE(section merging support, gcc_cv_as_shf_merge,
  [elf,2,12,0], [--fatal-warnings],
  [.section .rodata.str, "aMS", @progbits, 1])
@@ -3655,6 +3683,50 @@ if test x"$gcc_cv_ld_static_dynamic" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_ld_static_dynamic)
 
+AC_MSG_CHECKING(linker --version-script option)
+gcc_cv_ld_version_script=no
+ld_version_script_option=''
+if test $in_tree_ld = yes || test x"$gnu_ld" = xyes; then
+  gcc_cv_ld_version_script=yes
+  ld_version_script_option='--version-script'
+elif test x$gcc_cv_ld != x; then
+  case "$target" in
+    # Solaris 2 ld always supports -M.  It also supports a subset of
+    # --version-script since Solaris 11.4, but requires
+    # -z gnu-version-script-compat to activate.
+    *-*-solaris2*)
+      gcc_cv_ld_version_script=yes
+      ld_version_script_option='-M'
+      ;;
+  esac
+fi
+# Don't AC_DEFINE result, only used in jit/Make-lang.in so far.
+AC_MSG_RESULT($gcc_cv_ld_version_script)
+AC_SUBST(ld_version_script_option)
+
+AC_MSG_CHECKING(linker soname option)
+gcc_cv_ld_soname=no
+if test $in_tree_ld = yes || test x"$gnu_ld" = xyes; then
+  gcc_cv_ld_soname=yes
+  ld_soname_option='-soname'
+elif test x$gcc_cv_ld != x; then
+  case "$target" in
+    *-*-darwin*)
+      gcc_cv_ld_soname=yes
+      ld_soname_option='-install_name'
+      ;;
+    # Solaris 2 ld always supports -h.  It also supports --soname for GNU
+    # ld compatiblity since some Solaris 10 update.
+    *-*-solaris2*)
+      gcc_cv_ld_soname=yes
+      ld_soname_option='-h'
+      ;;
+  esac
+fi
+# Don't AC_DEFINE result, only used in jit/Make-lang.in so far.
+AC_MSG_RESULT($gcc_cv_ld_soname)
+AC_SUBST(ld_soname_option)
+
 if test x"$demangler_in_ld" = xyes; then
   AC_MSG_CHECKING(linker --demangle support)
   gcc_cv_ld_demangle=no
@@ -4157,16 +4229,6 @@ foo:	nop
       [-xbrace_comment=no], [.text],,
       [AC_DEFINE(HAVE_AS_XBRACE_COMMENT_OPTION, 1,
 		[Define if your assembler supports -xbrace_comment option.])])
-
-    # Test if the assembler supports the section flag 'e' for specifying
-    # an excluded section.
-    gcc_GAS_CHECK_FEATURE([.section with e], gcc_cv_as_section_has_e,
-      [2,22,51], [--fatal-warnings],
-[.section foo1,"e"
-.byte 0,0,0,0])
-    AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_EXCLUDE,
-      [`if test $gcc_cv_as_section_has_e = yes; then echo 1; else echo 0; fi`],
-      [Define if your assembler supports specifying the section flag e.])
 
     gcc_GAS_CHECK_FEATURE([filds and fists mnemonics],
        gcc_cv_as_ix86_filds,,,
@@ -5473,11 +5535,25 @@ if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
     gcc_cv_ld_as_needed=yes
+    if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 28; then
+      gcc_cv_ld_as_needed_option='--push-state --as-needed'
+      gcc_cv_ld_no_as_needed_option='--pop-state'
+    fi
   fi
 elif test x$gcc_cv_ld != x; then
   # Check if linker supports --as-needed and --no-as-needed options
   if $gcc_cv_ld --help 2>&1 | grep as-needed > /dev/null; then
     gcc_cv_ld_as_needed=yes
+    if $gcc_cv_ld --help 2>&1 | grep push-state > /dev/null \
+       && $gcc_cv_ld --help 2>&1 | grep pop-state > /dev/null \
+       && echo "$ld_ver" | grep GNU > /dev/null \
+       && test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -ge 28; then
+      # Use these options only when both ld.bfd and ld.gold support
+      # --push-state/--pop-state, which unfortunately wasn't added
+      # at the same time.
+      gcc_cv_ld_as_needed_option='--push-state --as-needed'
+      gcc_cv_ld_no_as_needed_option='--pop-state'
+    fi
   fi
   case "$target:$gnu_ld" in
     *-*-solaris2*:no)
@@ -6455,8 +6531,10 @@ AC_DEFINE_UNQUOTED(DIAGNOSTICS_COLOR_DEFAULT, $DIAGNOSTICS_COLOR_DEFAULT,
 
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
 # of jit/jit-playback.c.
+gcc_driver_version=`eval "${get_gcc_base_ver} $srcdir/BASE-VER"`
+echo "gcc_driver_version: ${gcc_driver_version}"
 cat > gcc-driver-name.h <<EOF
-#define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_BASEVER}${exeext}"
+#define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_driver_version}${exeext}"
 EOF
 
 # Check whether --enable-default-pie was given.

@@ -2081,6 +2081,9 @@ final_1 (rtx_insn *first, FILE *file, int seen, int optimize_p)
 	    }
 	  else
 	    insn_current_address = INSN_ADDRESSES (INSN_UID (insn));
+	  /* final can be seen as an iteration of shorten_branches that
+	     does nothing (since a fixed point has already been reached).  */
+	  insn_last_address = insn_current_address;
 	}
 
       dump_basic_block_info (file, insn, start_to_bb, end_to_bb,
@@ -2213,14 +2216,13 @@ asm_show_source (const char *filename, int linenum)
   if (!filename)
     return;
 
-  int line_size;
-  const char *line = location_get_source_line (filename, linenum, &line_size);
+  char_span line = location_get_source_line (filename, linenum);
   if (!line)
     return;
 
   fprintf (asm_out_file, "%s %s:%i: ", ASM_COMMENT_START, filename, linenum);
-  /* "line" is not 0-terminated, so we must use line_size.  */
-  fwrite (line, 1, line_size, asm_out_file);
+  /* "line" is not 0-terminated, so we must use its length.  */
+  fwrite (line.get_buffer (), 1, line.length (), asm_out_file);
   fputc ('\n', asm_out_file);
 }
 
@@ -2264,6 +2266,11 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	  maybe_output_next_view (seen);
+
+	  output_function_exception_table (0);
+
+	  if (targetm.asm_out.unwind_emit)
+	    targetm.asm_out.unwind_emit (asm_out_file, insn);
 
 	  in_cold_section_p = !in_cold_section_p;
 
@@ -4672,7 +4679,7 @@ rest_of_handle_final (void)
   /* The IA-64 ".handlerdata" directive must be issued before the ".endp"
      directive that closes the procedure descriptor.  Similarly, for x64 SEH.
      Otherwise it's not strictly necessary, but it doesn't hurt either.  */
-  output_function_exception_table (fnname);
+  output_function_exception_table (crtl->has_bb_partition ? 1 : 0);
 
   assemble_end_function (current_function_decl, fnname);
 
@@ -4845,11 +4852,19 @@ rest_of_clean_state (void)
       SET_NEXT_INSN (insn) = NULL;
       SET_PREV_INSN (insn) = NULL;
 
-      if (CALL_P (insn))
+      rtx_insn *call_insn = insn;
+      if (NONJUMP_INSN_P (call_insn)
+	  && GET_CODE (PATTERN (call_insn)) == SEQUENCE)
 	{
-	  rtx note = find_reg_note (insn, REG_CALL_ARG_LOCATION, NULL_RTX);
+	  rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (call_insn));
+	  call_insn = seq->insn (0);
+	}
+      if (CALL_P (call_insn))
+	{
+	  rtx note
+	    = find_reg_note (call_insn, REG_CALL_ARG_LOCATION, NULL_RTX);
 	  if (note)
-	    remove_note (insn, note);
+	    remove_note (call_insn, note);
 	}
 
       if (final_output

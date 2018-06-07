@@ -129,6 +129,11 @@ case "${target}" in
 	config_path="${config_path} linux/arm posix"
 	;;
 
+  s390*-*-linux*)
+	# OS support for atomic primitives.
+	config_path="${config_path} s390 posix"
+	;;
+
   *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu \
   | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly* \
   | *-*-solaris2* | *-*-sysv4* | *-*-irix6* | *-*-osf* | *-*-hpux11* \

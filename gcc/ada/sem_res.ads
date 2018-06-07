@@ -85,9 +85,9 @@ package Sem_Res is
    --  The parameter T is the Typ for the corresponding resolve call.
 
    procedure Preanalyze_And_Resolve (N : Node_Id; T : Entity_Id);
-   --  Performs a pre-analysis of expression node N. During pre-analysis, N is
+   --  Performs a preanalysis of expression node N. During preanalysis, N is
    --  analyzed and then resolved against type T, but no expansion is carried
-   --  out for N or its children. For more info on pre-analysis read the spec
+   --  out for N or its children. For more info on preanalysis read the spec
    --  of Sem.
 
    procedure Preanalyze_And_Resolve (N : Node_Id);

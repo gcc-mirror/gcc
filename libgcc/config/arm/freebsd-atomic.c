@@ -171,32 +171,32 @@ __sync_fetch_and_##NAME##_##N (TYPE *mem, TYPE val)	       		\
 
 #define	SYNC_OP_AND_FETCH_N(N, TYPE, LDR, STR, NAME, OP)		\
 TYPE HIDDEN   								\
-__sync_##NAME##_and_fetch_##N (TYPE *mem, TYPE val)	       		\
+__sync_##NAME##_and_fetch_##N (TYPE *mem, TYPE val)			\
 {									\
-        unsigned int old, temp, ras_start;                              \
+        unsigned int old, temp, ras_start, res;                         \
                                                                         \
         ras_start = ARM_RAS_START;					\
         __asm volatile (						\
                 /* Set up Restartable Atomic Sequence.  */		\
                 "1:"							\
                 "\tadr   %2, 1b\n"					\
-                "\tstr   %2, [%5]\n"					\
+                "\tstr   %2, [%6]\n"					\
                 "\tadr   %2, 2f\n"					\
-                "\tstr   %2, [%5, #4]\n"				\
+                "\tstr   %2, [%6, #4]\n"				\
                                                                         \
-                "\t"LDR" %0, %4\n"	/* Load old value.  */		\
-                "\t"OP"  %2, %0, %3\n"	/* Calculate new value.  */	\
-                "\t"STR" %2, %1\n"	/* Store new value.  */		\
+                "\t"LDR" %0, %5\n"	/* Load old value.  */		\
+                "\t"OP"  %3, %0, %4\n"	/* Calculate new value.  */	\
+                "\t"STR" %3, %1\n"	/* Store new value.  */		\
                                                                         \
                 /* Tear down Restartable Atomic Sequence.  */		\
                 "2:"							\
                 "\tmov   %2, #0x00000000\n"				\
-                "\tstr   %2, [%5]\n"					\
+                "\tstr   %2, [%6]\n"					\
                 "\tmov   %2, #0xffffffff\n"				\
-                "\tstr   %2, [%5, #4]\n"				\
-                : "=&r" (old), "=m" (*mem), "=&r" (temp)		\
+                "\tstr   %2, [%6, #4]\n"				\
+                : "=&r" (old), "=m" (*mem), "=&r" (temp), "=&r" (res)	\
                 : "r" (val), "m" (*mem), "r" (ras_start));		\
-        return (old);							\
+        return (res);							\
 }
 
 #define	EMIT_ALL_OPS_N(N, TYPE, LDR, STR, STREQ)			\

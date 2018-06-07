@@ -974,6 +974,8 @@ struct format_check_results
   /* Number of leaves of the format argument that were wide string
      literals.  */
   int number_wide;
+  /* Number of leaves of the format argument that are not array of "char".  */
+  int number_non_char;
   /* Number of leaves of the format argument that were empty strings.  */
   int number_empty;
   /* Number of leaves of the format argument that were unterminated
@@ -1435,6 +1437,7 @@ check_format_info (function_format_info *info, tree params,
   res.extra_arg_loc = UNKNOWN_LOCATION;
   res.number_dollar_extra_args = 0;
   res.number_wide = 0;
+  res.number_non_char = 0;
   res.number_empty = 0;
   res.number_unterminated = 0;
   res.number_other = 0;
@@ -1510,6 +1513,10 @@ check_format_info (function_format_info *info, tree params,
 
   if (res.number_wide > 0)
     warning_at (loc, OPT_Wformat_, "format is a wide character string");
+
+  if (res.number_non_char > 0)
+    warning_at (loc, OPT_Wformat_,
+		"format string is not an array of type %qs", "char");
 
   if (res.number_unterminated > 0)
     warning_at (loc, OPT_Wformat_, "unterminated format string");
@@ -1656,9 +1663,16 @@ check_format_arg (void *ctx, tree format_tree,
       res->number_non_literal++;
       return;
     }
-  if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (format_tree))) != char_type_node)
+  tree underlying_type
+    = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (format_tree)));
+  if (underlying_type != char_type_node)
     {
-      res->number_wide++;
+      if (underlying_type == char16_type_node
+	  || underlying_type == char32_type_node
+	  || underlying_type == wchar_type_node)
+	res->number_wide++;
+      else
+	res->number_non_char++;
       return;
     }
   format_chars = TREE_STRING_POINTER (format_tree);
@@ -3499,10 +3513,8 @@ get_corrected_substring (const substring_loc &fmt_loc,
   if (caret.column > finish.column)
     return NULL;
 
-  int line_width;
-  const char *line = location_get_source_line (start.file, start.line,
-					       &line_width);
-  if (line == NULL)
+  char_span line = location_get_source_line (start.file, start.line);
+  if (!line)
     return NULL;
 
   /* If we got this far, then we have the line containing the
@@ -3511,9 +3523,9 @@ get_corrected_substring (const substring_loc &fmt_loc,
      Generate a trimmed copy, containing the prefix part of the conversion
      specification, up to the (but not including) the length modifier.
      In the above example, this would be "%-+*.*".  */
-  const char *current_content = line + start.column - 1;
   int length_up_to_type = caret.column - start.column;
-  char *prefix = xstrndup (current_content, length_up_to_type);
+  char_span prefix_span = line.subspan (start.column - 1, length_up_to_type);
+  char *prefix = prefix_span.xstrdup ();
 
   /* Now attempt to generate a suggestion for the rest of the specification
      (length modifier and conversion char), based on ARG_TYPE and

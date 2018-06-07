@@ -1206,7 +1206,7 @@
     <biblioentry xml:id="biblio.sgi_stl">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.sgi.com/tech/stl/">
+	      xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/">
 	  Standard Template Library Programmer's Guide
 	</link>
       </title>

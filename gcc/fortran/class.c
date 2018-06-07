@@ -308,7 +308,6 @@ class_array_ref_detected (gfc_ref *ref, bool *full_array)
 	    *full_array = true;
 	}
       else if (ref->next && ref->next->type == REF_ARRAY
-	    && !ref->next->next
 	    && ref->type == REF_COMPONENT
 	    && ref->next->u.ar.type != AR_ELEMENT)
 	{
@@ -2630,7 +2629,7 @@ find_intrinsic_vtab (gfc_typespec *ts)
     {
       char tname[GFC_MAX_SYMBOL_LEN+1];
       char *name;
-      
+
       /* Encode all types as TYPENAME_KIND_ including especially character
 	 arrays, whose length is now consistently stored in the _len component
 	 of the class-variable.  */

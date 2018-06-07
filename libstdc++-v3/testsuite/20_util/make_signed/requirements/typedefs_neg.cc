@@ -28,7 +28,7 @@ void test01()
 {
   using std::make_signed;
 
-  // Negative  tests.
+  // Negative tests.
   typedef make_signed<bool>::type     	test1_type;
 
   typedef make_signed<__gnu_test::pod_uint>::type     	test2_type;
@@ -47,4 +47,4 @@ void test01()
 // { dg-error "required from here" "" { target *-*-* } 39 }
 // { dg-error "required from here" "" { target *-*-* } 41 }
 
-// { dg-error "invalid use of incomplete type" "" { target *-*-* } 1757 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 1793 }

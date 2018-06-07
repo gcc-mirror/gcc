@@ -27,4 +27,4 @@ struct X {
   char stuff[0]; // GNU extension, type has zero size
 };
 
-std::atomic<X> a;  // { dg-error "not supported" "" { target *-*-* } 190 }
+std::atomic<X> a;  // { dg-error "not supported" "" { target *-*-* } 194 }

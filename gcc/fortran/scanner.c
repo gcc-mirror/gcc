@@ -2107,6 +2107,10 @@ preprocessor_line (gfc_char_t *c)
           in the linemap.  Alternative could be using GC or updating linemap to
           point to the new name, but there is no API for that currently.  */
       current_file->filename = xstrdup (filename);
+
+      /* We need to tell the linemap API that the filename changed.  Just
+	 changing current_file is insufficient.  */
+      linemap_add (line_table, LC_RENAME, false, current_file->filename, line);
     }
 
   /* Set new line number.  */

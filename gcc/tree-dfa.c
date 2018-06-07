@@ -438,7 +438,7 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 		   referenced the last field of a struct or a union member
 		   then we have to adjust maxsize by the padding at the end
 		   of our field.  */
-		if (seen_variable_array_ref && known_size_p (maxsize))
+		if (seen_variable_array_ref)
 		  {
 		    tree stype = TREE_TYPE (TREE_OPERAND (exp, 0));
 		    tree next = DECL_CHAIN (field);
@@ -454,7 +454,7 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 			    || ssize == NULL
 			    || !poly_int_tree_p (ssize))
 			  maxsize = -1;
-			else
+			else if (known_size_p (maxsize))
 			  {
 			    poly_offset_int tem
 			      = (wi::to_poly_offset (ssize)
@@ -464,6 +464,11 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 			    maxsize += tem;
 			  }
 		      }
+		    /* An component ref with an adjacent field up in the
+		       structure hierarchy constrains the size of any variable
+		       array ref lower in the access hierarchy.  */
+		    else
+		      seen_variable_array_ref = false;
 		  }
 	      }
 	    else
@@ -524,6 +529,49 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 		/* Remember that we have seen an array ref with a variable
 		   index.  */
 		seen_variable_array_ref = true;
+
+		wide_int min, max;
+		if (TREE_CODE (index) == SSA_NAME
+		    && (low_bound = array_ref_low_bound (exp),
+			poly_int_tree_p (low_bound))
+		    && (unit_size = array_ref_element_size (exp),
+			TREE_CODE (unit_size) == INTEGER_CST)
+		    && get_range_info (index, &min, &max) == VR_RANGE)
+		  {
+		    poly_offset_int lbound = wi::to_poly_offset (low_bound);
+		    /* Try to constrain maxsize with range information.  */
+		    offset_int omax
+		      = offset_int::from (max, TYPE_SIGN (TREE_TYPE (index)));
+		    if (known_lt (lbound, omax))
+		      {
+			poly_offset_int rmaxsize;
+			rmaxsize = (omax - lbound + 1)
+			    * wi::to_offset (unit_size) << LOG2_BITS_PER_UNIT;
+			if (!known_size_p (maxsize)
+			    || known_lt (rmaxsize, maxsize))
+			  {
+			    /* If we know an upper bound below the declared
+			       one this is no longer variable.  */
+			    if (known_size_p (maxsize))
+			      seen_variable_array_ref = false;
+			    maxsize = rmaxsize;
+			  }
+		      }
+		    /* Try to adjust bit_offset with range information.  */
+		    offset_int omin
+		      = offset_int::from (min, TYPE_SIGN (TREE_TYPE (index)));
+		    if (known_le (lbound, omin))
+		      {
+			poly_offset_int woffset
+			  = wi::sext (omin - lbound,
+				      TYPE_PRECISION (TREE_TYPE (index)));
+			woffset *= wi::to_offset (unit_size);
+			woffset <<= LOG2_BITS_PER_UNIT;
+			bit_offset += woffset;
+			if (known_size_p (maxsize))
+			  maxsize -= woffset;
+		      }
+		  }
 	      }
 	  }
 	  break;
@@ -622,7 +670,9 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 
   if (DECL_P (exp))
     {
-      if (flag_unconstrained_commons && VAR_P (exp) && DECL_COMMON (exp))
+      if (VAR_P (exp)
+	  && ((flag_unconstrained_commons && DECL_COMMON (exp))
+	      || (DECL_EXTERNAL (exp) && seen_variable_array_ref)))
 	{
 	  tree sz_tree = TYPE_SIZE (TREE_TYPE (exp));
 	  /* If size is unknown, or we have read to the end, assume there

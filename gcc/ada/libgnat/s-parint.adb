@@ -72,7 +72,7 @@ package body System.Partition_Interface is
    end Check;
 
    -----------------------------
-   -- Get_Active_Partition_Id --
+   -- Get_Active_Partition_ID --
    -----------------------------
 
    function Get_Active_Partition_ID
@@ -103,7 +103,7 @@ package body System.Partition_Interface is
    end Get_Active_Version;
 
    ----------------------------
-   -- Get_Local_Partition_Id --
+   -- Get_Local_Partition_ID --
    ----------------------------
 
    function Get_Local_Partition_ID return System.RPC.Partition_ID is

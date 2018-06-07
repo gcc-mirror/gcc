@@ -72,9 +72,8 @@ struct gcov_summary_buffer
 struct gcov_filename
 {
   char *filename;  /* filename buffer */
-  size_t max_length;  /* maximum filename length */
   int strip; /* leading chars to strip from filename */
-  size_t prefix; /* chars to prepend to filename */
+  char *prefix; /* prefix string */
 };
 
 static struct gcov_fn_buffer *
@@ -221,40 +220,24 @@ gcov_compute_histogram (struct gcov_info *list, struct gcov_summary *sum)
   struct gcov_info *gi_ptr;
   const struct gcov_fn_info *gfi_ptr;
   const struct gcov_ctr_info *ci_ptr;
-  struct gcov_ctr_summary *cs_ptr;
-  unsigned t_ix, f_ix, ctr_info_ix, ix;
+  unsigned f_ix, ix;
   int h_ix;
 
-  /* This currently only applies to arc counters.  */
-  t_ix = GCOV_COUNTER_ARCS;
-
   /* First check if there are any counts recorded for this counter.  */
-  cs_ptr = &(sum->ctrs[t_ix]);
-  if (!cs_ptr->num)
+  if (!sum->num)
     return;
 
   for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
     {
-      cs_ptr->histogram[h_ix].num_counters = 0;
-      cs_ptr->histogram[h_ix].min_value = cs_ptr->run_max;
-      cs_ptr->histogram[h_ix].cum_value = 0;
+      sum->histogram[h_ix].num_counters = 0;
+      sum->histogram[h_ix].min_value = sum->run_max;
+      sum->histogram[h_ix].cum_value = 0;
     }
 
   /* Walk through all the per-object structures and record each of
      the count values in histogram.  */
   for (gi_ptr = list; gi_ptr; gi_ptr = gi_ptr->next)
     {
-      if (!gi_ptr->merge[t_ix])
-        continue;
-
-      /* Find the appropriate index into the gcov_ctr_info array
-         for the counter we are currently working on based on the
-         existence of the merge function pointer for this object.  */
-      for (ix = 0, ctr_info_ix = 0; ix < t_ix; ix++)
-        {
-          if (gi_ptr->merge[ix])
-            ctr_info_ix++;
-        }
       for (f_ix = 0; f_ix != gi_ptr->n_functions; f_ix++)
         {
           gfi_ptr = gi_ptr->functions[f_ix];
@@ -262,9 +245,9 @@ gcov_compute_histogram (struct gcov_info *list, struct gcov_summary *sum)
           if (!gfi_ptr || gfi_ptr->key != gi_ptr)
             continue;
 
-          ci_ptr = &gfi_ptr->ctrs[ctr_info_ix];
-          for (ix = 0; ix < ci_ptr->num; ix++)
-            gcov_histogram_insert (cs_ptr->histogram, ci_ptr->values[ix]);
+	  ci_ptr = &gfi_ptr->ctrs[0];
+	  for (ix = 0; ix < ci_ptr->num; ix++)
+	    gcov_histogram_insert (sum->histogram, ci_ptr->values[ix]);
         }
     }
 }
@@ -275,34 +258,25 @@ static struct gcov_fn_buffer *fn_buffer;
 static struct gcov_summary_buffer *sum_buffer;
 
 /* This function computes the program level summary and the histo-gram.
-   It computes and returns CRC32 and stored summary in THIS_PRG.
-   Also determines the longest filename length of the info files.  */
+   It computes and returns CRC32 and stored summary in THIS_PRG.  */
 
 #if !IN_GCOV_TOOL
 static
 #endif
 gcov_unsigned_t
-compute_summary (struct gcov_info *list, struct gcov_summary *this_prg,
-		 size_t *max_length)
+compute_summary (struct gcov_info *list, struct gcov_summary *this_prg)
 {
   struct gcov_info *gi_ptr;
   const struct gcov_fn_info *gfi_ptr;
-  struct gcov_ctr_summary *cs_ptr;
   const struct gcov_ctr_info *ci_ptr;
   int f_ix;
-  unsigned t_ix;
   gcov_unsigned_t c_num;
   gcov_unsigned_t crc32 = 0;
 
   /* Find the totals for this execution.  */
   memset (this_prg, 0, sizeof (*this_prg));
-  *max_length = 0;
   for (gi_ptr = list; gi_ptr; gi_ptr = gi_ptr->next)
     {
-      size_t len = strlen (gi_ptr->filename);
-      if (len > *max_length)
-	*max_length = len;
-      
       crc32 = crc32_unsigned (crc32, gi_ptr->stamp);
       crc32 = crc32_unsigned (crc32, gi_ptr->n_functions);
 
@@ -319,25 +293,18 @@ compute_summary (struct gcov_info *list, struct gcov_summary *this_prg,
           if (!gfi_ptr)
             continue;
 
-          ci_ptr = gfi_ptr->ctrs;
-          for (t_ix = 0; t_ix != GCOV_COUNTERS_SUMMABLE; t_ix++)
-            {
-              if (!gi_ptr->merge[t_ix])
-                continue;
+	  ci_ptr = gfi_ptr->ctrs;
+	  this_prg->num += ci_ptr->num;
+	  crc32 = crc32_unsigned (crc32, ci_ptr->num);
 
-              cs_ptr = &(this_prg->ctrs[t_ix]);
-              cs_ptr->num += ci_ptr->num;
-              crc32 = crc32_unsigned (crc32, ci_ptr->num);
-
-              for (c_num = 0; c_num < ci_ptr->num; c_num++)
-                {
-                  cs_ptr->sum_all += ci_ptr->values[c_num];
-                  if (cs_ptr->run_max < ci_ptr->values[c_num])
-                    cs_ptr->run_max = ci_ptr->values[c_num];
-                }
-              ci_ptr++;
-            }
-        }
+	  for (c_num = 0; c_num < ci_ptr->num; c_num++)
+	    {
+	      this_prg->sum_all += ci_ptr->values[c_num];
+	      if (this_prg->run_max < ci_ptr->values[c_num])
+		this_prg->run_max = ci_ptr->values[c_num];
+	    }
+	  ci_ptr++;
+	}
     }
   gcov_compute_histogram (list, this_prg);
   return crc32;
@@ -372,8 +339,12 @@ merge_one_data (const char *filename,
 
   length = gcov_read_unsigned ();
   if (length != gi_ptr->stamp)
-    /* Read from a different compilation. Overwrite the file.  */
-    return 0;
+    {
+      /* Read from a different compilation.  Overwrite the file.  */
+      gcov_error ("profiling:%s:overwriting an existing profile data "
+		  "with a different timestamp\n", filename);
+      return 0;
+    }
 
   /* Look for program summary.  */
   for (f_ix = 0;;)
@@ -407,9 +378,8 @@ merge_one_data (const char *filename,
       if (tmp.checksum != crc32)
         goto next_summary;
 
-      for (t_ix = 0; t_ix != GCOV_COUNTERS_SUMMABLE; t_ix++)
-        if (tmp.ctrs[t_ix].num != this_prg->ctrs[t_ix].num)
-          goto next_summary;
+      if (tmp.num != this_prg->num)
+	goto next_summary;
       *prg_p = tmp;
       *summary_pos_p = *eof_pos_p;
 
@@ -596,77 +566,60 @@ write_one_data (const struct gcov_info *gi_ptr,
    Return -1 on error. Return 0 on success.  */
 
 static int
-merge_summary (const char *filename, int run_counted,
-	       const struct gcov_info *gi_ptr, struct gcov_summary *prg,
+merge_summary (const char *filename __attribute__ ((unused)), int run_counted,
+	       struct gcov_summary *prg,
 	       struct gcov_summary *this_prg, gcov_unsigned_t crc32,
 	       struct gcov_summary *all_prg __attribute__ ((unused)))
 {
-  struct gcov_ctr_summary *cs_prg, *cs_tprg;
-  unsigned t_ix;
 #if !GCOV_LOCKED 
   /* summary for all instances of program.  */ 
-  struct gcov_ctr_summary *cs_all;
+  struct gcov_summary *all;
 #endif 
 
-  /* Merge the summaries.  */
-  for (t_ix = 0; t_ix < GCOV_COUNTERS_SUMMABLE; t_ix++)
-    {
-      cs_prg = &(prg->ctrs[t_ix]);
-      cs_tprg = &(this_prg->ctrs[t_ix]);
+  /* Merge the summary.  */
+  int first = !prg->runs;
 
-      if (gi_ptr->merge[t_ix])
-        {
-	  int first = !cs_prg->runs;
-
-	  if (!run_counted)
-	    cs_prg->runs++;
-          if (first)
-            cs_prg->num = cs_tprg->num;
-          cs_prg->sum_all += cs_tprg->sum_all;
-          if (cs_prg->run_max < cs_tprg->run_max)
-            cs_prg->run_max = cs_tprg->run_max;
-          cs_prg->sum_max += cs_tprg->run_max;
-          if (first)
-            memcpy (cs_prg->histogram, cs_tprg->histogram,
-                   sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
-          else
-            gcov_histogram_merge (cs_prg->histogram, cs_tprg->histogram);
-        }
-      else if (cs_prg->runs)
-        {
-          gcov_error ("profiling:%s:Merge mismatch for summary.\n",
-                      filename);
-          return -1;
-        }
+  if (!run_counted)
+    prg->runs++;
+  if (first)
+    prg->num = this_prg->num;
+  prg->sum_all += this_prg->sum_all;
+  if (prg->run_max < this_prg->run_max)
+    prg->run_max = this_prg->run_max;
+  prg->sum_max += this_prg->run_max;
+  if (first)
+    memcpy (prg->histogram, this_prg->histogram,
+	    sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+  else
+    gcov_histogram_merge (prg->histogram, this_prg->histogram);
 #if !GCOV_LOCKED
-      cs_all = &all_prg->ctrs[t_ix];
-      if (!cs_all->runs && cs_prg->runs)
-        {
-          cs_all->num = cs_prg->num;
-          cs_all->runs = cs_prg->runs;
-          cs_all->sum_all = cs_prg->sum_all;
-          cs_all->run_max = cs_prg->run_max;
-          cs_all->sum_max = cs_prg->sum_max;
-        }
-      else if (!all_prg->checksum
-               /* Don't compare the histograms, which may have slight
-                  variations depending on the order they were updated
-                  due to the truncating integer divides used in the
-                  merge.  */
-               && (cs_all->num != cs_prg->num
-                   || cs_all->runs != cs_prg->runs
-                   || cs_all->sum_all != cs_prg->sum_all
-                   || cs_all->run_max != cs_prg->run_max
-                   || cs_all->sum_max != cs_prg->sum_max))
-             {
-               gcov_error ("profiling:%s:Data file mismatch - some "
-                           "data files may have been concurrently "
-                           "updated without locking support\n", filename);
-               all_prg->checksum = ~0u;
-             }
-#endif
+  all = all_prg;
+  if (!all->runs && prg->runs)
+    {
+      all->num = prg->num;
+      all->runs = prg->runs;
+      all->sum_all = prg->sum_all;
+      all->run_max = prg->run_max;
+      all->sum_max = prg->sum_max;
     }
-  
+  else if (!all_prg->checksum
+	   /* Don't compare the histograms, which may have slight
+	      variations depending on the order they were updated
+	      due to the truncating integer divides used in the
+	      merge.  */
+	   && (all->num != prg->num
+	       || all->runs != prg->runs
+	       || all->sum_all != prg->sum_all
+	       || all->run_max != prg->run_max
+	       || all->sum_max != prg->sum_max))
+    {
+      gcov_error ("profiling:%s:Data file mismatch - some "
+		  "data files may have been concurrently "
+		  "updated without locking support\n", filename);
+      all_prg->checksum = ~0u;
+    }
+#endif
+
   prg->checksum = crc32;
 
   return 0;
@@ -802,7 +755,7 @@ dump_one_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
       summary_pos = eof_pos;
     }
 
-  error = merge_summary (gf->filename, run_counted, gi_ptr, &prg, this_prg,
+  error = merge_summary (gf->filename, run_counted, &prg, this_prg,
 			 crc32, all_prg);
   if (error == -1)
     goto read_fatal;
@@ -838,7 +791,7 @@ gcov_do_dump (struct gcov_info *list, int run_counted)
   struct gcov_summary all_prg;
   struct gcov_summary this_prg;
 
-  crc32 = compute_summary (list, &this_prg, &gf.max_length);
+  crc32 = compute_summary (list, &this_prg);
 
   allocate_filename_struct (&gf);
 #if !GCOV_LOCKED
@@ -847,9 +800,12 @@ gcov_do_dump (struct gcov_info *list, int run_counted)
 
   /* Now merge each file.  */
   for (gi_ptr = list; gi_ptr; gi_ptr = gi_ptr->next)
-    dump_one_gcov (gi_ptr, &gf, run_counted, crc32, &all_prg, &this_prg);
+    {
+      dump_one_gcov (gi_ptr, &gf, run_counted, crc32, &all_prg, &this_prg);
+      free (gf.filename);
+    }
 
-  free (gf.filename);
+  free (gf.prefix);
 }
 
 #if IN_GCOV_TOOL

@@ -200,7 +200,7 @@ If @option{-MD} is used in conjunction with @option{-E}, any
 is understood to specify a target object file.
 
 Since @option{-E} is not implied, @option{-MD} can be used to generate
-a dependency output file as a side-effect of the compilation process.
+a dependency output file as a side effect of the compilation process.
 
 @item -MMD
 @opindex MMD
@@ -403,7 +403,7 @@ Do not discard comments, including during macro expansion.  This is
 like @option{-C}, except that comments contained within macros are
 also passed through to the output file where the macro is expanded.
 
-In addition to the side-effects of the @option{-C} option, the
+In addition to the side effects of the @option{-C} option, the
 @option{-CC} option causes all C++-style comments inside a macro
 to be converted to C-style comments.  This is to prevent later use
 of that macro from inadvertently commenting out the remainder of

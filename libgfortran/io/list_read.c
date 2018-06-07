@@ -1380,7 +1380,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   if (!isdigit (c))
     {
       /* Extension: allow default exponent of 0 when omitted.  */
-      if (dtp->common.flags & IOPARM_DT_DEFAULT_EXP)
+      if (dtp->common.flags & IOPARM_DT_DEC_EXT)
 	{
 	  push_char (dtp, '0');
 	  goto done;
@@ -1831,7 +1831,7 @@ read_real (st_parameter_dt *dtp, void *dest, int length)
   if (!isdigit (c))
     {
       /* Extension: allow default exponent of 0 when omitted.  */
-      if (dtp->common.flags & IOPARM_DT_DEFAULT_EXP)
+      if (dtp->common.flags & IOPARM_DT_DEC_EXT)
 	{
 	  push_char (dtp, '0');
 	  goto done;

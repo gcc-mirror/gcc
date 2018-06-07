@@ -1,8 +1,8 @@
 # Danish version of cpplib.
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2018 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Ole Laursen <olau@hardworking.dk>, 2001, 02, 03.
-# Joe Hansen <joedalton2@yahoo.dk>, 2015, 2016, 2017.
+# Joe Hansen <joedalton2@yahoo.dk>, 2015, 2016, 2017, 2018.
 #
 # Konventioner:
 #
@@ -128,10 +128,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 7.1-b20170101\n"
+"Project-Id-Version: cpplib 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2017-01-23 18:00+0200\n"
+"PO-Revision-Date: 2018-03-03 18:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -560,10 +560,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ugyldigt præfiks »0b« i kommatalskonstant"
 
 #: expr.c:666
-#, fuzzy
-#| msgid "use of C++1z hexadecimal floating constant"
 msgid "use of C++17 hexadecimal floating constant"
-msgstr "brug af C++1z hexadecimal kommatalskonstant"
+msgstr "brug af C++17 hexadecimal kommatalskonstant"
 
 #: expr.c:669
 msgid "use of C99 hexadecimal floating constant"
@@ -817,13 +815,11 @@ msgstr "»%.*s« er ikke i NFC"
 
 #: lex.c:1365
 msgid "__VA_OPT__ is not available until C++2a"
-msgstr ""
+msgstr "__VA_OPT__ er ikke tilgængelig før C++2a"
 
 #: lex.c:1372
-#, fuzzy
-#| msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgid "__VA_OPT__ can only appear in the expansion of a C++2a variadic macro"
-msgstr "__VA_ARGS__ kan kun optræde i udfoldelsen af en C++11-makro med vilkårligt antal parametre"
+msgstr "__VA_OPT__ kan kun optræde i udfoldelsen af en C++2a-makro med vilkårligt antal parametre"
 
 #: lex.c:1403 lex.c:1495
 #, c-format
@@ -899,10 +895,8 @@ msgid "unspellable token %s"
 msgstr "symbol %s kan ikke staves"
 
 #: macro.c:93
-#, fuzzy
-#| msgid "'##' cannot appear at either end of a macro expansion"
 msgid "'##' cannot appear at either end of __VA_OPT__"
-msgstr "»##« må ikke optræde ved nogen af enderne i en makrokrop"
+msgstr "»##« må ikke optræde ved nogen af enderne i __VA_OPT__"
 
 #: macro.c:352
 #, c-format

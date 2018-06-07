@@ -2289,7 +2289,8 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 
-#define FRAME_GROWS_DOWNWARD flag_stack_protect
+#define FRAME_GROWS_DOWNWARD (flag_stack_protect != 0			\
+			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
 
 /* Size of the area allocated in the frame to save the GP.  */
 

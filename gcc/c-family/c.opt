@@ -308,6 +308,10 @@ C ObjC C++ LTO ObjC++ Var(warn_alloc_size_limit) Warning Joined LangEnabledBy(C 
 -Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that
 attempt to allocate objects larger than the specified number of bytes.
 
+Wno-alloc-size-larger-than
+C ObjC C++ LTO ObjC++ Alias(Walloc-size-larger-than=, 18446744073709551615EiB,none) Warning
+-Wno-alloc-size-larger-than Disable Walloc-size-larger-than= warning.  Equivalent to Walloc-size-larger-than=<SIZE_MAX> or larger.
+
 Walloc-zero
 C ObjC C++ ObjC++ Var(warn_alloc_zero) Warning
 -Walloc-zero Warn for calls to allocation functions that specify zero bytes.
@@ -464,6 +468,11 @@ Wdeprecated
 C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED) Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used.
 
+Wdeprecated-copy
+C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wall)
+Mark implicitly-declared copy operations as deprecated if the class has a
+user-provided copy operation or destructor.
+
 Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
 Warn about positional initialization of structs requiring designated initializers.
@@ -602,6 +611,10 @@ Warn when there is a conversion between pointers that have incompatible types.
 Winit-self
 C ObjC C++ ObjC++ Var(warn_init_self) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about variables which are initialized to themselves.
+
+Winit-list-lifetime
+C++ ObjC++ Var(warn_init_list) Warning Init(1)
+Warn about uses of std::initializer_list that can result in dangling pointers.
 
 Wimplicit
 C ObjC Var(warn_implicit) Warning LangEnabledBy(C ObjC,Wall)
@@ -780,6 +793,11 @@ Warn about switches with boolean controlling expression.
 Wtemplates
 C++ ObjC++ Var(warn_templates) Warning
 Warn on primary template declaration.
+
+Wmissing-attributes
+C ObjC C++ ObjC++ Var(warn_missing_attributes) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about declarations of entities that may be missing attributes
+that related entities have been declared with it.
 
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Warning Alias(Wsuggest-attribute=format)
@@ -1436,8 +1454,7 @@ fexternal-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ffor-scope
-C++ ObjC++ Var(flag_new_for_scope) Init(1)
-Scope of for-init-statement variables is local to the loop.
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ffreestanding
 C ObjC C++ ObjC++
@@ -1489,8 +1506,7 @@ C++ ObjC++ Var(flag_new_inheriting_ctors) Init(1)
 Implement C++17 inheriting constructor semantics.
 
 ffriend-injection
-C++ ObjC++ Var(flag_friend_injection)
-Inject friend functions into enclosing namespace.
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fkeep-inline-dllexport
 C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)

@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-require-effective-target vect_double }
-! { dg-options "-O3 --param vect-max-peeling-for-alignment=0 -fpredictive-commoning -fdump-tree-pcom-details" }
+! { dg-options "-O3 --param vect-max-peeling-for-alignment=0 -fpredictive-commoning -fdump-tree-pcom-details -std=legacy" }
 ! { dg-additional-options "-mprefer-avx128" { target { i?86-*-* x86_64-*-* } } }
 ! { dg-additional-options "-mzarch" { target { s390*-*-* } } }
 

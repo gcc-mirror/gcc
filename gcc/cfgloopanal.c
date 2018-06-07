@@ -230,12 +230,17 @@ average_num_loop_insns (const struct loop *loop)
 }
 
 /* Returns expected number of iterations of LOOP, according to
-   measured or guessed profile.  No bounding is done on the
-   value.  */
+   measured or guessed profile.
+
+   This functions attempts to return "sane" value even if profile
+   information is not good enough to derive osmething.
+   If BY_PROFILE_ONLY is set, this logic is bypassed and function
+   return -1 in those scenarios.  */
 
 gcov_type
 expected_loop_iterations_unbounded (const struct loop *loop,
-				    bool *read_profile_p)
+				    bool *read_profile_p,
+				    bool by_profile_only)
 {
   edge e;
   edge_iterator ei;
@@ -246,7 +251,11 @@ expected_loop_iterations_unbounded (const struct loop *loop,
 
   /* If we have no profile at all, use AVG_LOOP_NITER.  */
   if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
-    expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+    {
+      if (by_profile_only)
+	return -1;
+      expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+    }
   else if (loop->latch && (loop->latch->count.initialized_p ()
 			   || loop->header->count.initialized_p ()))
     {
@@ -260,9 +269,17 @@ expected_loop_iterations_unbounded (const struct loop *loop,
 	  count_in += e->count ();
 
       if (!count_latch.initialized_p ())
-	expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+	{
+          if (by_profile_only)
+	    return -1;
+	  expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+	}
       else if (!count_in.nonzero_p ())
-	expected = count_latch.to_gcov_type () * 2;
+	{
+          if (by_profile_only)
+	    return -1;
+	  expected = count_latch.to_gcov_type () * 2;
+	}
       else
 	{
 	  expected = (count_latch.to_gcov_type () + count_in.to_gcov_type ()
@@ -273,11 +290,18 @@ expected_loop_iterations_unbounded (const struct loop *loop,
 	}
     }
   else
-    expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+    {
+      if (by_profile_only)
+	return -1;
+      expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+    }
 
-  HOST_WIDE_INT max = get_max_loop_iterations_int (loop);
-  if (max != -1 && max < expected)
-    return max;
+  if (!by_profile_only)
+    {
+      HOST_WIDE_INT max = get_max_loop_iterations_int (loop);
+      if (max != -1 && max < expected)
+        return max;
+    }
  
   return expected;
 }

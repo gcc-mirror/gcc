@@ -590,6 +590,15 @@ scop_detection::add_scop (sese_l s)
 {
   gcc_assert (s);
 
+  /* If the exit edge is fake discard the SCoP for now as we're removing the
+     fake edges again after analysis.  */
+  if (s.exit->flags & EDGE_FAKE)
+    {
+      DEBUG_PRINT (dp << "[scop-detection-fail] Discarding infinite loop SCoP: ";
+		   print_sese (dump_file, s));
+      return;
+    }
+
   /* Include the BB with the loop-closed SSA PHI nodes, we need this
      block in the region for code-generating out-of-SSA copies.
      canonicalize_loop_closed_ssa makes sure that is in proper shape.  */
@@ -1028,16 +1037,23 @@ scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
     case GIMPLE_ASSIGN:
     case GIMPLE_CALL:
       {
-	tree op;
+	tree op, lhs = gimple_get_lhs (stmt);
 	ssa_op_iter i;
+	/* If we are not going to instantiate the stmt do not require
+	   its operands to be instantiatable at this point.  */
+	if (lhs
+	    && TREE_CODE (lhs) == SSA_NAME
+	    && scev_analyzable_p (lhs, scop))
+	  return true;
 	/* Verify that if we can analyze operands at their def site we
 	   also can represent them when analyzed at their uses.  */
 	FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
 	  if (scev_analyzable_p (op, scop)
-	      && !graphite_can_represent_expr (scop, bb->loop_father, op))
+	      && chrec_contains_undetermined
+		   (scalar_evolution_in_region (scop, bb->loop_father, op)))
 	    {
 	      DEBUG_PRINT (dp << "[scop-detection-fail] "
-			   << "Graphite cannot represent stmt:\n";
+			   << "Graphite cannot code-gen stmt:\n";
 			   print_gimple_stmt (dump_file, stmt, 0,
 					      TDF_VOPS | TDF_MEMSYMS));
 	      return false;
@@ -1160,13 +1176,15 @@ find_params_in_bb (sese_info_p region, gimple_poly_bb_p gbb)
 
   /* Find parameters in conditional statements.  */
   gimple *stmt;
-  loop_p loop = GBB_BB (gbb)->loop_father;
   FOR_EACH_VEC_ELT (GBB_CONDITIONS (gbb), i, stmt)
     {
+      loop_p loop = gimple_bb (stmt)->loop_father;
       tree lhs = scalar_evolution_in_region (region->region, loop,
 					     gimple_cond_lhs (stmt));
       tree rhs = scalar_evolution_in_region (region->region, loop,
 					     gimple_cond_rhs (stmt));
+      gcc_assert (!chrec_contains_undetermined (lhs)
+		  && !chrec_contains_undetermined (rhs));
 
       scan_tree_for_params (region, lhs);
       scan_tree_for_params (region, rhs);

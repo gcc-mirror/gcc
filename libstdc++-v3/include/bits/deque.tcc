@@ -291,7 +291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		    std::input_iterator_tag)
       {
         iterator __cur = begin();
-        for (; __first != __last && __cur != end(); ++__cur, ++__first)
+        for (; __first != __last && __cur != end(); ++__cur, (void)++__first)
           *__cur = *__first;
         if (__first == __last)
           _M_erase_at_end(__cur);

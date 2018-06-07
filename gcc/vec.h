@@ -490,12 +490,23 @@ template <typename T>
 inline void
 vec_default_construct (T *dst, unsigned n)
 {
-#ifndef BROKEN_VALUE_INITIALIZATION
-  for ( ; n; ++dst, --n)
-    ::new (static_cast<void*>(dst)) T ();
-#else
+#ifdef BROKEN_VALUE_INITIALIZATION
+  /* Versions of GCC before 4.4 sometimes leave certain objects
+     uninitialized when value initialized, though if the type has
+     user defined default ctor, that ctor is invoked.  As a workaround
+     perform clearing first and then the value initialization, which
+     fixes the case when value initialization doesn't initialize due to
+     the bugs and should initialize to all zeros, but still allows
+     vectors for types with user defined default ctor that initializes
+     some or all elements to non-zero.  If T has no user defined
+     default ctor and some non-static data members have user defined
+     default ctors that initialize to non-zero the workaround will
+     still not work properly; in that case we just need to provide
+     user defined default ctor.  */
   memset (dst, '\0', sizeof (T) * n);
 #endif
+  for ( ; n; ++dst, --n)
+    ::new (static_cast<void*>(dst)) T ();
 }
 
 /* Copy-construct N elements in DST from *SRC.  */
@@ -1017,6 +1028,40 @@ vec<T, A, vl_embed>::ordered_remove (unsigned ix)
 }
 
 
+/* Remove elements in [START, END) from VEC for which COND holds.  Ordering of
+   remaining elements is preserved.  This is an O(N) operation.  */
+
+#define VEC_ORDERED_REMOVE_IF_FROM_TO(vec, read_index, write_index,	\
+				      elem_ptr, start, end, cond)	\
+  {									\
+    gcc_assert ((end) <= (vec).length ());				\
+    for (read_index = write_index = (start); read_index < (end);	\
+	 ++read_index)							\
+      {									\
+	elem_ptr = &(vec)[read_index];					\
+	bool remove_p = (cond);						\
+	if (remove_p)							\
+	  continue;							\
+									\
+	if (read_index != write_index)					\
+	  (vec)[write_index] = (vec)[read_index];			\
+									\
+	write_index++;							\
+      }									\
+									\
+    if (read_index - write_index > 0)					\
+      (vec).block_remove (write_index, read_index - write_index);	\
+  }
+
+
+/* Remove elements from VEC for which COND holds.  Ordering of remaining
+   elements is preserved.  This is an O(N) operation.  */
+
+#define VEC_ORDERED_REMOVE_IF(vec, read_index, write_index, elem_ptr,	\
+			      cond)					\
+  VEC_ORDERED_REMOVE_IF_FROM_TO ((vec), read_index, write_index,	\
+				 elem_ptr, 0, (vec).length (), (cond))
+
 /* Remove an element from the IXth position of this vector.  Ordering of
    remaining elements is destroyed.  This is an O(1) operation.  */
 
@@ -1344,6 +1389,7 @@ public:
   T *bsearch (const void *key, int (*compar)(const void *, const void *));
   unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
   bool contains (const T &search) const;
+  void reverse (void);
 
   bool using_auto_storage () const;
 
@@ -1853,6 +1899,19 @@ inline bool
 vec<T, va_heap, vl_ptr>::contains (const T &search) const
 {
   return m_vec ? m_vec->contains (search) : false;
+}
+
+/* Reverse content of the vector.  */
+
+template<typename T>
+inline void
+vec<T, va_heap, vl_ptr>::reverse (void)
+{
+  unsigned l = length ();
+  T *ptr = address ();
+
+  for (unsigned i = 0; i < l / 2; i++)
+    std::swap (ptr[i], ptr[l - i - 1]);
 }
 
 template<typename T>

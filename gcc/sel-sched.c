@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "regs.h"
 #include "cfgbuild.h"
+#include "cfgcleanup.h"
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "params.h"
@@ -5004,12 +5005,16 @@ remove_temp_moveop_nops (bool full_tidying)
    distinguishing between bookkeeping copies and original insns.  */
 static int max_uid_before_move_op = 0;
 
+/* When true, we're always scheduling next insn on the already scheduled code
+   to get the right insn data for the following bundling or other passes.  */
+static int force_next_insn = 0;
+
 /* Remove from AV_VLIW_P all instructions but next when debug counter
    tells us so.  Next instruction is fetched from BNDS.  */
 static void
 remove_insns_for_debug (blist_t bnds, av_set_t *av_vliw_p)
 {
-  if (! dbg_cnt (sel_sched_insn_cnt))
+  if (! dbg_cnt (sel_sched_insn_cnt) || force_next_insn)
     /* Leave only the next insn in av_vliw.  */
     {
       av_set_iterator av_it;
@@ -7641,9 +7646,15 @@ sel_sched_region (int rgn)
   if (schedule_p)
     sel_sched_region_1 ();
   else
-    /* Force initialization of INSN_SCHED_CYCLEs for correct bundling.  */
-    reset_sched_cycles_p = true;
-
+    {
+      /* Schedule always selecting the next insn to make the correct data
+	 for bundling or other later passes.  */
+      pipelining_p = false;
+      force_next_insn = 1;
+      sel_sched_region_1 ();
+      force_next_insn = 0;
+    }
+  reset_sched_cycles_p = pipelining_p;
   sel_region_finish (reset_sched_cycles_p);
 }
 
@@ -7651,6 +7662,10 @@ sel_sched_region (int rgn)
 static void
 sel_global_init (void)
 {
+  /* Remove empty blocks: their presence can break assumptions elsewhere,
+     e.g. the logic to invoke update_liveness_on_insn in sel_region_init.  */
+  cleanup_cfg (0);
+
   calculate_dominance_info (CDI_DOMINATORS);
   alloc_sched_pools ();
 

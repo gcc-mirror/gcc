@@ -43,6 +43,7 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
+with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -171,6 +172,25 @@ package body Exp_Unst is
          end if;
       end loop;
    end Get_Level;
+
+   --------------------------
+   -- In_Synchronized_Unit --
+   --------------------------
+
+   function In_Synchronized_Unit (Subp : Entity_Id) return Boolean is
+      S : Entity_Id := Scope (Subp);
+
+   begin
+      while Present (S) and then S /= Standard_Standard loop
+         if Is_Concurrent_Type (S) then
+            return True;
+         end if;
+
+         S := Scope (S);
+      end loop;
+
+      return False;
+   end In_Synchronized_Unit;
 
    ----------------
    -- Subp_Index --
@@ -312,9 +332,9 @@ package body Exp_Unst is
          return;
       end if;
 
-      --  At least for now, do not unnest anything but main source unit
+      --  Only unnest when generating code for the main source unit
 
-      if not In_Extended_Main_Source_Unit (Subp_Body) then
+      if not In_Extended_Main_Code_Unit (Subp_Body) then
          return;
       end if;
 
@@ -366,54 +386,96 @@ package body Exp_Unst is
             Caller : Entity_Id;
             Callee : Entity_Id;
 
-            procedure Check_Static_Type (T : Entity_Id; DT : in out Boolean);
+            procedure Check_Static_Type
+              (T : Entity_Id; N : Node_Id; DT : in out Boolean);
             --  Given a type T, checks if it is a static type defined as a type
             --  with no dynamic bounds in sight. If so, the only action is to
             --  set Is_Static_Type True for T. If T is not a static type, then
             --  all types with dynamic bounds associated with T are detected,
             --  and their bounds are marked as uplevel referenced if not at the
-            --  library level, and DT is set True.
+            --  library level, and DT is set True. If N is specified, it's the
+            --  node that will need to be replaced. If not specified, it means
+            --  we can't do a replacement because the bound is implicit.
 
             procedure Note_Uplevel_Ref
               (E      : Entity_Id;
+               N      : Node_Id;
                Caller : Entity_Id;
                Callee : Entity_Id);
             --  Called when we detect an explicit or implicit uplevel reference
             --  from within Caller to entity E declared in Callee. E can be a
             --  an object or a type.
 
+            procedure Register_Subprogram (E : Entity_Id; Bod : Node_Id);
+            --  Enter a subprogram whose body is visible or which is a
+            --  subprogram instance into the subprogram table.
+
             -----------------------
             -- Check_Static_Type --
             -----------------------
 
-            procedure Check_Static_Type (T : Entity_Id; DT : in out Boolean) is
-               procedure Note_Uplevel_Bound (N : Node_Id);
+            procedure Check_Static_Type
+              (T : Entity_Id; N : Node_Id; DT : in out Boolean)
+            is
+               procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id);
                --  N is the bound of a dynamic type. This procedure notes that
                --  this bound is uplevel referenced, it can handle references
                --  to entities (typically _FIRST and _LAST entities), and also
                --  attribute references of the form T'name (name is typically
                --  FIRST or LAST) where T is the uplevel referenced bound.
+               --  Ref, if Present, is the location of the reference to
+               --  replace.
 
                ------------------------
                -- Note_Uplevel_Bound --
                ------------------------
 
-               procedure Note_Uplevel_Bound (N : Node_Id) is
+               procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id) is
                begin
-                  --  Entity name case
+                  --  Entity name case. Make sure that the entity is declared
+                  --  in a subprogram. This may not be the case for for a type
+                  --  in a loop appearing in a precondition.
+                  --  Exclude explicitly  discriminants (that can appear
+                  --  in bounds of discriminated components).
 
                   if Is_Entity_Name (N) then
-                     if Present (Entity (N)) then
+                     if Present (Entity (N))
+                       and then Present (Enclosing_Subprogram (Entity (N)))
+                       and then Ekind (Entity (N)) /= E_Discriminant
+                     then
                         Note_Uplevel_Ref
                           (E      => Entity (N),
+                           N      => Ref,
                            Caller => Current_Subprogram,
                            Callee => Enclosing_Subprogram (Entity (N)));
                      end if;
 
-                  --  Attribute case
+                  --  Attribute or indexed component case
 
-                  elsif Nkind (N) = N_Attribute_Reference then
-                     Note_Uplevel_Bound (Prefix (N));
+                  elsif Nkind_In (N, N_Attribute_Reference,
+                                     N_Indexed_Component)
+                  then
+                     Note_Uplevel_Bound (Prefix (N), Ref);
+
+                     --  The indices of the indexed components, or the
+                     --  associated expressions of an attribute reference,
+                     --  may also involve uplevel references.
+
+                     declare
+                        Expr : Node_Id;
+
+                     begin
+                        Expr := First (Expressions (N));
+                        while Present (Expr) loop
+                           Note_Uplevel_Bound (Expr, Ref);
+                           Next (Expr);
+                        end loop;
+                     end;
+
+                  --  Conversion case
+
+                  elsif Nkind (N) = N_Type_Conversion then
+                     Note_Uplevel_Bound (Expression (N), Ref);
                   end if;
                end Note_Uplevel_Bound;
 
@@ -448,27 +510,44 @@ package body Exp_Unst is
 
                   begin
                      if not Is_Static_Expression (LB) then
-                        Note_Uplevel_Bound (LB);
+                        Note_Uplevel_Bound (LB, N);
                         DT := True;
                      end if;
 
                      if not Is_Static_Expression (UB) then
-                        Note_Uplevel_Bound (UB);
+                        Note_Uplevel_Bound (UB, N);
                         DT := True;
                      end if;
                   end;
 
-               --  For record type, check all components
+               --  For record type, check all components and discriminant
+               --  constraints if present.
 
                elsif Is_Record_Type (T) then
                   declare
                      C : Entity_Id;
+                     D : Elmt_Id;
+
                   begin
                      C := First_Component_Or_Discriminant (T);
                      while Present (C) loop
-                        Check_Static_Type (Etype (C), DT);
+                        Check_Static_Type (Etype (C), N, DT);
                         Next_Component_Or_Discriminant (C);
                      end loop;
+
+                     if Has_Discriminants (T)
+                       and then Present (Discriminant_Constraint (T))
+                     then
+                        D := First_Elmt (Discriminant_Constraint (T));
+                        while Present (D) loop
+                           if not Is_Static_Expression (Node (D)) then
+                              Note_Uplevel_Bound (Node (D), N);
+                              DT := True;
+                           end if;
+
+                           Next_Elmt (D);
+                        end loop;
+                     end if;
                   end;
 
                --  For array type, check index types and component type
@@ -477,11 +556,11 @@ package body Exp_Unst is
                   declare
                      IX : Node_Id;
                   begin
-                     Check_Static_Type (Component_Type (T), DT);
+                     Check_Static_Type (Component_Type (T), N, DT);
 
                      IX := First_Index (T);
                      while Present (IX) loop
-                        Check_Static_Type (Etype (IX), DT);
+                        Check_Static_Type (Etype (IX), N, DT);
                         Next_Index (IX);
                      end loop;
                   end;
@@ -489,7 +568,7 @@ package body Exp_Unst is
                --  For private type, examine whether full view is static
 
                elsif Is_Private_Type (T) and then Present (Full_View (T)) then
-                  Check_Static_Type (Full_View (T), DT);
+                  Check_Static_Type (Full_View (T), N, DT);
 
                   if Is_Static_Type (Full_View (T)) then
                      Set_Is_Static_Type (T);
@@ -512,9 +591,11 @@ package body Exp_Unst is
 
             procedure Note_Uplevel_Ref
               (E      : Entity_Id;
+               N      : Node_Id;
                Caller : Entity_Id;
                Callee : Entity_Id)
             is
+               Full_E : Entity_Id := E;
             begin
                --  Nothing to do for static type
 
@@ -540,227 +621,388 @@ package body Exp_Unst is
 
                --  We have a new uplevel referenced entity
 
+               if Ekind (E) = E_Constant and then Present (Full_View (E)) then
+                  Full_E := Full_View (E);
+               end if;
+
                --  All we do at this stage is to add the uplevel reference to
                --  the table. It's too early to do anything else, since this
                --  uplevel reference may come from an unreachable subprogram
                --  in which case the entry will be deleted.
 
-               Urefs.Append ((N, E, Caller, Callee));
+               Urefs.Append ((N, Full_E, Caller, Callee));
             end Note_Uplevel_Ref;
+
+            -------------------------
+            -- Register_Subprogram --
+            -------------------------
+
+            procedure Register_Subprogram (E : Entity_Id; Bod : Node_Id) is
+               L : constant Nat := Get_Level (Subp, E);
+
+            begin
+               Subps.Append
+                 ((Ent           => E,
+                   Bod           => Bod,
+                   Lev           => L,
+                   Reachable     => False,
+                   Uplevel_Ref   => L,
+                   Declares_AREC => False,
+                   Uents         => No_Elist,
+                   Last          => 0,
+                   ARECnF        => Empty,
+                   ARECn         => Empty,
+                   ARECnT        => Empty,
+                   ARECnPT       => Empty,
+                   ARECnP        => Empty,
+                   ARECnU        => Empty));
+
+               Set_Subps_Index (E, UI_From_Int (Subps.Last));
+            end Register_Subprogram;
 
          --  Start of processing for Visit_Node
 
          begin
-            --  Record a call
+            case Nkind (N) is
 
-            if Nkind_In (N, N_Procedure_Call_Statement, N_Function_Call)
+               --  Record a subprogram call
 
-              --  We are only interested in direct calls, not indirect calls
-              --  (where Name (N) is an explicit dereference) at least for now!
+               when N_Function_Call
+                  | N_Procedure_Call_Statement
+               =>
+                  --  We are only interested in direct calls, not indirect
+                  --  calls (where Name (N) is an explicit dereference) at
+                  --  least for now!
 
-              and then Nkind (Name (N)) in N_Has_Entity
-            then
-               Ent := Entity (Name (N));
+                  if Nkind (Name (N)) in N_Has_Entity then
+                     Ent := Entity (Name (N));
 
-               --  We are only interested in calls to subprograms nested
-               --  within Subp. Calls to Subp itself or to subprograms
-               --  that are outside the nested structure do not affect us.
+                     --  We are only interested in calls to subprograms nested
+                     --  within Subp. Calls to Subp itself or to subprograms
+                     --  outside the nested structure do not affect us.
 
-               if Scope_Within (Ent, Subp) then
-
-                  --  Ignore calls to imported routines
-
-                  if Is_Imported (Ent) then
-                     null;
-
-                  --  Here we have a call to keep and analyze
-
-                  else
-                     --  Both caller and callee must be subprograms
-
-                     if Is_Subprogram (Ent) then
+                     if Scope_Within (Ent, Subp)
+                        and then Is_Subprogram (Ent)
+                        and then not Is_Imported (Ent)
+                     then
                         Append_Unique_Call ((N, Current_Subprogram, Ent));
                      end if;
                   end if;
-               end if;
 
-            --  Record a 'Access as a (potential) call
+                  --  For all calls where the formal is an unconstrained array
+                  --  and the actual is constrained we need to check the bounds
+                  --  for uplevel references.
 
-            elsif Nkind (N) = N_Attribute_Reference then
-               declare
-                  Attr : constant Attribute_Id :=
-                           Get_Attribute_Id (Attribute_Name (N));
-               begin
-                  case Attr is
-                     when Attribute_Access
-                        | Attribute_Unchecked_Access
-                        | Attribute_Unrestricted_Access
-                     =>
-                        if Nkind (Prefix (N)) in N_Has_Entity then
-                           Ent := Entity (Prefix (N));
+                  declare
+                     Actual : Entity_Id;
+                     DT     : Boolean := False;
+                     Formal : Node_Id;
+                     Subp   : Entity_Id;
 
-                           --  We are only interested in calls to subprograms
-                           --  nested within Subp.
+                  begin
+                     if Nkind (Name (N)) = N_Explicit_Dereference then
+                        Subp := Etype (Name (N));
+                     else
+                        Subp := Entity (Name (N));
+                     end if;
 
-                           if Scope_Within (Ent, Subp) then
-                              if Is_Imported (Ent) then
-                                 null;
+                     Actual := First_Actual (N);
+                     Formal := First_Formal_With_Extras (Subp);
+                     while Present (Actual) loop
+                        if Is_Array_Type (Etype (Formal))
+                          and then not Is_Constrained (Etype (Formal))
+                          and then Is_Constrained (Etype (Actual))
+                        then
+                           Check_Static_Type (Etype (Actual), Empty, DT);
+                        end if;
 
-                              elsif Is_Subprogram (Ent) then
-                                 Append_Unique_Call
-                                   ((N, Current_Subprogram, Ent));
+                        Next_Actual (Actual);
+                        Next_Formal_With_Extras (Formal);
+                     end loop;
+                  end;
+
+               --  An At_End_Proc in a statement sequence indicates that there
+               --  is a call from the enclosing construct or block to that
+               --  subprogram. As above, the called entity must be local and
+               --  not imported.
+
+               when N_Handled_Sequence_Of_Statements =>
+                  if Present (At_End_Proc (N))
+                    and then Scope_Within (Entity (At_End_Proc (N)), Subp)
+                    and then not Is_Imported (Entity (At_End_Proc (N)))
+                  then
+                     Append_Unique_Call
+                       ((N, Current_Subprogram, Entity (At_End_Proc (N))));
+                  end if;
+
+               --  Similarly, the following constructs include a semantic
+               --  attribute Procedure_To_Call that must be handled like
+               --  other calls.
+
+               when N_Allocator
+                  | N_Extended_Return_Statement
+                  | N_Free_Statement
+                  | N_Simple_Return_Statement
+               =>
+                  declare
+                     Proc : constant Entity_Id := Procedure_To_Call (N);
+                  begin
+                     if Present (Proc)
+                       and then Scope_Within (Proc, Subp)
+                       and then not Is_Imported (Proc)
+                     then
+                        Append_Unique_Call ((N, Current_Subprogram, Proc));
+                     end if;
+                  end;
+
+               --  A 'Access reference is a (potential) call. Other attributes
+               --  require special handling.
+
+               when N_Attribute_Reference =>
+                  declare
+                     Attr : constant Attribute_Id :=
+                              Get_Attribute_Id (Attribute_Name (N));
+                  begin
+                     case Attr is
+                        when Attribute_Access
+                           | Attribute_Unchecked_Access
+                           | Attribute_Unrestricted_Access
+                        =>
+                           if Nkind (Prefix (N)) in N_Has_Entity then
+                              Ent := Entity (Prefix (N));
+
+                              --  We only need to examine calls to subprograms
+                              --  nested within current Subp.
+
+                              if Scope_Within (Ent, Subp) then
+                                 if Is_Imported (Ent) then
+                                    null;
+
+                                 elsif Is_Subprogram (Ent) then
+                                    Append_Unique_Call
+                                      ((N, Current_Subprogram, Ent));
+                                 end if;
                               end if;
                            end if;
-                        end if;
 
-                     when others =>
-                        null;
-                  end case;
-               end;
+                        --  References to bounds can be uplevel references if
+                        --  the type isn't static.
 
-            --  Record a subprogram. We record a subprogram body that acts as
-            --  a spec. Otherwise we record a subprogram declaration, providing
-            --  that it has a corresponding body we can get hold of. The case
-            --  of no corresponding body being available is ignored for now.
+                        when Attribute_First
+                           | Attribute_Last
+                           | Attribute_Length
+                        =>
+                           --  Special-case attributes of objects whose bounds
+                           --  may be uplevel references. More complex prefixes
+                           --  handled during full traversal. Note that if the
+                           --  nominal subtype of the prefix is unconstrained,
+                           --  the bound must be obtained from the object, not
+                           --  from the (possibly) uplevel reference.
 
-            elsif Nkind (N) = N_Subprogram_Body then
-               Ent := Unique_Defining_Entity (N);
+                           if Is_Constrained (Etype (Prefix (N))) then
+                              declare
+                                 DT : Boolean := False;
+                              begin
+                                 Check_Static_Type
+                                   (Etype (Prefix (N)), Empty, DT);
+                              end;
 
-               --  Ignore generic subprogram
+                              return OK;
+                           end if;
 
-               if Is_Generic_Subprogram (Ent) then
-                  return Skip;
-               end if;
+                        when others =>
+                           null;
+                     end case;
+                  end;
 
-               --  Make new entry in subprogram table if not already made
+               --  Component associations in aggregates are either static or
+               --  else the aggregate will be expanded into assignments, in
+               --  which case the expression is analyzed later and provides
+               --  no relevant code generation.
 
-               declare
-                  L : constant Nat := Get_Level (Subp, Ent);
-               begin
-                  Subps.Append
-                    ((Ent           => Ent,
-                      Bod           => N,
-                      Lev           => L,
-                      Reachable     => False,
-                      Uplevel_Ref   => L,
-                      Declares_AREC => False,
-                      Uents         => No_Elist,
-                      Last          => 0,
-                      ARECnF        => Empty,
-                      ARECn         => Empty,
-                      ARECnT        => Empty,
-                      ARECnPT       => Empty,
-                      ARECnP        => Empty,
-                      ARECnU        => Empty));
-                  Set_Subps_Index (Ent, UI_From_Int (Subps.Last));
-               end;
+               when N_Component_Association =>
+                  if No (Etype (Expression (N))) then
+                     return Skip;
+                  end if;
 
-               --  We make a recursive call to scan the subprogram body, so
-               --  that we can save and restore Current_Subprogram.
+               --  Indexed references can be uplevel if the type isn't static
+               --  and if the lower bound (or an inner bound for a multi-
+               --  dimensional array) is uplevel.
 
-               declare
-                  Save_CS : constant Entity_Id := Current_Subprogram;
-                  Decl    : Node_Id;
-
-               begin
-                  Current_Subprogram := Ent;
-
-                  --  Scan declarations
-
-                  Decl := First (Declarations (N));
-                  while Present (Decl) loop
-                     Visit (Decl);
-                     Next (Decl);
-                  end loop;
-
-                  --  Scan statements
-
-                  Visit (Handled_Statement_Sequence (N));
-
-                  --  Restore current subprogram setting
-
-                  Current_Subprogram := Save_CS;
-               end;
-
-               --  Now at this level, return skipping the subprogram body
-               --  descendants, since we already took care of them!
-
-               return Skip;
-
-            --  Record an uplevel reference
-
-            elsif Nkind (N) in N_Has_Entity and then Present (Entity (N)) then
-               Ent := Entity (N);
-
-               --  Only interested in entities declared within our nest
-
-               if not Is_Library_Level_Entity (Ent)
-                 and then Scope_Within_Or_Same (Scope (Ent), Subp)
-
-                  --  Skip entities defined in inlined subprograms
-
-                 and then Chars (Enclosing_Subprogram (Ent)) /= Name_uParent
-                 and then
-
-                   --  Constants and variables are interesting
-
-                   (Ekind_In (Ent, E_Constant, E_Variable)
-
-                     --  Formals are interesting, but not if being used as mere
-                     --  names of parameters for name notation calls.
-
-                     or else
-                       (Is_Formal (Ent)
-                         and then not
-                          (Nkind (Parent (N)) = N_Parameter_Association
-                            and then Selector_Name (Parent (N)) = N))
-
-                     --  Types other than known Is_Static types are interesting
-
-                     or else (Is_Type (Ent)
-                               and then not Is_Static_Type (Ent)))
-               then
-                  --  Here we have a possible interesting uplevel reference
-
-                  if Is_Type (Ent) then
+               when N_Indexed_Component | N_Slice =>
+                  if Is_Constrained (Etype (Prefix (N))) then
                      declare
                         DT : Boolean := False;
-
                      begin
-                        Check_Static_Type (Ent, DT);
-
-                        if Is_Static_Type (Ent) then
-                           return OK;
-                        end if;
+                        Check_Static_Type (Etype (Prefix (N)), Empty, DT);
                      end;
                   end if;
 
-                  Caller := Current_Subprogram;
-                  Callee := Enclosing_Subprogram (Ent);
+                  --  A selected component can have an implicit up-level
+                  --  reference due to the bounds of previous fields in the
+                  --  record. We simplify the processing here by examining
+                  --  all components of the record.
 
-                  if Callee /= Caller and then not Is_Static_Type (Ent) then
-                     Note_Uplevel_Ref (Ent, Caller, Callee);
+                  --  Selected components appear as unit names and end labels
+                  --  for child units. Prefixes of these nodes denote parent
+                  --  units and carry no type information so they are skipped.
+
+               when N_Selected_Component =>
+                  if Present (Etype (Prefix (N))) then
+                     declare
+                        DT : Boolean := False;
+                     begin
+                        Check_Static_Type (Etype (Prefix (N)), Empty, DT);
+                     end;
                   end if;
-               end if;
 
-            --  If we have a body stub, visit the associated subunit
+               --  Record a subprogram. We record a subprogram body that acts
+               --  as a spec. Otherwise we record a subprogram declaration,
+               --  providing that it has a corresponding body we can get hold
+               --  of. The case of no corresponding body being available is
+               --  ignored for now.
 
-            elsif Nkind (N) in N_Body_Stub then
-               Visit (Library_Unit (N));
+               when N_Subprogram_Body =>
+                  Ent := Unique_Defining_Entity (N);
 
-            --  Skip generic declarations
+                  --  Ignore generic subprogram
 
-            elsif Nkind (N) in N_Generic_Declaration then
-               return Skip;
+                  if Is_Generic_Subprogram (Ent) then
+                     return Skip;
+                  end if;
 
-            --  Skip generic package body
+                  --  Make new entry in subprogram table if not already made
 
-            elsif Nkind (N) = N_Package_Body
-              and then Present (Corresponding_Spec (N))
-              and then Ekind (Corresponding_Spec (N)) = E_Generic_Package
-            then
-               return Skip;
-            end if;
+                  Register_Subprogram (Ent, N);
+
+                  --  We make a recursive call to scan the subprogram body, so
+                  --  that we can save and restore Current_Subprogram.
+
+                  declare
+                     Save_CS : constant Entity_Id := Current_Subprogram;
+                     Decl    : Node_Id;
+
+                  begin
+                     Current_Subprogram := Ent;
+
+                     --  Scan declarations
+
+                     Decl := First (Declarations (N));
+                     while Present (Decl) loop
+                        Visit (Decl);
+                        Next (Decl);
+                     end loop;
+
+                     --  Scan statements
+
+                     Visit (Handled_Statement_Sequence (N));
+
+                     --  Restore current subprogram setting
+
+                     Current_Subprogram := Save_CS;
+                  end;
+
+                  --  Now at this level, return skipping the subprogram body
+                  --  descendants, since we already took care of them!
+
+                  return Skip;
+
+               --  If we have a body stub, visit the associated subunit, which
+               --  is a semantic descendant of the stub.
+
+               when N_Body_Stub =>
+                  Visit (Library_Unit (N));
+
+               --  A declaration of a wrapper package indicates a subprogram
+               --  instance for which there is no explicit body. Enter the
+               --  subprogram instance in the table.
+
+               when N_Package_Declaration =>
+                  if Is_Wrapper_Package (Defining_Entity (N)) then
+                     Register_Subprogram
+                       (Related_Instance (Defining_Entity (N)), Empty);
+                  end if;
+
+               --  Skip generic declarations
+
+               when N_Generic_Declaration =>
+                  return Skip;
+
+               --  Skip generic package body
+
+               when N_Package_Body =>
+                  if Present (Corresponding_Spec (N))
+                    and then Ekind (Corresponding_Spec (N)) = E_Generic_Package
+                  then
+                     return Skip;
+                  end if;
+
+               --  Otherwise record an uplevel reference
+
+               when others =>
+                  if Nkind (N) in N_Has_Entity
+                    and then Present (Entity (N))
+                  then
+                     Ent := Entity (N);
+
+                     --  Only interested in entities declared within our nest
+
+                     if not Is_Library_Level_Entity (Ent)
+                       and then Scope_Within_Or_Same (Scope (Ent), Subp)
+
+                        --  Skip entities defined in inlined subprograms
+
+                       and then
+                         Chars (Enclosing_Subprogram (Ent)) /= Name_uParent
+
+                        --  Constants and variables are potentially uplevel
+                        --  references to global declarations.
+
+                       and then
+                         (Ekind_In (Ent, E_Constant, E_Variable)
+
+                        --  Formals are interesting, but not if being used as
+                        --  mere names of parameters for name notation calls.
+
+                        or else
+                          (Is_Formal (Ent)
+                            and then not
+                             (Nkind (Parent (N)) = N_Parameter_Association
+                               and then Selector_Name (Parent (N)) = N))
+
+                        --  Types other than known Is_Static types are
+                        --  potentially interesting.
+
+                        or else (Is_Type (Ent)
+                                  and then not Is_Static_Type (Ent)))
+                     then
+                        --  Here we have a potentially interesting uplevel
+                        --  reference to examine.
+
+                        if Is_Type (Ent) then
+                           declare
+                              DT : Boolean := False;
+
+                           begin
+                              Check_Static_Type (Ent, N, DT);
+
+                              if Is_Static_Type (Ent) then
+                                 return OK;
+                              end if;
+                           end;
+                        end if;
+
+                        Caller := Current_Subprogram;
+                        Callee := Enclosing_Subprogram (Ent);
+
+                        if Callee /= Caller
+                          and then not Is_Static_Type (Ent)
+                        then
+                           Note_Uplevel_Ref (Ent, N, Caller, Callee);
+                        end if;
+                     end if;
+                  end if;
+            end case;
 
             --  Fall through to continue scanning children of this node
 
@@ -897,8 +1139,12 @@ package body Exp_Unst is
                   --  to objects that will be referenced uplevel, and we use
                   --  the flag Is_Uplevel_Referenced_Entity to avoid making
                   --  duplicate entries in the list.
+                  --  Discriminants are also excluded, only the enclosing
+                  --  object can appear in the list.
 
-                  if not Is_Uplevel_Referenced_Entity (URJ.Ent) then
+                  if not Is_Uplevel_Referenced_Entity (URJ.Ent)
+                    and then Ekind (URJ.Ent) /= E_Discriminant
+                  then
                      Set_Is_Uplevel_Referenced_Entity (URJ.Ent);
 
                      if not Is_Type (URJ.Ent) then
@@ -934,6 +1180,13 @@ package body Exp_Unst is
                Decl : Node_Id;
 
             begin
+               --  Subprograms declared in tasks and protected types
+               --  are reachable and cannot be eliminated.
+
+               if In_Synchronized_Unit (STJ.Ent) then
+                  STJ.Reachable := True;
+               end if;
+
                --  Subprogram is reachable, copy and reset index
 
                if STJ.Reachable then
@@ -961,14 +1214,20 @@ package body Exp_Unst is
 
                   --  Rewrite declaration and body to null statements
 
-                  Spec := Corresponding_Spec (STJ.Bod);
+                  --  A subprogram instantiation does not have an explicit
+                  --  body. If unused, we could remove the corresponding
+                  --  wrapper package and its body (TBD).
 
-                  if Present (Spec) then
-                     Decl := Parent (Declaration_Node (Spec));
-                     Rewrite (Decl, Make_Null_Statement (Sloc (Decl)));
+                  if Present (STJ.Bod) then
+                     Spec := Corresponding_Spec (STJ.Bod);
+
+                     if Present (Spec) then
+                        Decl := Parent (Declaration_Node (Spec));
+                        Rewrite (Decl, Make_Null_Statement (Sloc (Decl)));
+                     end if;
+
+                     Rewrite (STJ.Bod, Make_Null_Statement (Sloc (STJ.Bod)));
                   end if;
-
-                  Rewrite (STJ.Bod, Make_Null_Statement (Sloc (STJ.Bod)));
                end if;
             end;
          end loop;
@@ -1178,13 +1437,14 @@ package body Exp_Unst is
                   begin
                      --  Decorate the new formal entity
 
-                     Set_Scope               (Form, STJ.Ent);
-                     Set_Ekind               (Form, E_In_Parameter);
-                     Set_Etype               (Form, STJE.ARECnPT);
-                     Set_Mechanism           (Form, By_Copy);
-                     Set_Never_Set_In_Source (Form, True);
-                     Set_Analyzed            (Form, True);
-                     Set_Comes_From_Source   (Form, False);
+                     Set_Scope                (Form, STJ.Ent);
+                     Set_Ekind                (Form, E_In_Parameter);
+                     Set_Etype                (Form, STJE.ARECnPT);
+                     Set_Mechanism            (Form, By_Copy);
+                     Set_Never_Set_In_Source  (Form, True);
+                     Set_Analyzed             (Form, True);
+                     Set_Comes_From_Source    (Form, False);
+                     Set_Is_Activation_Record (Form, True);
 
                      --  Case of only body present
 
@@ -1491,8 +1751,9 @@ package body Exp_Unst is
          begin
             --  Ignore type references, these are implicit references that do
             --  not need rewriting (e.g. the appearence in a conversion).
+            --  Also ignore if no reference was specified.
 
-            if Is_Type (UPJ.Ent) then
+            if Is_Type (UPJ.Ent) or else No (UPJ.Ref) then
                goto Continue;
             end if;
 
@@ -1556,7 +1817,7 @@ package body Exp_Unst is
                --  from level STJR.Lev to level STJE.Lev. The general form of
                --  the rewritten reference for entity X is:
 
-               --    Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X)
+               --    Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECmU.X)
 
                --  where a,b,c,d .. m =
                --    STJR.Lev - 1,  STJR.Lev - 2, .. STJE.Lev
@@ -1661,7 +1922,7 @@ package body Exp_Unst is
 
          begin
             if Present (STT.ARECnF)
-              and then Nkind (CTJ.N) /= N_Attribute_Reference
+              and then Nkind (CTJ.N) in N_Subprogram_Call
             then
                --  CTJ.N is a call to a subprogram which may require a pointer
                --  to an activation record. The subprogram containing the call
@@ -1692,7 +1953,7 @@ package body Exp_Unst is
                   --  have to find the activation record needed by the
                   --  callee. This is as follows:
 
-                  --    ARECaF.ARECbU.ARECcU....ARECm
+                  --    ARECaF.ARECbU.ARECcU....ARECmU
 
                   --  where a,b,c .. m =
                   --    STF.Lev - 1,  STF.Lev - 2, STF.Lev - 3 .. STT.Lev
@@ -1735,6 +1996,13 @@ package body Exp_Unst is
 
                if No (Act) then
                   Set_First_Named_Actual (CTJ.N, Extra);
+
+                  --  If call has been relocated (as with an expression in
+                  --  an aggregate), set First_Named pointer in original node
+                  --  as well, because that's the parent of the parameter list.
+
+                  Set_First_Named_Actual
+                    (Parent (List_Containing (ExtraP)), Extra);
 
                --  Here we must follow the chain and append the new entry
 
@@ -1828,6 +2096,17 @@ package body Exp_Unst is
    begin
       if not Opt.Unnest_Subprogram_Mode then
          return;
+      end if;
+
+      --  A specification will contain bodies if it contains instantiations so
+      --  examine package or subprogram declaration of the main unit, when it
+      --  is present.
+
+      if Nkind (Unit (N)) = N_Package_Body
+        or else (Nkind (Unit (N)) = N_Subprogram_Body
+                  and then not Acts_As_Spec (N))
+      then
+         Do_Search (Library_Unit (N));
       end if;
 
       Do_Search (N);

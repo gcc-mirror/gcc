@@ -399,7 +399,7 @@ package body Switch.B is
             end if;
 
             Ptr := Ptr + 1;
-            Scan_Pos
+            Scan_Nat
               (Switch_Chars, Max, Ptr,
                Quantity_Of_Default_Size_Sec_Stacks, C);
 

@@ -49,6 +49,18 @@ along with this program; see the file COPYING3.  If not see
 /* The type of line numbers.  */
 typedef unsigned int linenum_type;
 
+/* A function for for use by qsort for comparing line numbers.  */
+
+inline int compare (linenum_type lhs, linenum_type rhs)
+{
+  /* Avoid truncation issues by using long long for the comparison,
+     and only consider the sign of the result.  */
+  long long diff = (long long)lhs - (long long)rhs;
+  if (diff)
+    return diff > 0 ? 1 : -1;
+  return 0;
+}
+
 /* Reason for creating a new line map with linemap_add.  LC_ENTER is
    when including a new file, e.g. a #include directive in C.
    LC_LEAVE is when reaching a file's end.  LC_RENAME is when a file

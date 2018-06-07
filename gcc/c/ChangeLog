@@ -1,3 +1,83 @@
+2018-05-30  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/55976
+	* c-decl.c (grokdeclarator): Update check for return type warnings.
+	(start_function): Likewise.
+	(finish_function): Likewise.
+	* c-typeck.c (c_finish_return): Update check for return type warnings.
+	Pass OPT_Wreturn_type to pedwarn when appropriate.
+
+2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Remove
+	__FMA_EXPR handlng.
+
+2018-05-17  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gimple-parser.c: Include internal-fn.h.
+	(c_parser_gimple_statement): Treat a leading CPP_DOT as a call.
+	(c_parser_gimple_call_internal): New function.
+	(c_parser_gimple_postfix_expression): Use it to handle CPP_DOT.
+	Fix typos in comment.
+
+2018-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85662
+	* c-fold.c (c_fully_fold_internal): Use fold_offsetof rather than
+	fold_offsetof_1, pass TREE_TYPE (expr) as TYPE to it and drop the
+	fold_convert_loc.
+	* c-typeck.c (build_unary_op): Use fold_offsetof rather than
+	fold_offsetof_1, pass argtype as TYPE to it and drop the
+	fold_convert_loc.
+
+2018-05-02  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/30552
+	* c-decl.c (old_style_parameter_scope): New function.
+	* c-parser.c (c_parser_postfix_expression): Check for statement
+	expressions in old-style function parameter list declarations.
+	* c-parser.h (old_style_parameter_scope): New extern declaration.
+
+2018-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/84307
+	* c-decl.c (build_compound_literal): Call pushdecl (decl) even when
+	it is not TREE_STATIC.
+	* c-typeck.c (c_mark_addressable) <case COMPOUND_LITERAL_EXPR>: Mark
+	not just the COMPOUND_LITERAL_EXPR node itself addressable, but also
+	its COMPOUND_LITERAL_EXPR_DECL.
+
+2018-03-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_postfix_expression): For __builtin_tgmath
+	where all functions return the same _FloatN or _FloatNx type,
+	treat integer types as _Float64 instead of double.
+
+2018-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84999
+	* c-typeck.c (build_binary_op): If c_common_type_for_size fails when
+	building vector comparison, diagnose it and return error_mark_node.
+
+2018-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84853
+	* c-typeck.c (build_binary_op) <case RSHIFT_EXPR, case LSHIFT_EXPR>:
+	If code1 is INTEGER_TYPE, only allow code0 VECTOR_TYPE if it has
+	INTEGER_TYPE element type.
+
+2018-03-13  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/46921
+	* c-typeck.c (output_init_element): Ensure field initializer
+	expression is always evaluated if there are side effects.
+
+2018-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84721
+	* c-parser.c (add_debug_begin_stmt): Don't add DEBUG_BEGIN_STMT if
+	!building_stmt_list_p ().
+
 2018-02-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR c/84305

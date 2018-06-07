@@ -1180,12 +1180,12 @@
 )
 
 (define_insn_and_split "ashldi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand"	    "= w, w,?&r,?r,?&r, ?w,w")
-	(ashift:DI (match_operand:DI 1 "s_register_operand" " 0w, w, 0r, 0,  r, 0w,w")
-		   (match_operand:SI 2 "general_operand"    "rUm, i,  r, i,  i,rUm,i")))
-   (clobber (match_scratch:SI 3				    "= X, X,?&r, X,  X,  X,X"))
-   (clobber (match_scratch:SI 4				    "= X, X,?&r, X,  X,  X,X"))
-   (clobber (match_scratch:DI 5				    "=&w, X,  X, X,  X, &w,X"))
+  [(set (match_operand:DI 0 "s_register_operand"	    "= w, w, &r, r, &r, ?w,?w")
+	(ashift:DI (match_operand:DI 1 "s_register_operand" " 0w, w, 0r, 0,  r, 0w, w")
+		   (match_operand:SI 2 "general_operand"    "rUm, i,  r, i,  i,rUm, i")))
+   (clobber (match_scratch:SI 3				    "= X, X, &r, X,  X,  X, X"))
+   (clobber (match_scratch:SI 4				    "= X, X, &r, X,  X,  X, X"))
+   (clobber (match_scratch:DI 5				    "=&w, X,  X, X,  X, &w, X"))
    (clobber (reg:CC_C CC_REGNUM))]
   "TARGET_NEON"
   "#"
@@ -1276,7 +1276,7 @@
 ;; ashrdi3_neon
 ;; lshrdi3_neon
 (define_insn_and_split "<shift>di3_neon"
-  [(set (match_operand:DI 0 "s_register_operand"	     "= w, w,?&r,?r,?&r,?w,?w")
+  [(set (match_operand:DI 0 "s_register_operand"	     "= w, w, &r, r, &r,?w,?w")
 	(RSHIFTS:DI (match_operand:DI 1 "s_register_operand" " 0w, w, 0r, 0,  r,0w, w")
 		    (match_operand:SI 2 "reg_or_int_operand" "  r, i,  r, i,  i, r, i")))
    (clobber (match_scratch:SI 3				     "=2r, X, &r, X,  X,2r, X"))

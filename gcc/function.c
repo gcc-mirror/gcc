@@ -978,25 +978,26 @@ assign_temp (tree type_or_decl, int memory_required,
 
   if (mode == BLKmode || memory_required)
     {
-      HOST_WIDE_INT size = int_size_in_bytes (type);
+      poly_int64 size;
       rtx tmp;
-
-      /* Zero sized arrays are GNU C extension.  Set size to 1 to avoid
-	 problems with allocating the stack space.  */
-      if (size == 0)
-	size = 1;
 
       /* Unfortunately, we don't yet know how to allocate variable-sized
 	 temporaries.  However, sometimes we can find a fixed upper limit on
 	 the size, so try that instead.  */
-      else if (size == -1)
+      if (!poly_int_tree_p (TYPE_SIZE_UNIT (type), &size))
 	size = max_int_size_in_bytes (type);
+
+      /* Zero sized arrays are a GNU C extension.  Set size to 1 to avoid
+	 problems with allocating the stack space.  */
+      if (known_eq (size, 0))
+	size = 1;
 
       /* The size of the temporary may be too large to fit into an integer.  */
       /* ??? Not sure this should happen except for user silliness, so limit
 	 this to things that aren't compiler-generated temporaries.  The
 	 rest of the time we'll die in assign_stack_temp_for_type.  */
-      if (decl && size == -1
+      if (decl
+	  && !known_size_p (size)
 	  && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST)
 	{
 	  error ("size of variable %q+D is too large", decl);
@@ -6661,8 +6662,9 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
       /* Only do the transformation for pseudos.  */
       if (! REG_P (output)
 	  || rtx_equal_p (output, input)
-	  || (GET_MODE (input) != VOIDmode
-	      && GET_MODE (input) != GET_MODE (output)))
+	  || !(REG_P (input) || SUBREG_P (input)
+	       || MEM_P (input) || CONSTANT_P (input))
+	  || !general_operand (input, GET_MODE (output)))
 	continue;
 
       /* We can't do anything if the output is also used as input,

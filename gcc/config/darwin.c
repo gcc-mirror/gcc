@@ -1933,6 +1933,7 @@ static GTY (()) vec<darwin_lto_section_e, va_gc> *lto_section_names;
    in darwin_end_file.  */
 static FILE *lto_asm_out_file, *saved_asm_out_file;
 static char *lto_asm_out_name;
+static enum debug_info_levels saved_debug_info_level;
 
 /* Prepare asm_out_file for LTO output.  For darwin, this means hiding
    asm_out_file and switching to an alternative output file.  */
@@ -1941,6 +1942,8 @@ darwin_asm_lto_start (void)
 {
   gcc_assert (! saved_asm_out_file);
   saved_asm_out_file = asm_out_file;
+  saved_debug_info_level = debug_info_level;
+  debug_info_level = DINFO_LEVEL_NONE;
   if (! lto_asm_out_name)
     lto_asm_out_name = make_temp_file (".lto.s");
   lto_asm_out_file = fopen (lto_asm_out_name, "a");
@@ -1959,6 +1962,7 @@ darwin_asm_lto_end (void)
   fclose (lto_asm_out_file);
   asm_out_file = saved_asm_out_file;
   saved_asm_out_file = NULL;
+  debug_info_level = saved_debug_info_level;
 }
 
 static void

@@ -35,7 +35,7 @@ static void __spin_unlock(volatile int *lock) { __sync_lock_release(lock); }
 static struct {
   int lock;
   char pad[32 - sizeof(int)];
-} __attribute__((aligned(32))) lock = {0};
+} __attribute__((aligned(32))) lock = {0, {0}};
 
 template <class T>
 T __mips_sync_fetch_and_add(volatile T *ptr, T val) {

@@ -16,6 +16,6 @@ AC_DEFUN([AC_PLUGINS],
     [plugins=$maybe_plugins]
   )
   if test "$plugins" = "yes"; then
-    AC_SEARCH_LIBS([dlopen], [dl])
+    AC_SEARCH_LIBS([dlsym], [dl])
   fi
 ])

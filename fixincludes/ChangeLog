@@ -1,3 +1,12 @@
+2018-05-25  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* inclhack.def (vxworks_iolib_include_unistd): New fix.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
 2018-02-22  David Edelsohn  <dje.gcc@gmail.com>
 
 	* inclhack.def (aix_stdlib_vec_malloc): New.

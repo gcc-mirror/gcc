@@ -25,7 +25,11 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "ins\\t" 2 } } */
+/* For memory models that don't have an addend on the lane value
+   load we can merge the load and lane insert into an LD1.
+   For others we expect LDR + INS sequences.  */
+/* { dg-final { scan-assembler-times "ld1\\t" 2 { target { aarch64_tiny || aarch64_large } } } } */
+/* { dg-final { scan-assembler-times "ins\\t" 2 { target aarch64_small } } } */
 /* What we want to check, is that make_vector does not stp the whole vector
    to the stack.  Unfortunately here we scan the body of main() too, which may
    be a bit fragile - the test is currently passing only because of the option

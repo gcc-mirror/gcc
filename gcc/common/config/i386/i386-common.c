@@ -125,6 +125,8 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_ABM_SET \
   (OPTION_MASK_ISA_ABM | OPTION_MASK_ISA_POPCNT)
 
+#define OPTION_MASK_ISA_PCONFIG_SET OPTION_MASK_ISA_PCONFIG
+#define OPTION_MASK_ISA_WBNOINVD_SET OPTION_MASK_ISA_WBNOINVD
 #define OPTION_MASK_ISA_SGX_SET OPTION_MASK_ISA_SGX
 #define OPTION_MASK_ISA_BMI_SET OPTION_MASK_ISA_BMI
 #define OPTION_MASK_ISA_BMI2_SET OPTION_MASK_ISA_BMI2
@@ -145,10 +147,13 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_PKU_SET OPTION_MASK_ISA_PKU
 #define OPTION_MASK_ISA_RDPID_SET OPTION_MASK_ISA_RDPID
 #define OPTION_MASK_ISA_GFNI_SET OPTION_MASK_ISA_GFNI
-#define OPTION_MASK_ISA_IBT_SET OPTION_MASK_ISA_IBT
 #define OPTION_MASK_ISA_SHSTK_SET OPTION_MASK_ISA_SHSTK
 #define OPTION_MASK_ISA_VAES_SET OPTION_MASK_ISA_VAES
 #define OPTION_MASK_ISA_VPCLMULQDQ_SET OPTION_MASK_ISA_VPCLMULQDQ
+#define OPTION_MASK_ISA_MOVDIRI_SET OPTION_MASK_ISA_MOVDIRI
+#define OPTION_MASK_ISA_MOVDIR64B_SET OPTION_MASK_ISA_MOVDIR64B
+#define OPTION_MASK_ISA_WAITPKG_SET OPTION_MASK_ISA_WAITPKG
+#define OPTION_MASK_ISA_CLDEMOTE_SET OPTION_MASK_ISA_CLDEMOTE
 
 /* Define a set of ISAs which aren't available when a given ISA is
    disabled.  MMX and SSE ISAs are handled separately.  */
@@ -220,10 +225,13 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_PKU_UNSET OPTION_MASK_ISA_PKU
 #define OPTION_MASK_ISA_RDPID_UNSET OPTION_MASK_ISA_RDPID
 #define OPTION_MASK_ISA_GFNI_UNSET OPTION_MASK_ISA_GFNI
-#define OPTION_MASK_ISA_IBT_UNSET OPTION_MASK_ISA_IBT
 #define OPTION_MASK_ISA_SHSTK_UNSET OPTION_MASK_ISA_SHSTK
 #define OPTION_MASK_ISA_VAES_UNSET OPTION_MASK_ISA_VAES
 #define OPTION_MASK_ISA_VPCLMULQDQ_UNSET OPTION_MASK_ISA_VPCLMULQDQ
+#define OPTION_MASK_ISA_MOVDIRI_UNSET OPTION_MASK_ISA_MOVDIRI
+#define OPTION_MASK_ISA_MOVDIR64B_UNSET OPTION_MASK_ISA_MOVDIR64B
+#define OPTION_MASK_ISA_WAITPKG_UNSET OPTION_MASK_ISA_WAITPKG
+#define OPTION_MASK_ISA_CLDEMOTE_UNSET OPTION_MASK_ISA_CLDEMOTE
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -241,6 +249,8 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_SHA_UNSET OPTION_MASK_ISA_SHA
 #define OPTION_MASK_ISA_PCLMUL_UNSET OPTION_MASK_ISA_PCLMUL
 #define OPTION_MASK_ISA_ABM_UNSET OPTION_MASK_ISA_ABM
+#define OPTION_MASK_ISA_PCONFIG_UNSET OPTION_MASK_ISA_PCONFIG
+#define OPTION_MASK_ISA_WBNOINVD_UNSET OPTION_MASK_ISA_WBNOINVD
 #define OPTION_MASK_ISA_SGX_UNSET OPTION_MASK_ISA_SGX
 #define OPTION_MASK_ISA_BMI_UNSET OPTION_MASK_ISA_BMI
 #define OPTION_MASK_ISA_BMI2_UNSET OPTION_MASK_ISA_BMI2
@@ -537,22 +547,6 @@ ix86_handle_option (struct gcc_options *opts,
 	}
       return true;
 
-    case OPT_mcet:
-    case OPT_mibt:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_IBT_SET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_IBT_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_IBT_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_IBT_UNSET;
-	}
-      if (code != OPT_mcet)
-	return true;
-      /* fall through.  */
-
     case OPT_mshstk:
       if (value)
 	{
@@ -589,6 +583,58 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_VPCLMULQDQ_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_VPCLMULQDQ_UNSET;
+	}
+      return true;
+
+    case OPT_mmovdiri:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVDIRI_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MOVDIRI_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_MOVDIRI_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MOVDIRI_UNSET;
+	}
+      return true;
+
+    case OPT_mmovdir64b:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MOVDIR64B_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_MOVDIR64B_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_MOVDIR64B_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_MOVDIR64B_UNSET;
+	}
+	return true;
+
+    case OPT_mcldemote:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_CLDEMOTE_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_CLDEMOTE_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_CLDEMOTE_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_CLDEMOTE_UNSET;
+	}
+      return true;
+
+    case OPT_mwaitpkg:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_WAITPKG_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_WAITPKG_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_WAITPKG_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_WAITPKG_UNSET;
 	}
       return true;
 
@@ -687,6 +733,32 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_SGX_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_SGX_UNSET;
+	}
+      return true;
+
+    case OPT_mpconfig:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PCONFIG_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_PCONFIG_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_PCONFIG_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_PCONFIG_UNSET;
+	}
+      return true;
+
+    case OPT_mwbnoinvd:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_WBNOINVD_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_WBNOINVD_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_WBNOINVD_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_WBNOINVD_UNSET;
 	}
       return true;
 

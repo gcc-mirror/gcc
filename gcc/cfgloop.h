@@ -388,7 +388,7 @@ extern void verify_loop_structure (void);
 /* Loop analysis.  */
 extern bool just_once_each_iteration_p (const struct loop *, const_basic_block);
 gcov_type expected_loop_iterations_unbounded (const struct loop *,
-					      bool *read_profile_p = NULL);
+					      bool *read_profile_p = NULL, bool by_profile_only = false);
 extern unsigned expected_loop_iterations (struct loop *);
 extern rtx doloop_condition_get (rtx_insn *);
 

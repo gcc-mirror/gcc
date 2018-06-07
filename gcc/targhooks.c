@@ -1196,6 +1196,15 @@ default_reloc_rw_mask (void)
   return flag_pic ? 3 : 0;
 }
 
+/* By default, address diff vectors are generated
+for jump tables when flag_pic is true.  */
+
+bool
+default_generate_pic_addr_diff_vec (void)
+{
+  return flag_pic;
+}
+
 /* By default, do no modification. */
 tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
 					 tree id)

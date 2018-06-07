@@ -296,8 +296,8 @@ func mallocinit() {
 		// allocation at 0x40 << 32 because when using 4k pages with 3-level
 		// translation buffers, the user address space is limited to 39 bits
 		// On darwin/arm64, the address space is even smaller.
-		// On AIX, mmap adresses range start at 0x07000000_00000000 for 64 bits
-		// processes.
+		// On AIX, mmap adresses range starts at 0x0700000000000000 for 64-bit
+		// processes. The new address space allocator starts at 0x0A00000000000000.
 		arenaSize := round(_MaxMem, _PageSize)
 		pSize = bitmapSize + spansSize + arenaSize + _PageSize
 		for i := 0; i <= 0x7f; i++ {
@@ -307,13 +307,16 @@ func mallocinit() {
 			case GOARCH == "arm64":
 				p = uintptr(i)<<40 | uintptrMask&(0x0040<<32)
 			case GOOS == "aix":
-				i = 1
-				p = uintptr(i)<<32 | uintptrMask&(0x70<<52)
+				if i == 0 {
+					p = uintptrMask&(1<<42) | uintptrMask&(0xa0<<52)
+				} else {
+					p = uintptr(i)<<42 | uintptrMask&(0x70<<52)
+				}
 			default:
 				p = uintptr(i)<<40 | uintptrMask&(0x00c0<<32)
 			}
 			p = uintptr(sysReserve(unsafe.Pointer(p), pSize, &reserved))
-			if p != 0 || GOOS == "aix" { // Useless to loop on AIX, as i is forced to 1
+			if p != 0 {
 				break
 			}
 		}

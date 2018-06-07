@@ -228,7 +228,7 @@ package body Ada.Exceptions is
       function Allocate_Occurrence return EOA;
       --  Allocate an exception occurrence (as well as the machine occurrence)
 
-      procedure Propagate_Exception (Excep : EOA);
+      procedure Propagate_Exception (Excep : Exception_Occurrence);
       pragma No_Return (Propagate_Exception);
       --  This procedure propagates the exception represented by Excep
 
@@ -940,7 +940,7 @@ package body Ada.Exceptions is
    procedure Complete_And_Propagate_Occurrence (X : EOA) is
    begin
       Complete_Occurrence (X);
-      Exception_Propagation.Propagate_Exception (X);
+      Exception_Propagation.Propagate_Exception (X.all);
    end Complete_And_Propagate_Occurrence;
 
    ---------------------
@@ -1091,7 +1091,7 @@ package body Ada.Exceptions is
    is
    begin
       Exception_Propagation.Propagate_Exception
-        (Create_Occurrence_From_Signal_Handler (E, M));
+        (Create_Occurrence_From_Signal_Handler (E, M).all);
    end Raise_From_Signal_Handler;
 
    -------------------------
@@ -1587,12 +1587,25 @@ package body Ada.Exceptions is
    ---------------------------------
 
    procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence) is
-      Excep    : constant EOA := Exception_Propagation.Allocate_Occurrence;
-      Saved_MO : constant System.Address := Excep.Machine_Occurrence;
    begin
-      Save_Occurrence (Excep.all, X);
-      Excep.Machine_Occurrence := Saved_MO;
-      Complete_And_Propagate_Occurrence (Excep);
+      --  If we have a Machine_Occurrence at hand already, e.g. when we are
+      --  reraising a foreign exception, just repropagate. Otherwise, e.g.
+      --  when reraising a GNAT exception or an occurrence read back from a
+      --  stream, set up a new occurrence with its own Machine block first.
+
+      if X.Machine_Occurrence /= System.Null_Address then
+         Exception_Propagation.Propagate_Exception (X);
+      else
+         declare
+            Excep : constant EOA
+              := Exception_Propagation.Allocate_Occurrence;
+            Saved_MO : constant System.Address := Excep.Machine_Occurrence;
+         begin
+            Save_Occurrence (Excep.all, X);
+            Excep.Machine_Occurrence := Saved_MO;
+            Complete_And_Propagate_Occurrence (Excep);
+         end;
+      end if;
    end Reraise_Occurrence_No_Defer;
 
    ---------------------

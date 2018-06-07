@@ -1,3 +1,46 @@
+2018-05-23  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/60790
+	x86: Do not assume ELF constructors run before IFUNC resolvers.
+	* config/x86/host-config.h (libat_feat1_ecx, libat_feat1_edx):
+	Remove declarations.
+	(__libat_feat1, __libat_feat1_init): Declare.
+	(FEAT1_REGISTER): Define.
+	(load_feat1): New function.
+	(IFUNC_COND_1): Adjust.
+	* config/x86/init.c (libat_feat1_ecx, libat_feat1_edx)
+	(init_cpuid): Remove definitions.
+	(__libat_feat1): New variable.
+	(__libat_feat1_init): New function.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libatomic.exp: Include scanltranstree.exp.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libatomic.exp: Include scanwpaipa.exp.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-03-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/exch_n.c: New file.
+	* configure.tgt: Add the config directory for s390.
+
 2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84148

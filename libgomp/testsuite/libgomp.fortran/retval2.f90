@@ -17,11 +17,11 @@ contains
     l = l .or. (omp_get_thread_num () .eq. 0 .and. f1 .ne. 8.5)
     l = l .or. (omp_get_thread_num () .eq. 1 .and. f1 .ne. 14.5)
 !$omp end parallel
-    if (l) call abort
+    if (l) STOP 1
     f1 = -2.5
   end subroutine sub1
 end function f1
 
   real :: f1
-  if (f1 () .ne. -2.5) call abort
+  if (f1 () .ne. -2.5) STOP 2
 end

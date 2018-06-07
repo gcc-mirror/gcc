@@ -1,0 +1,111 @@
+#! /bin/sh
+
+# Compare copies of two given object files.
+
+# Copyright (C) 2007, 2008, 2009, 2010, 2012 Free Software Foundation
+# Originally by Alexandre Oliva <aoliva@redhat.com>
+# Modified for LTO bootstrap by Richard Biener <rguenther@suse.de>
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any later
+# version.
+
+# GCC is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+rm='rm -f'
+
+case $1 in
+-p | --preserve)
+  rm='echo preserving'
+  shift
+  ;;
+esac
+
+if test $# != 2; then
+  echo 'usage: compare-lto file1.o file2.o' >&2
+  exit 1
+fi
+
+if test ! -f "$1"; then
+  echo "$1" does not exist >&2
+  exit 1
+fi
+
+if test ! -f "$2"; then
+  echo "$2" does not exist >&2
+  exit 1
+fi
+
+suf1=stripped
+while test -f "$1.$suf1"; do
+  suf1=$suf1.
+done
+
+suf2=stripped
+while test -f "$2.$suf2"; do
+  suf2=$suf2.
+done
+
+trap 'rm -f "$1.$suf1" "$2.$suf2"' 0 1 2 15
+
+if cmp "$1" "$2"; then
+  status=0
+else
+  status=1
+
+  cmd=
+  for t in objdump readelf eu-readelf; do
+    if ($t --help) 2>&1 | grep ' --\[*section-\]*headers' > /dev/null; then
+      cmd=$t
+      break
+    fi
+  done
+
+  # If there are LTO option sections, try to strip them off.
+  if test "x$cmd" = "x" ||
+     $cmd --section-headers "$1" | grep '.gnu.lto_.opts' > /dev/null ||
+     $cmd --section-headers "$2" | grep '.gnu.lto_.opts' > /dev/null ; then
+
+    echo stripping off LTO option section, then retrying >&2
+
+    seclist=".gnu.lto_.opts"
+    rsopts=`for sec in $seclist; do echo " --remove-section $sec"; done`
+
+    if (objcopy -v) 2>&1 | grep ' --remove-section' > /dev/null; then
+      objcopy $rsopts "$1" "$1.$suf1"
+      objcopy $rsopts "$2" "$2.$suf2"
+    elif (strip --help) 2>&1 | grep ' --remove-section' > /dev/null; then
+      cp "$1" "$1.$suf1"
+      strip $rsopts "$1.$suf1"
+
+      cp "$2" "$2.$suf2"
+      strip $rsopts "$2.$suf2"
+    else
+      echo failed to strip off LTO option section >&2
+    fi
+
+    trap 'rm -f "$1.$suf1" "$2.$suf2"' 0 1 2 15
+
+    if cmp "$1.$suf1" "$2.$suf2"; then
+      status=0
+    else
+      status=1
+    fi
+  fi
+fi
+
+$rm "$1.$suf1" "$2.$suf2"
+
+trap "exit $status; exit" 0 1 2 15
+
+exit $status

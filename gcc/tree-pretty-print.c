@@ -247,21 +247,32 @@ dump_fancy_name (pretty_printer *pp, tree name)
 static void
 dump_decl_name (pretty_printer *pp, tree node, dump_flags_t flags)
 {
-  if (DECL_NAME (node))
+  tree name = DECL_NAME (node);
+  if (name)
     {
       if ((flags & TDF_ASMNAME)
 	  && HAS_DECL_ASSEMBLER_NAME_P (node)
 	  && DECL_ASSEMBLER_NAME_SET_P (node))
 	pp_tree_identifier (pp, DECL_ASSEMBLER_NAME_RAW (node));
+      /* For -fcompare-debug don't dump DECL_NAMELESS names at all,
+	 -g might have created more fancy names and their indexes
+	 could get out of sync.  Usually those should be DECL_IGNORED_P
+	 too, SRA can create even non-DECL_IGNORED_P DECL_NAMELESS fancy
+	 names, let's hope those never get out of sync after doing the
+	 dump_fancy_name sanitization.  */
+      else if ((flags & TDF_COMPARE_DEBUG)
+	       && DECL_NAMELESS (node)
+	       && DECL_IGNORED_P (node))
+	name = NULL_TREE;
       /* For DECL_NAMELESS names look for embedded uids in the
 	 names and sanitize them for TDF_NOUID.  */
       else if ((flags & TDF_NOUID) && DECL_NAMELESS (node))
-	dump_fancy_name (pp, DECL_NAME (node));
+	dump_fancy_name (pp, name);
       else
-	pp_tree_identifier (pp, DECL_NAME (node));
+	pp_tree_identifier (pp, name);
     }
   char uid_sep = (flags & TDF_GIMPLE) ? '_' : '.';
-  if ((flags & TDF_UID) || DECL_NAME (node) == NULL_TREE)
+  if ((flags & TDF_UID) || name == NULL_TREE)
     {
       if (TREE_CODE (node) == LABEL_DECL && LABEL_DECL_UID (node) != -1)
 	pp_printf (pp, "L%c%d", uid_sep, (int) LABEL_DECL_UID (node));
@@ -2251,7 +2262,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       if (CALL_EXPR_FN (node) != NULL_TREE)
 	print_call_name (pp, CALL_EXPR_FN (node), flags);
       else
-	pp_string (pp, internal_fn_name (CALL_EXPR_IFN (node)));
+	{
+	  pp_dot (pp);
+	  pp_string (pp, internal_fn_name (CALL_EXPR_IFN (node)));
+	}
 
       /* Print parameters.  */
       pp_space (pp);
@@ -2890,16 +2904,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_string (pp, " > ");
       break;
 
-    case FMA_EXPR:
-      pp_string (pp, " FMA_EXPR < ");
-      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (pp, ", ");
-      dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (pp, ", ");
-      dump_generic_node (pp, TREE_OPERAND (node, 2), spc, flags, false);
-      pp_string (pp, " > ");
-      break;
-
     case OACC_PARALLEL:
       pp_string (pp, "#pragma acc parallel");
       goto dump_omp_clauses_body;
@@ -3231,6 +3235,18 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_string (pp, " > ");
       break;
 
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+      pp_string (pp, " VEC_UNPACK_FIX_TRUNC_HI_EXPR < ");
+      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (pp, " > ");
+      break;
+
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
+      pp_string (pp, " VEC_UNPACK_FIX_TRUNC_LO_EXPR < ");
+      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (pp, " > ");
+      break;
+
     case VEC_PACK_TRUNC_EXPR:
       pp_string (pp, " VEC_PACK_TRUNC_EXPR < ");
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
@@ -3249,6 +3265,14 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case VEC_PACK_FIX_TRUNC_EXPR:
       pp_string (pp, " VEC_PACK_FIX_TRUNC_EXPR < ");
+      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (pp, ", ");
+      dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_string (pp, " > ");
+      break;
+
+    case VEC_PACK_FLOAT_EXPR:
+      pp_string (pp, " VEC_PACK_FLOAT_EXPR < ");
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
       pp_string (pp, ", ");
       dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
@@ -3538,7 +3562,6 @@ op_code_prio (enum tree_code code)
     case CEIL_MOD_EXPR:
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
-    case FMA_EXPR:
       return 13;
 
     case TRUTH_NOT_EXPR:
@@ -3572,6 +3595,8 @@ op_code_prio (enum tree_code code)
     case VEC_UNPACK_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
     case VEC_UNPACK_FLOAT_LO_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
       return 16;

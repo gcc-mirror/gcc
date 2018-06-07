@@ -257,6 +257,19 @@ set_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
 static inline void
 add_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
 {
+  /* We might have updated some stmts in STMTS via force_gimple_operand
+     calling fold_stmt and that producing multiple stmts.  Delink immediate
+     uses so update_ssa after loop versioning doesn't get confused for
+     the not yet inserted predicates.
+     ???  This should go away once we reliably avoid updating stmts
+     not in any BB.  */
+  for (gimple_stmt_iterator gsi = gsi_start (stmts);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      delink_stmt_imm_use (stmt);
+      gimple_set_modified (stmt, true);
+    }
   gimple_seq_add_seq_without_update
     (&(((struct bb_predicate *) bb->aux)->predicate_gimplified_stmts), stmts);
 }
@@ -271,8 +284,7 @@ init_bb_predicate (basic_block bb)
   set_bb_predicate (bb, boolean_true_node);
 }
 
-/* Release the SSA_NAMEs associated with the predicate of basic block BB,
-   but don't actually free it.  */
+/* Release the SSA_NAMEs associated with the predicate of basic block BB.  */
 
 static inline void
 release_bb_predicate (basic_block bb)
@@ -280,11 +292,14 @@ release_bb_predicate (basic_block bb)
   gimple_seq stmts = bb_predicate_gimplified_stmts (bb);
   if (stmts)
     {
+      /* Ensure that these stmts haven't yet been added to a bb.  */
       if (flag_checking)
 	for (gimple_stmt_iterator i = gsi_start (stmts);
 	     !gsi_end_p (i); gsi_next (&i))
-	  gcc_assert (! gimple_use_ops (gsi_stmt (i)));
+	  gcc_assert (! gimple_bb (gsi_stmt (i)));
 
+      /* Discard them.  */
+      gimple_seq_discard (stmts);
       set_bb_predicate_gimplified_stmts (bb, NULL);
     }
 }
@@ -849,6 +864,11 @@ base_object_writable (tree ref)
 static bool
 ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
 {
+  /* If DR didn't see a reference here we can't use it to tell
+     whether the ref traps or not.  */
+  if (gimple_uid (stmt) == 0)
+    return false;
+
   data_reference_p *master_dr, *base_master_dr;
   data_reference_p a = drs[gimple_uid (stmt) - 1];
 

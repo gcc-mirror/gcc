@@ -40,12 +40,24 @@
 package System.OS_Primitives is
    pragma Preelaborate;
 
-   Max_Sensible_Delay : constant Duration := 16#10_0000.0#;
-   --  LynxOS does not support delays as long as half a year, so we set this to
-   --  a shorter, but still fairly long, duration. Experiments show that if
-   --  pthread_cond_timedwait is passed an abstime much greater than about
-   --  2**21, it fails, returning EAGAIN. The cutoff is somewhere between
-   --  16#20_8000.0# and 16#20_F000.0#. This behavior is not documented.
+   Max_Sensible_Delay : constant Duration :=
+                          Duration'Min (183 * 24 * 60 * 60.0,
+                                        Duration'Last);
+   --  Max of half a year delay, needed to prevent exceptions for large delay
+   --  values. It seems unlikely that any test will notice this restriction,
+   --  except in the case of applications setting the clock at run time (see
+   --  s-tastim.adb). Also note that a larger value might cause problems (e.g
+   --  overflow, or more likely OS limitation in the primitives used). In the
+   --  case where half a year is too long (which occurs in high integrity mode
+   --  with 32-bit words, and possibly on some specific ports of GNAT),
+   --  Duration'Last is used instead.
+
+   Max_System_Delay : constant Duration := 2147483.0;
+   --  Note that Max_System_Delay is 2**31 / 1000 truncated.
+   --  LynxOS does not support delays as long as half a year, only the
+   --  number of seconds noted in Max_System_Delay, which is used to split
+   --  delays into chunks no larger than what the system can handle. This
+   --  maximum was found by experiment and is not documented.
 
    procedure Initialize;
    --  Initialize global settings related to this package. This procedure

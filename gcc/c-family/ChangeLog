@@ -1,3 +1,260 @@
+2018-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86068
+	* c-cppbuiltin.c (c_cpp_builtins): Fix a typo, set
+	__cpp_transactional_memory to 201500 instead of 210500.
+
+2018-06-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85710 - ICE with -Wmemset-elt-size.
+	* c-warn.c (warn_for_memset): Don't crash on incomplete element type.
+
+2018-06-01  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Bump __cpp_deduction_guides to
+	201703.
+
+2018-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_declaration) <TYPE_DECL>: Generate a forward
+	declaration for a typedef independently of whether the declaration of
+	the subtype is generated.
+
+2018-05-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c/82063
+	* c.opt (-Wno-alloc-size-larger-than): New option.
+
+2018-04-22  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/55976
+	* c-opts.c (c_common_post_options): Set default for warn_return_type
+	for C++/C++ with ObjC extensions only. For C, makes it possible to 
+	differentiate between default (no option), -Wreturn-type, and
+	-Wno-return-type.
+
+2018-05-29  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Winit-list-lifetime): New flag.
+
+2018-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-lex.c (get_fileinfo): Use splay_tree_compare_strings and
+	splay_tree_delete_pointers.
+
+2018-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/85921
+	* c-warn.c (diagnose_mismatched_attributes): Remove unnecessary
+	noinline variable to workaround broken kernel headers.
+
+2018-05-18  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Wdeprecated-copy): New flag.
+
+2018-05-17  Martin Liska  <mliska@suse.cz>
+
+	* c-warn.c (overflow_warning): Do not use
+	space in between 'G_' and '('.
+
+2018-05-09  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (valid_array_size_p): Add complain parameter.
+	* c-common.h: ...which defaults to true.
+
+2018-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85696
+	* c-omp.c (c_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_SHARED for artificial vars with integral type.
+
+2018-05-11  Martin Liska  <mliska@suse.cz>
+
+        PR sanitizer/85556
+	* c-attribs.c (handle_no_sanitize_attribute): Iterate all
+	TREE_LIST values.
+
+2018-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85662
+	* c-common.h (fold_offsetof_1): Removed.
+	(fold_offsetof): Add TYPE argument defaulted to size_type_node and
+	CTX argument defaulted to ERROR_MARK.
+	* c-common.c (fold_offsetof_1): Renamed to ...
+	(fold_offsetof): ... this.  Remove wrapper function.  Add TYPE
+	argument, convert the pointer constant to TYPE and use size_binop
+	with PLUS_EXPR instead of fold_build_pointer_plus if type is not
+	a pointer type.  Adjust recursive calls.
+
+2018-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/85400
+	* c-attribs.c (handle_visibility_attribute): Do not set no_add_attrs.
+
+2018-05-07  Nathan Sidwell  <nathan@acm.org>
+
+	* c.opt (ffor-scope): Remove functionality, issue warning.
+
+2018-05-03  Nathan Sidwell  <nathan@acm.org>
+
+	* c.opt (ffriend-injection): Remove functionality, issue warning.
+
+2018-05-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/84258
+	* c-format.c (struct format_check_results): Add field
+	"number_non_char".
+	(check_format_info): Initialize it, and warn if encountered.
+	(check_format_arg): Distinguish between wide char and
+	everything else when detecting arrays of non-char.
+
+2018-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (get_corrected_substring): Update for
+	location_get_source_line returning a char_span.  Use a char_span
+	when handling the prefix of the correction.
+	* c-indentation.c (get_visual_column): Update for
+	location_get_source_line returning a char_span.
+	(get_first_nws_vis_column): Likewise.
+
+2018-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84269
+	* known-headers.cc (get_stdlib_header_for_name): Add various names
+	from <assert.h>, <string.h>, and <memory.h>; add more names from
+	<stdio.h>.
+
+2018-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85061
+	* c-common.c (fold_offsetof_1) <case COMPOUND_EXPR>: Assert that
+	get_base_address of the second operand is a VAR_P, rather than the
+	operand itself, and use gcc_checking_assert instead of gcc_assert.
+
+2018-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85045
+	* c-pretty-print.c (c_pretty_printer::multiplicative_expression)
+	<case RDIV_EXPR>: Tweak condition.
+
+2018-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (pp_ada_tree_identifier): Deal specifically with _Bool.
+
+2018-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84909
+	* c-warn.c (conversion_warning): Replace "to to" with "to" in
+	diagnostics.
+
+	PR c/84910
+	* c-warn.c (diagnose_mismatched_attributes): Remove trailing space from
+	diagnostics.
+
+2018-03-16  Richard Biener  <rguenther@suse.de>
+
+	PR c/84873
+	* c-gimplify.c (c_gimplify_expr): Revert previous change.  Instead
+	unshare the possibly folded expression.
+
+2018-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/84873
+	* c-gimplify.c (c_gimplify_expr): Do not fold expressions.
+
+2018-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84725
+	* c-attribs.c (handle_nonstring_attribute): Allow attribute nonstring
+	with all three narrow character types, including their qualified forms.
+
+2018-03-12  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83456
+	* gcc/c-family/c-common.c (check_function_restrict): Return bool.
+	Restore checking of bounded built-in functions.
+	(check_function_arguments): Also return the result
+	of warn_for_restrict.
+	* gcc/c-family/c-common.c (check_function_restrict): Return bool.
+	* gcc/c-family/c-warn.c (warn_for_restrict): Return bool.
+
+2018-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84171
+	* c-warn.c (warn_for_sign_compare): Bail out if any of the operands
+	is erroneous.
+
+2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-attribs.c (c_common_attribute_table): Remove "cilk simd
+	function".
+
+2018-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84639
+	* c-attribs.c (common_handle_aligned_attribute): Don't use invalid
+	alignment in computation.
+
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_node) <NULLPTR_TYPE>: New case.
+	<REAL_TYPE>: Deal specifically with _Float128/__float128.
+
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_double_name) <ENUMERAL_TYPE>: New case.
+	(is_char_array): Take a type instead of a declaration.
+	(dump_ada_array_type): Likewise.
+	(is_simple_enum): Minor tweak.
+	(dump_ada_enum_type): New function extracted from...
+	(dump_ada_node) <ENUMERAL_TYPE>: ...here.  Invoke it.
+	<INTEGER_TYPE>: Remove unreachable code.
+	<RECORD_TYPE>: Likewise.  Minor tweaks.
+	(dump_nested_type) <ARRAY_TYPE>: Adjust to above changes.
+	<ENUMERAL_TYPE>: New case.
+	<RECORD_TYPE>: Factor out common code.
+	(dump_ada_declaration) <ARRAY_TYPE>: Adjust to above changes.
+	Minor tweaks.  Deal with enumeral types.
+	(dump_ada_structure): Minor tweaks.
+
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_node) <POINTER_TYPE>: Do not use generic
+	address for incomplete structures.
+	(dump_forward_type): Do not bail out for incomplete structures.
+	(dump_ada_declaration): Do not special-case incomplete structures
+	for subtypes.  Dump them as null records for types.
+
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_import): Use boolean and fix formatting.
+	(is_char_array): Fix formatting.
+	(dump_template_types): Likewise.
+	(dump_generic_ada_node): Rename into...
+	(dump_ada_node): ...this.
+	<POINTER_TYPE>: Remove superfluous space.  Use generic address for
+	incomplete structures and not for empty structures.  Do not use it
+	when forward declarations are needed.
+	(dump_forward_type): New function.
+	(dump_nested_types): Remove FORWARD parameter.  Do not consider
+	TREE_VISITED and do not generate a forward declaration.  Only dump
+	original nested types for nested declaration.
+	(dump_nested_type) <POINTER_TYPE>: Call dump_forward_type.
+	<ARRAY_TYPE>: Likewise if the component type is an anonymous pointer.
+	<RECORD_TYPE>: Do not consider TREE_VISITED.
+	(dump_ada_declaration): Use booleans and fix formatting throughout.
+	<TYPE_DECL>: Skip incomplete structures and not empty structures.
+	Call dump_forward_type instead of dump_nested_types for a typedef.
+	Remove superfluous check and adjust call to dump_nested_types.
+	<POINTER_TYPE>: Call dump_forward_type and fall through.
+	(dump_ada_struct_decl): Rename into...
+	(dump_ada_structure): ...this.  Do not special-case empty structures.
+
+2018-02-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83871
+	* c.opt (-Wmissing-attributes): New option.
+
 2018-02-21  Martin Liska  <mliska@suse.cz>
 
 	* c.opt (Wcatch-value=): Add IntegerRange.

@@ -237,6 +237,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ITp>
     struct __atomic_base
     {
+      using value_type = _ITp;
+      using difference_type = value_type;
+
     private:
       typedef _ITp 	__int_type;
 

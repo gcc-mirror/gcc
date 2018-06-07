@@ -61,10 +61,6 @@ maxloc0_8_s1 (gfc_array_i8 * const restrict retarray,
   index_type rank;
   index_type n;
 
-#ifdef HAVE_BACK_ARG
-  assert (back == 0);
-#endif
-
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -72,7 +68,7 @@ maxloc0_8_s1 (gfc_array_i8 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
-      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
+      retarray->dtype.rank = 1;
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_8));
     }
@@ -107,7 +103,7 @@ maxloc0_8_s1 (gfc_array_i8 * const restrict retarray,
   {
 
   const GFC_INTEGER_1 *maxval;
-   maxval = base;
+   maxval = NULL;
 
   while (base)
     {
@@ -115,7 +111,8 @@ maxloc0_8_s1 (gfc_array_i8 * const restrict retarray,
 	{
 	  /* Implementation start.  */
 
-  if (compare_fcn (base, maxval, len) > 0)
+    if (maxval == NULL || (back ? compare_fcn (base, maxval, len) >= 0 :
+     		   	   	   compare_fcn (base, maxval, len) > 0))
     {
       maxval = base;
       for (n = 0; n < rank; n++)
@@ -177,9 +174,6 @@ mmaxloc0_8_s1 (gfc_array_i8 * const restrict retarray,
   index_type n;
   int mask_kind;
 
-#ifdef HAVE_BACK_ARG
-  assert (back == 0);
-#endif
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -187,7 +181,7 @@ mmaxloc0_8_s1 (gfc_array_i8 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank - 1, 1);
-      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
+      retarray->dtype.rank = 1;
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_8));
     }
@@ -250,7 +244,9 @@ mmaxloc0_8_s1 (gfc_array_i8 * const restrict retarray,
 	{
 	  /* Implementation start.  */
 
-  if (*mbase && (maxval == NULL || compare_fcn (base, maxval, len) > 0))
+  if (*mbase &&
+        (maxval == NULL || (back ? compare_fcn (base, maxval, len) >= 0:
+		   	   	   compare_fcn (base, maxval, len) > 0)))
     {
       maxval = base;
       for (n = 0; n < rank; n++)
@@ -326,7 +322,7 @@ smaxloc0_8_s1 (gfc_array_i8 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
-      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
+      retarray->dtype.rank = 1;
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_8));
     }

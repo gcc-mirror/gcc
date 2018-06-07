@@ -1612,6 +1612,12 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (!VECTOR_TYPE_P (type)
       || !VECTOR_TYPE_P (TREE_TYPE (rhs1)))
     return;
+ 
+  /* A scalar operation pretending to be a vector one.  */
+  if (VECTOR_BOOLEAN_TYPE_P (type)
+      && !VECTOR_MODE_P (TYPE_MODE (type))
+      && TYPE_MODE (type) != BLKmode)
+    return;
 
   /* If the vector operation is operating on all same vector elements
      implement it with a scalar operation and a splat if the target
@@ -1638,12 +1644,6 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 	  return;
 	}
     }
- 
-  /* A scalar operation pretending to be a vector one.  */
-  if (VECTOR_BOOLEAN_TYPE_P (type)
-      && !VECTOR_MODE_P (TYPE_MODE (type))
-      && TYPE_MODE (type) != BLKmode)
-    return;
 
   if (CONVERT_EXPR_CODE_P (code)
       || code == FLOAT_EXPR
@@ -1653,7 +1653,8 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 
   /* The signedness is determined from input argument.  */
   if (code == VEC_UNPACK_FLOAT_HI_EXPR
-      || code == VEC_UNPACK_FLOAT_LO_EXPR)
+      || code == VEC_UNPACK_FLOAT_LO_EXPR
+      || code == VEC_PACK_FLOAT_EXPR)
     {
       type = TREE_TYPE (rhs1);
       /* We do not know how to scalarize those.  */
@@ -1670,6 +1671,8 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       || code == VEC_WIDEN_MULT_ODD_EXPR
       || code == VEC_UNPACK_HI_EXPR
       || code == VEC_UNPACK_LO_EXPR
+      || code == VEC_UNPACK_FIX_TRUNC_HI_EXPR
+      || code == VEC_UNPACK_FIX_TRUNC_LO_EXPR
       || code == VEC_PACK_TRUNC_EXPR
       || code == VEC_PACK_SAT_EXPR
       || code == VEC_PACK_FIX_TRUNC_EXPR

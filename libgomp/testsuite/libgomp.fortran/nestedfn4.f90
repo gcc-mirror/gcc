@@ -6,19 +6,19 @@ program foo
   call test1
   call test2
   do i = 1, 10
-    if (a(i) .ne. 10 * i) call abort
+    if (a(i) .ne. 10 * i) STOP 1
   end do
   !$omp parallel do reduction (+:c)
   do i = 1, 10
     c = c + a
   end do
   do i = 1, 10
-    if (c(i) .ne. 10 * a(i)) call abort
+    if (c(i) .ne. 10 * a(i)) STOP 2
   end do
   !$omp parallel do lastprivate (j)
   do j = 1, 10, k
   end do
-  if (j .ne. 11) call abort
+  if (j .ne. 11) STOP 3
 contains
   subroutine test1
     integer :: i
@@ -36,6 +36,6 @@ contains
     !$omp parallel do lastprivate (j)
     do j = 1, 10, k
     end do
-    if (j .ne. 11) call abort
+    if (j .ne. 11) STOP 4
   end subroutine test2
 end program foo

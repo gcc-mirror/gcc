@@ -301,12 +301,12 @@ initialize_handler_parm (tree decl, tree exp)
      adjusted by value from __cxa_begin_catch.  Others are returned by
      reference.  */
   init_type = TREE_TYPE (decl);
-  if (!POINTER_TYPE_P (init_type))
+  if (!INDIRECT_TYPE_P (init_type))
     init_type = build_reference_type (init_type);
 
   /* Since pointers are passed by value, initialize a reference to
      pointer catch parm with the address of the temporary.  */
-  if (TREE_CODE (init_type) == REFERENCE_TYPE
+  if (TYPE_REF_P (init_type)
       && TYPE_PTR_P (TREE_TYPE (init_type)))
     exp = cp_build_addr_expr (exp, tf_warning_or_error);
 
@@ -802,7 +802,7 @@ complete_ptr_ref_or_void_ptr_p (tree type, tree from)
 
   /* Or a pointer or ref to one, or cv void *.  */
   is_ptr = TYPE_PTR_P (type);
-  if (is_ptr || TREE_CODE (type) == REFERENCE_TYPE)
+  if (is_ptr || TYPE_REF_P (type))
     {
       tree core = TREE_TYPE (type);
 
@@ -846,7 +846,7 @@ is_admissible_throw_operand_or_catch_parameter (tree t, bool is_throw)
   else if (abstract_virtuals_error (is_throw ? ACU_THROW : ACU_CATCH, type))
     return false;
   else if (!is_throw
-	   && TREE_CODE (type) == REFERENCE_TYPE
+	   && TYPE_REF_P (type)
 	   && TYPE_REF_IS_RVALUE (type))
     {
       error ("cannot declare catch parameter to be of rvalue "
@@ -1024,7 +1024,7 @@ check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
          We could use TREE_NOTHROW (t) for !TREE_PUBLIC fns, though... */
       tree fn = cp_get_callee (t);
       tree type = TREE_TYPE (fn);
-      gcc_assert (POINTER_TYPE_P (type));
+      gcc_assert (INDIRECT_TYPE_P (type));
       type = TREE_TYPE (type);
 
       STRIP_NOPS (fn);
@@ -1194,11 +1194,14 @@ build_noexcept_spec (tree expr, int complain)
 {
   /* This isn't part of the signature, so don't bother trying to evaluate
      it until instantiation.  */
-  if (!processing_template_decl && TREE_CODE (expr) != DEFERRED_NOEXCEPT)
+  if (TREE_CODE (expr) != DEFERRED_NOEXCEPT
+      && (!processing_template_decl
+	  || (flag_noexcept_type && !value_dependent_expression_p (expr))))
     {
       expr = perform_implicit_conversion_flags (boolean_type_node, expr,
 						complain,
 						LOOKUP_NORMAL);
+      expr = instantiate_non_dependent_expr (expr);
       expr = cxx_constant_value (expr);
     }
   if (TREE_CODE (expr) == INTEGER_CST)

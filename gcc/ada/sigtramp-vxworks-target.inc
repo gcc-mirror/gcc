@@ -6,7 +6,7 @@
  *                                                                          *
  *                     Asm Implementation Include File                      *
  *                                                                          *
- *         Copyright (C) 2011-2017, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2011-2018, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -100,17 +100,18 @@
 #define FUNCTION "%function"
 
 #ifdef __aarch64__
-#define REGNO_PC_OFFSET  31  /* PC_REGNUM  */
+#define REGNO_PC_OFFSET  80  /* aka V16, a scratch register */
 #else
-#define REGNO_PC_OFFSET  15  /* PC_REGNUM  */
+#define REGNO_PC_OFFSET  15  /* PC_REGNUM */
 #endif
 
 /* Mapping of CFI Column, Gcc Regno, Signal context offset for _LP64
 
    Name	   CFI	   GCC	   SCTX
-   G0-G30  0-30    0-30
-   PC      31      31
-   V0-V31  64-95   32-63
+   G0-G30  0-30    0-30    0-30
+   SP      31      31      31
+   PC                      32
+   V0-V31  64-95   32-63   N/A
 
 */
 
@@ -386,6 +387,7 @@ TCR(COMMON_CFI(G_REG_OFFSET(26))) \
 TCR(COMMON_CFI(G_REG_OFFSET(27))) \
 TCR(COMMON_CFI(G_REG_OFFSET(28))) \
 TCR(COMMON_CFI(G_REG_OFFSET(29))) \
+TCR(COMMON_CFI(G_REG_OFFSET(30))) \
 TCR(COMMON_CFI(PC_OFFSET)) \
 TCR(".cfi_return_column " S(REGNO_PC_OFFSET))
 #else
@@ -415,17 +417,18 @@ TCR(".cfi_return_column " S(REGNO_PC_OFFSET))
 #ifdef __aarch64__
 #define SIGTRAMP_BODY \
 CR("") \
-TCR("# Push FP and LR on stack") \
-TCR("stp x29, x30, [sp, #-16]!") \
-TCR("# Push register used to hold the CFA on stack") \
-TCR("str x" S(CFA_REG) ", [sp, #-8]!")  \
-TCR("# Set the CFA: x2 value") \
-TCR("mov x" S(CFA_REG) ", x2") \
+TCR("# Allocate the frame (16bytes aligned) and push FP and LR") \
+TCR("stp x29, x30, [sp, #-32]!") \
+TCR("add x29, sp, 0") \
+TCR("# Store register used to hold the CFA on stack (pro forma)") \
+TCR("str x" S(CFA_REG) ", [sp, 16]")  \
+TCR("# Set the CFA reg from the 5th arg") \
+TCR("mov x" S(CFA_REG) ", x4") \
 TCR("# Call the handler") \
 TCR("blr x3") \
 TCR("# Release our frame and return (should never get here!).") \
-TCR("ldr x" S(CFA_REG) " , [sp], 8") \
-TCR("ldp x29, x30, [sp], 16") \
+TCR("ldr x" S(CFA_REG) ", [sp, 16]") \
+TCR("ldp x29, x30, [sp], 32") \
 TCR("ret")
 #else
 #define SIGTRAMP_BODY \

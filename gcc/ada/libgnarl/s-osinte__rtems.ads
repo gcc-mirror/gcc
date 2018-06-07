@@ -426,9 +426,6 @@ package System.OS_Interface is
       abstime : access timespec) return int;
    pragma Import (C, pthread_cond_timedwait, "pthread_cond_timedwait");
 
-   Relative_Timed_Wait : constant Boolean := False;
-   --  pthread_cond_timedwait requires an absolute delay time
-
    --------------------------
    -- POSIX.1c  Section 13 --
    --------------------------

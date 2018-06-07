@@ -199,28 +199,31 @@ dg-init
 
 set md_tests $srcdir/$subdir/md/*.c
 
+# C++ tests belong into g++.dg with a target check.  Do NOT add C to
+# these regexps!
+
 # Main loop.
-dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.{c,S,C}] \
+dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.{c,S}] \
 			 $md_tests]] "" $DEFAULT_CFLAGS
 
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.{c,S,C}]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS
 
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/target-attribute/*.{c,S,C}]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/target-attribute/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS
 
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/arch12/*.{c,S,C}]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/arch12/*.{c,S}]] \
 	"" "-O3 -march=arch12 -mzarch"
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vxe/*.{c,S}]] \
 	"" "-O3 -march=arch12 -mzarch"
 
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.{c,S,C}]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS
 
 # Additional hotpatch torture tests.
 torture-init
-set-torture-options [list -Os -O0 -O1 -O2 -O3]
+set-torture-options [list -Os -O1 -O2 -O3]
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/hotpatch-\[0-9\]*.c]] \
 	"" $DEFAULT_CFLAGS
 torture-finish

@@ -456,6 +456,8 @@ simd_clone_create (struct cgraph_node *old_node)
   if (new_node == NULL)
     return new_node;
 
+  DECL_BUILT_IN_CLASS (new_node->decl) = NOT_BUILT_IN;
+  DECL_FUNCTION_CODE (new_node->decl) = (enum built_in_function) 0;
   TREE_PUBLIC (new_node->decl) = TREE_PUBLIC (old_node->decl);
   DECL_COMDAT (new_node->decl) = DECL_COMDAT (old_node->decl);
   DECL_WEAK (new_node->decl) = DECL_WEAK (old_node->decl);

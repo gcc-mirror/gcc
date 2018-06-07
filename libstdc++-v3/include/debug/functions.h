@@ -87,10 +87,13 @@ namespace __gnu_debug
   template<typename _InputIterator>
     inline _InputIterator
     __check_valid_range(const _InputIterator& __first,
-			const _InputIterator& __last
-			__attribute__((__unused__)))
+			const _InputIterator& __last,
+			const char* __file,
+			unsigned int __line,
+			const char* __function)
     {
-      __glibcxx_check_valid_range(__first, __last);
+      __glibcxx_check_valid_range_at(__first, __last,
+				     __file, __line, __function);
       return __first;
     }
 

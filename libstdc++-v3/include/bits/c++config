@@ -438,7 +438,7 @@ namespace std
 {
   // Avoid the use of assert, because we're trying to keep the <cassert>
   // include out of the mix.
-  inline void
+  extern "C++" inline void
   __replacement_assert(const char* __file, int __line,
 		       const char* __function, const char* __condition)
   {
@@ -535,7 +535,7 @@ namespace std
 // Most of the following conditions are due to limitations in the current
 // implementation.
 #if __cplusplus >= 201103L && _GLIBCXX_USE_CXX11_ABI			\
-  && _GLIBCXX_USE_DUAL_ABI && __cpp_transactional_memory >= 201505L	\
+  && _GLIBCXX_USE_DUAL_ABI && __cpp_transactional_memory >= 201500L	\
   &&  !_GLIBCXX_FULLY_DYNAMIC_STRING && _GLIBCXX_USE_WEAK_REF		\
   && _GLIBCXX_USE_ALLOCATOR_NEW
 #define _GLIBCXX_TXN_SAFE transaction_safe
@@ -607,6 +607,11 @@ namespace std
 # ifndef _GLIBCXX_USE_C99_WCHAR
 # define _GLIBCXX_USE_C99_WCHAR _GLIBCXX98_USE_C99_WCHAR
 # endif
+#endif
+
+/* Define if __float128 is supported on this host. */
+#if defined(__FLOAT128__) || defined(__SIZEOF_FLOAT128__)
+#define _GLIBCXX_USE_FLOAT128
 #endif
 
 // End of prewritten config; the settings discovered at configure time follow.

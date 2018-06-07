@@ -95,15 +95,6 @@ void test03()
   VERIFY(move_count == 1);
   MoveEnabled&& m3 = any_cast<MoveEnabled&&>(any(m));
   VERIFY(move_count == 1);
-  struct MoveDeleted
-  {
-    MoveDeleted(MoveDeleted&&) = delete;
-    MoveDeleted() = default;
-    MoveDeleted(const MoveDeleted&) = default;
-  };
-  MoveDeleted md;
-  MoveDeleted&& md2 = any_cast<MoveDeleted>(any(std::move(md)));
-  MoveDeleted&& md3 = any_cast<MoveDeleted&&>(any(std::move(md)));
 }
 
 void test04()

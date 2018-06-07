@@ -19,7 +19,7 @@ program main
   !$acc update host(array)
 
   do i = 1, n
-     if (array(i) .ne. i) call abort
+     if (array(i) .ne. i) STOP 1
   end do
 
   call kernels_default_present(array, n)
@@ -27,7 +27,7 @@ program main
   !$acc update host(array)
 
   do i = 1, n
-     if (array(i) .ne. i+1) call abort
+     if (array(i) .ne. i+1) STOP 2
   end do
 
   call parallel(array, n)
@@ -35,7 +35,7 @@ program main
   !$acc update host(array)
 
   do i = 1, n
-     if (array(i) .ne. i+i) call abort
+     if (array(i) .ne. i+i) STOP 3
   end do
 
   call parallel_default_present(array, n)
@@ -43,7 +43,7 @@ program main
   !$acc end data
 
   do i = 1, n
-     if (array(i) .ne. i+i+1) call abort
+     if (array(i) .ne. i+i+1) STOP 4
   end do
 end program main
 

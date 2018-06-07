@@ -60,6 +60,7 @@
 #include "diagnostic.h"
 #include "context.h"
 #include "print-tree.h"
+#include "gcc-rich-location.h"
 
 int plugin_is_GPL_compatible;
 
@@ -333,6 +334,29 @@ test_show_locus (function *fun)
       }
     }  
 
+  /* Tests of gcc_rich_location::add_fixit_insert_formatted.  */
+
+  if (0 == strcmp (fnname, "test_add_fixit_insert_formatted_single_line"))
+    {
+      const int line = fnstart_line + 1;
+      location_t insertion_point = get_loc (line, 3);
+      location_t indent = get_loc (line, 2);
+      gcc_rich_location richloc (insertion_point);
+      richloc.add_fixit_insert_formatted ("INSERTED-CONTENT",
+					  insertion_point, indent);
+      inform (&richloc, "single-line insertion");
+    }
+
+  if (0 == strcmp (fnname, "test_add_fixit_insert_formatted_multiline"))
+    {
+      location_t insertion_point = fun->function_end_locus;
+      location_t indent = get_loc (fnstart_line + 1, 2);
+      gcc_rich_location richloc (insertion_point);
+      richloc.add_fixit_insert_formatted ("INSERTED-CONTENT",
+					  insertion_point, indent);
+      inform (&richloc, "multiline insertion");
+    }
+
   /* Example of two carets where both carets appear to have an off-by-one
      error appearing one column early.
      Seen with gfortran.dg/associate_5.f03.
@@ -377,19 +401,17 @@ test_show_locus (function *fun)
       rich_location richloc (line_table, loc);
       for (int line = start_line; line <= finish_line; line++)
 	{
-	  int line_size;
-	  const char *content = location_get_source_line (file, line,
-							  &line_size);
+	  char_span content = location_get_source_line (file, line);
 	  gcc_assert (content);
 	  /* Split line up into words.  */
-	  for (int idx = 0; idx < line_size; idx++)
+	  for (int idx = 0; idx < content.length (); idx++)
 	    {
 	      if (ISALPHA (content[idx]))
 		{
 		  int start_idx = idx;
-		  while (idx < line_size && ISALPHA (content[idx]))
+		  while (idx < content.length () && ISALPHA (content[idx]))
 		    idx++;
-		  if (idx == line_size || !ISALPHA (content[idx]))
+		  if (idx == content.length () || !ISALPHA (content[idx]))
 		    {
 		      location_t start_of_word = get_loc (line, start_idx);
 		      location_t end_of_word = get_loc (line, idx - 1);
@@ -399,8 +421,8 @@ test_show_locus (function *fun)
 		      richloc.add_range (word, true);
 
 		      /* Add a fixit, converting to upper case.  */
-		      char *copy = xstrndup (content + start_idx,
-					     idx - start_idx);
+		      char_span word_span = content.subspan (start_idx, idx - start_idx);
+		      char *copy = word_span.xstrdup ();
 		      for (char *ch = copy; *ch; ch++)
 			*ch = TOUPPER (*ch);
 		      richloc.add_fixit_replace (word, copy);

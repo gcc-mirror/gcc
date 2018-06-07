@@ -318,7 +318,7 @@ matmul_c8_avx (gfc_array_c8 * const restrict retarray,
 
       /* Adjust size of t1 to what is needed.  */
       index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      t1_dim = (a_dim1 - (ycount > 1)) * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
@@ -870,7 +870,7 @@ matmul_c8_avx2 (gfc_array_c8 * const restrict retarray,
 
       /* Adjust size of t1 to what is needed.  */
       index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      t1_dim = (a_dim1 - (ycount > 1)) * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
@@ -1422,7 +1422,7 @@ matmul_c8_avx512f (gfc_array_c8 * const restrict retarray,
 
       /* Adjust size of t1 to what is needed.  */
       index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      t1_dim = (a_dim1 - (ycount > 1)) * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
@@ -1988,7 +1988,7 @@ matmul_c8_vanilla (gfc_array_c8 * const restrict retarray,
 
       /* Adjust size of t1 to what is needed.  */
       index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      t1_dim = (a_dim1 - (ycount > 1)) * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
@@ -2614,7 +2614,7 @@ matmul_c8 (gfc_array_c8 * const restrict retarray,
 
       /* Adjust size of t1 to what is needed.  */
       index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      t1_dim = (a_dim1 - (ycount > 1)) * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 

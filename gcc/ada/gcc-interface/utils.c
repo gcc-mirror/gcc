@@ -1133,9 +1133,15 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 
   switch (TREE_CODE (type))
     {
+    case BOOLEAN_TYPE:
+      /* Do not mess with boolean types that have foreign convention.  */
+      if (TYPE_PRECISION (type) == 1 && TYPE_SIZE (type) == size_tree)
+	break;
+
+      /* ... fall through ... */
+
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-    case BOOLEAN_TYPE:
       biased_p = (TREE_CODE (type) == INTEGER_TYPE
 		  && TYPE_BIASED_REPRESENTATION_P (type));
 
@@ -1501,7 +1507,7 @@ built:
 	       || TREE_OVERFLOW (orig_size)
 	       || tree_int_cst_lt (size, orig_size))))
     {
-      Node_Id gnat_error_node = Empty;
+      Node_Id gnat_error_node;
 
       /* For a packed array, post the message on the original array type.  */
       if (Is_Packed_Array_Impl_Type (gnat_entity))
@@ -1511,8 +1517,12 @@ built:
 	   || Ekind (gnat_entity) == E_Discriminant)
 	  && Present (Component_Clause (gnat_entity)))
 	gnat_error_node = Last_Bit (Component_Clause (gnat_entity));
-      else if (Present (Size_Clause (gnat_entity)))
+      else if (Has_Size_Clause (gnat_entity))
 	gnat_error_node = Expression (Size_Clause (gnat_entity));
+      else if (Has_Object_Size_Clause (gnat_entity))
+	gnat_error_node = Expression (Object_Size_Clause (gnat_entity));
+      else
+	gnat_error_node = Empty;
 
       /* Generate message only for entities that come from source, since
 	 if we have an entity created by expansion, the message will be
@@ -4621,9 +4631,12 @@ convert (tree type, tree expr)
 					   etype)))
     return build1 (VIEW_CONVERT_EXPR, type, expr);
 
-  /* If we are converting between tagged types, try to upcast properly.  */
+  /* If we are converting between tagged types, try to upcast properly.
+     But don't do it if we are just annotating types since tagged types
+     aren't fully laid out in this mode.  */
   else if (ecode == RECORD_TYPE && code == RECORD_TYPE
-	   && TYPE_ALIGN_OK (etype) && TYPE_ALIGN_OK (type))
+	   && TYPE_ALIGN_OK (etype) && TYPE_ALIGN_OK (type)
+	   && !type_annotate_only)
     {
       tree child_etype = etype;
       do {
@@ -6441,6 +6454,9 @@ def_builtin_1 (enum built_in_function fncode,
   /* Preserve an already installed decl.  It most likely was setup in advance
      (e.g. as part of the internal builtins) for specific reasons.  */
   if (builtin_decl_explicit (fncode))
+    return;
+
+  if (fntype == error_mark_node)
     return;
 
   gcc_assert ((!both_p && !fallback_p)

@@ -705,7 +705,7 @@ now defaults to zero.
 
 </section>
 
-<section xml:id="api.rel_50"><info><title><constant>5</constant></title></info>
+<section xml:id="api.rel_51"><info><title><constant>5</constant></title></info>
 
 <para>
   ABI transition adds new implementations of several components, using the
@@ -717,7 +717,8 @@ now defaults to zero.
 <listitem>
   <para>
     Use of the new or old ABI can be selected per-translation unit with the
-    <symbol>_GLIBCXX_USE_CXX11_ABI</symbol> macro.
+    <xref linkend="manual.intro.using.macros"><symbol>_GLIBCXX_USE_CXX11_ABI</symbol>
+    macro</xref>.
   </para>
 </listitem>
 <listitem>
@@ -729,6 +730,12 @@ now defaults to zero.
   <para>
     New <classname>list</classname> implementation containing a new
     data member in order to provide O(1) <function>size()</function>.
+  </para>
+</listitem>
+<listitem>
+  <para>
+    New <classname>ios_base::failure</classname> implementation inheriting
+    from <classname>system_error</classname>.
   </para>
 </listitem>
 </itemizedlist>
@@ -760,5 +767,132 @@ now defaults to zero.
   <classname>has_trivial_copy_assign</classname> deprecated.
 </para>
 
+<section xml:id="api.rel_53"><info><title><constant>5.3</constant></title></info>
+<para> Experimental implementation of the C++ Filesystem TS added. </para>
+
 </section>
+
+</section>
+
+<section xml:id="api.rel_61"><info><title><constant>6</constant></title></info>
+
+<para> C++14 support completed. </para>
+
+<para>
+  Support for mathematical special functions (ISO/IEC 29124:2010) added.
+</para>
+
+<para>
+  Assertions to check function preconditions can be enabled by defining the
+  <xref linkend="manual.intro.using.macros"><symbol>_GLIBCXX_ASSERTIONS</symbol>
+  macro</xref>.
+  The initial set of assertions are a subset of the checks enabled by
+  the Debug Mode, but without the ABI changes and changes to algorithmic
+  complexity that are caused by enabling the full Debug Mode.
+</para>
+
+</section>
+
+<section xml:id="api.rel_71"><info><title><constant>7</constant></title></info>
+
+<para>
+  The type of exception thrown by iostreams changed to the <code>cxx11</code>
+  ABI version of <classname>std::ios_base::failure</classname>.
+</para>
+
+<para>
+  Experimental C++17 support added, including most new library features.
+  The meaning of <classname>shared_ptr&lt;T[]&gt;</classname> changed to
+  match the C++17 semantics.
+</para>
+
+<para>
+  <xref linkend="manual.intro.using.macros"><symbol>_GLIBCXX_RELEASE</symbol>
+  macro</xref> added.
+</para>
+
+<para>
+  <classname>has_trivial_default_constructor</classname>,
+  <classname>has_trivial_copy_constructor</classname> and
+  <classname>has_trivial_copy_assign</classname> removed.
+</para>
+
+<para> Profile Mode was deprecated. </para>
+
+<section xml:id="api.rel_73"><info><title><constant>7.3</constant></title></info>
+
+<para>
+  Including new C++14 or C++17 headers without a suitable <option>-std</option>
+  no longer causes compilation to fail via <literal>#error</literal>.
+  Instead the header is simply empty and doesn't define anything.
+</para>
+
+</section>
+
+</section>
+
+<section xml:id="api.rel_81"><info><title><constant>8</constant></title></info>
+
+<para>
+  The exceptions thrown by iostreams can now be caught by handlers for either
+  version of <classname>std::ios_base::failure</classname>.
+</para>
+
+<para>
+  Experimental implementation of the C++17 Filesystem library added.
+</para>
+
+<para>
+  AddressSanitizer annotations added to <classname>std::vector</classname>
+  to detect out-of-range accesses to the unused capacity of a vector.
+</para>
+
+<para>
+  <function>std::char_traits&lt;char16_t&gt;::to_int_type(u'\uFFFF')</function>
+  now returns <literal>0xFFFD</literal>, as <literal>0xFFFF</literal> is
+  used for <function>std::char_traits&lt;char16_t&gt;::eof()</function>.
+</para>
+
+<para>
+  The extension allowing arithmetic on
+  <classname>std::atomic&lt;void*&gt;</classname> and types like
+  <classname>std::atomic&lt;R(*)()&gt;</classname> was deprecated.
+</para>
+
+<para>
+  The <function>std::uncaught_exception</function> function was deprecated
+  for C++17 mode.
+</para>
+
+<para>
+  The nested typedefs <type>std::hash::result_type</type> and
+  <type>std::hash::argument_type</type> were deprecated for C++17 mode.
+</para>
+
+<para>
+  The deprecated iostream members <type>ios_base::io_state</type>,
+  <type>ios_base::open_mode</type>, <type>ios_base::seek_dir</type>, and
+  <function>basic_streambuf::stossc</function> were removed for C++17 mode.
+</para>
+
+<para>
+  The non-standard C++0x <function>std::copy_exception</function> function
+  was removed.
+</para>
+
+<para>
+  For <option>-std=c++11</option>, <option>-std=c++14</option>, and
+  <option>-std=c++17</option> modes the <filename>&lt;complex.h&gt;</filename>
+  header no longer includes the C99 <filename>&lt;complex.h&gt;</filename>
+  header.
+</para>
+
+<para>
+  For the non-default <option>--enable-symvers=gnu-versioned-namespace</option>
+  configuration, the shared library SONAME has been changed to
+  <filename>libstdc++.so.8</filename>.
+</para>
+
+</section>
+
 </section>

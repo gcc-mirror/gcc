@@ -10,7 +10,7 @@
   do d = a, b
     u(d) = v(d) + w(d)
   end do
-  if (d .ne. 1025) call abort
+  if (d .ne. 1025) STOP 1
   c = 17
   d = 75
   !$omp parallel do simd default(none) firstprivate (a, b) shared(u, v, w) &
@@ -20,8 +20,8 @@
     c = c + 5
     e = c
   end do
-  if (d .ne. 1025 .or. c .ne. (17 + 5 * 1024)) call abort
-  if (e .ne. (17 + 5 * 1024)) call abort
+  if (d .ne. 1025 .or. c .ne. (17 + 5 * 1024)) STOP 2
+  if (e .ne. (17 + 5 * 1024)) STOP 3
   a1 = 0
   a2 = 0
   b1 = 31
@@ -35,7 +35,7 @@
       u(d1 * 32 + d2 + 1) = v(d1 * 32 + d2 + 1) + w(d1 * 32 + d2 + 1)
     end do
   end do
-  if (d1 .ne. 32 .or. d2 .ne. 32) call abort
+  if (d1 .ne. 32 .or. d2 .ne. 32) STOP 4
   d1 = 7
   d2 = 9
   !$omp parallel do simd default(none) firstprivate (a1, b1, a2, b2) &
@@ -45,5 +45,5 @@
       u(d1 * 32 + d2 + 1) = v(d1 * 32 + d2 + 1) + w(d1 * 32 + d2 + 1)
     end do
   end do
-  if (d1 .ne. 32 .or. d2 .ne. 32) call abort
+  if (d1 .ne. 32 .or. d2 .ne. 32) STOP 5
 end

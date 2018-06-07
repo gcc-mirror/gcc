@@ -74,6 +74,6 @@ subroutine test (a, b, sarg, n)
   integer i
 
   do i = 1, n
-     if (a(i) .ne. b(i) + sarg) call abort ()
+     if (a(i) .ne. b(i) + sarg) STOP 1
   end do
 end subroutine test

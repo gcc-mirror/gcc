@@ -44,13 +44,13 @@ contains
   end subroutine test0
 
   subroutine test1() bind(c)
-    integer, target, dimension(100) :: int_array_tar
+    integer(c_int), target, dimension(100) :: int_array_tar
     type(c_ptr) :: my_c_ptr_1 = c_null_ptr
     type(c_ptr) :: my_c_ptr_2 = c_null_ptr
     
-    int_array_tar = 100
+    int_array_tar = 100_c_int
     my_c_ptr_1 = c_loc(int_array_tar)
-    if(test_array_address(my_c_ptr_1, 100) .ne. 1) then
+    if(test_array_address(my_c_ptr_1, 100_c_int) .ne. 1) then
        STOP 3
     end if
   end subroutine test1

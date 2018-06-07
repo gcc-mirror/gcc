@@ -448,8 +448,9 @@ proc check_ifunc_available { } {
 	#ifdef __cplusplus
 	extern "C" {
 	#endif
-	typedef void F (void);
-	F* g (void) { return 0; }
+	extern void f_ ();
+ 	typedef void F (void);
+	F* g (void) { return &f_; }	
 	void f () __attribute__ ((ifunc ("g")));
 	#ifdef __cplusplus
 	}
@@ -2522,6 +2523,22 @@ proc check_effective_target_next_runtime { } {
     }]
 }
 
+# Return 1 if we're generating code for big-endian memory order.
+
+proc check_effective_target_be { } {
+    return [check_no_compiler_messages be object {
+	int dummy[__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? 1 : -1];
+    }]
+}
+
+# Return 1 if we're generating code for little-endian memory order.
+
+proc check_effective_target_le { } {
+    return [check_no_compiler_messages le object {
+	int dummy[__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ? 1 : -1];
+    }]
+}
+
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
 
@@ -2876,6 +2893,13 @@ proc check_effective_target_base_quadfloat_support { } {
 	return [check_vsx_hw_available]
     }
     return 1
+}
+
+# Return 1 if the target supports all four forms of fused multiply-add
+# (fma, fms, fnma, and fnms) for both float and double.
+
+proc check_effective_target_scalar_all_fma { } {
+    return [istarget aarch64*-*-*]
 }
 
 # Return 1 if the target supports compiling fixed-point,
@@ -4088,12 +4112,11 @@ proc check_effective_target_arm_fp16_hw { } {
 # extension (eg. ARMv8.1-A) since there is no macro defined for them.  See
 # how only __ARM_ARCH_8A__ is checked for ARMv8.1-A.
 # Usage: /* { dg-require-effective-target arm_arch_v5_ok } */
-#        /* { dg-add-options arm_arch_v5 } */
-#	 /* { dg-require-effective-target arm_arch_v5_multilib } */
+#        /* { dg-add-options arm_arch_v5t } */
+#	 /* { dg-require-effective-target arm_arch_v5t_multilib } */
 foreach { armfunc armflag armdefs } {
 	v4 "-march=armv4 -marm" __ARM_ARCH_4__
 	v4t "-march=armv4t" __ARM_ARCH_4T__
-	v5 "-march=armv5 -marm" __ARM_ARCH_5__
 	v5t "-march=armv5t" __ARM_ARCH_5T__
 	v5te "-march=armv5te" __ARM_ARCH_5TE__
 	v6 "-march=armv6" __ARM_ARCH_6__
@@ -5567,6 +5590,14 @@ proc check_effective_target_vect_double { } {
     return $et_vect_double_saved($et_index)
 }
 
+# Return 1 if the target supports conditional addition, subtraction,
+# multiplication, division, minimum and maximum on vectors of double,
+# via the cond_ optabs.  Return 0 otherwise.
+
+proc check_effective_target_vect_double_cond_arith { } {
+    return [check_effective_target_aarch64_sve]
+}
+
 # Return 1 if the target supports hardware vectors of long long, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
@@ -5827,6 +5858,8 @@ proc check_effective_target_vect_perm_short { } {
 		 && ![check_effective_target_vect_variable_length])
 	     || [istarget powerpc*-*-*]
 	     || [istarget spu-*-*]
+	     || (([istarget i?86-*-*] || [istarget x86_64-*-*])
+	         && [check_ssse3_available])
 	     || ([istarget mips*-*-*]
 		  && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
@@ -6361,31 +6394,6 @@ proc check_effective_target_unaligned_stack { } {
     return $et_unaligned_stack_saved
 }
 
-# Return 1 if the target plus current options does not have
-# slow unaligned access when using word size accesses.
-#
-# This won't change for different subtargets so cache the result.
-
-proc check_effective_target_word_mode_no_slow_unalign { } {
-    global et_word_mode_no_slow_unalign_saved
-    global et_index
-
-    if [info exists et_word_mode_no_slow_unalign_saved($et_index)] {
-        verbose "check_effective_target_word_mode_no_slow_unalign: \
-                 using cached result" 2
-    } else {
-        set et_word_mode_no_slow_unalign_saved($et_index) 0
-        if { [is-effective-target non_strict_align]
-	     && !([istarget arm*-*-*])
-           } {
-            set et_word_mode_no_slow_unalign_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_word_mode_no_slow_unalign:\
-             returning $et_word_mode_no_slow_unalign_saved($et_index)" 2
-    return $et_word_mode_no_slow_unalign_saved($et_index)
-}
-
 # Return 1 if the target plus current options does not support a vector
 # alignment mechanism, 0 otherwise.
 #
@@ -6610,7 +6618,8 @@ proc check_effective_target_vect_load_lanes { } {
 	verbose "check_effective_target_vect_load_lanes: using cached result" 2
     } else {
 	set et_vect_load_lanes 0
-	if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok])
+	# We don't support load_lanes correctly on big-endian arm.
+	if { ([check_effective_target_arm_little_endian] && [check_effective_target_arm_neon_ok])
 	     || [istarget aarch64*-*-*] } {
 	    set et_vect_load_lanes 1
 	}
@@ -8015,6 +8024,19 @@ proc check_avx_available { } {
   return 0;
 }
 
+# Return true if we are compiling for SSSE3 target.
+
+proc check_ssse3_available { } {
+  if { [check_no_compiler_messages sse3a_available assembly {
+    #ifndef __SSSE3__
+    #error unsupported
+    #endif
+  } ""] } {
+    return 1;
+  }
+  return 0;
+}
+
 # Return true if 32- and 16-bytes vectors are available.
 
 proc check_effective_target_vect_sizes_32B_16B { } {
@@ -8815,6 +8837,26 @@ proc force_conventional_output_for { test } {
 	global gcc_force_conventional_output
 	return $gcc_force_conventional_output
     }
+}
+
+# Record that dg-final test scan-ltrans-tree-dump* requires -flto-partition=one
+# in order to force a single partition, allowing scan-ltrans-tree-dump* to scan
+# a dump file *.exe.ltrans0.*.
+
+proc scan-ltrans-tree-dump_required_options {} {
+    return "-flto-partition=one"
+}
+proc scan-ltrans-tree-dump-times_required_options {} {
+    return "-flto-partition=one"
+}
+proc scan-ltrans-tree-dump-not_required_options {} {
+    return "-flto-partition=one"
+}
+proc scan-ltrans-tree-dump-dem_required_options {} {
+    return "-flto-partition=one"
+}
+proc scan-ltrans-tree-dump-dem-not_required_options {} {
+    return "-flto-partition=one"
 }
 
 # Return 1 if the x86-64 target supports PIE with copy reloc, 0

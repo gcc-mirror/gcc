@@ -1,4 +1,4 @@
-// { dg-options "-lstdc++fs -std=gnu++17" }
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs -std=gnu++17" }
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
@@ -24,7 +24,6 @@
 #include <experimental/filesystem>
 #include <string_view>
 #include <string>
-#define USE_FILESYSTEM_TS
 #include <testsuite_fs.h>
 
 using std::experimental::filesystem::path;

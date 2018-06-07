@@ -352,7 +352,7 @@ package body Sem_Dist is
    end Package_Specification_Of_Scope;
 
    --------------------------
-   -- Process_Partition_ID --
+   -- Process_Partition_Id --
    --------------------------
 
    procedure Process_Partition_Id (N : Node_Id) is

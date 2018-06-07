@@ -76,6 +76,7 @@
 #define vec_vor vec_or
 #define vec_vpkpx vec_packpx
 #define vec_vperm vec_perm
+#define vec_permxor __builtin_vec_vpermxor
 #define vec_vrefp vec_re
 #define vec_vrfin vec_round
 #define vec_vrsqrtefp vec_rsqrte

@@ -1,3 +1,671 @@
+2018-05-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85841
+	PR testsuite/85865
+	* testsuite/libgomp.fortran/collapse2.f90: Add option "-std=legacy".
+	* testsuite/libgomp.fortran/omp_atomic2.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_parse1.f90: Ditto.
+	* testsuite/libgomp.fortran/omp_parse3.f90: Ditto.
+	* testsuite/libgomp.fortran/task2.f90: Ditto.
+	* testsuite/libgomp.fortran/vla1.f90: Ditto.
+	* testsuite/libgomp.fortran/vla2.f90: Ditto.
+	* testsuite/libgomp.fortran/vla3.f90: Ditto.
+	* testsuite/libgomp.fortran/vla4.f90: Ditto.
+	* testsuite/libgomp.fortran/vla5.f90: Ditto.
+	* testsuite/libgomp.fortran/vla6.f90: Ditto.
+	* testsuite/libgomp.fortran/vla8.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/collapse-2.f90: Ditto.
+	* testsuite/libgomp.oacc-fortran/nested-function-1.f90: Ditto.
+
+2018-05-18  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR c++/85782
+	* testsuite/libgomp.oacc-c-c++-common/pr85782.c: New test.
+
+2018-05-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/82901
+	* oacc-parallel.c (GOACC_declare): Use GOMP_ASYNC_SYNC as async argument
+	to GOACC_enter_exit_data.
+
+2018-05-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/83792
+	* oacc-int.h (async_valid_stream_id_p, async_valid_p)
+	(async_synchronous_p): New function.
+	* oacc-async.c (acc_async_test, acc_wait, acc_wait_all_async): Use
+	async_valid_p.
+	* oacc-cuda.c (acc_get_cuda_stream, acc_set_cuda_stream): Use
+	async_valid_stream_id_p.
+	* oacc-mem.c (gomp_acc_remove_pointer): Use async_synchronous_p.
+	* oacc-parallel.c (GOACC_parallel_keyed): Same.
+
+2018-05-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85677
+	* testsuite/lib/libgomp.exp (libgomp_init): Move inclusion of top-level
+	include directory in ALWAYS_CFLAGS out of $blddir != "" condition.
+
+2018-05-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libgomp-dg.exp (libgomp-dg-test): Add save-temps to
+	extra_tool_flags if it contains an -foffload=-fdump-* flag.
+	* testsuite/lib/libgomp.exp: Include scanoffloadtree.exp.
+	* testsuite/libgomp.oacc-c/vec.c: Use scan-offload-tree-dump.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/85411
+	* plugin/plugin-nvptx.c (nvptx_exec): Move parsing of
+	GOMP_OPENACC_DIM ...
+	* env.c (parse_gomp_openacc_dim): ... here.  New function.
+	(initialize_env): Call parse_gomp_openacc_dim.
+	(goacc_default_dims): Define.
+	* libgomp.h (goacc_default_dims): Declare.
+	* oacc-plugin.c (GOMP_PLUGIN_acc_default_dim): New function.
+	* oacc-plugin.h (GOMP_PLUGIN_acc_default_dim): Declare.
+	* libgomp.map: New version "GOMP_PLUGIN_1.2". Add
+	GOMP_PLUGIN_acc_default_dim.
+	* testsuite/libgomp.oacc-c-c++-common/loop-default-runtime.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-default.h: New test.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/83791
+	* testsuite/libgomp.c++/udr-9.C: Update.
+	* testsuite/libgomp.c++/atomic-16.C: Remove.
+	* testsuite/libgomp.c++/cancel-taskgroup-2.C: Remove.
+	* testsuite/libgomp.c++/loop-13.C: Remove.
+	* testsuite/libgomp.c++/loop-14.C: Remove.
+	* testsuite/libgomp.c++/loop-15.C: Remove.
+	* testsuite/libgomp.c++/monotonic-1.C: Remove.
+	* testsuite/libgomp.c++/monotonic-2.C: Remove.
+	* testsuite/libgomp.c++/nonmonotonic-1.C: Remove.
+	* testsuite/libgomp.c++/nonmonotonic-2.C: Remove.
+	* testsuite/libgomp.c++/ordered-1.C: Remove.
+	* testsuite/libgomp.c++/pr45784.C: Remove.
+	* testsuite/libgomp.c++/pr64824.C: Remove.
+	* testsuite/libgomp.c++/pr64868.C: Remove.
+	* testsuite/libgomp.c++/pr66199-1.C: Remove.
+	* testsuite/libgomp.c++/pr66199-2.C: Remove.
+	* testsuite/libgomp.c++/pr66199-3.C: Remove.
+	* testsuite/libgomp.c++/pr66199-4.C: Remove.
+	* testsuite/libgomp.c++/pr66199-5.C: Remove.
+	* testsuite/libgomp.c++/pr66199-6.C: Remove.
+	* testsuite/libgomp.c++/pr66199-7.C: Remove.
+	* testsuite/libgomp.c++/pr66199-8.C: Remove.
+	* testsuite/libgomp.c++/pr66199-9.C: Remove.
+	* testsuite/libgomp.c++/pr69389.C: Remove.
+	* testsuite/libgomp.c++/simd10.C: Remove.
+	* testsuite/libgomp.c++/simd11.C: Remove.
+	* testsuite/libgomp.c++/simd12.C: Remove.
+	* testsuite/libgomp.c++/simd13.C: Remove.
+	* testsuite/libgomp.c++/target-1.C: Remove.
+	* testsuite/libgomp.c++/target-3.C: Remove.
+	* testsuite/libgomp.c++/target-4.C: Remove.
+	* testsuite/libgomp.c++/target-5.C: Remove.
+	* testsuite/libgomp.c++/taskgroup-1.C: Remove.
+	* testsuite/libgomp.c++/taskloop-1.C: Remove.
+	* testsuite/libgomp.c++/taskloop-2.C: Remove.
+	* testsuite/libgomp.c++/taskloop-3.C: Remove.
+	* testsuite/libgomp.c++/taskloop-4.C: Remove.
+	* testsuite/libgomp.c++/udr-9.C: Remove.
+	* testsuite/libgomp.c++/for-10.C: Remove.
+	* testsuite/libgomp.c++/for-11.C: Remove.
+	* testsuite/libgomp.c++/for-12.C: Remove.
+	* testsuite/libgomp.c++/for-13.C: Remove.
+	* testsuite/libgomp.c++/for-14.C: Remove.
+	* testsuite/libgomp.c++/for-9.C: Remove.
+	* testsuite/libgomp.c/atomic-18.c: Move ...
+	* testsuite/libgomp.c-c++-common/atomic-18.c: ... here.
+	* testsuite/libgomp.c/cancel-taskgroup-2.c: Move ...
+	* testsuite/libgomp.c-c++-common/cancel-taskgroup-2.c: here.
+	* testsuite/libgomp.c/loop-13.c: Move ...
+	* testsuite/libgomp.c-c++-common/loop-13.c: ... here.
+	* testsuite/libgomp.c/loop-14.c: Move ...
+	* testsuite/libgomp.c-c++-common/loop-14.c: ... here.
+	* testsuite/libgomp.c/loop-15.c: Remove.
+	* testsuite/libgomp.c-c++-common/loop-15.c: New test.
+	* testsuite/libgomp.c/monotonic-1.c: Move ...
+	* testsuite/libgomp.c-c++-common/monotonic-1.c: ... here.
+	* testsuite/libgomp.c/monotonic-2.c: Move ...
+	* testsuite/libgomp.c-c++-common/monotonic-2.c: ... here.
+	* testsuite/libgomp.c/nonmonotonic-1.c: Move ...
+	* testsuite/libgomp.c-c++-common/nonmonotonic-1.c: ... here.
+	* testsuite/libgomp.c/nonmonotonic-2.c: Move ...
+	* testsuite/libgomp.c-c++-common/nonmonotonic-2.c: ... here.
+	* testsuite/libgomp.c/ordered-4.c: Move ...
+	* testsuite/libgomp.c-c++-common/ordered-4.c: ... here.
+	* testsuite/libgomp.c/pr45784.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr45784.c: ... here.
+	* testsuite/libgomp.c/pr64824.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr64824.c: ... here.
+	* testsuite/libgomp.c/pr64868.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr64868.c: ... here.
+	* testsuite/libgomp.c/pr66199-1.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr66199-1.c: ... here.
+	* testsuite/libgomp.c/pr66199-2.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr66199-2.c: ... here.
+	* testsuite/libgomp.c/pr66199-3.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr66199-3.c: ... here.
+	* testsuite/libgomp.c/pr66199-4.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr66199-4.c: ... here.
+	* testsuite/libgomp.c/pr66199-5.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr66199-5.c: ... here.
+	* testsuite/libgomp.c/pr66199-6.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr66199-6.c: ... here.
+	* testsuite/libgomp.c/pr66199-7.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr66199-7.c: ... here.
+	* testsuite/libgomp.c/pr66199-8.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr66199-8.c: ... here.
+	* testsuite/libgomp.c/pr66199-9.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr66199-9.c: ... here.
+	* testsuite/libgomp.c/pr69389.c: Move ...
+	* testsuite/libgomp.c-c++-common/pr69389.c: ... here.
+	* testsuite/libgomp.c/simd-14.c: Move ...
+	* testsuite/libgomp.c-c++-common/simd-14.c: ... here.
+	* testsuite/libgomp.c/simd-15.c: Move ...
+	* testsuite/libgomp.c-c++-common/simd-15.c: ... here.
+	* testsuite/libgomp.c/simd-16.c: Move ...
+	* testsuite/libgomp.c-c++-common/simd-16.c: ... here.
+	* testsuite/libgomp.c/simd-17.c: Move ...
+	* testsuite/libgomp.c-c++-common/simd-17.c: ... here.
+	* testsuite/libgomp.c/target-1.c: Move ...
+	* testsuite/libgomp.c-c++-common/target-1.c: ... here.
+	* testsuite/libgomp.c/target-10.c: Move ...
+	* testsuite/libgomp.c-c++-common/target-10.c: ... here.
+	* testsuite/libgomp.c/target-13.c: Move ...
+	* testsuite/libgomp.c-c++-common/target-13.c: ... here.
+	* testsuite/libgomp.c/target-2.c: Move ...
+	* testsuite/libgomp.c-c++-common/target-2.c: ... here.
+	* testsuite/libgomp.c/taskgroup-1.c: Move ...
+	* testsuite/libgomp.c-c++-common/taskgroup-1.c: ... here.
+	* testsuite/libgomp.c/taskloop-1.c: Move ...
+	* testsuite/libgomp.c-c++-common/taskloop-1.c: ... here.
+	* testsuite/libgomp.c/taskloop-2.c: Move ...
+	* testsuite/libgomp.c-c++-common/taskloop-2.c: ... here.
+	* testsuite/libgomp.c/taskloop-3.c: Move ...
+	* testsuite/libgomp.c-c++-common/taskloop-3.c: ... here.
+	* testsuite/libgomp.c/taskloop-4.c: Move ...
+	* testsuite/libgomp.c-c++-common/taskloop-4.c: ... here.
+	* testsuite/libgomp.c/udr-1.c: Move ...
+	* testsuite/libgomp.c-c++-common/udr-1.c: ... here.
+	* testsuite/libgomp.c/for-1.c: Move ...
+	* testsuite/libgomp.c-c++-common/for-1.c: ... here.
+	* testsuite/libgomp.c/for-1.h: Move ...
+	* testsuite/libgomp.c-c++-common/for-1.h: ... here.
+	* testsuite/libgomp.c/for-2.c: Move ...
+	* testsuite/libgomp.c-c++-common/for-2.c: ... here.
+	* testsuite/libgomp.c/for-2.h: Move ...
+	* testsuite/libgomp.c-c++-common/for-2.h: ... here.
+	* testsuite/libgomp.c/for-3.c: Move ...
+	* testsuite/libgomp.c-c++-common/for-3.c: ... here.
+	* testsuite/libgomp.c/for-4.c: Move ...
+	* testsuite/libgomp.c-c++-common/for-4.c: ... here.
+	* testsuite/libgomp.c/for-5.c: Move ...
+	* testsuite/libgomp.c-c++-common/for-5.c: ... here.
+	* testsuite/libgomp.c/for-6.c: Move ...
+	* testsuite/libgomp.c-c++-common/for-6.c: ... here.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/82428
+	* testsuite/libgomp.oacc-c-c++-common/gang-static-2.c: Use
+	__builtin_goacc_parlevel_{id,size}.
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-g-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-v-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-g-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-v-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/tile-1.c: Same.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libgomp.exp: Include scanltranstree.exp.
+
+2018-05-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85106
+	* testsuite/lib/libgomp.exp: Include scanwpaipa.exp.
+
+2018-04-29  Julian Brown  <julian@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85527
+	* testsuite/libgomp.oacc-c-c++-common/atomic_capture-1.c: Allow
+	arbitrary order for iterations of atomic subtract check.
+
+2018-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/85527
+	* testsuite/libgomp.oacc-fortran/atomic_capture-1.f90 (main): Store
+	atomic capture results obtained in parallel loop to an array, instead of
+	to a scalar.
+
+2018-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/84020
+	* plugin/cuda/cuda.h (CUjit_option): Add CU_JIT_OPTIMIZATION_LEVEL.
+	* plugin/plugin-nvptx.c (_GNU_SOURCE): Define.
+	(process_GOMP_NVPTX_JIT): New function.
+	(link_ptx): Use process_GOMP_NVPTX_JIT.
+
+2018-04-26  Richard Biener <rguenther@suse.de>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/85422
+	* testsuite/libgomp.oacc-c-c++-common/pr85422.c: New test.
+
+2018-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85519
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Reduce
+	recursion depth from 25 to 23.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Same.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-20  Nathan Sidwell  <nathan@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85445
+	* testsuite/libgomp.oacc-c++/ref-1.C: New.
+
+2018-04-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/85463
+	* testsuite/libgomp.oacc-fortran/error_stop-1.f: New file.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/error_stop-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-3.f: Likewise.
+
+	PR libfortran/85166
+	* testsuite/libgomp.oacc-fortran/abort-1.f90: Switch back to "call
+	abort".
+	* testsuite/libgomp.oacc-fortran/abort-2.f90: Likewise.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-04-16  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/84955
+	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: New test.
+	* testsuite/libgomp.oacc-fortran/pr84955.f90: New test.
+
+2018-04-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83064
+	PR testsuite/85346
+	* testsuite/libgomp.fortran/do_concurrent_5.f90: Move modified
+	test from gfortran.dg to here.
+
+2018-04-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/85204
+	* testsuite/libgomp.oacc-c-c++-common/broadcast-1.c: New test.
+
+2018-03-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/85063
+	* testsuite/libgomp.c/switch-conversion-2.c: New test.
+	* testsuite/libgomp.c/switch-conversion.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/switch-conversion-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/switch-conversion.c: New test.
+
+2018-03-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84381
+	* testsuite/libgomp.fortran/aligned1.f03: Replace non-standard
+	call abort by STOP n.
+	* testsuite/libgomp.fortran/alloc-comp-1.f90: Likewise.
+	* testsuite/libgomp.fortran/alloc-comp-2.f90: Likewise.
+	* testsuite/libgomp.fortran/alloc-comp-3.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable1.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable10.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable11.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable12.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable2.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable3.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable4.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable5.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable6.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable7.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable8.f90: Likewise.
+	* testsuite/libgomp.fortran/allocatable9.f90: Likewise.
+	* testsuite/libgomp.fortran/appendix-a/a.18.1.f90: Likewise.
+	* testsuite/libgomp.fortran/appendix-a/a.19.1.f90: Likewise.
+	* testsuite/libgomp.fortran/associate1.f90: Likewise.
+	* testsuite/libgomp.fortran/associate2.f90: Likewise.
+	* testsuite/libgomp.fortran/associate3.f90: Likewise.
+	* testsuite/libgomp.fortran/cancel-do-1.f90: Likewise.
+	* testsuite/libgomp.fortran/cancel-do-2.f90: Likewise.
+	* testsuite/libgomp.fortran/cancel-parallel-1.f90: Likewise.
+	* testsuite/libgomp.fortran/cancel-sections-1.f90: Likewise.
+	* testsuite/libgomp.fortran/cancel-taskgroup-2.f90: Likewise.
+	* testsuite/libgomp.fortran/character1.f90: Likewise.
+	* testsuite/libgomp.fortran/character2.f90: Likewise.
+	* testsuite/libgomp.fortran/collapse1.f90: Likewise.
+	* testsuite/libgomp.fortran/collapse2.f90: Likewise.
+	* testsuite/libgomp.fortran/collapse3.f90: Likewise.
+	* testsuite/libgomp.fortran/collapse4.f90: Likewise.
+	* testsuite/libgomp.fortran/crayptr1.f90: Likewise.
+	* testsuite/libgomp.fortran/crayptr2.f90: Likewise.
+	* testsuite/libgomp.fortran/crayptr3.f90: Likewise.
+	* testsuite/libgomp.fortran/declare-simd-1.f90: Likewise.
+	* testsuite/libgomp.fortran/declare-simd-3.f90: Likewise.
+	* testsuite/libgomp.fortran/declare-target-2.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-1.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-2.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-3.f90: Likewise.
+	* testsuite/libgomp.fortran/do1.f90: Likewise.
+	* testsuite/libgomp.fortran/do2.f90: Likewise.
+	* testsuite/libgomp.fortran/doacross1.f90: Likewise.
+	* testsuite/libgomp.fortran/doacross2.f90: Likewise.
+	* testsuite/libgomp.fortran/doacross3.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/array_sections-3.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/array_sections-4.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/async_target-1.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/async_target-2.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/declare_target-3.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/declare_target-4.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/declare_target-5.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/device-1.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/device-2.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/device-3.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/simd-1.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/simd-2.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/simd-3.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/simd-4.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/simd-5.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/simd-6.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/simd-7.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/simd-8.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target-1.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target-2.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target-3.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target-4.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target-5.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_data-1.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_data-2.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_data-3.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_data-4.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_data-5.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_data-6.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_data-7.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_update-1.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_update-2.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/task_dep-1.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/task_dep-2.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/task_dep-3.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/task_dep-4.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/task_dep-5.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/teams-2.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/teams-3.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/teams-4.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/teams-5.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/teams-6.f90: Likewise.
+	* testsuite/libgomp.fortran/lastprivate1.f90: Likewise.
+	* testsuite/libgomp.fortran/lastprivate2.f90: Likewise.
+	* testsuite/libgomp.fortran/lib1.f90: Likewise.
+	* testsuite/libgomp.fortran/lib2.f: Likewise.
+	* testsuite/libgomp.fortran/lib3.f: Likewise.
+	* testsuite/libgomp.fortran/lib4.f90: Likewise.
+	* testsuite/libgomp.fortran/lock-1.f90: Likewise.
+	* testsuite/libgomp.fortran/lock-2.f90: Likewise.
+	* testsuite/libgomp.fortran/nested1.f90: Likewise.
+	* testsuite/libgomp.fortran/nestedfn1.f90: Likewise.
+	* testsuite/libgomp.fortran/nestedfn2.f90: Likewise.
+	* testsuite/libgomp.fortran/nestedfn3.f90: Likewise.
+	* testsuite/libgomp.fortran/nestedfn4.f90: Likewise.
+	* testsuite/libgomp.fortran/nestedfn5.f90: Likewise.
+	* testsuite/libgomp.fortran/omp_atomic1.f90: Likewise.
+	* testsuite/libgomp.fortran/omp_atomic2.f90: Likewise.
+	* testsuite/libgomp.fortran/omp_atomic3.f90: Likewise.
+	* testsuite/libgomp.fortran/omp_atomic4.f90: Likewise.
+	* testsuite/libgomp.fortran/omp_atomic5.f90: Likewise.
+	* testsuite/libgomp.fortran/omp_cond1.f: Likewise.
+	* testsuite/libgomp.fortran/omp_cond2.f: Likewise.
+	* testsuite/libgomp.fortran/omp_cond3.F90: Likewise.
+	* testsuite/libgomp.fortran/omp_cond4.F90: Likewise.
+	* testsuite/libgomp.fortran/omp_parse1.f90: Likewise.
+	* testsuite/libgomp.fortran/omp_parse2.f90: Likewise.
+	* testsuite/libgomp.fortran/omp_parse3.f90: Likewise.
+	* testsuite/libgomp.fortran/omp_parse4.f90: Likewise.
+	* testsuite/libgomp.fortran/openmp_version-1.f: Likewise.
+	* testsuite/libgomp.fortran/openmp_version-2.f90: Likewise.
+	* testsuite/libgomp.fortran/parloops-exit-first-loop-alt-2.f95: Likewise.
+	* testsuite/libgomp.fortran/parloops-exit-first-loop-alt.f95: Likewise.
+	* testsuite/libgomp.fortran/pointer1.f90: Likewise.
+	* testsuite/libgomp.fortran/pointer2.f90: Likewise.
+	* testsuite/libgomp.fortran/pr25162.f: Likewise.
+	* testsuite/libgomp.fortran/pr25219.f90: Likewise.
+	* testsuite/libgomp.fortran/pr27395-1.f90: Likewise.
+	* testsuite/libgomp.fortran/pr27395-2.f90: Likewise.
+	* testsuite/libgomp.fortran/pr27416-1.f90: Likewise.
+	* testsuite/libgomp.fortran/pr27916-1.f90: Likewise.
+	* testsuite/libgomp.fortran/pr27916-2.f90: Likewise.
+	* testsuite/libgomp.fortran/pr28390.f: Likewise.
+	* testsuite/libgomp.fortran/pr29629.f90: Likewise.
+	* testsuite/libgomp.fortran/pr32550.f90: Likewise.
+	* testsuite/libgomp.fortran/pr33880.f90: Likewise.
+	* testsuite/libgomp.fortran/pr34020.f90: Likewise.
+	* testsuite/libgomp.fortran/pr35130.f90: Likewise.
+	* testsuite/libgomp.fortran/pr42162.f90: Likewise.
+	* testsuite/libgomp.fortran/pr46753.f90: Likewise.
+	* testsuite/libgomp.fortran/pr48894.f90: Likewise.
+	* testsuite/libgomp.fortran/pr49792-1.f90: Likewise.
+	* testsuite/libgomp.fortran/pr49792-2.f90: Likewise.
+	* testsuite/libgomp.fortran/pr63938-1.f90: Likewise.
+	* testsuite/libgomp.fortran/pr63938-2.f90: Likewise.
+	* testsuite/libgomp.fortran/pr65597.f90: Likewise.
+	* testsuite/libgomp.fortran/pr66199-1.f90: Likewise.
+	* testsuite/libgomp.fortran/pr71014.f90: Likewise.
+	* testsuite/libgomp.fortran/pr81304.f90: Likewise.
+	* testsuite/libgomp.fortran/pr81841.f90: Likewise.
+	* testsuite/libgomp.fortran/pr84418-1.f90: Likewise.
+	* testsuite/libgomp.fortran/pr84418-2.f90: Likewise.
+	* testsuite/libgomp.fortran/procptr1.f90: Likewise.
+	* testsuite/libgomp.fortran/recursion1.f90: Likewise.
+	* testsuite/libgomp.fortran/reduction1.f90: Likewise.
+	* testsuite/libgomp.fortran/reduction2.f90: Likewise.
+	* testsuite/libgomp.fortran/reduction3.f90: Likewise.
+	* testsuite/libgomp.fortran/reduction4.f90: Likewise.
+	* testsuite/libgomp.fortran/reduction5.f90: Likewise.
+	* testsuite/libgomp.fortran/reduction6.f90: Likewise.
+	* testsuite/libgomp.fortran/reference1.f90: Likewise.
+	* testsuite/libgomp.fortran/reference2.f90: Likewise.
+	* testsuite/libgomp.fortran/retval1.f90: Likewise.
+	* testsuite/libgomp.fortran/retval2.f90: Likewise.
+	* testsuite/libgomp.fortran/sharing1.f90: Likewise.
+	* testsuite/libgomp.fortran/sharing2.f90: Likewise.
+	* testsuite/libgomp.fortran/simd1.f90: Likewise.
+	* testsuite/libgomp.fortran/simd2.f90: Likewise.
+	* testsuite/libgomp.fortran/simd3.f90: Likewise.
+	* testsuite/libgomp.fortran/simd4.f90: Likewise.
+	* testsuite/libgomp.fortran/simd5.f90: Likewise.
+	* testsuite/libgomp.fortran/simd6.f90: Likewise.
+	* testsuite/libgomp.fortran/simd7.f90: Likewise.
+	* testsuite/libgomp.fortran/stack.f90: Likewise.
+	* testsuite/libgomp.fortran/strassen.f90: Likewise.
+	* testsuite/libgomp.fortran/tabs1.f90: Likewise.
+	* testsuite/libgomp.fortran/tabs2.f: Likewise.
+	* testsuite/libgomp.fortran/target1.f90: Likewise.
+	* testsuite/libgomp.fortran/target2.f90: Likewise.
+	* testsuite/libgomp.fortran/target3.f90: Likewise.
+	* testsuite/libgomp.fortran/target4.f90: Likewise.
+	* testsuite/libgomp.fortran/target5.f90: Likewise.
+	* testsuite/libgomp.fortran/target6.f90: Likewise.
+	* testsuite/libgomp.fortran/target7.f90: Likewise.
+	* testsuite/libgomp.fortran/target8.f90: Likewise.
+	* testsuite/libgomp.fortran/task1.f90: Likewise.
+	* testsuite/libgomp.fortran/task2.f90: Likewise.
+	* testsuite/libgomp.fortran/task3.f90: Likewise.
+	* testsuite/libgomp.fortran/task4.f90: Likewise.
+	* testsuite/libgomp.fortran/taskgroup1.f90: Likewise.
+	* testsuite/libgomp.fortran/taskloop1.f90: Likewise.
+	* testsuite/libgomp.fortran/taskloop2.f90: Likewise.
+	* testsuite/libgomp.fortran/taskloop3.f90: Likewise.
+	* testsuite/libgomp.fortran/taskloop4.f90: Likewise.
+	* testsuite/libgomp.fortran/threadprivate1.f90: Likewise.
+	* testsuite/libgomp.fortran/threadprivate2.f90: Likewise.
+	* testsuite/libgomp.fortran/threadprivate3.f90: Likewise.
+	* testsuite/libgomp.fortran/threadprivate4.f90: Likewise.
+	* testsuite/libgomp.fortran/udr1.f90: Likewise.
+	* testsuite/libgomp.fortran/udr10.f90: Likewise.
+	* testsuite/libgomp.fortran/udr11.f90: Likewise.
+	* testsuite/libgomp.fortran/udr12.f90: Likewise.
+	* testsuite/libgomp.fortran/udr13.f90: Likewise.
+	* testsuite/libgomp.fortran/udr14.f90: Likewise.
+	* testsuite/libgomp.fortran/udr15.f90: Likewise.
+	* testsuite/libgomp.fortran/udr2.f90: Likewise.
+	* testsuite/libgomp.fortran/udr3.f90: Likewise.
+	* testsuite/libgomp.fortran/udr4.f90: Likewise.
+	* testsuite/libgomp.fortran/udr5.f90: Likewise.
+	* testsuite/libgomp.fortran/udr6.f90: Likewise.
+	* testsuite/libgomp.fortran/udr7.f90: Likewise.
+	* testsuite/libgomp.fortran/udr8.f90: Likewise.
+	* testsuite/libgomp.fortran/udr9.f90: Likewise.
+	* testsuite/libgomp.fortran/vla1.f90: Likewise.
+	* testsuite/libgomp.fortran/vla2.f90: Likewise.
+	* testsuite/libgomp.fortran/vla3.f90: Likewise.
+	* testsuite/libgomp.fortran/vla4.f90: Likewise.
+	* testsuite/libgomp.fortran/vla5.f90: Likewise.
+	* testsuite/libgomp.fortran/vla6.f90: Likewise.
+	* testsuite/libgomp.fortran/vla7.f90: Likewise.
+	* testsuite/libgomp.fortran/vla8.f90: Likewise.
+	* testsuite/libgomp.fortran/workshare1.f90: Likewise.
+	* testsuite/libgomp.fortran/workshare2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/abort-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/abort-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/atomic_capture-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/atomic_rw-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/atomic_update-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/c2.pl: Likewise.
+	* testsuite/libgomp.oacc-fortran/clauses-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-6.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-7.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-8.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/combined-directives-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/combined-reduction.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-4-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/default-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/firstprivate-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/gang-static-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/host_data-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/implicit-firstprivate-ref.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-2.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-enter-exit-2.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-enter-exit.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-update.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-10.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-32-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-32-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-6.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-7.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-8.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/map-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/nested-function-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/nested-function-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/nested-function-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/non-scalar-data.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/openacc_version-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/openacc_version-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-reduction.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pointer-align-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr70643.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr81352.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr83920.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr84028.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/private-variables.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pset-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-6.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-7.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-8.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-7.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-9.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/subarrays-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/subarrays-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/update-1.f90: Likewise.
+
+2018-03-20  Richard Biener  <rguenther@suse.de>
+
+	* testsuite/libgomp.graphite/force-parallel-4.c: XFAIL one
+	parallelizable loop.
+
 2018-02-19  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84148

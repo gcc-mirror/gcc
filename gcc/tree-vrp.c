@@ -386,8 +386,13 @@ set_and_canonicalize_value_range (value_range *vr, enum value_range_type t,
   /* Anti-ranges that can be represented as ranges should be so.  */
   if (t == VR_ANTI_RANGE)
     {
-      bool is_min = vrp_val_is_min (min);
-      bool is_max = vrp_val_is_max (max);
+      /* For -fstrict-enums we may receive out-of-range ranges so consider
+         values < -INF and values > INF as -INF/INF as well.  */
+      tree type = TREE_TYPE (min);
+      bool is_min = (INTEGRAL_TYPE_P (type)
+		     && tree_int_cst_compare (min, TYPE_MIN_VALUE (type)) <= 0);
+      bool is_max = (INTEGRAL_TYPE_P (type)
+		     && tree_int_cst_compare (max, TYPE_MAX_VALUE (type)) >= 0);
 
       if (is_min && is_max)
 	{
@@ -3839,10 +3844,10 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
    Such comparison can yield assertions like
      X >= XX...X00...0
      X <= XX...X11...1
-   in case of COND_OP being NE_EXPR or
+   in case of COND_OP being EQ_EXPR or
      X < XX...X00...0
      X > XX...X11...1
-   in case of EQ_EXPR.  */
+   in case of NE_EXPR.  */
 
 static bool
 is_masked_range_test (tree name, tree valt, enum tree_code cond_code,
@@ -3862,6 +3867,10 @@ is_masked_range_test (tree name, tree valt, enum tree_code cond_code,
 
   wi::tree_to_wide_ref mask = wi::to_wide (maskt);
   wide_int inv_mask = ~mask;
+  /* Must have been removed by now so don't bother optimizing.  */
+  if (mask == 0 || inv_mask == 0)
+    return false;
+
   /* Assume VALT is INTEGER_CST.  */
   wi::tree_to_wide_ref val = wi::to_wide (valt);
 
@@ -3901,9 +3910,6 @@ is_masked_range_test (tree name, tree valt, enum tree_code cond_code,
   *new_name = t;
   *low = wide_int_to_tree (type, val);
   *high = wide_int_to_tree (type, val | inv_mask);
-
-  if (wi::neg_p (val, TYPE_SIGN (type)))
-    std::swap (*low, *high);
 
   return true;
 }
@@ -7123,4 +7129,63 @@ gimple_opt_pass *
 make_pass_vrp (gcc::context *ctxt)
 {
   return new pass_vrp (ctxt);
+}
+
+
+/* Worker for determine_value_range.  */
+
+static void
+determine_value_range_1 (value_range *vr, tree expr)
+{
+  if (BINARY_CLASS_P (expr))
+    {
+      value_range vr0 = VR_INITIALIZER, vr1 = VR_INITIALIZER;
+      determine_value_range_1 (&vr0, TREE_OPERAND (expr, 0));
+      determine_value_range_1 (&vr1, TREE_OPERAND (expr, 1));
+      extract_range_from_binary_expr_1 (vr, TREE_CODE (expr), TREE_TYPE (expr),
+					&vr0, &vr1);
+    }
+  else if (UNARY_CLASS_P (expr))
+    {
+      value_range vr0 = VR_INITIALIZER;
+      determine_value_range_1 (&vr0, TREE_OPERAND (expr, 0));
+      extract_range_from_unary_expr (vr, TREE_CODE (expr), TREE_TYPE (expr),
+				     &vr0, TREE_TYPE (TREE_OPERAND (expr, 0)));
+    }
+  else if (TREE_CODE (expr) == INTEGER_CST)
+    set_value_range_to_value (vr, expr, NULL);
+  else
+    {
+      value_range_type kind;
+      wide_int min, max;
+      /* For SSA names try to extract range info computed by VRP.  Otherwise
+	 fall back to varying.  */
+      if (TREE_CODE (expr) == SSA_NAME
+	  && INTEGRAL_TYPE_P (TREE_TYPE (expr))
+	  && (kind = get_range_info (expr, &min, &max)) != VR_VARYING)
+	set_value_range (vr, kind, wide_int_to_tree (TREE_TYPE (expr), min),
+			 wide_int_to_tree (TREE_TYPE (expr), max), NULL);
+      else
+	set_value_range_to_varying (vr);
+    }
+}
+
+/* Compute a value-range for EXPR and set it in *MIN and *MAX.  Return
+   the determined range type.  */
+
+value_range_type
+determine_value_range (tree expr, wide_int *min, wide_int *max)
+{
+  value_range vr = VR_INITIALIZER;
+  determine_value_range_1 (&vr, expr);
+  if ((vr.type == VR_RANGE
+       || vr.type == VR_ANTI_RANGE)
+      && !symbolic_range_p (&vr))
+    {
+      *min = wi::to_wide (vr.min);
+      *max = wi::to_wide (vr.max);
+      return vr.type;
+    }
+
+  return VR_VARYING;
 }

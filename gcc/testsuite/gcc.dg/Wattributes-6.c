@@ -401,7 +401,8 @@ inline int ATTR ((warn_unused_result))
 finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .warn_unused_result. because it conflicts with attribute .noreturn." } */
 
 inline int ATTR ((aligned (4)))
-finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .aligned \\(4\\). because it conflicts with attribute .aligned \\(8\\)." } */
+  finline_hot_noret_align (int);  /* { dg-warning "ignoring attribute .aligned \\(4\\). because it conflicts with attribute .aligned \\(8\\)." "" { target { ! s390*-*-* } } } */
+/* { dg-error "alignment for 'finline_hot_noret_align' must be at least 8" "" { target s390*-*-* } .-1 } */
 
 inline int ATTR ((aligned (8)))
 finline_hot_noret_align (int);

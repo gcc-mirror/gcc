@@ -1,3 +1,8 @@
+2018-04-20  Martin Liska  <mliska@suse.cz>
+
+	PR objc/85476
+	* objc-act.c (finish_class): Do not overflow string buffer.
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

@@ -463,6 +463,7 @@ extern bool compute_all_dependences (vec<data_reference_p> ,
 extern tree find_data_references_in_bb (struct loop *, basic_block,
                                         vec<data_reference_p> *);
 extern unsigned int dr_alignment (innermost_loop_behavior *);
+extern tree get_base_for_alignment (tree, unsigned int *);
 
 /* Return the alignment in bytes that DR is guaranteed to have at all
    times.  */

@@ -70,17 +70,6 @@ enum processor_type
 };
 
 
-/* FP processor type.  */
-enum fpu_type_t
-{
-  FPU_NONE,			/* No FPU */
-  FPU_SF_LITE,			/* Limited Single Precision FPU */
-  FPU_DF_LITE,			/* Limited Double Precision FPU */
-  FPU_SF_FULL,			/* Full Single Precision FPU */
-  FPU_DF_FULL			/* Full Double Single Precision FPU */
-};
-
-
 /* Types of costly dependences.  */
 enum rs6000_dependence_cost
 {
@@ -149,7 +138,6 @@ enum rs6000_vector {
   VECTOR_ALTIVEC,		/* Use altivec for vector processing */
   VECTOR_VSX,			/* Use VSX for vector processing */
   VECTOR_P8_VECTOR,		/* Use ISA 2.07 VSX for vector processing */
-  VECTOR_PAIRED,		/* Use paired floating point for vectors */
   VECTOR_OTHER			/* Some other vector unit */
 };
 

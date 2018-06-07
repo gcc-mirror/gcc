@@ -1455,7 +1455,8 @@ find_clusters_1 (same_succ *same_succ)
       /* TODO: handle blocks with phi-nodes.  We'll have to find corresponding
 	 phi-nodes in bb1 and bb2, with the same alternatives for the same
 	 preds.  */
-      if (bb_has_non_vop_phi (bb1) || bb_has_eh_pred (bb1))
+      if (bb_has_non_vop_phi (bb1) || bb_has_eh_pred (bb1)
+	  || bb_has_abnormal_pred (bb1))
 	continue;
 
       nr_comparisons = 0;
@@ -1463,7 +1464,8 @@ find_clusters_1 (same_succ *same_succ)
 	{
 	  bb2 = BASIC_BLOCK_FOR_FN (cfun, j);
 
-	  if (bb_has_non_vop_phi (bb2) || bb_has_eh_pred (bb2))
+	  if (bb_has_non_vop_phi (bb2) || bb_has_eh_pred (bb2)
+	      || bb_has_abnormal_pred (bb2))
 	    continue;
 
 	  if (BB_CLUSTER (bb1) != NULL && BB_CLUSTER (bb1) == BB_CLUSTER (bb2))

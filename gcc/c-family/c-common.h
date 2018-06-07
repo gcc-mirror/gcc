@@ -1033,8 +1033,8 @@ extern bool c_dump_tree (void *, tree);
 
 extern void verify_sequence_points (tree);
 
-extern tree fold_offsetof_1 (tree, tree_code ctx = ERROR_MARK);
-extern tree fold_offsetof (tree);
+extern tree fold_offsetof (tree, tree = size_type_node,
+			   tree_code ctx = ERROR_MARK);
 
 extern int complete_array_type (tree *, tree, bool);
 
@@ -1248,7 +1248,7 @@ extern tree find_inv_trees (tree *, int *, void *);
 extern tree replace_inv_trees (tree *, int *, void *);
 
 extern bool reject_gcc_builtin (const_tree, location_t = UNKNOWN_LOCATION);
-extern bool valid_array_size_p (location_t, tree, tree);
+extern bool valid_array_size_p (location_t, tree, tree, bool = true);
 
 /* In c-warn.c.  */
 extern void constant_expression_warning (tree);
@@ -1269,7 +1269,7 @@ extern void warnings_for_convert_and_check (location_t, tree, tree, tree);
 extern void c_do_switch_warnings (splay_tree, location_t, tree, tree, bool,
 				  bool);
 extern void warn_for_omitted_condop (location_t, tree);
-extern void warn_for_restrict (unsigned, tree *, unsigned);
+extern bool warn_for_restrict (unsigned, tree *, unsigned);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and

@@ -79,15 +79,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define FBSD_ENDFILE_SPEC \
   "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
-/* Provide a LIB_SPEC appropriate for FreeBSD as configured and as
-   required by the user-land thread model.  Before __FreeBSD_version
-   500016, select the appropriate libc, depending on whether we're
-   doing profiling or need threads support.  At __FreeBSD_version
-   500016 and later, when threads support is requested include both
-   -lc and the threading lib instead of only -lc_r.  To make matters
-   interesting, we can't actually use __FreeBSD_version provided by
-   <osreldate.h> directly since it breaks cross-compiling.  As a final
-   twist, make it a hard error if -pthread is provided on the command
+/* When threads support is requested include both -lc and the threading
+   library (which assumes FreeBSD 5.x or later, __FreeBSD_version 500016
+   to be precise).
+   And make it a hard error if -pthread is provided on the command
    line and gcc was configured with --disable-threads (this will help
    avoid bug reports from users complaining about threading when they
    misconfigured the gcc bootstrap but are later consulting FreeBSD
@@ -106,17 +101,6 @@ is built with the --enable-threads configure-time option.}		\
     %{pg:  -lc_p}							\
   }"
 #else
-#if FBSD_MAJOR < 5
-#define FBSD_LIB_SPEC "							\
-  %{!shared:								\
-    %{!pg:								\
-      %{!pthread:-lc}							\
-      %{pthread:-lc_r}}							\
-    %{pg:								\
-      %{!pthread:-lc_p}							\
-      %{pthread:-lc_r_p}}						\
-  }"
-#else
 #define FBSD_LIB_SPEC "							\
   %{!shared:								\
     %{!pg: %{pthread:-lpthread} -lc}					\
@@ -126,7 +110,9 @@ is built with the --enable-threads configure-time option.}		\
     %{pthread:-lpthread} -lc						\
   }"
 #endif
-#endif
+
+/* To make matters interesting, we can't actually use __FreeBSD_version
+   provided by <osreldate.h> directly since it breaks cross-compiling.  */
 
 #if FBSD_MAJOR < 6
 #define FBSD_DYNAMIC_LINKER "/usr/libexec/ld-elf.so.1"

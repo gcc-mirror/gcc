@@ -553,6 +553,7 @@ enum gfc_isym_id
   GFC_ISYM_PRODUCT,
   GFC_ISYM_RADIX,
   GFC_ISYM_RAND,
+  GFC_ISYM_RANDOM_INIT,
   GFC_ISYM_RANDOM_NUMBER,
   GFC_ISYM_RANDOM_SEED,
   GFC_ISYM_RANGE,
@@ -2437,7 +2438,7 @@ typedef struct
   gfc_expr *io_unit, *format_expr, *rec, *advance, *iostat, *size, *iomsg,
 	   *id, *pos, *asynchronous, *blank, *decimal, *delim, *pad, *round,
 	   *sign, *extra_comma, *dt_io_kind, *udtio;
-  char default_exp;
+  char dec_ext;
 
   gfc_symbol *namelist;
   /* A format_label of `format_asterisk' indicates the "*" format */
@@ -2921,6 +2922,7 @@ extern int gfc_numeric_storage_size;
 extern int gfc_character_storage_size;
 
 #define gfc_logical_4_kind 4
+#define gfc_integer_4_kind 4
 
 /* symbol.c */
 void gfc_clear_new_implicit (void);
@@ -3032,7 +3034,6 @@ int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **, bool);
 int gfc_get_ha_symbol (const char *, gfc_symbol **);
 int gfc_get_ha_sym_tree (const char *, gfc_symtree **);
 
-void gfc_new_undo_checkpoint (gfc_undo_change_set &);
 void gfc_drop_last_undo_checkpoint (void);
 void gfc_restore_last_undo_checkpoint (void);
 void gfc_undo_symbols (void);
@@ -3463,6 +3464,7 @@ int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
 
 void gfc_convert_mpz_to_signed (mpz_t, int);
 gfc_expr *gfc_simplify_ieee_functions (gfc_expr *);
+bool gfc_is_size_zero_array (gfc_expr *);
 
 /* trans-array.c  */
 

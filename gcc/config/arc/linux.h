@@ -109,3 +109,17 @@ along with GCC; see the file COPYING3.  If not see
 /* Build attribute: procedure call standard.  */
 #undef ATTRIBUTE_PCS
 #define ATTRIBUTE_PCS 3
+
+/* Clear the instruction cache from `beg' to `end'.  This makes an
+   inline system call to SYS_cacheflush.  */
+#undef CLEAR_INSN_CACHE
+#define CLEAR_INSN_CACHE(beg, end)					\
+{									\
+  register unsigned long _beg __asm ("r0") = (unsigned long) (beg);	\
+  register unsigned long _end __asm ("r1") = (unsigned long) (end);	\
+  register unsigned long _xtr __asm ("r2") = 0;				\
+  register unsigned long _scno __asm ("r8") = 244;			\
+  __asm __volatile ("trap_s 0		; sys_cache_sync"		\
+		    : "=r" (_beg)					\
+		    : "0" (_beg), "r" (_end), "r" (_xtr), "r" (_scno));	\
+}

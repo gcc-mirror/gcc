@@ -14,7 +14,7 @@
   for the new implementations have different names the definitions for both
   versions can be present in the same library.
 </p><p> The <span class="symbol">_GLIBCXX_USE_CXX11_ABI</span> macro (see
-<a class="xref" href="using_macros.html" title="Macros">Macros</a>) controls whether
+  <a class="xref" href="using_macros.html" title="Macros">Macros</a>) controls whether
   the declarations in the library headers use the old or new ABI.
   So the decision of which ABI to use can be made separately for each
   source file being compiled.
@@ -43,10 +43,35 @@
   facet that derives from one or other version of
   <code class="classname">time_get</code> is installed in the locale).
 </p><p> Although the standard exception types defined in
-  <code class="filename">&lt;stdexcept&gt;</code> use strings, they
+  <code class="filename">&lt;stdexcept&gt;</code> use strings, most
   are not defined twice, so that a <code class="classname">std::out_of_range</code>
   exception thrown in one file can always be caught by a suitable handler in
   another file, even if the two files are compiled with different ABIs.
+</p><p> One exception type does change when using the new ABI, namely
+  <code class="classname">std::ios_base::failure</code>.
+  This is necessary because the 2011 standard changed its base class from
+  <code class="classname">std::exception</code> to
+  <code class="classname">std::system_error</code>, which causes its layout to change.
+  Exceptions due to iostream errors are thrown by a function inside
+  <code class="filename">libstdc++.so</code>, so whether the thrown
+  exception uses the old <code class="classname">std::ios_base::failure</code> type
+  or the new one depends on the ABI that was active when
+  <code class="filename">libstdc++.so</code> was built,
+  <span class="emphasis"><em>not</em></span> the ABI active in the user code that is using
+  iostreams.
+  This means that for a given build of GCC the type thrown is fixed.
+  In current releases the library throws a special type that can be caught
+  by handlers for either the old or new type,
+  but for GCC 7.1, 7.2 and 7.3 the library throws the new
+  <code class="classname">std::ios_base::failure</code> type,
+  and for GCC 5.x and 6.x the library throws the old type.
+  Catch handlers of type <code class="classname">std::ios_base::failure</code>
+  will only catch the exceptions if using a newer release,
+  or if the handler is compiled with the same ABI as the type thrown by
+  the library.
+  Handlers for <code class="classname">std::exception</code> will always catch
+  iostreams exceptions, because the old and new type both inherit from
+  <code class="classname">std::exception</code>.
 </p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.abi.trouble"></a>Troubleshooting</h3></div></div></div><p> If you get linker errors about undefined references to symbols
   that involve types in the <code class="code">std::__cxx11</code> namespace or the tag
   <code class="code">[abi:cxx11]</code> then it probably indicates that you are trying to

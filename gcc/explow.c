@@ -1626,18 +1626,25 @@ void
 emit_stack_probe (rtx address)
 {
   if (targetm.have_probe_stack_address ())
-    emit_insn (targetm.gen_probe_stack_address (address));
+    {
+      struct expand_operand ops[1];
+      insn_code icode = targetm.code_for_probe_stack_address;
+      create_address_operand (ops, address);
+      maybe_legitimize_operands (icode, 0, 1, ops);
+      expand_insn (icode, 1, ops);
+    }
   else
     {
       rtx memref = gen_rtx_MEM (word_mode, address);
 
       MEM_VOLATILE_P (memref) = 1;
+      memref = validize_mem (memref);
 
       /* See if we have an insn to probe the stack.  */
       if (targetm.have_probe_stack ())
-        emit_insn (targetm.gen_probe_stack (memref));
+	emit_insn (targetm.gen_probe_stack (memref));
       else
-        emit_move_insn (memref, const0_rtx);
+	emit_move_insn (memref, const0_rtx);
     }
 }
 

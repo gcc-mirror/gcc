@@ -23,4 +23,4 @@ MODULE qs_integrate_potential_low
     END SUBROUTINE integrate_general_opt
 END MODULE qs_integrate_potential_low
 ! { dg-final { scan-tree-dump-not "bound" "original" } }
-! { dg-final { scan-tree-dump-not "abort" "original" } }
+! { dg-final { scan-tree-dump-not "_gfortran_stop" "original" } }

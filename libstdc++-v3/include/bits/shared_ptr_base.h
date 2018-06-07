@@ -49,9 +49,7 @@
 #ifndef _SHARED_PTR_BASE_H
 #define _SHARED_PTR_BASE_H 1
 
-#if __cpp_rtti
-# include <typeinfo>
-#endif
+#include <typeinfo>
 #include <bits/allocated_ptr.h>
 #include <bits/refwrap.h>
 #include <bits/stl_function.h>
@@ -59,10 +57,6 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-#if !__cpp_rtti
-  class type_info;
-#endif
-
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_DEPRECATED
@@ -516,7 +510,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const type_info&
     _S_ti() noexcept
     {
-      static constexpr _Sp_make_shared_tag __tag;
+      alignas(type_info) static constexpr _Sp_make_shared_tag __tag;
       return reinterpret_cast<const type_info&>(__tag);
     }
 #endif
@@ -540,6 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       using __allocator_type = __alloc_rebind<_Alloc, _Sp_counted_ptr_inplace>;
 
+      // Alloc parameter is not a reference so doesn't alias anything in __args
       template<typename... _Args>
 	_Sp_counted_ptr_inplace(_Alloc __a, _Args&&... __args)
 	: _M_impl(__a)
@@ -659,8 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  typename _Sp_cp_type::__allocator_type __a2(__a);
 	  auto __guard = std::__allocate_guarded(__a2);
 	  _Sp_cp_type* __mem = __guard.get();
-	  ::new (__mem) _Sp_cp_type(std::move(__a),
-				    std::forward<_Args>(__args)...);
+	  ::new (__mem) _Sp_cp_type(__a, std::forward<_Args>(__args)...);
 	  _M_pi = __mem;
 	  __guard = nullptr;
 	}

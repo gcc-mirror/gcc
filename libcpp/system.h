@@ -37,6 +37,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <stdio.h>
 
+#ifdef __cplusplus
+#include <new>
+#endif
+
 /* Define a generic NULL if one hasn't already been defined.  */
 #ifndef NULL
 #define NULL 0

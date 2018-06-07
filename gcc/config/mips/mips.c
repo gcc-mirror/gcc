@@ -20426,7 +20426,7 @@ mips_final_prescan_insn (rtx_insn *insn, rtx *opvec, int noperands)
       && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
       && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE)
     mips_set_text_contents_type (asm_out_file, "__pool_",
-				 XINT (XVECEXP (PATTERN (insn), 0, 0), 0),
+				 INTVAL (XVECEXP (PATTERN (insn), 0, 0)),
 				 FALSE);
 
   if (mips_need_noat_wrapper_p (insn, opvec, noperands))
@@ -20450,7 +20450,7 @@ mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx_insn *insn,
       && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
       && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE_END)
     mips_set_text_contents_type (asm_out_file, "__pend_",
-				 XINT (XVECEXP (PATTERN (insn), 0, 0), 0),
+				 INTVAL (XVECEXP (PATTERN (insn), 0, 0)),
 				 TRUE);
 }
 
@@ -22307,6 +22307,14 @@ mips_constant_alignment (const_tree exp, HOST_WIDE_INT align)
   return align;
 }
 
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+static unsigned HOST_WIDE_INT
+mips_asan_shadow_offset (void)
+{
+  return 0x0aaa0000;
+}
+
 /* Implement TARGET_STARTING_FRAME_OFFSET.  See mips_compute_frame_info
    for details about the frame layout.  */
 
@@ -22617,6 +22625,9 @@ mips_starting_frame_offset (void)
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT mips_constant_alignment
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET mips_asan_shadow_offset
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET mips_starting_frame_offset

@@ -822,6 +822,23 @@ manual needs to be installed as info for this to work, or to be a
 chapter of this manual.
 @end itemize
 
+The @file{@var{machine}.h} header is included very early in GCC's
+standard sequence of header files, while @file{@var{machine}-protos.h}
+is included late in the sequence.  Thus @file{@var{machine}-protos.h}
+can include declarations referencing types that are not defined when
+@file{@var{machine}.h} is included, specifically including those from
+@file{rtl.h} and @file{tree.h}.  Since both RTL and tree types may not
+be available in every context where @file{@var{machine}-protos.h} is
+included, in this file you should guard declarations using these types
+inside appropriate @code{#ifdef RTX_CODE} or @code{#ifdef TREE_CODE}
+conditional code segments.
+
+If the backend uses shared data structures that require @code{GTY} markers 
+for garbage collection (@pxref{Type Information}), you must declare those
+in @file{@var{machine}.h} rather than @file{@var{machine}-protos.h}.  
+Any definitions required for building libgcc must also go in
+@file{@var{machine}.h}.
+
 GCC uses the macro @code{IN_TARGET_CODE} to distinguish between
 machine-specific @file{.c} and @file{.cc} files and
 machine-independent @file{.c} and @file{.cc} files.  Machine-specific
@@ -1296,6 +1313,16 @@ By convention, keywords ending in @code{_nocache} can also include options
 specified for the particular test in an earlier @code{dg-options} or
 @code{dg-add-options} directive.
 
+@subsubsection Endianness
+
+@table @code
+@item be
+Target uses big-endian memory order for multi-byte and multi-word data.
+
+@item le
+Target uses little-endian memory order for multi-byte and multi-word data.
+@end table
+
 @subsubsection Data type sizes
 
 @table @code
@@ -1397,6 +1424,11 @@ have different type from the value operands.
 
 @item vect_double
 Target supports hardware vectors of @code{double}.
+
+@item vect_double_cond_arith
+Target supports conditional addition, subtraction, multiplication,
+division, minimum and maximum on vectors of @code{double}, via the
+@code{cond_} optabs.
 
 @item vect_element_align_preferred
 The target's preferred vector alignment is the same as the element
@@ -2234,6 +2266,11 @@ Target supports @option{-pie}, @option{-fpie} and @option{-fPIE}.
 @item rdynamic
 Target supports @option{-rdynamic}.
 
+@item scalar_all_fma
+Target supports all four fused multiply-add optabs for both @code{float}
+and @code{double}.  These optabs are: @code{fma_optab}, @code{fms_optab},
+@code{fnma_optab} and @code{fnms_optab}.
+
 @item section_anchors
 Target supports section anchors.
 
@@ -2280,14 +2317,7 @@ Target supports @code{wchar_t} that is compatible with @code{char32_t}.
 
 @item comdat_group
 Target uses comdat groups.
-
-@item weak_undefined
-Target supports weak undefined symbols.
-
-@item word_mode_no_slow_unalign
-Target does not have slow unaligned access when doing word size accesses.
 @end table
-
 
 @subsubsection Local to tests in @code{gcc.target/i386}
 
@@ -2578,8 +2608,8 @@ assembly output.
 
 @subsubsection Scan optimization dump files
 
-These commands are available for @var{kind} of @code{tree}, @code{rtl},
-and @code{ipa}.
+These commands are available for @var{kind} of @code{tree}, @code{ltrans-tree},
+@code{offload-tree}, @code{rtl}, @code{ipa}, and @code{wpa-ipa}.
 
 @table @code
 @item scan-@var{kind}-dump @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]

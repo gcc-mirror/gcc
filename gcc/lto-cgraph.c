@@ -540,7 +540,10 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->thunk.thunk_p, 1);
   bp_pack_value (&bp, node->parallelized_function, 1);
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
-	        LDPR_NUM_KNOWN, node->resolution);
+	        LDPR_NUM_KNOWN,
+		/* When doing incremental link, we will get new resolution
+		   info next time we process the file.  */
+		flag_incremental_link ? LDPR_UNKNOWN : node->resolution);
   bp_pack_value (&bp, node->instrumentation_clone, 1);
   bp_pack_value (&bp, node->split_part, 1);
   streamer_write_bitpack (&bp);
@@ -1257,6 +1260,8 @@ input_node (struct lto_file_decl_data *file_data,
 	 of ipa passes is done.  Alays forcingly create a fresh node.  */
       node = symtab->create_empty ();
       node->decl = fn_decl;
+      if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (fn_decl)))
+	node->ifunc_resolver = 1;
       node->register_symbol ();
     }
 
@@ -1652,7 +1657,7 @@ input_refs (struct lto_input_block *ib,
 }
 	    
 
-static struct gcov_ctr_summary lto_gcov_summary;
+static gcov_summary lto_gcov_summary;
 
 /* Input profile_info from IB.  */
 static void
@@ -1710,7 +1715,7 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
   struct cgraph_node *node;
   struct cgraph_edge *edge;
   gcov_type saved_sum_all = 0;
-  gcov_ctr_summary *saved_profile_info = 0;
+  gcov_summary *saved_profile_info = 0;
   int saved_scale = 0;
 
   /* Find unit with maximal number of runs.  If we ever get serious about

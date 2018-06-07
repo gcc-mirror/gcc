@@ -66,7 +66,7 @@ NAMED_INTCST (ISOCBINDING_INTMAX_T, "c_intmax_t", \
 NAMED_INTCST (ISOCBINDING_INTPTR_T, "c_intptr_t", \
               get_int_kind_from_name (INTPTR_TYPE), GFC_STD_F2003)
 NAMED_INTCST (ISOCBINDING_PTRDIFF_T, "c_ptrdiff_t", \
-              get_int_kind_from_name (PTRDIFF_TYPE), GFC_STD_F2008_TS)
+              get_int_kind_from_name (PTRDIFF_TYPE), GFC_STD_F2018)
 NAMED_INTCST (ISOCBINDING_SIZE_T, "c_size_t", \
               gfc_index_integer_kind, GFC_STD_F2003)
 NAMED_INTCST (ISOCBINDING_SIGNED_CHAR, "c_signed_char", \

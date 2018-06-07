@@ -90,7 +90,7 @@ build_lambda_object (tree lambda_expr)
 	val = build_array_copy (val);
       else if (DECL_NORMAL_CAPTURE_P (field)
 	       && !DECL_VLA_CAPTURE_P (field)
-	       && TREE_CODE (TREE_TYPE (field)) != REFERENCE_TYPE)
+	       && !TYPE_REF_P (TREE_TYPE (field)))
 	{
 	  /* "the entities that are captured by copy are used to
 	     direct-initialize each corresponding non-static data
@@ -291,15 +291,15 @@ is_normal_capture_proxy (tree decl)
   return DECL_NORMAL_CAPTURE_P (val);
 }
 
-/* Returns true iff DECL is a capture proxy for which we can use
-   DECL_CAPTURED_VARIABLE.  In effect, this is a normal proxy other than a
-   nested capture of a function parameter pack.  */
+/* Returns true iff DECL is a capture proxy for a normal capture
+   of a constant variable.  */
 
 bool
-is_capture_proxy_with_ref (tree var)
+is_constant_capture_proxy (tree decl)
 {
-  return (is_normal_capture_proxy (var) && DECL_LANG_SPECIFIC (var)
-	  && DECL_CAPTURED_VARIABLE (var));
+  if (is_normal_capture_proxy (decl))
+    return decl_constant_var_p (DECL_CAPTURED_VARIABLE (decl));
+  return false;
 }
 
 /* VAR is a capture proxy created by build_capture_proxy; add it to the
@@ -308,7 +308,7 @@ is_capture_proxy_with_ref (tree var)
 void
 insert_capture_proxy (tree var)
 {
-  if (is_capture_proxy_with_ref (var))
+  if (is_normal_capture_proxy (var))
     {
       tree cap = DECL_CAPTURED_VARIABLE (var);
       if (CHECKING_P)
@@ -388,7 +388,7 @@ lambda_proxy_type (tree ref)
    inside the operator(), build a placeholder var for future lookups and
    debugging.  */
 
-tree
+static tree
 build_capture_proxy (tree member, tree init)
 {
   tree var, object, fn, closure, name, lam, type;
@@ -411,7 +411,7 @@ build_capture_proxy (tree member, tree init)
 
   type = lambda_proxy_type (object);
 
-  if (name == this_identifier && !POINTER_TYPE_P (type))
+  if (name == this_identifier && !INDIRECT_TYPE_P (type))
     {
       type = build_pointer_type (type);
       type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
@@ -431,6 +431,8 @@ build_capture_proxy (tree member, tree init)
       REFERENCE_VLA_OK (type) = true;
       object = convert (type, ptr);
     }
+
+  complete_type (type);
 
   var = build_decl (input_location, VAR_DECL, name, type);
   SET_DECL_VALUE_EXPR (var, object);
@@ -552,13 +554,13 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
   else if (!dependent_type_p (type)
 	   && variably_modified_type_p (type, NULL_TREE))
     {
-      error ("capture of variable-size type %qT that is not an N3639 array "
+      sorry ("capture of variably-modified type %qT that is not an N3639 array "
 	     "of runtime bound", type);
       if (TREE_CODE (type) == ARRAY_TYPE
 	  && variably_modified_type_p (TREE_TYPE (type), NULL_TREE))
 	inform (input_location, "because the array element type %qT has "
 		"variable size", TREE_TYPE (type));
-      type = error_mark_node;
+      return error_mark_node;
     }
   else
     {
@@ -569,7 +571,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 
       if (id == this_identifier && !by_reference_p)
 	{
-	  gcc_assert (POINTER_TYPE_P (type));
+	  gcc_assert (INDIRECT_TYPE_P (type));
 	  type = TREE_TYPE (type);
 	  initializer = cp_build_fold_indirect_ref (initializer);
 	}
@@ -661,6 +663,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
     return build_capture_proxy (member, initializer);
   /* For explicit captures we haven't started the function yet, so we wait
      and build the proxy from cp_parser_lambda_body.  */
+  LAMBDA_CAPTURE_EXPLICIT_P (LAMBDA_EXPR_CAPTURE_LIST (lambda)) = true;
   return NULL_TREE;
 }
 
@@ -740,9 +743,7 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
     add_capture_p = false;
 
   /* Try to default capture 'this' if we can.  */
-  if (!this_capture
-      && (!add_capture_p
-          || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) != CPLD_NONE))
+  if (!this_capture)
     {
       tree lambda_stack = NULL_TREE;
       tree init = NULL_TREE;
@@ -753,25 +754,40 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
            3. a non-default capturing lambda function.  */
       for (tree tlambda = lambda; ;)
 	{
-          lambda_stack = tree_cons (NULL_TREE,
-                                    tlambda,
-                                    lambda_stack);
+	  if (add_capture_p
+	      && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (tlambda) == CPLD_NONE)
+	    /* tlambda won't let us capture 'this'.  */
+	    break;
 
-	  if (LAMBDA_EXPR_EXTRA_SCOPE (tlambda)
-	      && TREE_CODE (LAMBDA_EXPR_EXTRA_SCOPE (tlambda)) == FIELD_DECL)
+	  if (add_capture_p)
+	    lambda_stack = tree_cons (NULL_TREE,
+				      tlambda,
+				      lambda_stack);
+
+	  tree closure = LAMBDA_EXPR_CLOSURE (tlambda);
+	  tree containing_function
+	    = decl_function_context (TYPE_NAME (closure));
+
+	  tree ex = LAMBDA_EXPR_EXTRA_SCOPE (tlambda);
+	  if (ex && TREE_CODE (ex) == FIELD_DECL)
 	    {
-	      /* In an NSDMI, we don't have a function to look up the decl in,
-		 but the fake 'this' pointer that we're using for parsing is
-		 in scope_chain.  */
-	      init = scope_chain->x_current_class_ptr;
+	      /* Lambda in an NSDMI.  We don't have a function to look up
+		 'this' in, but we can find (or rebuild) the fake one from
+		 inject_this_parameter.  */
+	      if (!containing_function && !COMPLETE_TYPE_P (closure))
+		/* If we're parsing a lambda in a non-local class,
+		   we can find the fake 'this' in scope_chain.  */
+		init = scope_chain->x_current_class_ptr;
+	      else
+		/* Otherwise it's either gone or buried in
+		   function_context_stack, so make another.  */
+		init = build_this_parm (NULL_TREE, DECL_CONTEXT (ex),
+					TYPE_UNQUALIFIED);
 	      gcc_checking_assert
 		(init && (TREE_TYPE (TREE_TYPE (init))
 			  == current_nonlambda_class_type ()));
 	      break;
 	    }
-
-	  tree closure_decl = TYPE_NAME (LAMBDA_EXPR_CLOSURE (tlambda));
-	  tree containing_function = decl_function_context (closure_decl);
 
 	  if (containing_function == NULL_TREE)
 	    /* We ran out of scopes; there's no 'this' to capture.  */
@@ -795,10 +811,6 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
 	      init = LAMBDA_EXPR_THIS_CAPTURE (tlambda);
 	      break;
 	    }
-
-	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (tlambda) == CPLD_NONE)
-	    /* An outer lambda won't let us capture 'this'.  */
-	    break;
 	}
 
       if (init)
@@ -842,6 +854,20 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
   return result;
 }
 
+/* Return the innermost LAMBDA_EXPR we're currently in, if any.  */
+
+tree
+current_lambda_expr (void)
+{
+  tree type = current_class_type;
+  while (type && !LAMBDA_TYPE_P (type))
+    type = decl_type_context (TYPE_NAME (type));
+  if (type)
+    return CLASSTYPE_LAMBDA_EXPR (type);
+  else
+    return NULL_TREE;
+}
+
 /* Return the current LAMBDA_EXPR, if this is a resolvable dummy
    object.  NULL otherwise..  */
 
@@ -858,7 +884,7 @@ resolvable_dummy_lambda (tree object)
       && current_class_type
       && LAMBDA_TYPE_P (current_class_type)
       && lambda_function (current_class_type)
-      && DERIVED_FROM_P (type, current_nonlambda_class_type ()))
+      && DERIVED_FROM_P (type, nonlambda_method_basetype()))
     return CLASSTYPE_LAMBDA_EXPR (current_class_type);
 
   return NULL_TREE;
@@ -923,30 +949,37 @@ current_nonlambda_function (void)
   return fn;
 }
 
-/* Returns the method basetype of the innermost non-lambda function, or
-   NULL_TREE if none.  */
+/* Returns the method basetype of the innermost non-lambda function, including
+   a hypothetical constructor if inside an NSDMI, or NULL_TREE if none.  */
 
 tree
 nonlambda_method_basetype (void)
 {
-  tree fn, type;
   if (!current_class_ref)
     return NULL_TREE;
 
-  type = current_class_type;
+  tree type = current_class_type;
   if (!type || !LAMBDA_TYPE_P (type))
     return type;
 
-  /* Find the nearest enclosing non-lambda function.  */
-  fn = TYPE_NAME (type);
-  do
-    fn = decl_function_context (fn);
-  while (fn && LAMBDA_FUNCTION_P (fn));
+  while (true)
+    {
+      tree lam = CLASSTYPE_LAMBDA_EXPR (type);
+      tree ex = LAMBDA_EXPR_EXTRA_SCOPE (lam);
+      if (ex && TREE_CODE (ex) == FIELD_DECL)
+	/* Lambda in an NSDMI.  */
+	return DECL_CONTEXT (ex);
 
-  if (!fn || !DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
-    return NULL_TREE;
-
-  return TYPE_METHOD_BASETYPE (TREE_TYPE (fn));
+      tree fn = TYPE_CONTEXT (type);
+      if (!fn || TREE_CODE (fn) != FUNCTION_DECL
+	  || !DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	/* No enclosing non-lambda method.  */
+	return NULL_TREE;
+      if (!LAMBDA_FUNCTION_P (fn))
+	/* Found an enclosing non-lambda method.  */
+	return TYPE_METHOD_BASETYPE (TREE_TYPE (fn));
+      type = DECL_CONTEXT (fn);
+    }
 }
 
 /* Like current_scope, but looking through lambdas.  */
@@ -1150,6 +1183,7 @@ maybe_add_lambda_conv_op (tree type)
   tree thistype = cp_build_qualified_type (type, TYPE_QUAL_CONST);
   tree fntype = build_method_type_directly (thistype, rettype, void_list_node);
   tree convfn = build_lang_decl (FUNCTION_DECL, name, fntype);
+  SET_DECL_LANGUAGE (convfn, lang_cplusplus);
   tree fn = convfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
   SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
@@ -1182,6 +1216,7 @@ maybe_add_lambda_conv_op (tree type)
 
   name = get_identifier ("_FUN");
   tree statfn = build_lang_decl (FUNCTION_DECL, name, stattype);
+  SET_DECL_LANGUAGE (statfn, lang_cplusplus);
   fn = statfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
   grokclassfn (type, fn, NO_SPECIAL);
@@ -1376,10 +1411,119 @@ start_lambda_function (tree fco, tree lambda_expr)
   return body;
 }
 
+/* Subroutine of prune_lambda_captures: CAP is a node in
+   LAMBDA_EXPR_CAPTURE_LIST.  Return the variable it captures for which we
+   might optimize away the capture, or NULL_TREE if there is no such
+   variable.  */
+
+static tree
+var_to_maybe_prune (tree cap)
+{
+  if (LAMBDA_CAPTURE_EXPLICIT_P (cap))
+    /* Don't prune explicit captures.  */
+    return NULL_TREE;
+
+  tree mem = TREE_PURPOSE (cap);
+  if (!DECL_P (mem) || !DECL_NORMAL_CAPTURE_P (mem))
+    /* Packs and init-captures aren't captures of constant vars.  */
+    return NULL_TREE;
+
+  tree init = TREE_VALUE (cap);
+  if (is_normal_capture_proxy (init))
+    init = DECL_CAPTURED_VARIABLE (init);
+  if (decl_constant_var_p (init))
+    return init;
+
+  return NULL_TREE;
+}
+
+/* walk_tree helper for prune_lambda_captures: Remember which capture proxies
+   for constant variables are actually used in the lambda body.
+
+   There will always be a DECL_EXPR for the capture proxy; remember it when we
+   see it, but replace it with any other use.  */
+
+static tree
+mark_const_cap_r (tree *t, int *walk_subtrees, void *data)
+{
+  hash_map<tree,tree*> &const_vars = *(hash_map<tree,tree*>*)data;
+
+  tree var = NULL_TREE;
+  if (TREE_CODE (*t) == DECL_EXPR)
+    {
+      tree decl = DECL_EXPR_DECL (*t);
+      if (is_constant_capture_proxy (decl))
+	var = DECL_CAPTURED_VARIABLE (decl);
+      *walk_subtrees = 0;
+    }
+  else if (is_constant_capture_proxy (*t))
+    var = DECL_CAPTURED_VARIABLE (*t);
+
+  if (var)
+    {
+      tree *&slot = const_vars.get_or_insert (var);
+      if (!slot || VAR_P (*t))
+	slot = t;
+    }
+
+  return NULL_TREE;
+}
+
+/* We're at the end of processing a lambda; go back and remove any captures of
+   constant variables for which we've folded away all uses.  */
+
+static void
+prune_lambda_captures (tree body)
+{
+  tree lam = current_lambda_expr ();
+  if (!LAMBDA_EXPR_CAPTURE_OPTIMIZED (lam))
+    /* No uses were optimized away.  */
+    return;
+  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam) == CPLD_NONE)
+    /* No default captures, and we don't prune explicit captures.  */
+    return;
+
+  hash_map<tree,tree*> const_vars;
+
+  cp_walk_tree_without_duplicates (&body, mark_const_cap_r, &const_vars);
+
+  tree *fieldp = &TYPE_FIELDS (LAMBDA_EXPR_CLOSURE (lam));
+  for (tree *capp = &LAMBDA_EXPR_CAPTURE_LIST (lam); *capp; )
+    {
+      tree cap = *capp;
+      if (tree var = var_to_maybe_prune (cap))
+	{
+	  tree *use = *const_vars.get (var);
+	  if (TREE_CODE (*use) == DECL_EXPR)
+	    {
+	      /* All uses of this capture were folded away, leaving only the
+		 proxy declaration.  */
+
+	      /* Splice the capture out of LAMBDA_EXPR_CAPTURE_LIST.  */
+	      *capp = TREE_CHAIN (cap);
+
+	      /* And out of TYPE_FIELDS.  */
+	      tree field = TREE_PURPOSE (cap);
+	      while (*fieldp != field)
+		fieldp = &DECL_CHAIN (*fieldp);
+	      *fieldp = DECL_CHAIN (*fieldp);
+
+	      /* And remove the capture proxy declaration.  */
+	      *use = void_node;
+	      continue;
+	    }
+	}
+
+      capp = &TREE_CHAIN (cap);
+    }
+}
+
 void
 finish_lambda_function (tree body)
 {
   finish_function_body (body);
+
+  prune_lambda_captures (body);
 
   /* Finish the function and generate code for it if necessary.  */
   tree fn = finish_function (/*inline_p=*/true);

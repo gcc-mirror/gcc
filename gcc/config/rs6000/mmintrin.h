@@ -317,7 +317,7 @@ _mm_unpacklo_pi8 (__m64 __m1, __m64 __m2)
   a = (__vector unsigned char)vec_splats (__m1);
   b = (__vector unsigned char)vec_splats (__m2);
   c = vec_mergel (a, b);
-  return (__builtin_unpack_vector_int128 ((vector __int128_t)c, 1));
+  return (__builtin_unpack_vector_int128 ((__vector __int128_t)c, 1));
 #else
   __m64_union m1, m2, res;
 

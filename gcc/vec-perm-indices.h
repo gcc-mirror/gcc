@@ -119,7 +119,7 @@ inline vec_perm_indices::element_type
 vec_perm_indices::clamp (element_type elt) const
 {
   element_type limit = input_nelts (), elem_within_input;
-  int input;
+  HOST_WIDE_INT input;
   if (!can_div_trunc_p (elt, limit, &input, &elem_within_input))
     return elt;
 

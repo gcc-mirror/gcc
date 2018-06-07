@@ -1,7 +1,7 @@
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-require-effective-target arm_neon_ok } */
 /* { dg-add-options arm_neon } */
-/* { dg-do compile } */
 
 #include <arm_neon.h>
 

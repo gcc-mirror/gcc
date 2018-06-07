@@ -5309,10 +5309,11 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
     }
 }
 
-/* Check that the same argument isn't passed to restrict arguments
-   and other arguments.  */
+/* Check that the same argument isn't passed to two or more
+   restrict-qualified formal and issue a -Wrestrict warning
+   if it is.  Return true if a warning has been issued.  */
 
-static void
+static bool
 check_function_restrict (const_tree fndecl, const_tree fntype,
 			 int nargs, tree *argarray)
 {
@@ -5322,11 +5323,14 @@ check_function_restrict (const_tree fndecl, const_tree fntype,
   if (fndecl
       && TREE_CODE (fndecl) == FUNCTION_DECL)
     {
-      /* Skip checking built-ins here.  They are checked in more
-	 detail elsewhere.  */
+      /* Avoid diagnosing calls built-ins with a zero size/bound
+	 here.  They are checked in more detail elsewhere.  */
       if (DECL_BUILT_IN (fndecl)
-	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
-	return;
+	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+	  && nargs == 3
+	  && TREE_CODE (argarray[2]) == INTEGER_CST
+	  && integer_zerop (argarray[2]))
+	return false;
 
       if (DECL_ARGUMENTS (fndecl))
 	parms = DECL_ARGUMENTS (fndecl);
@@ -5334,6 +5338,8 @@ check_function_restrict (const_tree fndecl, const_tree fntype,
 
   for (i = 0; i < nargs; i++)
     TREE_VISITED (argarray[i]) = 0;
+
+  bool warned = false;
 
   for (i = 0; i < nargs && parms && parms != void_list_node; i++)
     {
@@ -5351,11 +5357,13 @@ check_function_restrict (const_tree fndecl, const_tree fntype,
       if (POINTER_TYPE_P (type)
 	  && TYPE_RESTRICT (type)
 	  && !TYPE_READONLY (TREE_TYPE (type)))
-	warn_for_restrict (i, argarray, nargs);
+	warned |= warn_for_restrict (i, argarray, nargs);
     }
 
   for (i = 0; i < nargs; i++)
     TREE_VISITED (argarray[i]) = 0;
+
+  return warned;
 }
 
 /* Helper for check_function_nonnull; given a list of operands which
@@ -5596,8 +5604,10 @@ attribute_fallthrough_p (tree attr)
 
 
 /* Check for valid arguments being passed to a function with FNTYPE.
-   There are NARGS arguments in the array ARGARRAY.  LOC should be used for
-   diagnostics.  Return true if -Wnonnull warning has been diagnosed.  */
+   There are NARGS arguments in the array ARGARRAY.  LOC should be used
+   for diagnostics.  Return true if either -Wnonnull or -Wrestrict has
+   been issued.  */
+
 bool
 check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
 			  int nargs, tree *argarray, vec<location_t> *arglocs)
@@ -5620,7 +5630,7 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
     check_function_sentinel (fntype, nargs, argarray);
 
   if (warn_restrict)
-    check_function_restrict (fndecl, fntype, nargs, argarray);
+    warned_p |= check_function_restrict (fndecl, fntype, nargs, argarray);
   return warned_p;
 }
 
@@ -6158,10 +6168,11 @@ c_common_to_target_charset (HOST_WIDE_INT c)
 
 /* Fold an offsetof-like expression.  EXPR is a nested sequence of component
    references with an INDIRECT_REF of a constant at the bottom; much like the
-   traditional rendering of offsetof as a macro.  Return the folded result.  */
+   traditional rendering of offsetof as a macro.  TYPE is the desired type of
+   the whole expression.  Return the folded result.  */
 
 tree
-fold_offsetof_1 (tree expr, enum tree_code ctx)
+fold_offsetof (tree expr, tree type, enum tree_code ctx)
 {
   tree base, off, t;
   tree_code code = TREE_CODE (expr);
@@ -6186,10 +6197,10 @@ fold_offsetof_1 (tree expr, enum tree_code ctx)
 	  error ("cannot apply %<offsetof%> to a non constant address");
 	  return error_mark_node;
 	}
-      return TREE_OPERAND (expr, 0);
+      return convert (type, TREE_OPERAND (expr, 0));
 
     case COMPONENT_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), code);
+      base = fold_offsetof (TREE_OPERAND (expr, 0), type, code);
       if (base == error_mark_node)
 	return base;
 
@@ -6206,7 +6217,7 @@ fold_offsetof_1 (tree expr, enum tree_code ctx)
       break;
 
     case ARRAY_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), code);
+      base = fold_offsetof (TREE_OPERAND (expr, 0), type, code);
       if (base == error_mark_node)
 	return base;
 
@@ -6262,24 +6273,17 @@ fold_offsetof_1 (tree expr, enum tree_code ctx)
     case COMPOUND_EXPR:
       /* Handle static members of volatile structs.  */
       t = TREE_OPERAND (expr, 1);
-      gcc_assert (VAR_P (t));
-      return fold_offsetof_1 (t);
+      gcc_checking_assert (VAR_P (get_base_address (t)));
+      return fold_offsetof (t, type);
 
     default:
       gcc_unreachable ();
     }
 
+  if (!POINTER_TYPE_P (type))
+    return size_binop (PLUS_EXPR, base, convert (type, off));
   return fold_build_pointer_plus (base, off);
 }
-
-/* Likewise, but convert it to the return type of offsetof.  */
-
-tree
-fold_offsetof (tree expr)
-{
-  return convert (size_type_node, fold_offsetof_1 (expr));
-}
-
 
 /* *PTYPE is an incomplete array.  Complete it with a domain based on
    INITIAL_VALUE.  If INITIAL_VALUE is not present, use 1 if DO_DEFAULT
@@ -7868,17 +7872,20 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
    the name of the array, or NULL_TREE for unnamed arrays.  */
 
 bool
-valid_array_size_p (location_t loc, tree type, tree name)
+valid_array_size_p (location_t loc, tree type, tree name, bool complain)
 {
   if (type != error_mark_node
       && COMPLETE_TYPE_P (type)
       && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
       && !valid_constant_size_p (TYPE_SIZE_UNIT (type)))
     {
-      if (name)
-	error_at (loc, "size of array %qE is too large", name);
-      else
-	error_at (loc, "size of unnamed array is too large");
+      if (complain)
+	{
+	  if (name)
+	    error_at (loc, "size of array %qE is too large", name);
+	  else
+	    error_at (loc, "size of unnamed array is too large");
+	}
       return false;
     }
   return true;

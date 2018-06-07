@@ -37,7 +37,7 @@ void good_nowarn_size_m1 ()
   sink (&str);
 }
 
-void good_nowarn_size_m1_var (const char* s)
+static void good_nowarn_size_m1_var (const char* s)
 {
   GoodString<3> str (s);        // { dg-bogus "\\\[-Wstringop-truncation]" }
   sink (&str);
@@ -112,7 +112,7 @@ private:
   char str[N + 1];
 };
 
-void bad3_warn_size_m1_var (const char *s)
+static void bad3_warn_size_m1_var (const char *s)
 {
   BadString3<3> str (s);
   sink (&str);

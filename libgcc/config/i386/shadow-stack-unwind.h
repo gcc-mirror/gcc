@@ -42,10 +42,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	  _Unwind_Word tmp = (x);		\
 	  while (tmp > 255)			\
 	    {					\
-	      _inc_ssp (tmp);			\
+	      _inc_ssp (255);			\
 	      tmp -= 255;			\
 	    }					\
 	  _inc_ssp (tmp);			\
 	}					\
     }						\
     while (0)
+
+/* Increment frame count.  Skip signal frames.  */
+#undef _Unwind_Frames_Increment
+#define _Unwind_Frames_Increment(context, frames) \
+  if (!_Unwind_IsSignalFrame (context)) frames++

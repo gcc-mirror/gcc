@@ -9,7 +9,8 @@ foo (void)
   bar ();
 }
 
-/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*bar@GOT" } } */
+/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*bar@GOT" { target x32 } } } */
+/* { dg-final { scan-assembler "mov(?:l|q)\[ \t\]*bar@GOT" { target { ! x32 } } } } */
 /* { dg-final { scan-assembler "jmp\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler "call\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler {\tpause} } } */

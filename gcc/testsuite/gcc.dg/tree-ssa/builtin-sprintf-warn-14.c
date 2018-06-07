@@ -17,13 +17,13 @@ typedef __SIZE_TYPE__  size_t;
 
 extern int int_value (void);
 
-int int_range (int min, int max)
+static int int_range (int min, int max)
 {
   int n = int_value ();
   return n < min || max < n ? min : n;
 }
 
-const char*
+static const char*
 choose_string (const char *s1, const char *s2, const char *s3)
 {
   int i = int_value ();

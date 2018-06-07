@@ -1168,10 +1168,6 @@ static void
 asan_poison_variable (tree decl, bool poison, gimple_stmt_iterator *it,
 		      bool before)
 {
-  /* When within an OMP context, do not emit ASAN_MARK internal fns.  */
-  if (gimplify_omp_ctxp)
-    return;
-
   tree unit_size = DECL_SIZE_UNIT (decl);
   tree base = build_fold_addr_expr (decl);
 
@@ -1383,9 +1379,8 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	      && !is_gimple_reg (t)
 	      && flag_stack_reuse != SR_NONE)
 	    {
-	      tree clobber = build_constructor (TREE_TYPE (t), NULL);
+	      tree clobber = build_clobber (TREE_TYPE (t));
 	      gimple *clobber_stmt;
-	      TREE_THIS_VOLATILE (clobber) = 1;
 	      clobber_stmt = gimple_build_assign (t, clobber);
 	      gimple_set_location (clobber_stmt, end_locus);
 	      gimplify_seq_add_stmt (&cleanup, clobber_stmt);
@@ -1689,7 +1684,8 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	  && !TREE_STATIC (decl)
 	  && !DECL_HAS_VALUE_EXPR_P (decl)
 	  && DECL_ALIGN (decl) <= MAX_SUPPORTED_STACK_ALIGNMENT
-	  && dbg_cnt (asan_use_after_scope))
+	  && dbg_cnt (asan_use_after_scope)
+	  && !gimplify_omp_ctxp)
 	{
 	  asan_poisoned_variables->add (decl);
 	  asan_poison_variable (decl, false, seq_p);
@@ -5211,6 +5207,8 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	    tree init = TARGET_EXPR_INITIAL (*from_p);
 
 	    if (init
+		&& (TREE_CODE (*expr_p) != MODIFY_EXPR
+		    || !TARGET_EXPR_NO_ELIDE (*from_p))
 		&& !VOID_TYPE_P (TREE_TYPE (init)))
 	      {
 		*from_p = init;
@@ -5560,8 +5558,13 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       ret = gimplify_expr (to_p, pre_p, post_p, is_gimple_lvalue, fb_lvalue);
       if (ret == GS_ERROR)
 	return ret;
-      gcc_assert (!want_value
-		  && (VAR_P (*to_p) || TREE_CODE (*to_p) == MEM_REF));
+      gcc_assert (!want_value);
+      if (!VAR_P (*to_p) && TREE_CODE (*to_p) != MEM_REF)
+	{
+	  tree addr = get_initialized_tmp_var (build_fold_addr_expr (*to_p),
+					       pre_p, post_p);
+	  *to_p = build_simple_mem_ref_loc (EXPR_LOCATION (*to_p), addr);
+	}
       gimplify_seq_add_stmt (pre_p, gimple_build_assign (*to_p, *from_p));
       *expr_p = NULL;
       return GS_ALL_DONE;
@@ -5928,8 +5931,11 @@ gimplify_save_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	}
       else
 	/* The temporary may not be an SSA name as later abnormal and EH
-	   control flow may invalidate use/def domination.  */
-	val = get_initialized_tmp_var (val, pre_p, post_p, false);
+	   control flow may invalidate use/def domination.  When in SSA
+	   form then assume there are no such issues and SAVE_EXPRs only
+	   appear via GENERIC foldings.  */
+	val = get_initialized_tmp_var (val, pre_p, post_p,
+				       gimple_in_ssa_p (cfun));
 
       TREE_OPERAND (*expr_p, 0) = val;
       SAVE_EXPR_RESOLVED_P (*expr_p) = 1;
@@ -6604,15 +6610,14 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	{
 	  if (flag_stack_reuse == SR_ALL)
 	    {
-	      tree clobber = build_constructor (TREE_TYPE (temp),
-						NULL);
-	      TREE_THIS_VOLATILE (clobber) = true;
+	      tree clobber = build_clobber (TREE_TYPE (temp));
 	      clobber = build2 (MODIFY_EXPR, TREE_TYPE (temp), temp, clobber);
 	      gimple_push_cleanup (temp, clobber, false, pre_p, true);
 	    }
 	  if (asan_poisoned_variables
 	      && DECL_ALIGN (temp) <= MAX_SUPPORTED_STACK_ALIGNMENT
-	      && dbg_cnt (asan_use_after_scope))
+	      && dbg_cnt (asan_use_after_scope)
+	      && !gimplify_omp_ctxp)
 	    {
 	      tree asan_cleanup = build_asan_poison_call_expr (temp);
 	      if (asan_cleanup)
@@ -9270,13 +9275,16 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_REDUCTION:
 	  decl = OMP_CLAUSE_DECL (c);
 	  /* OpenACC reductions need a present_or_copy data clause.
-	     Add one if necessary.  Error is the reduction is private.  */
+	     Add one if necessary.  Emit error when the reduction is private.  */
 	  if (ctx->region_type == ORT_ACC_PARALLEL)
 	    {
 	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	      if (n->value & (GOVD_PRIVATE | GOVD_FIRSTPRIVATE))
-		error_at (OMP_CLAUSE_LOCATION (c), "invalid private "
-			  "reduction on %qE", DECL_NAME (decl));
+		{
+		  remove = true;
+		  error_at (OMP_CLAUSE_LOCATION (c), "invalid private "
+			    "reduction on %qE", DECL_NAME (decl));
+		}
 	      else if ((n->value & GOVD_MAP) == 0)
 		{
 		  tree next = OMP_CLAUSE_CHAIN (c);
@@ -12081,7 +12089,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 	  break;
 
-	case FMA_EXPR:
 	case VEC_PERM_EXPR:
 	  /* Classified as tcc_expression.  */
 	  goto expr_3;

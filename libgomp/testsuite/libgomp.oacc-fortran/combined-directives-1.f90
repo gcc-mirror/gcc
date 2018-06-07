@@ -19,9 +19,9 @@ program main
   end do
 
   do i = 1, n
-    if (a(i) .ne. 3.0) call abort
+    if (a(i) .ne. 3.0) STOP 1
 
-    if (b(i) .ne. 2.0) call abort
+    if (b(i) .ne. 2.0) STOP 2
   end do
 
   !$acc kernels loop copy (a(1:n)) copy (b(1:n))
@@ -31,9 +31,9 @@ program main
   end do
 
   do i = 1, n
-    if (a(i) .ne. 6.0) call abort
+    if (a(i) .ne. 6.0) STOP 3
 
-    if (b(i) .ne. 3.0) call abort
+    if (b(i) .ne. 3.0) STOP 4
   end do
 
 end program main

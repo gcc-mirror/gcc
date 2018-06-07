@@ -19,4 +19,4 @@ subroutine S ( A )
   esize = ( storage_size(a) + 7 ) / 8
 end
 
-! { dg-final { scan-tree-dump-not "abort" "original" } }
+! { dg-final { scan-tree-dump-not "_gfortran_stop" "original" } }

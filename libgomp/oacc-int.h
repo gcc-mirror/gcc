@@ -99,6 +99,28 @@ void goacc_restore_bind (void);
 void goacc_lazy_initialize (void);
 void goacc_host_init (void);
 
+static inline bool
+async_valid_stream_id_p (int async)
+{
+  return async >= 0;
+}
+
+static inline bool
+async_valid_p (int async)
+{
+  return (async == acc_async_noval || async == acc_async_sync
+	  || async_valid_stream_id_p (async));
+}
+
+static inline bool
+async_synchronous_p (int async)
+{
+  if (!async_valid_p (async))
+    return true;
+
+  return async == acc_async_sync;
+}
+
 #ifdef HAVE_ATTRIBUTE_VISIBILITY
 # pragma GCC visibility pop
 #endif

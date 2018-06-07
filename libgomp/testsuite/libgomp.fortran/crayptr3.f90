@@ -18,7 +18,7 @@
   l = l .or. (p .ne. (2 + omp_get_thread_num ()))
 !$omp end parallel
 
-  if (l) call abort
+  if (l) STOP 1
 
   l = .false.
   ip = loc (a)
@@ -31,6 +31,6 @@
     l = l .or. (p .ne. (2 + i))
   end do
 
-  if (l) call abort
-  if (p .ne. 3) call abort
+  if (l) STOP 2
+  if (p .ne. 3) STOP 3
 end

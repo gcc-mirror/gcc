@@ -933,92 +933,68 @@ tree_size (const_tree node)
     }
 }
 
-/* Record interesting allocation statistics for a tree node with CODE
-   and LENGTH.  */
+/* Return tree node kind based on tree CODE.  */
 
-static void
-record_node_allocation_statistics (enum tree_code code ATTRIBUTE_UNUSED,
-				   size_t length ATTRIBUTE_UNUSED)
+static tree_node_kind
+get_stats_node_kind (enum tree_code code)
 {
   enum tree_code_class type = TREE_CODE_CLASS (code);
-  tree_node_kind kind;
-
-  if (!GATHER_STATISTICS)
-    return;
 
   switch (type)
     {
     case tcc_declaration:  /* A decl node */
-      kind = d_kind;
-      break;
-
+      return d_kind;
     case tcc_type:  /* a type node */
-      kind = t_kind;
-      break;
-
+      return t_kind;
     case tcc_statement:  /* an expression with side effects */
-      kind = s_kind;
-      break;
-
+      return s_kind;
     case tcc_reference:  /* a reference */
-      kind = r_kind;
-      break;
-
+      return r_kind;
     case tcc_expression:  /* an expression */
     case tcc_comparison:  /* a comparison expression */
     case tcc_unary:  /* a unary arithmetic expression */
     case tcc_binary:  /* a binary arithmetic expression */
-      kind = e_kind;
-      break;
-
+      return e_kind;
     case tcc_constant:  /* a constant */
-      kind = c_kind;
-      break;
-
+      return c_kind;
     case tcc_exceptional:  /* something random, like an identifier.  */
       switch (code)
 	{
 	case IDENTIFIER_NODE:
-	  kind = id_kind;
-	  break;
-
+	  return id_kind;
 	case TREE_VEC:
-	  kind = vec_kind;
-	  break;
-
+	  return vec_kind;
 	case TREE_BINFO:
-	  kind = binfo_kind;
-	  break;
-
+	  return binfo_kind;
 	case SSA_NAME:
-	  kind = ssa_name_kind;
-	  break;
-
+	  return ssa_name_kind;
 	case BLOCK:
-	  kind = b_kind;
-	  break;
-
+	  return b_kind;
 	case CONSTRUCTOR:
-	  kind = constr_kind;
-	  break;
-
+	  return constr_kind;
 	case OMP_CLAUSE:
-	  kind = omp_clause_kind;
-	  break;
-
+	  return omp_clause_kind;
 	default:
-	  kind = x_kind;
-	  break;
+	  return x_kind;
 	}
       break;
-
     case tcc_vl_exp:
-      kind = e_kind;
-      break;
-
+      return e_kind;
     default:
       gcc_unreachable ();
     }
+}
+
+/* Record interesting allocation statistics for a tree node with CODE
+   and LENGTH.  */
+
+static void
+record_node_allocation_statistics (enum tree_code code, size_t length)
+{
+  if (!GATHER_STATISTICS)
+    return;
+
+  tree_node_kind kind = get_stats_node_kind (code);
 
   tree_code_counts[(int) code]++;
   tree_node_counts[(int) kind]++;
@@ -1157,9 +1133,15 @@ free_node (tree node)
   enum tree_code code = TREE_CODE (node);
   if (GATHER_STATISTICS)
     {
+      enum tree_node_kind kind = get_stats_node_kind (code);
+
+      gcc_checking_assert (tree_code_counts[(int) TREE_CODE (node)] != 0);
+      gcc_checking_assert (tree_node_counts[(int) kind] != 0);
+      gcc_checking_assert (tree_node_sizes[(int) kind] >= tree_size (node));
+
       tree_code_counts[(int) TREE_CODE (node)]--;
-      tree_node_counts[(int) t_kind]--;
-      tree_node_sizes[(int) t_kind] -= tree_size (node);
+      tree_node_counts[(int) kind]--;
+      tree_node_sizes[(int) kind] -= tree_size (node);
     }
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     vec_free (CONSTRUCTOR_ELTS (node));
@@ -2075,6 +2057,16 @@ build_constructor_va (tree type, int nelts, ...)
     }
   va_end (p);
   return build_constructor (type, v);
+}
+
+/* Return a node of type TYPE for which TREE_CLOBBER_P is true.  */
+
+tree
+build_clobber (tree type)
+{
+  tree clobber = build_constructor (type, NULL);
+  TREE_THIS_VOLATILE (clobber) = true;
+  return clobber;
 }
 
 /* Return a new FIXED_CST node whose type is TYPE and value is F.  */
@@ -4352,6 +4344,11 @@ stabilize_reference_1 (tree e)
   switch (TREE_CODE_CLASS (code))
     {
     case tcc_exceptional:
+      /* Always wrap STATEMENT_LIST into SAVE_EXPR, even if it doesn't
+	 have side-effects.  */
+      if (code == STATEMENT_LIST)
+	return save_expr (e);
+      /* FALLTHRU */
     case tcc_type:
     case tcc_declaration:
     case tcc_comparison:
@@ -5534,7 +5531,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  tree tem;
 	  FOR_EACH_VEC_ELT (*BINFO_BASE_BINFOS (TYPE_BINFO (t)), i, tem)
 	    fld_worklist_push (TREE_TYPE (tem), fld);
-	  fld_worklist_push (BINFO_VIRTUALS (TYPE_BINFO (t)), fld);
+	  fld_worklist_push (BINFO_TYPE (TYPE_BINFO (t)), fld);
+	  fld_worklist_push (BINFO_VTABLE (TYPE_BINFO (t)), fld);
 	}
       if (RECORD_OR_UNION_TYPE_P (t))
 	{
@@ -5553,6 +5551,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	      tem = TREE_CHAIN (tem);
 	    }
 	}
+      if (FUNC_OR_METHOD_TYPE_P (t))
+	fld_worklist_push (TYPE_METHOD_BASETYPE (t), fld);
 
       fld_worklist_push (TYPE_STUB_DECL (t), fld);
       *ws = 0;
@@ -5871,6 +5871,8 @@ free_lang_data (void)
 
   /* Reset diagnostic machinery.  */
   tree_diagnostics_defaults (global_dc);
+
+  rebuild_type_inheritance_graph ();
 
   return 0;
 }
@@ -7169,7 +7171,6 @@ commutative_ternary_tree_code (enum tree_code code)
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
     case DOT_PROD_EXPR:
-    case FMA_EXPR:
       return true;
 
     default:
@@ -7359,6 +7360,9 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
       for (i = 0; i < TREE_VEC_LENGTH (t); ++i)
 	inchash::add_expr (TREE_VEC_ELT (t, i), hstate, flags);
       return;
+    case IDENTIFIER_NODE:
+      hstate.add_object (IDENTIFIER_HASH_VALUE (t));
+      return;
     case FUNCTION_DECL:
       /* When referring to a built-in FUNCTION_DECL, use the __builtin__ form.
 	 Otherwise nodes that compare equal according to operand_equal_p might
@@ -7455,7 +7459,6 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
 	      flags &= ~OEP_ADDRESS_OF;
 	      break;
 
-	    case FMA_EXPR:
 	    case WIDEN_MULT_PLUS_EXPR:
 	    case WIDEN_MULT_MINUS_EXPR:
 	      {
@@ -9785,8 +9788,6 @@ build_common_tree_nodes (bool signed_char)
     {
       int_n_trees[i].signed_type = make_signed_type (int_n_data[i].bitsize);
       int_n_trees[i].unsigned_type = make_unsigned_type (int_n_data[i].bitsize);
-      TYPE_SIZE (int_n_trees[i].signed_type) = bitsize_int (int_n_data[i].bitsize);
-      TYPE_SIZE (int_n_trees[i].unsigned_type) = bitsize_int (int_n_data[i].bitsize);
 
       if (int_n_data[i].bitsize > LONG_LONG_TYPE_SIZE
 	  && int_n_enabled_p[i])
@@ -10279,6 +10280,14 @@ build_common_builtin_nodes (void)
 			"__builtin_memcmp_eq",
 			ECF_PURE | ECF_NOTHROW | ECF_LEAF);
 
+  local_define_builtin ("__builtin_strncmp_eq", ftype, BUILT_IN_STRNCMP_EQ,
+			"__builtin_strncmp_eq",
+			ECF_PURE | ECF_NOTHROW | ECF_LEAF);
+
+  local_define_builtin ("__builtin_strcmp_eq", ftype, BUILT_IN_STRCMP_EQ,
+			"__builtin_strcmp_eq",
+			ECF_PURE | ECF_NOTHROW | ECF_LEAF);
+
   /* If there's a possibility that we might use the ARM EABI, build the
     alternate __cxa_end_cleanup node used to resume from C++.  */
   if (targetm.arm_eabi_unwinder)
@@ -10384,17 +10393,19 @@ build_common_builtin_nodes (void)
 	  *q = TOLOWER (*p);
 	*q = '\0';
 
+	/* For -ftrapping-math these should throw from a former
+	   -fnon-call-exception stmt.  */
 	built_in_names[mcode] = concat (prefix, "mul", mode_name_buf, "3",
 					NULL);
         local_define_builtin (built_in_names[mcode], ftype, mcode,
 			      built_in_names[mcode],
-			      ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+			      ECF_CONST | ECF_LEAF);
 
 	built_in_names[dcode] = concat (prefix, "div", mode_name_buf, "3",
 					NULL);
         local_define_builtin (built_in_names[dcode], ftype, dcode,
 			      built_in_names[dcode],
-			      ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+			      ECF_CONST | ECF_LEAF);
       }
   }
 
@@ -12416,14 +12427,16 @@ typedef_variant_p (const_tree type)
   return is_typedef_decl (TYPE_NAME (type));
 }
 
-/* Warn about a use of an identifier which was marked deprecated.  */
-void
+/* Warn about a use of an identifier which was marked deprecated.  Returns
+   whether a warning was given.  */
+
+bool
 warn_deprecated_use (tree node, tree attr)
 {
   const char *msg;
 
   if (node == 0 || !warn_deprecated_decl)
-    return;
+    return false;
 
   if (!attr)
     {
@@ -12446,7 +12459,7 @@ warn_deprecated_use (tree node, tree attr)
   else
     msg = NULL;
 
-  bool w;
+  bool w = false;
   if (DECL_P (node))
     {
       if (msg)
@@ -12472,49 +12485,29 @@ warn_deprecated_use (tree node, tree attr)
 	    what = DECL_NAME (TYPE_NAME (node));
 	}
 
-      if (decl)
+      if (what)
 	{
-	  if (what)
-	    {
-	      if (msg)
-		w = warning (OPT_Wdeprecated_declarations,
-			     "%qE is deprecated: %s", what, msg);
-	      else
-		w = warning (OPT_Wdeprecated_declarations,
-			     "%qE is deprecated", what);
-	    }
+	  if (msg)
+	    w = warning (OPT_Wdeprecated_declarations,
+			 "%qE is deprecated: %s", what, msg);
 	  else
-	    {
-	      if (msg)
-		w = warning (OPT_Wdeprecated_declarations,
-			     "type is deprecated: %s", msg);
-	      else
-		w = warning (OPT_Wdeprecated_declarations,
-			     "type is deprecated");
-	    }
-	  if (w)
-	    inform (DECL_SOURCE_LOCATION (decl), "declared here");
+	    w = warning (OPT_Wdeprecated_declarations,
+			 "%qE is deprecated", what);
 	}
       else
 	{
-	  if (what)
-	    {
-	      if (msg)
-		warning (OPT_Wdeprecated_declarations, "%qE is deprecated: %s",
-			 what, msg);
-	      else
-		warning (OPT_Wdeprecated_declarations, "%qE is deprecated", what);
-	    }
+	  if (msg)
+	    w = warning (OPT_Wdeprecated_declarations,
+			 "type is deprecated: %s", msg);
 	  else
-	    {
-	      if (msg)
-		warning (OPT_Wdeprecated_declarations, "type is deprecated: %s",
-			 msg);
-	      else
-		warning (OPT_Wdeprecated_declarations, "type is deprecated");
-	    }
+	    w = warning (OPT_Wdeprecated_declarations,
+			 "type is deprecated");
 	}
+      if (w && decl)
+	inform (DECL_SOURCE_LOCATION (decl), "declared here");
     }
+
+  return w;
 }
 
 /* Return true if REF has a COMPONENT_REF with a bit-field field declaration
@@ -13048,7 +13041,7 @@ verify_type_variant (const_tree t, tree tv)
   do {									    \
     if (flag (tv) != flag (t))						    \
       {									    \
-	error ("type variant differs by " #flag ".");			    \
+	error ("type variant differs by %s", #flag);			    \
 	debug_tree (tv);						    \
 	return false;							    \
       }									    \

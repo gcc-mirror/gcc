@@ -18,7 +18,7 @@
     c = c + b - (7 + 2 * i)
     call foo (b, i, j, 2)
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) call abort
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) STOP 1
   i = 4
   j = 4
   b = 7
@@ -27,7 +27,7 @@
     c = c + b - (7 + i / 4 * 3)
     call foo (b, i, j, 3)
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) call abort
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) STOP 2
   i = 4
   j = 4
   b = 7
@@ -36,7 +36,7 @@
     c = c + b - (7 + 2 * i)
     call foo (b, i, j, 2)
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) call abort
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) STOP 3
   i = 4
   j = 4
   b = 7
@@ -45,7 +45,7 @@
     c = c + b - (7 + i / 4 * 3)
     call foo (b, i, j, 3)
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) call abort
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) STOP 4
   i = 4
   j = 4
   b = 7
@@ -56,7 +56,7 @@
       call foo (b, i, j, 2)
     end do
   end do
-  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) call abort
+  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) STOP 5
   i = 4
   j = 4
   b = 7
@@ -67,7 +67,7 @@
       call foo (b, i, j, 2)
     end do
   end do
-  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) call abort
+  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) STOP 6
   i = 4
   j = 4
   b = 7
@@ -76,7 +76,7 @@
     c = c + b - (7 + 2 * i)
     call foo (b, i, j, 2)
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) call abort
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) STOP 7
   i = 4
   j = 4
   b = 7
@@ -85,7 +85,7 @@
     c = c + b - (7 + i / 4 * 3)
     call foo (b, i, j, 3)
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) call abort
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) STOP 8
   i = 4
   j = 4
   b = 7
@@ -94,7 +94,7 @@
     c = c + b - (7 + 2 * i)
     call foo (b, i, j, 2)
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) call abort
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 64 * 2) STOP 9
   i = 4
   j = 4
   b = 7
@@ -103,7 +103,7 @@
     c = c + b - (7 + i / 4 * 3)
     call foo (b, i, j, 3)
   end do
-  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) call abort
+  if (c /= 0 .or. i /= 64 .or. b /= 7 + 16 * 3) STOP 10
   i = 4
   j = 4
   b = 7
@@ -114,7 +114,7 @@
       call foo (b, i, j, 2)
     end do
   end do
-  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) call abort
+  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) STOP 11
   i = 4
   j = 4
   b = 7
@@ -126,7 +126,7 @@
       call foo (b, i, j, 2)
     end do
   end do
-  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) call abort
+  if (c /= 0 .or. i /= 8 .or. j /= 8 .or. b /= 7 + 64 * 2) STOP 12
 end
 subroutine foo (b, i, j, x)
   integer, intent (inout) :: b

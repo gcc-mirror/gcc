@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-maltivec -mabi=altivec -std=gnu99 -mno-vsx -Wno-deprecated" } */
+/* { dg-require-effective-target vmx_hw } */
+/* { dg-options "-maltivec -mabi=altivec -std=gnu99 -mvsx -Wno-deprecated" } */
 
 /* Checks from the original ops.c that pass pointers to long or
    unsigned long for operations that support that in released versions
@@ -10,28 +11,33 @@
 extern int *var_int;
 extern long * *var_long_ptr;
 extern unsigned long * *var_unsigned_long_ptr;
+extern long long int * *var_long_long_ptr;
+extern unsigned long long int * *var_unsigned_long_long_ptr;
 extern vector signed int * *var_vec_s32_ptr;
 extern vector signed int *var_vec_s32;
 extern vector unsigned char * *var_vec_u8_ptr;
 extern vector unsigned char *var_vec_u8;
 extern vector unsigned int * *var_vec_u32_ptr;
 extern vector unsigned int *var_vec_u32;
+/* Use of long long int types requires -mvsx command-line option. */
+extern vector long long int *var_vec_s64;
+extern vector unsigned long long int *var_vec_u64;
 
 void f13() {
   *var_vec_s32++ = vec_ld(var_int[0], var_long_ptr[1]);
   *var_vec_s32++ = vec_lde(var_int[0], var_long_ptr[1]);
-  *var_vec_s32++ = vec_ldl(var_int[0], var_long_ptr[1]);
+  *var_vec_s64++ = vec_ldl(var_int[0], var_long_long_ptr[1]);
   *var_vec_s32++ = vec_lvewx(var_int[0], var_long_ptr[1]);
   *var_vec_s32++ = vec_lvx(var_int[0], var_long_ptr[1]);
-  *var_vec_s32++ = vec_lvxl(var_int[0], var_long_ptr[1]);
+  *var_vec_s64++ = vec_lvxl(var_int[0], var_long_long_ptr[1]);
 }
 void f22() {
   *var_vec_u32++ = vec_ld(var_int[0], var_unsigned_long_ptr[1]);
   *var_vec_u32++ = vec_lde(var_int[0], var_unsigned_long_ptr[1]);
-  *var_vec_u32++ = vec_ldl(var_int[0], var_unsigned_long_ptr[1]);
+  *var_vec_u64++ = vec_ldl(var_int[0], var_unsigned_long_long_ptr[1]);
   *var_vec_u32++ = vec_lvewx(var_int[0], var_unsigned_long_ptr[1]);
   *var_vec_u32++ = vec_lvx(var_int[0], var_unsigned_long_ptr[1]);
-  *var_vec_u32++ = vec_lvxl(var_int[0], var_unsigned_long_ptr[1]);
+  *var_vec_u64++ = vec_lvxl(var_int[0], var_unsigned_long_long_ptr[1]);
 }
 void f25() {
   *var_vec_u8++ = vec_lvsl(var_int[0], var_long_ptr[1]);

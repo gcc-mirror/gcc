@@ -37,193 +37,394 @@ with System.Storage_Elements;
 package System.Secondary_Stack is
    pragma Preelaborate;
 
-   package SP renames System.Parameters;
+   package SP  renames System.Parameters;
    package SSE renames System.Storage_Elements;
 
-   type SS_Stack (Size : SP.Size_Type) is private;
-   --  Data structure for secondary stacks
+   use type SP.Size_Type;
+
+   type SS_Stack (Default_Chunk_Size : SP.Size_Type) is private;
+   --  An abstraction for a heap structure maintained in a stack-like fashion.
+   --  The structure is comprised of chunks which accommodate allocations of
+   --  varying sizes. See the private part of the package for further details.
+   --  Default_Chunk_Size indicates the size of the static chunk, and provides
+   --  a minimum size for all dynamic chunks.
 
    type SS_Stack_Ptr is access all SS_Stack;
-   --  Pointer to secondary stack objects
+   --  A reference to a secondary stack
+
+   type Mark_Id is private;
+   --  An abstraction for tracking the state of the secondary stack
 
    procedure SS_Init
      (Stack : in out SS_Stack_Ptr;
       Size  : SP.Size_Type := SP.Unspecified_Size);
-   --  Initialize the secondary stack Stack. If Stack is null allocate a stack
-   --  from the heap or from the default-sized secondary stack pool if the
-   --  pool exists and the requested size is Unspecified_Size.
+   --  Initialize or reuse a secondary stack denoted by reference Stack. If
+   --  Stack is null, create a new stack of size Size in the following manner:
+   --
+   --    * If Size denotes Unspecified_Size, allocate the stack from the binder
+   --      generated pool as long as the pool has not been exhausted.
+   --
+   --    * Otherwise allocate the stack from the heap.
+   --
+   --  If Stack is not null, reset the state of the stack. No existing chunks
+   --  are freed because they may be reused again.
 
    procedure SS_Allocate
      (Addr         : out Address;
       Storage_Size : SSE.Storage_Count);
-   --  Allocate enough space for a 'Storage_Size' bytes object with Maximum
-   --  alignment. The address of the allocated space is returned in Addr.
+   --  Allocate enough space on the secondary stack of the invoking task to
+   --  accommodate an alloction of size Storage_Size. Return the address of the
+   --  first byte of the allocation in Addr. The routine may carry out one or
+   --  more of the following actions:
+   --
+   --    * Reuse an existing chunk that is big enough to accommodate the
+   --      requested Storage_Size.
+   --
+   --    * Free an existing chunk that is too small to accommodate the
+   --      requested Storage_Size.
+   --
+   --    * Create a new chunk that fits the requested Storage_Size.
 
    procedure SS_Free (Stack : in out SS_Stack_Ptr);
-   --  Release the memory allocated for the Stack. If the stack was statically
-   --  allocated the SS_Stack record is not freed.
-
-   type Mark_Id is private;
-   --  Type used to mark the stack for mark/release processing
+   --  Free all dynamic chunks of secondary stack Stack. If possible, free the
+   --  stack itself.
 
    function SS_Mark return Mark_Id;
-   --  Return the Mark corresponding to the current state of the stack
+   --  Capture and return the state of the invoking task's secondary stack
 
    procedure SS_Release (M : Mark_Id);
-   --  Restore the state of the stack corresponding to the mark M
+   --  Restore the state of the invoking task's secondary stack to mark M
 
    function SS_Get_Max return Long_Long_Integer;
-   --  Return the high water mark of the secondary stack for the current
-   --  secondary stack in bytes.
+   --  Return the high water mark of the invoking task's secondary stack, in
+   --  bytes.
 
    generic
       with procedure Put_Line (S : String);
    procedure SS_Info;
-   --  Debugging procedure used to print out secondary Stack allocation
-   --  information. This procedure is generic in order to avoid a direct
-   --  dependance on a particular IO package.
+   --  Debugging procedure for outputting the internals of the invoking task's
+   --  secondary stack. This procedure is generic in order to avoid a direct
+   --  dependence on a particular IO package. Instantiate with Text_IO.Put_Line
+   --  for example.
 
 private
    SS_Pool : Integer;
    --  Unused entity that is just present to ease the sharing of the pool
-   --  mechanism for specific allocation/deallocation in the compiler
+   --  mechanism for specific allocation/deallocation in the compiler.
 
-   -------------------------------------
-   -- Secondary Stack Data Structures --
-   -------------------------------------
+   ------------------
+   -- Introduction --
+   ------------------
 
-   --  This package provides fixed and dynamically sized secondary stack
-   --  implementations centered around a common data structure SS_Stack. This
-   --  record contains an initial secondary stack allocation of the requested
-   --  size, and markers for the current top of the stack and the high-water
-   --  mark of the stack. A SS_Stack can be either pre-allocated outside the
-   --  package or SS_Init can allocate a stack from the heap or the
-   --  default-sized secondary stack from a pool generated by the binder.
-
-   --  For dynamically allocated secondary stacks, the stack can grow via a
-   --  linked list of stack chunks allocated from the heap. New chunks are
-   --  allocated once the initial static allocation and any existing chunks are
-   --  exhausted. The following diagram illustrated the data structures used
-   --  for a dynamically allocated secondary stack:
+   --  The secondary stack is a runtime data structure managed in a stack-like
+   --  fashion. It is part of the runtime support for functions that return
+   --  results of caller-unknown size.
    --
-   --                                       +------------------+
-   --                                       |       Next       |
-   --                                       +------------------+
-   --                                       |                  | Last (300)
-   --                                       |                  |
-   --                                       |                  |
-   --                                       |                  |
-   --                                       |                  |
-   --                                       |                  |
-   --                                       |                  | First (201)
-   --                                       +------------------+
-   --    +-----------------+       +------> |          |       |
-   --    |                 | (100) |        +--------- | ------+
-   --    |                 |       |                ^  |
-   --    |                 |       |                |  |
-   --    |                 |       |                |  V
-   --    |                 |       |        +------ | ---------+
-   --    |                 |       |        |       |          |
-   --    |                 |       |        +------------------+
-   --    |                 |       |        |                  | Last (200)
-   --    |                 |       |        |         C        |
-   --    |                 | (1)   |        |         H        |
-   --    +-----------------+       |  +---->|         U        |
-   --    |  Current_Chunk ---------+  |     |         N        |
-   --    +-----------------+          |     |         K        |
-   --    |       Top      ------------+     |                  | First (101)
-   --    +-----------------+                +------------------+
-   --    |       Size      |                |       Prev       |
-   --    +-----------------+                +------------------+
+   --  The secondary stack is utilized as follows:
    --
-   --  The implementation used by the runtime is controlled via the constant
-   --  System.Parameter.Sec_Stack_Dynamic. If True, the implementation is
-   --  permitted to grow the secondary stack at runtime. The implementation is
-   --  designed for the compiler to include only code to support the desired
-   --  secondary stack behavior.
+   --    * The compiler pushes the caller-unknown size result on the secondary
+   --      stack as part of return statement or build-in-place semantics.
+   --
+   --    * The caller receives a reference to the result.
+   --
+   --    * Using the reference, the caller may "offload" the result into its
+   --      primary stack, or use it in-place while still on the secondary
+   --      stack.
+   --
+   --    * Once the caller has utilized the result, the compiler reclaims the
+   --      memory occupied by the result by popping the secondary stack up to
+   --      a safe limit.
 
-   subtype SS_Ptr is SP.Size_Type;
-   --  Stack pointer value for the current position within the secondary stack.
-   --  Size_Type is used as the base type since the Size discriminate of
-   --  SS_Stack forms the bounds of the internal memory array.
+   ------------
+   -- Design --
+   ------------
 
-   type Memory is array (SS_Ptr range <>) of SSE.Storage_Element;
-   for Memory'Alignment use Standard'Maximum_Alignment;
-   --  The region of memory that holds the stack itself. Requires maximum
-   --  alignment for efficient stack operations.
+   --  1) Chunk
+   --
+   --  The secondary stack is a linked structure which consist of "chunks".
+   --  A chunk is both a memory storage and a linked-list node. Addresses of
+   --  allocated objects refer to addresses within the memory storage of a
+   --  chunk. Chunks come in two variants - static and dynamic.
+   --
+   --  1.1) Static chunk
+   --
+   --  The secondary stack has exactly one static chunk that is created on the
+   --  primary stack. The static chunk allows secondary-stack usage on targets
+   --  where dynamic allocation is not available or desirable. The static chunk
+   --  is always the "first" chunk and precedes all dynamic chunks.
+   --
+   --  1.2) Dynamic chunk
+   --
+   --  The secondary stack may have zero or more dynamic chunks, created on the
+   --  heap. Dynamic chunks allow the secondary stack to grow beyond the limits
+   --  of the initial static chunk. They provide a finer-grained management of
+   --  the memory by means of reuse and deallocation.
+   --
+   --  2) Mark
+   --
+   --  The secondary stack captures its state in a "mark". The mark is used by
+   --  the compiler to indicate how far the stack can be safely popped after a
+   --  sequence of pushes has taken place.
+   --
+   --  3) Secondary stack
+   --
+   --  The secondary stack maintains a singly-linked list of chunks, starting
+   --  with the static chunk, along with a stack pointer.
+   --
+   --  4) Allocation
+   --
+   --  The process of allocation equates to "pushing" on the secondary stack.
+   --  Depending on whether dynamic allocation is allowed or not, there are
+   --  two variants of allocation - static and dynamic.
+   --
+   --  4.1) Static allocation
+   --
+   --  In this case the secondary stack has only the static chunk to work with.
+   --  The requested size is reserved on the static chunk and the stack pointer
+   --  is advanced. If the requested size will overflow the static chunk, then
+   --  Storage_Error is raised.
+   --
+   --  4.2) Dynamic allocation
+   --
+   --  In this case the secondary stack may carry out several actions depending
+   --  on how much free memory is available in the chunk indicated by the stack
+   --  pointer.
+   --
+   --    * If the indicated chunk is big enough, allocation is carried out on
+   --      it.
+   --
+   --    * If the indicated chunk is too small, subsequent chunks (if any) are
+   --      examined. If a subsequent chunk is big enough, allocation is carried
+   --      out on it, otherwise the subsequent chunk is deallocated.
+   --
+   --    * If none of the chunks following and including the indicated chunk
+   --      are big enough, a new chunk is created and the allocation is carried
+   --      out on it.
+   --
+   --  This model of operation has several desirable effects:
+   --
+   --    * Leftover chunks from prior allocations, followed by at least one pop
+   --      are either reused or deallocated. This compacts the memory footprint
+   --      of the secondary stack.
+   --
+   --    * When a new chunk is created, its size is exactly the requested size.
+   --      This keeps the memory usage of the secondary stack tight.
+   --
+   --    * Allocation is in general an expensive operation. Compaction is thus
+   --      added to this cost, rather than penalizing mark and pop operations.
+   --
+   --  5) Marking
+   --
+   --  The process of marking involves capturing the secondary-stack pointer
+   --  in a mark for later restore.
+   --
+   --  6) Releasing
+   --
+   --  The process of releasing equates to "popping" the secondary stack. It
+   --  moves the stack pointer to a previously captured mark, causing chunks
+   --  to become reusable or deallocatable during the allocation process.
 
-   --  Chunk_Id
+   ------------------
+   -- Architecture --
+   ------------------
 
-   --  Chunk_Id is a contiguous block of dynamically allocated stack. First
-   --  and Last indicate the range of secondary stack addresses present in the
-   --  chunk. Chunk_Ptr points to a Chunk_Id block.
+   --      Secondary stack
+   --
+   --      +------------+
+   --      | Top.Byte  ------------------------+
+   --      | Top.Chunk ------------------+     |
+   --      |            |                |     |
+   --      |            |                v     |
+   --      +------------+   +--------+   +-----|--+   +--------+
+   --      | Memory     |   | Memory |   | Memo|y |   | Memory |
+   --      | #########  |   | #####  |   | ####|  |   | #####  |
+   --      |            |   |        |   |        |   |        |
+   --      | Next      ---> | Next  ---> | Next  ---> | Next  ---> x
+   --      +------------+   +--------+   +--------+   +--------+
+   --
+   --       Static chunk     Chunk 2      Chunk 3      Chunk 4
 
-   type Chunk_Id (First, Last : SS_Ptr);
-   type Chunk_Ptr is access all Chunk_Id;
+   --------------------------
+   -- Memory-related types --
+   --------------------------
 
-   type Chunk_Id (First, Last : SS_Ptr) is record
-      Prev, Next : Chunk_Ptr;
-      Mem        : Memory (First .. Last);
+   subtype Memory_Size_With_Invalid is SP.Size_Type;
+   --  Memory storage size which also includes an invalid negative range
+
+   Invalid_Memory_Size : constant Memory_Size_With_Invalid := -1;
+
+   subtype Memory_Size is
+     Memory_Size_With_Invalid range 0 .. SP.Size_Type'Last;
+   --  The memory storage size of a single chunk or the whole secondary stack.
+   --  A non-negative size is considered a "valid" size.
+
+   subtype Memory_Index is Memory_Size;
+   --  Index into the memory storage of a single chunk
+
+   type Chunk_Memory is array (Memory_Size range <>) of SSE.Storage_Element;
+   for Chunk_Memory'Alignment use Standard'Maximum_Alignment;
+   --  The memory storage of a single chunk. It utilizes maximum alignment in
+   --  order to guarantee efficient operations.
+
+   --------------
+   -- SS_Chunk --
+   --------------
+
+   type SS_Chunk (Size : Memory_Size);
+   --  Abstraction for a chunk. Size indicates the memory capacity of the
+   --  chunk.
+
+   type SS_Chunk_Ptr is access all SS_Chunk;
+   --  Reference to the static or any dynamic chunk
+
+   type SS_Chunk (Size : Memory_Size) is record
+      Next : SS_Chunk_Ptr;
+      --  Pointer to the next chunk. The direction of the pointer is from the
+      --  static chunk to the first dynamic chunk, and so on.
+
+      Size_Up_To_Chunk : Memory_Size;
+      --  The size of the secondary stack up to, but excluding the current
+      --  chunk. This value aids in calculating the total amount of memory
+      --  the stack is consuming, for high-water-mark update purposes.
+
+      Memory : Chunk_Memory (1 .. Size);
+      --  The memory storage of the chunk. The 1-indexing facilitates various
+      --  size and indexing calculations.
    end record;
 
-   --  Secondary stack data structure
+   -------------------
+   -- Stack_Pointer --
+   -------------------
 
-   type SS_Stack (Size : SP.Size_Type) is record
-      Top : SS_Ptr;
-      --  Index of next available location in the stack. Initialized to 1 and
-      --  then incremented on Allocate and decremented on Release.
+   --  Abstraction for a secondary stack pointer
 
-      Max : SS_Ptr;
-      --  Contains the high-water mark of Top. Initialized to 1 and then
-      --  may be incremented on Allocate but never decremented. Since
-      --  Top = Size + 1 represents a fully used stack, Max - 1 indicates
-      --  the size of the stack used in bytes.
+   type Stack_Pointer is record
+      Byte : Memory_Index;
+      --  The position of the first free byte within the memory storage of
+      --  Chunk.all. Byte - 1 denotes the last occupied byte within Chunk.all.
 
-      Current_Chunk : Chunk_Ptr;
-      --  A link to the chunk containing the highest range of the stack
+      Chunk : SS_Chunk_Ptr;
+      --  Reference to the chunk that accommodated the most recent allocation.
+      --  This could be the static or any dynamic chunk.
+   end record;
 
+   --------------
+   -- SS_Stack --
+   --------------
+
+   type SS_Stack (Default_Chunk_Size : SP.Size_Type) is record
       Freeable : Boolean;
-      --  Indicates if an object of this type can be freed
+      --  Indicates whether the secondary stack can be freed
 
-      Internal_Chunk : aliased Chunk_Id (1, Size);
-      --  Initial memory allocation of the secondary stack
+      High_Water_Mark : Memory_Size;
+      --  The maximum amount of memory in use throughout the lifetime of the
+      --  secondary stack.
+
+      Top : Stack_Pointer;
+      --  The stack pointer
+
+      Static_Chunk : aliased SS_Chunk (Default_Chunk_Size);
+      --  A special chunk with a default size. On targets that do not support
+      --  dynamic allocations, this chunk represents the capacity of the whole
+      --  secondary stack.
    end record;
+
+   -------------
+   -- Mark_Id --
+   -------------
 
    type Mark_Id is record
-      Sec_Stack : SS_Stack_Ptr;
-      Sptr      : SS_Ptr;
+      Stack : SS_Stack_Ptr;
+      --  The secondary stack whose mark was taken
+
+      Top : Stack_Pointer;
+      --  The value of Stack.Top at the point in time when the mark was taken
    end record;
-   --  Contains the pointer to the secondary stack object and the stack pointer
-   --  value corresponding to the top of the stack at the time of the mark
-   --  call.
 
-   ------------------------------------
-   -- Binder Allocated Stack Support --
-   ------------------------------------
+   ------------------
+   -- Testing Aids --
+   ------------------
 
-   --  When the No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations
-   --  restrictions are in effect the binder statically generates secondary
-   --  stacks for tasks who are using default-sized secondary stack. Assignment
-   --  of these stacks to tasks is handled by SS_Init. The following variables
-   --  assist SS_Init and are defined here so the runtime does not depend on
-   --  the binder.
+   --  The following section provides lightweight versions of all abstractions
+   --  used to implement a secondary stack. The contents of these versions may
+   --  look identical to the original abstractions, however there are several
+   --  important implications:
+   --
+   --    * The versions do not expose pointers.
+   --
+   --    * The types of the versions are all definite. In addition, there are
+   --      no per-object constrained components. As a result, the versions do
+   --      not involve the secondary stack or the heap in any way.
+   --
+   --    * The types of the versions do not contain potentially big components.
 
-   Binder_SS_Count : Natural;
-   pragma Export (Ada, Binder_SS_Count, "__gnat_binder_ss_count");
-   --  The number of default sized secondary stacks allocated by the binder
+   subtype Chunk_Id_With_Invalid is Natural;
+   --  Numeric Id of a chunk with value zero
 
-   Default_SS_Size : SP.Size_Type;
-   pragma Export (Ada, Default_SS_Size, "__gnat_default_ss_size");
-   --  The default size for secondary stacks. Defined here and not in init.c/
-   --  System.Init because these locations are not present on ZFP or
-   --  Ravenscar-SFP run-times.
+   Invalid_Chunk_Id : constant Chunk_Id_With_Invalid := 0;
 
-   Default_Sized_SS_Pool : System.Address;
-   pragma Export (Ada, Default_Sized_SS_Pool, "__gnat_default_ss_pool");
-   --  Address to the secondary stack pool generated by the binder that
-   --  contains default sized stacks.
+   subtype Chunk_Id is
+     Chunk_Id_With_Invalid range 1 .. Chunk_Id_With_Invalid'Last;
+   --  Numeric Id of a chunk. A positive Id is considered "valid" because a
+   --  secondary stack will have at least one chunk (the static chunk).
 
-   Num_Of_Assigned_Stacks : Natural := 0;
-   --  The number of currently allocated secondary stacks
+   subtype Chunk_Count is Natural;
+   --  Number of chunks in a secondary stack
+
+   --  Lightweight version of SS_Chunk
+
+   type Chunk_Info is record
+      Size : Memory_Size_With_Invalid;
+      --  The memory capacity of the chunk
+
+      Size_Up_To_Chunk : Memory_Size_With_Invalid;
+      --  The size of the secondary stack up to, but excluding the current
+      --  chunk.
+   end record;
+
+   Invalid_Chunk : constant Chunk_Info :=
+                     (Size             => Invalid_Memory_Size,
+                      Size_Up_To_Chunk => Invalid_Memory_Size);
+
+   --  Lightweight version of Stack_Pointer
+
+   type Stack_Pointer_Info is record
+      Byte : Memory_Index;
+      --  The position of the first free byte within the memory storage of
+      --  Chunk. Byte - 1 denotes the last occupied byte within Chunk.
+
+      Chunk : Chunk_Id_With_Invalid;
+      --  The Id of the chunk that accommodated the most recent allocation.
+      --  This could be the static or any dynamic chunk.
+   end record;
+
+   --  Lightweight version of SS_Stack
+
+   type Stack_Info is record
+      Default_Chunk_Size : Memory_Size;
+      --  The default memory capacity of a chunk
+
+      Freeable : Boolean;
+      --  Indicates whether the secondary stack can be freed
+
+      High_Water_Mark : Memory_Size;
+      --  The maximum amount of memory in use throughout the lifetime of the
+      --  secondary stack.
+
+      Number_Of_Chunks : Chunk_Count;
+      --  The total number of static and dynamic chunks in the secondary stack
+
+      Top : Stack_Pointer_Info;
+      --  The stack pointer
+   end record;
+
+   function Get_Chunk_Info
+     (Stack : SS_Stack_Ptr;
+      C_Id  : Chunk_Id) return Chunk_Info;
+   --  Obtain the information attributes of a chunk that belongs to secondary
+   --  stack Stack and is identified by Id C_Id.
+
+   function Get_Stack_Info (Stack : SS_Stack_Ptr) return Stack_Info;
+   --  Obtain the information attributes of secondary stack Stack
 
 end System.Secondary_Stack;

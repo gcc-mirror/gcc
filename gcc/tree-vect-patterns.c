@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "cgraph.h"
 #include "omp-simd-clone.h"
+#include "predict.h"
 
 /* Pattern recognition functions  */
 static gimple *vect_recog_widen_sum_pattern (vec<gimple *> *, tree *,
@@ -222,13 +223,16 @@ vect_recog_temp_ssa_var (tree type, gimple *stmt)
 }
 
 /* Return true if STMT_VINFO describes a reduction for which reassociation
-   is allowed.  */
+   is allowed.  If STMT_INFO is part of a group, assume that it's part of
+   a reduction chain and optimistically assume that all statements
+   except the last allow reassociation.  */
 
 static bool
 vect_reassociating_reduction_p (stmt_vec_info stmt_vinfo)
 {
   return (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
-	  && STMT_VINFO_REDUC_TYPE (stmt_vinfo) != FOLD_LEFT_REDUCTION);
+	  ? STMT_VINFO_REDUC_TYPE (stmt_vinfo) != FOLD_LEFT_REDUCTION
+	  : REDUC_GROUP_FIRST_ELEMENT (stmt_vinfo) != NULL);
 }
 
 /* Function vect_recog_dot_prod_pattern
@@ -350,8 +354,7 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
     {
       gimple *def_stmt;
 
-      if (!vect_reassociating_reduction_p (stmt_vinfo)
-	  && ! STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_vinfo))
+      if (!vect_reassociating_reduction_p (stmt_vinfo))
 	return NULL;
       oprnd0 = gimple_assign_rhs1 (last_stmt);
       oprnd1 = gimple_assign_rhs2 (last_stmt);
@@ -571,8 +574,7 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
     {
       gimple *def_stmt;
 
-      if (!vect_reassociating_reduction_p (stmt_vinfo)
-	  && ! STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_vinfo))
+      if (!vect_reassociating_reduction_p (stmt_vinfo))
 	return NULL;
       plus_oprnd0 = gimple_assign_rhs1 (last_stmt);
       plus_oprnd1 = gimple_assign_rhs2 (last_stmt);
@@ -1256,8 +1258,7 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_in,
   if (gimple_assign_rhs_code (last_stmt) != PLUS_EXPR)
     return NULL;
 
-  if (!vect_reassociating_reduction_p (stmt_vinfo)
-      && ! STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_vinfo))
+  if (!vect_reassociating_reduction_p (stmt_vinfo))
     return NULL;
 
   oprnd0 = gimple_assign_rhs1 (last_stmt);
@@ -2674,15 +2675,19 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
   if (vectype == NULL_TREE)
     return NULL;
 
-  /* If the target can handle vectorized division or modulo natively,
-     don't attempt to optimize this.  */
-  optab = optab_for_tree_code (rhs_code, vectype, optab_default);
-  if (optab != unknown_optab)
+  if (optimize_bb_for_size_p (gimple_bb (last_stmt)))
     {
-      machine_mode vec_mode = TYPE_MODE (vectype);
-      int icode = (int) optab_handler (optab, vec_mode);
-      if (icode != CODE_FOR_nothing)
-	return NULL;
+      /* If the target can handle vectorized division or modulo natively,
+	 don't attempt to optimize this, since native division is likely
+	 to give smaller code.  */
+      optab = optab_for_tree_code (rhs_code, vectype, optab_default);
+      if (optab != unknown_optab)
+	{
+	  machine_mode vec_mode = TYPE_MODE (vectype);
+	  int icode = (int) optab_handler (optab, vec_mode);
+	  if (icode != CODE_FOR_nothing)
+	    return NULL;
+	}
     }
 
   prec = TYPE_PRECISION (itype);
@@ -3875,7 +3880,6 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
 	= STMT_VINFO_DATA_REF (stmt_vinfo);
       STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
 	= STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
-      DR_STMT (STMT_VINFO_DATA_REF (stmt_vinfo)) = pattern_stmt;
       *type_out = vectype;
       *type_in = vectype;
       stmts->safe_push (last_stmt);
@@ -4012,7 +4016,6 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
 	= STMT_VINFO_DATA_REF (stmt_vinfo);
       STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
 	= STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
-      DR_STMT (STMT_VINFO_DATA_REF (stmt_vinfo)) = pattern_stmt;
 
       *type_out = vectype1;
       *type_in = vectype1;
@@ -4371,7 +4374,6 @@ vect_try_gather_scatter_pattern (gimple *stmt, stmt_vec_info last_stmt_info,
     = STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
   STMT_VINFO_GATHER_SCATTER_P (pattern_stmt_info)
     = STMT_VINFO_GATHER_SCATTER_P (stmt_info);
-  DR_STMT (dr) = pattern_stmt;
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   *type_out = vectype;
@@ -4483,7 +4485,6 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
   tree type_in, type_out;
   enum tree_code code;
   int i;
-  gimple *next;
 
   stmts_to_replace->truncate (0);
   stmts_to_replace->quick_push (stmt);
@@ -4545,9 +4546,12 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
   /* Patterns cannot be vectorized using SLP, because they change the order of
      computation.  */
   if (loop_vinfo)
-    FOR_EACH_VEC_ELT (LOOP_VINFO_REDUCTIONS (loop_vinfo), i, next)
-      if (next == stmt)
-        LOOP_VINFO_REDUCTIONS (loop_vinfo).ordered_remove (i);
+    {
+      unsigned ix, ix2;
+      gimple **elem_ptr;
+      VEC_ORDERED_REMOVE_IF (LOOP_VINFO_REDUCTIONS (loop_vinfo), ix, ix2,
+			     elem_ptr, *elem_ptr == stmt);
+    }
 
   /* It is possible that additional pattern stmts are created and inserted in
      STMTS_TO_REPLACE.  We create a stmt_info for each of them, and mark the

@@ -123,7 +123,6 @@ tree gfor_fndecl_system_clock8;
 tree gfor_fndecl_ieee_procedure_entry;
 tree gfor_fndecl_ieee_procedure_exit;
 
-
 /* Coarray run-time library function decls.  */
 tree gfor_fndecl_caf_init;
 tree gfor_fndecl_caf_finalize;
@@ -215,6 +214,9 @@ tree gfor_fndecl_convert_char4_to_char1;
 tree gfor_fndecl_size0;
 tree gfor_fndecl_size1;
 tree gfor_fndecl_iargc;
+tree gfor_fndecl_kill;
+tree gfor_fndecl_kill_sub;
+
 
 /* Intrinsic functions implemented in Fortran.  */
 tree gfor_fndecl_sc_kind;
@@ -227,6 +229,8 @@ tree gfor_fndecl_dgemm;
 tree gfor_fndecl_cgemm;
 tree gfor_fndecl_zgemm;
 
+/* RANDOM_INIT function.  */
+tree gfor_fndecl_random_init;
 
 static void
 gfc_add_decl_to_parent_function (tree decl)
@@ -3326,6 +3330,11 @@ gfc_build_intrinsic_function_decls (void)
 	void_type_node, 3, pchar_type_node, gfc_charlen_type_node,
 	gfc_int8_type_node);
 
+  gfor_fndecl_random_init = gfc_build_library_function_decl (
+	get_identifier (PREFIX("random_init")),
+	void_type_node, 3, gfc_logical4_type_node, gfc_logical4_type_node,
+	gfc_int4_type_node);
+
   gfor_fndecl_sc_kind = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("selected_char_kind")), "..R",
 	gfc_int4_type_node, 2, gfc_charlen_type_node, pchar_type_node);
@@ -3494,6 +3503,14 @@ gfc_build_intrinsic_function_decls (void)
   gfor_fndecl_iargc = gfc_build_library_function_decl (
 	get_identifier (PREFIX ("iargc")), gfc_int4_type_node, 0);
   TREE_NOTHROW (gfor_fndecl_iargc) = 1;
+
+  gfor_fndecl_kill_sub = gfc_build_library_function_decl (
+	get_identifier (PREFIX ("kill_sub")), void_type_node,
+	3, gfc_int4_type_node, gfc_int4_type_node, gfc_pint4_type_node);
+
+  gfor_fndecl_kill = gfc_build_library_function_decl (
+	get_identifier (PREFIX ("kill")), gfc_int4_type_node,
+	2, gfc_int4_type_node, gfc_int4_type_node);
 }
 
 

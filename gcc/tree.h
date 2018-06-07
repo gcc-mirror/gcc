@@ -1197,6 +1197,9 @@ extern tree maybe_wrap_with_location (tree, location_t);
 #define TARGET_EXPR_SLOT(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 0)
 #define TARGET_EXPR_INITIAL(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 1)
 #define TARGET_EXPR_CLEANUP(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 2)
+/* Don't elide the initialization of TARGET_EXPR_SLOT for this TARGET_EXPR
+   on rhs of MODIFY_EXPR.  */
+#define TARGET_EXPR_NO_ELIDE(NODE) (TARGET_EXPR_CHECK (NODE)->base.private_flag)
 
 /* DECL_EXPR accessor. This gives access to the DECL associated with
    the given declaration statement.  */
@@ -4170,6 +4173,7 @@ extern tree build_constructor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
 extern tree build_constructor_va (tree, int, ...);
+extern tree build_clobber (tree);
 extern tree build_real_from_int_cst (tree, const_tree);
 extern tree build_complex (tree, tree, tree);
 extern tree build_complex_inf (tree, bool);
@@ -4824,7 +4828,7 @@ extern tree tree_strip_sign_nop_conversions (tree);
 extern const_tree strip_invariant_refs (const_tree);
 extern tree lhd_gcc_personality (void);
 extern void assign_assembler_name_if_needed (tree);
-extern void warn_deprecated_use (tree, tree);
+extern bool warn_deprecated_use (tree, tree);
 extern void cache_integer_cst (tree);
 extern const char *combined_fn_name (combined_fn);
 

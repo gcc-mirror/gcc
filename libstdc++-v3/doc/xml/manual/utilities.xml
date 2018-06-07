@@ -22,8 +22,8 @@
       get slightly the wrong idea.  In the interest of not reinventing
       the wheel, we will refer you to the introduction to the functor
       concept written by SGI as part of their STL, in
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/functors.html">their
-      http://www.sgi.com/tech/stl/functors.html</link>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/functors.html">their
+      https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/functors.html</link>.
    </para>
 </section>
 

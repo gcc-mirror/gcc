@@ -2,7 +2,8 @@
 !
 ! Test the fix for PR83344.
 !
-! Contributed by <Janne Blomqvist  <jb@gcc.gnu.org>
+! Contributed by Janne Blomqvist  <jb@gcc.gnu.org>
+! and Steve Kargl  <kargl@gcc.gnu.org>
 !
 program foo
    implicit none

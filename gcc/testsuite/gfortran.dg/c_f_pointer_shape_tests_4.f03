@@ -12,7 +12,7 @@ contains
     use, intrinsic :: iso_c_binding
     type(c_ptr), value :: cPtr
     integer(c_int), value :: num_elems
-    integer, dimension(:), pointer :: myArrayPtr
+    integer(c_int), dimension(:), pointer :: myArrayPtr
     integer(c_long_long), dimension(1) :: shape
     integer :: i
     
@@ -28,7 +28,7 @@ contains
     type(c_ptr), value :: cPtr
     integer(c_int), value :: num_rows
     integer(c_int), value :: num_cols
-    integer, dimension(:,:), pointer :: myArrayPtr
+    integer(c_int), dimension(:,:), pointer :: myArrayPtr
     integer(c_long_long), dimension(3) :: shape
     integer :: i,j
     
@@ -47,7 +47,7 @@ contains
     use, intrinsic :: iso_c_binding
     type(c_ptr), value :: cPtr
     integer(c_int), value :: num_elems
-    integer, dimension(:), pointer :: myArrayPtr
+    integer(c_int), dimension(:), pointer :: myArrayPtr
     integer(c_long), dimension(1) :: shape
     integer :: i
     
@@ -62,7 +62,7 @@ contains
     use, intrinsic :: iso_c_binding
     type(c_ptr), value :: cPtr
     integer(c_int), value :: num_elems
-    integer, dimension(:), pointer :: myArrayPtr
+    integer(c_int), dimension(:), pointer :: myArrayPtr
     integer(c_int), dimension(1) :: shape
     integer :: i
     
@@ -77,7 +77,7 @@ contains
     use, intrinsic :: iso_c_binding
     type(c_ptr), value :: cPtr
     integer(c_int), value :: num_elems
-    integer, dimension(:), pointer :: myArrayPtr
+    integer(c_int), dimension(:), pointer :: myArrayPtr
     integer(c_short), dimension(1) :: shape
     integer :: i
     
@@ -92,7 +92,7 @@ contains
     use, intrinsic :: iso_c_binding
     type(c_ptr), value :: cPtr
     integer(c_int), value :: num_elems
-    integer, dimension(:), pointer :: myArrayPtr
+    integer(c_int), dimension(:), pointer :: myArrayPtr
     integer(c_int), dimension(1) :: shape1
     integer(c_long_long), dimension(1) :: shape2
     integer :: i

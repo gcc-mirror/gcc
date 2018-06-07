@@ -867,7 +867,7 @@ hardware's requirements explicitly.
 @defun push_operand
 This predicate allows a memory reference suitable for pushing a value
 onto the stack.  This will be a @code{MEM} which refers to
-@code{stack_pointer_rtx}, with a side-effect in its address expression
+@code{stack_pointer_rtx}, with a side effect in its address expression
 (@pxref{Incdec}); which one is determined by the
 @code{STACK_PUSH_CODE} macro (@pxref{Frame Layout}).
 @end defun
@@ -875,7 +875,7 @@ onto the stack.  This will be a @code{MEM} which refers to
 @defun pop_operand
 This predicate allows a memory reference suitable for popping a value
 off the stack.  Again, this will be a @code{MEM} referring to
-@code{stack_pointer_rtx}, with a side-effect in its address
+@code{stack_pointer_rtx}, with a side effect in its address
 expression.  However, this time @code{STACK_POP_CODE} is expected.
 @end defun
 
@@ -1091,7 +1091,7 @@ operand may be an immediate constant, and which possible values it may
 have.  Constraints can also require two operands to match.
 Side-effects aren't allowed in operands of inline @code{asm}, unless
 @samp{<} or @samp{>} constraints are used, because there is no guarantee
-that the side-effects will happen exactly once in an instruction that can update
+that the side effects will happen exactly once in an instruction that can update
 the addressing register.
 
 @ifset INTERNALS
@@ -1172,9 +1172,9 @@ would fit the @samp{m} constraint but not the @samp{o} constraint.
 A memory operand with autodecrement addressing (either predecrement or
 postdecrement) is allowed.  In inline @code{asm} this constraint is only
 allowed if the operand is used exactly once in an instruction that can
-handle the side-effects.  Not using an operand with @samp{<} in constraint
+handle the side effects.  Not using an operand with @samp{<} in constraint
 string in the inline @code{asm} pattern at all or using it in multiple
-instructions isn't valid, because the side-effects wouldn't be performed
+instructions isn't valid, because the side effects wouldn't be performed
 or would be performed more than once.  Furthermore, on some targets
 the operand with @samp{<} in constraint string must be accompanied by
 special instruction suffixes like @code{%U0} instruction suffix on PowerPC
@@ -5371,6 +5371,14 @@ of two vectors.  Operands 1 and 2 are vectors of the same mode having N
 floating point elements of size S@.  Operand 0 is the resulting vector
 in which 2*N elements of size N/2 are concatenated.
 
+@cindex @code{vec_packs_float_@var{m}} instruction pattern
+@cindex @code{vec_packu_float_@var{m}} instruction pattern
+@item @samp{vec_packs_float_@var{m}}, @samp{vec_packu_float_@var{m}}
+Narrow, convert to floating point type and merge the elements
+of two vectors.  Operands 1 and 2 are vectors of the same mode having N
+signed/unsigned integral elements of size S@.  Operand 0 is the resulting vector
+in which 2*N elements of size N/2 are concatenated.
+
 @cindex @code{vec_unpacks_hi_@var{m}} instruction pattern
 @cindex @code{vec_unpacks_lo_@var{m}} instruction pattern
 @item @samp{vec_unpacks_hi_@var{m}}, @samp{vec_unpacks_lo_@var{m}}
@@ -5398,6 +5406,20 @@ Extract, convert to floating point type and widen the high/low part of a
 vector of signed/unsigned integral elements.  The input vector (operand 1)
 has N elements of size S@.  Convert the high/low elements of the vector using
 floating point conversion and place the resulting N/2 values of size 2*S in
+the output vector (operand 0).
+
+@cindex @code{vec_unpack_sfix_trunc_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpack_sfix_trunc_lo_@var{m}} instruction pattern
+@cindex @code{vec_unpack_ufix_trunc_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpack_ufix_trunc_lo_@var{m}} instruction pattern
+@item @samp{vec_unpack_sfix_trunc_hi_@var{m}},
+@itemx @samp{vec_unpack_sfix_trunc_lo_@var{m}}
+@itemx @samp{vec_unpack_ufix_trunc_hi_@var{m}}
+@itemx @samp{vec_unpack_ufix_trunc_lo_@var{m}}
+Extract, convert to signed/unsigned integer type and widen the high/low part of a
+vector of floating point elements.  The input vector (operand 1)
+has N elements of size S@.  Convert the high/low elements of the vector
+to integers and place the resulting N/2 values of size 2*S in
 the output vector (operand 0).
 
 @cindex @code{vec_widen_umult_hi_@var{m}} instruction pattern
@@ -6333,6 +6355,11 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 
 @cindex @code{cond_add@var{mode}} instruction pattern
 @cindex @code{cond_sub@var{mode}} instruction pattern
+@cindex @code{cond_mul@var{mode}} instruction pattern
+@cindex @code{cond_div@var{mode}} instruction pattern
+@cindex @code{cond_udiv@var{mode}} instruction pattern
+@cindex @code{cond_mod@var{mode}} instruction pattern
+@cindex @code{cond_umod@var{mode}} instruction pattern
 @cindex @code{cond_and@var{mode}} instruction pattern
 @cindex @code{cond_ior@var{mode}} instruction pattern
 @cindex @code{cond_xor@var{mode}} instruction pattern
@@ -6342,6 +6369,11 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @cindex @code{cond_umax@var{mode}} instruction pattern
 @item @samp{cond_add@var{mode}}
 @itemx @samp{cond_sub@var{mode}}
+@itemx @samp{cond_mul@var{mode}}
+@itemx @samp{cond_div@var{mode}}
+@itemx @samp{cond_udiv@var{mode}}
+@itemx @samp{cond_mod@var{mode}}
+@itemx @samp{cond_umod@var{mode}}
 @itemx @samp{cond_and@var{mode}}
 @itemx @samp{cond_ior@var{mode}}
 @itemx @samp{cond_xor@var{mode}}
@@ -6349,13 +6381,21 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @itemx @samp{cond_smax@var{mode}}
 @itemx @samp{cond_umin@var{mode}}
 @itemx @samp{cond_umax@var{mode}}
-Perform an elementwise operation on vector operands 2 and 3,
-under the control of the vector mask in operand 1, and store the result
-in operand 0.  This is equivalent to:
+When operand 1 is true, perform an operation on operands 2 and 3 and
+store the result in operand 0, otherwise store operand 4 in operand 0.
+The operation works elementwise if the operands are vectors.
+
+The scalar case is equivalent to:
 
 @smallexample
-for (i = 0; i < GET_MODE_NUNITS (@var{n}); i++)
-  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op2[i];
+op0 = op1 ? op2 @var{op} op3 : op4;
+@end smallexample
+
+while the vector case is equivalent to:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op4[i];
 @end smallexample
 
 where, for example, @var{op} is @code{+} for @samp{cond_add@var{mode}}.
@@ -6364,8 +6404,9 @@ When defined for floating-point modes, the contents of @samp{op3[i]}
 are not interpreted if @var{op1[i]} is false, just like they would not
 be in a normal C @samp{?:} condition.
 
-Operands 0, 2 and 3 all have mode @var{m}, while operand 1 has the mode
-returned by @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
+integer if @var{m} is scalar, otherwise it has the mode returned by
+@code{TARGET_VECTORIZE_GET_MASK_MODE}.
 
 @cindex @code{neg@var{mode}cc} instruction pattern
 @item @samp{neg@var{mode}cc}

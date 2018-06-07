@@ -817,8 +817,8 @@ is_pointer_array (tree expr)
 
 /* Return the span of an array.  */
 
-static tree
-get_array_span (tree desc, gfc_expr *expr)
+tree
+gfc_get_array_span (tree desc, gfc_expr *expr)
 {
   tree tmp;
 
@@ -3215,7 +3215,7 @@ conv_array_index_offset (gfc_se * se, gfc_ss * ss, int dim, int i,
     }
 
   /* Multiply by the stride.  */
-  if (!integer_onep (stride))
+  if (stride != NULL && !integer_onep (stride))
     index = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			     index, stride);
 
@@ -3376,7 +3376,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   gfc_array_info *info;
   tree decl = NULL_TREE;
   tree index;
-  tree tmp;
+  tree base;
   gfc_ss *ss;
   gfc_expr *expr;
   int n;
@@ -3395,6 +3395,12 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   if (info->offset && !integer_zerop (info->offset))
     index = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
 			     index, info->offset);
+
+  base = build_fold_indirect_ref_loc (input_location, info->data);
+
+  /* Use the vptr 'size' field to access the element of a class array.  */
+  if (build_class_array_ref (se, base, index))
+    return;
 
   if (expr && ((is_subref_array (expr)
 		&& GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (info->descriptor)))
@@ -3420,14 +3426,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 	decl = info->descriptor;
     }
 
-  tmp = build_fold_indirect_ref_loc (input_location, info->data);
-
-  /* Use the vptr 'size' field to access a class the element of a class
-     array.  */
-  if (build_class_array_ref (se, tmp, index))
-    return;
-
-  se->expr = gfc_build_array_ref (tmp, index, decl);
+  se->expr = gfc_build_array_ref (base, index, decl);
 }
 
 
@@ -7062,7 +7061,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 				      subref_array_target, expr);
 
 	      /* ....and set the span field.  */
-	      tmp = get_array_span (desc, expr);
+	      tmp = gfc_get_array_span (desc, expr);
 	      gfc_conv_descriptor_span_set (&se->pre, se->expr, tmp);
 	    }
 	  else if (se->want_pointer)
@@ -7335,7 +7334,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	  parmtype = TREE_TYPE (parm);
 
 	  /* ....and set the span field.  */
-	  tmp = get_array_span (desc, expr);
+	  tmp = gfc_get_array_span (desc, expr);
 	  gfc_conv_descriptor_span_set (&loop.pre, parm, tmp);
 	}
       else
@@ -8884,6 +8883,31 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	      gfc_init_block (&tmpblock);
 
+	      gfc_add_modify (&tmpblock, gfc_class_vptr_get (dcmp),
+			      gfc_class_vptr_get (comp));
+
+	      /* Copy the unlimited '_len' field. If it is greater than zero
+		 (ie. a character(_len)), multiply it by size and use this
+		 for the malloc call.  */
+	      if (UNLIMITED_POLY (c))
+		{
+		  tree ctmp;
+		  gfc_add_modify (&tmpblock, gfc_class_len_get (dcmp),
+				  gfc_class_len_get (comp));
+
+		  size = gfc_evaluate_now (size, &tmpblock);
+		  tmp = gfc_class_len_get (comp);
+		  ctmp = fold_build2_loc (input_location, MULT_EXPR,
+					  size_type_node, size,
+					  fold_convert (size_type_node, tmp));
+		  tmp = fold_build2_loc (input_location, GT_EXPR,
+					 logical_type_node, tmp,
+					 build_zero_cst (TREE_TYPE (tmp)));
+		  size = fold_build3_loc (input_location, COND_EXPR,
+					  size_type_node, tmp, ctmp, size);
+		  size = gfc_evaluate_now (size, &tmpblock);
+		}
+
 	      /* Coarray component have to have the same allocation status and
 		 shape/type-parameter/effective-type on the LHS and RHS of an
 		 intrinsic assignment. Hence, we did not deallocated them - and
@@ -9673,6 +9697,12 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 
   if (expr2 && rss == gfc_ss_terminator)
     return NULL_TREE;
+
+  /* Ensure that the string length from the current scope is used.  */
+  if (expr2->ts.type == BT_CHARACTER
+      && expr2->expr_type == EXPR_FUNCTION
+      && !expr2->value.function.isym)
+    expr2->ts.u.cl->backend_decl = rss->info->string_length;
 
   gfc_start_block (&fblock);
 

@@ -11,6 +11,6 @@ struct A
 {
   union
   {
-    void bad(); // { dg-error "can only have non-static data" }
+    void bad(); // { dg-error "public non-static data member" }
   };
 };
