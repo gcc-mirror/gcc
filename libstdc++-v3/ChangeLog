@@ -1,3 +1,14 @@
+2018-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (sub_match): Add noexcept to default
+	constructor and length observer.
+	(match_results): Add noexcept to default constructor and observers
+	with no preconditions. Define destructor as defaulted.
+	(operator==, operator!=, swap): Add noexcept.
+	(regex_iterator): Add default member initializers and define default
+	constructor and destructor as defaulted. Add noexcept to equality
+	and dereference operators.
+
 2018-06-07  François Dumont  <fdumont@gcc.gnu.org>
 
 	* src/c++11/debug.cc
