@@ -1,3 +1,24 @@
+2018-06-07  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config.gcc: Support "tremont".
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect "tremont".
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_TREMONT.
+	* config/i386/i386.c (m_TREMONT): Define.
+	(processor_target_table): Add "tremont".
+	(PTA_TREMONT): Define.
+	(ix86_lea_outperforms): Add TARGET_TREMONT.
+	(get_builtin_code_for_version): Handle PROCESSOR_TREMONT.
+	(fold_builtin_cpu): Add M_INTEL_TREMONT, replace M_INTEL_GOLDMONT
+	and M_INTEL_GOLDMONT_PLUS.
+	(fold_builtin_cpu): Add "tremont".
+	(ix86_add_stmt_cost): Add TARGET_TREMONT.
+	(ix86_option_override_internal): Add "tremont".
+	* config/i386/i386.h (processor_costs): Define TARGET_TREMONT.
+	(processor_type): Add PROCESSOR_TREMONT.
+	* config/i386/x86-tune.def: Add m_TREMONT.
+	* doc/invoke.texi: Add tremont as x86 -march=/-mtune= CPU type.
+
 2018-06-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc/config/msp430/msp430.c (msp430_mcu_name): Set the "i" in the

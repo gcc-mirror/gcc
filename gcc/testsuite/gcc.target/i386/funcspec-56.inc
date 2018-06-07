@@ -144,6 +144,7 @@ extern void test_arch_core_avx2 (void)		__attribute__((__target__("arch=core-avx
 extern void test_arch_silvermont (void)		__attribute__((__target__("arch=silvermont")));
 extern void test_arch_goldmont (void)		__attribute__((__target__("arch=goldmont")));
 extern void test_arch_goldmont_plus (void)	__attribute__((__target__("arch=goldmont-plus")));
+extern void test_arch_tremont (void)		__attribute__((__target__("arch=tremont")));
 extern void test_arch_knl (void)		__attribute__((__target__("arch=knl")));
 extern void test_arch_knm (void)		__attribute__((__target__("arch=knm")));
 extern void test_arch_skylake (void)		__attribute__((__target__("arch=skylake")));
