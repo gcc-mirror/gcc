@@ -1,3 +1,12 @@
+2018-06-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2018-06-06  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/63177
+	* /config/rs6000/rs6000.h (ASM_CPU_SPEC): Add support for -mpower9.
+	Don't handle -mcpu=power8 if -mpower9-vector is also used.
+
 2018-06-05  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
