@@ -1,3 +1,9 @@
+2018-06-07  Richard Biener  <rguenther@suse.de>
+
+	* graphite-sese-to-poly.c (extract_affine): Avoid unneded
+	wrapping.  Properly wrap the result of a BIT_NOT_EXPR.
+	Properly wrap signed arithmetic if overflow wraps.
+
 2018-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69615
