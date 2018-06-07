@@ -1,6 +1,10 @@
 2018-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (struct data): Delete.  Move into ...
+	(struct bytes): ... here.  Update uses.
+
+	gcc/cp/
 	* module.c (struct data): Make buffer a pointer.  Redo interface.
 
 	Change integer on-disk format.
