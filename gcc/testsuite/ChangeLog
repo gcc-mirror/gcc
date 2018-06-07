@@ -1,3 +1,11 @@
+2018-06-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/85318
+	* gcc.dg/Wc90-c99-compat-10.c: New test.
+	* gcc.dg/Wc90-c99-compat-11.c: New test.
+	* gcc.dg/Wc90-c99-compat-12.c: New test.
+	* gcc.dg/Wc90-c99-compat-9.c: New test.
+
 2018-06-07  Paul Koning  <ni1d@arrl.net>
 
 	* gcc.c-torture/compile/20180605-1.c: New test.
