@@ -868,18 +868,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     public:
       typedef typename __iter_traits::value_type      	value_type;
       typedef typename __iter_traits::difference_type 	difference_type;
-      typedef _BiIter				   iterator;
-      typedef std::basic_string<value_type>	     string_type;
+      typedef _BiIter					iterator;
+      typedef basic_string<value_type>			string_type;
 
       bool matched;
 
-      constexpr sub_match() : matched() { }
+      constexpr sub_match() noexcept : matched() { }
 
       /**
        * Gets the length of the matching sequence.
        */
       difference_type
-      length() const
+      length() const noexcept
       { return this->matched ? std::distance(this->first, this->second) : 0; }
 
       /**
@@ -1602,37 +1602,36 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @post size() returns 0 and str() returns an empty string.
        */
       explicit
-      match_results(const _Alloc& __a = _Alloc())
+      match_results(const _Alloc& __a = _Alloc()) noexcept
       : _Base_type(__a)
       { }
 
       /**
        * @brief Copy constructs a %match_results.
        */
-      match_results(const match_results& __rhs) = default;
+      match_results(const match_results&) = default;
 
       /**
        * @brief Move constructs a %match_results.
        */
-      match_results(match_results&& __rhs) noexcept = default;
+      match_results(match_results&&) noexcept = default;
 
       /**
        * @brief Assigns rhs to *this.
        */
       match_results&
-      operator=(const match_results& __rhs) = default;
+      operator=(const match_results&) = default;
 
       /**
        * @brief Move-assigns rhs to *this.
        */
       match_results&
-      operator=(match_results&& __rhs) = default;
+      operator=(match_results&&) = default;
 
       /**
        * @brief Destroys a %match_results object.
        */
-      ~match_results()
-      { }
+      ~match_results() = default;
 
       //@}
 
@@ -1642,7 +1641,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @retval true   The object has a fully-established result state.
        * @retval false  The object is not ready.
        */
-      bool ready() const { return !_Base_type::empty(); }
+      bool ready() const noexcept { return !_Base_type::empty(); }
 
       /**
        * @name 28.10.2 Size
@@ -1659,11 +1658,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @returns the number of matches found.
        */
       size_type
-      size() const
+      size() const noexcept
       { return _Base_type::empty() ? 0 : _Base_type::size() - 3; }
 
       size_type
-      max_size() const
+      max_size() const noexcept
       { return _Base_type::max_size(); }
 
       /**
@@ -1672,7 +1671,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @retval false The %match_results object is not empty.
        */
       bool
-      empty() const
+      empty() const noexcept
       { return size() == 0; }
 
       //@}
@@ -1776,28 +1775,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @brief Gets an iterator to the start of the %sub_match collection.
        */
       const_iterator
-      begin() const
+      begin() const noexcept
       { return _Base_type::begin(); }
 
       /**
        * @brief Gets an iterator to the start of the %sub_match collection.
        */
       const_iterator
-      cbegin() const
+      cbegin() const noexcept
       { return this->begin(); }
 
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
        */
       const_iterator
-      end() const
+      end() const noexcept
       { return _Base_type::end() - (empty() ? 0 : 3); }
 
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
        */
       const_iterator
-      cend() const
+      cend() const noexcept
       { return this->end(); }
 
       //@}
@@ -1872,7 +1871,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @brief Gets a copy of the allocator.
        */
       allocator_type
-      get_allocator() const
+      get_allocator() const noexcept
       { return _Base_type::get_allocator(); }
 
       //@}
@@ -1886,7 +1885,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @brief Swaps the contents of two match_results.
        */
       void
-      swap(match_results& __that)
+      swap(match_results& __that) noexcept
       {
 	using std::swap;
 	_Base_type::swap(__that);
@@ -1955,7 +1954,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Bi_iter, typename _Alloc>
     inline bool
     operator==(const match_results<_Bi_iter, _Alloc>& __m1,
-	       const match_results<_Bi_iter, _Alloc>& __m2)
+	       const match_results<_Bi_iter, _Alloc>& __m2) noexcept
     {
       if (__m1.ready() != __m2.ready())
 	return false;
@@ -1979,7 +1978,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Bi_iter, class _Alloc>
     inline bool
     operator!=(const match_results<_Bi_iter, _Alloc>& __m1,
-	       const match_results<_Bi_iter, _Alloc>& __m2)
+	       const match_results<_Bi_iter, _Alloc>& __m2) noexcept
     { return !(__m1 == __m2); }
 
   // [7.10.6] match_results swap
@@ -1993,7 +1992,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename _Bi_iter, typename _Alloc>
     inline void
     swap(match_results<_Bi_iter, _Alloc>& __lhs,
-	 match_results<_Bi_iter, _Alloc>& __rhs)
+	 match_results<_Bi_iter, _Alloc>& __rhs) noexcept
     { __lhs.swap(__rhs); }
 
 _GLIBCXX_END_NAMESPACE_CXX11
@@ -2490,9 +2489,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @brief Provides a singular iterator, useful for indicating
        * one-past-the-end of a range.
        */
-      regex_iterator()
-      : _M_pregex()
-      { }
+      regex_iterator() = default;
 
       /**
        * Constructs a %regex_iterator...
@@ -2515,42 +2512,41 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       regex_iterator(_Bi_iter, _Bi_iter, const regex_type&&,
 		     regex_constants::match_flag_type
 		     = regex_constants::match_default) = delete;
-      /**
-       * Copy constructs a %regex_iterator.
-       */
-      regex_iterator(const regex_iterator& __rhs) = default;
 
-      /**
-       * @brief Assigns one %regex_iterator to another.
-       */
+      /// Copy constructs a %regex_iterator.
+      regex_iterator(const regex_iterator&) = default;
+
+      /// Copy assigns one %regex_iterator to another.
       regex_iterator&
-      operator=(const regex_iterator& __rhs) = default;
+      operator=(const regex_iterator&) = default;
+
+      ~regex_iterator() = default;
 
       /**
        * @brief Tests the equivalence of two regex iterators.
        */
       bool
-      operator==(const regex_iterator& __rhs) const;
+      operator==(const regex_iterator&) const noexcept;
 
       /**
        * @brief Tests the inequivalence of two regex iterators.
        */
       bool
-      operator!=(const regex_iterator& __rhs) const
+      operator!=(const regex_iterator& __rhs) const noexcept
       { return !(*this == __rhs); }
 
       /**
        * @brief Dereferences a %regex_iterator.
        */
       const value_type&
-      operator*() const
+      operator*() const noexcept
       { return _M_match; }
 
       /**
        * @brief Selects a %regex_iterator member.
        */
       const value_type*
-      operator->() const
+      operator->() const noexcept
       { return &_M_match; }
 
       /**
@@ -2571,10 +2567,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 
     private:
-      _Bi_iter				_M_begin;
-      _Bi_iter				_M_end;
-      const regex_type*			_M_pregex;
-      regex_constants::match_flag_type	_M_flags;
+      _Bi_iter				_M_begin {};
+      _Bi_iter				_M_end {};
+      const regex_type*			_M_pregex = nullptr;
+      regex_constants::match_flag_type	_M_flags {};
       match_results<_Bi_iter>		_M_match;
     };
 
