@@ -5457,41 +5457,46 @@ gfc_simplify_mod (gfc_expr *a, gfc_expr *p)
   gfc_expr *result;
   int kind;
 
-  if (a->expr_type != EXPR_CONSTANT || p->expr_type != EXPR_CONSTANT)
+  /* First check p.  */
+  if (p->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  /* p shall not be 0.  */
+  switch (p->ts.type)
+    {
+      case BT_INTEGER:
+	if (mpz_cmp_ui (p->value.integer, 0) == 0)
+	  {
+	    gfc_error ("Argument %qs of MOD at %L shall not be zero",
+			"P", &p->where);
+	    return &gfc_bad_expr;
+	  }
+	break;
+      case BT_REAL:
+	if (mpfr_cmp_ui (p->value.real, 0) == 0)
+	  {
+	    gfc_error ("Argument %qs of MOD at %L shall not be zero",
+			"P", &p->where);
+	    return &gfc_bad_expr;
+	  }
+	break;
+      default:
+	gfc_internal_error ("gfc_simplify_mod(): Bad arguments");
+    }
+
+  if (a->expr_type != EXPR_CONSTANT)
     return NULL;
 
   kind = a->ts.kind > p->ts.kind ? a->ts.kind : p->ts.kind;
   result = gfc_get_constant_expr (a->ts.type, kind, &a->where);
 
-  switch (a->ts.type)
+  if (a->ts.type == BT_INTEGER)
+    mpz_tdiv_r (result->value.integer, a->value.integer, p->value.integer);
+  else
     {
-      case BT_INTEGER:
-	if (mpz_cmp_ui (p->value.integer, 0) == 0)
-	  {
-	    /* Result is processor-dependent.  */
-	    gfc_error ("Second argument MOD at %L is zero", &a->where);
-	    gfc_free_expr (result);
-	    return &gfc_bad_expr;
-	  }
-	mpz_tdiv_r (result->value.integer, a->value.integer, p->value.integer);
-	break;
-
-      case BT_REAL:
-	if (mpfr_cmp_ui (p->value.real, 0) == 0)
-	  {
-	    /* Result is processor-dependent.  */
-	    gfc_error ("Second argument of MOD at %L is zero", &p->where);
-	    gfc_free_expr (result);
-	    return &gfc_bad_expr;
-	  }
-
-	gfc_set_model_kind (kind);
-	mpfr_fmod (result->value.real, a->value.real, p->value.real,
-		   GFC_RND_MODE);
-	break;
-
-      default:
-	gfc_internal_error ("gfc_simplify_mod(): Bad arguments");
+      gfc_set_model_kind (kind);
+      mpfr_fmod (result->value.real, a->value.real, p->value.real,
+		 GFC_RND_MODE);
     }
 
   return range_check (result, "MOD");
