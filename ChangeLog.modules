@@ -1,6 +1,11 @@
 2018-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (bytes::calc_crc): Take length parm.  Adjust callers.
+	(elf_out::strtab): Reimplement.
+	(elf_out::add): Use buffer pos for length.
+
+	gcc/cp/
 	* module.c (struct data): Resurrect.  Move buffer extension here.
 	Update users.
 	(class bytes): Derive from data.

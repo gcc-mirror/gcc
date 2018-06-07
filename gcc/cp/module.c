@@ -359,7 +359,7 @@ public:
   }
 
 protected:
-  unsigned calc_crc () const;
+  unsigned calc_crc (unsigned) const;
 
 protected:
   /* Begin streaming.  Set buffer postion for crc  */
@@ -391,10 +391,10 @@ protected:
    first 4 bytes, so don't include them.  */
 
 unsigned
-bytes::calc_crc () const
+bytes::calc_crc (unsigned l) const
 {
   unsigned crc = 0;
-  for (size_t ix = 4; ix < size; ix++)
+  for (size_t ix = 4; ix < l; ix++)
     crc = crc32_byte (crc, buffer[ix]);
   return crc;
 }
@@ -480,7 +480,7 @@ bytes_in::check_crc () const
   if (size < 4)
     return false;
 
-  unsigned c_crc = calc_crc ();
+  unsigned c_crc = calc_crc (size);
   if (c_crc != get_crc ())
     return false;
 
@@ -563,11 +563,11 @@ int bytes_out::is_set = -1;
 void
 bytes_out::set_crc (unsigned *crc_ptr)
 {
-  gcc_checking_assert (size >= 4);
+  gcc_checking_assert (pos >= 4);
   unsigned crc = 0;
   if (crc_ptr)
     {
-      crc = calc_crc ();
+      crc = calc_crc (pos);
       unsigned accum = *crc_ptr;
       /* Only mix the existing *CRC_PTR if it is non-zero.  */
       accum = accum ? crc32_unsigned (accum, crc) : crc;
@@ -1230,23 +1230,19 @@ public:
   class strtab
   {
   private:
+    data buffer;
     ptr_int_hash_map ident_map;		/* Map of IDENTIFIERS to offsets. */
-    vec<uintptr_t, va_gc> *idents;	/* Ordered vector.  */
-    vec<const char *, va_gc> *literals; /* Ordered vector.  */
-    unsigned size;			/* Next offset.  */
 
   public:
     strtab (unsigned size = 50)
-      :ident_map (size), idents (NULL), literals (NULL), size (0)
+      :buffer (), ident_map (size)
     {
-      vec_safe_reserve (idents, size);
-      vec_safe_reserve (literals, 10);
+      /* The string table starts with an empty string.  */
       name ("");
     }
     ~strtab ()
     {
-      vec_free (idents);
-      vec_free (literals);
+      buffer.release ();
     }
 
   public:
@@ -1260,7 +1256,8 @@ public:
     unsigned write (elf_out *out);
 
   private:
-    static bool write_named_decl (elf_out *out, tree decl);
+    unsigned write (const char *s, unsigned l);
+    void write_named_decl (tree decl, int);
   };
 
 private:
@@ -1297,7 +1294,7 @@ public:
 
 public:
   /* Add a section with contents or strings.  */
-  unsigned add (const bytes_out *, bool strings_p, unsigned name);
+  unsigned add (const data *, int string_kind, unsigned name);
 
 public:
   /* Begin and end writing.  */
@@ -1370,7 +1367,6 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
   lengths[3] += pos;
   spans[3]++;
 
-  size = pos;
   set_crc (crc_ptr);
   unsigned sec_num = sink->add (this, !crc_ptr, name);
   parent::end ();
@@ -1591,6 +1587,15 @@ elf_in::begin (location_t loc)
   return true;
 }
 
+unsigned
+elf_out::strtab::write (const char *s, unsigned l)
+{
+  unsigned res = buffer.pos;
+  char *ptr = buffer.write (l);
+  memcpy (ptr, s, l);
+  return res;
+}
+
 /* Map IDENTIFIER IDENT to strtab offset.  Inserts into strtab if not
    already there.  */
 
@@ -1598,19 +1603,11 @@ unsigned
 elf_out::strtab::name (tree ident)
 {
   gcc_checking_assert (identifier_p (ident));
-  unsigned result;
   bool existed;
   int *slot = &ident_map.get_or_insert (ident, &existed);
-  if (existed)
-    result = *slot;
-  else
-    {
-      *slot = (int)size;
-      vec_safe_push (idents, reinterpret_cast<uintptr_t> (ident));
-      result = size;
-      size += IDENTIFIER_LENGTH (ident) + 1;
-    }
-  return result;
+  if (!existed)
+    *slot = write (IDENTIFIER_POINTER (ident), IDENTIFIER_LENGTH (ident) + 1);
+  return *slot;
 }
 
 /* Map LITERAL to strtab offset.  Does not detect duplicates and
@@ -1619,11 +1616,7 @@ elf_out::strtab::name (tree ident)
 unsigned
 elf_out::strtab::name (const char *literal)
 {
-  vec_safe_push (idents, uintptr_t (0));
-  vec_safe_push (literals, literal);
-  unsigned result = size;
-  size += strlen (literal) + 1;
-  return result;
+  return write (literal, strlen (literal) + 1);
 }
 
 /* Map a DECL's qualified name to strtab offset.  Does not detect
@@ -1633,43 +1626,30 @@ unsigned
 elf_out::strtab::named_decl (tree decl, bool is_defn)
 {
   gcc_checking_assert (DECL_P (decl) && decl != global_namespace);
-  unsigned result = size;
-  vec_safe_push (idents, reinterpret_cast<uintptr_t> (decl) | is_defn);
+  unsigned result = buffer.pos;
 
-  if (is_defn)
-    size += 2;
-  while (decl != global_namespace)
-    {
-      size += IDENTIFIER_LENGTH (DECL_NAME (decl))  + 2;
-      decl = CP_DECL_CONTEXT (decl);
-      if (TYPE_P (decl))
-	decl = TYPE_NAME (decl);
-    }
-  size++;
+  write_named_decl (decl, is_defn);
+
+  write ("", 1);
 
   return result;
 }
 
-bool
-elf_out::strtab::write_named_decl (elf_out *elf, tree decl)
+void
+elf_out::strtab::write_named_decl (tree decl, int inner)
 {
-  if (decl == global_namespace)
-    return true;
+  if (decl != global_namespace)
+    {
+      if (TYPE_P (decl))
+	decl = TYPE_NAME (decl);
 
-  if (TYPE_P (decl))
-    decl = TYPE_NAME (decl);
+      write_named_decl (CP_DECL_CONTEXT (decl), -1);
 
-  if (!write_named_decl (elf, CP_DECL_CONTEXT (decl)))
-    return false;
-
-  if (!elf->write ("::", 2))
-    return false;
-
-  tree name = DECL_NAME (decl);
-  if (!elf->write (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name)))
-    return false;
-
-  return true;
+      tree name = DECL_NAME (decl);
+      write (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
+    }
+  if (inner)
+    write (&"::{}"[inner+1], 2);
 }
 
 /* Write the string table to ELF.  section name is .strtab.  */
@@ -1677,43 +1657,7 @@ elf_out::strtab::write_named_decl (elf_out *elf, tree decl)
 unsigned
 elf_out::strtab::write (elf_out *elf)
 {
-  unsigned off = elf->pad ();
-  if (!off)
-    return 0;
-
-  unsigned shname = name (".strtab");
-  unsigned lit_ix = 0;
-  for (unsigned ix = 0; ix != idents->length (); ix++)
-    {
-      uintptr_t handle = (*idents)[ix];
-      bool is_defn = handle & 1;
-      tree ident = reinterpret_cast <tree> (handle ^ is_defn);
-      unsigned len;
-      const char *ptr;
-      if (!ident)
-	{
-	  ptr = (*literals)[lit_ix++];
-	  len = strlen (ptr);
-	}
-      else if (identifier_p (ident))
-	{
-	  len = IDENTIFIER_LENGTH (ident);
-	  ptr = IDENTIFIER_POINTER (ident);
-	}
-      else
-	{
-	  if (!write_named_decl (elf, ident))
-	    return 0;
-	  /* Write the trailing NUL.  */
-	  len = is_defn ? 2 : 0;
-	  ptr = &"{}"[2-len];
-	}
-      if (!elf->write (ptr, len + 1))
-	return 0;
-    }
-
-  gcc_assert (lit_ix == literals->length ());
-  return elf->add (SHT_STRTAB, shname, off, size, SHF_STRINGS);
+  return elf->add (&buffer, -1, name (".strtab"));
 }
 
 /* Pad file to the next SECTION_ALIGN byte boundary.  Return the file
@@ -1778,26 +1722,26 @@ elf_out::write (const void *buffer, size_t size)
   return true;
 }
 
-/* Write data and add section.  STRINGS_P is true for a string
+/* Write data and add section.  STRING_KIND is true for a string
    section, false for PROGBITS.  NAME identifies the section (0 is the
    empty name).  DATA is the contents.  Return section number or 0 on
    failure (0 is the undef section).  */
 
 unsigned
-elf_out::add (const bytes_out *data, bool strings_p, unsigned name)
+elf_out::add (const data *data, int string_kind, unsigned name)
 {
   uint32_t off = pad ();
   if (!off)
     return 0;
   /* DATA will have included space for a CRC.  We don't care about tht
      for string sections.  */
-  uint32_t disp = strings_p ? 4 : 0;
-  if (!write (data->buffer + disp, data->size - disp))
+  uint32_t disp = string_kind > 0 ? 4 : 0;
+  if (!write (data->buffer + disp, data->pos - disp))
     return 0;
 
-  return add (strings_p ? SHT_STRTAB : SHT_PROGBITS,
-	      name, off, data->size - disp,
-	      strings_p ? SHF_STRINGS : SHF_NONE);
+  return add (string_kind ? SHT_STRTAB : SHT_PROGBITS,
+	      name, off, data->pos - disp,
+	      string_kind ? SHF_STRINGS : SHF_NONE);
 }
 
 /* Begin writing the file.  Initialize the section table and write an
