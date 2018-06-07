@@ -48,6 +48,8 @@ static gfc_code * create_do_loop (gfc_expr *, gfc_expr *, gfc_expr *,
 				  locus *, gfc_namespace *,
 				  char *vname=NULL);
 
+static bool is_fe_temp (gfc_expr *e);
+
 #ifdef CHECKING_P
 static void check_locus (gfc_namespace *);
 #endif
@@ -229,6 +231,9 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   if (expr1->ts.type != BT_CHARACTER || expr1->rank != 0
       || !gfc_expr_attr(expr1).allocatable
       || !expr1->ts.deferred)
+    return 0;
+
+  if (is_fe_temp (expr1))
     return 0;
 
   expr2 = gfc_discard_nops (co->expr2);
