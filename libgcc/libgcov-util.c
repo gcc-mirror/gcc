@@ -1202,7 +1202,7 @@ matched_gcov_info (const struct gcov_info *info1, const struct gcov_info *info2)
 
 /* Defined in libgcov-driver.c.  */
 extern gcov_unsigned_t compute_summary (struct gcov_info *,
-                 struct gcov_summary *, size_t *);
+					struct gcov_summary *);
 
 /* Compute the overlap score of two profiles with the head of GCOV_LIST1 and
    GCOV_LIST1. Return a number ranging from [0.0, 1.0], with 0.0 meaning no
@@ -1215,15 +1215,14 @@ calculate_overlap (struct gcov_info *gcov_list1,
   struct gcov_summary this_prg;
   unsigned list1_cnt = 0, list2_cnt= 0, all_cnt;
   unsigned int i, j;
-  size_t max_length;
   const struct gcov_info *gi_ptr;
   struct overlap_t *all_infos;
 
-  compute_summary (gcov_list1, &this_prg, &max_length);
+  compute_summary (gcov_list1, &this_prg);
   overlap_sum_1 = (double) (this_prg.sum_all);
   p1_sum_all = this_prg.sum_all;
   p1_run_max = this_prg.run_max;
-  compute_summary (gcov_list2, &this_prg, &max_length);
+  compute_summary (gcov_list2, &this_prg);
   overlap_sum_2 = (double) (this_prg.sum_all);
   p2_sum_all = this_prg.sum_all;
   p2_run_max = this_prg.run_max;

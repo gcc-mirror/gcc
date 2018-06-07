@@ -190,9 +190,12 @@ replace_filename_variables (char *filename)
 
 	  char *buffer = (char *)xmalloc (start + end + repl_length + 1);
 	  char *buffer_ptr = buffer;
-	  buffer_ptr = (char *)mempcpy (buffer_ptr, filename, start);
-	  buffer_ptr = (char *)mempcpy (buffer_ptr, replacement, repl_length);
-	  buffer_ptr = (char *)mempcpy (buffer_ptr, p, end);
+	  buffer_ptr = (char *)memcpy (buffer_ptr, filename, start);
+	  buffer_ptr += start;
+	  buffer_ptr = (char *)memcpy (buffer_ptr, replacement, repl_length);
+	  buffer_ptr += repl_length;
+	  buffer_ptr = (char *)memcpy (buffer_ptr, p, end);
+	  buffer_ptr += end;
 	  *buffer_ptr = '\0';
 
 	  free (filename);
@@ -210,6 +213,7 @@ allocate_filename_struct (struct gcov_filename *gf)
   const char *gcov_prefix;
   size_t prefix_length;
   int strip = 0;
+  gf->filename = NULL;
 
   {
     /* Check if the level of dirs to strip off specified. */
@@ -239,12 +243,16 @@ allocate_filename_struct (struct gcov_filename *gf)
       gcov_prefix = ".";
       prefix_length = 1;
     }
-  gf->prefix = prefix_length;
 
   /* Allocate and initialize the filename scratch space.  */
-  gf->filename = (char *) xmalloc (gf->max_length + prefix_length + 2);
   if (prefix_length)
-    memcpy (gf->filename, gcov_prefix, prefix_length);
+    {
+      gf->prefix = (char *) xmalloc (prefix_length + 1);
+      char *p = (char *) memcpy (gf->prefix, gcov_prefix, prefix_length);
+      *(p + prefix_length) = '\0';
+    }
+  else
+    gf->prefix = NULL;
 }
 
 /* Open a gcda file specified by GI_FILENAME.
@@ -255,7 +263,7 @@ gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
 			  struct gcov_filename *gf)
 {
   const char *fname = gi_ptr->filename;
-  char *dst = gf->filename + gf->prefix;
+  int append_slash = 0;
 
   fname = gi_ptr->filename;
 
@@ -288,9 +296,17 @@ gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
 	fname += 2;
 
       if (!IS_DIR_SEPARATOR (*fname))
-	*dst++ = '/';
+	append_slash = 1;
     }
-  strcpy (dst, fname);
+
+  size_t prefix_length = gf->prefix ? strlen (gf->prefix) : 0;
+  gf->filename = (char *) xmalloc (prefix_length + strlen (fname) + 2);
+  *gf->filename = '\0';
+  if (prefix_length)
+    strcat (gf->filename, gf->prefix);
+  if (append_slash)
+    *gf->filename++ = '/';
+  strcat (gf->filename, fname);
 
   gf->filename = replace_filename_variables (gf->filename);
 
