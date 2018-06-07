@@ -1,3 +1,7 @@
+2018-06-07  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/range-for9.C: Adjust dg-error.
+
 2018-06-07  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* gcc.target/i386/funcspec-56.inc: Test arch=tremont.
