@@ -1,5 +1,18 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* ipa-cp.c (class edge_clone_summary): New summary.
+	(grow_edge_clone_vectors): Remove.
+	(ipcp_edge_duplication_hook): Remove.
+	(class edge_clone_summary_t): New call_summary class.
+	(ipcp_edge_removal_hook): Remove.
+	(edge_clone_summary_t::duplicate): New function.
+	(get_next_cgraph_edge_clone): Use edge_clone_summaries.
+	(create_specialized_node): Likewise.
+	(ipcp_driver): Initialize edge_clone_summaries and do not
+	register hooks.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* symbol-summary.h (get): New function.
 	(call_summary::m_initialize_when_cloning): New class member.
 
