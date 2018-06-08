@@ -1,3 +1,18 @@
+2018-06-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2018-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/81497
+	* config/arm/arm-builtins.c (arm_type_qualifiers): Add
+	qualifier_void_pointer and qualifier_const_void_pointer.
+	(arm_ldc_qualifiers, arm_stc_qualifiers): Use the above.
+	(arm_init_builtins): Handle the above.
+	* config/arm/arm_acle.h (__arm_cdp, __arm_ldc, __arm_ldcl, __arm_stc,
+	__arm_stcl, __arm_mcr, __arm_cdp2, __arm_ldc2, __arm_ldcl2, __arm_stc2,
+	__arm_stcl2,__arm_mcr2, __arm_mcrr, __arm_mcrr2): Remove return for
+	void intrinsics.
+
 2018-06-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/85684

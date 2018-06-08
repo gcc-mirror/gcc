@@ -1,3 +1,12 @@
+2018-06-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2018-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/81497
+	* g++.target/arm/arm.exp: New file.
+	* g++.target/arm/pr81497.C: Likewise.
+
 2018-06-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/86045
