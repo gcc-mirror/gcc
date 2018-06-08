@@ -1,21 +1,28 @@
-/* { dg-do compile { target { powerpc64-*-* && lp64 } } } */
+/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2 -mcpu=power7" } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 
 
-/* Expected instruction counts for Big Endian */
+/* Expected instruction counts for Power 7 */
 
 /* { dg-final { scan-assembler-times "xvabsdp" 1 } } */
 /* { dg-final { scan-assembler-times "xvadddp" 1 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 7 } } */
-/* { dg-final { scan-assembler-times "xvcmpeqdp" 6 } } */
-/* { dg-final { scan-assembler-times "xvcmpeqdp." 6 } } */
-/* { dg-final { scan-assembler-times "xvcmpgtdp" 8 } } */
-/* { dg-final { scan-assembler-times "xvcmpgtdp." 8 } } */
-/* { dg-final { scan-assembler-times "xvcmpgedp" 7 } } */
-/* { dg-final { scan-assembler-times "xvcmpgedp." 7 } } */
+/* { dg-final { scan-assembler-times "xxlnor" 8 { target le } } } */
+/* { dg-final { scan-assembler-times "xxlnor" 8 { target be } } } */
+/* { dg-final { scan-assembler-times "xvcmpeqdp" 5 { target le } } } */
+/* { dg-final { scan-assembler-times "xvcmpeqdp" 6 { target be }} } */
+/* { dg-final { scan-assembler-times "xvcmpeqdp." 5 { target le } } } */
+/* { dg-final { scan-assembler-times "xvcmpeqdp." 6 { target be } } } */
+/* { dg-final { scan-assembler-times "xvcmpgtdp" 9 { target le } } } */
+/* { dg-final { scan-assembler-times "xvcmpgtdp" 8 { target be } } } */
+/* { dg-final { scan-assembler-times "xvcmpgtdp." 9 { target le } } } */
+/* { dg-final { scan-assembler-times "xvcmpgtdp." 8 { target be } } } */
+/* { dg-final { scan-assembler-times "xvcmpgedp" 6 { target le } } } */
+/* { dg-final { scan-assembler-times "xvcmpgedp" 7 { target be } } } */
+/* { dg-final { scan-assembler-times "xvcmpgedp." 6 { target le } } } */
+/* { dg-final { scan-assembler-times "xvcmpgedp." 7 { target be } } } */
 /* { dg-final { scan-assembler-times "xvrdpim" 1 } } */
 /* { dg-final { scan-assembler-times "xvmaddadp" 1 } } */
 /* { dg-final { scan-assembler-times "xvmsubadp" 1 } } */
