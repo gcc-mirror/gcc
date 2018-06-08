@@ -126,7 +126,7 @@ simple_edge_hints (struct cgraph_edge *edge)
 			    ? edge->caller->global.inlined_to : edge->caller);
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
   if (ipa_fn_summaries->get_create (to)->scc_no
-      && ipa_fn_summaries->get_create (to)->scc_no
+      && ipa_fn_summaries->get (to)->scc_no
 	 == ipa_fn_summaries->get_create (callee)->scc_no
       && !edge->recursive_p ())
     hints |= INLINE_HINT_same_scc;

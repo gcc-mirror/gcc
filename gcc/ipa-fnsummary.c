@@ -850,7 +850,7 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 	  }
       if (!edge->inline_failed)
 	{
-	  ipa_fn_summary *s = ipa_fn_summaries->get_create (callee);
+	  ipa_fn_summary *s = ipa_fn_summaries->get (callee);
 	  fprintf (f, "%*sStack frame offset %i, callee self size %i,"
 		   " callee size %i\n",
 		   indent + 2, "",
@@ -2363,10 +2363,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	    }
 	  free (body);
 	}
-      set_hint_predicate (&ipa_fn_summaries->get_create (node)->loop_iterations,
-			  loop_iterations);
-      set_hint_predicate (&ipa_fn_summaries->get_create (node)->loop_stride,
-			  loop_stride);
+      ipa_fn_summary *s = ipa_fn_summaries->get_create (node);
+      set_hint_predicate (&s->loop_iterations, loop_iterations);
+      set_hint_predicate (&s->loop_stride, loop_stride);
       scev_finalize ();
     }
   FOR_ALL_BB_FN (bb, my_function)
@@ -2384,8 +2383,9 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	  e->aux = NULL;
 	}
     }
-  ipa_fn_summaries->get_create (node)->time = time;
-  ipa_fn_summaries->get_create (node)->self_size = size;
+  ipa_fn_summary *s = ipa_fn_summaries->get_create (node);
+  s->time = time;
+  s->self_size = size;
   nonconstant_names.release ();
   ipa_release_body_info (&fbi);
   if (opt_for_fn (node->decl, optimize))

@@ -1,5 +1,13 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* ipa-fnsummary.c (dump_ipa_call_summary): Use ::get method.
+	(analyze_function_body): Extract multiple calls of get_create.
+	* ipa-inline-analysis.c (simple_edge_hints): Likewise.
+	* ipa-inline.c (recursive_inlining): Use ::get method.
+	* ipa-inline.h (estimate_edge_growth): Likewise.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* hsa-common.h (enum hsa_function_kind): Rename HSA_NONE to
 	HSA_INVALID.
 	(hsa_function_summary::hsa_function_summary): Use the new enum

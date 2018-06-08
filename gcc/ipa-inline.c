@@ -1559,10 +1559,10 @@ recursive_inlining (struct cgraph_edge *edge,
     fprintf (dump_file,
 	     "\n   Inlined %i times, "
 	     "body grown from size %i to %i, time %f to %f\n", n,
-	     ipa_fn_summaries->get_create (master_clone)->size,
-	     ipa_fn_summaries->get_create (node)->size,
-	     ipa_fn_summaries->get_create (master_clone)->time.to_double (),
-	     ipa_fn_summaries->get_create (node)->time.to_double ());
+	     ipa_fn_summaries->get (master_clone)->size,
+	     ipa_fn_summaries->get (node)->size,
+	     ipa_fn_summaries->get (master_clone)->time.to_double (),
+	     ipa_fn_summaries->get (node)->time.to_double ());
 
   /* Remove master clone we used for inlining.  We rely that clones inlined
      into master clone gets queued just before master clone so we don't
