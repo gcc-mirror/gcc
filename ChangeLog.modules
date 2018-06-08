@@ -1,3 +1,13 @@
+2018-06-08  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (data::printf): Moved from ...
+	(bytes_out::printf): ... here.
+	(elf): Replace sections pointer with section_vec local class.
+	Adjust all uses.
+	(elf_out): Remove strtab member class.
+	(elf_out::end): Adjust.
+
 2018-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

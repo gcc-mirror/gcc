@@ -298,13 +298,28 @@ protected:
     pos += count;
     return res;
   }
+
 public:
-  char *write (unsigned count);
-  const char *read (unsigned count);
+  char *write (unsigned count, bool exact = false)
+  {
+    if (size < pos + count)
+      extend ((pos + count) * (exact ? 2 : 3) / 2);
+    return use (count);
+  }
+  const char *read (unsigned count)
+  {
+    if (size - pos < count)
+      return NULL;
+    return use (count);
+  }
   void unuse (unsigned count)
   {
     pos -= count;
   }
+
+public:
+  /* Format a NUL-terminated raw string.  */
+  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
 };
 
 /* Extend the buffer to size A.  It is either not allocated, or
@@ -318,25 +333,28 @@ data::extend (size_t a)
   size = a;
 }
 
-/* Emit COUNT bytes.  Extend buffer as necessary and return pointer to
-   space.  Return pointer to writable data.  */
+/* Format a string directly to the buffer, including a terminating
+   NUL.  Intended for human consumption.  */
 
-char *
-data::write (unsigned count)
+void
+data::printf (const char *format, ...)
 {
-  if (size < pos + count)
-    extend ((pos + count) * 3/2);
-  return use (count);
-}
+  va_list args;
+  /* Exercise buffer expansion.  */
+  size_t len = MODULE_STAMP ? 10 : 500;
 
-/* Consume COUNT bytes of data.  Check there is sufficient data.
-   Return pointer to consumed data.  */
-
-const char *data::read (unsigned count)
-{
-  if (size - pos < count)
-    return NULL;
-  return use (count);
+ again:
+  va_start (args, format);
+  char *ptr = write (len);
+  size_t actual = vsnprintf (ptr, len, format, args) + 1;
+  va_end (args);
+  if (actual > len)
+    {
+      unuse (len);
+      len = actual;
+      goto again;
+    }
+  unuse (len - actual);
 }
 
 /* Byte streamer base.   Buffer with read/write position and smarts
@@ -365,9 +383,10 @@ protected:
   /* Begin streaming.  Set buffer postion for crc  */
   void begin ()
   {
-    gcc_checking_assert (!buffer && !size);
+    gcc_checking_assert (!buffer && !size && !pos);
     pos = 4;
   }
+
   /* Complete streaming.  Release the buffer.  */
   void end ()
   {
@@ -538,8 +557,6 @@ public:
   }
   void str (const char *, size_t);  /* Write string of known length.  */
   void buf (const char *, size_t);  /* Write fixed length buffer.  */
-  /* Format a NUL-terminated raw string.  */
-  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
 
 public:
   /* Dump instrumentation.  */
@@ -921,30 +938,6 @@ bytes_in::str (size_t *len_p)
   return str;
 }
 
-/* Format a string directly to the buffer, including a terminating
-   NUL.  Intended for human consumption.  */
-
-void
-bytes_out::printf (const char *format, ...)
-{
-  va_list args;
-  /* Exercise buffer expansion.  */
-  size_t len = MODULE_STAMP ? 10 : 500;
-
- again:
-  va_start (args, format);
-  char *ptr = write (len);
-  size_t actual = vsnprintf (ptr, len, format, args) + 1;
-  va_end (args);
-  if (actual > len)
-    {
-      unuse (len);
-      len = actual;
-      goto again;
-    }
-  unuse (len - actual);
-}
-
 /* Encapsulated Lazy Records Of Named Declarations.
    Header: Stunningly Elf32_Ehdr-like
    Sections: Sectional data
@@ -1045,31 +1038,43 @@ protected:
     uint32_t addralign; /* 0 */
     uint32_t entsize; /* ENTry SIZE, usually 0 */
   };
-
-protected:
-  /* Internal section.  NOT the on-disk representation. */
-  struct isection
+  class section_vec : public data
   {
-    unsigned short type;   /* Type of section.  */
-    unsigned short flags;  /* Section flags.  */
-    unsigned name;   /* Index into string section.  */
-    unsigned offset; /* File offset.  */
-    unsigned size;   /* Size of data.  */
+  public:
+    typedef data parent;
+
+  public:
+    section *operator[] (unsigned s)
+    {
+      if (s * sizeof (section) < pos)
+	return (section *)&buffer[s * sizeof (section)];
+      else
+	return NULL;
+    }
+    unsigned size () const
+    {
+      return pos / sizeof (section);
+    }
+
+    section *write (unsigned count, bool exact = false)
+    {
+      return (section *)parent::write (count * sizeof (section), exact);
+    }
   };
 
 protected:
   FILE *stream;   /* File stream we're reading or writing.  */
-  vec<isection, va_heap, vl_embed> *sections;  /* Section table.  */
-  int err; 		/* Sticky error code.  */
+  section_vec sections;  /* Section table in external form.  */
+  int err; 	  /* Sticky error code.  */
 
 public:
   /* Construct from STREAM.  E is errno if STREAM NULL.  */
   elf (FILE *stream, int e)
-    :stream (stream), sections (NULL), err (stream ? 0 : e)
+    :stream (stream), sections (), err (stream ? 0 : e)
   {}
   ~elf ()
   {
-    gcc_checking_assert (!stream && !sections);
+    gcc_checking_assert (!stream && !sections.buffer);
   }
 
 public:
@@ -1090,14 +1095,14 @@ public:
 public:
   unsigned get_num_sections () const 
   {
-    return sections->length ();
+    return sections.size ();
   }
 
 public:
   /* Begin reading/writing file.  Return false on error.  */
   bool begin () const
   {
-    gcc_checking_assert (!sections);
+    gcc_checking_assert (!sections.buffer);
     return !has_error ();
   }
   /* Finish reading/writing file.  Return NULL or error string.  */
@@ -1136,8 +1141,7 @@ elf::end ()
   if (stream && fclose (stream))
     set_error (errno);
   stream = NULL;
-  vec_free (sections);
-  sections = NULL;
+  sections.release ();
 
   return has_error ();
 }
@@ -1198,7 +1202,7 @@ public:
      it.  */
   void forget_section (unsigned s)
   {
-    memset (&(*sections)[s], 0, sizeof (isection));
+    memset (sections[s], 0, sizeof (section));
   }
 
 public:
@@ -1225,48 +1229,20 @@ class elf_out : public elf {
   /* Desired section alignment on disk.  */
   static const int SECTION_ALIGN = 16;
 
-public:
-  /* Builder for string table.  */
-  class strtab
-  {
-  private:
-    data buffer;
-    ptr_int_hash_map ident_map;		/* Map of IDENTIFIERS to offsets. */
-
-  public:
-    strtab (unsigned size = 50)
-      :buffer (), ident_map (size)
-    {
-      /* The string table starts with an empty string.  */
-      name ("");
-    }
-    ~strtab ()
-    {
-      buffer.release ();
-    }
-
-  public:
-    /* IDENTIFIER to offset.  */
-    unsigned name (tree ident);
-    /* String literal to offset.  */
-    unsigned name (const char *literal);
-    /* Qualified name to offset.  */
-    unsigned named_decl (tree decl, bool is_defn);
-    /* Write out the string table.  */
-    unsigned write (elf_out *out);
-
-  private:
-    unsigned write (const char *s, unsigned l);
-    void write_named_decl (tree decl, int);
-  };
-
 private:
-  strtab strings;   /* String table.  */
+  data strtab;			/* The string table.  */
+  ptr_int_hash_map ident_strtab;/* Map of IDENTIFIERS to strtab offsets. */
 
 public:
   elf_out (FILE *s, int e)
-    :parent (s, e), strings (500)
+    :parent (s, e), strtab (), ident_strtab (500)
   {
+    /* The string table starts with an empty string.  */
+    name ("");
+  }
+  ~elf_out ()
+  {
+    strtab.release ();
   }
 
 protected:
@@ -1277,24 +1253,19 @@ protected:
 
 public:
   /* IDENTIFIER to strtab offset.  */
-  unsigned name (tree ident)
-  {
-    return strings.name (ident);
-  }
+  unsigned name (tree ident);
   /* String literal to strtab offset.  */
-  unsigned name (const char *n)
-  {
-    return strings.name (n);
-  }
+  unsigned name (const char *n);
   /* Qualified name of DECL to strtab offset.  */
-  unsigned named_decl (tree decl, bool is_defn)
-  {
-    return strings.named_decl (decl, is_defn);
-  }
+  unsigned qualified_name (tree decl, bool is_defn);
+
+private:
+  unsigned strtab_write (const char *s, unsigned l);
+  void strtab_write (tree decl, int);
 
 public:
   /* Add a section with contents or strings.  */
-  unsigned add (const data *, int string_kind, unsigned name);
+  unsigned add (const data *, bool string_p, unsigned name);
 
 public:
   /* Begin and end writing.  */
@@ -1426,11 +1397,11 @@ void
 elf_in::keep_sections (unsigned from, unsigned to)
 {
   release ();
-  gcc_assert (to <= get_num_sections ());
+  gcc_assert (to <= sections.size ());
   if (from)
-    memset (&(*sections)[0], 0, sizeof (isection) * from);
-  if (unsigned tail = get_num_sections () - to)
-    memset (&(*sections)[to], 0, sizeof (isection) * tail);
+    memset (sections[0], 0, sizeof (section) * from);
+  if (unsigned tail = sections.size () - to)
+    memset (sections[to], 0, sizeof (section) * tail);
 }
 
 /* Read at current position into BUFFER.  Return true on success.  */
@@ -1451,9 +1422,9 @@ elf_in::read (void *buffer, size_t size)
 bool
 elf_in::read (data *b, unsigned snum, unsigned type)
 {
-  if (!snum || snum >= sections->length ())
+  const section *sec = sections[snum];
+  if (!snum || !sec)
     return false;
-  const isection *sec = &(*sections)[snum];
   if (sec->type != type)
     return false;
   if (fseek (stream, sec->offset, SEEK_SET))
@@ -1475,12 +1446,11 @@ elf_in::read (data *b, unsigned snum, unsigned type)
 unsigned
 elf_in::find (const char *sname)
 {
-  unsigned snum = sections->length ();
-  while (--snum)
+  for (unsigned snum = sections.size (); --snum;)
     {
-      const isection *isec = &(*sections)[snum];
+      const section *sec = sections[snum];
 
-      if (!strcmp (sname, name (isec->name)))
+      if (!strcmp (sname, name (sec->name)))
 	return snum;
     }
 
@@ -1541,35 +1511,24 @@ elf_in::begin (location_t loc)
 
   unsigned strndx = header.shstrndx;
   unsigned shnum = header.shnum;
-  vec_alloc (sections, shnum);
-  for (unsigned ix = 0; ix != shnum; ix++)
+  bool indirect = shnum == SHN_XINDEX;
+  if (indirect)
     {
-      section section;
-      if (fread (&section, 1, sizeof (section), stream) != sizeof (section))
+      if (fread (sections.write (1), 1, sizeof (section), stream) != 1)
 	goto section_table_fail;
-
-      if (!ix)
-	{
-	  /* Section[0] is where escape values might be stored.  */
-	  if (strndx == SHN_XINDEX)
-	    strndx = section.link;
-	  if (shnum == SHN_XINDEX)
-	    {
-	      shnum = section.size;
-	      section.size = 0;
-	      if (!shnum)
-		goto malformed;
-	    }
-	  vec_safe_reserve (sections, shnum, true);
-	}
-
-      isection isection;
-      isection.type = section.type;
-      isection.name = section.name;
-      isection.offset = section.offset;
-      isection.size = section.size;
-      sections->quick_push (isection);
+      shnum = sections[0]->size;
     }
+  if (!shnum)
+    goto malformed;
+  if (unsigned more = shnum - indirect)
+    {
+      if (fread (sections.write (more, true), sizeof (section), more, stream)
+	  != more)
+	goto section_table_fail;
+    }
+
+  if (strndx == SHN_XINDEX)
+    strndx = sections[0]->link;
 
   if (strndx) 
    {
@@ -1587,26 +1546,50 @@ elf_in::begin (location_t loc)
   return true;
 }
 
+/* Write S of length L to the strtab buffer.  L must include the ending
+   NUL, if that's what you want.  */
+
 unsigned
-elf_out::strtab::write (const char *s, unsigned l)
+elf_out::strtab_write (const char *s, unsigned l)
 {
-  unsigned res = buffer.pos;
-  char *ptr = buffer.write (l);
-  memcpy (ptr, s, l);
+  unsigned res = strtab.pos;
+  memcpy (strtab.write (l), s, l);
   return res;
+}
+
+/* Write qualified name of decl.  INNER >0 if this is a definition, <0
+   if this is a qualifier of an outer name.  */
+
+void
+elf_out::strtab_write (tree decl, int inner)
+{
+  if (decl != global_namespace)
+    {
+      if (TYPE_P (decl))
+	decl = TYPE_NAME (decl);
+
+      strtab_write (CP_DECL_CONTEXT (decl), -1);
+
+      tree name = DECL_NAME (decl);
+      strtab_write (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
+    }
+
+  if (inner)
+    strtab_write (&"::{}"[inner+1], 2);
 }
 
 /* Map IDENTIFIER IDENT to strtab offset.  Inserts into strtab if not
    already there.  */
 
 unsigned
-elf_out::strtab::name (tree ident)
+elf_out::name (tree ident)
 {
   gcc_checking_assert (identifier_p (ident));
   bool existed;
-  int *slot = &ident_map.get_or_insert (ident, &existed);
+  int *slot = &ident_strtab.get_or_insert (ident, &existed);
   if (!existed)
-    *slot = write (IDENTIFIER_POINTER (ident), IDENTIFIER_LENGTH (ident) + 1);
+    *slot = strtab_write (IDENTIFIER_POINTER (ident),
+			  IDENTIFIER_LENGTH (ident) + 1);
   return *slot;
 }
 
@@ -1614,50 +1597,24 @@ elf_out::strtab::name (tree ident)
    expects LITERAL to remain live until strtab is written out.  */
 
 unsigned
-elf_out::strtab::name (const char *literal)
+elf_out::name (const char *literal)
 {
-  return write (literal, strlen (literal) + 1);
+  return strtab_write (literal, strlen (literal) + 1);
 }
 
 /* Map a DECL's qualified name to strtab offset.  Does not detect
    duplicates.  */
 
 unsigned
-elf_out::strtab::named_decl (tree decl, bool is_defn)
+elf_out::qualified_name (tree decl, bool is_defn)
 {
   gcc_checking_assert (DECL_P (decl) && decl != global_namespace);
-  unsigned result = buffer.pos;
+  unsigned result = strtab.pos;
 
-  write_named_decl (decl, is_defn);
-
-  write ("", 1);
+  strtab_write (decl, is_defn);
+  strtab_write ("", 1);
 
   return result;
-}
-
-void
-elf_out::strtab::write_named_decl (tree decl, int inner)
-{
-  if (decl != global_namespace)
-    {
-      if (TYPE_P (decl))
-	decl = TYPE_NAME (decl);
-
-      write_named_decl (CP_DECL_CONTEXT (decl), -1);
-
-      tree name = DECL_NAME (decl);
-      write (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
-    }
-  if (inner)
-    write (&"::{}"[inner+1], 2);
-}
-
-/* Write the string table to ELF.  section name is .strtab.  */
-
-unsigned
-elf_out::strtab::write (elf_out *elf)
-{
-  return elf->add (&buffer, -1, name (".strtab"));
 }
 
 /* Pad file to the next SECTION_ALIGN byte boundary.  Return the file
@@ -1694,17 +1651,19 @@ unsigned
 elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
 	      unsigned flags)
 {
-  isection sec;
+  unsigned res = sections.size ();
+  section *sec = sections.write (1);
 
-  sec.type = type;
-  sec.flags = flags;
-  sec.name = name;
-  sec.offset = off;
-  sec.size = size;
+  memset (sec, 0, sizeof (section));
+  sec->type = type;
+  sec->flags = flags;
+  sec->name = name;
+  sec->offset = off;
+  sec->size = size;
+  if (flags & SHF_STRINGS)
+    sec->entsize = 1;
 
-  unsigned snum = sections->length ();
-  vec_safe_push (sections, sec);
-  return snum;
+  return res;
 }
 
 /* Write BUFFER of SIZE bytes at current file position.  Return true
@@ -1722,26 +1681,22 @@ elf_out::write (const void *buffer, size_t size)
   return true;
 }
 
-/* Write data and add section.  STRING_KIND is true for a string
+/* Write data and add section.  STRING_P is true for a string
    section, false for PROGBITS.  NAME identifies the section (0 is the
    empty name).  DATA is the contents.  Return section number or 0 on
    failure (0 is the undef section).  */
 
 unsigned
-elf_out::add (const data *data, int string_kind, unsigned name)
+elf_out::add (const data *data, bool string_p, unsigned name)
 {
   uint32_t off = pad ();
   if (!off)
     return 0;
-  /* DATA will have included space for a CRC.  We don't care about tht
-     for string sections.  */
-  uint32_t disp = string_kind > 0 ? 4 : 0;
-  if (!write (data->buffer + disp, data->pos - disp))
+  if (!write (data->buffer, data->pos))
     return 0;
 
-  return add (string_kind ? SHT_STRTAB : SHT_PROGBITS,
-	      name, off, data->pos - disp,
-	      string_kind ? SHF_STRINGS : SHF_NONE);
+  return add (string_p ? SHT_STRTAB : SHT_PROGBITS, name,
+	      off, data->pos, string_p ? SHF_STRINGS : SHF_NONE);
 }
 
 /* Begin writing the file.  Initialize the section table and write an
@@ -1753,7 +1708,7 @@ elf_out::begin ()
   if (!parent::begin ())
     return false;
 
-  vec_alloc (sections, 10);
+  sections.extend (10 * sizeof (section));
 
   /* Create the UNDEF section.  */
   add (SHT_NONE);
@@ -1773,44 +1728,23 @@ elf_out::end ()
   if (stream)
     {
       /* Write the string table.  */
-      unsigned strndx = strings.write (this);
-
+      unsigned strndx = add (&strtab, -1, name (".strtab"));
       uint32_t shoff = pad ();
-      unsigned shnum = sections->length ();
+      unsigned shnum = sections.size ();
 
-      /* Write section table */
-      for (unsigned ix = 0; ix != sections->length (); ix++)
+      /* Store escape values in section[0].  */
+      if (strndx >= SHN_LORESERVE)
 	{
-	  const isection *isec = &(*sections)[ix];
-	  section section;
-	  memset (&section, 0, sizeof (section));
-	  section.name = isec->name;
-	  section.type = isec->type;
-	  section.offset = isec->offset;
-	  section.size = isec->size;
-	  section.flags = isec->flags;
-	  section.entsize = 0;
-	  if (isec->flags & SHF_STRINGS)
-	    section.entsize = 1;
-
-	  if (!ix)
-	    {
-	      /* Store escape values in section[0].  */
-	      if (strndx >= SHN_LORESERVE)
-		{
-		  section.link = strndx;
-		  strndx = SHN_XINDEX;
-		}
-	      if (shnum >= SHN_LORESERVE)
-		{
-		  section.size = shnum;
-		  shnum = SHN_XINDEX;
-		}
-	    }
-
-	  if (!write (&section, sizeof (section)))
-	    break;
+	  sections[0]->link = strndx;
+	  strndx = SHN_XINDEX;
 	}
+      if (shnum >= SHN_LORESERVE)
+	{
+	  sections[0]->size = shnum;
+	  shnum = SHN_XINDEX;
+	}
+
+      write (sections.buffer, sections.pos);
 
       /* Write header.  */
       if (fseek (stream, 0, SEEK_SET))
@@ -7315,9 +7249,9 @@ module_state::get_option_string  ()
 void
 module_state::write_readme (elf_out *to, const char *options)
 {
-  bytes_out readme;
+  data readme;
 
-  readme.begin ();
+  readme.extend (200);
 
   readme.printf ("GNU C++ Module (%s)", modules_atom_p () ? "ATOM" : "TS");
   /* Compiler's version.  */
@@ -7335,7 +7269,6 @@ module_state::write_readme (elf_out *to, const char *options)
   readme.printf ("options:%s", options);
 
   /* Its direct imports.  */
-  char *real_from = NULL;
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
@@ -7343,10 +7276,9 @@ module_state::write_readme (elf_out *to, const char *options)
 	readme.printf ("import:%s %s",
 		       IDENTIFIER_POINTER (state->name), state->filename);
     }
-  if (real_from)
-    free (real_from);
 
-  readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
+  to->add (&readme, true, to->name (MOD_SNAME_PFX ".README"));
+  readme.release ();
 }
 
 /* Write the direct or indirect imports.
@@ -8488,7 +8420,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   /* We don't find the section by name.  Use depset's decl's name for
      human friendliness.  Prefer a defn over a decl.  */
   tree naming_decl = scc[0]->get_decl ();
-  unsigned name = to->named_decl (naming_decl, scc[0]->is_defn ());
+  unsigned name = to->qualified_name (naming_decl, scc[0]->is_defn ());
   unsigned snum = sec.end (to, name, crc_ptr);
 
   for (unsigned ix = size; ix--;)
