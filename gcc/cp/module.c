@@ -1065,16 +1065,17 @@ protected:
 protected:
   FILE *stream;   /* File stream we're reading or writing.  */
   section_vec sections;  /* Section table in external form.  */
+  data hdr;	  /* The header.  */
   int err; 	  /* Sticky error code.  */
 
 public:
   /* Construct from STREAM.  E is errno if STREAM NULL.  */
   elf (FILE *stream, int e)
-    :stream (stream), sections (), err (stream ? 0 : e)
+    :stream (stream), sections (), hdr (), err (stream ? 0 : e)
   {}
   ~elf ()
   {
-    gcc_checking_assert (!stream && !sections.buffer);
+    gcc_checking_assert (!stream && !sections.buffer && !hdr.buffer);
   }
 
 public:
@@ -1242,6 +1243,7 @@ public:
   }
   ~elf_out ()
   {
+    hdr.release ();
     strtab.release ();
   }
 
@@ -1466,51 +1468,57 @@ elf_in::begin (location_t loc)
   if (!parent::begin ())
     return false;
 
-  header header;
-  if (fseek (stream, 0, SEEK_SET)
-      || !read (&header, sizeof (header)))
-    return false;
-  if (header.ident.magic[0] != 0x7f
-      || header.ident.magic[1] != 'E'
-      || header.ident.magic[2] != 'L'
-      || header.ident.magic[3] != 'F')
+  header *h = reinterpret_cast <header *> (hdr.write (sizeof (header), true));
+
+  if (!read (h, sizeof (header)))
+    {
+    fail:
+      hdr.release ();
+      return false;
+    }
+
+  if (h->ident.magic[0] != 0x7f
+      || h->ident.magic[1] != 'E'
+      || h->ident.magic[2] != 'L'
+      || h->ident.magic[3] != 'F')
     {
       error_at (loc, "not Encapsulated Lazy Records of Named Declarations");
-      return false;
+      goto fail;
     }
 
   /* We expect a particular format -- the ELF is not intended to be
      distributable.  */
-  if (header.ident.klass != MY_CLASS
-      || header.ident.data != MY_ENDIAN
-      || header.ident.version != EV_CURRENT
-      || header.type != ET_NONE
-      || header.machine != EM_NONE
-      || header.ident.osabi != OSABI_NONE)
+  if (h->ident.klass != MY_CLASS
+      || h->ident.data != MY_ENDIAN
+      || h->ident.version != EV_CURRENT
+      || h->type != ET_NONE
+      || h->machine != EM_NONE
+      || h->ident.osabi != OSABI_NONE)
     {
       error_at (loc, "unexpected encapsulation format or type");
-      return false;
+      goto fail;
     }
 
   int e = -1;
-  if (!header.shoff || !header.shnum
-      || header.shentsize != sizeof (section))
+  if (!h->shoff || !h->shnum
+      || h->shentsize != sizeof (section))
     {
     malformed:
       set_error (e);
       error_at (loc, "encapsulation is malformed");
-      return false;
+      goto fail;
     }
 
-  if (fseek (stream, header.shoff, SEEK_SET))
+  if (fseek (stream, h->shoff, SEEK_SET))
     {
     section_table_fail:
+      sections.release ();
       e = errno;
       goto malformed;
     }
 
-  unsigned strndx = header.shstrndx;
-  unsigned shnum = header.shnum;
+  unsigned strndx = h->shstrndx;
+  unsigned shnum = h->shnum;
   bool indirect = shnum == SHN_XINDEX;
   if (indirect)
     {
@@ -1543,6 +1551,7 @@ elf_in::begin (location_t loc)
   if (!strings.size)
     goto malformed;
 
+  hdr.release ();
   return true;
 }
 
@@ -1714,9 +1723,9 @@ elf_out::begin ()
   add (SHT_NONE);
 
   /* Write an empty header.  */
-  header header;
-  memset (&header, 0, sizeof (header));
-  return write (&header, sizeof (header));
+  header *h = reinterpret_cast <header *> (hdr.write (sizeof (header), true));
+  memset (h, 0, sizeof (header));
+  return write (hdr.buffer, hdr.pos);
 }
 
 /* Finish writing the file.  Write out the string & section tables.
@@ -1752,26 +1761,25 @@ elf_out::end ()
       else
 	{
 	  /* Write the correct header now.  */
-	  header header;
-	  memset (&header, 0, sizeof (header));
-	  header.ident.magic[0] = 0x7f;
-	  header.ident.magic[1] = 'E';	/* Elrond */
-	  header.ident.magic[2] = 'L';	/* is an */
-	  header.ident.magic[3] = 'F';	/* elf.  */
-	  header.ident.klass = MY_CLASS;
-	  header.ident.data =  MY_ENDIAN;
-	  header.ident.version = EV_CURRENT;
-	  header.ident.osabi = OSABI_NONE;
-	  header.type = ET_NONE;
-	  header.machine = EM_NONE;
-	  header.version = EV_CURRENT;
-	  header.shoff = shoff;
-	  header.ehsize = sizeof (header);
-	  header.shentsize = sizeof (section);
-	  header.shnum = shnum;
-	  header.shstrndx = strndx;
+	  header *h = reinterpret_cast <header *> (hdr.buffer);
+	  h->ident.magic[0] = 0x7f;
+	  h->ident.magic[1] = 'E';	/* Elrond */
+	  h->ident.magic[2] = 'L';	/* is an */
+	  h->ident.magic[3] = 'F';	/* elf.  */
+	  h->ident.klass = MY_CLASS;
+	  h->ident.data =  MY_ENDIAN;
+	  h->ident.version = EV_CURRENT;
+	  h->ident.osabi = OSABI_NONE;
+	  h->type = ET_NONE;
+	  h->machine = EM_NONE;
+	  h->version = EV_CURRENT;
+	  h->shoff = shoff;
+	  h->ehsize = sizeof (header);
+	  h->shentsize = sizeof (section);
+	  h->shnum = shnum;
+	  h->shstrndx = strndx;
 
-	  write (&header, sizeof (header));
+	  write (hdr.buffer, hdr.pos);
 	}
     }
 
