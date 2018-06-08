@@ -1,3 +1,9 @@
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
+	* config/powerpcspe/powerpcspe.c (rs6000_xcoff_visibility):
+        Remove usage of MPX-related (and removed) fields.
+	* config/rs6000/rs6000.c (rs6000_xcoff_visibility): Likewise.
+
 2018-06-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* cfg.c (debug): Use TDF_NONE rather than 0.
