@@ -1,3 +1,7 @@
+2018-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* dumpfile.c (FIRST_ME_AUTO_NUMBERED_DUMP): Bump to 4.
+
 2018-06-08  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_passes_ieee128): Protect with #if

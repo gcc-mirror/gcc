@@ -2972,29 +2972,43 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       all_file_decl_data[i]->current_decl_state = NULL; 
     }
 
-  /* Finally merge the cgraph according to the decl merging decisions.  */
-  timevar_push (TV_IPA_LTO_CGRAPH_MERGE);
-  if (symtab->dump_file)
-    {
-      fprintf (symtab->dump_file, "Before merging:\n");
-      symtab->dump (symtab->dump_file);
-    }
   if (!flag_ltrans)
     {
+      /* Finally merge the cgraph according to the decl merging decisions.  */
+      timevar_push (TV_IPA_LTO_CGRAPH_MERGE);
+
+      gcc_assert (!dump_file);
+      dump_file = dump_begin (lto_link_dump_id, NULL);
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Before merging:\n");
+	  symtab->dump (dump_file);
+	}
       lto_symtab_merge_symbols ();
       /* Removal of unreachable symbols is needed to make verify_symtab to pass;
 	 we are still having duplicated comdat groups containing local statics.
 	 We could also just remove them while merging.  */
       symtab->remove_unreachable_nodes (dump_file);
-    }
-  ggc_collect ();
-  symtab->state = IPA_SSA;
-  /* FIXME: Technically all node removals happening here are useless, because
-     WPA should not stream them.  */
-  if (flag_ltrans)
-    symtab->remove_unreachable_nodes (dump_file);
+      ggc_collect ();
 
-  timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
+      if (dump_file)
+        dump_end (lto_link_dump_id, dump_file);
+      dump_file = NULL;
+      timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
+    }
+  symtab->state = IPA_SSA;
+  /* All node removals happening here are useless, because
+     WPA should not stream them.  Still always perform remove_unreachable_nodes
+     because we may reshape clone tree, get rid of dead masters of inline
+     clones and remove symbol entries for read-only variables we keep around
+     only to be able to constant fold them.  */
+  if (flag_ltrans)
+    {
+      if (symtab->dump_file)
+	 symtab->dump (symtab->dump_file);
+      symtab->remove_unreachable_nodes (symtab->dump_file);
+    }
 
   /* Indicate that the cgraph is built and ready.  */
   symtab->function_flags_ready = true;
@@ -3152,19 +3166,19 @@ do_whole_program_analysis (void)
   if (seen_error ())
     return;
 
-  if (symtab->dump_file)
-    {
-      fprintf (symtab->dump_file, "Optimized ");
-      symtab->dump (symtab->dump_file);
-    }
-
-  symtab_node::checking_verify_symtab_nodes ();
-  bitmap_obstack_release (NULL);
-
   /* We are about to launch the final LTRANS phase, stop the WPA timer.  */
   timevar_pop (TV_WHOPR_WPA);
 
   timevar_push (TV_WHOPR_PARTITIONING);
+
+  gcc_assert (!dump_file);
+  dump_file = dump_begin (partition_dump_id, NULL);
+
+  if (dump_file)
+    symtab->dump (dump_file);
+
+  symtab_node::checking_verify_symtab_nodes ();
+  bitmap_obstack_release (NULL);
   if (flag_lto_partition == LTO_PARTITION_1TO1)
     lto_1_to_1_map ();
   else if (flag_lto_partition == LTO_PARTITION_MAX)
@@ -3192,6 +3206,9 @@ do_whole_program_analysis (void)
      to globals with hidden visibility because they are accessed from multiple
      partitions.  */
   lto_promote_cross_file_statics ();
+  if (dump_file)
+     dump_end (partition_dump_id, dump_file);
+  dump_file = NULL;
   timevar_pop (TV_WHOPR_PARTITIONING);
 
   timevar_stop (TV_PHASE_OPT_GEN);
