@@ -90,8 +90,13 @@ public:
      does not exist it will be created.  */
   T* get_create (cgraph_node *node)
   {
-    gcc_checking_assert (node->summary_uid);
-    return get_create (node->summary_uid);
+    return get (node->summary_uid, true);
+  }
+
+  /* Getter for summary callgraph node pointer.  */
+  T* get (cgraph_node *node)
+  {
+    return get (node->summary_uid, false);
   }
 
   /* Return number of elements handled by data structure.  */
@@ -136,7 +141,7 @@ private:
   typedef int_hash <int, 0, -1> map_hash;
 
   /* Getter for summary callgraph ID.  */
-  T* get_create (int uid);
+  T *get (int uid, bool lazy_insert);
 
   /* Indicates if insertion hook is enabled.  */
   bool m_insertion_enabled;
@@ -245,30 +250,37 @@ function_summary<T *>::symtab_duplication (cgraph_node *node,
 					   cgraph_node *node2, void *data)
 {
   function_summary *summary = (function_summary <T *> *) (data);
-  T **v = summary->m_map.get (node->summary_uid);
-
-  gcc_checking_assert (node2->summary_uid > 0);
+  T *v = summary->get (node);
 
   if (v)
     {
       /* This load is necessary, because we insert a new value!  */
-      T *data = *v;
       T *duplicate = summary->allocate_new ();
       summary->m_map.put (node2->summary_uid, duplicate);
-      summary->duplicate (node, node2, data, duplicate);
+      summary->duplicate (node, node2, v, duplicate);
     }
 }
 
 template <typename T>
 T*
-function_summary<T *>::get_create (int uid)
+function_summary<T *>::get (int uid, bool lazy_insert)
 {
-  bool existed;
-  T **v = &m_map.get_or_insert (uid, &existed);
-  if (!existed)
-    *v = allocate_new ();
+  gcc_checking_assert (uid > 0);
 
-  return *v;
+  if (lazy_insert)
+    {
+      bool existed;
+      T **v = &m_map.get_or_insert (uid, &existed);
+      if (!existed)
+	*v = allocate_new ();
+
+      return *v;
+    }
+  else
+    {
+      T **v = m_map.get (uid);
+      return v == NULL ? NULL : *v;
+    }
 }
 
 template <typename T>
