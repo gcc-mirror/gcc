@@ -1,3 +1,8 @@
+2018-06-08  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (class Gcc_backend): Remove
+	stack_allocation_expression method.
+
 2018-02-03  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::fill_in_struct): Mark struct types as
