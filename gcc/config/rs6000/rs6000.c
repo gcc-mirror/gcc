@@ -197,12 +197,14 @@ int dot_symbols;
    of this machine mode.  */
 scalar_int_mode rs6000_pmode;
 
+#if TARGET_ELF
 /* Note whether IEEE 128-bit floating point was passed or returned, either as
    the __float128/_Float128 explicit type, or when long double is IEEE 128-bit
    floating point.  We changed the default C++ mangling for these types and we
    may want to generate a weak alias of the old mangling (U10__float128) to the
    new mangling (u9__ieee128).  */
 static bool rs6000_passes_ieee128;
+#endif
 
 /* Generate the manged name (i.e. U10__float128) used in GCC 8.1, and not the
    name used in current releases (i.e. u9__ieee128).  */
