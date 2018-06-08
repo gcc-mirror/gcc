@@ -1,3 +1,19 @@
+2018-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ios_base.h (ios::Init::Init(const Init&))
+	(ios::Init::operator=): Define as defaulted.
+	* include/bits/stl_bvector.h (_Bit_reference(const _Bit_reference&)):
+	Likewise.
+	* include/bits/stream_iterator.h (istream_iterator::operator=)
+	(ostream_iterator::operator=): Likewise.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator::operator=)
+	Likewise.
+	* include/std/bitset (bitset::reference::reference(const reference&)):
+	Likewise.
+	* include/std/complex (complex<float>::complex(const complex&))
+	(complex<double>::complex(const complex&))
+	(complex<long double>::complex(const complex&)): Likewise.
+
 2018-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.h (sub_match): Add noexcept to default
