@@ -1064,19 +1064,19 @@ protected:
   };
 
 protected:
-  FILE *stream;   /* File stream we're reading or writing.  */
+  int fd;   /* File descriptor we're reading or writing.  */
   section_vec sections;  /* Section table in external form.  */
   data hdr;	  /* The header.  */
   int err; 	  /* Sticky error code.  */
 
 public:
   /* Construct from STREAM.  E is errno if STREAM NULL.  */
-  elf (FILE *stream, int e)
-    :stream (stream), sections (), hdr (), err (stream ? 0 : e)
+  elf (int fd, int e)
+    :fd (fd), sections (), hdr (), err (fd >= 0 ? 0 : e)
   {}
   ~elf ()
   {
-    gcc_checking_assert (!stream && !sections.buffer && !hdr.buffer);
+    gcc_checking_assert (fd < 0 && !sections.buffer && !hdr.buffer);
   }
 
 public:
@@ -1140,9 +1140,9 @@ bool
 elf::end ()
 {
   /* Close the stream and free the section table.  */
-  if (stream && fclose (stream))
+  if (fd >= 0 && close (fd))
     set_error (errno);
-  stream = NULL;
+  fd = -1;
   sections.release ();
 
   return has_error ();
@@ -1165,8 +1165,8 @@ protected:
   data strings;  /* String table.  */
 
   public:
-  elf_in (FILE *s, int e)
-    :parent (s, e), size (0), strings ()
+  elf_in (int fd, int e)
+    :parent (fd, e), size (0), strings ()
   {
   }
   ~elf_in ()
@@ -1177,7 +1177,7 @@ protected:
 public:
   bool is_frozen () const
   {
-    return !stream && size;
+    return fd < 0 && size;
   }
   void freeze ();
   void defrost (const char *);
@@ -1244,8 +1244,8 @@ private:
   unsigned offset;		/* Write position in file.  */
 
 public:
-  elf_out (FILE *s, int e)
-    :parent (s, e), strtab (), ident_strtab (500), offset (0)
+  elf_out (int fd, int e)
+    :parent (fd, e), strtab (), ident_strtab (500), offset (0)
   {
     /* The string table starts with an empty string.  */
     name ("");
@@ -1363,7 +1363,7 @@ elf_in::freeze ()
   gcc_checking_assert (!is_frozen ());
   struct stat stat;
 
-  if (fstat (fileno (stream), &stat) < 0)
+  if (fstat (fd, &stat) < 0)
     set_error (errno);
   else
     {
@@ -1372,9 +1372,9 @@ elf_in::freeze ()
       inode = stat.st_ino;
 #endif
       size = unsigned (stat.st_size);
-      if (fclose (stream) < 0)
+      if (close (fd) < 0)
 	set_error (errno);
-      stream = NULL;
+      fd = -1;
     }
 }
 
@@ -1384,8 +1384,8 @@ elf_in::defrost (const char *name)
   gcc_checking_assert (is_frozen ());
   struct stat stat;
 
-  stream = fopen (name, "rb");
-  if (!stream || fstat (fileno (stream), &stat) < 0)
+  fd = open (name, O_RDONLY | O_CLOEXEC);
+  if (fd < 0 || fstat (fd, &stat) < 0)
     set_error (errno);
   else
     {
@@ -1419,13 +1419,13 @@ elf_in::keep_sections (unsigned from, unsigned to)
 const char *
 elf_in::read (data *buffer, unsigned pos, unsigned length)
 {
-  if (pos != ~0u && fseek (stream, pos, SEEK_SET))
+  if (pos != ~0u && lseek (fd, pos, SEEK_SET) < 0)
     {
       set_error (errno);
       return NULL;
     }
 
-  if (fread (buffer->write (length, true), 1, length, stream) != length)
+  if (::read (fd, buffer->write (length, true), length) != length)
     {
       set_error (errno);
       buffer->release ();
@@ -1658,12 +1658,12 @@ elf_out::write (const data *buffer)
       static char zero[SECTION_ALIGN];
       padding = SECTION_ALIGN - padding;
       offset += padding;
-      if (fwrite (&zero, 1, padding, stream) != padding)
+      if (::write (fd, &zero, padding) != padding)
 	set_error (errno);
     }
 
   unsigned res = offset;
-  if (fwrite (buffer->buffer, 1, buffer->pos, stream) != buffer->pos)
+  if (::write (fd, buffer->buffer, buffer->pos) != buffer->pos)
     {
       set_error (errno);
       return 0;
@@ -1715,7 +1715,7 @@ elf_out::begin ()
 bool
 elf_out::end ()
 {
-  if (stream)
+  if (fd >= 0)
     {
       /* Write the string table.  */
       unsigned strndx = add (&strtab, -1, name (".strtab"));
@@ -1736,7 +1736,7 @@ elf_out::end ()
       unsigned shoff = write (&sections);
 
       /* Write header.  */
-      if (fseek (stream, 0, SEEK_SET))
+      if (lseek (fd, 0, SEEK_SET) < 0)
 	set_error (errno);
       else
 	{
@@ -2242,7 +2242,7 @@ struct GTY(()) module_state {
  public:
   /* Read and write module.  */
   void write (elf_out *to);
-  void read (FILE *handle, int e, bool);
+  void read (int fd, int e, bool);
 
   /* Read a section.  */
   void load_section (unsigned snum);
@@ -9017,9 +9017,9 @@ module_state::write (elf_out *to)
    be lazy, if this is an import and flag_module_lazy is in effect.  */
 
 void
-module_state::read (FILE *stream, int e, bool check_crc)
+module_state::read (int fd, int e, bool check_crc)
 {
-  from = new elf_in (stream, e);
+  from = new elf_in (fd, e);
   lru = lazy_lru++;
   lazy_open--;
   if (!from->begin (loc))
@@ -9526,18 +9526,18 @@ module_state::do_import (char const *fname, bool check_crc)
       filename = xstrdup (fname);
     }
 
-  FILE *stream = NULL;
+  int fd = -1;
   int e = ENOENT;
   if (filename)
     {
-      stream = fopen (maybe_add_bmi_prefix (filename), "rb");
+      fd = open (maybe_add_bmi_prefix (filename), O_RDONLY | O_CLOEXEC);
       e = errno;
     }
 
   announce ("importing");
   vec_safe_push (importing, this);
   imported = true;
-  read (stream, e, check_crc);
+  read (fd, e, check_crc);
   bool failed = check_read (direct && !modules_atom_p ());
   importing->pop ();
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
@@ -9812,17 +9812,19 @@ finish_module ()
     warning_at (state->loc, 0, "not exporting module due to errors");
   else
     {
-      FILE *stream = NULL;
+      int fd = -1;
       int e = ENOENT;
       if (state->filename)
 	{
-	  stream = fopen (maybe_add_bmi_prefix (state->filename), "wb");
+	  fd = open (maybe_add_bmi_prefix (state->filename),
+		     O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC,
+		     0666);
 	  e = errno;
 	}
       unsigned n = dump.push (state);
       state->announce ("creating");
 
-      elf_out to (stream, e);
+      elf_out to (fd, e);
       if (to.begin ())
 	state->write (&to);
       if (to.end ())

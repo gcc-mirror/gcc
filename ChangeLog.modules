@@ -1,6 +1,9 @@
 2018-06-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (elf): Replace FILE *stream with int fd.  Update uses.
+
+	gcc/cp/
 	* module.c (bytes::begin): Add CRC parm.
 	(elf_in): Read buffers, adjust.
 
