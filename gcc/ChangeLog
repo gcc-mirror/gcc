@@ -1,5 +1,15 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* cgraph.c (symbol_table::create_edge): Always assign a new
+	unique number.
+	(symbol_table::free_edge): Do not recycle numbers.
+	* cgraph.h (cgraph_edge::get): New method.
+	* symbol-summary.h (symtab_removal): Use it.
+	(symtab_duplication): Likewise.
+	(call_summary::hashable_uid): Remove.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* ipa-inline-analysis.c (inline_edge_removal_hook): Remove.
 	(initialize_growth_caches): Remove.
 	(free_growth_caches): Likewise.
