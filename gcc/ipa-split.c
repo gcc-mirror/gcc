@@ -1691,7 +1691,7 @@ execute_split_functions (void)
   /* This can be relaxed; function might become inlinable after splitting
      away the uninlinable part.  */
   if (ipa_fn_summaries
-      && !ipa_fn_summaries->get (node)->inlinable)
+      && !ipa_fn_summaries->get_create (node)->inlinable)
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: not inlinable.\n");

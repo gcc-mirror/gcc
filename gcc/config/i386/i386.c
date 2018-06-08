@@ -5789,7 +5789,7 @@ ix86_can_inline_p (tree caller, tree callee)
 	      for multi-versioning call optimization, so beware of
 	      ipa_fn_summaries not available.  */
 	   && (! ipa_fn_summaries
-	       || ipa_fn_summaries->get
+	       || ipa_fn_summaries->get_create
 	       (cgraph_node::get (callee))->fp_expressions))
     ret = false;
 

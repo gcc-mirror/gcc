@@ -125,9 +125,9 @@ simple_edge_hints (struct cgraph_edge *edge)
   struct cgraph_node *to = (edge->caller->global.inlined_to
 			    ? edge->caller->global.inlined_to : edge->caller);
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
-  if (ipa_fn_summaries->get (to)->scc_no
-      && ipa_fn_summaries->get (to)->scc_no
-	 == ipa_fn_summaries->get (callee)->scc_no
+  if (ipa_fn_summaries->get_create (to)->scc_no
+      && ipa_fn_summaries->get_create (to)->scc_no
+	 == ipa_fn_summaries->get_create (callee)->scc_no
       && !edge->recursive_p ())
     hints |= INLINE_HINT_same_scc;
 
@@ -157,7 +157,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   vec<tree> known_vals;
   vec<ipa_polymorphic_call_context> known_contexts;
   vec<ipa_agg_jump_function_p> known_aggs;
-  struct ipa_call_summary *es = ipa_call_summaries->get (edge);
+  struct ipa_call_summary *es = ipa_call_summaries->get_create (edge);
   int min_size;
 
   callee = edge->callee->ultimate_alias_target ();
@@ -190,7 +190,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   /* When caching, update the cache entry.  */
   if (edge_growth_cache.exists ())
     {
-      ipa_fn_summaries->get (edge->callee)->min_size = min_size;
+      ipa_fn_summaries->get_create (edge->callee)->min_size = min_size;
       if ((int) edge_growth_cache.length () <= edge->uid)
 	edge_growth_cache.safe_grow_cleared (symtab->edges_max_uid);
       edge_growth_cache[edge->uid].time = time;
@@ -293,14 +293,15 @@ int
 estimate_size_after_inlining (struct cgraph_node *node,
 			      struct cgraph_edge *edge)
 {
-  struct ipa_call_summary *es = ipa_call_summaries->get (edge);
+  struct ipa_call_summary *es = ipa_call_summaries->get_create (edge);
+  ipa_fn_summary *s = ipa_fn_summaries->get_create (node);
   if (!es->predicate || *es->predicate != false)
     {
-      int size = ipa_fn_summaries->get (node)->size + estimate_edge_growth (edge);
+      int size = s->size + estimate_edge_growth (edge);
       gcc_assert (size >= 0);
       return size;
     }
-  return ipa_fn_summaries->get (node)->size;
+  return s->size;
 }
 
 
@@ -349,7 +350,7 @@ int
 estimate_growth (struct cgraph_node *node)
 {
   struct growth_data d = { node, false, false, 0 };
-  struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
+  struct ipa_fn_summary *info = ipa_fn_summaries->get_create (node);
 
   node->call_for_symbol_and_aliases (do_estimate_growth_1, &d, true);
 
@@ -424,7 +425,7 @@ growth_likely_positive (struct cgraph_node *node,
       || node->address_taken)
     return true;
 
-  max_callers = ipa_fn_summaries->get (node)->size * 4 / edge_growth + 2;
+  max_callers = ipa_fn_summaries->get_create (node)->size * 4 / edge_growth + 2;
 
   for (e = node->callers; e; e = e->next_caller)
     {

@@ -76,7 +76,7 @@ process_hsa_functions (void)
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      hsa_function_summary *s = hsa_summaries->get (node);
+      hsa_function_summary *s = hsa_summaries->get_create (node);
 
       /* A linked function is skipped.  */
       if (s->m_bound_function != NULL)
@@ -130,10 +130,10 @@ process_hsa_functions (void)
 
       while (e)
 	{
-	  hsa_function_summary *src = hsa_summaries->get (node);
+	  hsa_function_summary *src = hsa_summaries->get_create (node);
 	  if (src->m_kind != HSA_NONE && src->m_gpu_implementation_p)
 	    {
-	      hsa_function_summary *dst = hsa_summaries->get (e->callee);
+	      hsa_function_summary *dst = hsa_summaries->get_create (e->callee);
 	      if (dst->m_kind != HSA_NONE && !dst->m_gpu_implementation_p)
 		{
 		  e->redirect_callee (dst->m_bound_function);
@@ -174,7 +174,7 @@ ipa_hsa_write_summary (void)
        lsei_next_function_in_partition (&lsei))
     {
       node = lsei_cgraph_node (lsei);
-      hsa_function_summary *s = hsa_summaries->get (node);
+      hsa_function_summary *s = hsa_summaries->get_create (node);
 
       if (s->m_kind != HSA_NONE)
 	count++;
@@ -187,7 +187,7 @@ ipa_hsa_write_summary (void)
        lsei_next_function_in_partition (&lsei))
     {
       node = lsei_cgraph_node (lsei);
-      hsa_function_summary *s = hsa_summaries->get (node);
+      hsa_function_summary *s = hsa_summaries->get_create (node);
 
       if (s->m_kind != HSA_NONE)
 	{
@@ -244,7 +244,7 @@ ipa_hsa_read_section (struct lto_file_decl_data *file_data, const char *data,
       node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
 								index));
       gcc_assert (node->definition);
-      hsa_function_summary *s = hsa_summaries->get (node);
+      hsa_function_summary *s = hsa_summaries->get_create (node);
 
       struct bitpack_d bp = streamer_read_bitpack (&ib_main);
       s->m_kind = (hsa_function_kind) bp_unpack_value (&bp, 2);

@@ -1,5 +1,12 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* lto-partition.c (add_symbol_to_partition_1): Use get_create instead
+	of get.
+	(undo_partition): Likewise.
+	(lto_balanced_map): Likewise.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* lto-partition.c (add_references_to_partition): Remove support
 	for MPX (macros, related functions, fields in cgraph_node, ...).
 	(add_symbol_to_partition_1): Likewise.

@@ -1407,7 +1407,8 @@ hsa_gpu_implementation_p (tree decl)
   if (hsa_summaries == NULL)
     return false;
 
-  hsa_function_summary *s = hsa_summaries->get (cgraph_node::get_create (decl));
+  hsa_function_summary *s
+    = hsa_summaries->get_create (cgraph_node::get_create (decl));
 
   return s->m_gpu_implementation_p;
 }

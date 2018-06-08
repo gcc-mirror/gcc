@@ -86,11 +86,12 @@ public:
   /* Release an item that is stored within map.  */
   void release (T *item);
 
-  /* Getter for summary callgraph node pointer.  */
-  T* get (cgraph_node *node)
+  /* Getter for summary callgraph node pointer.  If a summary for a node
+     does not exist it will be created.  */
+  T* get_create (cgraph_node *node)
   {
     gcc_checking_assert (node->summary_uid);
-    return get (node->summary_uid);
+    return get_create (node->summary_uid);
   }
 
   /* Return number of elements handled by data structure.  */
@@ -135,7 +136,7 @@ private:
   typedef int_hash <int, 0, -1> map_hash;
 
   /* Getter for summary callgraph ID.  */
-  T* get (int uid);
+  T* get_create (int uid);
 
   /* Indicates if insertion hook is enabled.  */
   bool m_insertion_enabled;
@@ -214,7 +215,7 @@ function_summary<T *>::symtab_insertion (cgraph_node *node, void *data)
   function_summary *summary = (function_summary <T *> *) (data);
 
   if (summary->m_insertion_enabled)
-    summary->insert (node, summary->get (node));
+    summary->insert (node, summary->get_create (node));
 }
 
 template <typename T>
@@ -260,7 +261,7 @@ function_summary<T *>::symtab_duplication (cgraph_node *node,
 
 template <typename T>
 T*
-function_summary<T *>::get (int uid)
+function_summary<T *>::get_create (int uid)
 {
   bool existed;
   T **v = &m_map.get_or_insert (uid, &existed);
@@ -357,10 +358,11 @@ public:
   /* Release an item that is stored within map.  */
   void release (T *item);
 
-  /* Getter for summary callgraph edge pointer.  */
-  T* get (cgraph_edge *edge)
+  /* Getter for summary callgraph edge pointer.
+     If a summary for an edge does not exist, it will be created.  */
+  T* get_create (cgraph_edge *edge)
   {
-    return get (hashable_uid (edge));
+    return get_create (hashable_uid (edge));
   }
 
   /* Return number of elements handled by data structure.  */
@@ -390,7 +392,7 @@ private:
   typedef int_hash <int, 0, -1> map_hash;
 
   /* Getter for summary callgraph ID.  */
-  T* get (int uid)
+  T* get_create (int uid)
   {
     bool existed;
     T **v = &m_map.get_or_insert (uid, &existed);
