@@ -1,3 +1,8 @@
+2018-06-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_passes_ieee128): Protect with #if
+	TARGET_ELF. 
+
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
 	* tree-cfg.h (debug_function): Fix argument type to match
