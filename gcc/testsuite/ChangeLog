@@ -1,5 +1,9 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* gcc.dg/ipa/ipa-icf-38.c: Scan optimized tree dump.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* g++.dg/dg.exp: Do not use mpx.exp.
 	* g++.dg/lto/lto.exp: Likewise.
 	* g++.dg/lto/pr69729_0.C: Remove.
