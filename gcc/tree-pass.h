@@ -47,7 +47,7 @@ struct pass_data
   const char *name;
 
   /* The -fopt-info optimization group flags as defined in dumpfile.h. */
-  unsigned int optinfo_flags;
+  optgroup_flags_t optinfo_flags;
 
   /* The timevar id associated with this pass.  */
   /* ??? Ideally would be dynamically assigned.  */

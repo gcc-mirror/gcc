@@ -5992,7 +5992,7 @@ vn_eliminate (bitmap inserted_exprs)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Removing dead stmt ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_NONE);
 	}
 
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);

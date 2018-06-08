@@ -153,7 +153,7 @@ print_gimple_stmt (FILE *file, gimple *g, int spc, dump_flags_t flags)
 DEBUG_FUNCTION void
 debug (gimple &ref)
 {
-  print_gimple_stmt (stderr, &ref, 0, 0);
+  print_gimple_stmt (stderr, &ref, 0, TDF_NONE);
 }
 
 DEBUG_FUNCTION void

@@ -1,3 +1,9 @@
+2018-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* brigfrontend/brig-to-generic.cc
+	(brig_to_generic::write_globals): Use TDF_NONE rather than 0.
+	(dump_function): Likewise.
+
 2018-05-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* brigfrontend/brig-function.cc

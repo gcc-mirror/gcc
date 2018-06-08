@@ -932,8 +932,9 @@ brig_to_generic::write_globals ()
 	  fprintf (m_dump_file, "\n;; Function %s", kern_name.c_str());
 	  fprintf (m_dump_file, "\n;; enabled by -%s\n\n",
 		   dump_flag_name (TDI_original));
-	  print_generic_decl (m_dump_file, launcher, 0);
-	  print_generic_expr (m_dump_file, DECL_SAVED_TREE (launcher), 0);
+	  print_generic_decl (m_dump_file, launcher, TDF_NONE);
+	  print_generic_expr (m_dump_file, DECL_SAVED_TREE (launcher),
+			      TDF_NONE);
 	  fprintf (m_dump_file, "\n");
 	}
 
@@ -1018,8 +1019,8 @@ dump_function (FILE *dump_file, brig_function *f)
       fprintf (dump_file, "\n;; Function %s", f->m_name.c_str ());
       fprintf (dump_file, "\n;; enabled by -%s\n\n",
 	       dump_flag_name (TDI_original));
-      print_generic_decl (dump_file, f->m_func_decl, 0);
-      print_generic_expr (dump_file, f->m_current_bind_expr, 0);
+      print_generic_decl (dump_file, f->m_func_decl, TDF_NONE);
+      print_generic_expr (dump_file, f->m_current_bind_expr, TDF_NONE);
       fprintf (dump_file, "\n");
     }
 }

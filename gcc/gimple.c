@@ -3153,7 +3153,7 @@ static void
 verify_gimple_pp (const char *expected, gimple *stmt)
 {
   pretty_printer pp;
-  pp_gimple_stmt_1 (&pp, stmt, 0 /* spc */, 0 /* flags */);
+  pp_gimple_stmt_1 (&pp, stmt, 0 /* spc */, TDF_NONE /* flags */);
   ASSERT_STREQ (expected, pp_formatted_text (&pp));
 }
 

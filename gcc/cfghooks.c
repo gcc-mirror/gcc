@@ -288,7 +288,7 @@ dump_bb (FILE *outf, basic_block bb, int indent, dump_flags_t flags)
 DEBUG_FUNCTION void
 debug (basic_block_def &ref)
 {
-  dump_bb (stderr, &ref, 0, 0);
+  dump_bb (stderr, &ref, 0, TDF_NONE);
 }
 
 DEBUG_FUNCTION void

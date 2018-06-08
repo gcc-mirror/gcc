@@ -3254,7 +3254,7 @@ dependence_distance_ge_vf (data_dependence_relation *ddr,
 /* Dump LOWER_BOUND using flags DUMP_KIND.  Dumps are known to be enabled.  */
 
 static void
-dump_lower_bound (int dump_kind, const vec_lower_bound &lower_bound)
+dump_lower_bound (dump_flags_t dump_kind, const vec_lower_bound &lower_bound)
 {
   dump_printf (dump_kind, "%s (", lower_bound.unsigned_p ? "unsigned" : "abs");
   dump_generic_expr (dump_kind, TDF_SLIM, lower_bound.expr);

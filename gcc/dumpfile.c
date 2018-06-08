@@ -50,8 +50,8 @@ const char *dump_file_name;
 dump_flags_t dump_flags;
 
 #define DUMP_FILE_INFO(suffix, swtch, dkind, num) \
-  {suffix, swtch, NULL, NULL, NULL, NULL, NULL, dkind, 0, 0, 0, 0, 0, num, \
-   false, false}
+  {suffix, swtch, NULL, NULL, NULL, NULL, NULL, dkind, TDF_NONE, TDF_NONE, \
+   OPTGROUP_NONE, 0, 0, num, false, false}
 
 /* Table of tree dump switches. This must be consistent with the
    TREE_DUMP_INDEX enumeration in dumpfile.h.  */
@@ -74,15 +74,16 @@ static struct dump_file_info dump_files[TDI_end] =
 };
 
 /* Define a name->number mapping for a dump flag value.  */
-struct dump_option_value_info
+template <typename ValueType>
+struct kv_pair
 {
   const char *const name;	/* the name of the value */
-  const dump_flags_t value;	/* the value of the name */
+  const ValueType value;	/* the value of the name */
 };
 
 /* Table of dump options. This must be consistent with the TDF_* flags
    in dumpfile.h and opt_info_options below. */
-static const struct dump_option_value_info dump_options[] =
+static const kv_pair<dump_flags_t> dump_options[] =
 {
   {"address", TDF_ADDRESS},
   {"asmname", TDF_ASMNAME},
@@ -114,23 +115,23 @@ static const struct dump_option_value_info dump_options[] =
   {"all", dump_flags_t (~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_GRAPH
 			| TDF_STMTADDR | TDF_RHS_ONLY | TDF_NOUID
 			| TDF_ENUMERATE_LOCALS | TDF_SCEV | TDF_GIMPLE))},
-  {NULL, 0}
+  {NULL, TDF_NONE}
 };
 
 /* A subset of the dump_options table which is used for -fopt-info
    types. This must be consistent with the MSG_* flags in dumpfile.h.
  */
-static const struct dump_option_value_info optinfo_verbosity_options[] =
+static const kv_pair<dump_flags_t> optinfo_verbosity_options[] =
 {
   {"optimized", MSG_OPTIMIZED_LOCATIONS},
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
   {"all", MSG_ALL},
-  {NULL, 0}
+  {NULL, TDF_NONE}
 };
 
 /* Flags used for -fopt-info groups.  */
-static const struct dump_option_value_info optgroup_options[] =
+static const kv_pair<optgroup_flags_t> optgroup_options[] =
 {
   {"ipa", OPTGROUP_IPA},
   {"loop", OPTGROUP_LOOP},
@@ -138,7 +139,7 @@ static const struct dump_option_value_info optgroup_options[] =
   {"omp", OPTGROUP_OMP},
   {"vec", OPTGROUP_VEC},
   {"optall", OPTGROUP_ALL},
-  {NULL, 0}
+  {NULL, OPTGROUP_NONE}
 };
 
 gcc::dump_manager::dump_manager ():
@@ -173,7 +174,8 @@ gcc::dump_manager::~dump_manager ()
 unsigned int
 gcc::dump_manager::
 dump_register (const char *suffix, const char *swtch, const char *glob,
-	       dump_kind dkind, int optgroup_flags, bool take_ownership)
+	       dump_kind dkind, optgroup_flags_t optgroup_flags,
+	       bool take_ownership)
 {
   int num = m_next_dump++;
 
@@ -425,7 +427,7 @@ dump_generic_expr (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
    location.  */
 
 void
-dump_generic_expr_loc (int dump_kind, source_location loc,
+dump_generic_expr_loc (dump_flags_t dump_kind, source_location loc,
 		       dump_flags_t extra_dump_flags, tree t)
 {
   if (dump_file && (dump_kind & pflags))
@@ -492,7 +494,7 @@ dump_printf_loc (dump_flags_t dump_kind, source_location loc,
 
 template<unsigned int N, typename C>
 void
-dump_dec (int dump_kind, const poly_int<N, C> &value)
+dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value)
 {
   STATIC_ASSERT (poly_coeff_traits<C>::signedness >= 0);
   signop sgn = poly_coeff_traits<C>::signedness ? SIGNED : UNSIGNED;
@@ -503,11 +505,11 @@ dump_dec (int dump_kind, const poly_int<N, C> &value)
     print_dec (value, alt_dump_file, sgn);
 }
 
-template void dump_dec (int, const poly_uint16 &);
-template void dump_dec (int, const poly_int64 &);
-template void dump_dec (int, const poly_uint64 &);
-template void dump_dec (int, const poly_offset_int &);
-template void dump_dec (int, const poly_widest_int &);
+template void dump_dec (dump_flags_t, const poly_uint16 &);
+template void dump_dec (dump_flags_t, const poly_int64 &);
+template void dump_dec (dump_flags_t, const poly_uint64 &);
+template void dump_dec (dump_flags_t, const poly_offset_int &);
+template void dump_dec (dump_flags_t, const poly_widest_int &);
 
 /* Start a dump for PHASE. Store user-supplied dump flags in
    *FLAG_PTR.  Return the number of streams opened.  Set globals
@@ -581,9 +583,9 @@ dump_finish (int phase)
   dfi->pstream = NULL;
   dump_file = NULL;
   alt_dump_file = NULL;
-  dump_flags = TDI_none;
-  alt_flags = 0;
-  pflags = 0;
+  dump_flags = TDF_NONE;
+  alt_flags = TDF_NONE;
+  pflags = TDF_NONE;
 }
 
 /* Begin a tree dump for PHASE. Stores any user supplied flag in
@@ -749,7 +751,7 @@ dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename)
 
 int
 gcc::dump_manager::
-opt_info_enable_passes (int optgroup_flags, dump_flags_t flags,
+opt_info_enable_passes (optgroup_flags_t optgroup_flags, dump_flags_t flags,
 			const char *filename)
 {
   int n = 0;
@@ -816,11 +818,11 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
     return 0;
 
   ptr = option_value;
-  flags = 0;
+  flags = TDF_NONE;
 
   while (*ptr)
     {
-      const struct dump_option_value_info *option_ptr;
+      const struct kv_pair<dump_flags_t> *option_ptr;
       const char *end_ptr;
       const char *eq_ptr;
       unsigned length;
@@ -902,8 +904,8 @@ dump_switch_p (const char *arg)
    and filename.  Return non-zero if it is a recognized switch.  */
 
 static int
-opt_info_switch_p_1 (const char *arg, dump_flags_t *flags, int *optgroup_flags,
-                     char **filename)
+opt_info_switch_p_1 (const char *arg, dump_flags_t *flags,
+		     optgroup_flags_t *optgroup_flags, char **filename)
 {
   const char *option_value;
   const char *ptr;
@@ -912,15 +914,14 @@ opt_info_switch_p_1 (const char *arg, dump_flags_t *flags, int *optgroup_flags,
   ptr = option_value;
 
   *filename = NULL;
-  *flags = 0;
-  *optgroup_flags = 0;
+  *flags = TDF_NONE;
+  *optgroup_flags = OPTGROUP_NONE;
 
   if (!ptr)
     return 1;       /* Handle '-fopt-info' without any additional options.  */
 
   while (*ptr)
     {
-      const struct dump_option_value_info *option_ptr;
       const char *end_ptr;
       const char *eq_ptr;
       unsigned length;
@@ -937,8 +938,8 @@ opt_info_switch_p_1 (const char *arg, dump_flags_t *flags, int *optgroup_flags,
 	end_ptr = ptr + strlen (ptr);
       length = end_ptr - ptr;
 
-      for (option_ptr = optinfo_verbosity_options; option_ptr->name;
-           option_ptr++)
+      for (const kv_pair<dump_flags_t> *option_ptr = optinfo_verbosity_options;
+	   option_ptr->name; option_ptr++)
 	if (strlen (option_ptr->name) == length
 	    && !memcmp (option_ptr->name, ptr, length))
           {
@@ -946,7 +947,8 @@ opt_info_switch_p_1 (const char *arg, dump_flags_t *flags, int *optgroup_flags,
 	    goto found;
           }
 
-      for (option_ptr = optgroup_options; option_ptr->name; option_ptr++)
+      for (const kv_pair<optgroup_flags_t> *option_ptr = optgroup_options;
+	   option_ptr->name; option_ptr++)
 	if (strlen (option_ptr->name) == length
 	    && !memcmp (option_ptr->name, ptr, length))
           {
@@ -981,7 +983,7 @@ int
 opt_info_switch_p (const char *arg)
 {
   dump_flags_t flags;
-  int optgroup_flags;
+  optgroup_flags_t optgroup_flags;
   char *filename;
   static char *file_seen = NULL;
   gcc::dump_manager *dumps = g->get_dumps ();
@@ -1012,7 +1014,7 @@ opt_info_switch_p (const char *arg)
 /* Print basic block on the dump streams.  */
 
 void
-dump_basic_block (int dump_kind, basic_block bb, int indent)
+dump_basic_block (dump_flags_t dump_kind, basic_block bb, int indent)
 {
   if (dump_file && (dump_kind & pflags))
     dump_bb (dump_file, bb, indent, TDF_DETAILS);

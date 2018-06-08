@@ -746,7 +746,7 @@ pass_manager::register_one_dump_file (opt_pass *pass)
   char num[11];
   dump_kind dkind;
   int id;
-  int optgroup_flags = OPTGROUP_NONE;
+  optgroup_flags_t optgroup_flags = OPTGROUP_NONE;
   gcc::dump_manager *dumps = m_ctxt->get_dumps ();
 
   /* See below in next_pass_1.  */
