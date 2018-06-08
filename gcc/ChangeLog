@@ -1,5 +1,24 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* cgraph.c (function_version_hasher::hash): Use
+	cgraph_node::get_uid ().
+	(function_version_hasher::equal):
+	* cgraph.h (cgraph_node::get_uid): New method.
+	* ipa-inline.c (update_caller_keys): Use
+	cgraph_node::get_uid ().
+	(update_callee_keys): Likewise.
+	* ipa-utils.c (searchc): Likewise.
+	(ipa_reduced_postorder): Likewise.
+	* lto-cgraph.c (input_node): Likewise.
+	* passes.c (is_pass_explicitly_enabled_or_disabled): Likewise.
+	* symbol-summary.h (symtab_insertion): Likewise.
+	(symtab_removal): Likewise.
+	(symtab_duplication): Likewise.
+	* tree-pretty-print.c (dump_function_header): Likewise.
+	* tree-sra.c (convert_callers_for_node): Likewise.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* cgraph.c (symbol_table::create_edge): Always assign a new
 	unique number.
 	(symbol_table::free_edge): Do not recycle numbers.
