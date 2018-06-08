@@ -1,5 +1,31 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* ipa-pure-const.c (struct funct_state_d): Do it class instead
+	of struct.
+	(class funct_state_summary_t): New function_summary class.
+	(has_function_state): Remove.
+	(get_function_state): Likewise.
+	(set_function_state): Likewise.
+	(add_new_function): Likewise.
+	(funct_state_summary_t::insert): New function.
+	(duplicate_node_data): Remove.
+	(remove_node_data): Remove.
+	(funct_state_summary_t::duplicate): New function.
+	(register_hooks): Create new funct_state_summaries.
+	(pure_const_generate_summary): Use it.
+	(pure_const_write_summary): Likewise.
+	(pure_const_read_summary): Likewise.
+	(propagate_pure_const): Likewise.
+	(propagate_nothrow): Likewise.
+	(dump_malloc_lattice): Likewise.
+	(propagate_malloc): Likewise.
+	(execute): Do not register hooks, just remove summary
+	instead.
+	(pass_ipa_pure_const::pass_ipa_pure_const): Simplify
+	constructor.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* ipa-reference.c (remove_node_data): Remove.
 	(duplicate_node_data): Likewise.
 	(class ipa_ref_var_info_summary_t): New class.
