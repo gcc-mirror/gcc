@@ -1,6 +1,12 @@
 2018-06-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (elf_out): Track file position directly.
+	(elf_out::pad): Remove, fold into ...
+	(elf_out::write): ... here.  Take a buffer.
+	(elf_out::{add,begin,end}): Adjust.
+
+	gcc/cp/
 	* module.c (elf): Add hdr member.
 	(elf_in::begin): Adjust.
 	(elf_out::{begin,end}): Adjust.

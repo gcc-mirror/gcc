@@ -1232,11 +1232,13 @@ class elf_out : public elf {
 
 private:
   data strtab;			/* The string table.  */
-  ptr_int_hash_map ident_strtab;/* Map of IDENTIFIERS to strtab offsets. */
+  ptr_int_hash_map ident_strtab;/* Map of IDENTIFIERS to strtab
+				   offsets. */
+  unsigned offset;		/* Write position in file.  */
 
 public:
   elf_out (FILE *s, int e)
-    :parent (s, e), strtab (), ident_strtab (500)
+    :parent (s, e), strtab (), ident_strtab (500), offset (0)
   {
     /* The string table starts with an empty string.  */
     name ("");
@@ -1248,10 +1250,9 @@ public:
   }
 
 protected:
-  uint32_t pad ();
   unsigned add (unsigned type, unsigned name = 0,
 		unsigned off = 0, unsigned size = 0, unsigned flags = SHF_NONE);
-  bool write (const void *, size_t);
+  unsigned write (const data *);
 
 public:
   /* IDENTIFIER to strtab offset.  */
@@ -1626,32 +1627,6 @@ elf_out::qualified_name (tree decl, bool is_defn)
   return result;
 }
 
-/* Pad file to the next SECTION_ALIGN byte boundary.  Return the file
-   position or zero on error.  (We never need this at the start of
-   file.)  */
-
-uint32_t
-elf_out::pad ()
-{
-  long off = ftell (stream);
-  if (off < 0)
-    off = 0;
-  else if (unsigned padding = off & (SECTION_ALIGN - 1))
-    {
-      /* Align the section on disk, should help the necessary copies.
-         fseeking to extend is non-portable.  */
-      static char zero[SECTION_ALIGN];
-      padding = SECTION_ALIGN - padding;
-      off += padding;
-      if (fwrite (&zero, 1, padding, stream) != padding)
-	off = 0;
-    }
-  if (!off)
-    set_error (errno);
-
-  return (uint32_t)off;
-}
-
 /* Add section to file.  Return section number.  TYPE & NAME identify
    the section.  OFF and SIZE identify the file location of its
    data.  FLAGS contains additional info.  */
@@ -1660,7 +1635,7 @@ unsigned
 elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
 	      unsigned flags)
 {
-  unsigned res = sections.size ();
+  unsigned res = off ? sections.size () : 0;
   section *sec = sections.write (1);
 
   memset (sec, 0, sizeof (section));
@@ -1675,19 +1650,33 @@ elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
   return res;
 }
 
-/* Write BUFFER of SIZE bytes at current file position.  Return true
-   on success.  */
+/* Pad to the next alignment boundary, then write BUFFER to disk.
+   Return the position of the start of the write, or zero on failure.   */
 
-bool
-elf_out::write (const void *buffer, size_t size)
+unsigned
+elf_out::write (const data *buffer)
 {
-  if (fwrite (buffer, 1, size, stream) != size)
+  if (unsigned padding = offset & (SECTION_ALIGN - 1))
     {
-      set_error (errno);
-      return false;
+      /* Align the section on disk, should help the necessary copies.
+	 fseeking to extend is non-portable.  */
+      static char zero[SECTION_ALIGN];
+      padding = SECTION_ALIGN - padding;
+      offset += padding;
+      if (fwrite (&zero, 1, padding, stream) != padding)
+	set_error (errno);
     }
 
-  return true;
+  unsigned res = offset;
+  if (fwrite (buffer->buffer, 1, buffer->pos, stream) != buffer->pos)
+    {
+      set_error (errno);
+      return 0;
+    }
+
+  offset += buffer->pos;
+
+  return res;
 }
 
 /* Write data and add section.  STRING_P is true for a string
@@ -1698,11 +1687,7 @@ elf_out::write (const void *buffer, size_t size)
 unsigned
 elf_out::add (const data *data, bool string_p, unsigned name)
 {
-  uint32_t off = pad ();
-  if (!off)
-    return 0;
-  if (!write (data->buffer, data->pos))
-    return 0;
+  unsigned off = write (data);
 
   return add (string_p ? SHT_STRTAB : SHT_PROGBITS, name,
 	      off, data->pos, string_p ? SHF_STRINGS : SHF_NONE);
@@ -1725,7 +1710,8 @@ elf_out::begin ()
   /* Write an empty header.  */
   header *h = reinterpret_cast <header *> (hdr.write (sizeof (header), true));
   memset (h, 0, sizeof (header));
-  return write (hdr.buffer, hdr.pos);
+  write (&hdr);
+  return has_error () == 0;
 }
 
 /* Finish writing the file.  Write out the string & section tables.
@@ -1738,7 +1724,6 @@ elf_out::end ()
     {
       /* Write the string table.  */
       unsigned strndx = add (&strtab, -1, name (".strtab"));
-      uint32_t shoff = pad ();
       unsigned shnum = sections.size ();
 
       /* Store escape values in section[0].  */
@@ -1753,7 +1738,7 @@ elf_out::end ()
 	  shnum = SHN_XINDEX;
 	}
 
-      write (sections.buffer, sections.pos);
+      unsigned shoff = write (&sections);
 
       /* Write header.  */
       if (fseek (stream, 0, SEEK_SET))
@@ -1779,7 +1764,8 @@ elf_out::end ()
 	  h->shnum = shnum;
 	  h->shstrndx = strndx;
 
-	  write (hdr.buffer, hdr.pos);
+	  offset = 0;
+	  write (&hdr);
 	}
     }
 
