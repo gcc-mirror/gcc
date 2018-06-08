@@ -107,7 +107,10 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
   HOST_WIDE_INT len, start, end, tlen;
   gfc_char_t *dest;
   bool alloced_init = false;
-	    
+
+  if (init && init->ts.type != BT_CHARACTER)
+    return NULL;
+
   gfc_extract_hwi (ts->u.cl->length, &len);
 
   if (init == NULL)
