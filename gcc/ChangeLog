@@ -1,5 +1,10 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* ipa-pure-const.c (propagate_pure_const): Use ::get at places
+        where we expect an existing summary.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* ipa-inline-analysis.c (simple_edge_hints): Use ::get method.
 	* ipa-inline.h (estimate_edge_growth): Likewise.
 

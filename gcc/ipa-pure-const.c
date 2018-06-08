@@ -1477,7 +1477,7 @@ propagate_pure_const (void)
 		}
 	      if (avail > AVAIL_INTERPOSABLE)
 		{
-		  funct_state y_l = funct_state_summaries->get_create (y);
+		  funct_state y_l = funct_state_summaries->get (y);
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file,
@@ -1591,7 +1591,7 @@ propagate_pure_const (void)
       while (w && !can_free)
 	{
 	  struct cgraph_edge *e;
-	  funct_state w_l = funct_state_summaries->get_create (w);
+	  funct_state w_l = funct_state_summaries->get (w);
 
 	  if (w_l->can_free
 	      || w->get_availability () == AVAIL_INTERPOSABLE
@@ -1606,7 +1606,7 @@ propagate_pure_const (void)
 								  e->caller);
 
 	      if (avail > AVAIL_INTERPOSABLE)
-		can_free = funct_state_summaries->get_create (y)->can_free;
+		can_free = funct_state_summaries->get (y)->can_free;
 	      else
 		can_free = true;
 	    }
@@ -1619,7 +1619,7 @@ propagate_pure_const (void)
       w = node;
       while (w)
 	{
-	  funct_state w_l = funct_state_summaries->get_create (w);
+	  funct_state w_l = funct_state_summaries->get (w);
 	  enum pure_const_state_e this_state = pure_const_state;
 	  bool this_looping = looping;
 
