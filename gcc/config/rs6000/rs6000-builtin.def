@@ -2240,7 +2240,9 @@ BU_P9V_64BIT_AV_X (STXVL,	"stxvl",	MISC)
 BU_P9V_64BIT_AV_X (XST_LEN_R,	"xst_len_r",	MISC)
 
 /* 1 argument vector functions added in ISA 3.0 (power9). */
-BU_P9V_AV_1 (VCLZLSBB, "vclzlsbb",		CONST,	vclzlsbb)
+BU_P9V_AV_1 (VCLZLSBB_V16QI, "vclzlsbb_v16qi",	CONST,	vclzlsbb_v16qi)
+BU_P9V_AV_1 (VCLZLSBB_V8HI, "vclzlsbb_v8hi",	CONST,	vclzlsbb_v8hi)
+BU_P9V_AV_1 (VCLZLSBB_V4SI, "vclzlsbb_v4si",	CONST,	vclzlsbb_v4si)
 BU_P9V_AV_1 (VCTZLSBB_V16QI, "vctzlsbb_v16qi",	CONST,	vctzlsbb_v16qi)
 BU_P9V_AV_1 (VCTZLSBB_V8HI, "vctzlsbb_v8hi",	CONST,	vctzlsbb_v8hi)
 BU_P9V_AV_1 (VCTZLSBB_V4SI, "vctzlsbb_v4si",	CONST,	vctzlsbb_v4si)

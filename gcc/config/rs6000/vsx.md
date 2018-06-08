@@ -4795,7 +4795,8 @@
   "vcmpnez<VSX_EXTRACT_WIDTH>. %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-;; Return first position of match between vectors
+;; Return first position of match between vectors using natural order
+;; for both LE and BE execution modes.
 (define_expand "first_match_index_<mode>"
   [(match_operand:SI 0 "register_operand")
    (unspec:SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
@@ -4815,17 +4816,26 @@
   sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
 
   if (<MODE>mode == V16QImode)
-    emit_insn (gen_vctzlsbb_<mode> (operands[0], not_result));
+    {
+      if (!BYTES_BIG_ENDIAN)
+        emit_insn (gen_vctzlsbb_<mode> (operands[0], not_result));
+      else
+        emit_insn (gen_vclzlsbb_<mode> (operands[0], not_result));
+    }
   else
     {
       rtx tmp = gen_reg_rtx (SImode);
-      emit_insn (gen_vctzlsbb_<mode> (tmp, not_result));
-      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+      if (!BYTES_BIG_ENDIAN)
+        emit_insn (gen_vctzlsbb_<mode> (tmp, not_result));
+      else
+        emit_insn (gen_vclzlsbb_<mode> (tmp, not_result));
+      emit_insn (gen_lshrsi3 (operands[0], tmp, GEN_INT (sh)));
     }
   DONE;
 })
 
-;; Return first position of match between vectors or end of string (EOS)
+;; Return first position of match between vectors or end of string (EOS) using
+;; natural element order for both LE and BE execution modes.
 (define_expand "first_match_or_eos_index_<mode>"
   [(match_operand:SI 0 "register_operand")
    (unspec: SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
@@ -4857,17 +4867,26 @@
   sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
 
   if (<MODE>mode == V16QImode)
-    emit_insn (gen_vctzlsbb_<mode> (operands[0], result));
+    {
+      if (!BYTES_BIG_ENDIAN)
+        emit_insn (gen_vctzlsbb_<mode> (operands[0], result));
+      else
+        emit_insn (gen_vclzlsbb_<mode> (operands[0], result));
+    }
   else
     {
       rtx tmp = gen_reg_rtx (SImode);
-      emit_insn (gen_vctzlsbb_<mode> (tmp, result));
-      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+      if (!BYTES_BIG_ENDIAN)
+        emit_insn (gen_vctzlsbb_<mode> (tmp, result));
+      else
+        emit_insn (gen_vclzlsbb_<mode> (tmp, result));
+      emit_insn (gen_lshrsi3 (operands[0], tmp, GEN_INT (sh)));
     }
   DONE;
 })
 
-;; Return first position of mismatch between vectors
+;; Return first position of mismatch between vectors using natural
+;; element order for both LE and BE execution modes.
 (define_expand "first_mismatch_index_<mode>"
   [(match_operand:SI 0 "register_operand")
    (unspec: SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
@@ -4883,17 +4902,26 @@
   sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
 
   if (<MODE>mode == V16QImode)
-    emit_insn (gen_vctzlsbb_<mode> (operands[0], cmp_result));
+    {
+      if (!BYTES_BIG_ENDIAN)
+        emit_insn (gen_vctzlsbb_<mode> (operands[0], cmp_result));
+      else
+        emit_insn (gen_vclzlsbb_<mode> (operands[0], cmp_result));
+    }
   else
     {
       rtx tmp = gen_reg_rtx (SImode);
-      emit_insn (gen_vctzlsbb_<mode> (tmp, cmp_result));
-      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+      if (!BYTES_BIG_ENDIAN)
+        emit_insn (gen_vctzlsbb_<mode> (tmp, cmp_result));
+      else
+        emit_insn (gen_vclzlsbb_<mode> (tmp, cmp_result));
+      emit_insn (gen_lshrsi3 (operands[0], tmp, GEN_INT (sh)));
     }
   DONE;
 })
 
 ;; Return first position of mismatch between vectors or end of string (EOS)
+;; using natural element order for both LE and BE execution modes.
 (define_expand "first_mismatch_or_eos_index_<mode>"
   [(match_operand:SI 0 "register_operand")
    (unspec: SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
@@ -4928,12 +4956,20 @@
   sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
 
   if (<MODE>mode == V16QImode)
-    emit_insn (gen_vctzlsbb_<mode> (operands[0], result));
+    {
+      if (!BYTES_BIG_ENDIAN)
+        emit_insn (gen_vctzlsbb_<mode> (operands[0], result));
+      else
+        emit_insn (gen_vclzlsbb_<mode> (operands[0], result));
+    }
   else
     {
       rtx tmp = gen_reg_rtx (SImode);
-      emit_insn (gen_vctzlsbb_<mode> (tmp, result));
-      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+      if (!BYTES_BIG_ENDIAN)
+        emit_insn (gen_vctzlsbb_<mode> (tmp, result));
+      else
+        emit_insn (gen_vclzlsbb_<mode> (tmp, result));
+      emit_insn (gen_lshrsi3 (operands[0], tmp, GEN_INT (sh)));
     }
   DONE;
 })
@@ -5112,10 +5148,10 @@
   [(set_attr "type" "vecsimple")])
 
 ;; Vector Count Leading Zero Least-Significant Bits Byte
-(define_insn "vclzlsbb"
+(define_insn "vclzlsbb_<mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI
-	 [(match_operand:V16QI 1 "altivec_register_operand" "v")]
+	 [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
 	 UNSPEC_VCLZLSBB))]
   "TARGET_P9_VECTOR"
   "vclzlsbb %0,%1"
