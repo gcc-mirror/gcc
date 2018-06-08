@@ -1626,6 +1626,7 @@ struct GTY(()) cgraph_indirect_call_info
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
 	    for_user)) cgraph_edge {
   friend class cgraph_node;
+  friend class symbol_table;
 
   /* Remove the edge in the cgraph.  */
   void remove (void);
@@ -1689,6 +1690,12 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Return true if the call can be hot.  */
   bool maybe_hot_p (void);
 
+  /* Get unique identifier of the edge.  */
+  inline int get_uid ()
+  {
+    return m_uid;
+  }
+
   /* Rebuild cgraph edges for current function node.  This needs to be run after
      passes that don't update the cgraph.  */
   static unsigned int rebuild_edges (void);
@@ -1716,8 +1723,6 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* The stmt_uid of call_stmt.  This is used by LTO to recover the call_stmt
      when the function is serialized in.  */
   unsigned int lto_stmt_uid;
-  /* Unique id of the edge.  */
-  int uid;
   /* Whether this edge was made direct by indirect inlining.  */
   unsigned int indirect_inlining_edge : 1;
   /* Whether this edge describes an indirect call with an undetermined
@@ -1761,6 +1766,9 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
   /* Expected frequency of executions within the function.  */
   sreal sreal_frequency ();
 private:
+  /* Unique id of the edge.  */
+  int m_uid;
+
   /* Remove the edge from the list of the callers of the callee.  */
   void remove_caller (void);
 
@@ -2011,7 +2019,7 @@ public:
   friend class cgraph_node;
   friend class cgraph_edge;
 
-  symbol_table (): cgraph_max_uid (1)
+  symbol_table (): cgraph_max_uid (1), edges_max_uid (1)
   {
   }
 

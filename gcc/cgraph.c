@@ -850,13 +850,12 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
       free_edges = NEXT_FREE_EDGE (edge);
     }
   else
-    {
-      edge = ggc_alloc<cgraph_edge> ();
-      edge->uid = edges_max_uid++;
-    }
+    edge = ggc_alloc<cgraph_edge> ();
 
   edges_count++;
 
+  gcc_assert (++edges_max_uid != 0);
+  edge->m_uid = edges_max_uid;
   edge->aux = NULL;
   edge->caller = caller;
   edge->callee = callee;
@@ -1010,14 +1009,11 @@ cgraph_edge::remove_caller (void)
 void
 symbol_table::free_edge (cgraph_edge *e)
 {
-  int uid = e->uid;
-
   if (e->indirect_info)
     ggc_free (e->indirect_info);
 
   /* Clear out the edge so we do not dangle pointers.  */
   memset (e, 0, sizeof (*e));
-  e->uid = uid;
   NEXT_FREE_EDGE (e) = free_edges;
   free_edges = e;
   edges_count--;

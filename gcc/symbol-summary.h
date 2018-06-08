@@ -375,19 +375,19 @@ public:
      If a summary for an edge does not exist, it will be created.  */
   T* get_create (cgraph_edge *edge)
   {
-    return get (hashable_uid (edge), true);
+    return get (edge->get_uid (), true);
   }
 
   /* Getter for summary callgraph edge pointer.  */
   T* get (cgraph_edge *edge)
   {
-    return get (hashable_uid (edge), false);
+    return get (edge->get_uid (), false);
   }
 
   /* Remove edge from summary.  */
   void remove (cgraph_edge *edge)
   {
-    int uid = hashable_uid (edge);
+    int uid = edge->get_uid ();
     T **v = m_map.get (uid);
     if (v)
       {
@@ -405,7 +405,7 @@ public:
   /* Return true if a summary for the given EDGE already exists.  */
   bool exists (cgraph_edge *edge)
   {
-    return m_map.get (hashable_uid (edge)) != NULL;
+    return m_map.get (edge->get_uid ()) != NULL;
   }
 
   /* Symbol removal hook that is registered to symbol table.  */
@@ -427,13 +427,6 @@ private:
 
   /* Getter for summary callgraph ID.  */
   T *get (int uid, bool lazy_insert);
-
-  /* Get a hashable uid of EDGE.  */
-  int hashable_uid (cgraph_edge *edge)
-  {
-    /* Edge uids start at zero which our hash_map does not like.  */
-    return edge->uid + 1;
-  }
 
   /* Main summary store, where summary ID is used as key.  */
   hash_map <map_hash, T *> m_map;
@@ -511,7 +504,7 @@ call_summary<T *>::symtab_removal (cgraph_edge *edge, void *data)
 {
   call_summary *summary = (call_summary <T *> *) (data);
 
-  int h_uid = summary->hashable_uid (edge);
+  int h_uid = edge->get_uid ();
   T **v = summary->m_map.get (h_uid);
 
   if (v)
@@ -534,7 +527,7 @@ call_summary<T *>::symtab_duplication (cgraph_edge *edge1,
     edge1_summary = summary->get_create (edge1);
   else
     {
-      T **v = summary->m_map.get (summary->hashable_uid (edge1));
+      T **v = summary->m_map.get (edge1->get_uid ());
       if (v)
 	{
 	  /* This load is necessary, because we insert a new value!  */
@@ -545,7 +538,7 @@ call_summary<T *>::symtab_duplication (cgraph_edge *edge1,
   if (edge1_summary)
     {
       T *duplicate = summary->allocate_new ();
-      summary->m_map.put (summary->hashable_uid (edge2), duplicate);
+      summary->m_map.put (edge2->get_uid (), duplicate);
       summary->duplicate (edge1, edge2, edge1_summary, duplicate);
     }
 }
