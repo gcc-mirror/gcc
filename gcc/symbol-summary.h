@@ -31,26 +31,23 @@ private:
   function_summary();
 };
 
+/* Function summary is a helper class that is used to associate a data structure
+   related to a callgraph node.  Typical usage can be seen in IPA passes which
+   create a temporary pass-related structures.  The summary class registers
+   hooks that are triggered when a new node is inserted, duplicated and deleted.
+   A user of a summary class can ovewrite virtual methods than are triggered by
+   the summary if such hook is triggered.  Apart from a callgraph node, the user
+   is given a data structure tied to the node.
+
+   The function summary class can work both with a heap-allocated memory and
+   a memory gained by garbage collected memory.  */
+
 template <class T>
 class GTY((user)) function_summary <T *>
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  function_summary (symbol_table *symtab, bool ggc = false): m_ggc (ggc),
-    m_insertion_enabled (true), m_released (false), m_map (13, ggc),
-    m_symtab (symtab)
-  {
-    m_symtab_insertion_hook =
-      symtab->add_cgraph_insertion_hook
-      (function_summary::symtab_insertion, this);
-
-    m_symtab_removal_hook =
-      symtab->add_cgraph_removal_hook
-      (function_summary::symtab_removal, this);
-    m_symtab_duplication_hook =
-      symtab->add_cgraph_duplication_hook
-      (function_summary::symtab_duplication, this);
-  }
+  function_summary (symbol_table *symtab, bool ggc = false);
 
   /* Destructor.  */
   virtual ~function_summary ()
@@ -59,22 +56,7 @@ public:
   }
 
   /* Destruction method that can be called for GGT purpose.  */
-  void release ()
-  {
-    if (m_released)
-      return;
-
-    m_symtab->remove_cgraph_insertion_hook (m_symtab_insertion_hook);
-    m_symtab->remove_cgraph_removal_hook (m_symtab_removal_hook);
-    m_symtab->remove_cgraph_duplication_hook (m_symtab_duplication_hook);
-
-    /* Release all summaries.  */
-    typedef typename hash_map <map_hash, T *>::iterator map_iterator;
-    for (map_iterator it = m_map.begin (); it != m_map.end (); ++it)
-      release ((*it).second);
-
-    m_released = true;
-  }
+  void release ();
 
   /* Traverses all summarys with a function F called with
      ARG as argument.  */
@@ -102,16 +84,7 @@ public:
   }
 
   /* Release an item that is stored within map.  */
-  void release (T *item)
-  {
-    if (m_ggc)
-      {
-	item->~T ();
-	ggc_free (item);
-      }
-    else
-      delete item;
-  }
+  void release (T *item);
 
   /* Getter for summary callgraph node pointer.  */
   T* get (cgraph_node *node)
@@ -145,50 +118,14 @@ public:
   }
 
   /* Symbol insertion hook that is registered to symbol table.  */
-  static void symtab_insertion (cgraph_node *node, void *data)
-  {
-    gcc_checking_assert (node->summary_uid);
-    function_summary *summary = (function_summary <T *> *) (data);
-
-    if (summary->m_insertion_enabled)
-      summary->insert (node, summary->get (node));
-  }
+  static void symtab_insertion (cgraph_node *node, void *data);
 
   /* Symbol removal hook that is registered to symbol table.  */
-  static void symtab_removal (cgraph_node *node, void *data)
-  {
-    gcc_checking_assert (node->summary_uid);
-    function_summary *summary = (function_summary <T *> *) (data);
-
-    int summary_uid = node->summary_uid;
-    T **v = summary->m_map.get (summary_uid);
-
-    if (v)
-      {
-	summary->remove (node, *v);
-	summary->release (*v);
-	summary->m_map.remove (summary_uid);
-      }
-  }
+  static void symtab_removal (cgraph_node *node, void *data);
 
   /* Symbol duplication hook that is registered to symbol table.  */
   static void symtab_duplication (cgraph_node *node, cgraph_node *node2,
-				  void *data)
-  {
-    function_summary *summary = (function_summary <T *> *) (data);
-    T **v = summary->m_map.get (node->summary_uid);
-
-    gcc_checking_assert (node2->summary_uid > 0);
-
-    if (v)
-      {
-	/* This load is necessary, because we insert a new value!  */
-	T *data = *v;
-	T *duplicate = summary->allocate_new ();
-	summary->m_map.put (node2->summary_uid, duplicate);
-	summary->duplicate (node, node2, data, duplicate);
-      }
-  }
+				  void *data);
 
 protected:
   /* Indication if we use ggc summary.  */
@@ -198,15 +135,7 @@ private:
   typedef int_hash <int, 0, -1> map_hash;
 
   /* Getter for summary callgraph ID.  */
-  T* get (int uid)
-  {
-    bool existed;
-    T **v = &m_map.get_or_insert (uid, &existed);
-    if (!existed)
-      *v = allocate_new ();
-
-    return *v;
-  }
+  T* get (int uid);
 
   /* Indicates if insertion hook is enabled.  */
   bool m_insertion_enabled;
@@ -228,6 +157,118 @@ private:
   template <typename U> friend void gt_pch_nx (function_summary <U *> * const &,
       gt_pointer_operator, void *);
 };
+
+template <typename T>
+function_summary<T *>::function_summary (symbol_table *symtab, bool ggc):
+  m_ggc (ggc), m_insertion_enabled (true), m_released (false), m_map (13, ggc),
+  m_symtab (symtab)
+{
+  m_symtab_insertion_hook
+    = symtab->add_cgraph_insertion_hook (function_summary::symtab_insertion,
+					 this);
+
+  m_symtab_removal_hook
+    = symtab->add_cgraph_removal_hook (function_summary::symtab_removal, this);
+  m_symtab_duplication_hook
+    = symtab->add_cgraph_duplication_hook (function_summary::symtab_duplication,
+					   this);
+}
+
+template <typename T>
+void
+function_summary<T *>::release ()
+{
+  if (m_released)
+    return;
+
+  m_symtab->remove_cgraph_insertion_hook (m_symtab_insertion_hook);
+  m_symtab->remove_cgraph_removal_hook (m_symtab_removal_hook);
+  m_symtab->remove_cgraph_duplication_hook (m_symtab_duplication_hook);
+
+  /* Release all summaries.  */
+  typedef typename hash_map <map_hash, T *>::iterator map_iterator;
+  for (map_iterator it = m_map.begin (); it != m_map.end (); ++it)
+    release ((*it).second);
+
+  m_released = true;
+}
+
+template <typename T>
+void
+function_summary<T *>::release (T *item)
+{
+  if (m_ggc)
+    {
+      item->~T ();
+      ggc_free (item);
+    }
+  else
+    delete item;
+}
+
+template <typename T>
+void
+function_summary<T *>::symtab_insertion (cgraph_node *node, void *data)
+{
+  gcc_checking_assert (node->summary_uid);
+  function_summary *summary = (function_summary <T *> *) (data);
+
+  if (summary->m_insertion_enabled)
+    summary->insert (node, summary->get (node));
+}
+
+template <typename T>
+void
+function_summary<T *>::symtab_removal (cgraph_node *node, void *data)
+{
+  gcc_checking_assert (node->summary_uid);
+  function_summary *summary = (function_summary <T *> *) (data);
+
+  int summary_uid = node->summary_uid;
+  T **v = summary->m_map.get (summary_uid);
+
+  if (v)
+    {
+      summary->remove (node, *v);
+
+      if (!summary->m_ggc)
+	delete (*v);
+
+      summary->m_map.remove (summary_uid);
+    }
+}
+
+template <typename T>
+void
+function_summary<T *>::symtab_duplication (cgraph_node *node,
+					   cgraph_node *node2, void *data)
+{
+  function_summary *summary = (function_summary <T *> *) (data);
+  T **v = summary->m_map.get (node->summary_uid);
+
+  gcc_checking_assert (node2->summary_uid > 0);
+
+  if (v)
+    {
+      /* This load is necessary, because we insert a new value!  */
+      T *data = *v;
+      T *duplicate = summary->allocate_new ();
+      summary->m_map.put (node2->summary_uid, duplicate);
+      summary->duplicate (node, node2, data, duplicate);
+    }
+}
+
+template <typename T>
+T*
+function_summary<T *>::get (int uid)
+{
+  bool existed;
+  T **v = &m_map.get_or_insert (uid, &existed);
+  if (!existed)
+    *v = allocate_new ();
+
+  return *v;
+}
 
 template <typename T>
 void

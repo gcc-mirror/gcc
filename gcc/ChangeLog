@@ -1,5 +1,15 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* symbol-summary.h (function_summary): Move constructor
+	implementation out of class declaration.
+	(release): Likewise.
+	(symtab_insertion): Likewise.
+	(symtab_removal): Likewise.
+	(symtab_duplication): Likewise.
+	(get): Likewise.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* Makefile.in: Remove support for MPX (macros, related functions,
 	fields in cgraph_node, ...).
 	* builtin-types.def (BT_BND): Likewise.
