@@ -1,3 +1,19 @@
+2018-06-08  Carl Love  <cel@us.ibm.com>
+
+ 	* gcc.target/powerpc/p8vector-builtin-3.c: Add vec_pack test. Update
+	vpkudum counts.
+ 	* gcc.target/powerpc/p9-extract-3.c: Make second argument of
+	vec_extract a signed int.
+ 	* gcc.target/powerpc/vec-cmp.c: Add vec_cmple, vec_cmpge tests. Update,
+	vcmpgtsb, vcmpgtub, vcmpgtsh, vcmpgtuh, vcmpgtsw, vcmpgtsw, vcmpgtuw,
+	vcmpgtsd, vcmpgtud.
+	* gcc.target/powerpc/vsx-extract-4.c: Make second argument of
+	vec_extract a signed int.
+	* gcc.target/powerpc/vsx-extract-5.c: Make second argument of
+	vec_extract a signed int.
+ 	* gcc.target/powerpc/vsx-vector-7.c (foo): Add tests for vec_sel and
+	vec_xor builtins.  Update xxsel, xxlxor counts.
+
 2018-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/86059 
