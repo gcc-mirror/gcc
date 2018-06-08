@@ -1,5 +1,10 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* lto-partition.c (lto_balanced_map): Use cgraph_node::uid
+	instead of summary_uid.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* lto-partition.c (add_symbol_to_partition_1): Use get_create instead
 	of get.
 	(undo_partition): Likewise.
