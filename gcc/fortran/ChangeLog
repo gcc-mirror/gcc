@@ -1,5 +1,11 @@
 2018-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/86059 
+	* array.c (match_array_cons_element): NULL() cannot be in an
+	array constructor.
+
+2018-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/78571
 	* data.c (create_character_initializer): Return early if type is
 	incompatible with CHARACTER.
