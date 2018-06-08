@@ -1,5 +1,12 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* symbol-summary.h (release): Move definition out of class
+	declaration.
+	(symtab_removal): Likewise.
+	(symtab_duplication): Likewise.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* symbol-summary.h (function_summary): Move constructor
 	implementation out of class declaration.
 	(release): Likewise.

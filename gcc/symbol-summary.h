@@ -330,21 +330,7 @@ public:
   }
 
   /* Destruction method that can be called for GGT purpose.  */
-  void release ()
-  {
-    if (m_released)
-      return;
-
-    m_symtab->remove_edge_removal_hook (m_symtab_removal_hook);
-    m_symtab->remove_edge_duplication_hook (m_symtab_duplication_hook);
-
-    /* Release all summaries.  */
-    typedef typename hash_map <map_hash, T *>::iterator map_iterator;
-    for (map_iterator it = m_map.begin (); it != m_map.end (); ++it)
-      release ((*it).second);
-
-    m_released = true;
-  }
+  void release ();
 
   /* Traverses all summarys with a function F called with
      ARG as argument.  */
@@ -369,16 +355,7 @@ public:
   }
 
   /* Release an item that is stored within map.  */
-  void release (T *item)
-  {
-    if (m_ggc)
-      {
-	item->~T ();
-	ggc_free (item);
-      }
-    else
-      delete item;
-  }
+  void release (T *item);
 
   /* Getter for summary callgraph edge pointer.  */
   T* get (cgraph_edge *edge)
@@ -399,37 +376,11 @@ public:
   }
 
   /* Symbol removal hook that is registered to symbol table.  */
-  static void symtab_removal (cgraph_edge *edge, void *data)
-  {
-    call_summary *summary = (call_summary <T *> *) (data);
-
-    int h_uid = summary->hashable_uid (edge);
-    T **v = summary->m_map.get (h_uid);
-
-    if (v)
-      {
-	summary->remove (edge, *v);
-	summary->release (*v);
-	summary->m_map.remove (h_uid);
-      }
-  }
+  static void symtab_removal (cgraph_edge *edge, void *data);
 
   /* Symbol duplication hook that is registered to symbol table.  */
   static void symtab_duplication (cgraph_edge *edge1, cgraph_edge *edge2,
-				  void *data)
-  {
-    call_summary *summary = (call_summary <T *> *) (data);
-    T **v = summary->m_map.get (summary->hashable_uid (edge1));
-
-    if (v)
-      {
-	/* This load is necessary, because we insert a new value!  */
-	T *data = *v;
-	T *duplicate = summary->allocate_new ();
-	summary->m_map.put (summary->hashable_uid (edge2), duplicate);
-	summary->duplicate (edge1, edge2, data, duplicate);
-      }
-  }
+				  void *data);
 
 protected:
   /* Indication if we use ggc summary.  */
@@ -472,6 +423,72 @@ private:
   template <typename U> friend void gt_pch_nx (call_summary <U *> * const &,
       gt_pointer_operator, void *);
 };
+
+template <typename T>
+void
+call_summary<T *>::release ()
+{
+  if (m_released)
+    return;
+
+  m_symtab->remove_edge_removal_hook (m_symtab_removal_hook);
+  m_symtab->remove_edge_duplication_hook (m_symtab_duplication_hook);
+
+  /* Release all summaries.  */
+  typedef typename hash_map <map_hash, T *>::iterator map_iterator;
+  for (map_iterator it = m_map.begin (); it != m_map.end (); ++it)
+    release ((*it).second);
+
+  m_released = true;
+}
+
+template <typename T>
+void
+call_summary<T *>::release (T *item)
+{
+  if (m_ggc)
+    {
+      item->~T ();
+      ggc_free (item);
+    }
+  else
+    delete item;
+}
+
+template <typename T>
+void
+call_summary<T *>::symtab_removal (cgraph_edge *edge, void *data)
+{
+  call_summary *summary = (call_summary <T *> *) (data);
+
+  int h_uid = summary->hashable_uid (edge);
+  T **v = summary->m_map.get (h_uid);
+
+  if (v)
+    {
+      summary->remove (edge, *v);
+      summary->release (*v);
+      summary->m_map.remove (h_uid);
+    }
+}
+
+template <typename T>
+void
+call_summary<T *>::symtab_duplication (cgraph_edge *edge1,
+				       cgraph_edge *edge2, void *data)
+{
+  call_summary *summary = (call_summary <T *> *) (data);
+  T **v = summary->m_map.get (summary->hashable_uid (edge1));
+
+  if (v)
+    {
+      /* This load is necessary, because we insert a new value!  */
+      T *data = *v;
+      T *duplicate = summary->allocate_new ();
+      summary->m_map.put (summary->hashable_uid (edge2), duplicate);
+      summary->duplicate (edge1, edge2, data, duplicate);
+    }
+}
 
 template <typename T>
 void
