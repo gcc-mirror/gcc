@@ -1,6 +1,15 @@
+2018-06-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85631
+	* trans.h (gfc_ss): Add field no_bounds_check.
+	* trans-array.c (gfc_conv_ss_startstride): If flag_realloc_lhs and
+	ss->no_bounds_check is set, do not use runtime checks.
+	* trans-expr.c (gfc_trans_assignment_1): Set lss->no_bounds_check
+	for reallocatable lhs.
+
 2018-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	PR fortran/86059 
+	PR fortran/86059
 	* array.c (match_array_cons_element): NULL() cannot be in an
 	array constructor.
 

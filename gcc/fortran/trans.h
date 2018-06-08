@@ -330,6 +330,7 @@ typedef struct gfc_ss
   struct gfc_loopinfo *loop;
 
   unsigned is_alloc_lhs:1;
+  unsigned no_bounds_check:1;
 }
 gfc_ss;
 #define gfc_get_ss() XCNEW (gfc_ss)
