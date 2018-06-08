@@ -1,5 +1,19 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* hsa-common.h (enum hsa_function_kind): Rename HSA_NONE to
+	HSA_INVALID.
+	(hsa_function_summary::hsa_function_summary): Use the new enum
+	value.
+	(hsa_gpu_implementation_p): Use hsa_summaries::get.
+	* hsa-gen.c (hsa_get_host_function): Likewise.
+	(get_brig_function_name): Likewise.
+	* ipa-hsa.c (process_hsa_functions): Likewise.
+	(ipa_hsa_write_summary): Likewise.
+	* symbol-summary.h (symtab_duplication): Use ::get function/
+	(get): New function.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* config/i386/i386.c (ix86_can_inline_p): Use get_create instead
 	of get.
 	* hsa-common.c (hsa_summary_t::link_functions): Likewise.

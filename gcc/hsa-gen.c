@@ -961,9 +961,7 @@ get_symbol_for_decl (tree decl)
 tree
 hsa_get_host_function (tree decl)
 {
-  hsa_function_summary *s
-    = hsa_summaries->get_create (cgraph_node::get_create (decl));
-  gcc_assert (s->m_kind != HSA_NONE);
+  hsa_function_summary *s = hsa_summaries->get (cgraph_node::get_create (decl));
   gcc_assert (s->m_gpu_implementation_p);
 
   return s->m_bound_function ? s->m_bound_function->decl : NULL;
@@ -976,9 +974,8 @@ get_brig_function_name (tree decl)
 {
   tree d = decl;
 
-  hsa_function_summary *s
-    = hsa_summaries->get_create (cgraph_node::get_create (d));
-  if (s->m_kind != HSA_NONE
+  hsa_function_summary *s = hsa_summaries->get (cgraph_node::get_create (d));
+  if (s != NULL
       && s->m_gpu_implementation_p
       && s->m_bound_function)
     d = s->m_bound_function->decl;

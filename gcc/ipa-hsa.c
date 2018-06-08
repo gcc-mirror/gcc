@@ -76,13 +76,13 @@ process_hsa_functions (void)
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      hsa_function_summary *s = hsa_summaries->get_create (node);
+      hsa_function_summary *s = hsa_summaries->get (node);
 
       /* A linked function is skipped.  */
-      if (s->m_bound_function != NULL)
+      if (s != NULL && s->m_bound_function != NULL)
 	continue;
 
-      if (s->m_kind != HSA_NONE)
+      if (s != NULL)
 	{
 	  if (!check_warn_node_versionable (node))
 	    continue;
@@ -130,11 +130,11 @@ process_hsa_functions (void)
 
       while (e)
 	{
-	  hsa_function_summary *src = hsa_summaries->get_create (node);
-	  if (src->m_kind != HSA_NONE && src->m_gpu_implementation_p)
+	  hsa_function_summary *src = hsa_summaries->get (node);
+	  if (src != NULL && src->m_gpu_implementation_p)
 	    {
-	      hsa_function_summary *dst = hsa_summaries->get_create (e->callee);
-	      if (dst->m_kind != HSA_NONE && !dst->m_gpu_implementation_p)
+	      hsa_function_summary *dst = hsa_summaries->get (e->callee);
+	      if (dst != NULL && !dst->m_gpu_implementation_p)
 		{
 		  e->redirect_callee (dst->m_bound_function);
 		  if (dump_file)
@@ -174,9 +174,9 @@ ipa_hsa_write_summary (void)
        lsei_next_function_in_partition (&lsei))
     {
       node = lsei_cgraph_node (lsei);
-      hsa_function_summary *s = hsa_summaries->get_create (node);
+      hsa_function_summary *s = hsa_summaries->get (node);
 
-      if (s->m_kind != HSA_NONE)
+      if (s != NULL)
 	count++;
     }
 
@@ -187,9 +187,9 @@ ipa_hsa_write_summary (void)
        lsei_next_function_in_partition (&lsei))
     {
       node = lsei_cgraph_node (lsei);
-      hsa_function_summary *s = hsa_summaries->get_create (node);
+      hsa_function_summary *s = hsa_summaries->get (node);
 
-      if (s->m_kind != HSA_NONE)
+      if (s != NULL)
 	{
 	  encoder = ob->decl_state->symtab_node_encoder;
 	  int node_ref = lto_symtab_encoder_encode (encoder, node);
