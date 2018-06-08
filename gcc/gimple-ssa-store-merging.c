@@ -1083,7 +1083,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	    print_gimple_stmt (dump_file, cur_stmt, 0);
 	  else
 	    {
-	      print_generic_expr (dump_file, tgt, 0);
+	      print_generic_expr (dump_file, tgt, TDF_NONE);
 	      fprintf (dump_file, "\n");
 	    }
 	}
@@ -1153,7 +1153,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	print_gimple_stmt (dump_file, cur_stmt, 0);
       else
 	{
-	  print_generic_expr (dump_file, tgt, 0);
+	  print_generic_expr (dump_file, tgt, TDF_NONE);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -2020,7 +2020,7 @@ merged_store_group::apply_stores ()
 	  if (ret)
 	    {
 	      fputs ("After writing ", dump_file);
-	      print_generic_expr (dump_file, cst, 0);
+	      print_generic_expr (dump_file, cst, TDF_NONE);
 	      fprintf (dump_file, " of size " HOST_WIDE_INT_PRINT_DEC
 		       " at position %d\n", info->bitsize, pos_in_buffer);
 	      fputs ("  the merged value contains ", dump_file);

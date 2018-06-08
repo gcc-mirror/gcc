@@ -894,7 +894,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  {
 	    pretty_printer buffer;
 	    buffer.buffer->stream = file;
-	    pp_gimple_stmt_1 (&buffer, SSA_NAME_DEF_STMT (node), indent + 4, 0);
+	    pp_gimple_stmt_1 (&buffer, SSA_NAME_DEF_STMT (node), indent + 4,
+			      TDF_NONE);
 	    pp_flush (&buffer);
 	  }
 
@@ -1039,7 +1040,7 @@ dump_tree_via_hooks (const tree_node *ptr, dump_flags_t options)
 DEBUG_FUNCTION void
 debug (const tree_node &ref)
 {
-  dump_tree_via_hooks (&ref, 0);
+  dump_tree_via_hooks (&ref, TDF_NONE);
 }
 
 DEBUG_FUNCTION void
@@ -1070,7 +1071,7 @@ DEBUG_FUNCTION void
 debug_body (const tree_node &ref)
 {
   if (TREE_CODE (&ref) == FUNCTION_DECL)
-    dump_function_to_file (const_cast <tree_node*> (&ref), stderr, 0);
+    dump_function_to_file (const_cast <tree_node*> (&ref), stderr, TDF_NONE);
   else
     debug (ref);
 }

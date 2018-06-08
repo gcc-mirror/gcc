@@ -1,3 +1,8 @@
+2018-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-pretty-print.c (c_pretty_printer::statement): Use TDF_NONE
+	rather than 0.
+
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
 	* c-attribs.c (handle_bnd_variable_size_attribute): Remove support

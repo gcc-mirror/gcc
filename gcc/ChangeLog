@@ -1,3 +1,82 @@
+2018-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* cfg.c (debug): Use TDF_NONE rather than 0.
+	* cfghooks.c (debug): Likewise.
+	* dumpfile.c (DUMP_FILE_INFO): Likewise; also for OPTGROUP.
+	(struct dump_option_value_info): Convert to...
+	(struct kv_pair): ...this template type.
+	(dump_options): Convert to kv_pair<dump_flags_t>; use TDF_NONE
+	rather than 0.
+	(optinfo_verbosity_options): Likewise.
+	(optgroup_options): Convert to kv_pair<optgroup_flags_t>; use
+	OPTGROUP_NONE.
+	(gcc::dump_manager::dump_register): Use optgroup_flags_t rather
+	than int for "optgroup_flags" param.
+	(dump_generic_expr_loc): Use dump_flags_t rather than int for
+	"dump_kind" param.
+	(dump_dec): Likewise.
+	(dump_finish): Use TDF_NONE rather than 0.
+	(gcc::dump_manager::opt_info_enable_passes): Use optgroup_flags_t
+	rather than int for "optgroup_flags" param.  Use TDF_NONE rather
+	than 0.  Update for change to option_ptr.
+	(opt_info_switch_p_1): Convert "optgroup_flags" param from int *
+	to optgroup_flags_t *.  Use TDF_NONE and OPTGROUP_NONE rather than
+	0.  Update for changes to optinfo_verbosity_options and
+	optgroup_options.
+	(opt_info_switch_p): Convert optgroup_flags from int to
+	optgroup_flags_t.
+	(dump_basic_block): Use dump_flags_t rather than int
+	for "dump_kind" param.
+	* dumpfile.h (TDF_ADDRESS, TDF_SLIM, TDF_RAW, TDF_DETAILS,
+	TDF_STATS, TDF_BLOCKS, TDF_VOPS, TDF_LINENO, TDF_UID)
+	TDF_STMTADDR, TDF_GRAPH, TDF_MEMSYMS, TDF_RHS_ONLY, TDF_ASMNAME,
+	TDF_EH, TDF_NOUID, TDF_ALIAS, TDF_ENUMERATE_LOCALS, TDF_CSELIB,
+	TDF_SCEV, TDF_GIMPLE, TDF_FOLDING, MSG_OPTIMIZED_LOCATIONS,
+	MSG_MISSED_OPTIMIZATION, MSG_NOTE, MSG_ALL, TDF_COMPARE_DEBUG,
+	TDF_NONE): Convert from macros to...
+	(enum dump_flag): ...this new enum.
+	(dump_flags_t): Update to use enum.
+	(operator|, operator&, operator~, operator|=, operator&=):
+	Implement for dump_flags_t.
+	(OPTGROUP_NONE, OPTGROUP_IPA, OPTGROUP_LOOP, OPTGROUP_INLINE,
+	OPTGROUP_OMP, OPTGROUP_VEC, OPTGROUP_OTHER, OPTGROUP_ALL):
+	Convert from macros to...
+	(enum optgroup_flag): ...this new enum.
+	(optgroup_flags_t): New typedef.
+	(operator|, operator|=): Implement for optgroup_flags_t.
+	(struct dump_file_info): Convert field "alt_flags" to
+	dump_flags_t.  Convert field "optgroup_flags" to
+	optgroup_flags_t.
+	(dump_basic_block): Use dump_flags_t rather than int for param.
+	(dump_generic_expr_loc): Likewise.
+	(dump_dec): Likewise.
+	(dump_register): Convert param "optgroup_flags" to
+	optgroup_flags_t.
+	(opt_info_enable_passes): Likewise.
+	* early-remat.c (early_remat::dump_edge_list): Use TDF_NONE rather
+	than 0.
+	* gimple-pretty-print.c (debug): Likewise.
+	* gimple-ssa-store-merging.c (bswap_replace): Likewise.
+	(merged_store_group::apply_stores): Likewise.
+	* gimple-ssa-strength-reduction.c (insert_initializers): Likewise.
+	* gimple.c (verify_gimple_pp): Likewise.
+	* graphite-poly.c (print_pbb_body): Likewise.
+	* passes.c (pass_manager::register_one_dump_file): Convert
+	local "optgroup_flags" to optgroup_flags_t.
+	* print-tree.c (print_node): Use TDF_NONE rather than 0.
+	(debug): Likewise.
+	(debug_body): Likewise.
+	* tree-pass.h (struct pass_data): Convert field "optgroup_flags"
+	to optgroup_flags_t.
+	* tree-pretty-print.c (print_struct_decl): Use TDF_NONE rather
+	than 0.
+	* tree-ssa-math-opts.c (convert_mult_to_fma_1): Likewise.
+	(convert_mult_to_fma): Likewise.
+	* tree-ssa-reassoc.c (undistribute_ops_list): Likewise.
+	* tree-ssa-sccvn.c (vn_eliminate): Likewise.
+	* tree-vect-data-refs.c (dump_lower_bound): Convert param
+	"dump_kind" to dump_flags_t.
+
 2018-06-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (min, max): Delete.
