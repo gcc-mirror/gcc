@@ -1,3 +1,15 @@
+2018-06-08  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vsx-vector-6-be.p7.c: Rename this file to
+	vsx-vector-6.p7.c.
+	* gcc.target/powerpc/vsx-vector-6-le.p9.c: Rename this file to
+	vsx-vector-6.p9.c.
+	* gcc.target/powerpc/vsx-vector-6-be.p8.c: Move instruction counts
+	for BE system that are different then for an LE system from this file
+	into vsx-vector-6-le.c using be target qualifier.  Remove this file.
+	* gcc.target/powerpc/vsx-vector-6-le.c: Add le qualifiers as needed for
+	the various instruction counts.  Rename file to	vsx-vector-6.p8.c.
+
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/ipa-icf-38.c: Scan optimized tree dump.
