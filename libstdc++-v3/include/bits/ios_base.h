@@ -607,6 +607,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       Init();
       ~Init();
 
+#if __cplusplus >= 201103L
+      Init(const Init&) = default;
+      Init& operator=(const Init&) = default;
+#endif
+
     private:
       static _Atomic_word	_S_refcount;
       static bool		_S_synced_with_stdio;
