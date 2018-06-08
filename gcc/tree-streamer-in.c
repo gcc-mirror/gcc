@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-streamer.h"
 #include "cgraph.h"
 #include "builtins.h"
-#include "ipa-chkp.h"
 #include "gomp-constants.h"
 #include "stringpool.h"
 #include "attribs.h"

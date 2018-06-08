@@ -1177,7 +1177,7 @@ initialize_node_lattices (struct cgraph_node *node)
   int i;
 
   gcc_checking_assert (node->has_gimple_body_p ());
-  if (cgraph_local_p (node))
+  if (node->local.local)
     {
       int caller_count = 0;
       node->call_for_symbol_thunks_and_aliases (count_callers, &caller_count,
@@ -2270,24 +2270,6 @@ propagate_constants_across_call (struct cgraph_edge *cs)
   parms_count = ipa_get_param_count (callee_info);
   if (parms_count == 0)
     return false;
-
-  /* No propagation through instrumentation thunks is available yet.
-     It should be possible with proper mapping of call args and
-     instrumented callee params in the propagation loop below.  But
-     this case mostly occurs when legacy code calls instrumented code
-     and it is not a primary target for optimizations.
-     We detect instrumentation thunks in aliases and thunks chain by
-     checking instrumentation_clone flag for chain source and target.
-     Going through instrumentation thunks we always have it changed
-     from 0 to 1 and all other nodes do not change it.  */
-  if (!cs->callee->instrumentation_clone
-      && callee->instrumentation_clone)
-    {
-      for (i = 0; i < parms_count; i++)
-	ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
-								 i));
-      return ret;
-    }
 
   /* If this call goes through a thunk we must not propagate to the first (0th)
      parameter.  However, we might need to uncover a thunk from below a series
@@ -3967,9 +3949,7 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 
 	  if (i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      || (i == 0
-		  && call_passes_through_thunk_p (cs))
-	      || (!cs->callee->instrumentation_clone
-		  && cs->callee->function_symbol ()->instrumentation_clone))
+		  && call_passes_through_thunk_p (cs)))
 	    {
 	      newval = NULL_TREE;
 	      break;

@@ -312,7 +312,6 @@ record_common_node (struct streamer_tree_cache_d *cache, tree node)
     case IDENTIFIER_NODE:
     case INTEGER_CST:
     case INTEGER_TYPE:
-    case POINTER_BOUNDS_TYPE:
     case REAL_TYPE:
     case TREE_LIST:
     case VOID_CST:

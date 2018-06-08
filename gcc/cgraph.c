@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "profile.h"
 #include "params.h"
-#include "tree-chkp.h"
 #include "context.h"
 #include "gimplify.h"
 #include "stringpool.h"
@@ -1275,7 +1274,6 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
   tree decl = gimple_call_fndecl (e->call_stmt);
   gcall *new_stmt;
   gimple_stmt_iterator gsi;
-  bool skip_bounds = false;
 
   if (e->speculative)
     {
@@ -1333,24 +1331,6 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	  e->caller->set_call_stmt_including_clones (e->call_stmt, new_stmt,
 						     false);
 	  e->count = gimple_bb (e->call_stmt)->count;
-
-	  /* Fix edges for BUILT_IN_CHKP_BNDRET calls attached to the
-	     processed call stmt.  */
-	  if (gimple_call_with_bounds_p (new_stmt)
-	      && gimple_call_lhs (new_stmt)
-	      && chkp_retbnd_call_by_val (gimple_call_lhs (e2->call_stmt)))
-	    {
-	      tree dresult = gimple_call_lhs (new_stmt);
-	      tree iresult = gimple_call_lhs (e2->call_stmt);
-	      gcall *dbndret = chkp_retbnd_call_by_val (dresult);
-	      gcall *ibndret = chkp_retbnd_call_by_val (iresult);
-	      struct cgraph_edge *iedge
-		= e2->caller->cgraph_node::get_edge (ibndret);
-
-	      if (dbndret)
-		iedge->caller->create_edge (iedge->callee, dbndret, e->count);
-	    }
-
 	  e2->speculative = false;
 	  e2->count = gimple_bb (e2->call_stmt)->count;
 	  ref->speculative = false;
@@ -1364,16 +1344,9 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	}
     }
 
-  /* We might propagate instrumented function pointer into
-     not instrumented function and vice versa.  In such a
-     case we need to either fix function declaration or
-     remove bounds from call statement.  */
-  if (flag_check_pointer_bounds && e->callee)
-    skip_bounds = chkp_redirect_edge (e);
 
   if (e->indirect_unknown_callee
-      || (decl == e->callee->decl
-	  && !skip_bounds))
+      || decl == e->callee->decl)
     return e->call_stmt;
 
   if (flag_checking && decl)
@@ -1395,8 +1368,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	}
     }
 
-  if (e->callee->clone.combined_args_to_skip
-      || skip_bounds)
+  if (e->callee->clone.combined_args_to_skip)
     {
       int lp_nr;
 
@@ -1405,9 +1377,6 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	new_stmt
 	  = gimple_call_copy_skip_args (new_stmt,
 					e->callee->clone.combined_args_to_skip);
-      if (skip_bounds)
-	new_stmt = chkp_copy_call_skip_bounds (new_stmt);
-
       tree old_fntype = gimple_call_fntype (e->call_stmt);
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
       cgraph_node *origin = e->callee;
@@ -1906,12 +1875,6 @@ cgraph_node::remove (void)
       call_site_hash = NULL;
     }
 
-  if (instrumented_version)
-    {
-      instrumented_version->instrumented_version = NULL;
-      instrumented_version = NULL;
-    }
-
   symtab->release_symbol (this, uid);
 }
 
@@ -2234,11 +2197,6 @@ cgraph_node::dump (FILE *f)
       if (edge->indirect_info->polymorphic)
 	edge->indirect_info->context.dump (f);
     }
-
-  if (instrumentation_clone)
-    fprintf (f, "  Is instrumented version.\n");
-  else if (instrumented_version)
-    fprintf (f, "  Has instrumented version.\n");
 }
 
 /* Dump call graph node NODE to stderr.  */
@@ -3335,9 +3293,7 @@ cgraph_node::verify_node (void)
           error_found = true;
 	}
       for (i = 0; iterate_reference (i, ref); i++)
-	if (ref->use == IPA_REF_CHKP)
-	  ;
-	else if (ref->use != IPA_REF_ALIAS)
+	if (ref->use != IPA_REF_ALIAS)
 	  {
 	    error ("Alias has non-alias reference");
 	    error_found = true;
@@ -3352,77 +3308,6 @@ cgraph_node::verify_node (void)
       if (!ref_found)
 	{
 	  error ("Analyzed alias has no reference");
-	  error_found = true;
-	}
-    }
-
-  /* Check instrumented version reference.  */
-  if (instrumented_version
-      && instrumented_version->instrumented_version != this)
-    {
-      error ("Instrumentation clone does not reference original node");
-      error_found = true;
-    }
-
-  /* Cannot have orig_decl for not instrumented nodes.  */
-  if (!instrumentation_clone && orig_decl)
-    {
-      error ("Not instrumented node has non-NULL original declaration");
-      error_found = true;
-    }
-
-  /* If original not instrumented node still exists then we may check
-     original declaration is set properly.  */
-  if (instrumented_version
-      && orig_decl
-      && orig_decl != instrumented_version->decl)
-    {
-      error ("Instrumented node has wrong original declaration");
-      error_found = true;
-    }
-
-  /* Check all nodes have chkp reference to their instrumented versions.  */
-  if (analyzed
-      && instrumented_version
-      && !instrumentation_clone)
-    {
-      bool ref_found = false;
-      int i;
-      struct ipa_ref *ref;
-
-      for (i = 0; iterate_reference (i, ref); i++)
-	if (ref->use == IPA_REF_CHKP)
-	  {
-	    if (ref_found)
-	      {
-		error ("Node has more than one chkp reference");
-		error_found = true;
-	      }
-	    if (ref->referred != instrumented_version)
-	      {
-		error ("Wrong node is referenced with chkp reference");
-		error_found = true;
-	      }
-	    ref_found = true;
-	  }
-
-      if (!ref_found)
-	{
-	  error ("Analyzed node has no reference to instrumented version");
-	  error_found = true;
-	}
-    }
-
-  if (instrumentation_clone
-      && DECL_BUILT_IN_CLASS (decl) == NOT_BUILT_IN)
-    {
-      tree name = DECL_ASSEMBLER_NAME (decl);
-      tree orig_name = DECL_ASSEMBLER_NAME (orig_decl);
-
-      if (!IDENTIFIER_TRANSPARENT_ALIAS (name)
-	  || TREE_CHAIN (name) != orig_name)
-	{
-	  error ("Alias chain for instrumented node is broken");
 	  error_found = true;
 	}
     }
@@ -3444,12 +3329,6 @@ cgraph_node::verify_node (void)
 	  error ("Thunk is not supposed to have body");
           error_found = true;
         }
-      if (thunk.add_pointer_bounds_args
-	  && !instrumented_version->semantically_equivalent_p (callees->callee))
-	{
-	  error ("Instrumentation thunk has wrong edge callee");
-          error_found = true;
-	}
     }
   else if (analyzed && gimple_has_body_p (decl)
 	   && !TREE_ASM_WRITTEN (decl)

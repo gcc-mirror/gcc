@@ -1,3 +1,11 @@
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
+	* c-attribs.c (handle_bnd_variable_size_attribute): Remove support
+	for MPX (macros, related functions, fields in cgraph_node, ...).
+	(handle_bnd_legacy): Likewise.
+	(handle_bnd_instrument): Likewise.
+	* c.opt: Likewise.
+
 2018-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86068

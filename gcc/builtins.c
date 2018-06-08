@@ -64,8 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
-#include "tree-chkp.h"
-#include "rtl-chkp.h"
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
 #include "gimple-fold.h"
@@ -125,12 +123,10 @@ static rtx expand_builtin_strncmp (tree, rtx, machine_mode);
 static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
 static rtx expand_builtin_memchr (tree, rtx);
 static rtx expand_builtin_memcpy (tree, rtx);
-static rtx expand_builtin_memcpy_with_bounds (tree, rtx);
 static rtx expand_builtin_memory_copy_args (tree dest, tree src, tree len,
 					    rtx target, tree exp, int endp);
 static rtx expand_builtin_memmove (tree, rtx);
 static rtx expand_builtin_mempcpy (tree, rtx);
-static rtx expand_builtin_mempcpy_with_bounds (tree, rtx);
 static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx, tree, int);
 static rtx expand_builtin_strcat (tree, rtx);
 static rtx expand_builtin_strcpy (tree, rtx);
@@ -141,7 +137,6 @@ static rtx expand_builtin_strncat (tree, rtx);
 static rtx expand_builtin_strncpy (tree, rtx);
 static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, scalar_int_mode);
 static rtx expand_builtin_memset (tree, rtx, machine_mode);
-static rtx expand_builtin_memset_with_bounds (tree, rtx, machine_mode);
 static rtx expand_builtin_memset_args (tree, tree, tree, rtx, machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
 static rtx expand_builtin_strlen (tree, rtx, machine_mode);
@@ -3479,38 +3474,6 @@ expand_builtin_memmove (tree exp, rtx)
   return NULL_RTX;
 }
 
-/* Expand an instrumented call EXP to the memcpy builtin.
-   Return NULL_RTX if we failed, the caller should emit a normal call,
-   otherwise try to get the result in TARGET, if convenient (and in
-   mode MODE if that's convenient).  */
-
-static rtx
-expand_builtin_memcpy_with_bounds (tree exp, rtx target)
-{
-  if (!validate_arglist (exp,
-			 POINTER_TYPE, POINTER_BOUNDS_TYPE,
-			 POINTER_TYPE, POINTER_BOUNDS_TYPE,
-			 INTEGER_TYPE, VOID_TYPE))
-    return NULL_RTX;
-  else
-    {
-      tree dest = CALL_EXPR_ARG (exp, 0);
-      tree src = CALL_EXPR_ARG (exp, 2);
-      tree len = CALL_EXPR_ARG (exp, 4);
-      rtx res = expand_builtin_memory_copy_args (dest, src, len, target, exp,
-						 /*end_p=*/ 0);
-
-      /* Return src bounds with the result.  */
-      if (res)
-	{
-	  rtx bnd = force_reg (targetm.chkp_bound_mode (),
-			       expand_normal (CALL_EXPR_ARG (exp, 1)));
-	  res = chkp_join_splitted_slot (res, bnd);
-	}
-      return res;
-    }
-}
-
 /* Expand a call EXP to the mempcpy builtin.
    Return NULL_RTX if we failed; the caller should emit a normal call,
    otherwise try to get the result in TARGET, if convenient (and in
@@ -3551,38 +3514,6 @@ expand_builtin_mempcpy (tree exp, rtx target)
 
   return expand_builtin_mempcpy_args (dest, src, len,
 				      target, exp, /*endp=*/ 1);
-}
-
-/* Expand an instrumented call EXP to the mempcpy builtin.
-   Return NULL_RTX if we failed, the caller should emit a normal call,
-   otherwise try to get the result in TARGET, if convenient (and in
-   mode MODE if that's convenient).  */
-
-static rtx
-expand_builtin_mempcpy_with_bounds (tree exp, rtx target)
-{
-  if (!validate_arglist (exp,
-			 POINTER_TYPE, POINTER_BOUNDS_TYPE,
-			 POINTER_TYPE, POINTER_BOUNDS_TYPE,
-			 INTEGER_TYPE, VOID_TYPE))
-    return NULL_RTX;
-  else
-    {
-      tree dest = CALL_EXPR_ARG (exp, 0);
-      tree src = CALL_EXPR_ARG (exp, 2);
-      tree len = CALL_EXPR_ARG (exp, 4);
-      rtx res = expand_builtin_mempcpy_args (dest, src, len, target,
-					     exp, 1);
-
-      /* Return src bounds with the result.  */
-      if (res)
-	{
-	  rtx bnd = force_reg (targetm.chkp_bound_mode (),
-			       expand_normal (CALL_EXPR_ARG (exp, 1)));
-	  res = chkp_join_splitted_slot (res, bnd);
-	}
-      return res;
-    }
 }
 
 /* Helper function to do the actual work for expand of memory copy family
@@ -4205,36 +4136,6 @@ expand_builtin_memset (tree exp, rtx target, machine_mode mode)
   return expand_builtin_memset_args (dest, val, len, target, mode, exp);
 }
 
-/* Expand expression EXP, which is an instrumented call to the memset builtin.
-   Return NULL_RTX if we failed the caller should emit a normal call, otherwise
-   try to get the result in TARGET, if convenient (and in mode MODE if that's
-   convenient).  */
-
-static rtx
-expand_builtin_memset_with_bounds (tree exp, rtx target, machine_mode mode)
-{
-  if (!validate_arglist (exp,
-			 POINTER_TYPE, POINTER_BOUNDS_TYPE,
-			 INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE))
-    return NULL_RTX;
-  else
-    {
-      tree dest = CALL_EXPR_ARG (exp, 0);
-      tree val = CALL_EXPR_ARG (exp, 2);
-      tree len = CALL_EXPR_ARG (exp, 3);
-      rtx res = expand_builtin_memset_args (dest, val, len, target, mode, exp);
-
-      /* Return src bounds with the result.  */
-      if (res)
-	{
-	  rtx bnd = force_reg (targetm.chkp_bound_mode (),
-			       expand_normal (CALL_EXPR_ARG (exp, 1)));
-	  res = chkp_join_splitted_slot (res, bnd);
-	}
-      return res;
-    }
-}
-
 /* Helper function to do the actual work for expand_builtin_memset.  The
    arguments to the builtin_memset call DEST, VAL, and LEN are broken out
    so that this can also be called without constructing an actual CALL_EXPR.
@@ -4363,8 +4264,7 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
  do_libcall:
   fndecl = get_callee_fndecl (orig_exp);
   fcode = DECL_FUNCTION_CODE (fndecl);
-  if (fcode == BUILT_IN_MEMSET
-      || fcode == BUILT_IN_CHKP_MEMSET_NOBND_NOCHK_CHKP)
+  if (fcode == BUILT_IN_MEMSET)
     fn = build_call_nofold_loc (EXPR_LOCATION (orig_exp), fndecl, 3,
 				dest, val, len);
   else if (fcode == BUILT_IN_BZERO)
@@ -4889,13 +4789,6 @@ std_expand_builtin_va_start (tree valist, rtx nextarg)
 {
   rtx va_r = expand_expr (valist, NULL_RTX, VOIDmode, EXPAND_WRITE);
   convert_move (va_r, nextarg, 0);
-
-  /* We do not have any valid bounds for the pointer, so
-     just store zero bounds for it.  */
-  if (chkp_function_instrumented_p (current_function_decl))
-    chkp_expand_bounds_reset_for_mem (valist,
-				      make_tree (TREE_TYPE (valist),
-						 nextarg));
 }
 
 /* Expand EXP, a call to __builtin_va_start.  */
@@ -6766,19 +6659,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       && fcode != BUILT_IN_EXECVP
       && fcode != BUILT_IN_EXECVE
       && !ALLOCA_FUNCTION_CODE_P (fcode)
-      && fcode != BUILT_IN_FREE
-      && fcode != BUILT_IN_CHKP_SET_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_INIT_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_NULL_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_COPY_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_NARROW_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_STORE_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_CHECK_PTR_LBOUNDS
-      && fcode != BUILT_IN_CHKP_CHECK_PTR_UBOUNDS
-      && fcode != BUILT_IN_CHKP_CHECK_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_GET_PTR_LBOUND
-      && fcode != BUILT_IN_CHKP_GET_PTR_UBOUND
-      && fcode != BUILT_IN_CHKP_BNDRET)
+      && fcode != BUILT_IN_FREE)
     return expand_call (exp, target, ignore);
 
   /* The built-in function expanders test for target == const0_rtx
@@ -6811,10 +6692,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	  return const0_rtx;
 	}
     }
-
-  /* expand_builtin_with_bounds is supposed to be used for
-     instrumented builtin calls.  */
-  gcc_assert (!CALL_WITH_BOUNDS_P (exp));
 
   switch (fcode)
     {
@@ -7840,51 +7717,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       expand_builtin_set_thread_pointer (exp);
       return const0_rtx;
 
-    case BUILT_IN_CHKP_INIT_PTR_BOUNDS:
-    case BUILT_IN_CHKP_NULL_PTR_BOUNDS:
-    case BUILT_IN_CHKP_COPY_PTR_BOUNDS:
-    case BUILT_IN_CHKP_CHECK_PTR_LBOUNDS:
-    case BUILT_IN_CHKP_CHECK_PTR_UBOUNDS:
-    case BUILT_IN_CHKP_CHECK_PTR_BOUNDS:
-    case BUILT_IN_CHKP_SET_PTR_BOUNDS:
-    case BUILT_IN_CHKP_NARROW_PTR_BOUNDS:
-    case BUILT_IN_CHKP_STORE_PTR_BOUNDS:
-    case BUILT_IN_CHKP_GET_PTR_LBOUND:
-    case BUILT_IN_CHKP_GET_PTR_UBOUND:
-      /* We allow user CHKP builtins if Pointer Bounds
-	 Checker is off.  */
-      if (!chkp_function_instrumented_p (current_function_decl))
-	{
-	  if (fcode == BUILT_IN_CHKP_SET_PTR_BOUNDS
-	      || fcode == BUILT_IN_CHKP_NARROW_PTR_BOUNDS
-	      || fcode == BUILT_IN_CHKP_INIT_PTR_BOUNDS
-	      || fcode == BUILT_IN_CHKP_NULL_PTR_BOUNDS
-	      || fcode == BUILT_IN_CHKP_COPY_PTR_BOUNDS)
-	    return expand_normal (CALL_EXPR_ARG (exp, 0));
-	  else if (fcode == BUILT_IN_CHKP_GET_PTR_LBOUND)
-	    return expand_normal (size_zero_node);
-	  else if (fcode == BUILT_IN_CHKP_GET_PTR_UBOUND)
-	    return expand_normal (size_int (-1));
-	  else
-	    return const0_rtx;
-	}
-      /* FALLTHROUGH */
-
-    case BUILT_IN_CHKP_BNDMK:
-    case BUILT_IN_CHKP_BNDSTX:
-    case BUILT_IN_CHKP_BNDCL:
-    case BUILT_IN_CHKP_BNDCU:
-    case BUILT_IN_CHKP_BNDLDX:
-    case BUILT_IN_CHKP_BNDRET:
-    case BUILT_IN_CHKP_INTERSECT:
-    case BUILT_IN_CHKP_NARROW:
-    case BUILT_IN_CHKP_EXTRACT_LOWER:
-    case BUILT_IN_CHKP_EXTRACT_UPPER:
-      /* Software implementation of Pointer Bounds Checker is NYI.
-	 Target support is required.  */
-      error ("Your target platform does not support -fcheck-pointer-bounds");
-      break;
-
     case BUILT_IN_ACC_ON_DEVICE:
       /* Do library call, if we failed to expand the builtin when
 	 folding.  */
@@ -7902,70 +7734,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
      to be called normally.  */
   return expand_call (exp, target, ignore);
 }
-
-/* Similar to expand_builtin but is used for instrumented calls.  */
-
-rtx
-expand_builtin_with_bounds (tree exp, rtx target,
-			    rtx subtarget ATTRIBUTE_UNUSED,
-			    machine_mode mode, int ignore)
-{
-  tree fndecl = get_callee_fndecl (exp);
-  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
-
-  gcc_assert (CALL_WITH_BOUNDS_P (exp));
-
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    return targetm.expand_builtin (exp, target, subtarget, mode, ignore);
-
-  gcc_assert (fcode > BEGIN_CHKP_BUILTINS
-	      && fcode < END_CHKP_BUILTINS);
-
-  switch (fcode)
-    {
-    case BUILT_IN_CHKP_MEMCPY_NOBND_NOCHK_CHKP:
-      target = expand_builtin_memcpy_with_bounds (exp, target);
-      if (target)
-	return target;
-      break;
-
-    case BUILT_IN_CHKP_MEMPCPY_NOBND_NOCHK_CHKP:
-      target = expand_builtin_mempcpy_with_bounds (exp, target);
-      if (target)
-	return target;
-      break;
-
-    case BUILT_IN_CHKP_MEMSET_NOBND_NOCHK_CHKP:
-      target = expand_builtin_memset_with_bounds (exp, target, mode);
-      if (target)
-	return target;
-      break;
-
-    case BUILT_IN_MEMCPY_CHKP:
-    case BUILT_IN_MEMMOVE_CHKP:
-    case BUILT_IN_MEMPCPY_CHKP:
-      if (call_expr_nargs (exp) > 3)
-	{
-	  /* memcpy_chkp (void *dst, size_t dstbnd,
-	                  const void *src, size_t srcbnd, size_t n)
-  	     and others take a pointer bound argument just after each
-	     pointer argument.  */
-	  tree dest = CALL_EXPR_ARG (exp, 0);
-	  tree src = CALL_EXPR_ARG (exp, 2);
-	  tree len = CALL_EXPR_ARG (exp, 4);
-
-	  check_memop_access (exp, dest, src, len);
-	  break;
-	}
-
-    default:
-      break;
-    }
-
-  /* The switch statement above can drop through to cause the function
-     to be called normally.  */
-  return expand_call (exp, target, ignore);
- }
 
 /* Determine whether a tree node represents a call to a built-in
    function.  If the tree T is a call to a built-in function with

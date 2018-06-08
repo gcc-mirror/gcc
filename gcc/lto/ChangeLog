@@ -1,3 +1,11 @@
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (add_references_to_partition): Remove support
+	for MPX (macros, related functions, fields in cgraph_node, ...).
+	(add_symbol_to_partition_1): Likewise.
+	(privatize_symbol_name): Likewise.
+	* lto-symtab.c (lto_cgraph_replace_node): Likewise.
+
 2018-06-05  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (cmp_type_location): Expand locations only once.

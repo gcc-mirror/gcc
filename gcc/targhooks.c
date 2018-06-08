@@ -2222,53 +2222,6 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   return build_va_arg_indirect_ref (addr);
 }
 
-tree
-default_chkp_bound_type (void)
-{
-  tree res = make_node (POINTER_BOUNDS_TYPE);
-  TYPE_PRECISION (res) = TYPE_PRECISION (size_type_node) * 2;
-  TYPE_NAME (res) = get_identifier ("__bounds_type");
-  SET_TYPE_MODE (res, targetm.chkp_bound_mode ());
-  layout_type (res);
-  return res;
-}
-
-machine_mode
-default_chkp_bound_mode (void)
-{
-  return VOIDmode;
-}
-
-tree
-default_builtin_chkp_function (unsigned int fcode ATTRIBUTE_UNUSED)
-{
-  return NULL_TREE;
-}
-
-rtx
-default_chkp_function_value_bounds (const_tree ret_type ATTRIBUTE_UNUSED,
-				    const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
-				    bool outgoing ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-}
-
-tree
-default_chkp_make_bounds_constant (HOST_WIDE_INT lb ATTRIBUTE_UNUSED,
-				   HOST_WIDE_INT ub ATTRIBUTE_UNUSED)
-{
-  return NULL_TREE;
-}
-
-int
-default_chkp_initialize_bounds (tree var ATTRIBUTE_UNUSED,
-				tree lb ATTRIBUTE_UNUSED,
-				tree ub ATTRIBUTE_UNUSED,
-				tree *stmts ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
 void
 default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE_UNUSED,
 				      machine_mode mode ATTRIBUTE_UNUSED,

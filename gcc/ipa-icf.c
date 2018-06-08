@@ -1220,8 +1220,7 @@ sem_function::merge (sem_item *alias_item)
 	 are not interposable.  */
       redirect_callers
 	= alias->get_availability () > AVAIL_INTERPOSABLE
-	  && original->get_availability () > AVAIL_INTERPOSABLE
-	  && !alias->instrumented_version;
+	  && original->get_availability () > AVAIL_INTERPOSABLE;
       /* TODO: We can redirect, but we need to produce alias of ORIGINAL
 	 with proper properties.  */
       if (!sem_item::compare_referenced_symbol_properties (NULL, original, alias,

@@ -157,7 +157,6 @@ target_libraries="target-libgcc \
 		target-libstdc++-v3 \
 		target-libsanitizer \
 		target-libvtv \
-		target-libmpx \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
@@ -600,22 +599,6 @@ if test -d ${srcdir}/libvtv; then
     fi
 fi
 
-
-# Enable libmpx on supported systems by request.
-if test -d ${srcdir}/libmpx; then
-    if test x$enable_libmpx = x; then
-       AC_MSG_CHECKING([for libmpx support])
-       if (srcdir=${srcdir}/libmpx; \
-               . ${srcdir}/configure.tgt; \
-               test "$LIBMPX_SUPPORTED" != "yes")
-       then
-           AC_MSG_RESULT([no])
-           noconfigdirs="$noconfigdirs target-libmpx"
-       else
-           AC_MSG_RESULT([yes])
-       fi
-    fi
-fi
 
 # Disable libhsail-rt on unsupported systems.
 if test -d ${srcdir}/libhsail-rt; then
@@ -2694,16 +2677,6 @@ fi
 if echo " ${target_configdirs} " | grep " libvtv " > /dev/null 2>&1 &&
    test "$enable_vtable_verify" != no; then
   bootstrap_target_libs=${bootstrap_target_libs}target-libvtv,
-fi
-
-# If we are building libmpx and $BUILD_CONFIG contains bootstrap-mpx,
-# bootstrap it.
-if echo " ${target_configdirs} " | grep " libmpx " > /dev/null 2>&1; then
-  case "$BUILD_CONFIG" in
-    *bootstrap-mpx* )
-      bootstrap_target_libs=${bootstrap_target_libs}target-libmpx,
-      ;;
-  esac
 fi
 
 # Determine whether gdb needs tk/tcl or not.

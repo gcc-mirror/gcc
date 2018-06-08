@@ -2712,13 +2712,6 @@ early_inliner (function *fun)
     node->verify ();
   node->remove_all_references ();
 
-  /* Rebuild this reference because it dosn't depend on
-     function's body and it's required to pass cgraph_node
-     verification.  */
-  if (node->instrumented_version
-      && !node->instrumentation_clone)
-    node->create_reference (node->instrumented_version, IPA_REF_CHKP, NULL);
-
   /* Even when not optimizing or not inlining inline always-inline
      functions.  */
   inlined = inline_always_inline_functions (node);

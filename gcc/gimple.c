@@ -385,7 +385,6 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
   gimple_call_set_nothrow (call, TREE_NOTHROW (t));
   gimple_call_set_by_descriptor (call, CALL_EXPR_BY_DESCRIPTOR (t));
   gimple_set_no_warning (call, TREE_NO_WARNING (t));
-  gimple_call_set_with_bounds (call, CALL_WITH_BOUNDS_P (t));
 
   if (fnptrtype)
     {

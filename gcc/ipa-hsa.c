@@ -113,7 +113,7 @@ process_hsa_functions (void)
 	  TREE_PUBLIC (clone->decl) = TREE_PUBLIC (node->decl);
 	  clone->externally_visible = node->externally_visible;
 
-	  if (!cgraph_local_p (node))
+	  if (!node->local.local)
 	    clone->force_output = true;
 	  hsa_summaries->link_functions (clone, node, HSA_FUNCTION, false);
 
