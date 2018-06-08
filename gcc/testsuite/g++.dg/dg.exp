@@ -18,7 +18,6 @@
 
 # Load support procs.
 load_lib g++-dg.exp
-load_lib mpx-dg.exp
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CXXFLAGS

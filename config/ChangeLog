@@ -1,3 +1,7 @@
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
+	* bootstrap-mpx.mk: Remove.
+
 2018-05-10  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/64914

@@ -115,8 +115,7 @@ add_references_to_partition (ltrans_partition part, symtab_node *node)
        references, too.  */
     else if (is_a <varpool_node *> (ref->referred)
 	     && (dyn_cast <varpool_node *> (ref->referred)
-		 ->ctor_useable_for_folding_p ()
-		 || POINTER_BOUNDS_P (ref->referred->decl))
+		 ->ctor_useable_for_folding_p ())
 	     && !lto_symtab_encoder_in_partition_p (part->encoder, ref->referred))
       {
 	if (!part->initializers_visited)
@@ -185,11 +184,6 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
       for (e = cnode->callers; e; e = e->next_caller)
 	if (e->caller->thunk.thunk_p && !e->caller->global.inlined_to)
 	  add_symbol_to_partition_1 (part, e->caller);
-
-      /* Instrumented version is actually the same function.
-	 Therefore put it into the same partition.  */
-      if (cnode->instrumented_version)
-	add_symbol_to_partition_1 (part, cnode->instrumented_version);
     }
 
   add_references_to_partition (part, node);
@@ -1002,30 +996,6 @@ privatize_symbol_name (symtab_node *node)
 {
   if (!privatize_symbol_name_1 (node, node->decl))
     return false;
-
-  /* We could change name which is a target of transparent alias
-     chain of instrumented function name.  Fix alias chain if so  .*/
-  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
-    {
-      tree iname = NULL_TREE;
-      if (cnode->instrumentation_clone)
-	{
-	  /* If we want to privatize instrumentation clone
-	     then we also need to privatize original function.  */
-	  if (cnode->instrumented_version)
-	    privatize_symbol_name (cnode->instrumented_version);
-	  else
-	    privatize_symbol_name_1 (cnode, cnode->orig_decl);
-	  iname = DECL_ASSEMBLER_NAME (cnode->decl);
-	  TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (cnode->orig_decl);
-	}
-      else if (cnode->instrumented_version
-	       && cnode->instrumented_version->orig_decl == cnode->decl)
-	{
-	  iname = DECL_ASSEMBLER_NAME (cnode->instrumented_version->decl);
-	  TREE_CHAIN (iname) = DECL_ASSEMBLER_NAME (cnode->decl);
-	}
-    }
 
   return true;
 }

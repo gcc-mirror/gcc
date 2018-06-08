@@ -1377,10 +1377,6 @@ make_decl_rtl (tree decl)
     }
 
   id = DECL_ASSEMBLER_NAME (decl);
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && cgraph_node::get (decl)
-      && cgraph_node::get (decl)->instrumentation_clone)
-    ultimate_transparent_alias_target (&id);
   name = IDENTIFIER_POINTER (id);
 
   if (name[0] != '*' && TREE_CODE (decl) != FUNCTION_DECL
@@ -1832,10 +1828,7 @@ assemble_start_function (tree decl, const char *fnname)
 
   /* Make function name accessible from other files, if appropriate.  */
 
-  if (TREE_PUBLIC (decl)
-      || (cgraph_node::get (decl)->instrumentation_clone
-	  && cgraph_node::get (decl)->instrumented_version
-	  && TREE_PUBLIC (cgraph_node::get (decl)->instrumented_version->decl)))
+  if (TREE_PUBLIC (decl))
     {
       notice_global_symbol (decl);
 
@@ -4912,7 +4905,6 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
     case FIXED_POINT_TYPE:
-    case POINTER_BOUNDS_TYPE:
     case NULLPTR_TYPE:
       cst = expand_expr (exp, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
       if (reverse)
@@ -5821,11 +5813,6 @@ do_assemble_alias (tree decl, tree target)
 #ifdef ASM_OUTPUT_DEF
   tree orig_decl = decl;
 
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && cgraph_node::get (decl)->instrumentation_clone
-      && cgraph_node::get (decl)->instrumented_version)
-    orig_decl = cgraph_node::get (decl)->instrumented_version->decl;
-
   /* Make name accessible from other files, if appropriate.  */
 
   if (TREE_PUBLIC (decl) || TREE_PUBLIC (orig_decl))
@@ -6150,13 +6137,6 @@ int
 maybe_assemble_visibility (tree decl)
 {
   enum symbol_visibility vis = DECL_VISIBILITY (decl);
-
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && cgraph_node::get (decl)
-      && cgraph_node::get (decl)->instrumentation_clone
-      && cgraph_node::get (decl)->instrumented_version)
-    vis = DECL_VISIBILITY (cgraph_node::get (decl)->instrumented_version->decl);
-
   if (vis != VISIBILITY_DEFAULT)
     {
       targetm.asm_out.assemble_visibility (decl, vis);

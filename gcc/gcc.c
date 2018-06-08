@@ -1012,10 +1012,6 @@ proper position among the other output files.  */
 #endif
 #endif
 
-#ifndef CHKP_SPEC
-#define CHKP_SPEC ""
-#endif
-
 /* -u* was put back because both BSD and SysV seem to support it.  */
 /* %{static|no-pie|static-pie:} simply prevents an error message:
    1. If the target machine doesn't handle -static.
@@ -1039,7 +1035,7 @@ proper position among the other output files.  */
    "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} \
     %{static|no-pie|static-pie:} %{L*} %(mfwrap) %(link_libgcc) " \
-    VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o " CHKP_SPEC " \
+    VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o "" \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
 	%:include(libgomp.spec)%(link_gomp)}\
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\

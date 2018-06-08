@@ -58,8 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-outof-ssa.h"
 #include "tree-ssa-address.h"
 #include "builtins.h"
-#include "tree-chkp.h"
-#include "rtl-chkp.h"
 #include "ccmp.h"
 #include "rtx-vector-builder.h"
 
@@ -5283,13 +5281,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    || TREE_CODE (to) == SSA_NAME))
     {
       rtx value;
-      rtx bounds;
 
       push_temp_slots ();
       value = expand_normal (from);
-
-      /* Split value and bounds to store them separately.  */
-      chkp_split_slot (value, &value, &bounds);
 
       if (to_rtx == 0)
 	to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_WRITE);
@@ -5323,14 +5317,6 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	       TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (to))));
 
 	  emit_move_insn (to_rtx, value);
-	}
-
-      /* Store bounds if required.  */
-      if (bounds
-	  && (BOUNDED_P (to) || chkp_type_has_pointer (TREE_TYPE (to))))
-	{
-	  gcc_assert (MEM_P (to_rtx));
-	  chkp_emit_bounds_store (bounds, value, to_rtx);
 	}
 
       preserve_temp_slots (to_rtx);
@@ -5403,7 +5389,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
   /* Compute FROM and store the value in the rtx we got.  */
 
   push_temp_slots ();
-  result = store_expr_with_bounds (from, to_rtx, 0, nontemporal, false, to);
+  result = store_expr (from, to_rtx, 0, nontemporal, false);
   preserve_temp_slots (result);
   pop_temp_slots ();
   return;
@@ -5442,14 +5428,11 @@ emit_storent_insn (rtx to, rtx from)
 
    If NONTEMPORAL is true, try using a nontemporal store instruction.
 
-   If REVERSE is true, the store is to be done in reverse order.
-
-   If BTARGET is not NULL then computed bounds of EXP are
-   associated with BTARGET.  */
+   If REVERSE is true, the store is to be done in reverse order.  */
 
 rtx
-store_expr_with_bounds (tree exp, rtx target, int call_param_p,
-			bool nontemporal, bool reverse, tree btarget)
+store_expr (tree exp, rtx target, int call_param_p,
+			bool nontemporal, bool reverse)
 {
   rtx temp;
   rtx alt_rtl = NULL_RTX;
@@ -5470,9 +5453,8 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
 	 part.  */
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
 		   call_param_p ? EXPAND_STACK_PARM : EXPAND_NORMAL);
-      return store_expr_with_bounds (TREE_OPERAND (exp, 1), target,
-				     call_param_p, nontemporal, reverse,
-				     btarget);
+      return store_expr (TREE_OPERAND (exp, 1), target,
+				     call_param_p, nontemporal, reverse);
     }
   else if (TREE_CODE (exp) == COND_EXPR && GET_MODE (target) == BLKmode)
     {
@@ -5487,13 +5469,13 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1,
 		 profile_probability::uninitialized ());
-      store_expr_with_bounds (TREE_OPERAND (exp, 1), target, call_param_p,
-			      nontemporal, reverse, btarget);
+      store_expr (TREE_OPERAND (exp, 1), target, call_param_p,
+		  nontemporal, reverse);
       emit_jump_insn (targetm.gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
-      store_expr_with_bounds (TREE_OPERAND (exp, 2), target, call_param_p,
-			      nontemporal, reverse, btarget);
+      store_expr (TREE_OPERAND (exp, 2), target, call_param_p,
+		  nontemporal, reverse);
       emit_label (lab2);
       OK_DEFER_POP;
 
@@ -5546,18 +5528,6 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
       temp = expand_expr (exp, inner_target, VOIDmode,
 			  call_param_p ? EXPAND_STACK_PARM : EXPAND_NORMAL);
 
-      /* Handle bounds returned by call.  */
-      if (TREE_CODE (exp) == CALL_EXPR)
-	{
-	  rtx bounds;
-	  chkp_split_slot (temp, &temp, &bounds);
-	  if (bounds && btarget)
-	    {
-	      gcc_assert (TREE_CODE (btarget) == SSA_NAME);
-	      rtx tmp = targetm.calls.load_returned_bounds (bounds);
-	      chkp_set_rtl_bounds (btarget, tmp);
-	    }
-	}
 
       /* If TEMP is a VOIDmode constant, use convert_modes to make
 	 sure that we properly convert it.  */
@@ -5639,19 +5609,6 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
 			       (call_param_p
 				? EXPAND_STACK_PARM : EXPAND_NORMAL),
 			       &alt_rtl, false);
-
-      /* Handle bounds returned by call.  */
-      if (TREE_CODE (exp) == CALL_EXPR)
-	{
-	  rtx bounds;
-	  chkp_split_slot (temp, &temp, &bounds);
-	  if (bounds && btarget)
-	    {
-	      gcc_assert (TREE_CODE (btarget) == SSA_NAME);
-	      rtx tmp = targetm.calls.load_returned_bounds (bounds);
-	      chkp_set_rtl_bounds (btarget, tmp);
-	    }
-	}
     }
 
   /* If TEMP is a VOIDmode constant and the mode of the type of EXP is not
@@ -5830,15 +5787,6 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
     }
 
   return NULL_RTX;
-}
-
-/* Same as store_expr_with_bounds but ignoring bounds of EXP.  */
-rtx
-store_expr (tree exp, rtx target, int call_param_p, bool nontemporal,
-	    bool reverse)
-{
-  return store_expr_with_bounds (exp, target, call_param_p, nontemporal,
-				 reverse, NULL);
 }
 
 /* Return true if field F of structure TYPE is a flexible array.  */
@@ -10954,11 +10902,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (fndecl && DECL_BUILT_IN (fndecl))
 	  {
 	    gcc_assert (DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_FRONTEND);
-	    if (CALL_WITH_BOUNDS_P (exp))
-	      return expand_builtin_with_bounds (exp, target, subtarget,
-						 tmode, ignore);
-	    else
-	      return expand_builtin (exp, target, subtarget, tmode, ignore);
+	    return expand_builtin (exp, target, subtarget, tmode, ignore);
 	  }
       }
       return expand_call (exp, target, ignore);

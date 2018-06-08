@@ -1,3 +1,34 @@
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Remove MPX-related entries.
+	* Makefile.def: Remove libmpx support.
+	* Makefile.in: Likewise.
+	* configure: Remove removed files.
+	* configure.ac: Likewise.
+	* libmpx/ChangeLog: Remove.
+	* libmpx/Makefile.am: Remove.
+	* libmpx/Makefile.in: Remove.
+	* libmpx/acinclude.m4: Remove.
+	* libmpx/aclocal.m4: Remove.
+	* libmpx/config.h.in: Remove.
+	* libmpx/configure: Remove.
+	* libmpx/configure.ac: Remove.
+	* libmpx/configure.tgt: Remove.
+	* libmpx/libmpx.spec.in: Remove.
+	* libmpx/mpxrt/Makefile.am: Remove.
+	* libmpx/mpxrt/Makefile.in: Remove.
+	* libmpx/mpxrt/libmpx.map: Remove.
+	* libmpx/mpxrt/libtool-version: Remove.
+	* libmpx/mpxrt/mpxrt-utils.c: Remove.
+	* libmpx/mpxrt/mpxrt-utils.h: Remove.
+	* libmpx/mpxrt/mpxrt.c: Remove.
+	* libmpx/mpxrt/mpxrt.h: Remove.
+	* libmpx/mpxwrap/Makefile.am: Remove.
+	* libmpx/mpxwrap/Makefile.in: Remove.
+	* libmpx/mpxwrap/libmpxwrappers.map: Remove.
+	* libmpx/mpxwrap/libtool-version: Remove.
+	* libmpx/mpxwrap/mpx_wrappers.c: Remove.
+
 2018-06-04  Martin Liska  <mliska@suse.cz>
 
 	* MAINTAINERS: Add myself as gcov maintainer.

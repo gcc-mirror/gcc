@@ -117,8 +117,6 @@ void
 pass_manager::execute_early_local_passes ()
 {
   execute_pass_list (cfun, pass_build_ssa_passes_1->sub);
-  if (flag_check_pointer_bounds)
-    execute_pass_list (cfun, pass_chkp_instrumentation_passes_1->sub);
   execute_pass_list (cfun, pass_local_optimization_passes_1->sub);
 }
 
@@ -432,36 +430,6 @@ public:
 
 }; // class pass_build_ssa_passes
 
-const pass_data pass_data_chkp_instrumentation_passes =
-{
-  SIMPLE_IPA_PASS, /* type */
-  "chkp_passes", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_chkp_instrumentation_passes : public simple_ipa_opt_pass
-{
-public:
-  pass_chkp_instrumentation_passes (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_chkp_instrumentation_passes, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *)
-    {
-      /* Don't bother doing anything if the program has errors.  */
-      return (flag_check_pointer_bounds
-	      && !seen_error () && !in_lto_p);
-    }
-
-}; // class pass_chkp_instrumentation_passes
-
 const pass_data pass_data_local_optimization_passes =
 {
   SIMPLE_IPA_PASS, /* type */
@@ -497,12 +465,6 @@ simple_ipa_opt_pass *
 make_pass_build_ssa_passes (gcc::context *ctxt)
 {
   return new pass_build_ssa_passes (ctxt);
-}
-
-simple_ipa_opt_pass *
-make_pass_chkp_instrumentation_passes (gcc::context *ctxt)
-{
-  return new pass_chkp_instrumentation_passes (ctxt);
 }
 
 simple_ipa_opt_pass *

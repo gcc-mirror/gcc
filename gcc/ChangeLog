@@ -1,3 +1,295 @@
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Remove support for MPX (macros, related functions,
+	fields in cgraph_node, ...).
+	* builtin-types.def (BT_BND): Likewise.
+	(BT_FN_BND_CONST_PTR): Likewise.
+	(BT_FN_CONST_PTR_BND): Likewise.
+	(BT_FN_VOID_PTR_BND): Likewise.
+	(BT_FN_BND_CONST_PTR_SIZE): Likewise.
+	(BT_FN_VOID_CONST_PTR_BND_CONST_PTR): Likewise.
+	* builtins.c (expand_builtin_memcpy_with_bounds): Likewise.
+	(expand_builtin_mempcpy_with_bounds): Likewise.
+	(expand_builtin_memset_with_bounds): Likewise.
+	(expand_builtin_memset_args): Likewise.
+	(std_expand_builtin_va_start): Likewise.
+	(expand_builtin): Likewise.
+	(expand_builtin_with_bounds): Likewise.
+	* builtins.def (DEF_BUILTIN_CHKP): Likewise.
+	(DEF_LIB_BUILTIN_CHKP): Likewise.
+	(DEF_EXT_LIB_BUILTIN_CHKP): Likewise.
+	(DEF_CHKP_BUILTIN): Likewise.
+	(BUILT_IN_MEMCPY): Likewise.
+	(BUILT_IN_MEMMOVE): Likewise.
+	(BUILT_IN_MEMPCPY): Likewise.
+	(BUILT_IN_MEMSET): Likewise.
+	(BUILT_IN_STPCPY): Likewise.
+	(BUILT_IN_STRCAT): Likewise.
+	(BUILT_IN_STRCHR): Likewise.
+	(BUILT_IN_STRCPY): Likewise.
+	(BUILT_IN_STRLEN): Likewise.
+	(BUILT_IN_MEMCPY_CHK): Likewise.
+	(BUILT_IN_MEMMOVE_CHK): Likewise.
+	(BUILT_IN_MEMPCPY_CHK): Likewise.
+	(BUILT_IN_MEMSET_CHK): Likewise.
+	(BUILT_IN_STPCPY_CHK): Likewise.
+	(BUILT_IN_STRCAT_CHK): Likewise.
+	(BUILT_IN_STRCPY_CHK): Likewise.
+	* calls.c (store_bounds): Likewise.
+	(emit_call_1): Likewise.
+	(special_function_p): Likewise.
+	(maybe_warn_nonstring_arg): Likewise.
+	(initialize_argument_information): Likewise.
+	(finalize_must_preallocate): Likewise.
+	(compute_argument_addresses): Likewise.
+	(expand_call): Likewise.
+	* cfgexpand.c (expand_call_stmt): Likewise.
+	(expand_return): Likewise.
+	(expand_gimple_stmt_1): Likewise.
+	(pass_expand::execute): Likewise.
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Likewise.
+	(cgraph_node::remove): Likewise.
+	(cgraph_node::dump): Likewise.
+	(cgraph_node::verify_node): Likewise.
+	* cgraph.h (chkp_function_instrumented_p): Likewise.
+	(symtab_node::get_alias_target): Likewise.
+	(cgraph_node::can_remove_if_no_direct_calls_and_refs_p): Likewise.
+	(cgraph_local_p): Likewise.
+	* cgraphbuild.c (cgraph_edge::rebuild_edges): Likewise.
+	(cgraph_edge::rebuild_references): Likewise.
+	* cgraphunit.c (varpool_node::finalize_decl): Likewise.
+	(walk_polymorphic_call_targets): Likewise.
+	(cgraph_node::expand_thunk): Likewise.
+	(symbol_table::output_weakrefs): Likewise.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET): Likewise.
+	(ix86_handle_option): Likewise.
+	* config/i386/constraints.md: Likewise.
+	* config/i386/i386-builtin-types.def (BND): Likewise.
+	(VOID): Likewise.
+	(PVOID): Likewise.
+	(ULONG): Likewise.
+	* config/i386/i386-builtin.def (BDESC_END): Likewise.
+	(BDESC_FIRST): Likewise.
+	(BDESC): Likewise.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Likewise.
+	* config/i386/i386-protos.h (ix86_bnd_prefixed_insn_p): Likewise.
+	* config/i386/i386.c (enum reg_class): Likewise.
+	(ix86_target_string): Likewise.
+	(ix86_option_override_internal): Likewise.
+	(ix86_conditional_register_usage): Likewise.
+	(ix86_valid_target_attribute_inner_p): Likewise.
+	(ix86_set_indirect_branch_type): Likewise.
+	(ix86_set_current_function): Likewise.
+	(ix86_function_arg_regno_p): Likewise.
+	(init_cumulative_args): Likewise.
+	(ix86_function_arg_advance): Likewise.
+	(ix86_function_arg): Likewise.
+	(ix86_pass_by_reference): Likewise.
+	(ix86_function_value_regno_p): Likewise.
+	(ix86_function_value_1): Likewise.
+	(ix86_function_value_bounds): Likewise.
+	(ix86_return_in_memory): Likewise.
+	(ix86_setup_incoming_vararg_bounds): Likewise.
+	(ix86_va_start): Likewise.
+	(indirect_thunk_need_prefix): Likewise.
+	(print_reg): Likewise.
+	(ix86_print_operand): Likewise.
+	(ix86_expand_call): Likewise.
+	(ix86_output_function_return): Likewise.
+	(reg_encoded_number): Likewise.
+	(BDESC_VERIFYS): Likewise.
+	(ix86_init_mpx_builtins): Likewise.
+	(ix86_init_builtins): Likewise.
+	(ix86_emit_cmove): Likewise.
+	(ix86_emit_move_max): Likewise.
+	(ix86_expand_builtin): Likewise.
+	(ix86_builtin_mpx_function): Likewise.
+	(ix86_get_arg_address_for_bt): Likewise.
+	(ix86_load_bounds): Likewise.
+	(ix86_store_bounds): Likewise.
+	(ix86_load_returned_bounds): Likewise.
+	(ix86_store_returned_bounds): Likewise.
+	(ix86_class_likely_spilled_p): Likewise.
+	(ix86_hard_regno_mode_ok): Likewise.
+	(x86_order_regs_for_local_alloc): Likewise.
+	(ix86_mitigate_rop): Likewise.
+	(ix86_bnd_prefixed_insn_p): Likewise.
+	(ix86_mpx_bound_mode): Likewise.
+	(ix86_make_bounds_constant): Likewise.
+	(ix86_initialize_bounds): Likewise.
+	(TARGET_LOAD_BOUNDS_FOR_ARG): Likewise.
+	(TARGET_STORE_BOUNDS_FOR_ARG): Likewise.
+	(TARGET_LOAD_RETURNED_BOUNDS): Likewise.
+	(TARGET_STORE_RETURNED_BOUNDS): Likewise.
+	(TARGET_CHKP_BOUND_MODE): Likewise.
+	(TARGET_BUILTIN_CHKP_FUNCTION): Likewise.
+	(TARGET_CHKP_FUNCTION_VALUE_BOUNDS): Likewise.
+	(TARGET_CHKP_MAKE_BOUNDS_CONSTANT): Likewise.
+	(TARGET_CHKP_INITIALIZE_BOUNDS): Likewise.
+	* config/i386/i386.h (TARGET_MPX): Likewise.
+	(TARGET_MPX_P): Likewise.
+	(VALID_BND_REG_MODE): Likewise.
+	(FIRST_BND_REG): Likewise.
+	(LAST_BND_REG): Likewise.
+	(enum reg_class): Likewise.
+	(BND_REG_P): Likewise.
+	(BND_REGNO_P): Likewise.
+	(BNDmode): Likewise.
+	(ADJUST_INSN_LENGTH): Likewise.
+	* config/i386/i386.md: Likewise.
+	* config/i386/i386.opt: Likewise.
+	* config/i386/linux-common.h (LIBMPX_LIBS): Likewise.
+	(defined): Likewise.
+	(LINK_MPX): Likewise.
+	(MPX_SPEC): Likewise.
+	(LIBMPX_SPEC): Likewise.
+	(LIBMPXWRAPPERS_SPEC): Likewise.
+	(CHKP_SPEC): Likewise.
+	* config/i386/predicates.md: Likewise.
+	* dbxout.c (dbxout_type): Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/tm.texi.in: Likewise.
+	* dwarf2out.c (is_base_type): Likewise.
+	(gen_formal_types_die): Likewise.
+	(gen_subprogram_die): Likewise.
+	(gen_type_die_with_usage): Likewise.
+	(gen_decl_die): Likewise.
+	(dwarf2out_late_global_decl): Likewise.
+	* expr.c (expand_assignment): Likewise.
+	(emit_storent_insn): Likewise.
+	(store_expr_with_bounds): Likewise.
+	(store_expr): Likewise.
+	(expand_expr_real_1): Likewise.
+	* expr.h (store_expr_with_bounds): Likewise.
+	* function.c (use_register_for_decl): Likewise.
+	(struct bounds_parm_data): Likewise.
+	(assign_parms_augmented_arg_list): Likewise.
+	(assign_parm_find_entry_rtl): Likewise.
+	(assign_parm_is_stack_parm): Likewise.
+	(assign_parm_load_bounds): Likewise.
+	(assign_bounds): Likewise.
+	(assign_parms): Likewise.
+	(expand_function_start): Likewise.
+	* gcc.c (CHKP_SPEC): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Likewise.
+	* gimple-ssa-warn-restrict.c (builtin_access::builtin_access): Likewise.
+	(wrestrict_dom_walker::check_call): Likewise.
+	* gimple.c (gimple_build_call_from_tree): Likewise.
+	* gimple.h (enum gf_mask): Likewise.
+	(gimple_call_with_bounds_p): Likewise.
+	(gimple_call_set_with_bounds): Likewise.
+	* gimplify.c (gimplify_init_constructor): Likewise.
+	* ipa-cp.c (initialize_node_lattices): Likewise.
+	(propagate_constants_across_call): Likewise.
+	(find_more_scalar_values_for_callers_subset): Likewise.
+	* ipa-hsa.c (process_hsa_functions): Likewise.
+	* ipa-icf-gimple.c (func_checker::compare_gimple_call): Likewise.
+	* ipa-icf.c (sem_function::merge): Likewise.
+	* ipa-inline.c (early_inliner): Likewise.
+	* ipa-pure-const.c (warn_function_noreturn): Likewise.
+	(warn_function_cold): Likewise.
+	(propagate_pure_const): Likewise.
+	* ipa-ref.h (enum GTY): Likewise.
+	* ipa-split.c (find_retbnd): Likewise.
+	(consider_split): Likewise.
+	(split_function): Likewise.
+	* ipa-visibility.c (cgraph_externally_visible_p): Likewise.
+	* ipa.c (walk_polymorphic_call_targets): Likewise.
+	(symbol_table::remove_unreachable_nodes): Likewise.
+	(process_references): Likewise.
+	(cgraph_build_static_cdtor_1): Likewise.
+	* lto-cgraph.c (lto_output_node): Likewise.
+	(output_refs): Likewise.
+	(compute_ltrans_boundary): Likewise.
+	(input_overwrite_node): Likewise.
+	(input_node): Likewise.
+	(input_cgraph_1): Likewise.
+	* params.def (PARAM_CHKP_MAX_CTOR_SIZE): Likewise.
+	* passes.c (pass_manager::execute_early_local_passes): Likewise.
+	(class pass_chkp_instrumentation_passes): Likewise.
+	(make_pass_chkp_instrumentation_passes): Likewise.
+	* passes.def: Likewise.
+	* rtl.h (struct GTY): Likewise.
+	(CALL_EXPR_WITH_BOUNDS_P): Likewise.
+	* stor-layout.c (layout_type): Likewise.
+	* symtab.c: Likewise.
+	* target.def: Likewise.
+	* targhooks.c (default_chkp_bound_type): Likewise.
+	(default_chkp_bound_mode): Likewise.
+	(default_builtin_chkp_function): Likewise.
+	(default_chkp_function_value_bounds): Likewise.
+	(default_chkp_make_bounds_constant): Likewise.
+	(default_chkp_initialize_bounds): Likewise.
+	* targhooks.h (default_chkp_bound_type): Likewise.
+	(default_chkp_bound_mode): Likewise.
+	(default_builtin_chkp_function): Likewise.
+	(default_chkp_function_value_bounds): Likewise.
+	(default_chkp_make_bounds_constant): Likewise.
+	(default_chkp_initialize_bounds): Likewise.
+	* toplev.c (compile_file): Likewise.
+	(process_options): Likewise.
+	* tree-core.h (DEF_BUILTIN): Likewise.
+	(DEF_BUILTIN_CHKP): Likewise.
+	* tree-inline.c (declare_return_variable): Likewise.
+	(remap_gimple_stmt): Likewise.
+	(copy_bb): Likewise.
+	(initialize_inlined_parameters): Likewise.
+	(expand_call_inline): Likewise.
+	* tree-pass.h (make_pass_ipa_chkp_versioning): Likewise.
+	(make_pass_ipa_chkp_early_produce_thunks): Likewise.
+	(make_pass_ipa_chkp_produce_thunks): Likewise.
+	(make_pass_chkp): Likewise.
+	(make_pass_chkp_opt): Likewise.
+	(make_pass_chkp_instrumentation_passes): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-ccp.c (insert_clobber_before_stack_restore): Likewise.
+	* tree-ssa-dce.c (propagate_necessity): Likewise.
+	(eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-pre.c (create_expression_by_pieces): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_call): Likewise.
+	* tree-ssa-sccvn.h: Likewise.
+	* tree-ssa-strlen.c (get_string_length): Likewise.
+	(valid_builtin_call): Likewise.
+	(adjust_last_stmt): Likewise.
+	(handle_builtin_strchr): Likewise.
+	(handle_builtin_strcpy): Likewise.
+	(handle_builtin_stxncpy): Likewise.
+	(handle_builtin_memcpy): Likewise.
+	(handle_builtin_strcat): Likewise.
+	(strlen_check_and_optimize_stmt): Likewise.
+	* tree-stdarg.c (expand_ifn_va_arg_1): Likewise.
+	* tree-streamer-in.c: Likewise.
+	* tree-streamer.c (record_common_node): Likewise.
+	* tree.c (tree_code_size): Likewise.
+	(wide_int_to_tree_1): Likewise.
+	(type_contains_placeholder_1): Likewise.
+	(build_common_tree_nodes): Likewise.
+	* tree.def (POINTER_BOUNDS_TYPE): Likewise.
+	* tree.h (POINTER_BOUNDS_TYPE_P): Likewise.
+	(POINTER_BOUNDS_P): Likewise.
+	(BOUNDED_TYPE_P): Likewise.
+	(BOUNDED_P): Likewise.
+	(CALL_WITH_BOUNDS_P): Likewise.
+	(pointer_bounds_type_node): Likewise.
+	* value-prof.c (gimple_ic): Likewise.
+	* var-tracking.c (vt_add_function_parameters): Likewise.
+	* varasm.c (make_decl_rtl): Likewise.
+	(assemble_start_function): Likewise.
+	(output_constant): Likewise.
+	(maybe_assemble_visibility): Likewise.
+	* varpool.c (ctor_for_folding): Likewise.
+	* chkp-builtins.def: Remove.
+	* ipa-chkp.c: Remove.
+	* ipa-chkp.h: Remove.
+	* rtl-chkp.c: Remove.
+	* rtl-chkp.h: Remove.
+	* tree-chkp-opt.c: Remove.
+	* tree-chkp.c: Remove.
+	* tree-chkp.h: Remove.
+
 2018-06-07  Carl Love  <cel@us.ibm.com>
 
 	* gcc/config/rs6000/vsx.md (vextract_fp_from_shorth,

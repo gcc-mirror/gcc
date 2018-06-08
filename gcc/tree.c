@@ -827,7 +827,6 @@ tree_code_size (enum tree_code code)
 	case UNION_TYPE:
 	case QUAL_UNION_TYPE:
 	case VOID_TYPE:
-	case POINTER_BOUNDS_TYPE:
 	case FUNCTION_TYPE:
 	case METHOD_TYPE:
 	case LANG_TYPE:		return sizeof (tree_type_non_common);
@@ -1508,7 +1507,6 @@ wide_int_to_tree_1 (tree type, const wide_int_ref &pcst)
 
 	case POINTER_TYPE:
 	case REFERENCE_TYPE:
-	case POINTER_BOUNDS_TYPE:
 	  /* Cache NULL pointer and zero bounds.  */
 	  if (hwi == 0)
 	    {
@@ -3783,7 +3781,6 @@ type_contains_placeholder_1 (const_tree type)
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
-    case POINTER_BOUNDS_TYPE:
     case COMPLEX_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
@@ -9909,8 +9906,6 @@ build_common_tree_nodes (bool signed_char)
 
   void_type_node = make_node (VOID_TYPE);
   layout_type (void_type_node);
-
-  pointer_bounds_type_node = targetm.chkp_bound_type ();
 
   /* We are not going to have real types in C with less than byte alignment,
      so we might as well not have any types that claim to have it.  */

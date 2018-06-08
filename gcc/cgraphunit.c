@@ -202,7 +202,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "tree-nested.h"
 #include "dbgcnt.h"
-#include "tree-chkp.h"
 #include "lto-section-names.h"
 #include "stringpool.h"
 #include "attribs.h"
@@ -865,9 +864,6 @@ varpool_node::finalize_decl (tree decl)
       || (node->no_reorder
 	  && symtab->state == EXPANSION))
     node->assemble_decl ();
-
-  if (DECL_INITIAL (decl))
-    chkp_register_var_initializer (decl);
 }
 
 /* EDGE is an polymorphic call.  Mark all possible targets as reachable
@@ -940,10 +936,6 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 
 	  edge->make_direct (target);
 	  edge->redirect_call_stmt_to_callee ();
-
-	  /* Call to __builtin_unreachable shouldn't be instrumented.  */
-	  if (!targets.length ())
-	    gimple_call_set_with_bounds (edge->call_stmt, false);
 
 	  if (symtab->dump_file)
 	    {
@@ -1924,7 +1916,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       callees->call_stmt = call;
       gimple_call_set_from_thunk (call, true);
-      gimple_call_set_with_bounds (call, instrumentation_clone);
 
       /* Return slot optimization is always possible and in fact requred to
          return values with DECL_BY_REFERENCE.  */
@@ -1942,17 +1933,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       gsi_insert_after (&bsi, call, GSI_NEW_STMT);
       if (!alias_is_noreturn)
 	{
-	  if (instrumentation_clone
-	      && !DECL_BY_REFERENCE (resdecl)
-	      && restmp
-	      && BOUNDED_P (restmp))
-	    {
-	      resbnd = chkp_insert_retbnd_call (NULL, restmp, &bsi);
-	      create_edge (get_create (gimple_call_fndecl (gsi_stmt (bsi))),
-			   as_a <gcall *> (gsi_stmt (bsi)),
-			   callees->count);
-	    }
-
 	  if (restmp && !this_adjusting
 	      && (fixed_offset || virtual_offset))
 	    {
@@ -2503,13 +2483,9 @@ void
 symbol_table::output_weakrefs (void)
 {
   symtab_node *node;
-  cgraph_node *cnode;
   FOR_EACH_SYMBOL (node)
     if (node->alias
         && !TREE_ASM_WRITTEN (node->decl)
-	&& (!(cnode = dyn_cast <cgraph_node *> (node))
-	    || !cnode->instrumented_version
-	    || !TREE_ASM_WRITTEN (cnode->instrumented_version->decl))
 	&& node->weakref)
       {
 	tree target;

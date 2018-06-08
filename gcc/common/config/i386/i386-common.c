@@ -273,7 +273,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AVX512F_UNSET \
   (OPTION_MASK_ISA_AVX5124FMAPS_UNSET | OPTION_MASK_ISA_AVX5124VNNIW_UNSET)
 #define OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET \
-  (OPTION_MASK_ISA2_AVX512F_UNSET | OPTION_MASK_ISA_MPX)
+  (OPTION_MASK_ISA2_AVX512F_UNSET)
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -291,7 +291,7 @@ ix86_handle_option (struct gcc_options *opts,
     case OPT_mgeneral_regs_only:
       if (value)
 	{
-	  /* Disable MPX, MMX, SSE and x87 instructions if only
+	  /* Disable MMX, SSE and x87 instructions if only
 	     general registers are allowed.  */
 	  opts->x_ix86_isa_flags
 	    &= ~OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;

@@ -4189,12 +4189,6 @@ VSIB address operand.
 @item Ts
 Address operand without segment register.
 
-@item Ti
-MPX address operand without index.
-
-@item Tb
-MPX address operand without base.
-
 @end table
 
 @item Xstormy16---@file{config/stormy16/stormy16.h}

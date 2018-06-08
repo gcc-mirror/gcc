@@ -589,20 +589,14 @@ builtin_access::builtin_access (gcall *call, builtin_memref &dst,
 
   /* The size argument number (depends on the built-in).  */
   unsigned sizeargno = 2;
-  if (gimple_call_with_bounds_p (call))
-    sizeargno += 2;
 
   tree func = gimple_call_fndecl (call);
   switch (DECL_FUNCTION_CODE (func))
     {
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMCPY_CHK:
-    case BUILT_IN_MEMCPY_CHKP:
-    case BUILT_IN_MEMCPY_CHK_CHKP:
     case BUILT_IN_MEMPCPY:
     case BUILT_IN_MEMPCPY_CHK:
-    case BUILT_IN_MEMPCPY_CHKP:
-    case BUILT_IN_MEMPCPY_CHK_CHKP:
       ostype = 0;
       depends_p = false;
       detect_overlap = &builtin_access::generic_overlap;
@@ -610,8 +604,6 @@ builtin_access::builtin_access (gcall *call, builtin_memref &dst,
 
     case BUILT_IN_MEMMOVE:
     case BUILT_IN_MEMMOVE_CHK:
-    case BUILT_IN_MEMMOVE_CHKP:
-    case BUILT_IN_MEMMOVE_CHK_CHKP:
       /* For memmove there is never any overlap to check for.  */
       ostype = 0;
       depends_p = false;
@@ -628,19 +620,13 @@ builtin_access::builtin_access (gcall *call, builtin_memref &dst,
 
     case BUILT_IN_STPCPY:
     case BUILT_IN_STPCPY_CHK:
-    case BUILT_IN_STPCPY_CHKP:
-    case BUILT_IN_STPCPY_CHK_CHKP:
     case BUILT_IN_STRCPY:
     case BUILT_IN_STRCPY_CHK:
-    case BUILT_IN_STRCPY_CHKP:
-    case BUILT_IN_STRCPY_CHK_CHKP:
       detect_overlap = &builtin_access::strcpy_overlap;
       break;
 
     case BUILT_IN_STRCAT:
     case BUILT_IN_STRCAT_CHK:
-    case BUILT_IN_STRCAT_CHKP:
-    case BUILT_IN_STRCAT_CHK_CHKP:
       detect_overlap = &builtin_access::strcat_overlap;
       break;
 
@@ -654,8 +640,7 @@ builtin_access::builtin_access (gcall *call, builtin_memref &dst,
     default:
       /* Handle other string functions here whose access may need
 	 to be validated for in-bounds offsets and non-overlapping
-	 copies.  (Not all _chkp functions have BUILT_IN_XXX_CHKP
-	 macros so they need to be handled here.)  */
+	 copies.  */
       return;
     }
 
@@ -1738,8 +1723,6 @@ wrestrict_dom_walker::check_call (gcall *call)
   if (!func || DECL_BUILT_IN_CLASS (func) != BUILT_IN_NORMAL)
     return;
 
-  bool with_bounds = gimple_call_with_bounds_p (call);
-
   /* Argument number to extract from the call (depends on the built-in
      and its kind).  */
   unsigned dst_idx = -1;
@@ -1754,16 +1737,10 @@ wrestrict_dom_walker::check_call (gcall *call)
     {
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMCPY_CHK:
-    case BUILT_IN_MEMCPY_CHKP:
-    case BUILT_IN_MEMCPY_CHK_CHKP:
     case BUILT_IN_MEMPCPY:
     case BUILT_IN_MEMPCPY_CHK:
-    case BUILT_IN_MEMPCPY_CHKP:
-    case BUILT_IN_MEMPCPY_CHK_CHKP:
     case BUILT_IN_MEMMOVE:
     case BUILT_IN_MEMMOVE_CHK:
-    case BUILT_IN_MEMMOVE_CHKP:
-    case BUILT_IN_MEMMOVE_CHK_CHKP:
       strfun = false;
       /* Fall through.  */
 
@@ -1774,31 +1751,24 @@ wrestrict_dom_walker::check_call (gcall *call)
     case BUILT_IN_STRNCPY:
     case BUILT_IN_STRNCPY_CHK:
       dst_idx = 0;
-      src_idx = 1 + with_bounds;
-      bnd_idx = 2 + 2 * with_bounds;
+      src_idx = 1;
+      bnd_idx = 2;
       break;
 
     case BUILT_IN_STPCPY:
     case BUILT_IN_STPCPY_CHK:
-    case BUILT_IN_STPCPY_CHKP:
-    case BUILT_IN_STPCPY_CHK_CHKP:
     case BUILT_IN_STRCPY:
     case BUILT_IN_STRCPY_CHK:
-    case BUILT_IN_STRCPY_CHKP:
-    case BUILT_IN_STRCPY_CHK_CHKP:
     case BUILT_IN_STRCAT:
     case BUILT_IN_STRCAT_CHK:
-    case BUILT_IN_STRCAT_CHKP:
-    case BUILT_IN_STRCAT_CHK_CHKP:
       dst_idx = 0;
-      src_idx = 1 + with_bounds;
+      src_idx = 1;
       break;
 
     default:
       /* Handle other string functions here whose access may need
 	 to be validated for in-bounds offsets and non-overlapping
-	 copies.  (Not all _chkp functions have BUILT_IN_XXX_CHKP
-	 macros so they need to be handled here.)  */
+	 copies.  */
       return;
     }
 
