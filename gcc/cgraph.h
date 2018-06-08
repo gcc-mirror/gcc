@@ -97,6 +97,8 @@ class GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
   symtab_node
 {
 public:
+  friend class symbol_table;
+
   /* Return name.  */
   const char *name () const;
 
@@ -893,6 +895,8 @@ struct cgraph_edge_hasher : ggc_ptr_hash<cgraph_edge>
 
 struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node {
 public:
+  friend class symbol_table;
+
   /* Remove the node from cgraph and all inline clones inlined into it.
      Skip however removal of FORBIDDEN_NODE and return true if it needs to be
      removed.  This allows to call the function from outer loop walking clone
@@ -1271,6 +1275,12 @@ public:
     dump_cgraph (stderr);
   }
 
+  /* Get unique identifier of the node.  */
+  inline int get_uid ()
+  {
+    return m_uid;
+  }
+
   /* Record that DECL1 and DECL2 are semantically identical function
      versions.  */
   static void record_function_versions (tree decl1, tree decl2);
@@ -1390,8 +1400,6 @@ public:
   /* How to scale counts at materialization time; used to merge
      LTO units with different number of profile runs.  */
   int count_materialization_scale;
-  /* Unique id of the node.  */
-  int uid;
   /* ID assigned by the profiling.  */
   unsigned int profile_id;
   /* Time profiler: first run of function.  */
@@ -1438,6 +1446,9 @@ public:
   unsigned indirect_call_target : 1;
 
 private:
+  /* Unique id of the node.  */
+  int m_uid;
+
   /* Worker for call_for_symbol_and_aliases.  */
   bool call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
 						        void *),
@@ -2617,7 +2628,7 @@ symbol_table::allocate_cgraph_symbol (void)
   else
     node = ggc_cleared_alloc<cgraph_node> ();
 
-  node->uid = cgraph_max_uid++;
+  node->m_uid = cgraph_max_uid++;
   return node;
 }
 

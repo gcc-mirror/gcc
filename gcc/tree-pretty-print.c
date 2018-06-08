@@ -4056,7 +4056,7 @@ dump_function_header (FILE *dump_file, tree fdecl, dump_flags_t flags)
     fprintf (dump_file, ", decl_uid=%d", DECL_UID (fdecl));
   if (node)
     {
-      fprintf (dump_file, ", cgraph_uid=%d", node->uid);
+      fprintf (dump_file, ", cgraph_uid=%d", node->get_uid ());
       fprintf (dump_file, ", symbol_order=%d)%s\n\n", node->order,
                node->frequency == NODE_FREQUENCY_HOT
                ? " (hot)"
