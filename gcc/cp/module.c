@@ -381,10 +381,11 @@ protected:
 
 protected:
   /* Begin streaming.  Set buffer postion for crc  */
-  void begin ()
+  void begin (bool crc = true)
   {
     gcc_checking_assert (!buffer && !size && !pos);
-    pos = 4;
+    if (crc)
+      pos = 4;
   }
 
   /* Complete streaming.  Release the buffer.  */
@@ -1182,13 +1183,19 @@ public:
   void defrost (const char *);
 
 protected:
-  bool read (void *, size_t);
+  const char *read (data *, unsigned, unsigned);
 
 public:
   /* Read section by number.  */
-  bool read (data *, unsigned snum, unsigned type = SHT_PROGBITS);
+  bool read (data *d, const section *s)
+  {
+    return s && read (d, s->offset, s->size);
+  }
+
   /* Find section by name.  */
   unsigned find (const char *name);
+  /* Find section by index.  */
+  const section *find (unsigned snum, unsigned type = SHT_PROGBITS);
 
 public:
   /* Release the string table, when we're done with it.  */
@@ -1292,11 +1299,10 @@ bytes_in::begin (location_t loc, elf_in *source, const char *name)
 bool
 bytes_in::begin (location_t loc, elf_in *source, unsigned snum, const char *name)
 {
-  parent::begin ();
+  parent::begin (false);
 
-  source->read (this, snum);
-
-  if (!size || !check_crc ())
+  if (!source->read (this, source->find (snum))
+      || !size || !check_crc ())
     {
       release ();
       source->set_error (elf::E_BAD_DATA);
@@ -1306,6 +1312,7 @@ bytes_in::begin (location_t loc, elf_in *source, unsigned snum, const char *name
 	error_at (loc, "section #%u is missing or corrupted", snum);
       return false;
     }
+  pos = 4;
   return true;
 }
 
@@ -1409,41 +1416,37 @@ elf_in::keep_sections (unsigned from, unsigned to)
 
 /* Read at current position into BUFFER.  Return true on success.  */
 
-bool
-elf_in::read (void *buffer, size_t size)
+const char *
+elf_in::read (data *buffer, unsigned pos, unsigned length)
 {
-  if (fread (buffer, 1, size, stream) != size)
+  if (pos != ~0u && fseek (stream, pos, SEEK_SET))
     {
       set_error (errno);
-      return false;
+      return NULL;
     }
-  return true;
+
+  if (fread (buffer->write (length, true), 1, length, stream) != length)
+    {
+      set_error (errno);
+      buffer->release ();
+      return NULL;
+    }
+
+  return buffer->buffer;
 }
 
-/* Read section SNUM of TYPE.  Return data buffer, or NULL on error.  */
+/* Read section SNUM of TYPE.  Return section pointer or NULL on error.  */
 
-bool
-elf_in::read (data *b, unsigned snum, unsigned type)
+const elf::section *
+elf_in::find (unsigned snum, unsigned type)
 {
   const section *sec = sections[snum];
-  if (!snum || !sec)
-    return false;
-  if (sec->type != type)
-    return false;
-  if (fseek (stream, sec->offset, SEEK_SET))
-    {
-      set_error (errno);
-      return false;
-    }
-
-  b->extend (sec->size);
-  if (read (b->buffer, b->size))
-    return true;
-  b->release ();
-  return false;
+  if (!snum || !sec || sec->type != type)
+    return NULL;
+  return sec;
 }
 
-/* Find a section NAME and TYPE.  Return section number or 0 on
+/* Find a section NAME and TYPE.  Return section number, or zero on
    failure.  */
 
 unsigned
@@ -1453,7 +1456,7 @@ elf_in::find (const char *sname)
     {
       const section *sec = sections[snum];
 
-      if (!strcmp (sname, name (sec->name)))
+      if (0 == strcmp (sname, name (sec->name)))
 	return snum;
     }
 
@@ -1469,14 +1472,10 @@ elf_in::begin (location_t loc)
   if (!parent::begin ())
     return false;
 
-  header *h = reinterpret_cast <header *> (hdr.write (sizeof (header), true));
-
-  if (!read (h, sizeof (header)))
-    {
-    fail:
-      hdr.release ();
-      return false;
-    }
+  const header *h
+    = reinterpret_cast <const header *> (read (&hdr, 0, sizeof (header)));
+  if (!h)
+    return false;
 
   if (h->ident.magic[0] != 0x7f
       || h->ident.magic[1] != 'E'
@@ -1484,7 +1483,9 @@ elf_in::begin (location_t loc)
       || h->ident.magic[3] != 'F')
     {
       error_at (loc, "not Encapsulated Lazy Records of Named Declarations");
-      goto fail;
+    failed:
+      hdr.release ();
+      return false;
     }
 
   /* We expect a particular format -- the ELF is not intended to be
@@ -1497,25 +1498,16 @@ elf_in::begin (location_t loc)
       || h->ident.osabi != OSABI_NONE)
     {
       error_at (loc, "unexpected encapsulation format or type");
-      goto fail;
+      goto failed;
     }
 
   int e = -1;
-  if (!h->shoff || !h->shnum
-      || h->shentsize != sizeof (section))
+  if (!h->shoff || h->shentsize != sizeof (section))
     {
     malformed:
       set_error (e);
       error_at (loc, "encapsulation is malformed");
-      goto fail;
-    }
-
-  if (fseek (stream, h->shoff, SEEK_SET))
-    {
-    section_table_fail:
-      sections.release ();
-      e = errno;
-      goto malformed;
+      goto failed;
     }
 
   unsigned strndx = h->shstrndx;
@@ -1523,34 +1515,37 @@ elf_in::begin (location_t loc)
   bool indirect = shnum == SHN_XINDEX;
   if (indirect)
     {
-      if (fread (sections.write (1), 1, sizeof (section), stream) != 1)
-	goto section_table_fail;
+      if (!read (&sections, h->shoff, sizeof (section)))
+	{
+	section_table_fail:
+	  sections.release ();
+	  e = errno;
+	  goto malformed;
+	}
       shnum = sections[0]->size;
     }
+
   if (!shnum)
     goto malformed;
+
   if (unsigned more = shnum - indirect)
-    {
-      if (fread (sections.write (more, true), sizeof (section), more, stream)
-	  != more)
-	goto section_table_fail;
-    }
+    if (!read (&sections, indirect ? ~0u : h->shoff, more * sizeof (section)))
+      goto section_table_fail;
 
   if (strndx == SHN_XINDEX)
     strndx = sections[0]->link;
 
-  if (strndx) 
-   {
-      read (&strings, strndx, SHT_STRTAB);
-      /* The string table should be at least one byte, with NUL chars
-	 at either end.  */
-      if (!(strings.size && !strings.buffer[0]
-	    && !strings.buffer[strings.size - 1]))
-	strings.release ();
-    }
-
-  if (!strings.size)
+  if (!read (&strings, find (strndx, SHT_STRTAB)))
     goto malformed;
+
+  /* The string table should be at least one byte, with NUL chars
+     at either end.  */
+  if (!(strings.size && !strings.buffer[0]
+	&& !strings.buffer[strings.size - 1]))
+    {
+      strings.release ();
+      goto malformed;
+    }
 
   hdr.release ();
   return true;
