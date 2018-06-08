@@ -1,5 +1,9 @@
 2018-06-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (min, max): Delete.
+
+2018-06-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete mention of
 	-mabi=spe and -mabi=no-spe.
 
