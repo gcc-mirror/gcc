@@ -1,5 +1,27 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* ipa-reference.c (remove_node_data): Remove.
+	(duplicate_node_data): Likewise.
+	(class ipa_ref_var_info_summary_t): New class.
+	(class ipa_ref_opt_summary_t): Likewise.
+	(get_reference_vars_info): Use ipa_ref_var_info_summaries.
+	(get_reference_optimization_summary): Use
+	ipa_ref_opt_sum_summaries.
+	(set_reference_vars_info): Remove.
+	(set_reference_optimization_summary): Likewise.
+	(ipa_init): Create summaries.
+	(init_function_info): Use function summary.
+	(ipa_ref_opt_summary_t::duplicate): New function.
+	(ipa_ref_opt_summary_t::remove): New function.
+	(get_read_write_all_from_node): Fix GNU coding style.
+	(propagate): Use function summary.
+	(write_node_summary_p): Fix GNU coding style.
+	(stream_out_bitmap): Likewise.
+	(ipa_reference_read_optimization_summary): Use function summary.
+	(ipa_reference_c_finalize): Do not release hooks.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* ipa-fnsummary.c (dump_ipa_call_summary): Use ::get method.
 	(analyze_function_body): Extract multiple calls of get_create.
 	* ipa-inline-analysis.c (simple_edge_hints): Likewise.
