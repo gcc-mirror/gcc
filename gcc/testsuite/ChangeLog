@@ -1,5 +1,11 @@
 2018-06-08  Carl Love  <cel@us.ibm.com>
 
+	Backport from mainline.
+	* gcc.target/powerpc/builtins-3-p9-runnable.c: Add debug print
+	statements.
+
+2018-06-08  Carl Love  <cel@us.ibm.com>
+
 	Backport from mainline
 	* gcc.target/powerpc/builtins-8-p9-runnable.c: New test file.
 	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-2.c (dg-error): Update expected
