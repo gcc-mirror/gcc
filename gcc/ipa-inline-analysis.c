@@ -96,10 +96,10 @@ simple_edge_hints (struct cgraph_edge *edge)
   struct cgraph_node *to = (edge->caller->global.inlined_to
 			    ? edge->caller->global.inlined_to : edge->caller);
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
-  if (ipa_fn_summaries->get_create (to)->scc_no
-      && ipa_fn_summaries->get (to)->scc_no
-	 == ipa_fn_summaries->get_create (callee)->scc_no
-      && !edge->recursive_p ())
+  int to_scc_no = ipa_fn_summaries->get (to)->scc_no;
+  int callee_scc_no = ipa_fn_summaries->get (callee)->scc_no;
+
+  if (to_scc_no && to_scc_no  == callee_scc_no && !edge->recursive_p ())
     hints |= INLINE_HINT_same_scc;
 
   if (callee->lto_file_data && edge->caller->lto_file_data

@@ -1,5 +1,10 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* ipa-inline-analysis.c (simple_edge_hints): Use ::get method.
+	* ipa-inline.h (estimate_edge_growth): Likewise.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* cgraph.c (function_version_hasher::hash): Use
 	cgraph_node::get_uid ().
 	(function_version_hasher::equal):

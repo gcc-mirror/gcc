@@ -81,7 +81,7 @@ estimate_edge_size (struct cgraph_edge *edge)
 static inline int
 estimate_edge_growth (struct cgraph_edge *edge)
 {
-  ipa_call_summary *s = ipa_call_summaries->get_create (edge);
+  ipa_call_summary *s = ipa_call_summaries->get (edge);
   gcc_checking_assert (s->call_stmt_size || !edge->callee->analyzed);
   return (estimate_edge_size (edge) - s->call_stmt_size);
 }
