@@ -1287,9 +1287,10 @@ reset_edge_caches (struct cgraph_node *node)
   if (where->global.inlined_to)
     where = where->global.inlined_to;
 
-  for (edge = where->callers; edge; edge = edge->next_caller)
-    if (edge->inline_failed)
-      reset_edge_growth_cache (edge);
+  if (edge_growth_cache != NULL)
+    for (edge = where->callers; edge; edge = edge->next_caller)
+      if (edge->inline_failed)
+	edge_growth_cache->remove (edge);
 
   FOR_EACH_ALIAS (where, ref)
     reset_edge_caches (dyn_cast <cgraph_node *> (ref->referring));
@@ -1302,8 +1303,8 @@ reset_edge_caches (struct cgraph_node *node)
       e = e->callee->callees;
     else
       {
-	if (e->inline_failed)
-	  reset_edge_growth_cache (e);
+	if (edge_growth_cache != NULL && e->inline_failed)
+	  edge_growth_cache->remove (e);
 	if (e->next_callee)
 	  e = e->next_callee;
 	else
@@ -1496,13 +1497,15 @@ recursive_inlining (struct cgraph_edge *edge,
       if (master_clone)
 	{
 	  curr->redirect_callee (master_clone);
-	  reset_edge_growth_cache (curr);
+	  if (edge_growth_cache != NULL)
+	    edge_growth_cache->remove (curr);
 	}
 
       if (estimate_size_after_inlining (node, curr) > limit)
 	{
 	  curr->redirect_callee (dest);
-	  reset_edge_growth_cache (curr);
+	  if (edge_growth_cache != NULL)
+	    edge_growth_cache->remove (curr);
 	  break;
 	}
 
@@ -1516,7 +1519,8 @@ recursive_inlining (struct cgraph_edge *edge,
       if (!want_inline_self_recursive_call_p (curr, node, false, depth))
 	{
 	  curr->redirect_callee (dest);
-	  reset_edge_growth_cache (curr);
+	  if (edge_growth_cache != NULL)
+	    edge_growth_cache->remove (curr);
 	  continue;
 	}
 
@@ -1541,7 +1545,8 @@ recursive_inlining (struct cgraph_edge *edge,
 	    if (!e->inline_failed)
 	      clone_inlined_nodes (e, true, false, NULL);
 	  curr->redirect_callee (master_clone);
-          reset_edge_growth_cache (curr);
+	  if (edge_growth_cache != NULL)
+	    edge_growth_cache->remove (curr);
 	}
 
       inline_call (curr, false, new_edges, &overall_size, true);
@@ -1798,7 +1803,8 @@ inline_small_functions (void)
 	  max_count = max_count.max (edge->count.ipa ());
       }
   ipa_free_postorder_info ();
-  initialize_growth_caches ();
+  edge_growth_cache
+    = new call_summary<edge_growth_cache_entry *> (symtab, false);
 
   if (dump_file)
     fprintf (dump_file,
@@ -1892,7 +1898,8 @@ inline_small_functions (void)
 	  sreal old_time_est = estimate_edge_time (edge);
 	  int old_hints_est = estimate_edge_hints (edge);
 
-	  reset_edge_growth_cache (edge);
+	  if (edge_growth_cache != NULL)
+	    edge_growth_cache->remove (edge);
 	  gcc_assert (old_size_est == estimate_edge_size (edge));
 	  gcc_assert (old_time_est == estimate_edge_time (edge));
 	  /* FIXME:
@@ -1906,7 +1913,7 @@ inline_small_functions (void)
 	     for given invocation but that will be better done once whole
 	     code is converted to sreals.  Disable for now and revert to "wrong"
 	     value so enable/disable checking paths agree.  */
-	  edge_growth_cache[edge->uid].hints = old_hints_est + 1;
+	  edge_growth_cache->get (edge)->hints = old_hints_est + 1;
 
 	  /* When updating the edge costs, we only decrease badness in the keys.
 	     Increases of badness are handled lazilly; when we see key with out
