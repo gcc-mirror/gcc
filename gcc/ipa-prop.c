@@ -55,8 +55,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
-/* Vector of IPA-CP transformation data for each clone.  */
-vec<ipcp_transformation_summary, va_gc> *ipcp_transformations;
+
+function_summary <ipcp_transformation *> *ipcp_transformation_sum = NULL;
+
 /* Edge summary for IPA-CP edge information.  */
 ipa_edge_args_sum_t *ipa_edge_args_sum;
 
@@ -3729,19 +3730,18 @@ ipa_free_all_node_params (void)
   ipa_node_params_sum = NULL;
 }
 
-/* Grow ipcp_transformations if necessary.  Also allocate any necessary hash
+/* Initialize IPA CP transformation summary and also allocate any necessary hash
    tables if they do not already exist.  */
 
 void
-ipcp_grow_transformations_if_necessary (void)
+ipcp_transformation_initialize (void)
 {
-  if (vec_safe_length (ipcp_transformations)
-      <= (unsigned) symtab->cgraph_max_uid)
-    vec_safe_grow_cleared (ipcp_transformations, symtab->cgraph_max_uid + 1);
   if (!ipa_bits_hash_table)
     ipa_bits_hash_table = hash_table<ipa_bit_ggc_hash_traits>::create_ggc (37);
   if (!ipa_vr_hash_table)
     ipa_vr_hash_table = hash_table<ipa_vr_ggc_hash_traits>::create_ggc (37);
+  if (ipcp_transformation_sum == NULL)
+    ipcp_transformation_sum = ipcp_transformation_t::create_ggc (symtab);
 }
 
 /* Set the aggregate replacements of NODE to be AGGVALS.  */
@@ -3750,8 +3750,9 @@ void
 ipa_set_node_agg_value_chain (struct cgraph_node *node,
 			      struct ipa_agg_replacement_value *aggvals)
 {
-  ipcp_grow_transformations_if_necessary ();
-  (*ipcp_transformations)[node->uid].agg_values = aggvals;
+  ipcp_transformation_initialize ();
+  ipcp_transformation *s = ipcp_transformation_sum->get_create (node);
+  s->agg_values = aggvals;
 }
 
 /* Hook that is called by cgraph.c when an edge is removed.  Adjust reference
@@ -3915,15 +3916,14 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
       ipa_set_node_agg_value_chain (dst, new_av);
     }
 
-  ipcp_transformation_summary *src_trans
-    = ipcp_get_transformation_summary (src);
+  ipcp_transformation *src_trans = ipcp_get_transformation_summary (src);
 
   if (src_trans)
     {
-      ipcp_grow_transformations_if_necessary ();
-      src_trans = ipcp_get_transformation_summary (src);
-      ipcp_transformation_summary *dst_trans
-	= ipcp_get_transformation_summary (dst);
+      ipcp_transformation_initialize ();
+      src_trans = ipcp_transformation_sum->get_create (src);
+      ipcp_transformation *dst_trans
+	= ipcp_transformation_sum->get_create (dst);
 
       dst_trans->bits = vec_safe_copy (src_trans->bits);
 
@@ -4565,7 +4565,7 @@ write_ipcp_transformation_info (output_block *ob, cgraph_node *node)
       streamer_write_bitpack (&bp);
     }
 
-  ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
   if (ts && vec_safe_length (ts->m_vr) > 0)
     {
       count = ts->m_vr->length ();
@@ -4640,9 +4640,8 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
   count = streamer_read_uhwi (ib);
   if (count > 0)
     {
-      ipcp_grow_transformations_if_necessary ();
-
-      ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+      ipcp_transformation_initialize ();
+      ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
       vec_safe_grow_cleared (ts->m_vr, count);
       for (i = 0; i < count; i++)
 	{
@@ -4663,9 +4662,8 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
   count = streamer_read_uhwi (ib);
   if (count > 0)
     {
-      ipcp_grow_transformations_if_necessary ();
-
-      ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+      ipcp_transformation_initialize ();
+      ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
       vec_safe_grow_cleared (ts->bits, count);
 
       for (i = 0; i < count; i++)
@@ -4932,14 +4930,14 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 }
 
 /* Update bits info of formal parameters as described in
-   ipcp_transformation_summary.  */
+   ipcp_transformation.  */
 
 static void
 ipcp_update_bits (struct cgraph_node *node)
 {
   tree parm = DECL_ARGUMENTS (node->decl);
   tree next_parm = parm;
-  ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
 
   if (!ts || vec_safe_length (ts->bits) == 0)
     return;
@@ -5024,7 +5022,7 @@ ipcp_update_bits (struct cgraph_node *node)
 }
 
 /* Update value range of formal parameters as described in
-   ipcp_transformation_summary.  */
+   ipcp_transformation.  */
 
 static void
 ipcp_update_vr (struct cgraph_node *node)
@@ -5032,7 +5030,7 @@ ipcp_update_vr (struct cgraph_node *node)
   tree fndecl = node->decl;
   tree parm = DECL_ARGUMENTS (fndecl);
   tree next_parm = parm;
-  ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+  ipcp_transformation *ts = ipcp_get_transformation_summary (node);
   if (!ts || vec_safe_length (ts->m_vr) == 0)
     return;
   const vec<ipa_vr, va_gc> &vr = *ts->m_vr;
@@ -5135,9 +5133,11 @@ ipcp_transform_function (struct cgraph_node *node)
     free_ipa_bb_info (bi);
   fbi.bb_infos.release ();
   free_dominance_info (CDI_DOMINATORS);
-  (*ipcp_transformations)[node->uid].agg_values = NULL;
-  (*ipcp_transformations)[node->uid].bits = NULL;
-  (*ipcp_transformations)[node->uid].m_vr = NULL;
+
+  ipcp_transformation *s = ipcp_transformation_sum->get (node);
+  s->agg_values = NULL;
+  s->bits = NULL;
+  s->m_vr = NULL;
 
   vec_free (descriptors);
 

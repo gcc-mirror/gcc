@@ -4949,8 +4949,8 @@ ipcp_store_bits_results (void)
       if (!found_useful_result)
 	continue;
 
-      ipcp_grow_transformations_if_necessary ();
-      ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+      ipcp_transformation_initialize ();
+      ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
       vec_safe_reserve_exact (ts->bits, count);
 
       for (unsigned i = 0; i < count; i++)
@@ -5022,8 +5022,8 @@ ipcp_store_vr_results (void)
       if (!found_useful_result)
 	continue;
 
-      ipcp_grow_transformations_if_necessary ();
-      ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+      ipcp_transformation_initialize ();
+      ipcp_transformation *ts = ipcp_transformation_sum->get_create (node);
       vec_safe_reserve_exact (ts->m_vr, count);
 
       for (unsigned i = 0; i < count; i++)

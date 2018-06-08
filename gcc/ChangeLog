@@ -1,5 +1,26 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* ipa-cp.c (ipcp_store_bits_results): Use
+	ipcp_transformation_sum.
+	(ipcp_store_vr_results): Likewise.
+	* ipa-prop.c (ipcp_grow_transformations_if_necessary): Renamed
+	to ...
+	(ipcp_transformation_initialize): ... this.
+	(ipa_set_node_agg_value_chain):
+	(ipa_node_params_t::duplicate): Use ipcp_transformation_sum.
+	(write_ipcp_transformation_info): Likewise.
+	(read_ipcp_transformation_info): Likewise.
+	(ipcp_update_bits): Likewise.
+	(ipcp_update_vr): Likewise.
+	(ipcp_transform_function): Likewise.
+	* ipa-prop.h: Rename ipcp_transformation_summary to
+	ipcp_transformation.
+	(class ipcp_transformation_t): New function summary.
+	(ipcp_get_transformation_summary): Use ipcp_transformation_sum.
+	(ipa_get_agg_replacements_for_node): Likewise.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* ipa-pure-const.c (struct funct_state_d): Do it class instead
 	of struct.
 	(class funct_state_summary_t): New function_summary class.
