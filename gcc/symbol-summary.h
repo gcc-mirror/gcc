@@ -326,7 +326,8 @@ class GTY((user)) call_summary <T *>
 public:
   /* Default construction takes SYMTAB as an argument.  */
   call_summary (symbol_table *symtab, bool ggc = false): m_ggc (ggc),
-    m_map (13, ggc), m_released (false), m_symtab (symtab)
+    m_initialize_when_cloning (false), m_map (13, ggc), m_released (false),
+    m_symtab (symtab)
   {
     m_symtab_removal_hook =
       symtab->add_edge_removal_hook
@@ -374,7 +375,13 @@ public:
      If a summary for an edge does not exist, it will be created.  */
   T* get_create (cgraph_edge *edge)
   {
-    return get_create (hashable_uid (edge));
+    return get (hashable_uid (edge), true);
+  }
+
+  /* Getter for summary callgraph edge pointer.  */
+  T* get (cgraph_edge *edge)
+  {
+    return get (hashable_uid (edge), false);
   }
 
   /* Return number of elements handled by data structure.  */
@@ -400,19 +407,14 @@ protected:
   /* Indication if we use ggc summary.  */
   bool m_ggc;
 
+  /* Initialize summary for an edge that is cloned.  */
+  bool m_initialize_when_cloning;
+
 private:
   typedef int_hash <int, 0, -1> map_hash;
 
   /* Getter for summary callgraph ID.  */
-  T* get_create (int uid)
-  {
-    bool existed;
-    T **v = &m_map.get_or_insert (uid, &existed);
-    if (!existed)
-      *v = allocate_new ();
-
-    return *v;
-  }
+  T *get (int uid, bool lazy_insert);
 
   /* Get a hashable uid of EDGE.  */
   int hashable_uid (cgraph_edge *edge)
@@ -437,6 +439,28 @@ private:
   template <typename U> friend void gt_pch_nx (call_summary <U *> * const &,
       gt_pointer_operator, void *);
 };
+
+template <typename T>
+T*
+call_summary<T *>::get (int uid, bool lazy_insert)
+{
+  gcc_checking_assert (uid > 0);
+
+  if (lazy_insert)
+    {
+      bool existed;
+      T **v = &m_map.get_or_insert (uid, &existed);
+      if (!existed)
+	*v = allocate_new ();
+
+      return *v;
+    }
+  else
+    {
+      T **v = m_map.get (uid);
+      return v == NULL ? NULL : *v;
+    }
+}
 
 template <typename T>
 void
@@ -492,15 +516,25 @@ call_summary<T *>::symtab_duplication (cgraph_edge *edge1,
 				       cgraph_edge *edge2, void *data)
 {
   call_summary *summary = (call_summary <T *> *) (data);
-  T **v = summary->m_map.get (summary->hashable_uid (edge1));
+  T *edge1_summary = NULL;
 
-  if (v)
+  if (summary->m_initialize_when_cloning)
+    edge1_summary = summary->get_create (edge1);
+  else
     {
-      /* This load is necessary, because we insert a new value!  */
-      T *data = *v;
+      T **v = summary->m_map.get (summary->hashable_uid (edge1));
+      if (v)
+	{
+	  /* This load is necessary, because we insert a new value!  */
+	  edge1_summary = *v;
+	}
+    }
+
+  if (edge1_summary)
+    {
       T *duplicate = summary->allocate_new ();
       summary->m_map.put (summary->hashable_uid (edge2), duplicate);
-      summary->duplicate (edge1, edge2, data, duplicate);
+      summary->duplicate (edge1, edge2, edge1_summary, duplicate);
     }
 }
 

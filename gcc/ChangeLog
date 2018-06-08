@@ -1,5 +1,10 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* symbol-summary.h (get): New function.
+	(call_summary::m_initialize_when_cloning): New class member.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* cgraph.c (cgraph_node::remove): Do not recycle uid.
 	* cgraph.h (symbol_table::release_symbol): Do not pass uid.
 	(symbol_table::allocate_cgraph_symbol): Do not set uid.
