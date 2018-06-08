@@ -1,5 +1,23 @@
 2018-06-08  Martin Liska  <mliska@suse.cz>
 
+	* ipa-inline-analysis.c (inline_edge_removal_hook): Remove.
+	(initialize_growth_caches): Remove.
+	(free_growth_caches): Likewise.
+	(do_estimate_edge_time): Use edge_growth_cache.
+	(do_estimate_edge_size): Likewise.
+	(do_estimate_edge_hints): Likewise.
+	* ipa-inline.c (reset_edge_caches): Likewise.
+	(recursive_inlining): Likewise.
+	(inline_small_functions): Likewise.
+	* ipa-inline.h (initialize_growth_caches): Remove.
+	(estimate_edge_size): Likewise.
+	(estimate_edge_time): Likewise.
+	(estimate_edge_hints): Likewise.
+	(reset_edge_growth_cache): Likewise.
+	* symbol-summary.h (call_summary::remove): New method.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
 	* ipa-cp.c (class edge_clone_summary): New summary.
 	(grow_edge_clone_vectors): Remove.
 	(ipcp_edge_duplication_hook): Remove.
