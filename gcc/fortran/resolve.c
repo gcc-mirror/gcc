@@ -3878,7 +3878,13 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg,
+      if (op1->ts.type == BT_DERIVED || op2->ts.type == BT_DERIVED)
+	sprintf (msg,
+	       _("Unexpected derived-type entities in binary intrinsic "
+		 "numeric operator %%<%s%%> at %%L"),
+	       gfc_op2string (e->value.op.op));
+      else
+      	sprintf (msg,
 	       _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));

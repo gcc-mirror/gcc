@@ -1,4 +1,10 @@
 2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+ 
+	PR fortran/38351
+	* resolve.c (resolve_operator): Provide better error message for
+	derived type entity used in an binary intrinsic numeric operator.
+
+2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85138
 	PR fortran/85996
