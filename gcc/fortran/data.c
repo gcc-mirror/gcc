@@ -481,6 +481,21 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
   mpz_clear (offset);
   gcc_assert (repeat == NULL);
 
+  /* Overwriting an existing initializer is non-standard but usually only
+     provokes a warning from other compilers.  */
+  if (init != NULL && init->where.lb && rvalue->where.lb)
+    {
+      /* Order in which the expressions arrive here depends on whether
+	 they are from data statements or F95 style declarations.
+	 Therefore, check which is the most recent.  */
+      expr = (LOCATION_LINE (init->where.lb->location)
+	      > LOCATION_LINE (rvalue->where.lb->location))
+	   ? init : rvalue;
+      if (gfc_notify_std (GFC_STD_GNU, "re-initialization of %qs at %L",
+			  symbol->name, &expr->where) == false)
+	return false;
+    }
+
   if (ref || last_ts->type == BT_CHARACTER)
     {
       /* An initializer has to be constant.  */
@@ -499,22 +514,6 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 		     "shall not appear in a DATA statement at %L", 
 		     symbol->name, &lvalue->where);
 	  return false;
-	}
-
-      /* Overwriting an existing initializer is non-standard but usually only
-	 provokes a warning from other compilers.  */
-      if (init != NULL)
-	{
-	  /* Order in which the expressions arrive here depends on whether
-	     they are from data statements or F95 style declarations.
-	     Therefore, check which is the most recent.  */
-	  expr = (LOCATION_LINE (init->where.lb->location)
-		  > LOCATION_LINE (rvalue->where.lb->location))
-	       ? init : rvalue;
-	  if (gfc_notify_std (GFC_STD_GNU,
-			      "re-initialization of %qs at %L",
-			      symbol->name, &expr->where) == false)
-	    return false;
 	}
 
       expr = gfc_copy_expr (rvalue);
