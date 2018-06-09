@@ -1,3 +1,11 @@
+2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85138
+	PR fortran/85996
+	PR fortran/86051
+	* decl.c (gfc_match_char_spec): Use private namespace in attempt to
+	reduce a charlen to a constant.
+
 2018-06-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/86045
