@@ -1,3 +1,13 @@
+2018-06-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85631
+	Backport from trunk.
+	* trans.h (gfc_ss): Add field no_bounds_check.
+	* trans-array.c (gfc_conv_ss_startstride): If flag_realloc_lhs and
+	ss->no_bounds_check is set, do not use runtime checks.
+	* trans-expr.c (gfc_trans_assignment_1): Set lss->no_bounds_check
+	for reallocatable lhs.
+
 2018-06-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/86045
