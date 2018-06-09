@@ -84,6 +84,6 @@ PROGRAM main
   TYPE(myint) :: x
 
   x = 0 ! { dg-error "Can't convert" }
-  x = x + 42 ! { dg-error "Operands of" }
+  x = x + 42 ! { dg-error "binary intrinsic numeric operator" }
   x = x .PLUS. 5 ! { dg-error "Unknown operator" }
 END PROGRAM main
