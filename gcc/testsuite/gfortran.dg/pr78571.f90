@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-std=gnu" }
 ! PR fortran/78571
 program p
    type t
