@@ -3226,12 +3226,20 @@ done:
     cl->length = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
   else
     {
-      /* If gfortran ends up here, then the len may be reducible to a
-	 constant.  Try to do that here.  If it does not reduce, simply
-	 assign len to the charlen.  */
+      /* If gfortran ends up here, then len may be reducible to a constant.
+	 Try to do that here.  If it does not reduce, simply assign len to
+	 charlen.  A complication occurs with user-defined generic functions,
+	 which are not resolved.  Use a private namespace to deal with
+	 generic functions.  */
+
       if (len && len->expr_type != EXPR_CONSTANT)
 	{
+	  gfc_namespace *old_ns;
 	  gfc_expr *e;
+
+	  old_ns = gfc_current_ns;
+	  gfc_current_ns = gfc_get_namespace (NULL, 0);
+
 	  e = gfc_copy_expr (len);
 	  gfc_reduce_init_expr (e);
 	  if (e->expr_type == EXPR_CONSTANT)
@@ -3242,10 +3250,12 @@ done:
 	    }
 	  else
 	    gfc_free_expr (e);
-	  cl->length = len;
+
+	  gfc_free_namespace (gfc_current_ns);
+	  gfc_current_ns = old_ns;
 	}
-      else
-	cl->length = len;
+
+      cl->length = len;
     }
 
   ts->u.cl = cl;
