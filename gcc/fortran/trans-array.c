@@ -4304,7 +4304,7 @@ done:
 	}
     }
 
-  /* The rest is just runtime bound checking.  */
+  /* The rest is just runtime bounds checking.  */
   if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
     {
       stmtblock_t block;
@@ -4334,7 +4334,7 @@ done:
 	    continue;
 
 	  /* Catch allocatable lhs in f2003.  */
-	  if (flag_realloc_lhs && ss->is_alloc_lhs)
+	  if (flag_realloc_lhs && ss->no_bounds_check)
 	    continue;
 
 	  expr = ss_info->expr;
