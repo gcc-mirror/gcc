@@ -1,5 +1,10 @@
 2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/63514
+	* symbol.c (gfc_add_volatile): Enforce F2008:C1282 and F2018:C1588.
+
+2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/78278
 	* data.c (gfc_assign_data_value): Re-arrange code to allow for
 	an error for double initialization of CHARACTER entities.
