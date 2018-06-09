@@ -1,5 +1,12 @@
 2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/78278
+	Committed as part of r261364
+	* data.c (gfc_assign_data_value): Re-arrange code to allow for
+	an error for double initialization of CHARACTER entities.
+
+2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/38351
 	* resolve.c (resolve_operator): Provide better error message for
 	derived type entity used in an binary intrinsic numeric operator.
