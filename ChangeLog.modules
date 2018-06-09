@@ -1,3 +1,17 @@
+2018-06-09  Nathan Sidwell  <nathan@acm.org>
+
+	MMAP importing!
+	gcc/cp/
+	* module.c (MODULE_MMAP_IO): New define.
+	(bytes::{begin,end}): Delete.
+	(elf_in::{freeze,defrost}): Adjust.
+	(elf_in::{begin,end}): Adjust.
+	(elf_in::{keep,forget}_section): Adjust.
+	(elf_in::read): Adjust.
+	(module_state::our_opts): New static member.  Adjust uses.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Document lazy limit change.
+
 2018-06-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -29487,10 +29487,11 @@ preamble is processed.  Build systems may need to determine the set of
 imports a compilation needed, and this allows that without the expense
 of preprocessing the complete source.
 
-The @option{--param lazy-modules=@var{n}} parameter controls the
-limit on the number of concurrently open module files during lazy
-loading.  Should more modules be imported, an LRU algorithm is used to
-determine which files to close -- until that file is needed again.
-With large code bases there may be more imports than the process limit
-of file descriptors.  By default, the limit is 20 less than the
-per-process limit, if that is determinable.
+The @option{--param lazy-modules=@var{n}} parameter controls the limit
+on the number of concurrently open module files during lazy loading.
+Should more modules be imported, an LRU algorithm is used to determine
+which files to close -- until that file is needed again.  This limit
+may be exceeded with deep module dependency hierarchies.  With large
+code bases there may be more imports than the process limit of file
+descriptors.  By default, the limit is 20 less than the per-process
+limit, if that is determinable.

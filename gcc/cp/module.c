@@ -175,6 +175,11 @@ Classes used:
 # define hstrerror(X) ""
 #endif
 
+#if HAVE_MMAP_FILE
+/* Use mmap to load module files.  */
+#define MODULE_MMAP_IO 1
+#endif
+
 /* Id for dumping module information.  */
 int module_dump_id;
 
@@ -378,21 +383,6 @@ public:
 
 protected:
   unsigned calc_crc (unsigned) const;
-
-protected:
-  /* Begin streaming.  Set buffer postion for crc  */
-  void begin (bool crc = true)
-  {
-    gcc_checking_assert (!buffer && !size && !pos);
-    if (crc)
-      pos = 4;
-  }
-
-  /* Complete streaming.  Release the buffer.  */
-  void end ()
-  {
-    release ();
-  }
 
 protected:
   /* Finish bit packet.  Rewind the bytes not used.  */
@@ -1143,7 +1133,6 @@ elf::end ()
   if (fd >= 0 && close (fd))
     set_error (errno);
   fd = -1;
-  sections.release ();
 
   return has_error ();
 }
@@ -1159,14 +1148,13 @@ private:
   dev_t device;
   ino_t inode;
 #endif
-  unsigned size;
 
 protected:
   data strings;  /* String table.  */
 
   public:
   elf_in (int fd, int e)
-    :parent (fd, e), size (0), strings ()
+    :parent (fd, e), strings ()
   {
   }
   ~elf_in ()
@@ -1177,7 +1165,11 @@ protected:
 public:
   bool is_frozen () const
   {
-    return fd < 0 && size;
+    return fd < 0 && hdr.pos;
+  }
+  bool is_freezable () const
+  {
+    return fd >= 0 && hdr.pos;
   }
   void freeze ();
   void defrost (const char *);
@@ -1201,16 +1193,22 @@ public:
   /* Release the string table, when we're done with it.  */
   void release ()
   {
+#ifndef MODULE_MMAP_IO
     strings.release ();
+#else
+    strings.buffer = NULL;
+#endif
   }
   /* Release string table, and all section information but those
      specified.  */
   void keep_sections (unsigned, unsigned);
   /* Forget a particular section, so we detect errors trying to reload
      it.  */
-  void forget_section (unsigned s)
+  void forget_section (unsigned s ATTRIBUTE_UNUSED)
   {
+#ifndef MODULE_MMAP_IO
     memset (sections[s], 0, sizeof (section));
+#endif
   }
 
 public:
@@ -1218,6 +1216,14 @@ public:
   bool end ()
   {
     release ();
+#ifdef MODULE_MMAP_IO
+    if (hdr.buffer)
+      munmap (hdr.buffer, hdr.pos);
+    hdr.buffer = NULL;
+    sections.buffer = NULL;
+#else
+    sections.release ();
+#endif
     return parent::end ();
   }
 
@@ -1299,8 +1305,6 @@ bytes_in::begin (location_t loc, elf_in *source, const char *name)
 bool
 bytes_in::begin (location_t loc, elf_in *source, unsigned snum, const char *name)
 {
-  parent::begin (false);
-
   if (!source->read (this, source->find (snum))
       || !size || !check_crc ())
     {
@@ -1325,7 +1329,13 @@ bytes_in::end (elf_in *src)
     set_overrun ();
   if (overrun)
     src->set_error ();
-  parent::end ();
+
+#ifdef MODULE_MMAP_IO
+  buffer = NULL;
+#else
+  release ();
+#endif
+
   return !overrun;
 }
 
@@ -1334,7 +1344,7 @@ bytes_in::end (elf_in *src)
 void
 bytes_out::begin ()
 {
-  parent::begin ();
+  pos = 4;
   extend (200);
 }
 
@@ -1350,7 +1360,7 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
 
   set_crc (crc_ptr);
   unsigned sec_num = sink->add (this, !crc_ptr, name);
-  parent::end ();
+  release ();
 
   return sec_num;
 }
@@ -1361,21 +1371,14 @@ void
 elf_in::freeze ()
 {
   gcc_checking_assert (!is_frozen ());
-  struct stat stat;
-
-  if (fstat (fd, &stat) < 0)
+#if MODULE_MMAP_IO
+  if (munmap (hdr.buffer, hdr.pos) < 0)
     set_error (errno);
-  else
-    {
-#if !defined (HOST_LACKS_INODE_NUMBERS)
-      device = stat.st_dev;
-      inode = stat.st_ino;
+  hdr.buffer = NULL;
 #endif
-      size = unsigned (stat.st_size);
-      if (close (fd) < 0)
-	set_error (errno);
-      fd = -1;
-    }
+  if (close (fd) < 0)
+    set_error (errno);
+  fd = -1;
 }
 
 void
@@ -1389,7 +1392,7 @@ elf_in::defrost (const char *name)
     set_error (errno);
   else
     {
-      bool ok = size == unsigned (stat.st_size);
+      bool ok = hdr.pos == unsigned (stat.st_size);
 #if !defined (HOST_LACKS_INODE_NUMBERS)
       if (device != stat.st_dev
 	  || inode != stat.st_ino)
@@ -1397,21 +1400,32 @@ elf_in::defrost (const char *name)
 #endif
       if (!ok)
 	set_error (EMFILE);
+#if MODULE_MMAP_IO
+      if (ok)
+	{
+	  void *mapping = mmap (NULL, hdr.pos, PROT_READ, MAP_PRIVATE, fd, 0);
+	  if (mapping == MAP_FAILED)
+	    set_error (errno);
+	  else
+	    hdr.buffer = (char *)mapping;
+	}
+#endif
     }
-  size = 0;
 }
 
 /* Forget about sections not in the range [from,to).  */
 
 void
-elf_in::keep_sections (unsigned from, unsigned to)
+elf_in::keep_sections (unsigned from ATTRIBUTE_UNUSED, unsigned to)
 {
   release ();
   gcc_assert (to <= sections.size ());
+#ifndef MODULE_MMAP_IO
   if (from)
     memset (sections[0], 0, sizeof (section) * from);
   if (unsigned tail = sections.size () - to)
     memset (sections[to], 0, sizeof (section) * tail);
+#endif
 }
 
 /* Read at current position into BUFFER.  Return true on success.  */
@@ -1419,17 +1433,30 @@ elf_in::keep_sections (unsigned from, unsigned to)
 const char *
 elf_in::read (data *buffer, unsigned pos, unsigned length)
 {
-  if (pos != ~0u && lseek (fd, pos, SEEK_SET) < 0)
+  if (hdr.buffer)
     {
-      set_error (errno);
-      return NULL;
+      if (pos + length > hdr.pos)
+	{
+	  set_error (EINVAL);
+	  return NULL;
+	}
+      buffer->size = buffer->pos = length;
+      buffer->buffer = hdr.buffer + pos;
     }
-
-  if (::read (fd, buffer->write (length, true), length) != length)
+  else
     {
-      set_error (errno);
-      buffer->release ();
-      return NULL;
+      if (pos != ~0u && lseek (fd, pos, SEEK_SET) < 0)
+	{
+	  set_error (errno);
+	  return NULL;
+	}
+
+      if (::read (fd, buffer->write (length, true), length) != length)
+	{
+	  set_error (errno);
+	  buffer->release ();
+	  return NULL;
+	}
     }
 
   return buffer->buffer;
@@ -1472,8 +1499,33 @@ elf_in::begin (location_t loc)
   if (!parent::begin ())
     return false;
 
-  const header *h
-    = reinterpret_cast <const header *> (read (&hdr, 0, sizeof (header)));
+  struct stat stat;
+  unsigned size = 0;
+  if (!fstat (fd, &stat))
+    {
+#if !defined (HOST_LACKS_INODE_NUMBERS)
+      device = stat.st_dev;
+      inode = stat.st_ino;
+#endif
+      if (stat.st_size == unsigned (stat.st_size))
+	size = unsigned (stat.st_size);
+    }
+
+  void *mapping;
+#if MODULE_MMAP_IO
+  mapping = mmap (NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  if (mapping == MAP_FAILED)
+    {
+      set_error (errno);
+      return false;
+    }
+  hdr.buffer = (char *)mapping;
+#else
+  mapping = read (&hdr, 0, sizeof (header));
+#endif
+  hdr.pos = size;
+
+  const header *h = reinterpret_cast <const header *> (mapping);
   if (!h)
     return false;
 
@@ -1484,7 +1536,9 @@ elf_in::begin (location_t loc)
     {
       error_at (loc, "not Encapsulated Lazy Records of Named Declarations");
     failed:
+#ifndef MODULE_MMAP_IO
       hdr.release ();
+#endif
       return false;
     }
 
@@ -1512,25 +1566,29 @@ elf_in::begin (location_t loc)
 
   unsigned strndx = h->shstrndx;
   unsigned shnum = h->shnum;
-  bool indirect = shnum == SHN_XINDEX;
-  if (indirect)
+  if (shnum == SHN_XINDEX)
     {
       if (!read (&sections, h->shoff, sizeof (section)))
 	{
 	section_table_fail:
-	  sections.release ();
 	  e = errno;
 	  goto malformed;
 	}
       shnum = sections[0]->size;
+      /* Freeing does mean we'll re-read it in the case we're not
+	 mapping, but this is going to be rare.  */
+#if MODULE_MMAP_IO
+      sections.buffer = NULL;
+#else
+      sections.release ();
+#endif
     }
 
   if (!shnum)
     goto malformed;
 
-  if (unsigned more = shnum - indirect)
-    if (!read (&sections, indirect ? ~0u : h->shoff, more * sizeof (section)))
-      goto section_table_fail;
+  if (!read (&sections, h->shoff, shnum * sizeof (section)))
+    goto section_table_fail;
 
   if (strndx == SHN_XINDEX)
     strndx = sections[0]->link;
@@ -1542,12 +1600,12 @@ elf_in::begin (location_t loc)
      at either end.  */
   if (!(strings.size && !strings.buffer[0]
 	&& !strings.buffer[strings.size - 1]))
-    {
-      strings.release ();
-      goto malformed;
-    }
+    goto malformed;
 
+#ifndef MODULE_MMAP_IO
   hdr.release ();
+#endif
+
   return true;
 }
 
@@ -1763,6 +1821,8 @@ elf_out::end ()
 	  write (&hdr);
 	}
     }
+
+  sections.release ();
 
   return parent::end ();
 }
@@ -2341,6 +2401,8 @@ struct GTY(()) module_state {
  public:
   /* Vector indexed by OWNER.  */
   static vec<module_state *, va_gc> *modules;
+  static char *our_opts;     /* Significant options for this
+				compilation.   */
 
  private:
   /* Hash, findable by NAME.  */
@@ -2354,8 +2416,7 @@ struct GTY(()) module_state {
 
  private:
   static unsigned lazy_lru;  /* LRU counter.  */
-  static unsigned lazy_open; /* Remaining limit for unfrozen loaders.  */
-  static vec<module_state *, va_gc_atomic> *importing;
+  static int lazy_open;      /* Remaining limit for unfrozen loaders.  */
 };
 
 module_state::module_state (tree name)
@@ -2409,10 +2470,11 @@ const std::pair<tree *, unsigned> module_state::global_trees[] =
 GTY(()) vec<tree, va_gc> *module_state::global_vec;
 unsigned module_state::global_crc;
 
+char *module_state::our_opts;
+
 /* Nesting of lazy loaders.  */
 unsigned module_state::lazy_lru;
-unsigned module_state::lazy_open;
-GTY((deletable)) vec<module_state *, va_gc_atomic> *module_state::importing;
+int module_state::lazy_open;
 
 /* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
 GTY(()) vec<module_state *, va_gc> *module_state::modules;
@@ -7569,14 +7631,14 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   /* Check compilation options.  For the moment we requre exact
      match.  */
   const char *their_opts = cfg.str ();
-  char *our_opts = get_option_string ();
+  if (!our_opts)
+    our_opts = get_option_string ();
   if (strcmp (their_opts, our_opts))
     {
       error_at (loc, "compilation options differ %qs, expected %qs",
 		their_opts, our_opts);
       goto fail;
     }
-  XDELETEVEC (our_opts);
   
   /* Check global trees.  */
   unsigned their_glength = cfg.u ();
@@ -8883,8 +8945,9 @@ module_state::write (elf_out *to)
 {
   unsigned crc = 0;
 
-  char *opt_str = get_option_string ();
-  write_readme (to, opt_str);
+  if (!our_opts)
+    our_opts = get_option_string ();
+  write_readme (to, our_opts);
 
   depset::hash table (200);
 
@@ -9005,9 +9068,7 @@ module_state::write (elf_out *to)
   write_unnamed (to, sccs, unnamed, &crc);
 
   /* And finish up.  */
-  write_config (to, opt_str, range, unnamed, crc);
-
-  XDELETEVEC (opt_str);
+  write_config (to, our_opts, range, unnamed, crc);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_num_sections ());
@@ -9020,8 +9081,6 @@ void
 module_state::read (int fd, int e, bool check_crc)
 {
   from = new elf_in (fd, e);
-  lru = lazy_lru++;
-  lazy_open--;
   if (!from->begin (loc))
     return;
 
@@ -9055,8 +9114,9 @@ module_state::read (int fd, int e, bool check_crc)
   (*remap)[MODULE_PURVIEW] = mod;
   dump () && dump ("Assigning %N module number %u", name, mod);
 
-  /* We may have been frozen during the importing done by read_config.  */
-  maybe_defrost ();
+  /* We should not have been frozen during the importing done by
+     read_config.  */
+  gcc_assert (!from->is_frozen ());
 
   /* Read the namespace hierarchy. */
   auto_vec<tree> spaces;
@@ -9095,7 +9155,7 @@ module_state::maybe_defrost ()
 {
   if (from->is_frozen ())
     {
-      if (!lazy_open)
+      if (lazy_open <= 0)
 	freeze_an_elf ();
       dump () && dump ("Defrosting %s", filename);
       from->defrost (maybe_add_bmi_prefix (filename));
@@ -9112,8 +9172,9 @@ module_state::load_section (unsigned snum)
 
   unsigned old_loading = loading;
   loading = snum;
-  lru = lazy_lru++;
+  lru = 0;  /* Do not swap out.  */
   read_cluster (snum);
+  lru = ++lazy_lru;
   from->forget_section (loading);
   loading = old_loading;
   lazy--;
@@ -9517,7 +9578,7 @@ module_state::do_import (char const *fname, bool check_crc)
   gcc_assert (global_namespace == current_scope ()
 	      && !is_imported ());
 
-  if (!lazy_open)
+  if (lazy_open <= 0)
     freeze_an_elf ();
 
   if (fname)
@@ -9535,11 +9596,12 @@ module_state::do_import (char const *fname, bool check_crc)
     }
 
   announce ("importing");
-  vec_safe_push (importing, this);
   imported = true;
+  lru = ++lazy_lru;
+  lazy_open--;
+  
   read (fd, e, check_crc);
   bool failed = check_read (direct && !modules_atom_p ());
-  importing->pop ();
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
 
   return !failed;
@@ -9554,27 +9616,20 @@ module_state::freeze_an_elf ()
   for (unsigned ix = modules->length (); ix--;)
     {
       module_state *candidate = (*modules)[ix];
-      if (candidate && candidate->from && !candidate->from->is_frozen ()
+      if (candidate && candidate->from && candidate->lru
+	  && candidate->from->is_freezable ()
 	  && (!victim || victim->lru > candidate->lru))
 	victim = candidate;
     }
 
-  if (!victim)
+  if (victim)
     {
-      /* Pick the first available one off the importing stack.  There
-	 must be one */
-      for (unsigned ix = 0; !victim; ix++)
-	{
-	  gcc_assert (ix < vec_safe_length (importing));
-	  module_state *candidate = (*importing)[ix];
-	  if (!candidate->from->is_frozen ())
-	    victim = candidate;
-	}
+      dump () && dump ("Freezing %s", victim->filename);
+      victim->from->freeze ();
+      lazy_open++;
     }
-
-  dump () && dump ("Freezing %s", victim->filename);
-  victim->from->freeze ();
-  lazy_open++;
+  else
+    dump () && dump ("No module available for freezing");
 }
 
 /* *SLOT is a lazy binding in namepsace NS named ID.  Load it, or die
@@ -9842,6 +9897,9 @@ finish_module ()
 	unlink (state->filename);
       state->release ();
     }
+
+  XDELETEVEC (module_state::our_opts);
+  module_state::our_opts = NULL;
 
   set_bmi_repo (NULL);
   module_mapper::fini (input_location);
