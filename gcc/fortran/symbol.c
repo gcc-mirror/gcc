@@ -1349,6 +1349,20 @@ gfc_add_volatile (symbol_attribute *attr, const char *name, locus *where)
 			 where))
       return false;
 
+  /* F2008:  C1282 A designator of a variable with the VOLATILE attribute
+     shall not appear in a pure subprogram.
+
+     F2018: C1588 A local variable of a pure subprogram, or of a BLOCK
+     construct within a pure subprogram, shall not have the SAVE or
+     VOLATILE attribute.  */
+  if (gfc_pure (NULL))
+    {
+      gfc_error ("VOLATILE attribute at %L cannot be specified in a "
+		 "PURE procedure", where);
+      return false;
+    }
+
+
   attr->volatile_ = 1;
   attr->volatile_ns = gfc_current_ns;
   return check_conflict (attr, name, where);
