@@ -1,5 +1,11 @@
 2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/86059
+	* array.c (match_array_cons_element): NULL() cannot be in an
+	array constructor.
+
+2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/63514
 	* symbol.c (gfc_add_volatile): Enforce F2008:C1282 and F2018:C1588.
 
