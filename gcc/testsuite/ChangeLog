@@ -1,3 +1,9 @@
+2018-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/friend64.C: New.
+	* g++.old-deja/g++.other/friend4.C: Test the location too.
+	* g++.old-deja/g++.pt/crash23.C: Likewise.
+
 2018-06-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/inline_matmul_23.f90: New test.
