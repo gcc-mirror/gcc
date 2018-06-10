@@ -1,3 +1,11 @@
+2018-06-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85088
+	* decl.c (match_attr_spec): Synchronize the DECL_* enum values with the
+	INTENT_* values from the enum 'sym_intent'. Call 'match_intent_spec'
+	and remove a TODO note.
+	* gfortran.h: Add a comment to sym_intent.
+
 2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
  
 	PR fortran/38351
