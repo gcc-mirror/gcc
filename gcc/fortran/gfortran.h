@@ -291,7 +291,8 @@ enum procedure_type
   PROC_INTRINSIC, PROC_ST_FUNCTION, PROC_EXTERNAL
 };
 
-/* Intent types.  */
+/* Intent types. Note that these values are also used in another enum in
+   decl.c (match_attr_spec).  */
 enum sym_intent
 { INTENT_UNKNOWN = 0, INTENT_IN, INTENT_OUT, INTENT_INOUT
 };
