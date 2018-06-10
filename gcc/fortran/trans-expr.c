@@ -9991,6 +9991,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 		 || expr2->value.function.isym->conversion)))
 	lss->is_alloc_lhs = 1;
     }
+  else
+    lss->no_bounds_check = expr1->no_bounds_check;
 
   rss = NULL;
 
@@ -10045,6 +10047,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       if (is_poly_assign && expr2->rank == 0 && !UNLIMITED_POLY (expr2))
 	rss->info->type = GFC_SS_REFERENCE;
 
+      rss->no_bounds_check = expr2->no_bounds_check;
       /* Associate the SS with the loop.  */
       gfc_add_ss_to_loop (&loop, lss);
       gfc_add_ss_to_loop (&loop, rss);
