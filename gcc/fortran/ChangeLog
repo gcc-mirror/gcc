@@ -1,3 +1,18 @@
+2018-06-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.h (gfc_expr): Add no_bounds_check field.
+	* frontend-passes.c (get_array_inq_function): Set no_bounds_check
+	on function and function argument.
+	(inline_matmul_assign): Set no_bounds_check on zero expression
+	and on lhs of zero expression.
+	Also handle A1B2 case if realloc on assigment is active.
+	* trans-array.c (gfc_conv_array_ref): Don't do range checking
+	if expr has no_bounds_check set.
+	(gfc_conv_expr_descriptor): Set no_bounds_check on ss if expr
+	has it set.
+	* trans-expr.c (gfc_trans_assignment_1): Set no_bounds_check
+	on lss and lss if the corresponding expressions have it set.
+
 2018-06-10  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/79854
@@ -13,7 +28,7 @@
 	* gfortran.h: Add a comment to sym_intent.
 
 2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
- 
+
 	PR fortran/38351
 	* resolve.c (resolve_operator): Provide better error message for
 	derived type entity used in an binary intrinsic numeric operator.
