@@ -1,5 +1,6 @@
 2018-06-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	Backport from trunk.
 	PR libgfortran/86070
 	* io/write_float.def (build_float_string): Initialize *len.
 
