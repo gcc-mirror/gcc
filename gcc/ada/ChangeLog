@@ -1,3 +1,9 @@
+2018-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): For a derived type, ensure
+	that its parent is already frozen so that its predicate function, if
+	any, has already been constructed.
+
 2018-06-11  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Check_Mode_Restriction_In_Enclosing_Context): Adapt for
