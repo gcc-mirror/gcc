@@ -1,3 +1,8 @@
+2018-06-11  Nicolas Roche  <roche@adacore.com>
+
+	* libgnat/s-valuti.adb (Bad_Value): Ensure that we do not generate a
+	stack overflow while raising a constraint error.
+
 2018-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.ads (Rep_Value): Use a single line.
