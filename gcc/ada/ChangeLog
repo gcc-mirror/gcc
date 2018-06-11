@@ -1,5 +1,12 @@
 2018-06-11  Yannick Moy  <moy@adacore.com>
 
+	* inline.adb (Build_Body_To_Inline): Consider case of extended return
+	of unconstrained type as one case where inlining is not supported.
+	(Expand_Inlined_Call): Remove special case for body as extended return
+	of unconstrained type.
+
+2018-06-11  Yannick Moy  <moy@adacore.com>
+
 	* sem_prag.adb (Analyze_Part_Of): Only allow Part_Of on non-generic
 	unit.
 	(Check_Missing_Part_Of): Do not force Part_Of on generic unit.

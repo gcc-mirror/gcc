@@ -879,6 +879,10 @@ package body Inline is
       Body_To_Analyze : Node_Id;
       Max_Size        : constant := 10;
 
+      function Has_Extended_Return return Boolean;
+      --  This function returns True if the subprogram has an extended return
+      --  statement.
+
       function Has_Pending_Instantiation return Boolean;
       --  If some enclosing body contains instantiations that appear before
       --  the corresponding generic body, the enclosing body has a freeze node
@@ -898,6 +902,49 @@ package body Inline is
       --  If the body of the subprogram includes a call that returns an
       --  unconstrained type, the secondary stack is involved, and it
       --  is not worth inlining.
+
+      -------------------------
+      -- Has_Extended_Return --
+      -------------------------
+
+      function Has_Extended_Return return Boolean is
+         Body_To_Inline : constant Node_Id := N;
+
+         function Check_Return (N : Node_Id) return Traverse_Result;
+         --  Returns OK on node N if this is not an extended return statement
+
+         ------------------
+         -- Check_Return --
+         ------------------
+
+         function Check_Return (N : Node_Id) return Traverse_Result is
+         begin
+            case Nkind (N) is
+               when N_Extended_Return_Statement =>
+                  return Abandon;
+
+               --  Skip locally declared subprogram bodies inside the body to
+               --  inline, as the return statements inside those do not count.
+
+               when N_Subprogram_Body =>
+                  if N = Body_To_Inline then
+                     return OK;
+                  else
+                     return Skip;
+                  end if;
+
+               when others =>
+                  return OK;
+            end case;
+         end Check_Return;
+
+         function Check_All_Returns is new Traverse_Func (Check_Return);
+
+      --  Start of processing for Has_Extended_Return
+
+      begin
+         return Check_All_Returns (N) /= OK;
+      end Has_Extended_Return;
 
       -------------------------------
       -- Has_Pending_Instantiation --
@@ -1048,7 +1095,16 @@ package body Inline is
         and then not Is_Access_Type (Etype (Spec_Id))
         and then not Is_Constrained (Etype (Spec_Id))
       then
-         if not Has_Single_Return (N) then
+         if not Has_Single_Return (N)
+
+           --  Skip inlining if the function returns an unconstrained type
+           --  using an extended return statement since this part of the
+           --  new inlining model which is not yet supported by the current
+           --  implementation. ???
+
+           or else (Returns_Unconstrained_Type (Spec_Id)
+                     and then Has_Extended_Return)
+         then
             Cannot_Inline
               ("cannot inline & (unconstrained return type)?", N, Spec_Id);
             return;
@@ -2872,18 +2928,6 @@ package body Inline is
       --  true inlining, Orig_Bod has code rather than being an entity.
 
       elsif Nkind (Orig_Bod) in N_Entity then
-         return;
-
-      --  Skip inlining if the function returns an unconstrained type using
-      --  an extended return statement since this part of the new inlining
-      --  model which is not yet supported by the current implementation. ???
-
-      elsif Is_Unc
-        and then
-          Nkind (First (Statements (Handled_Statement_Sequence (Orig_Bod)))) =
-            N_Extended_Return_Statement
-        and then not Back_End_Inlining
-      then
          return;
       end if;
 
