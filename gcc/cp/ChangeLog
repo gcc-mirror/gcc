@@ -1,5 +1,9 @@
 2018-06-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85765 - SFINAE and non-type default template arg.
+	* pt.c (type_unification_real): Do full semantic processing if
+	substituting a partial args list replaces all template parms.
+
 	PR c++/85764 - bogus 'this' not captured error.
 	* lambda.c (resolvable_dummy_lambda): Use nonlambda_method_basetype.
 	(nonlambda_method_basetype): Handle NSDMI.
