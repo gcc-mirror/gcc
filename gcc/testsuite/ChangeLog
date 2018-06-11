@@ -1,3 +1,21 @@
+2018-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/lookup/new2.C: Test locations too.
+	* g++.dg/other/ellipsis1.C: Likewise.
+	* g++.dg/other/operator1.C: Likewise.
+	* g++.dg/other/operator2.C: Likewise.
+	* g++.dg/overload/operator2.C: Likewise.
+	* g++.dg/parse/defarg11.C: Likewise.
+	* g++.dg/parse/operator4.C: Likewise.
+	* g++.dg/template/error30.C: Likewise.
+	* g++.dg/template/explicit-args3.C: Likewise.
+	* g++.dg/warn/effc1.C: Likewise.
+	* g++.old-deja/g++.brendan/prepost2.C: Likewise.
+	* g++.old-deja/g++.brendan/prepost3.C: Likewise.
+	* g++.old-deja/g++.bugs/900215_01.C: Likewise.
+	* g++.old-deja/g++.jason/conversion5.C: Likewise.
+	* g++.old-deja/g++.jason/operator.C: Likewise.
+
 2018-06-11  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86083
