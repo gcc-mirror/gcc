@@ -11114,13 +11114,27 @@ package body Sem_Ch13 is
 
       --  If we have a type with predicates, build predicate function. This is
       --  not needed in the generic case, nor within TSS subprograms and other
-      --  predefined primitives.
+      --  predefined primitives. For a derived type, ensure that the parent
+      --  type is already frozen so that its predicate function has been
+      --  constructed already. This is necessary if the parent is declared
+      --  in a nested package and its own freeze point has not been reached.
 
       if Is_Type (E)
         and then Nongeneric_Case
         and then not Within_Internal_Subprogram
         and then Has_Predicates (E)
       then
+         declare
+            Atyp : constant Entity_Id := Nearest_Ancestor (E);
+         begin
+            if Present (Atyp)
+              and then Has_Predicates (Atyp)
+              and then not Is_Frozen (Atyp)
+            then
+               Freeze_Before (N, Atyp);
+            end if;
+         end;
+
          Build_Predicate_Functions (E, N);
       end if;
 
