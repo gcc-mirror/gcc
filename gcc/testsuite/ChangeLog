@@ -1,3 +1,9 @@
+2018-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/nested_generic2.adb, gnat.dg/nested_generic2.ads,
+	gnat.dg/nested_generic2_g1.adb, gnat.dg/nested_generic2_g1.ads,
+	gnat.dg/nested_generic2_g2.ads: New testcase.
+
 2018-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/template/friend64.C: New.
