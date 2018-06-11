@@ -13078,6 +13078,7 @@ grok_op_properties (tree decl, bool complain)
   tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
   bool methodp = TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE;
   tree name = DECL_NAME (decl);
+  location_t loc = DECL_SOURCE_LOCATION (decl);
 
   tree class_type = DECL_CONTEXT (decl);
   if (class_type && !CLASS_TYPE_P (class_type))
@@ -13139,13 +13140,14 @@ grok_op_properties (tree decl, bool complain)
 	{
 	  if (CP_DECL_CONTEXT (decl) != global_namespace)
 	    {
-	      error ("%qD may not be declared within a namespace", decl);
+	      error_at (loc, "%qD may not be declared within a namespace",
+			decl);
 	      return false;
 	    }
 
 	  if (!TREE_PUBLIC (decl))
 	    {
-	      error ("%qD may not be declared as static", decl);
+	      error_at (loc, "%qD may not be declared as static", decl);
 	      return false;
 	    }
 	}
@@ -13172,14 +13174,14 @@ grok_op_properties (tree decl, bool complain)
 	  || operator_code == ARRAY_REF
 	  || operator_code == NOP_EXPR)
 	{
-	  error ("%qD must be a nonstatic member function", decl);
+	  error_at (loc, "%qD must be a nonstatic member function", decl);
 	  return false;
 	}
 
       if (DECL_STATIC_FUNCTION_P (decl))
 	{
-	  error ("%qD must be either a non-static member "
-		 "function or a non-member function", decl);
+	  error_at (loc, "%qD must be either a non-static member "
+		    "function or a non-member function", decl);
 	  return false;
 	}
 
@@ -13188,8 +13190,8 @@ grok_op_properties (tree decl, bool complain)
 	  if (!arg || arg == void_list_node)
 	    {
 	      if (complain)
-		error ("%qD must have an argument of class or "
-		       "enumerated type", decl);
+		error_at(loc, "%qD must have an argument of class or "
+			 "enumerated type", decl);
 	      return false;
 	    }
       
@@ -13214,7 +13216,7 @@ grok_op_properties (tree decl, bool complain)
   if (operator_code == COND_EXPR)
     {
       /* 13.4.0.3 */
-      error ("ISO C++ prohibits overloading operator ?:");
+      error_at (loc, "ISO C++ prohibits overloading operator ?:");
       return false;
     }
 
@@ -13225,7 +13227,8 @@ grok_op_properties (tree decl, bool complain)
       if (!arg)
 	{
 	  /* Variadic.  */
-	  error ("%qD must not have variable number of arguments", decl);
+	  error_at (loc, "%qD must not have variable number of arguments",
+		    decl);
 	  return false;
 	}
       ++arity;
@@ -13248,9 +13251,10 @@ grok_op_properties (tree decl, bool complain)
       else if (arity != 2)
 	{
 	  /* This was an ambiguous operator but is invalid. */
-	  error (methodp
-		 ? G_("%qD must have either zero or one argument")
-		 : G_("%qD must have either one or two arguments"), decl);
+	  error_at (loc,
+		    methodp
+		    ? G_("%qD must have either zero or one argument")
+		    : G_("%qD must have either one or two arguments"), decl);
 	  return false;
 	}
       else if ((operator_code == POSTINCREMENT_EXPR
@@ -13260,10 +13264,11 @@ grok_op_properties (tree decl, bool complain)
 	       && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)),
 				 integer_type_node))
 	{
-	  error (methodp
-		 ? G_("postfix %qD must have %<int%> as its argument")
-		 : G_("postfix %qD must have %<int%> as its second argument"),
-		 decl);
+	  error_at (loc,
+		    methodp
+		    ? G_("postfix %qD must have %<int%> as its argument")
+		    : G_("postfix %qD must have %<int%> as its second argument"),
+		    decl);
 	  return false;
 	}
       break;
@@ -13271,9 +13276,10 @@ grok_op_properties (tree decl, bool complain)
     case OVL_OP_FLAG_UNARY:
       if (arity != 1)
 	{
-	  error (methodp
-		 ? G_("%qD must have no arguments")
-		 : G_("%qD must have exactly one argument"), decl);
+	  error_at (loc,
+		    methodp
+		    ? G_("%qD must have no arguments")
+		    : G_("%qD must have exactly one argument"), decl);
 	  return false;
 	}
       break;
@@ -13281,9 +13287,10 @@ grok_op_properties (tree decl, bool complain)
     case OVL_OP_FLAG_BINARY:
       if (arity != 2)
 	{
-	  error (methodp
-		 ? G_("%qD must have exactly one argument")
-		 : G_("%qD must have exactly two arguments"), decl);
+	  error_at (loc,
+		    methodp
+		    ? G_("%qD must have exactly one argument")
+		    : G_("%qD must have exactly two arguments"), decl);
 	  return false;
 	}
       break;
@@ -13297,15 +13304,8 @@ grok_op_properties (tree decl, bool complain)
     if (TREE_PURPOSE (arg))
       {
 	TREE_PURPOSE (arg) = NULL_TREE;
-	if (operator_code == POSTINCREMENT_EXPR
-	    || operator_code == POSTDECREMENT_EXPR)
-	  pedwarn (input_location, OPT_Wpedantic,
-		   "%qD cannot have default arguments", decl);
-	else
-	  {
-	    error ("%qD cannot have default arguments", decl);
-	    return false;
-	  }
+	error_at (loc, "%qD cannot have default arguments", decl);
+	return false;
       }
 
   /* At this point the declaration is well-formed.  It may not be
@@ -13328,31 +13328,31 @@ grok_op_properties (tree decl, bool complain)
 	t = TYPE_MAIN_VARIANT (TREE_TYPE (t));
 
       if (VOID_TYPE_P (t))
-	warning (OPT_Wconversion,
-		 ref
-		 ? G_("conversion to a reference to void "
-		      "will never use a type conversion operator")
-		 : G_("conversion to void "
-		      "will never use a type conversion operator"));
+	warning_at (loc, OPT_Wconversion,
+		    ref
+		    ? G_("conversion to a reference to void "
+			 "will never use a type conversion operator")
+		    : G_("conversion to void "
+			 "will never use a type conversion operator"));
       else if (class_type)
 	{
 	  if (t == class_type)
-	    warning (OPT_Wconversion,
-                     ref
-                     ? G_("conversion to a reference to the same type "
-                          "will never use a type conversion operator")
-                     : G_("conversion to the same type "
-                          "will never use a type conversion operator"));
+	    warning_at (loc, OPT_Wconversion,
+			ref
+			? G_("conversion to a reference to the same type "
+			     "will never use a type conversion operator")
+			: G_("conversion to the same type "
+			     "will never use a type conversion operator"));
 	  /* Don't force t to be complete here.  */
 	  else if (MAYBE_CLASS_TYPE_P (t)
 		   && COMPLETE_TYPE_P (t)
 		   && DERIVED_FROM_P (t, class_type))
-	    warning (OPT_Wconversion,
-		     ref
-		     ? G_("conversion to a reference to a base class "
-			  "will never use a type conversion operator")
-		     : G_("conversion to a base class "
-			  "will never use a type conversion operator"));
+	    warning_at (loc, OPT_Wconversion,
+			ref
+			? G_("conversion to a reference to a base class "
+			     "will never use a type conversion operator")
+			: G_("conversion to a base class "
+			     "will never use a type conversion operator"));
 	}
     }
 
@@ -13365,8 +13365,8 @@ grok_op_properties (tree decl, bool complain)
   if (operator_code == TRUTH_ANDIF_EXPR
       || operator_code == TRUTH_ORIF_EXPR
       || operator_code == COMPOUND_EXPR)
-    warning (OPT_Weffc__,
-	     "user-defined %qD always evaluates both arguments", decl);
+    warning_at (loc, OPT_Weffc__,
+		"user-defined %qD always evaluates both arguments", decl);
   
   /* More Effective C++ rule 6.  */
   if (operator_code == POSTINCREMENT_EXPR
@@ -13385,13 +13385,14 @@ grok_op_properties (tree decl, bool complain)
 	{
 	  if (!TYPE_REF_P (ret)
 	      || !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (ret)), arg))
-	    warning (OPT_Weffc__, "prefix %qD should return %qT", decl,
-		     build_reference_type (arg));
+	    warning_at (loc, OPT_Weffc__, "prefix %qD should return %qT", decl,
+			build_reference_type (arg));
 	}
       else
 	{
 	  if (!same_type_p (TYPE_MAIN_VARIANT (ret), arg))
-	    warning (OPT_Weffc__, "postfix %qD should return %qT", decl, arg);
+	    warning_at (loc, OPT_Weffc__,
+			"postfix %qD should return %qT", decl, arg);
 	}
     }
 
@@ -13403,7 +13404,7 @@ grok_op_properties (tree decl, bool complain)
 	  || operator_code == MULT_EXPR
 	  || operator_code == TRUNC_MOD_EXPR)
       && TYPE_REF_P (TREE_TYPE (TREE_TYPE (decl))))
-    warning (OPT_Weffc__, "%qD should return by value", decl);
+    warning_at (loc, OPT_Weffc__, "%qD should return by value", decl);
 
   return true;
 }
