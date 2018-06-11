@@ -2055,11 +2055,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  {
 	    gnu_fat_type = TYPE_MAIN_VARIANT (TYPE_POINTER_TO (gnu_type));
 	    TYPE_NAME (gnu_fat_type) = NULL_TREE;
+	    gnu_ptr_template =
+	      TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_fat_type)));
+	    gnu_template_type = TREE_TYPE (gnu_ptr_template);
+
 	    /* Save the contents of the dummy type for update_pointer_to.  */
 	    TYPE_POINTER_TO (gnu_type) = copy_type (gnu_fat_type);
-	    gnu_ptr_template =
-	      TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_fat_type)));
-	    gnu_template_type = TREE_TYPE (gnu_ptr_template);
+	    TYPE_FIELDS (TYPE_POINTER_TO (gnu_type))
+	      = copy_node (TYPE_FIELDS (gnu_fat_type));
+	    DECL_CHAIN (TYPE_FIELDS (TYPE_POINTER_TO (gnu_type)))
+	      = copy_node (DECL_CHAIN (TYPE_FIELDS (gnu_fat_type)));
 	  }
 	else
 	  {
@@ -2080,29 +2085,39 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* Build the fat pointer type.  Use a "void *" object instead of
 	   a pointer to the array type since we don't have the array type
-	   yet (it will reference the fat pointer via the bounds).  */
-	tem
-	  = create_field_decl (get_identifier ("P_ARRAY"), ptr_type_node,
-			       gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
-	DECL_CHAIN (tem)
-	  = create_field_decl (get_identifier ("P_BOUNDS"), gnu_ptr_template,
-			       gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
+	   yet (it will reference the fat pointer via the bounds).  Note
+	   that we reuse the existing fields of a dummy type because for:
 
+	     type Arr is array (Positive range <>) of Element_Type;
+	     type Array_Ref is access Arr;
+	     Var : Array_Ref := Null;
+
+	   in a declarative part, Arr will be frozen only after Var, which
+	   means that the fields used in the CONSTRUCTOR built for Null are
+	   those of the dummy type, which in turn means that COMPONENT_REFs
+	   of Var may be built with these fields.  Now if COMPONENT_REFs of
+	   Var are also built later with the fields of the final type, the
+	   aliasing machinery may consider that the accesses are distinct
+	   if the FIELD_DECLs are distinct as objects.  */
 	if (COMPLETE_TYPE_P (gnu_fat_type))
 	  {
-	    /* We are going to lay it out again so reset the alias set.  */
-	    alias_set_type alias_set = TYPE_ALIAS_SET (gnu_fat_type);
-	    TYPE_ALIAS_SET (gnu_fat_type) = -1;
-	    finish_fat_pointer_type (gnu_fat_type, tem);
-	    TYPE_ALIAS_SET (gnu_fat_type) = alias_set;
+	    tem = TYPE_FIELDS (gnu_fat_type);
+	    TREE_TYPE (tem) = ptr_type_node;
+	    TREE_TYPE (DECL_CHAIN (tem)) = gnu_ptr_template;
+	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (gnu_fat_type)) = 0;
 	    for (t = gnu_fat_type; t; t = TYPE_NEXT_VARIANT (t))
-	      {
-		TYPE_FIELDS (t) = tem;
-		SET_TYPE_UNCONSTRAINED_ARRAY (t, gnu_type);
-	      }
+	      SET_TYPE_UNCONSTRAINED_ARRAY (t, gnu_type);
 	  }
 	else
 	  {
+	    tem
+	      = create_field_decl (get_identifier ("P_ARRAY"),
+				   ptr_type_node, gnu_fat_type,
+				   NULL_TREE, NULL_TREE, 0, 0);
+	    DECL_CHAIN (tem)
+	      = create_field_decl (get_identifier ("P_BOUNDS"),
+				   gnu_ptr_template, gnu_fat_type,
+				   NULL_TREE, NULL_TREE, 0, 0);
 	    finish_fat_pointer_type (gnu_fat_type, tem);
 	    SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_type);
 	  }
