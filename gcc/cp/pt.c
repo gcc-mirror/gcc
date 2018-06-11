@@ -18511,6 +18511,7 @@ tsubst_copy_and_build (tree t,
     case COND_EXPR:
       {
 	tree cond = RECUR (TREE_OPERAND (t, 0));
+	cond = mark_rvalue_use (cond);
 	tree folded_cond = fold_non_dependent_expr (cond);
 	tree exp1, exp2;
 
