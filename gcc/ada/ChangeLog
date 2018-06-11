@@ -1,3 +1,9 @@
+2018-06-11  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Part_Of): Only allow Part_Of on non-generic
+	unit.
+	(Check_Missing_Part_Of): Do not force Part_Of on generic unit.
+
 2018-06-11  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications): Don't split AND THEN
