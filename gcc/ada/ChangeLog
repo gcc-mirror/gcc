@@ -1,3 +1,9 @@
+2018-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.ads (Rep_Value): Use a single line.
+	* repinfo.adb (Rep_Value): Likewise.
+	(List_Attr): Do not use string concatenation.
+
 2018-06-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Visit_Node): Check reference to formal parameter of
