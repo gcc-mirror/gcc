@@ -3019,7 +3019,8 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
   /* Make a copy of this node.  */
   t = copy_tree_r (tp, walk_subtrees, NULL);
   if (TREE_CODE (*tp) == CALL_EXPR)
-    set_flags_from_callee (*tp);
+    if (!processing_template_decl)
+      set_flags_from_callee (*tp);
   if (data.clear_location && EXPR_HAS_LOCATION (*tp))
     SET_EXPR_LOCATION (*tp, input_location);
   return t;

@@ -577,6 +577,16 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 
 	  DECL_INSTANTIATING_NSDMI_P (member) = 1;
 
+	  bool pushed = false;
+	  if (!currently_open_class (DECL_CONTEXT (member)))
+	    {
+	      push_to_top_level ();
+	      push_nested_class (DECL_CONTEXT (member));
+	      pushed = true;
+	    }
+
+	  gcc_checking_assert (!processing_template_decl);
+
 	  inject_this_parameter (DECL_CONTEXT (member), TYPE_UNQUALIFIED);
 
 	  start_lambda_scope (member);
@@ -597,6 +607,12 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	      if (!nsdmi_inst)
 		nsdmi_inst = tree_cache_map::create_ggc (37);
 	      nsdmi_inst->put (member, init);
+	    }
+
+	  if (pushed)
+	    {
+	      pop_nested_class ();
+	      pop_from_top_level ();
 	    }
 
 	  input_location = sloc;
