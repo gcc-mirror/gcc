@@ -1,3 +1,7 @@
+2018-06-11  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vx-common.h (USE_TM_CLONE_REGISTRY): #define to 0.
+
 2018-06-11  Martin Sebor  <msebor@redhat.com>
 
 	* doc/invoke.texi (-Wall): List -Wc++17-compat.
