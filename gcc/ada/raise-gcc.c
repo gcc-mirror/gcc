@@ -106,8 +106,9 @@ __gnat_Unwind_RaiseException (_Unwind_Exception *);
 _Unwind_Reason_Code
 __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, _Unwind_Stop_Fn, void *);
 
-extern struct Exception_Occurrence *__gnat_setup_current_excep
- (_Unwind_Exception *);
+extern struct Exception_Occurrence *
+__gnat_setup_current_excep (_Unwind_Exception *, _Unwind_Action);
+
 extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 
 #ifdef CERT
@@ -1220,12 +1221,14 @@ personality_body (_Unwind_Action uw_phases,
       else
 	{
 #ifndef CERT
-	  struct Exception_Occurrence *excep;
-
 	  /* Trigger the appropriate notification routines before the second
-	     phase starts, which ensures the stack is still intact.
-             First, setup the Ada occurrence.  */
-          excep = __gnat_setup_current_excep (uw_exception);
+	     phase starts, when the stack is still intact.  First install what
+	     needs to be installed in the current exception buffer and fetch
+	     the Ada occurrence pointer to use.  */
+
+	  struct Exception_Occurrence *excep
+	    = __gnat_setup_current_excep (uw_exception, uw_phases);
+
 	  if (action.kind == unhandler)
 	    __gnat_notify_unhandled_exception (excep);
 	  else
@@ -1245,10 +1248,10 @@ personality_body (_Unwind_Action uw_phases,
     (uw_context, uw_exception, action.landing_pad, action.ttype_filter);
 
 #ifndef CERT
-  /* Write current exception, so that it can be retrieved from Ada.  It was
-     already done during phase 1 (just above), but in between, one or several
-     exceptions may have been raised (in cleanup handlers).  */
-  __gnat_setup_current_excep (uw_exception);
+  /* Write current exception so that it can be retrieved from Ada.  It was
+     already done during phase 1, but one or several exceptions may have been
+     raised in cleanup handlers in between.  */
+  __gnat_setup_current_excep (uw_exception, uw_phases);
 #endif
 
   return _URC_INSTALL_CONTEXT;
