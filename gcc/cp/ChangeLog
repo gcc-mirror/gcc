@@ -1,5 +1,9 @@
 2018-06-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85792 -Wctor-dtor-privacy and inherited constructor.
+	* class.c (maybe_warn_about_overly_private_class): Handle inherited
+	constructors.
+
 	PR c++/85963 - -Wunused-but-set with ?: in template.
 	* pt.c (tsubst_copy_and_build) [COND_EXPR]: Call mark_rvalue_use.
 
