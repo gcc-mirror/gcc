@@ -2051,8 +2051,22 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
 
       if (TREE_CODE (lhs) == PTRMEM_CST
 	  && TREE_CODE (rhs) == PTRMEM_CST)
-	r = constant_boolean_node (cp_tree_equal (lhs, rhs) == is_code_eq,
-				   type);
+	{
+	  tree lmem = PTRMEM_CST_MEMBER (lhs);
+	  tree rmem = PTRMEM_CST_MEMBER (rhs);
+	  bool eq;
+	  if (TREE_CODE (lmem) == TREE_CODE (rmem)
+	      && TREE_CODE (lmem) == FIELD_DECL
+	      && TREE_CODE (DECL_CONTEXT (lmem)) == UNION_TYPE
+	      && same_type_p (DECL_CONTEXT (lmem),
+			      DECL_CONTEXT (rmem)))
+	    /* If both refer to (possibly different) members of the same union
+	       (12.3), they compare equal. */
+	    eq = true;
+	  else
+	    eq = cp_tree_equal (lhs, rhs);
+	  r = constant_boolean_node (eq == is_code_eq, type);
+	}
       else if ((TREE_CODE (lhs) == PTRMEM_CST
 		|| TREE_CODE (rhs) == PTRMEM_CST)
 	       && (null_member_pointer_value_p (lhs)
