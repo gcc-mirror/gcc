@@ -50,7 +50,7 @@ with Osint.C;   use Osint.C;
 with Output;    use Output;
 with Par_SCO;
 with Prepcomp;
-with Repinfo;   use Repinfo;
+with Repinfo;
 with Restrict;
 with Rident;    use Rident;
 with Rtsfind;
@@ -1442,7 +1442,9 @@ begin
          Exit_Program (Ecode);
       end if;
 
-      --  In -gnatc mode, we only do annotation if -gnatt or -gnatR is also set
+      --  In -gnatc mode we only do annotation if -gnatt or -gnatR is also set,
+      --  or if -gnatwz is enabled (default setting) and there is an unchecked
+      --  conversion that involves a type whose size is not statically known,
       --  as indicated by Back_Annotate_Rep_Info being set to True.
 
       --  We don't call for annotations on a subunit, because to process those
@@ -1558,7 +1560,7 @@ begin
 
       Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;
-      List_Rep_Info (Ttypes.Bytes_Big_Endian);
+      Repinfo.List_Rep_Info (Ttypes.Bytes_Big_Endian);
       Inline.List_Inlining_Info;
 
       --  Only write the library if the backend did not generate any error
