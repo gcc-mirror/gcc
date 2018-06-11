@@ -3667,10 +3667,15 @@ package body Sem_Res is
             --    read     IN, IN OUT
             --    write    IN OUT, OUT
 
-            Build_Variable_Reference_Marker
-              (N     => A,
-               Read  => Ekind (F) /= E_Out_Parameter,
-               Write => Ekind (F) /= E_In_Parameter);
+            if Needs_Variable_Reference_Marker
+                 (N        => A,
+                  Calls_OK => True)
+            then
+               Build_Variable_Reference_Marker
+                 (N     => A,
+                  Read  => Ekind (F) /= E_Out_Parameter,
+                  Write => Ekind (F) /= E_In_Parameter);
+            end if;
 
             Orig_A := Entity (A);
 

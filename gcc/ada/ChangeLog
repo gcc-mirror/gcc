@@ -1,3 +1,22 @@
+2018-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name): Mode the declaration of
+	Is_Assignment_LHS further in. Use predicate
+	Needs_Variable_Reference_Marker to determine whether to create a
+	variable marker.
+	(Find_Expanded_Name): Mode the declaration of Is_Assignment_LHS further
+	in.  Use predicate Needs_Variable_Reference_Marker to determine whether
+	to create a variable marker.
+	* sem_elab.adb (Build_Variable_Reference_Marker): Remove the various
+	checks that determine whether the identifier or expanded name is a
+	suitable variable reference.  The checks are now performed by
+	Needs_Variable_Reference_Marker.
+	* sem_res.adb (Resolve_Actuals): Use predicate
+	Needs_Variable_Reference_Marker to determine whether to create a
+	variable marker.
+	* sem_util.adb (Needs_Variable_Reference_Marker): New routine.
+	* sem_util.ads (Needs_Variable_Reference_Marker): New routine.
+
 2018-06-11  Valentine Reboul  <reboul@adacore.com>
 
 	* doc/gnat_rm.rst, doc/gnat_ugn.rst: Rename "GPL Edition" into
