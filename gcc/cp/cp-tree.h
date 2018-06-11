@@ -6827,9 +6827,9 @@ extern bool perform_or_defer_access_check	(tree, tree, tree,
 
 struct deferring_access_check_sentinel
 {
-  deferring_access_check_sentinel ()
+  deferring_access_check_sentinel (enum deferring_kind kind = dk_deferred)
   {
-    push_deferring_access_checks (dk_deferred);
+    push_deferring_access_checks (kind);
   }
   ~deferring_access_check_sentinel ()
   {
