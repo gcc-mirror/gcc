@@ -1,5 +1,30 @@
 2018-06-11  Nathan Sidwell  <nathan@acm.org>
 
+	MMAP writing
+	gcc/
+	* configure.ac: Check for posix_fallocate.
+	* configure, config.in: Rebuilt.
+	gcc/cp/
+	* module.c (MAPPED_WRITING): New.
+	(data::allocator::{grow,shrink}): New overloads.
+	(data::use): Check available.
+	(data::allocator::grow): Deal with allocator failure.
+	(bytes_in::read): Set overflow on fail.
+	(bytes_{in,out}::{u32,c,i,u,wi,buf}): Adjust.
+	(bytes_out::printf): Likewise.
+	(bytes_out::bytes_out): Allocator is non-optional.
+	(elf_out): Derive from data::allocator.
+	(elf_out::{grow,shrink}): New overriders.
+	(elf_out::elf_out): Find page size.
+	(elf_out::{create,remove}_mapping): New.
+	(elf_out::write): New overload.
+	(elf_out::add): Take bytes_out.  Adjust users.
+	(elf_out::{begin,end}): Add mapping support.
+	(trees_out::trees_out): Add allocator parm.
+	(trees_{in::out}::fixed_refs): Delete, adjust uses.
+	(module_state::write_{readme,config,namespaces,bindings}): Adjust.
+	(module_state::write_{unnamed,cluster}): Adjust.
+
 	Prep for MMAP exporting.
 	gcc/cp/
 	* module.c (MODULE_MMAP_IO): Rename to ...

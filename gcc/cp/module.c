@@ -175,9 +175,14 @@ Classes used:
 # define hstrerror(X) ""
 #endif
 
-#if HAVE_MMAP_FILE
-/* Use mmap to load module files.  */
+#if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
+/* Use mmap to load module files.
+   Presumes, mmap, munmap.  */
 #define MAPPED_READING 1
+#if HAVE_SYSCONF && defined (_SC_PAGE_SIZE)
+/* Presumes msync, sysconf (_SC_PAGE_SIZE), ftruncate  */
+#define MAPPED_WRITING 1
+#endif
 #endif
 
 /* Id for dumping module information.  */
@@ -277,8 +282,10 @@ public:
     /* Tools tend to moan if the dtor's not virtual.  */
     virtual ~allocator () {}
 
-    virtual void grow (data &obj, unsigned needed, bool exact);
-    virtual void shrink (data &obj);
+    void grow (data &obj, unsigned needed, bool exact);
+    void shrink (data &obj);
+    virtual char *grow (char *ptr, unsigned needed);
+    virtual void shrink (char *ptr);
   };
 
 public:
@@ -305,6 +312,8 @@ public:
 protected:
   char *use (unsigned count)
   {
+    if (size < pos + count)
+      return NULL;
     char *res = &buffer[pos];
     pos += count;
     return res;
@@ -335,8 +344,11 @@ data::allocator::grow (data &obj, unsigned needed, bool exact)
 
   if (!exact)
     needed *= 2;
-  obj.buffer = XRESIZEVAR (char, obj.buffer, needed);
-  obj.size = needed;
+  obj.buffer = grow (obj.buffer, needed);
+  if (obj.buffer)
+    obj.size = needed;
+  else
+    obj.pos = obj.size = 0;
 }
 
 /* Free a buffer.  */
@@ -344,9 +356,21 @@ data::allocator::grow (data &obj, unsigned needed, bool exact)
 void
 data::allocator::shrink (data &obj)
 {
-  XDELETEVEC (obj.buffer);
+  shrink (obj.buffer);
   obj.buffer = NULL;
   obj.size = 0;
+}
+
+char *
+data::allocator::grow (char *ptr, unsigned needed)
+{
+  return XRESIZEVAR (char, ptr, needed);
+}
+
+void
+data::allocator::shrink (char *ptr)
+{
+  XDELETEVEC (ptr);
 }
 
 /* Byte streamer base.   Buffer with read/write position and smarts
@@ -432,9 +456,10 @@ public:
 public:
   const char *read (unsigned count)
   {
-    if (size - pos < count)
-      return NULL;
-    return use (count);
+    char *ptr = use (count);
+    if (!ptr)
+      set_overrun ();
+    return ptr;
   }
 
 public:
@@ -503,8 +528,8 @@ public:
   allocator *memory;	/* Obtainer of memory.  */
   
 public:
-  bytes_out (allocator *memory = NULL)
-    : parent (), memory (memory ? memory : &simple_memory)
+  bytes_out (allocator *memory)
+    : parent (), memory (memory)
   {
   }
   ~bytes_out ()
@@ -514,7 +539,7 @@ public:
 public:
   bool streaming_p () const
   {
-    return buffer != NULL;
+    return memory != NULL;
   }
 
 public:
@@ -669,11 +694,13 @@ bytes_in::b ()
 void
 bytes_out::u32 (unsigned val)
 {
-  char *ptr = write (4);
-  ptr[0] = val;
-  ptr[1] = val >> 8;
-  ptr[2] = val >> 16;
-  ptr[3] = val >> 24;
+  if (char *ptr = write (4))
+    {
+      ptr[0] = val;
+      ptr[1] = val >> 8;
+      ptr[2] = val >> 16;
+      ptr[3] = val >> 24;
+    }
 }
 
 unsigned
@@ -687,8 +714,6 @@ bytes_in::u32 ()
       val |= (unsigned char)ptr[2] << 16;
       val |= (unsigned char)ptr[3] << 24;
     }
-  else
-    set_overrun ();
 
   return val;
 }
@@ -698,7 +723,8 @@ bytes_in::u32 ()
 void
 bytes_out::c (unsigned char v)
 {
-  *write (1) = v;
+  if (char *ptr = write (1))
+    *ptr = v;
 }
 
 int
@@ -707,8 +733,6 @@ bytes_in::c ()
   int v = 0;
   if (const char *ptr = read (1))
     v = (unsigned char)ptr[0];
-  else
-    set_overrun ();
   return v;
 }
 
@@ -718,22 +742,25 @@ bytes_in::c ()
 void
 bytes_out::i (int v)
 {
-  char *ptr = write (1);
-  if (v <= 0x3f && v >= -0x40)
-    *ptr = v & 0x7f;
-  else
+  if (char *ptr = write (1))
     {
-      unsigned bytes = 0;
-      int probe;
-      if (v >= 0)
-	for (probe = v >> 8; probe > 0x7; probe >>= 8)
-	  bytes++;
+      if (v <= 0x3f && v >= -0x40)
+	*ptr = v & 0x7f;
       else
-	for (probe = v >> 8; probe < -0x8; probe >>= 8)
-	  bytes++;
-      *ptr = 0x80 | bytes << 4 | (probe & 0xf);
-      for (ptr = write (++bytes); bytes--; v >>= 8)
-	ptr[bytes] = v & 0xff;
+	{
+	  unsigned bytes = 0;
+	  int probe;
+	  if (v >= 0)
+	    for (probe = v >> 8; probe > 0x7; probe >>= 8)
+	      bytes++;
+	  else
+	    for (probe = v >> 8; probe < -0x8; probe >>= 8)
+	      bytes++;
+	  *ptr = 0x80 | bytes << 4 | (probe & 0xf);
+	  if ((ptr = write (++bytes)))
+	    for (; bytes--; v >>= 8)
+	      ptr[bytes] = v & 0xff;
+	}
     }
 }
 
@@ -753,14 +780,10 @@ bytes_in::i ()
 	  if ((ptr = read (++bytes)))
 	    while (bytes--)
 	      v = (v << 8) | (*ptr++ & 0xff);
-	  else
-	    set_overrun ();
 	}
       else if (v & 0x40)
 	v |= -1 ^ 0x3f;
     }
-  else
-    set_overrun ();
 
   return v;
 }
@@ -768,18 +791,21 @@ bytes_in::i ()
 void
 bytes_out::u (unsigned v)
 {
-  char *ptr = write (1);
-  if (v <= 0x7f)
-    *ptr = v;
-  else
+  if (char *ptr = write (1))
     {
-      unsigned bytes = 0;
-      unsigned probe;
-      for (probe = v >> 8; probe > 0xf; probe >>= 8)
-	bytes++;
-      *ptr = 0x80 | bytes << 4 | probe;
-      for (ptr = write (++bytes); bytes--; v >>= 8)
-	ptr[bytes] = v & 0xff;
+      if (v <= 0x7f)
+	*ptr = v;
+      else
+	{
+	  unsigned bytes = 0;
+	  unsigned probe;
+	  for (probe = v >> 8; probe > 0xf; probe >>= 8)
+	    bytes++;
+	  *ptr = 0x80 | bytes << 4 | probe;
+	  if ((ptr = write (++bytes)))
+	    for (; bytes--; v >>= 8)
+	      ptr[bytes] = v & 0xff;
+	}
     }
 }
 
@@ -798,12 +824,8 @@ bytes_in::u ()
 	  if ((ptr = read (++bytes)))
 	    while (bytes--)
 	      v = (v << 8) | (*ptr++ & 0xff);
-	  else
-	    set_overrun ();
 	}
     }
-  else
-    set_overrun ();
 
   return v;
 }
@@ -811,22 +833,25 @@ bytes_in::u ()
 void
 bytes_out::wi (HOST_WIDE_INT v)
 {
-  char *ptr = write (1);
-  if (v <= 0x3f && v >= -0x40)
-    *ptr = v & 0x7f;
-  else
+  if (char *ptr = write (1))
     {
-      unsigned bytes = 0;
-      HOST_WIDE_INT probe;
-      if (v >= 0)
-	for (probe = v >> 8; probe > 0x7; probe >>= 8)
-	  bytes++;
+      if (v <= 0x3f && v >= -0x40)
+	*ptr = v & 0x7f;
       else
-	for (probe = v >> 8; probe < -0x8; probe >>= 8)
-	  bytes++;
-      *ptr = 0x80 | bytes << 4 | (probe & 0xf);
-      for (ptr = write (++bytes); bytes--; v >>= 8)
-	ptr[bytes] = v & 0xff;
+	{
+	  unsigned bytes = 0;
+	  HOST_WIDE_INT probe;
+	  if (v >= 0)
+	    for (probe = v >> 8; probe > 0x7; probe >>= 8)
+	      bytes++;
+	  else
+	    for (probe = v >> 8; probe < -0x8; probe >>= 8)
+	      bytes++;
+	  *ptr = 0x80 | bytes << 4 | (probe & 0xf);
+	  if ((ptr = write (++bytes)))
+	    for (; bytes--; v >>= 8)
+	      ptr[bytes] = v & 0xff;
+	}
     }
 }
 
@@ -846,14 +871,10 @@ bytes_in::wi ()
 	  if ((ptr = read (++bytes)))
 	    while (bytes--)
 	      v = (v << 8) | (*ptr++ & 0xff);
-	  else
-	    set_overrun ();
 	}
       else if (v & 0x40)
 	v |= -1 ^ 0x3f;
     }
-  else
-    set_overrun ();
 
   return v;
 }
@@ -897,15 +918,14 @@ bytes_in::z ()
 void
 bytes_out::buf (const char *buf, size_t len)
 {
-  memcpy (write (len), buf, len);
+  if (char *ptr = write (len))
+    memcpy (ptr, buf, len);
 }
 
 const char *
 bytes_in::buf (size_t len)
 {
   const char *ptr = read (len);
-  if (!ptr)
-    set_overrun ();
 
   return ptr;
 }
@@ -949,18 +969,19 @@ bytes_out::printf (const char *format, ...)
   /* Exercise buffer expansion.  */
   size_t len = MODULE_STAMP ? 10 : 500;
 
- again:
-  va_start (args, format);
-  char *ptr = write (len);
-  size_t actual = vsnprintf (ptr, len, format, args) + 1;
-  va_end (args);
-  if (actual > len)
+  while (char *ptr = write (len))
     {
+      va_start (args, format);
+      size_t actual = vsnprintf (ptr, len, format, args) + 1;
+      va_end (args);
+      if (actual <= len)
+	{
+	  unuse (len - actual);
+	  break;
+	}
       unuse (len);
       len = actual;
-      goto again;
     }
-  unuse (len - actual);
 }
 
 /* Encapsulated Lazy Records Of Named Declarations.
@@ -1256,20 +1277,31 @@ public:
 
 /* ELROND writer.  */
 
-class elf_out : public elf {
+class elf_out : public elf, public data::allocator {
   typedef elf parent;
   /* Desired section alignment on disk.  */
   static const int SECTION_ALIGN = 16;
 
 private:
-  ptr_int_hash_map ident_strtab;/* Map of IDENTIFIERS to strtab
-				   offsets. */
-  unsigned offset;		/* Write position in file.  */
+  ptr_int_hash_map identtab;	/* Map of IDENTIFIERS to strtab offsets. */
+  unsigned pos;			/* Write position in file.  */
+#ifdef MAPPED_WRITING
+  unsigned offset;		/* Offset of the mapping.  */
+  unsigned extent;		/* Length of mapping.  */
+  unsigned page_size;		/* System page size.  */
+#endif
 
 public:
   elf_out (int fd, int e)
-    :parent (fd, e), ident_strtab (500), offset (0)
+    :parent (fd, e), identtab (500), pos (0)
   {
+#ifdef MAPPED_WRITING
+    offset = extent = 0;
+    page_size = sysconf (_SC_PAGE_SIZE);
+    if (page_size < SECTION_ALIGN)
+      /* Something really strange.  */
+      set_error (EINVAL);
+#endif
   }
   ~elf_out ()
   {
@@ -1277,6 +1309,20 @@ public:
     data::simple_memory.shrink (sectab);
     data::simple_memory.shrink (strtab);
   }
+
+#ifdef MAPPED_WRITING
+private:
+  void create_mapping (unsigned ext, bool extending = true);
+  void remove_mapping ();
+#endif
+
+#ifdef MAPPED_WRITING
+protected:
+  using allocator::grow;
+  virtual char *grow (char *, unsigned needed);
+  using allocator::shrink;
+  virtual void shrink (char *);
+#endif
 
 public:
   unsigned get_section_limit () const
@@ -1287,7 +1333,10 @@ public:
 protected:
   unsigned add (unsigned type, unsigned name = 0,
 		unsigned off = 0, unsigned size = 0, unsigned flags = SHF_NONE);
-  unsigned write (const data *);
+  unsigned write (const data &);
+#ifdef MAPPED_WRITING
+  unsigned write (const bytes_out &);
+#endif
 
 public:
   /* IDENTIFIER to strtab offset.  */
@@ -1303,7 +1352,7 @@ private:
 
 public:
   /* Add a section with contents or strings.  */
-  unsigned add (const data *, bool string_p, unsigned name);
+  unsigned add (const bytes_out &, bool string_p, unsigned name);
 
 public:
   /* Begin and end writing.  */
@@ -1378,7 +1427,7 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
   spans[3]++;
 
   set_crc (crc_ptr);
-  unsigned sec_num = sink->add (this, !crc_ptr, name);
+  unsigned sec_num = sink->add (*this, !crc_ptr, name);
   memory->shrink (*this);
 
   return sec_num;
@@ -1616,6 +1665,107 @@ elf_in::begin (location_t loc)
   return true;
 }
 
+/* Create a new mapping.  */
+
+#ifdef MAPPED_WRITING
+void
+elf_out::create_mapping (unsigned ext, bool extending)
+{
+#ifndef HAVE_POSIX_FALLOCATE
+#define posix_fallocate(fd,off,len) ftruncate (fd, off + len)
+#endif
+  void *mapping = MAP_FAILED;
+  if (extending && ext < 1024 * 1024)
+    {
+      if (!posix_fallocate (fd, offset, ext * 2))
+	mapping = mmap (NULL, ext * 2, PROT_READ + PROT_WRITE,
+			MAP_SHARED, fd, offset);
+      if (mapping != MAP_FAILED)
+	ext *= 2;
+    }
+  if (mapping == MAP_FAILED)
+    {
+      if (!extending || !posix_fallocate (fd, offset, ext))
+	mapping = mmap (NULL, ext, PROT_READ + PROT_WRITE,
+			MAP_SHARED, fd, offset);
+      if (mapping == MAP_FAILED)
+	{
+	  set_error (errno);
+	  mapping = NULL;
+	  ext = 0;
+	}
+    }
+#undef posix_fallocate
+  hdr.buffer = (char *)mapping;
+  extent = ext;
+}
+#endif
+
+/* Flush out the current mapping.  */
+
+#ifdef MAPPED_WRITING
+void
+elf_out::remove_mapping ()
+{
+  if (hdr.buffer)
+    {
+      if (msync (hdr.buffer, extent, MS_ASYNC)
+	  || munmap (hdr.buffer, extent))
+	/* We're somewhat screwed at this point.  */
+	set_error (errno);
+    }
+
+  hdr.buffer = NULL;
+}
+#endif
+
+#ifdef MAPPED_WRITING
+/* Grow a mapping of PTR to be NEEDED bytes long.  This gets
+   interesting if the new size grows the EXTENT.  */
+
+char *
+elf_out::grow (char *data, unsigned needed)
+{
+  if (!hdr.buffer)
+    return NULL;
+
+  if (!data)
+    {
+      /* First allocation, align to SECTION_ALIGN now.  */
+      pos = (pos + SECTION_ALIGN - 1) & ~(SECTION_ALIGN - 1);
+
+      data = hdr.buffer + (pos - offset);
+    }
+  
+  unsigned pos = data - hdr.buffer;
+  if (pos + needed > extent)
+    {
+      /* We need to grow the mapping.  */
+      unsigned lwm = pos & ~(page_size - 1);
+      unsigned hwm = (pos + needed + page_size - 1) & ~(page_size - 1);
+
+      gcc_checking_assert (hwm > extent);
+
+      remove_mapping ();
+
+      offset += lwm;
+      create_mapping (extent < hwm - lwm ? hwm - lwm : extent);
+
+      data = hdr.buffer + (pos - lwm);
+    }
+
+  return data;
+}
+#endif
+
+#ifdef MAPPED_WRITING
+/* Shrinking is a NOP.  */
+void
+elf_out::shrink (char *)
+{
+}
+#endif
+
 /* Write S of length L to the strtab buffer.  L must include the ending
    NUL, if that's what you want.  */
 
@@ -1659,7 +1809,7 @@ elf_out::name (tree ident)
 {
   gcc_checking_assert (identifier_p (ident));
   bool existed;
-  int *slot = &ident_strtab.get_or_insert (ident, &existed);
+  int *slot = &identtab.get_or_insert (ident, &existed);
   if (!existed)
     *slot = strtab_write (IDENTIFIER_POINTER (ident),
 			  IDENTIFIER_LENGTH (ident) + 1);
@@ -1719,30 +1869,62 @@ elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
    Return the position of the start of the write, or zero on failure.   */
 
 unsigned
-elf_out::write (const data *buffer)
+elf_out::write (const data &buffer)
 {
-  if (unsigned padding = offset & (SECTION_ALIGN - 1))
+#ifndef MAPPED_WRITING
+  if (unsigned padding = pos & (SECTION_ALIGN - 1))
     {
       /* Align the section on disk, should help the necessary copies.
 	 fseeking to extend is non-portable.  */
       static char zero[SECTION_ALIGN];
       padding = SECTION_ALIGN - padding;
-      offset += padding;
+      pos += padding;
       if (::write (fd, &zero, padding) != padding)
 	set_error (errno);
     }
+#endif
 
-  unsigned res = offset;
-  if (::write (fd, buffer->buffer, buffer->pos) != buffer->pos)
+  unsigned res = pos;
+
+#ifdef MAPPED_WRITING
+  /* HDR is always mapped, even though it's not bytes_out.  */
+  if (&buffer != &hdr)
+    {
+      bytes_out out (this);
+      grow (out, buffer.pos, true);
+      res = pos;
+      if (out.buffer)
+	memcpy (out.buffer, buffer.buffer, buffer.pos);
+      shrink (out);
+    }
+#else
+  if (::write (fd, buffer.buffer, buffer.pos) != buffer.pos)
     {
       set_error (errno);
       return 0;
     }
-
-  offset += buffer->pos;
-
+#endif
+  pos += buffer.pos;
   return res;
 }
+
+#ifdef MAPPED_WRITING
+unsigned
+elf_out::write (const bytes_out &buf)
+{
+  if (buf.memory == this)
+    {
+      /* A directly mapped buffer.  */
+      gcc_checking_assert (buf.buffer - hdr.buffer >= 0
+			   && buf.buffer - hdr.buffer + buf.size <= extent);
+      unsigned res = pos;
+      pos += buf.pos;
+      return res;
+    }
+  else
+    return write (static_cast <const data &> (buf));
+}
+#endif
 
 /* Write data and add section.  STRING_P is true for a string
    section, false for PROGBITS.  NAME identifies the section (0 is the
@@ -1750,12 +1932,12 @@ elf_out::write (const data *buffer)
    failure (0 is the undef section).  */
 
 unsigned
-elf_out::add (const data *data, bool string_p, unsigned name)
+elf_out::add (const bytes_out &data, bool string_p, unsigned name)
 {
   unsigned off = write (data);
 
   return add (string_p ? SHT_STRTAB : SHT_PROGBITS, name,
-	      off, data->pos, string_p ? SHF_STRINGS : SHF_NONE);
+	      off, data.pos, string_p ? SHF_STRINGS : SHF_NONE);
 }
 
 /* Begin writing the file.  Initialize the section table and write an
@@ -1777,12 +1959,20 @@ elf_out::begin ()
   /* Create the UNDEF section.  */
   add (SHT_NONE);
 
+#ifdef MAPPED_WRITING
+  /* Start a mapping.  */
+  create_mapping (MODULE_STAMP ? page_size
+		  : (32767 + page_size) & ~(page_size - 1));
+  if (!hdr.buffer)
+    return false;
+#endif
+
   /* Write an empty header.  */
-  data::simple_memory.grow (hdr, sizeof (header), true);
+  grow (hdr, sizeof (header), true);
   header *h = reinterpret_cast <header *> (hdr.buffer);
   memset (h, 0, sizeof (header));
   hdr.pos = hdr.size;
-  write (&hdr);
+  write (hdr);
   return has_error () == 0;
 }
 
@@ -1795,8 +1985,10 @@ elf_out::end ()
   if (fd >= 0)
     {
       /* Write the string table.  */
-      unsigned strndx = add (&strtab, -1, name (".strtab"));
-      unsigned shnum = sectab.pos / sizeof (section);
+      unsigned strnam = name (".strtab");
+      unsigned stroff = write (strtab);
+      unsigned strndx = add (SHT_STRTAB, strnam, stroff, strtab.pos,
+			     SHF_STRINGS);
 
       /* Store escape values in section[0].  */
       if (strndx >= SHN_LORESERVE)
@@ -1804,18 +1996,30 @@ elf_out::end ()
 	  reinterpret_cast <section *> (sectab.buffer)->link = strndx;
 	  strndx = SHN_XINDEX;
 	}
+      unsigned shnum = sectab.pos / sizeof (section);
       if (shnum >= SHN_LORESERVE)
 	{
 	  reinterpret_cast <section *> (sectab.buffer)->size = shnum;
 	  shnum = SHN_XINDEX;
 	}
 
-      unsigned shoff = write (&sectab);
+      unsigned shoff = write (sectab);
 
-      /* Write header.  */
+#ifdef MAPPED_WRITING
+      if (offset)
+	{
+	  remove_mapping ();
+	  offset = 0;
+	  create_mapping ((sizeof (header) + page_size - 1) & ~(page_size - 1),
+			  false);
+	}
+      unsigned length = pos;
+#else
       if (lseek (fd, 0, SEEK_SET) < 0)
 	set_error (errno);
-      else
+#endif
+      /* Write header.  */
+      if (!has_error ())
 	{
 	  /* Write the correct header now.  */
 	  header *h = reinterpret_cast <header *> (hdr.buffer);
@@ -1836,9 +2040,15 @@ elf_out::end ()
 	  h->shnum = shnum;
 	  h->shstrndx = strndx;
 
-	  offset = 0;
-	  write (&hdr);
+	  pos = 0;
+	  write (hdr);
 	}
+
+#ifdef MAPPED_WRITING
+      remove_mapping ();
+      if (ftruncate (fd, length))
+	set_error (errno);
+#endif
     }
 
   data::simple_memory.shrink (sectab);
@@ -2096,11 +2306,10 @@ class trees_in : public bytes_in {
 
 private:
   module_state *state;		/* Module being imported.  */
-  vec<tree, va_gc> *fixed_refs;	/* Fixed trees.  */
   auto_vec<tree> back_refs;	/* Back references.  */
 
 public:
-  trees_in (module_state *, vec<tree, va_gc> *globals);
+  trees_in (module_state *);
   ~trees_in ();
 
 public:
@@ -2139,8 +2348,8 @@ public:
   tree tree_node ();
 };
 
-trees_in::trees_in (module_state *state, vec<tree, va_gc> *globals)
-  :parent (), state (state), fixed_refs (globals), back_refs (500)
+trees_in::trees_in (module_state *state)
+  :parent (), state (state), back_refs (500)
 {
 }
 
@@ -2154,13 +2363,12 @@ class trees_out : public bytes_out {
 
 private:
   module_state *state;		/* The module we are writing.  */
-  vec<tree, va_gc> *fixed_refs;	/* Fixed trees.  */
   ptr_int_hash_map tree_map; 	/* Trees to references */
   depset::hash *dep_hash;    	/* Dependency table.  */
   int ref_num;			/* Back reference number.  */
 
 public:
-  trees_out (module_state *, vec<tree, va_gc> *globals);
+  trees_out (allocator *, module_state *);
   ~trees_out ();
 
 public:
@@ -2243,8 +2451,8 @@ unsigned trees_out::refs;
 unsigned trees_out::nulls;
 unsigned trees_out::records;
 
-trees_out::trees_out (module_state *state, vec<tree, va_gc> *globals)
-  :parent (), state (state), fixed_refs (globals), tree_map (500),
+trees_out::trees_out (allocator *mem, module_state *state)
+  :parent (mem), state (state), tree_map (500),
    dep_hash (NULL), ref_num (0)
 {
 }
@@ -2431,8 +2639,10 @@ struct GTY(()) module_state {
  private:
   /* Global tree context.  */
   static const std::pair<tree *, unsigned> global_trees[];
-  static vec<tree, va_gc> *global_vec;
   static unsigned global_crc;
+
+ public:
+  static vec<tree, va_gc> *fixed;
 
  private:
   static unsigned lazy_lru;  /* LRU counter.  */
@@ -2487,7 +2697,7 @@ const std::pair<tree *, unsigned> module_state::global_trees[] =
     std::pair<tree *, unsigned> (cp_global_trees, CPTI_MAX),
     std::pair<tree *, unsigned> (NULL, 0)
   };
-GTY(()) vec<tree, va_gc> *module_state::global_vec;
+GTY(()) vec<tree, va_gc> *module_state::fixed;
 unsigned module_state::global_crc;
 
 char *module_state::our_opts;
@@ -3136,10 +3346,10 @@ trees_out::mark_trees ()
     }
 
   /* Install the fixed trees, with +ve references.  */
-  unsigned limit = fixed_refs->length ();
+  unsigned limit = state->fixed->length ();
   for (unsigned ix = 0; ix != limit; ix++)
     {
-      tree val = (*fixed_refs)[ix];
+      tree val = (*state->fixed)[ix];
       bool existed = tree_map.put (val, ix + 1);
       gcc_checking_assert (!TREE_VISITED (val) && !existed);
       TREE_VISITED (val) = true;
@@ -5708,9 +5918,9 @@ trees_in::tree_node ()
       {
 	/* A fixed ref, find it in the fixed_ref array.   */
 	unsigned fix = u ();
-	if (fix < (*fixed_refs).length ())
+	if (fix < (*state->fixed).length ())
 	  {
-	    res = (*fixed_refs)[fix];
+	    res = (*state->fixed)[fix];
 	    dump () && dump ("Read fixed:%u %C:%N%S", fix,
 			     TREE_CODE (res), res, res);
 	  }
@@ -6329,8 +6539,8 @@ module_state::maybe_add_global (tree val, unsigned &crc)
   if (val && !(identifier_p (val) || TREE_VISITED (val)))
     {
       TREE_VISITED (val) = true;
-      crc = crc32_unsigned (crc, global_vec->length ());
-      vec_safe_push (global_vec, val);
+      crc = crc32_unsigned (crc, fixed->length ());
+      vec_safe_push (fixed, val);
       v++;
 
       if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
@@ -6360,7 +6570,7 @@ module_state::init ()
   bitmap_set_bit (current->imports, MODULE_NONE);
   (*modules)[MODULE_NONE] = current;
 
-  gcc_checking_assert (!global_vec);
+  gcc_checking_assert (!fixed);
 
   dump.push (NULL);
 
@@ -6389,12 +6599,12 @@ module_state::init ()
      some global trees are lazily created and we don't want that to
      mess with our syndrome of fixed trees.  */
   unsigned crc = 0;
-  vec_alloc (global_vec, 200);
+  vec_alloc (fixed, 200);
 
   dump () && dump ("+Creating globals");
   /* Insert the TRANSLATION_UNIT_DECL.  */
   TREE_VISITED (DECL_CONTEXT (global_namespace)) = true;
-  global_vec->quick_push (DECL_CONTEXT (global_namespace));
+  fixed->quick_push (DECL_CONTEXT (global_namespace));
   for (unsigned jx = 0; global_trees[jx].first; jx++)
     {
       const tree *ptr = global_trees[jx].first;
@@ -6407,11 +6617,11 @@ module_state::init ()
 	  dump () && dump ("+%u", v);
 	}
     }
-  global_crc = crc32_unsigned (crc, global_vec->length ());
+  global_crc = crc32_unsigned (crc, fixed->length ());
   dump ("") && dump ("Created %u unique globals, crc=%x",
-		     global_vec->length (), global_crc);
-  for (unsigned ix = global_vec->length (); ix--;)
-    TREE_VISITED ((*global_vec)[ix]) = false;
+		     fixed->length (), global_crc);
+  for (unsigned ix = fixed->length (); ix--;)
+    TREE_VISITED ((*fixed)[ix]) = false;
 
   dump.pop (0);
 }
@@ -7320,7 +7530,7 @@ module_state::get_option_string  ()
 void
 module_state::write_readme (elf_out *to, const char *options)
 {
-  bytes_out readme;
+  bytes_out readme (to);
 
   readme.begin (false);
 
@@ -7492,7 +7702,7 @@ module_state::read_imports (bytes_in &cfg, bool direct)
    u:<host-triplet>
    s:options
 
-   u:global_vec->length()
+   u:fixed->length()
    u32:global_crc
 
    u:modules->length ()
@@ -7509,7 +7719,7 @@ module_state::write_config (elf_out *to, const char *opt_str,
 			    const range_t &sec_range,
 			    unsigned unnamed, unsigned inner_crc)
 {
-  bytes_out cfg;
+  bytes_out cfg (to);
 
   cfg.begin ();
 
@@ -7539,8 +7749,8 @@ module_state::write_config (elf_out *to, const char *opt_str,
      to ensure data match between instances of the compiler, not
      integrity of the file.  */
   dump () && dump ("Writing globals=%u, crc=%x",
-		   global_vec->length (), global_crc);
-  cfg.u (global_vec->length ());
+		   fixed->length (), global_crc);
+  cfg.u (fixed->length ());
   cfg.u32 (global_crc);
 
   cfg.u (modules->length ());
@@ -7660,13 +7870,14 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
     }
   
   /* Check global trees.  */
-  unsigned their_glength = cfg.u ();
-  unsigned their_gcrc = cfg.u32 ();
-  dump () && dump ("Read globals=%u, crc=%x", their_glength, their_gcrc);
-  if (their_glength != global_vec->length ()
-      || their_gcrc != global_crc)
+  unsigned their_fixed_length = cfg.u ();
+  unsigned their_fixed_crc = cfg.u32 ();
+  dump () && dump ("Read globals=%u, crc=%x",
+		   their_fixed_length, their_fixed_crc);
+  if (their_fixed_length != fixed->length ()
+      || their_fixed_crc != global_crc)
     {
-      error_at (loc, "global tree mismatch");
+      error_at (loc, "fixed tree mismatch");
       goto fail;
     }
 
@@ -8370,7 +8581,7 @@ void
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			     unsigned &unnamed, unsigned *crc_ptr)
 {
-  trees_out sec (this, global_vec);
+  trees_out sec (to, this);
   sec.begin ();
 
   dump () && dump ("Writing SCC:%u %u depsets", scc[0]->section, size);
@@ -8505,7 +8716,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 bool
 module_state::read_cluster (unsigned snum)
 {
-  trees_in sec (this, global_vec);
+  trees_in sec (this);
 
   if (!sec.begin (loc, from, snum))
     return false;
@@ -8632,7 +8843,7 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
   dump () && dump ("Writing namespaces");
   dump.indent ();
 
-  bytes_out sec;
+  bytes_out sec (to);
   sec.begin ();
 
   for (unsigned ix = 0; ix != spaces.length (); ix++)
@@ -8717,7 +8928,7 @@ module_state::write_bindings (elf_out *to, depset::hash &table, unsigned *crc_p)
   dump () && dump ("Writing binding table");
   dump.indent ();
 
-  bytes_out sec;
+  bytes_out sec (to);
   sec.begin ();
 
   depset::hash::iterator end (table.end ());
@@ -8793,7 +9004,7 @@ module_state::write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
   dump () && dump ("Writing unnamed");
   dump.indent ();
 
-  bytes_out sec;
+  bytes_out sec (to);
   sec.begin ();
 
   unsigned current = 0;
@@ -8905,7 +9116,7 @@ module_state::add_writables (depset::hash &table, tree ns)
 void
 module_state::find_dependencies (depset::hash &table)
 {
-  trees_out walker (this, global_vec);
+  trees_out walker (NULL, this);
 
   while (depset *d = table.get_work ())
     {
@@ -9889,8 +10100,8 @@ finish_module ()
       if (state->filename)
 	{
 	  fd = open (maybe_add_bmi_prefix (state->filename),
-		     O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC,
-		     0666);
+		     O_RDWR | O_CREAT | O_TRUNC | O_CLOEXEC,
+		     S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
 	  e = errno;
 	}
       unsigned n = dump.push (state);
