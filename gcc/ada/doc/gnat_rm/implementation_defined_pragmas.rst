@@ -396,7 +396,7 @@ Pragma Assertion_Policy
 
 Syntax::
 
-  pragma Assertion_Policy (CHECK | DISABLE | IGNORE);
+  pragma Assertion_Policy (CHECK | DISABLE | IGNORE | SUPPRESSIBLE);
 
   pragma Assertion_Policy (
       ASSERTION_KIND => POLICY_IDENTIFIER

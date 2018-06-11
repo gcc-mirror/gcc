@@ -1,5 +1,11 @@
 2018-06-11  Yannick Moy  <moy@adacore.com>
 
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Add Suppressible
+	argument to Assertion_Policy
+	* gnat_rm.texi: Regenerate.
+
+2018-06-11  Yannick Moy  <moy@adacore.com>
+
 	* gnat1drv.adb: Do not check representation information in CodePeer and
 	GNATprove modes, as these modes call a special backend instead of gigi,
 	so do not have the information.
