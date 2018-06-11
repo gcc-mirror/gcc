@@ -4002,10 +4002,8 @@ package body Exp_Ch7 is
       then
          Stat := First (Statements (Handled_Statement_Sequence (N)));
          while Present (Stat) loop
-            if Nkind (Stat) = N_Block_Statement then
-               exit;
-            end if;
-
+            exit when Nkind (Stat) = N_Block_Statement
+              and then Present (Identifier (Stat));
             Next (Stat);
          end loop;
 
@@ -4046,7 +4044,9 @@ package body Exp_Ch7 is
               First (Statements (Handled_Statement_Sequence (Elab_Body)));
 
             while Present (Stat) loop
-               if Nkind (Stat) = N_Block_Statement then
+               if Nkind (Stat) = N_Block_Statement
+                 and then Present (Identifier (Stat))
+               then
                   Set_Scope (Entity (Identifier (Stat)), Elab_Proc);
                end if;
 

@@ -1,5 +1,9 @@
 2018-06-11  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): Add guard.
+
+2018-06-11  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_unst.adb (Visit_Node): Skip generic associations.
 
 2018-06-11  Arnaud Charlet  <charlet@adacore.com>
