@@ -2034,6 +2034,7 @@ maybe_warn_about_overly_private_class (tree t)
 {
   int has_member_fn = 0;
   int has_nonprivate_method = 0;
+  bool nonprivate_ctor = false;
 
   if (!warn_ctor_dtor_privacy
       /* If the class has friends, those entities might create and
@@ -2064,7 +2065,11 @@ maybe_warn_about_overly_private_class (tree t)
      non-private statics, we can't ever call any of the private member
      functions.)  */
   for (tree fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
-    if (!DECL_DECLARES_FUNCTION_P (fn))
+    if (TREE_CODE (fn) == USING_DECL
+	&& DECL_NAME (fn) == ctor_identifier
+	&& !TREE_PRIVATE (fn))
+      nonprivate_ctor = true;
+    else if (!DECL_DECLARES_FUNCTION_P (fn))
       /* Not a function.  */;
     else if (DECL_ARTIFICIAL (fn))
       /* We're not interested in compiler-generated methods; they don't
@@ -2126,7 +2131,6 @@ maybe_warn_about_overly_private_class (tree t)
       /* Implicitly generated constructors are always public.  */
       && !CLASSTYPE_LAZY_DEFAULT_CTOR (t))
     {
-      bool nonprivate_ctor = false;
       tree copy_or_move = NULL_TREE;
 
       /* If a non-template class does not define a copy
