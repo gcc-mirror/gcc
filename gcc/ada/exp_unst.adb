@@ -999,6 +999,20 @@ package body Exp_Unst is
                           and then not Is_Static_Type (Ent)
                         then
                            Note_Uplevel_Ref (Ent, N, Caller, Callee);
+
+                        --  Check the type of a formal parameter of the current
+                        --  subprogram, whose formal type may be an uplevel
+                        --  reference.
+
+                        elsif Is_Formal (Ent)
+                          and then Scope (Ent) = Current_Subprogram
+                        then
+                           declare
+                              DT : Boolean := False;
+
+                           begin
+                              Check_Static_Type (Etype (Ent), Empty, DT);
+                           end;
                         end if;
                      end if;
                   end if;

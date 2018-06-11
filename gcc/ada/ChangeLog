@@ -1,3 +1,9 @@
+2018-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Check reference to formal parameter of
+	current procedure, because the bounds of its type may be uplevel
+	references.
+
 2018-06-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: If this is
