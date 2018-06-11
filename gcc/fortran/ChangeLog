@@ -1,3 +1,9 @@
+2018-06-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45521
+	* interface.c (compare_ptr_alloc): New function.
+	(generic_correspondence): Call it.
+
 2018-06-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.h (gfc_expr): Add no_bounds_check field.
