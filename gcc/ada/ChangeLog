@@ -1,3 +1,10 @@
+2018-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb, exp_unst.adb, inline.adb, libgnat/a-ciorma.adb,
+	libgnat/a-ciormu.adb, libgnat/a-ciorse.adb, libgnat/a-coorma.adb,
+	libgnat/a-coormu.adb, libgnat/a-coorse.adb, sem_prag.adb: Minor
+	reformatting.
+
 2018-06-11  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_unst.ads, exp_unst.adb: Typo fixes and minor reformatting.

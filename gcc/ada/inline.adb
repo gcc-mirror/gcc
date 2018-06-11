@@ -900,8 +900,8 @@ package body Inline is
 
       function Uses_Secondary_Stack (Bod : Node_Id) return Boolean;
       --  If the body of the subprogram includes a call that returns an
-      --  unconstrained type, the secondary stack is involved, and it
-      --  is not worth inlining.
+      --  unconstrained type, the secondary stack is involved, and it is
+      --  not worth inlining.
 
       -------------------------
       -- Has_Extended_Return --

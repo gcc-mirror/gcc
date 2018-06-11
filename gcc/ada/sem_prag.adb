@@ -2499,12 +2499,12 @@ package body Sem_Prag is
                end if;
 
                if (Is_Subprogram (Context)
-                   or else Ekind (Context) = E_Task_Type
-                   or else Is_Single_Task_Object (Context))
+                     or else Ekind (Context) = E_Task_Type
+                     or else Is_Single_Task_Object (Context))
                  and then
-                   (Present (Get_Pragma (Context, Pragma_Global))
-                      or else
-                    Present (Get_Pragma (Context, Pragma_Refined_Global)))
+                  (Present (Get_Pragma (Context, Pragma_Global))
+                     or else
+                   Present (Get_Pragma (Context, Pragma_Refined_Global)))
                then
                   Collect_Subprogram_Inputs_Outputs
                     (Subp_Id      => Context,
