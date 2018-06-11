@@ -1,3 +1,8 @@
+2018-06-11  Martin Sebor  <msebor@redhat.com>
+
+	* PR tree-optimization/86083
+	* tree-ssa-strlen.c (handle_char_store): Use tree_expr_nonzero_p.
+
 2018-06-11 Zhouyi Zhou <zhouzhouyi@gmail.com>
 
 	* tree-eh.c (lower_eh_constructs_2): Add a comma to comment.

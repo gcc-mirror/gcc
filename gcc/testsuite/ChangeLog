@@ -1,3 +1,8 @@
+2018-06-11  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86083
+	* gcc.dg/strlenopt-44.c: New test.
+
 2018-06-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45521
