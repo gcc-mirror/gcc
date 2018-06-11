@@ -1,3 +1,23 @@
+2018-06-11  Nathan Sidwell  <nathan@acm.org>
+
+	Prep for MMAP exporting.
+	gcc/cp/
+	* module.c (MODULE_MMAP_IO): Rename to ...
+	(MAPPED_READING): This.
+	(data): Add allocator class with default instance.
+	(data::{write,printf}): Move to bytes_out.
+	(data::read): Move to bytes_in.
+	(data::{extend,release}): Delete. Adjust uses.
+	(bytes_out): Add allocator pointer, alter ctor.
+	(bytes_out::begin): Add need_crc parm.
+	(elf::section_vec): Delete.
+	(elf): Add sectab, strtab data members.
+	(get_num_sections): Delete.
+	(elf_{in,out}::strings): Delete here.
+	(elf_in::{grow,shrink}): New.
+	(elf_in::{get_section{,_limit}): New, adjust uses.
+	(elf_in::{keep_sections,forget_section}): Delete.
+
 2018-06-09  Nathan Sidwell  <nathan@acm.org>
 
 	MMAP importing!

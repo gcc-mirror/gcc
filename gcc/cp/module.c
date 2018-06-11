@@ -177,7 +177,7 @@ Classes used:
 
 #if HAVE_MMAP_FILE
 /* Use mmap to load module files.  */
-#define MODULE_MMAP_IO 1
+#define MAPPED_READING 1
 #endif
 
 /* Id for dumping module information.  */
@@ -186,7 +186,7 @@ int module_dump_id;
 /* We have a few more special module owners.  */
 #define MODULE_UNKNOWN (~0U)    /* Not yet known.  */
 
-/* Prefix for section names.  */
+/* Prefix for section names. (Not system-defined, so no leading dot.)  */
 #define MOD_SNAME_PFX "gnu.c++"
 
 /* Get the version of this compiler.  This is negative, when it is a
@@ -271,29 +271,35 @@ typedef hash_map<void *,signed,ptr_int_traits> ptr_int_hash_map;
 
 class data {
 public:
+  class allocator 
+  {
+  public:
+    /* Tools tend to moan if the dtor's not virtual.  */
+    virtual ~allocator () {}
+
+    virtual void grow (data &obj, unsigned needed, bool exact);
+    virtual void shrink (data &obj);
+  };
+
+public:
   char *buffer;		/* Buffer being transferred.  */
   /* Although size_t would be the usual size, we know we never get
      more than 4GB of buffer -- because that's the limit of the
-     encapsulation format.  */
+     encapsulation format.  And if you need bigger imports, you're
+     doing it wrong.  */
   unsigned size;	/* Allocated size of buffer.  */
   unsigned pos;		/* Position in buffer.  */
 
+public:
   data ()
     :buffer (NULL), size (0), pos (0)
   {
   }
   ~data ()
   {
+    /* Make sure the derived and/or using class know what they're
+       doing.  */
     gcc_checking_assert (!buffer);
-  }
-
-public:
-  void extend (size_t);
-  void release ()
-  {
-    free (buffer);
-    buffer = NULL;
-    size = 0;
   }
 
 protected:
@@ -305,61 +311,42 @@ protected:
   }
 
 public:
-  char *write (unsigned count, bool exact = false)
-  {
-    if (size < pos + count)
-      extend ((pos + count) * (exact ? 2 : 3) / 2);
-    return use (count);
-  }
-  const char *read (unsigned count)
-  {
-    if (size - pos < count)
-      return NULL;
-    return use (count);
-  }
   void unuse (unsigned count)
   {
     pos -= count;
   }
 
 public:
-  /* Format a NUL-terminated raw string.  */
-  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
+  static allocator simple_memory;
 };
 
-/* Extend the buffer to size A.  It is either not allocated, or
-   smaller than A.  */
+/* The simple data allocator.  */
+data::allocator data::simple_memory;
+
+/* Grow buffer to at least size NEEDED.  */
 
 void
-data::extend (size_t a)
+data::allocator::grow (data &obj, unsigned needed, bool exact)
 {
-  gcc_checking_assert (a > size);
-  buffer = XRESIZEVAR (char, buffer, a);
-  size = a;
+  gcc_checking_assert (needed ? needed > obj.size : !obj.size);
+  if (!needed)
+    /* Pick a default size.  */
+    needed = MODULE_STAMP ? 100 : 10000;
+
+  if (!exact)
+    needed *= 2;
+  obj.buffer = XRESIZEVAR (char, obj.buffer, needed);
+  obj.size = needed;
 }
 
-/* Format a string directly to the buffer, including a terminating
-   NUL.  Intended for human consumption.  */
+/* Free a buffer.  */
 
 void
-data::printf (const char *format, ...)
+data::allocator::shrink (data &obj)
 {
-  va_list args;
-  /* Exercise buffer expansion.  */
-  size_t len = MODULE_STAMP ? 10 : 500;
-
- again:
-  va_start (args, format);
-  char *ptr = write (len);
-  size_t actual = vsnprintf (ptr, len, format, args) + 1;
-  va_end (args);
-  if (actual > len)
-    {
-      unuse (len);
-      len = actual;
-      goto again;
-    }
-  unuse (len - actual);
+  XDELETEVEC (obj.buffer);
+  obj.buffer = NULL;
+  obj.size = 0;
 }
 
 /* Byte streamer base.   Buffer with read/write position and smarts
@@ -443,6 +430,14 @@ public:
   }
 
 public:
+  const char *read (unsigned count)
+  {
+    if (size - pos < count)
+      return NULL;
+    return use (count);
+  }
+
+public:
   bool check_crc () const;
   /* We store the CRC in the first 4 bytes, using host endianness.  */
   unsigned get_crc () const
@@ -505,8 +500,11 @@ class bytes_out : public bytes {
   typedef bytes parent;
 
 public:
-  bytes_out ()
-    : parent ()
+  allocator *memory;	/* Obtainer of memory.  */
+  
+public:
+  bytes_out (allocator *memory = NULL)
+    : parent (), memory (memory ? memory : &simple_memory)
   {
   }
   ~bytes_out ()
@@ -523,10 +521,18 @@ public:
   void set_crc (unsigned *crc_ptr);
 
 public:
-  /* Begin writing, reserve space for CRC.  */
-  void begin ();
+  /* Begin writing, maybe reserve space for CRC.  */
+  void begin (bool need_crc = true);
   /* Finish writing.  Spill to section by number.  */
   unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL);
+
+public:
+  char *write (unsigned count, bool exact = false)
+  {
+    if (size < pos + count)
+      memory->grow (*this, pos + count, exact);
+    return use (count);
+  }
 
 public:
   void u32 (unsigned);  /* Write uncompressed integer.  */
@@ -548,6 +554,10 @@ public:
   }
   void str (const char *, size_t);  /* Write string of known length.  */
   void buf (const char *, size_t);  /* Write fixed length buffer.  */
+
+public:
+  /* Format a NUL-terminated raw string.  */
+  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
 
 public:
   /* Dump instrumentation.  */
@@ -929,6 +939,30 @@ bytes_in::str (size_t *len_p)
   return str;
 }
 
+/* Format a string directly to the buffer, including a terminating
+   NUL.  Intended for human consumption.  */
+
+void
+bytes_out::printf (const char *format, ...)
+{
+  va_list args;
+  /* Exercise buffer expansion.  */
+  size_t len = MODULE_STAMP ? 10 : 500;
+
+ again:
+  va_start (args, format);
+  char *ptr = write (len);
+  size_t actual = vsnprintf (ptr, len, format, args) + 1;
+  va_end (args);
+  if (actual > len)
+    {
+      unuse (len);
+      len = actual;
+      goto again;
+    }
+  unuse (len - actual);
+}
+
 /* Encapsulated Lazy Records Of Named Declarations.
    Header: Stunningly Elf32_Ehdr-like
    Sections: Sectional data
@@ -1029,44 +1063,23 @@ protected:
     uint32_t addralign; /* 0 */
     uint32_t entsize; /* ENTry SIZE, usually 0 */
   };
-  class section_vec : public data
-  {
-  public:
-    typedef data parent;
-
-  public:
-    section *operator[] (unsigned s)
-    {
-      if (s * sizeof (section) < pos)
-	return (section *)&buffer[s * sizeof (section)];
-      else
-	return NULL;
-    }
-    unsigned size () const
-    {
-      return pos / sizeof (section);
-    }
-
-    section *write (unsigned count, bool exact = false)
-    {
-      return (section *)parent::write (count * sizeof (section), exact);
-    }
-  };
 
 protected:
-  int fd;   /* File descriptor we're reading or writing.  */
-  section_vec sections;  /* Section table in external form.  */
   data hdr;	  /* The header.  */
+  data sectab; 	/* The section table.  */
+  data strtab;  /* String table.  */
+  int fd;   /* File descriptor we're reading or writing.  */
   int err; 	  /* Sticky error code.  */
 
 public:
   /* Construct from STREAM.  E is errno if STREAM NULL.  */
   elf (int fd, int e)
-    :fd (fd), sections (), hdr (), err (fd >= 0 ? 0 : e)
+    :hdr (), sectab (), strtab (), fd (fd), err (fd >= 0 ? 0 : e)
   {}
   ~elf ()
   {
-    gcc_checking_assert (fd < 0 && !sections.buffer && !hdr.buffer);
+    gcc_checking_assert (fd < 0 && !hdr.buffer
+			 && !sectab.buffer && !strtab.buffer);
   }
 
 public:
@@ -1085,16 +1098,9 @@ public:
   const char *get_error (const char *) const;
 
 public:
-  unsigned get_num_sections () const 
-  {
-    return sections.size ();
-  }
-
-public:
   /* Begin reading/writing file.  Return false on error.  */
   bool begin () const
   {
-    gcc_checking_assert (!sections.buffer);
     return !has_error ();
   }
   /* Finish reading/writing file.  Return NULL or error string.  */
@@ -1149,17 +1155,13 @@ private:
   ino_t inode;
 #endif
 
-protected:
-  data strings;  /* String table.  */
-
-  public:
+public:
   elf_in (int fd, int e)
-    :parent (fd, e), strings ()
+    :parent (fd, e)
   {
   }
   ~elf_in ()
   {
-    gcc_checking_assert (!strings.buffer);
   }
 
 public:
@@ -1173,6 +1175,38 @@ public:
   }
   void freeze ();
   void defrost (const char *);
+
+public:
+  static void grow (data &data, unsigned needed)
+  {
+    gcc_checking_assert (!data.buffer);
+#ifndef MAPPED_READING
+    data.buffer = XNEWVEC (char, needed);
+#endif
+    data.size = needed;
+  }
+  static void shrink (data &data)
+  {
+#ifndef MAPPED_READING
+    XDELETEVEC (data.buffer);
+#endif
+    data.buffer = NULL;
+    data.size = 0;
+  }
+
+public:
+  const section *get_section (unsigned s) const
+  {
+    if (s * sizeof (section) < sectab.size)
+      return reinterpret_cast <const section *>
+	(&sectab.buffer[s * sizeof (section)]);
+    else
+      return NULL;
+  }
+  unsigned get_section_limit () const
+  {
+    return sectab.size / sizeof (section);
+  }
 
 protected:
   const char *read (data *, unsigned, unsigned);
@@ -1193,22 +1227,7 @@ public:
   /* Release the string table, when we're done with it.  */
   void release ()
   {
-#ifndef MODULE_MMAP_IO
-    strings.release ();
-#else
-    strings.buffer = NULL;
-#endif
-  }
-  /* Release string table, and all section information but those
-     specified.  */
-  void keep_sections (unsigned, unsigned);
-  /* Forget a particular section, so we detect errors trying to reload
-     it.  */
-  void forget_section (unsigned s ATTRIBUTE_UNUSED)
-  {
-#ifndef MODULE_MMAP_IO
-    memset (sections[s], 0, sizeof (section));
-#endif
+    shrink (strtab);
   }
 
 public:
@@ -1216,23 +1235,22 @@ public:
   bool end ()
   {
     release ();
-#ifdef MODULE_MMAP_IO
+#ifdef MAPPED_READING
     if (hdr.buffer)
       munmap (hdr.buffer, hdr.pos);
     hdr.buffer = NULL;
-    sections.buffer = NULL;
-#else
-    sections.release ();
 #endif
+    shrink (sectab);
+
     return parent::end ();
   }
 
 public:
   /* Return string name at OFFSET.  Checks OFFSET range.  Always
-     returns non-NULL.  */
+     returns non-NULL.  We know offset 0 is an empty string.  */
   const char *name (unsigned offset)
   {
-    return &strings.buffer[offset < strings.size ? offset : 0];
+    return &strtab.buffer[offset < strtab.size ? offset : 0];
   }
 };
 
@@ -1244,22 +1262,26 @@ class elf_out : public elf {
   static const int SECTION_ALIGN = 16;
 
 private:
-  data strtab;			/* The string table.  */
   ptr_int_hash_map ident_strtab;/* Map of IDENTIFIERS to strtab
 				   offsets. */
   unsigned offset;		/* Write position in file.  */
 
 public:
   elf_out (int fd, int e)
-    :parent (fd, e), strtab (), ident_strtab (500), offset (0)
+    :parent (fd, e), ident_strtab (500), offset (0)
   {
-    /* The string table starts with an empty string.  */
-    name ("");
   }
   ~elf_out ()
   {
-    hdr.release ();
-    strtab.release ();
+    data::simple_memory.shrink (hdr);
+    data::simple_memory.shrink (sectab);
+    data::simple_memory.shrink (strtab);
+  }
+
+public:
+  unsigned get_section_limit () const
+  {
+    return sectab.pos / sizeof (section);
   }
 
 protected:
@@ -1308,8 +1330,8 @@ bytes_in::begin (location_t loc, elf_in *source, unsigned snum, const char *name
   if (!source->read (this, source->find (snum))
       || !size || !check_crc ())
     {
-      release ();
       source->set_error (elf::E_BAD_DATA);
+      source->shrink (*this);
       if (name)
 	error_at (loc, "section %qs is missing or corrupted", name);
       else
@@ -1330,11 +1352,7 @@ bytes_in::end (elf_in *src)
   if (overrun)
     src->set_error ();
 
-#ifdef MODULE_MMAP_IO
-  buffer = NULL;
-#else
-  release ();
-#endif
+  src->shrink (*this);
 
   return !overrun;
 }
@@ -1342,10 +1360,11 @@ bytes_in::end (elf_in *src)
 /* Begin writing buffer.  */
 
 void
-bytes_out::begin ()
+bytes_out::begin (bool need_crc)
 {
-  pos = 4;
-  extend (200);
+  if (need_crc)
+    pos = 4;
+  memory->grow (*this, 0, false);
 }
 
 /* Finish writing buffer.  Stream out to SINK as named section NAME.
@@ -1360,7 +1379,7 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
 
   set_crc (crc_ptr);
   unsigned sec_num = sink->add (this, !crc_ptr, name);
-  release ();
+  memory->shrink (*this);
 
   return sec_num;
 }
@@ -1371,10 +1390,9 @@ void
 elf_in::freeze ()
 {
   gcc_checking_assert (!is_frozen ());
-#if MODULE_MMAP_IO
+#ifdef MAPPED_READING
   if (munmap (hdr.buffer, hdr.pos) < 0)
     set_error (errno);
-  hdr.buffer = NULL;
 #endif
   if (close (fd) < 0)
     set_error (errno);
@@ -1393,73 +1411,63 @@ elf_in::defrost (const char *name)
   else
     {
       bool ok = hdr.pos == unsigned (stat.st_size);
-#if !defined (HOST_LACKS_INODE_NUMBERS)
+#ifndef HOST_LACKS_INODE_NUMBERS
       if (device != stat.st_dev
 	  || inode != stat.st_ino)
 	ok = false;
 #endif
       if (!ok)
 	set_error (EMFILE);
-#if MODULE_MMAP_IO
+#ifdef MAPPED_READING
       if (ok)
 	{
-	  void *mapping = mmap (NULL, hdr.pos, PROT_READ, MAP_PRIVATE, fd, 0);
+	  char *mapping = reinterpret_cast <char *>
+	    (mmap (NULL, hdr.pos, PROT_READ, MAP_PRIVATE, fd, 0));
 	  if (mapping == MAP_FAILED)
 	    set_error (errno);
 	  else
-	    hdr.buffer = (char *)mapping;
+	    {
+	      /* These buffers are never NULL in this case.  */
+	      strtab.buffer = mapping + strtab.pos;
+	      sectab.buffer = mapping + sectab.pos;
+	      hdr.buffer = mapping;
+	    }
 	}
 #endif
     }
-}
-
-/* Forget about sections not in the range [from,to).  */
-
-void
-elf_in::keep_sections (unsigned from ATTRIBUTE_UNUSED, unsigned to)
-{
-  release ();
-  gcc_assert (to <= sections.size ());
-#ifndef MODULE_MMAP_IO
-  if (from)
-    memset (sections[0], 0, sizeof (section) * from);
-  if (unsigned tail = sections.size () - to)
-    memset (sections[to], 0, sizeof (section) * tail);
-#endif
 }
 
 /* Read at current position into BUFFER.  Return true on success.  */
 
 const char *
-elf_in::read (data *buffer, unsigned pos, unsigned length)
+elf_in::read (data *data, unsigned pos, unsigned length)
 {
-  if (hdr.buffer)
+#ifdef MAPPED_READING
+  if (pos + length > hdr.pos)
     {
-      if (pos + length > hdr.pos)
-	{
-	  set_error (EINVAL);
-	  return NULL;
-	}
-      buffer->size = buffer->pos = length;
-      buffer->buffer = hdr.buffer + pos;
+      set_error (EINVAL);
+      return NULL;
     }
-  else
+#else
+  if (pos != ~0u && lseek (fd, pos, SEEK_SET) < 0)
     {
-      if (pos != ~0u && lseek (fd, pos, SEEK_SET) < 0)
-	{
-	  set_error (errno);
-	  return NULL;
-	}
-
-      if (::read (fd, buffer->write (length, true), length) != length)
-	{
-	  set_error (errno);
-	  buffer->release ();
-	  return NULL;
-	}
+      set_error (errno);
+      return NULL;
     }
+#endif
+  grow (*data, length);
+#ifdef MAPPED_READING  
+  data->buffer = hdr.buffer + pos;
+#else
+  if (::read (fd, data->buffer, data->size) != length)
+    {
+      set_error (errno);
+      shrink (*data);
+      return NULL;
+    }
+#endif
 
-  return buffer->buffer;
+  return data->buffer;
 }
 
 /* Read section SNUM of TYPE.  Return section pointer or NULL on error.  */
@@ -1467,7 +1475,7 @@ elf_in::read (data *buffer, unsigned pos, unsigned length)
 const elf::section *
 elf_in::find (unsigned snum, unsigned type)
 {
-  const section *sec = sections[snum];
+  const section *sec = get_section (snum);
   if (!snum || !sec || sec->type != type)
     return NULL;
   return sec;
@@ -1479,12 +1487,13 @@ elf_in::find (unsigned snum, unsigned type)
 unsigned
 elf_in::find (const char *sname)
 {
-  for (unsigned snum = sections.size (); --snum;)
+  for (unsigned pos = sectab.size; pos -= sizeof (section); )
     {
-      const section *sec = sections[snum];
+      const section *sec
+	= reinterpret_cast <const section *> (&sectab.buffer[pos]);
 
       if (0 == strcmp (sname, name (sec->name)))
-	return snum;
+	return pos / sizeof (section);
     }
 
   return 0;
@@ -1507,13 +1516,13 @@ elf_in::begin (location_t loc)
       device = stat.st_dev;
       inode = stat.st_ino;
 #endif
+      /* Never generate files > 4GB, check we've not been given one.  */
       if (stat.st_size == unsigned (stat.st_size))
 	size = unsigned (stat.st_size);
     }
 
-  void *mapping;
-#if MODULE_MMAP_IO
-  mapping = mmap (NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+#ifdef MAPPED_READING
+  void *mapping = mmap (NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
   if (mapping == MAP_FAILED)
     {
       set_error (errno);
@@ -1521,11 +1530,11 @@ elf_in::begin (location_t loc)
     }
   hdr.buffer = (char *)mapping;
 #else
-  mapping = read (&hdr, 0, sizeof (header));
+  read (&hdr, 0, sizeof (header));
 #endif
-  hdr.pos = size;
+  hdr.pos = size; /* Record size of the file.  */
 
-  const header *h = reinterpret_cast <const header *> (mapping);
+  const header *h = reinterpret_cast <const header *> (hdr.buffer);
   if (!h)
     return false;
 
@@ -1536,9 +1545,7 @@ elf_in::begin (location_t loc)
     {
       error_at (loc, "not Encapsulated Lazy Records of Named Declarations");
     failed:
-#ifndef MODULE_MMAP_IO
-      hdr.release ();
-#endif
+      shrink (hdr);
       return false;
     }
 
@@ -1568,42 +1575,42 @@ elf_in::begin (location_t loc)
   unsigned shnum = h->shnum;
   if (shnum == SHN_XINDEX)
     {
-      if (!read (&sections, h->shoff, sizeof (section)))
+      if (!read (&sectab, h->shoff, sizeof (section)))
 	{
 	section_table_fail:
 	  e = errno;
 	  goto malformed;
 	}
-      shnum = sections[0]->size;
+      shnum = get_section (0)->size;
       /* Freeing does mean we'll re-read it in the case we're not
 	 mapping, but this is going to be rare.  */
-#if MODULE_MMAP_IO
-      sections.buffer = NULL;
-#else
-      sections.release ();
-#endif
+      shrink (sectab);
     }
 
   if (!shnum)
     goto malformed;
 
-  if (!read (&sections, h->shoff, shnum * sizeof (section)))
+  if (!read (&sectab, h->shoff, shnum * sizeof (section)))
     goto section_table_fail;
 
   if (strndx == SHN_XINDEX)
-    strndx = sections[0]->link;
+    strndx = get_section (0)->link;
 
-  if (!read (&strings, find (strndx, SHT_STRTAB)))
+  if (!read (&strtab, find (strndx, SHT_STRTAB)))
     goto malformed;
 
   /* The string table should be at least one byte, with NUL chars
      at either end.  */
-  if (!(strings.size && !strings.buffer[0]
-	&& !strings.buffer[strings.size - 1]))
+  if (!(strtab.size && !strtab.buffer[0]
+	&& !strtab.buffer[strtab.size - 1]))
     goto malformed;
 
-#ifndef MODULE_MMAP_IO
-  hdr.release ();
+#if MAPPED_READING
+  /* Record the offsets of the section and string tables.  */
+  sectab.pos = h->shoff;
+  strtab.pos = shnum * sizeof (section);
+#else
+  shrink (hdr);
 #endif
 
   return true;
@@ -1615,8 +1622,11 @@ elf_in::begin (location_t loc)
 unsigned
 elf_out::strtab_write (const char *s, unsigned l)
 {
+  if (strtab.pos + l > strtab.size)
+    data::simple_memory.grow (strtab, strtab.pos + l, false);
+  memcpy (strtab.buffer + strtab.pos, s, l);
   unsigned res = strtab.pos;
-  memcpy (strtab.write (l), s, l);
+  strtab.pos += l;
   return res;
 }
 
@@ -1688,9 +1698,9 @@ unsigned
 elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
 	      unsigned flags)
 {
-  unsigned res = off ? sections.size () : 0;
-  section *sec = sections.write (1);
-
+  if (sectab.pos + sizeof (section) > sectab.size)
+    data::simple_memory.grow (sectab, sectab.pos + sizeof (section), false);
+  section *sec = reinterpret_cast <section *> (sectab.buffer + sectab.pos);
   memset (sec, 0, sizeof (section));
   sec->type = type;
   sec->flags = flags;
@@ -1700,7 +1710,9 @@ elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
   if (flags & SHF_STRINGS)
     sec->entsize = 1;
 
-  return res;
+  unsigned res = sectab.pos;
+  sectab.pos += sizeof (section);
+  return res / sizeof (section);
 }
 
 /* Pad to the next alignment boundary, then write BUFFER to disk.
@@ -1755,14 +1767,21 @@ elf_out::begin ()
   if (!parent::begin ())
     return false;
 
-  sections.extend (10 * sizeof (section));
+  /* Let the allocators pick a default.  */
+  data::simple_memory.grow (strtab, 0, false);
+  data::simple_memory.grow (sectab, 0, false);
+
+  /* The string table starts with an empty string.  */
+  name ("");
 
   /* Create the UNDEF section.  */
   add (SHT_NONE);
 
   /* Write an empty header.  */
-  header *h = reinterpret_cast <header *> (hdr.write (sizeof (header), true));
+  data::simple_memory.grow (hdr, sizeof (header), true);
+  header *h = reinterpret_cast <header *> (hdr.buffer);
   memset (h, 0, sizeof (header));
+  hdr.pos = hdr.size;
   write (&hdr);
   return has_error () == 0;
 }
@@ -1777,21 +1796,21 @@ elf_out::end ()
     {
       /* Write the string table.  */
       unsigned strndx = add (&strtab, -1, name (".strtab"));
-      unsigned shnum = sections.size ();
+      unsigned shnum = sectab.pos / sizeof (section);
 
       /* Store escape values in section[0].  */
       if (strndx >= SHN_LORESERVE)
 	{
-	  sections[0]->link = strndx;
+	  reinterpret_cast <section *> (sectab.buffer)->link = strndx;
 	  strndx = SHN_XINDEX;
 	}
       if (shnum >= SHN_LORESERVE)
 	{
-	  sections[0]->size = shnum;
+	  reinterpret_cast <section *> (sectab.buffer)->size = shnum;
 	  shnum = SHN_XINDEX;
 	}
 
-      unsigned shoff = write (&sections);
+      unsigned shoff = write (&sectab);
 
       /* Write header.  */
       if (lseek (fd, 0, SEEK_SET) < 0)
@@ -1822,7 +1841,8 @@ elf_out::end ()
 	}
     }
 
-  sections.release ();
+  data::simple_memory.shrink (sectab);
+  data::simple_memory.shrink (strtab);
 
   return parent::end ();
 }
@@ -7300,9 +7320,9 @@ module_state::get_option_string  ()
 void
 module_state::write_readme (elf_out *to, const char *options)
 {
-  data readme;
+  bytes_out readme;
 
-  readme.extend (200);
+  readme.begin (false);
 
   readme.printf ("GNU C++ Module (%s)", modules_atom_p () ? "ATOM" : "TS");
   /* Compiler's version.  */
@@ -7328,8 +7348,7 @@ module_state::write_readme (elf_out *to, const char *options)
 		       IDENTIFIER_POINTER (state->name), state->filename);
     }
 
-  to->add (&readme, true, to->name (MOD_SNAME_PFX ".README"));
-  readme.release ();
+  readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
 }
 
 /* Write the direct or indirect imports.
@@ -7678,7 +7697,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   dump () && dump ("%u unnamed decls", unnamed);
 
   if (sec_range.first > sec_range.second
-      || sec_range.second > from->get_num_sections ())
+      || sec_range.second > from->get_section_limit ())
     {
       error_at (loc, "paradoxical declaration section range");
       goto fail;
@@ -8987,7 +9006,7 @@ module_state::write (elf_out *to)
 
   unsigned n_spaces = 0;
   range_t range;
-  range.first = range.second = to->get_num_sections ();
+  range.first = range.second = to->get_section_limit ();
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
@@ -9054,7 +9073,7 @@ module_state::write (elf_out *to)
 
   /* We'd better have written as many sections and found as many
      namespaces as we predicted.  */
-  gcc_assert (range.second == to->get_num_sections ()
+  gcc_assert (range.second == to->get_section_limit ()
 	      && spaces.length () == n_spaces);
 
   /* Write the namespaces.  */
@@ -9071,7 +9090,7 @@ module_state::write (elf_out *to)
   write_config (to, our_opts, range, unnamed, crc);
 
   trees_out::instrument ();
-  dump () && dump ("Wrote %u sections", to->get_num_sections ());
+  dump () && dump ("Wrote %u sections", to->get_section_limit ());
 }
 
 /* Read a BMI from STREAM.  E is errno from its fopen.  Reading will
@@ -9133,7 +9152,6 @@ module_state::read (int fd, int e, bool check_crc)
 
   /* We're done with the string and non-decl sections now.  */
   from->release ();
-  from->keep_sections (range.first, range.second);
   lazy = range.second - range.first;
 
   if (mod == MODULE_PURVIEW || !flag_module_lazy)
@@ -9175,7 +9193,6 @@ module_state::load_section (unsigned snum)
   lru = 0;  /* Do not swap out.  */
   read_cluster (snum);
   lru = ++lazy_lru;
-  from->forget_section (loading);
   loading = old_loading;
   lazy--;
 }
