@@ -1,3 +1,7 @@
+2018-06-11  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_unst.ads, exp_unst.adb: Typo fixes and minor reformatting.
+
 2018-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb (Add_Unconstrained_Actuals_To_Build_In_Place_Call): Do

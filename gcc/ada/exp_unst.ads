@@ -568,11 +568,11 @@ package Exp_Unst is
 
    --  Objects whose nominal subtype is an unconstrained array type present
    --  additional complications for translation into LLVM. The address
-   --  attributes of such objects points to the first component of the
+   --  attribute of such objects points to the first component of the
    --  array, and the bounds are found elsewhere, typically ahead of the
    --  components. In many cases the bounds of an object are stored ahead
    --  of the components and can be retrieved from it. However, if the
-   --  object is an expression (.e.g a slice) the bounds are not adjacent
+   --  object is an expression (e.g. a slice) the bounds are not adjacent
    --  and thus must be conveyed explicitly by means of a so-called
    --  fat pointer. This leads to the following enhancements to the
    --  handling of uplevel references described so far. This applies only
@@ -580,8 +580,8 @@ package Exp_Unst is
    --  subprograms:
    --
    --  a) Uplevel references are detected as before during the tree traversal
-   --  in Visit_Node. For referenes to uplevel formals, we include those with
-   --  an unconstrained array type (e.g. String) even if suvh a type has
+   --  in Visit_Node. For reference to uplevel formals, we include those with
+   --  an unconstrained array type (e.g. String) even if such a type has
    --  static bounds.
    --
    --  b) references to unconstrained formals are recognized in the Subp
