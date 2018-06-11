@@ -3073,9 +3073,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
     }
 
   bool storing_zero_p = initializer_zerop (rhs);
-  bool storing_nonzero_p = (!storing_zero_p
-			    && TREE_CODE (rhs) == INTEGER_CST
-			    && integer_nonzerop (rhs));
+  bool storing_nonzero_p = !storing_zero_p && tree_expr_nonzero_p (rhs);
   /* Set to the length of the string being assigned if known.  */
   HOST_WIDE_INT rhslen;
 
