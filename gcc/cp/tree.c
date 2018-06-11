@@ -4135,7 +4135,7 @@ type_has_nontrivial_copy_init (const_tree type)
 	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
 	  {
 	    tree fn = *iter;
-	    if (copy_fn_p (fn))
+	    if (copy_fn_p (fn) || move_fn_p (fn))
 	      {
 		saw_copy = true;
 		if (!DECL_DELETED_FN (fn))
