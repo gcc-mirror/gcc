@@ -1,3 +1,8 @@
+2018-06-11  Valentine Reboul  <reboul@adacore.com>
+
+	* doc/gnat_rm.rst, doc/gnat_ugn.rst: Rename "GPL Edition" into
+	"Community Edition".
+
 2018-06-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Install_Body): In order to determine the placement of
