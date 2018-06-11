@@ -1,3 +1,8 @@
+2018-06-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86094 - wrong code with defaulted move ctor.
+	* tree.c (type_has_nontrivial_copy_init): Fix move ctor handling.
+
 2018-06-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86060 - ICE on range for with -std=c++98.
