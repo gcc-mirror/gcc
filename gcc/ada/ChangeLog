@@ -1,3 +1,8 @@
+2018-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Potentially_Unevaluated): Fix detection of contracts
+	with AND THEN expressions broken down into individual conjuncts.
+
 2018-06-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): Add guard.

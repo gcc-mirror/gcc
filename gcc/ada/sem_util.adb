@@ -16453,7 +16453,9 @@ package body Sem_Util is
       while Present (Par)
         and then Nkind (Par) /= N_Pragma_Argument_Association
       loop
-         if Nkind (Original_Node (Par)) = N_And_Then then
+         if Is_Rewrite_Substitution (Par)
+           and then Nkind (Original_Node (Par)) = N_And_Then
+         then
             return True;
          end if;
 
