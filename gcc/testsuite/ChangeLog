@@ -1,3 +1,7 @@
+2018-06-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gnat.dg/contract1.adb: New testcase.
+
 2018-06-11  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/aggr23.adb, gnat.dg/aggr23_q.adb, gnat.dg/aggr23_tt.ads: New
