@@ -1,3 +1,8 @@
+2018-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/gnat_array_split1.adb, gnat.dg/gnat_array_split1.ads: New
+	testcase.
+
 2018-06-11  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/prot4.adb: New testcase.
