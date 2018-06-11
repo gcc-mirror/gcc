@@ -1,3 +1,9 @@
+2018-06-11  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/vaesintrin.h (_mm_aesdec_epi128, _mm_aesdeclast_epi128)
+	_mm_aesenc_epi128, _mm_aesenclast_epi128: Remove.
+	* config/i386/vpclmulqdqintrin.h (_mm_clmulepi64_epi128): Remove.
+
 2018-06-11  Olivier Hainque  <hainque@adacore.com>
 
 	* dwarf2out.c (gen_compile_unit_die): Fallout to DW_LANG_Ada83

@@ -1,3 +1,8 @@
+2018-06-11  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx512fvl-vaes-1.c: Remove 128bit versions from test.
+	* gcc.target/i386/vpclmulqdq.c: Ditto.
+
 2018-06-11  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/lang-dw2.adb: New test.
