@@ -1,5 +1,10 @@
 2018-06-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85815 - reference to member of enclosing template.
+	* search.c (lookup_base): Use currently_open_class.
+	(lookup_member): Use it regardless of -fconcepts.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Check it.
+
 	PR c++/86094 - wrong code with defaulted move ctor.
 	* tree.c (type_has_nontrivial_copy_init): Fix move ctor handling.
 
