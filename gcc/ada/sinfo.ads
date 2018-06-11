@@ -2371,7 +2371,7 @@ package Sinfo is
 
    --  Split_PPC (Flag17)
    --    When a Pre or Post aspect specification is processed, it is broken
-   --    into AND THEN sections. The left most section has Split_PPC set to
+   --    into AND THEN sections. The leftmost section has Split_PPC set to
    --    False, indicating that it is the original specification (e.g. for
    --    posting errors). For other sections, Split_PPC is set to True.
    --    This flag is set in both the N_Aspect_Specification node itself,

@@ -1194,8 +1194,8 @@ package body Exp_Unst is
                Decl : Node_Id;
 
             begin
-               --  Subprograms declared in tasks and protected types
-               --  are reachable and cannot be eliminated.
+               --  Subprograms declared in tasks and protected types are
+               --  reachable and cannot be eliminated.
 
                if In_Synchronized_Unit (STJ.Ent) then
                   STJ.Reachable := True;

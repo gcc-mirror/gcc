@@ -2269,28 +2269,39 @@ package body Inline is
      Subp      : Entity_Id;
      Orig_Subp : Entity_Id)
    is
-      Loc           : constant Source_Ptr := Sloc (N);
-      Is_Predef     : constant Boolean :=
-                        Is_Predefined_Unit (Get_Source_Unit (Subp));
-      Orig_Bod      : constant Node_Id :=
+      Decls     : constant List_Id    := New_List;
+      Is_Predef : constant Boolean    :=
+                    Is_Predefined_Unit (Get_Source_Unit (Subp));
+      Loc       : constant Source_Ptr := Sloc (N);
+      Orig_Bod  : constant Node_Id    :=
                     Body_To_Inline (Unit_Declaration_Node (Subp));
+
       Uses_Back_End : constant Boolean :=
-                         Back_End_Inlining and then Optimization_Level > 0;
+                        Back_End_Inlining and then Optimization_Level > 0;
       --  The back-end expansion is used if the target supports back-end
       --  inlining and some level of optimixation is required; otherwise
       --  the inlining takes place fully as a tree expansion.
 
       Blk      : Node_Id;
       Decl     : Node_Id;
-      Decls    : constant List_Id := New_List;
-      Exit_Lab : Entity_Id        := Empty;
+      Exit_Lab : Entity_Id := Empty;
       F        : Entity_Id;
       A        : Node_Id;
-      Lab_Decl : Node_Id          := Empty;
+      Lab_Decl : Node_Id   := Empty;
       Lab_Id   : Node_Id;
       New_A    : Node_Id;
-      Num_Ret  : Nat              := 0;
+      Num_Ret  : Nat       := 0;
       Ret_Type : Entity_Id;
+      Temp     : Entity_Id;
+      Temp_Typ : Entity_Id;
+
+      Is_Unc      : Boolean;
+      Is_Unc_Decl : Boolean;
+      --  If the type returned by the function is unconstrained and the call
+      --  can be inlined, special processing is required.
+
+      Return_Object : Entity_Id := Empty;
+      --  Entity in declaration in an extended_return_statement
 
       Targ : Node_Id := Empty;
       --  The target of the call. If context is an assignment statement then
@@ -2299,17 +2310,6 @@ package body Inline is
 
       Targ1 : Node_Id := Empty;
       --  A separate target used when the return type is unconstrained
-
-      Temp     : Entity_Id;
-      Temp_Typ : Entity_Id;
-
-      Return_Object : Entity_Id := Empty;
-      --  Entity in declaration in an extended_return_statement
-
-      Is_Unc      : Boolean;
-      Is_Unc_Decl : Boolean;
-      --  If the type returned by the function is unconstrained and the call
-      --  can be inlined, special processing is required.
 
       procedure Declare_Postconditions_Result;
       --  When generating C code, declare _Result, which may be used in the
@@ -2963,20 +2963,22 @@ package body Inline is
                begin
                   First_Decl := First (Declarations (Blk));
 
-                  --  If the body is a single extended return statement,
-                  --  the resulting block is a nested block.
+                  --  If the body is a single extended return statement,the
+                  --  resulting block is a nested block.
 
                   if No (First_Decl) then
-                        First_Decl := First
-                          (Statements (Handled_Statement_Sequence (Blk)));
+                     First_Decl :=
+                       First (Statements (Handled_Statement_Sequence (Blk)));
 
                      if Nkind (First_Decl) = N_Block_Statement then
                         First_Decl := First (Declarations (First_Decl));
                      end if;
                   end if;
 
+                  --  No front-end inlining possible
+
                   if Nkind (First_Decl) /= N_Object_Declaration then
-                     return;  --  No front-end inlining possible,
+                     return;
                   end if;
 
                   if Nkind (Parent (N)) /= N_Assignment_Statement then
