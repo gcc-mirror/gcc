@@ -2128,10 +2128,10 @@ package body Sem_Prag is
          procedure Check_Mode_Restriction_In_Enclosing_Context
            (Item    : Node_Id;
             Item_Id : Entity_Id);
-         --  Verify that an item of mode In_Out or Output does not appear as an
-         --  input in the Global aspect of an enclosing subprogram. If this is
-         --  the case, emit an error. Item and Item_Id are respectively the
-         --  item and its entity.
+         --  Verify that an item of mode In_Out or Output does not appear as
+         --  an input in the Global aspect of an enclosing subprogram or task
+         --  unit. If this is the case, emit an error. Item and Item_Id are
+         --  respectively the item and its entity.
 
          procedure Check_Mode_Restriction_In_Function (Mode : Node_Id);
          --  Mode denotes either In_Out or Output. Depending on the kind of the
@@ -2483,12 +2483,24 @@ package body Sem_Prag is
             Outputs : Elist_Id := No_Elist;
 
          begin
-            --  Traverse the scope stack looking for enclosing subprograms
-            --  subject to pragma [Refined_]Global.
+            --  Traverse the scope stack looking for enclosing subprograms or
+            --  tasks subject to pragma [Refined_]Global.
 
             Context := Scope (Subp_Id);
             while Present (Context) and then Context /= Standard_Standard loop
-               if Is_Subprogram (Context)
+
+               --  For a single task type, retrieve the corresponding object to
+               --  which pragma [Refined_]Global is attached.
+
+               if Ekind (Context) = E_Task_Type
+                 and then Is_Single_Concurrent_Type (Context)
+               then
+                  Context := Anonymous_Object (Context);
+               end if;
+
+               if (Is_Subprogram (Context)
+                   or else Ekind (Context) = E_Task_Type
+                   or else Is_Single_Task_Object (Context))
                  and then
                    (Present (Get_Pragma (Context, Pragma_Global))
                       or else
@@ -2501,7 +2513,8 @@ package body Sem_Prag is
                      Global_Seen  => Dummy);
 
                   --  The item is classified as In_Out or Output but appears as
-                  --  an Input in an enclosing subprogram (SPARK RM 6.1.4(12)).
+                  --  an Input in an enclosing subprogram or task unit (SPARK
+                  --  RM 6.1.4(12)).
 
                   if Appears_In (Inputs, Item_Id)
                     and then not Appears_In (Outputs, Item_Id)
@@ -2510,9 +2523,15 @@ package body Sem_Prag is
                        ("global item & cannot have mode In_Out or Output",
                         Item, Item_Id);
 
-                     SPARK_Msg_NE
-                       (Fix_Msg (Subp_Id, "\item already appears as input of "
-                        & "subprogram &"), Item, Context);
+                     if Is_Subprogram (Context) then
+                        SPARK_Msg_NE
+                          (Fix_Msg (Subp_Id, "\item already appears as input "
+                           & "of subprogram &"), Item, Context);
+                     else
+                        SPARK_Msg_NE
+                          (Fix_Msg (Subp_Id, "\item already appears as input "
+                           & "of task &"), Item, Context);
+                     end if;
 
                      --  Stop the traversal once an error has been detected
 

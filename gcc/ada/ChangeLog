@@ -1,3 +1,8 @@
+2018-06-11  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Check_Mode_Restriction_In_Enclosing_Context): Adapt for
+	possible task unit as the enclosing context.
+
 2018-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat1drv.adb: Remove use clause for Repinfo.
