@@ -1455,6 +1455,9 @@ begin
       --  representation information will be provided by the GNSA back end, not
       --  gigi.
 
+      --  A special back end is always called in CodePeer and GNATprove modes,
+      --  unless this is a subunit.
+
       if Back_End_Mode = Declarations_Only
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
@@ -1468,7 +1471,11 @@ begin
          Tree_Dump;
          Tree_Gen;
          Namet.Finalize;
-         Check_Rep_Info;
+
+         if not (Generate_SCIL or GNATprove_Mode) then
+            Check_Rep_Info;
+         end if;
+
          return;
       end if;
 

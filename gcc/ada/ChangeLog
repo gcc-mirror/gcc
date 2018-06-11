@@ -1,5 +1,11 @@
 2018-06-11  Yannick Moy  <moy@adacore.com>
 
+	* gnat1drv.adb: Do not check representation information in CodePeer and
+	GNATprove modes, as these modes call a special backend instead of gigi,
+	so do not have the information.
+
+2018-06-11  Yannick Moy  <moy@adacore.com>
+
 	* inline.adb (Build_Body_To_Inline): Consider case of extended return
 	of unconstrained type as one case where inlining is not supported.
 	(Expand_Inlined_Call): Remove special case for body as extended return
