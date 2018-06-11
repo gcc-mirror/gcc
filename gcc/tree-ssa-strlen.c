@@ -617,8 +617,12 @@ get_string_length (strinfo *si)
 	  lhs = NULL_TREE;
 	  /* FALLTHRU */
 	case BUILT_IN_STRCPY:
+	case BUILT_IN_STRCPY_CHK:
 	  gcc_assert (builtin_decl_implicit_p (BUILT_IN_STPCPY));
-	  fn = builtin_decl_implicit (BUILT_IN_STPCPY);
+	  if (gimple_call_num_args (stmt) == 2)
+	    fn = builtin_decl_implicit (BUILT_IN_STPCPY);
+	  else
+	    fn = builtin_decl_explicit (BUILT_IN_STPCPY_CHK);
 	  gcc_assert (lhs == NULL_TREE);
 	  if (dump_file && (dump_flags & TDF_DETAILS) != 0)
 	    {
