@@ -1,3 +1,11 @@
+2018-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Install_Body): In order to determine the placement of
+	the freeze node for an instance of a generic nested within another
+	instance, take into account that the outer instance may be declared in
+	the visible part of a package and the inner intance may be in the
+	private part of the same package.
+
 2018-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* errout.adb (Special_Msg_Delete): Remove handling of Atomic and VFA.
