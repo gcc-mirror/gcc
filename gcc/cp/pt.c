@@ -20383,8 +20383,6 @@ type_unification_real (tree tparms,
 	  location_t save_loc = input_location;
 	  if (DECL_P (parm))
 	    input_location = DECL_SOURCE_LOCATION (parm);
-	  if (saw_undeduced == 1)
-	    ++processing_template_decl;
 
 	  if (saw_undeduced == 1
 	      && TREE_CODE (parm) == PARM_DECL
@@ -20392,11 +20390,14 @@ type_unification_real (tree tparms,
 	    {
 	      /* The type of this non-type parameter depends on undeduced
 		 parameters.  Don't try to use its default argument yet,
+		 since we might deduce an argument for it on the next pass,
 		 but do check whether the arguments we already have cause
 		 substitution failure, so that that happens before we try
 		 later default arguments (78489).  */
+	      ++processing_template_decl;
 	      tree type = tsubst (TREE_TYPE (parm), full_targs, complain,
 				  NULL_TREE);
+	      --processing_template_decl;
 	      if (type == error_mark_node)
 		arg = error_mark_node;
 	      else
@@ -20404,10 +20405,27 @@ type_unification_real (tree tparms,
 	    }
 	  else
 	    {
-	      arg = tsubst_template_arg (arg, full_targs, complain, NULL_TREE);
+	      tree substed = NULL_TREE;
+	      if (saw_undeduced == 1 && processing_template_decl == 0)
+		{
+		  /* First instatiate in template context, in case we still
+		     depend on undeduced template parameters.  */
+		  ++processing_template_decl;
+		  substed = tsubst_template_arg (arg, full_targs, complain,
+						 NULL_TREE);
+		  --processing_template_decl;
+		  if (substed != error_mark_node
+		      && !uses_template_parms (substed))
+		    /* We replaced all the tparms, substitute again out of
+		       template context.  */
+		    substed = NULL_TREE;
+		}
+	      if (!substed)
+		substed = tsubst_template_arg (arg, full_targs, complain,
+					       NULL_TREE);
 
-	      if (!uses_template_parms (arg))
-		arg = convert_template_argument (parm, arg, full_targs,
+	      if (!uses_template_parms (substed))
+		arg = convert_template_argument (parm, substed, full_targs,
 						 complain, i, NULL_TREE);
 	      else if (saw_undeduced == 1)
 		arg = NULL_TREE;
@@ -20415,8 +20433,6 @@ type_unification_real (tree tparms,
 		arg = error_mark_node;
 	    }
 
-	  if (saw_undeduced == 1)
-	    --processing_template_decl;
 	  input_location = save_loc;
 	  *checks = get_deferred_access_checks ();
 	  pop_deferring_access_checks ();
