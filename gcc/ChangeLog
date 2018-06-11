@@ -1,3 +1,8 @@
+2018-06-11  Olivier Hainque  <hainque@adacore.com>
+
+	* dwarf2out.c (gen_compile_unit_die): Fallout to DW_LANG_Ada83
+	for Ada with strict dwarf2.
+
 2018-06-08  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/85755

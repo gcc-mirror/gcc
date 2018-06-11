@@ -1,3 +1,8 @@
+2018-06-11  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/lang-dw2.adb: New test.
+	* gnat.dg/lang-dw3.adb: New test.
+
 2018-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/assertion_policy1.adb, gnat.dg/assertion_policy1_pkg.adb,

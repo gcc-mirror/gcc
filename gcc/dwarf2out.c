@@ -24460,6 +24460,9 @@ gen_compile_unit_die (const char *filename)
   /* Use a degraded Fortran setting in strict DWARF2 so is_fortran works.  */
   else if (strncmp (language_string, "GNU Fortran", 11) == 0)
     language = DW_LANG_Fortran90;
+  /* Likewise for Ada.  */
+  else if (strcmp (language_string, "GNU Ada") == 0)
+    language = DW_LANG_Ada83;
 
   add_AT_unsigned (die, DW_AT_language, language);
 
