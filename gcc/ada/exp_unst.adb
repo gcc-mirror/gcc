@@ -825,6 +825,13 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
+               --  Generic associations are not analyzed: the actuals are
+               --  transferred to renaming qnd subtype declarations that
+               --  are the ones that must be examined.
+
+               when N_Generic_Association =>
+                  return Skip;
+
                --  Indexed references can be uplevel if the type isn't static
                --  and if the lower bound (or an inner bound for a multi-
                --  dimensional array) is uplevel.
