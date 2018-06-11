@@ -1,3 +1,12 @@
+2018-06-11  Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/altivec-7.c (main): Remove tests
+	vec_unpackh(vecubi[0]) and vec_unpackl(vecubi[0]) returning
+	long long bool.  Remove duplicate dg-final for xxlxor.  Update
+	dg-final instruction counts.
+	* gcc.target/powerpc/altivec-37.c (main): New file for
+	tests vec_unpackh and vec_unpackl returning long long bool and
+	long long int.
+
 2018-06-11  Martin Liska  <mliska@suse.cz>
 
         PR tree-optimization/86089
