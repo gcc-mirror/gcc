@@ -1,3 +1,13 @@
+2018-06-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2018-06-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/85755
+	* config/rs6000/rs6000.md (*movdi_internal32): Put constraint modifiers
+	on the correct operand.
+	(*movdi_internal64): Ditto.
+
 2018-06-08  Carl Love  <cel@us.ibm.com>
 
 	Backport from mainline
