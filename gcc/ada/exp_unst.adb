@@ -810,9 +810,9 @@ package body Exp_Unst is
                      end if;
                   end;
 
-                  --  For an allocator with a qualified expression, check
-                  --  type of expression being qualified. The explicit type
-                  --  name is handled as an entity reference..
+                  --  For an allocator with a qualified expression, check type
+                  --  of expression being qualified. The explicit type name is
+                  --  handled as an entity reference.
 
                   if Nkind (N) = N_Allocator
                      and then Nkind (Expression (N)) = N_Qualified_Expression
@@ -1074,8 +1074,8 @@ package body Exp_Unst is
                         Callee := Enclosing_Subprogram (Ent);
 
                         if Callee /= Caller
-                           and then (not Is_Static_Type (Ent)
-                                      or else Needs_Fat_Pointer (Ent))
+                          and then (not Is_Static_Type (Ent)
+                                     or else Needs_Fat_Pointer (Ent))
                         then
                            Note_Uplevel_Ref (Ent, N, Caller, Callee);
 
@@ -1990,10 +1990,9 @@ package body Exp_Unst is
                Comp := Activation_Record_Component (UPJ.Ent);
                pragma Assert (Present (Comp));
 
-               --  Do the replacement. If the component type is an
-               --  access type, this is an uplevel reference for an
-               --  entity that requires a fat pointer, so dereference
-               --  the component.
+               --  Do the replacement. If the component type is an access type,
+               --  this is an uplevel reference for an entity that requires a
+               --  fat pointer, so dereference the component.
 
                if Is_Access_Type (Etype (Comp)) then
                   Rewrite (UPJ.Ref,
