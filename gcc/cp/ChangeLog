@@ -1,3 +1,8 @@
+2018-06-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86094 - wrong code with defaulted move ctor.
+	* tree.c (type_has_nontrivial_copy_init): Fix move ctor handling.
+
 2018-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokfndecl): Use the location_t argument in two more places.
