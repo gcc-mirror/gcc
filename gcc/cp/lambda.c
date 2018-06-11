@@ -884,7 +884,7 @@ resolvable_dummy_lambda (tree object)
       && current_class_type
       && LAMBDA_TYPE_P (current_class_type)
       && lambda_function (current_class_type)
-      && DERIVED_FROM_P (type, current_nonlambda_class_type ()))
+      && DERIVED_FROM_P (type, nonlambda_method_basetype()))
     return CLASSTYPE_LAMBDA_EXPR (current_class_type);
 
   return NULL_TREE;
@@ -949,30 +949,37 @@ current_nonlambda_function (void)
   return fn;
 }
 
-/* Returns the method basetype of the innermost non-lambda function, or
-   NULL_TREE if none.  */
+/* Returns the method basetype of the innermost non-lambda function, including
+   a hypothetical constructor if inside an NSDMI, or NULL_TREE if none.  */
 
 tree
 nonlambda_method_basetype (void)
 {
-  tree fn, type;
   if (!current_class_ref)
     return NULL_TREE;
 
-  type = current_class_type;
+  tree type = current_class_type;
   if (!type || !LAMBDA_TYPE_P (type))
     return type;
 
-  /* Find the nearest enclosing non-lambda function.  */
-  fn = TYPE_NAME (type);
-  do
-    fn = decl_function_context (fn);
-  while (fn && LAMBDA_FUNCTION_P (fn));
+  while (true)
+    {
+      tree lam = CLASSTYPE_LAMBDA_EXPR (type);
+      tree ex = LAMBDA_EXPR_EXTRA_SCOPE (lam);
+      if (ex && TREE_CODE (ex) == FIELD_DECL)
+	/* Lambda in an NSDMI.  */
+	return DECL_CONTEXT (ex);
 
-  if (!fn || !DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
-    return NULL_TREE;
-
-  return TYPE_METHOD_BASETYPE (TREE_TYPE (fn));
+      tree fn = TYPE_CONTEXT (type);
+      if (!fn || TREE_CODE (fn) != FUNCTION_DECL
+	  || !DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	/* No enclosing non-lambda method.  */
+	return NULL_TREE;
+      if (!LAMBDA_FUNCTION_P (fn))
+	/* Found an enclosing non-lambda method.  */
+	return TYPE_METHOD_BASETYPE (TREE_TYPE (fn));
+      type = DECL_CONTEXT (fn);
+    }
 }
 
 /* Like current_scope, but looking through lambdas.  */

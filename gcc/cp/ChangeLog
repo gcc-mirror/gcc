@@ -1,5 +1,9 @@
 2018-06-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85764 - bogus 'this' not captured error.
+	* lambda.c (resolvable_dummy_lambda): Use nonlambda_method_basetype.
+	(nonlambda_method_basetype): Handle NSDMI.
+
 	PR c++/85807 - ICE with call in template NSDMI.
 	* init.c (get_nsdmi): Use push_to/pop_from_top_level.
 	* tree.c (bot_manip): Don't set_flags_from_callee in a template.
