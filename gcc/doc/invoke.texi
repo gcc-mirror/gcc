@@ -2346,6 +2346,10 @@ the same name within a function, that are declared in different scopes,
 the mangling now changes starting with the twelfth occurrence.  It also
 implies @option{-fnew-inheriting-ctors}.
 
+Version 12, which first appeared in G++ 8, corrects the calling
+conventions for empty classes on the x86_64 target and for classes
+with only deleted copy/move constructors.
+
 See also @option{-Wabi}.
 
 @item -fabi-compat-version=@var{n}
