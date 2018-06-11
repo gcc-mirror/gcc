@@ -1,3 +1,8 @@
+2018-06-11  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/86089
+	* gcc.dg/tree-ssa/pr86089.c: New test.
+
 2018-06-11  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx512fvl-vaes-1.c: Remove 128bit versions from test.
