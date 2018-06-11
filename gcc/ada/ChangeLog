@@ -1,5 +1,22 @@
 2018-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* contracts.adb (Process_Body_Postconditions): Expand only checked
+	postconditions.
+	(Process_Contract_Cases_For): Expand only checked contract cases.
+	(Process_Inherited_Preconditions): Ignored class-wide preconditions are
+	partially expanded because some of their semantic checks are tied to
+	the expansion.
+	(Process_Preconditions_For): Expand only checked preconditions.
+	(Process_Spec_Postconditions): Expand only checked preconditions.
+	Ignored class-wide preconditions are partially expanded because some of
+	their semantic checks are tied to the expansion.
+	* exp_prag.adb (Expand_N_Pragma): Suppress the expansion of ignored
+	assertion pragmas.
+	* exp_util.adb (Add_Inherited_Invariants): Code clean up.
+	* sem_util.adb (Propagate_Invariant_Attributes): Code clean up.
+
+2018-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_ch9.adb, exp_unst.adb, inline.adb, libgnat/a-ciorma.adb,
 	libgnat/a-ciormu.adb, libgnat/a-ciorse.adb, libgnat/a-coorma.adb,
 	libgnat/a-coormu.adb, libgnat/a-coorse.adb, sem_prag.adb: Minor

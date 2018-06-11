@@ -23193,19 +23193,19 @@ package body Sem_Util is
          if Has_Inheritable_Invariants (From_Typ)
            and then not Has_Inheritable_Invariants (Typ)
          then
-            Set_Has_Inheritable_Invariants (Typ, True);
+            Set_Has_Inheritable_Invariants (Typ);
          end if;
 
          if Has_Inherited_Invariants (From_Typ)
            and then not Has_Inherited_Invariants (Typ)
          then
-            Set_Has_Inherited_Invariants (Typ, True);
+            Set_Has_Inherited_Invariants (Typ);
          end if;
 
          if Has_Own_Invariants (From_Typ)
            and then not Has_Own_Invariants (Typ)
          then
-            Set_Has_Own_Invariants (Typ, True);
+            Set_Has_Own_Invariants (Typ);
          end if;
 
          if Present (Full_IP) and then No (Invariant_Procedure (Typ)) then
