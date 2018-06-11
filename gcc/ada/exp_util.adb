@@ -2307,7 +2307,7 @@ package body Exp_Util is
             Deriv_Typ := T;
          end if;
 
-               pragma Assert (Present (Deriv_Typ));
+         pragma Assert (Present (Deriv_Typ));
 
          --  Determine which rep item chain to use. Precedence is given to that
          --  of the parent type's partial view since it usually carries all the
