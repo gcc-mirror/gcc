@@ -2269,11 +2269,16 @@ package body Inline is
      Subp      : Entity_Id;
      Orig_Subp : Entity_Id)
    is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Is_Predef : constant Boolean :=
-                    Is_Predefined_Unit (Get_Source_Unit (Subp));
-      Orig_Bod  : constant Node_Id :=
+      Loc           : constant Source_Ptr := Sloc (N);
+      Is_Predef     : constant Boolean :=
+                        Is_Predefined_Unit (Get_Source_Unit (Subp));
+      Orig_Bod      : constant Node_Id :=
                     Body_To_Inline (Unit_Declaration_Node (Subp));
+      Uses_Back_End : constant Boolean :=
+                         Back_End_Inlining and then Optimization_Level > 0;
+      --  The back-end expansion is used if the target supports back-end
+      --  inlining and some level of optimixation is required; otherwise
+      --  the inlining takes place fully as a tree expansion.
 
       Blk      : Node_Id;
       Decl     : Node_Id;
@@ -2840,7 +2845,7 @@ package body Inline is
    begin
       --  Initializations for old/new semantics
 
-      if not Back_End_Inlining then
+      if not Uses_Back_End then
          Is_Unc      := Is_Array_Type (Etype (Subp))
                           and then not Is_Constrained (Etype (Subp));
          Is_Unc_Decl := False;
@@ -2914,7 +2919,7 @@ package body Inline is
 
       --  Old semantics
 
-      if not Back_End_Inlining then
+      if not Uses_Back_End then
          declare
             Bod : Node_Id;
 
@@ -2958,8 +2963,20 @@ package body Inline is
                begin
                   First_Decl := First (Declarations (Blk));
 
+                  --  If the body is a single extended return statement,
+                  --  the resulting block is a nested block.
+
+                  if No (First_Decl) then
+                        First_Decl := First
+                          (Statements (Handled_Statement_Sequence (Blk)));
+
+                     if Nkind (First_Decl) = N_Block_Statement then
+                        First_Decl := First (Declarations (First_Decl));
+                     end if;
+                  end if;
+
                   if Nkind (First_Decl) /= N_Object_Declaration then
-                     return;
+                     return;  --  No front-end inlining possible,
                   end if;
 
                   if Nkind (Parent (N)) /= N_Assignment_Statement then
@@ -3288,7 +3305,7 @@ package body Inline is
          --  of the result of a call to an inlined function that returns
          --  an unconstrained type
 
-         elsif Back_End_Inlining
+         elsif Uses_Back_End
            and then Nkind (Parent (N)) = N_Object_Declaration
            and then Is_Unc
          then

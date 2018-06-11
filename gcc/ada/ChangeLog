@@ -1,3 +1,10 @@
+2018-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): If no optimization level is
+	specified, the expansion of a call to an Inline_Always function is
+	fully performed in the front-end even on a target that support back-end
+	inlining.
+
 2018-06-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* bindgen.adb (Gen_Adainit): Protect reference to System.Parameters
