@@ -2712,6 +2712,22 @@ package body Sem_Ch6 is
              Specification => Copy_Subprogram_Spec (Body_Spec));
          Set_Comes_From_Source (Subp_Decl, True);
 
+         --  Also mark parameters as coming from source
+
+         if Present (Parameter_Specifications (Specification (Subp_Decl))) then
+            declare
+               Form : Entity_Id;
+            begin
+               Form :=
+                 First (Parameter_Specifications (Specification (Subp_Decl)));
+
+               while Present (Form) loop
+                  Set_Comes_From_Source (Defining_Identifier (Form), True);
+                  Next (Form);
+               end loop;
+            end;
+         end if;
+
          --  Relocate the aspects and relevant pragmas from the subprogram body
          --  to the generated spec because it acts as the initial declaration.
 

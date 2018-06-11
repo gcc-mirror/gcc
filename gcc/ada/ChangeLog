@@ -1,3 +1,8 @@
+2018-06-11  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Build_Subprogram_Declaration): Mark parameters as coming
+	from source.
+
 2018-06-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Build_Predicate_Functions): For a derived type, ensure
