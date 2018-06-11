@@ -1,3 +1,20 @@
+2018-06-11  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-excmac*.ads: Factorize Unwind_Action definitions ...
+	* libgnat/a-exexpr.adb: ... Here, then add comments describing the
+	major datastructures associated with the current exception raised.
+	(Setup_Current_Excep): Accept a "Phase" argument conveying the
+	unwinding phase during which this subprogram is called.  For an Ada
+	exception, don't update the current exception buffer from the raised
+	exception object during SEARCH_PHASE, as this is redundant with the
+	call now issued just before propagation starts.
+	(Propagate_GCC_Exception): Move call to Setup_Current_Excep ahead of
+	the unwinding start, conveying Phase 0.
+	(Unhandled_Except_Handler): Pass UA_CLEANUP_PHASE as the Phase value on
+	the call to Setup_Current_Excep.
+	* raise-gcc.c (personality_body): Pass uw_phases as the Phase argument
+	on calls to Setup_Current_Excep.
+
 2018-06-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.ads, exp_unst.adb (Needs_Fat_Pointer,
