@@ -1,3 +1,7 @@
+2018-06-11  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/range-for9.C: Adjust dg-error.
+
 2018-06-11  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
