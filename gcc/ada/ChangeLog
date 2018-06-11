@@ -1,3 +1,11 @@
+2018-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.ads, exp_unst.adb (Needs_Fat_Pointer,
+	Build_Access_Type_Decl): New subprograms to handle uplevel references
+	to formals of an unconstrained array type. The activation record
+	component for these is an access type, and the reference is rewritten
+	as an explicit derefenrence of that component.
+
 2018-06-11  Bob Duff  <duff@adacore.com>
 
 	* libgnat/a-ciorma.adb, libgnat/a-ciormu.adb, libgnat/a-ciorse.adb,
