@@ -1,3 +1,8 @@
+2018-06-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_Record_Equality): Remove extraneous "True and
+	then" and general logical "ada" in codepeer mode.
+
 2018-06-11  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Protected_Body): Add missing handling of
