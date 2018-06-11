@@ -937,7 +937,8 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
-               --  Otherwise record an uplevel reference
+               --  Otherwise record an uplevel reference in a local
+               --  identifier.
 
                when others =>
                   if Nkind (N) in N_Has_Entity
@@ -1727,6 +1728,7 @@ package body Exp_Unst is
                                            New_Occurrence_Of (Ent, Loc),
                                          Attribute_Name => Name_Address));
 
+                                 --  or else 'Access for unconstrained
                                  Insert_After (Ins, Asn);
 
                                  --  Analyze the assignment statement. We do
@@ -2072,6 +2074,13 @@ package body Exp_Unst is
       --  Tree visitor that search for outer level procedures with nested
       --  subprograms and invokes Unnest_Subprogram()
 
+      ---------------
+      -- Do_Search --
+      ---------------
+
+      procedure Do_Search is new Traverse_Proc (Search_Subprograms);
+      --  Subtree visitor instantiation
+
       ------------------------
       -- Search_Subprograms --
       ------------------------
@@ -2095,15 +2104,16 @@ package body Exp_Unst is
             end;
          end if;
 
+         --  The proper body of a stub may contain nested subprograms,
+         --  and therefore must be visited explicitly. Nested stubs are
+         --  examined recursively in Visit_Node.
+
+         if Nkind (N) in N_Body_Stub then
+            Do_Search (Library_Unit (N));
+         end if;
+
          return OK;
       end Search_Subprograms;
-
-      ---------------
-      -- Do_Search --
-      ---------------
-
-      procedure Do_Search is new Traverse_Proc (Search_Subprograms);
-      --  Subtree visitor instantiation
 
    --  Start of processing for Unnest_Subprograms
 

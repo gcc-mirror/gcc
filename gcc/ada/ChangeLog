@@ -1,3 +1,9 @@
+2018-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Search_Subprograms): Handle explicitly stubs at the top
+	level of a compilation unit, becuase they may contain nested
+	subprograms that need an activation record.
+
 2018-06-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* Makefile.rtl: Compile Ada files with $(ADAC) instead of $(CC).
