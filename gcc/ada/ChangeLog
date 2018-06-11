@@ -1,3 +1,25 @@
+2018-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Add_Unconstrained_Actuals_To_Build_In_Place_Call): Do
+	not add any actuals when the size of the object is known, and the
+	caller will allocate it.
+	(Build_Heap_Allocator): Rename to Build_Heap_Or_Pool_Allocator to
+	better illustrate its functionality. Update the comment on the
+	generated code.  Generate a branch for the heap and pool cases where
+	the object is not necessarity controlled.
+	(Expand_N_Extended_Return_Statement): Expand the extended return
+	statement into four branches depending the requested mode if the caller
+	will not allocate the object on its side.
+	(Make_Build_In_Place_Call_In_Allocator): Do not allocate a controlled
+	object on the caller side because this will violate the semantics of
+	finalizable types. Instead notify the function to allocate the object
+	on the heap or a user-defined storage pool.
+	(Needs_BIP_Alloc_Form): A build-in-place function needs to be notified
+	which of the four modes to employ when returning a limited controlled
+	result.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Remove a redundant
+	guard which is already covered in Needs_Finalization.
+
 2018-06-11  Olivier Hainque  <hainque@adacore.com>
 
 	* libgnat/s-excmac*.ads: Factorize Unwind_Action definitions ...

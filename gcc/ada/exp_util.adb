@@ -682,16 +682,10 @@ package body Exp_Util is
 
       if Needs_Fin then
 
-         --  Certain run-time configurations and targets do not provide support
-         --  for controlled types.
-
-         if Restriction_Active (No_Finalization) then
-            return;
-
          --  Do nothing if the access type may never allocate / deallocate
          --  objects.
 
-         elsif No_Pool_Assigned (Ptr_Typ) then
+         if No_Pool_Assigned (Ptr_Typ) then
             return;
          end if;
 
