@@ -1,3 +1,7 @@
+2018-06-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/g-arrspl.ads: Add pragma Preelaborate.
+
 2018-06-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_ch4.adb (Expand_Record_Equality): Remove extraneous "True and
