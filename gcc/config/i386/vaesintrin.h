@@ -108,44 +108,4 @@ _mm512_aesenclast_epi128 (__m512i __A, __m512i __B)
 #pragma GCC pop_options
 #endif /* __DISABLE_VAES__ */
 
-#if !defined(__VAES__) || !defined(__AVX512VL__)
-#pragma GCC push_options
-#pragma GCC target("vaes,avx512vl")
-#define __DISABLE_VAESVL__
-#endif /* __VAES__ */
-
-extern __inline __m128i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_aesdec_epi128 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_vaesdec_v16qi ((__v16qi) __A, (__v16qi) __B);
-}
-
-extern __inline __m128i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_aesdeclast_epi128 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_vaesdeclast_v16qi ((__v16qi) __A,
-						    (__v16qi) __B);
-}
-
-extern __inline __m128i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_aesenc_epi128 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_vaesenc_v16qi ((__v16qi) __A, (__v16qi) __B);
-}
-
-extern __inline __m128i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_aesenclast_epi128 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_vaesenclast_v16qi ((__v16qi) __A,
-						    (__v16qi) __B);
-}
-
-#ifdef __DISABLE_VAESVL__
-#undef __DISABLE_VAESVL__
-#pragma GCC pop_options
-#endif /* __DISABLE_VAES__ */
 #endif /* __VAESINTRIN_H_INCLUDED */
