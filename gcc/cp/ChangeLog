@@ -1,5 +1,8 @@
 2018-06-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85963 - -Wunused-but-set with ?: in template.
+	* pt.c (tsubst_copy_and_build) [COND_EXPR]: Call mark_rvalue_use.
+
 	PR c++/61806 - missed SFINAE with partial specialization.
 	* cp-tree.h (deferring_access_check_sentinel): Add deferring_kind
 	parameter to constructor.
