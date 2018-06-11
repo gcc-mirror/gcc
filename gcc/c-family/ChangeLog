@@ -1,3 +1,8 @@
+2018-06-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85710 - ICE with -Wmemset-elt-size.
+	* c-warn.c (warn_for_memset): Don't crash on incomplete element type.
+
 2018-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_ada_declaration) <TYPE_DECL>: Generate a forward
