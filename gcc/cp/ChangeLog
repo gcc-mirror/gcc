@@ -1,3 +1,8 @@
+2018-06-05  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_binary_expression): Special case comparison
+	of pointers to members of the same union.
+
 2018-06-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86094 - wrong code with defaulted move ctor.
