@@ -9533,7 +9533,7 @@ package body Sem_Ch12 is
                --  the corresponding private part.
 
                if Parent (List_Containing (Get_Unit_Instantiation_Node (Par)))
-                  = Parent (List_Containing (N))
+                    = Parent (List_Containing (N))
                  and then Sloc (Freeze_Node (Par)) < Sloc (N)
                then
                   Insert_Freeze_Node_For_Instance (N, F_Node);

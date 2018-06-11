@@ -8334,13 +8334,18 @@ package body Sem_Util is
       --  Search for the equality primitive; return Empty if the primitive is
       --  not found.
 
+      ------------------
+      -- Find_Eq_Prim --
+      ------------------
+
       function Find_Eq_Prim (Prims_List : Elist_Id) return Entity_Id is
-         Prim_E : Elmt_Id := First_Elmt (Prims_List);
-         Prim   : Entity_Id;
+         Prim      : Entity_Id;
+         Prim_Elmt : Elmt_Id;
 
       begin
-         while Present (Prim_E) loop
-            Prim := Node (Prim_E);
+         Prim_Elmt := First_Elmt (Prims_List);
+         while Present (Prim_Elmt) loop
+            Prim := Node (Prim_Elmt);
 
             --  Locate primitive equality with the right signature
 
@@ -8352,7 +8357,7 @@ package body Sem_Util is
                return Prim;
             end if;
 
-            Next_Elmt (Prim_E);
+            Next_Elmt (Prim_Elmt);
          end loop;
 
          return Empty;
@@ -8360,8 +8365,8 @@ package body Sem_Util is
 
       --  Local Variables
 
-      Full_Type : Entity_Id;
       Eq_Prim   : Entity_Id;
+      Full_Type : Entity_Id;
 
    --  Start of processing for Find_Primitive_Eq
 
@@ -19320,7 +19325,7 @@ package body Sem_Util is
    begin
       --  No marker needs to be created when switch -gnatH (legacy elaboration
       --  checking mode enabled) is in effect because the legacy ABE mechanism
-      --  does use markers.
+      --  does not use markers.
 
       if Legacy_Elaboration_Checks then
          return False;

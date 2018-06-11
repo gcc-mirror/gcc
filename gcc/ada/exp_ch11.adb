@@ -913,8 +913,8 @@ package body Exp_Ch11 is
             Cond := Condition (Raise_S);
 
             --  The only other possibility is a node that is or used to be a
-            --  simple raise statement. Note that the string expression in
-            --  the original Raise statement is ignored.
+            --  simple raise statement. Note that the string expression in the
+            --  original Raise statement is ignored.
 
          else
             Orig := Original_Node (Raise_S);
