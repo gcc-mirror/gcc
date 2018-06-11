@@ -18472,6 +18472,7 @@ package body Sem_Util is
       begin
          if Nkind (N) = N_Allocator then
             if Is_Dynamic then
+               Set_Is_Static_Coextension (N, False);
                Set_Is_Dynamic_Coextension (N);
 
             --  If the allocator expression is potentially dynamic, it may
@@ -18482,8 +18483,10 @@ package body Sem_Util is
             elsif Nkind (Expression (N)) = N_Qualified_Expression
               and then Nkind (Expression (Expression (N))) = N_Op_Concat
             then
+               Set_Is_Static_Coextension (N, False);
                Set_Is_Dynamic_Coextension (N);
             else
+               Set_Is_Dynamic_Coextension (N, False);
                Set_Is_Static_Coextension (N);
             end if;
          end if;

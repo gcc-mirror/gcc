@@ -5350,6 +5350,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Allocator);
+      pragma Assert (not Val
+        or else not Is_Static_Coextension (N));
       Set_Flag18 (N, Val);
    end Set_Is_Dynamic_Coextension;
 
@@ -5613,6 +5615,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Allocator);
+      pragma Assert (not Val
+        or else not Is_Dynamic_Coextension (N));
       Set_Flag14 (N, Val);
    end Set_Is_Static_Coextension;
 

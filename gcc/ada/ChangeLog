@@ -1,3 +1,12 @@
+2018-06-11  Javier Miranda  <miranda@adacore.com>
+
+	* sinfo.ads (Is_Dynamic_Coextension): Adding documentation.
+	(Is_Static_Coextension): Adding documentation.
+	* sinfo.adb (Is_Dynamic_Coextension): Extending the assertion.
+	(Is_Static_Coextension): Extending the assertion.
+	* sem_util.adb (Mark_Allocator): Clear Is_Static_Coextension when
+	setting flag Is_Dynamic_Coextension (and vice versa).
+
 2018-06-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Search_Subprograms): Handle explicitly stubs at the top

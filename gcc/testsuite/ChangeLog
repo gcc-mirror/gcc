@@ -1,3 +1,8 @@
+2018-06-11  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/aggr23.adb, gnat.dg/aggr23_q.adb, gnat.dg/aggr23_tt.ads: New
+	testcase.
+
 2018-06-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/inline_always1.adb: New testcase.
