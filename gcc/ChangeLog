@@ -1,5 +1,20 @@
 2018-06-11  Martin Sebor  <msebor@redhat.com>
 
+	* doc/invoke.texi (-Wall): List -Wc++17-compat.
+	(Wno-class-memaccess): Add @opindex.
+	(Wno-templates, Wno-multiple-inheritance): Same.
+	(Wno-virtual-inheritance, Wno-namespaces): Same.
+	(Wno-pedantic, Wno-chkp, Wcoverage-mismatch): Same.
+	(Wno-format-overflow, Wno-format-truncation): Same.
+	(Wno-unused-local-typedefs, Walloc-size-larger-than): Same.
+	(Wno-alloc-size-larger-than, Wframe-larger-than): Same
+	(Wno-stack-usage, Wno-c++-compat, Wno-c++11-compat): Same.
+	(Wno-c++14-compat, Wno-c++17-compat, Wno-openmp-simd): Same.
+	(Wno-unsuffixed-float-constants, Wno-addr-space-convert): Same.
+	(Wno-misspelled-isr): Same.
+
+2018-06-11  Martin Sebor  <msebor@redhat.com>
+
 	* PR tree-optimization/86083
 	* tree-ssa-strlen.c (handle_char_store): Use tree_expr_nonzero_p.
 
@@ -43,7 +58,7 @@
 2018-06-08  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_passes_ieee128): Protect with #if
-	TARGET_ELF. 
+	TARGET_ELF.
 
 2018-06-08  Martin Liska  <mliska@suse.cz>
 

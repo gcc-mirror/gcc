@@ -267,7 +267,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-attributes  -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
--Wc++-compat  -Wc++11-compat  -Wc++14-compat  @gol
+-Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
 -Wchar-subscripts  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wclobbered  -Wcomment  -Wconditionally-supported @gol
@@ -3034,6 +3034,7 @@ C++17 it calls @code{f<void(*)()noexcept>}.
 
 @item -Wclass-memaccess @r{(C++ and Objective-C++ only)}
 @opindex Wclass-memaccess
+@opindex Wno-class-memaccess
 Warn when the destination of a call to a raw memory function such as
 @code{memset} or @code{memcpy} is an object of class type, and when writing
 into such an object might bypass the class non-trivial or deleted constructor
@@ -3220,6 +3221,7 @@ unsignedness, but the standard mandates the current behavior.
 
 @item -Wtemplates @r{(C++ and Objective-C++ only)}
 @opindex Wtemplates
+@opindex Wno-templates
 Warn when a primary template declaration is encountered.  Some coding
 rules disallow templates, and this may be used to enforce that rule.
 The warning is inactive inside a system header file, such as the STL, so
@@ -3228,6 +3230,7 @@ templates.
 
 @item -Wmultiple-inheritance @r{(C++ and Objective-C++ only)}
 @opindex Wmultiple-inheritance
+@opindex Wno-multiple-inheritance
 Warn when a class is defined with multiple direct base classes.  Some
 coding rules disallow multiple inheritance, and this may be used to
 enforce that rule.  The warning is inactive inside a system header file,
@@ -3236,6 +3239,7 @@ classes that indirectly use multiple inheritance.
 
 @item -Wvirtual-inheritance
 @opindex Wvirtual-inheritance
+@opindex Wno-virtual-inheritance
 Warn when a class is defined with a virtual direct base class.  Some
 coding rules disallow multiple inheritance, and this may be used to
 enforce that rule.  The warning is inactive inside a system header file,
@@ -3244,6 +3248,7 @@ classes that indirectly use virtual inheritance.
 
 @item -Wnamespaces
 @opindex Wnamespaces
+@opindex Wno-namespaces
 Warn when a namespace definition is opened.  Some coding rules disallow
 namespaces, and this may be used to enforce that rule.  The warning is
 inactive inside a system header file, such as the STL, so one can still
@@ -3874,6 +3879,7 @@ warns that an unrecognized option is present.
 @itemx -pedantic
 @opindex pedantic
 @opindex Wpedantic
+@opindex Wno-pedantic
 Issue all the warnings demanded by strict ISO C and ISO C++;
 reject all programs that use forbidden extensions, and some other
 programs that do not follow ISO C and ISO C++.  For ISO C, follows the
@@ -4055,8 +4061,15 @@ of error, as programmers often forget that this type is signed on some
 machines.
 This warning is enabled by @option{-Wall}.
 
+@item -Wchkp
+@opindex Wchkp
+@opindex Wno-chkp
+Warn about an invalid memory access that is found by Pointer Bounds Checker
+(@option{-fcheck-pointer-bounds}).
+
 @item -Wno-coverage-mismatch
 @opindex Wno-coverage-mismatch
+@opindex Wcoverage-mismatch
 Warn if feedback profiles do not match when using the
 @option{-fprofile-use} option.
 If a source file is changed between compiling with @option{-fprofile-gen} and
@@ -4306,7 +4319,7 @@ logic @option{-Wformat-overflow}.
 @item -Wformat-truncation
 @itemx -Wformat-truncation=1
 @opindex Wformat-truncation
-@opindex Wno-format-overflow
+@opindex Wno-format-truncation
 Level @var{1} of @option{-Wformat-truncation} enabled by @option{-Wformat}
 employs a conservative approach that warns only about calls to bounded
 functions whose return value is unused and that will most likely result
@@ -4963,6 +4976,7 @@ To suppress this warning use the @code{unused} attribute
 
 @item -Wunused-local-typedefs @r{(C, Objective-C, C++ and Objective-C++ only)}
 @opindex Wunused-local-typedefs
+@opindex Wno-unused-local-typedefs
 Warn when a typedef locally defined in a function is not used.
 This warning is enabled by @option{-Wall}.
 
@@ -5496,6 +5510,8 @@ of @code{realloc} has been deprecated) relying on it may result in subtle
 portability bugs and should be avoided.
 
 @item -Walloc-size-larger-than=@var{n}
+@opindex Walloc-size-larger-than=@var{n}
+@opindex Wno-alloc-size-larger-than
 Warn about calls to functions decorated with attribute @code{alloc_size}
 that attempt to allocate objects larger than the specified number of bytes,
 or where the result of the size computation in an integer type with infinite
@@ -5930,6 +5946,7 @@ This warning is enabled by @option{-Wshadow=local}.
 Warn whenever an object of larger than @var{len} bytes is defined.
 
 @item -Wframe-larger-than=@var{len}
+@opindex Wframe-larger-than=@var{len}
 @opindex Wframe-larger-than
 Warn if the size of a function frame is larger than @var{len} bytes.
 The computation done to determine the stack frame size is approximate
@@ -5948,6 +5965,7 @@ on the heap.
 
 @item -Wstack-usage=@var{len}
 @opindex Wstack-usage
+@opindex Wno-stack-usage
 Warn if the stack usage of a function might be larger than @var{len} bytes.
 The computation done to determine the stack usage is conservative.
 Any space allocated via @code{alloca}, variable-length arrays, or related
@@ -6114,12 +6132,14 @@ disabled in the expression that follows @code{__extension__}.
 
 @item -Wc++-compat @r{(C and Objective-C only)}
 @opindex Wc++-compat
+@opindex Wno-c++-compat
 Warn about ISO C constructs that are outside of the common subset of
 ISO C and ISO C++, e.g.@: request for implicit conversion from
 @code{void *} to a pointer to non-@code{void} type.
 
 @item -Wc++11-compat @r{(C++ and Objective-C++ only)}
 @opindex Wc++11-compat
+@opindex Wno-c++11-compat
 Warn about C++ constructs whose meaning differs between ISO C++ 1998
 and ISO C++ 2011, e.g., identifiers in ISO C++ 1998 that are keywords
 in ISO C++ 2011.  This warning turns on @option{-Wnarrowing} and is
@@ -6127,11 +6147,13 @@ enabled by @option{-Wall}.
 
 @item -Wc++14-compat @r{(C++ and Objective-C++ only)}
 @opindex Wc++14-compat
+@opindex Wno-c++14-compat
 Warn about C++ constructs whose meaning differs between ISO C++ 2011
 and ISO C++ 2014.  This warning is enabled by @option{-Wall}.
 
 @item -Wc++17-compat @r{(C++ and Objective-C++ only)}
 @opindex Wc++17-compat
+@opindex Wno-c++17-compat
 Warn about C++ constructs whose meaning differs between ISO C++ 2014
 and ISO C++ 2017.  This warning is enabled by @option{-Wall}.
 
@@ -6735,7 +6757,8 @@ Warn about One Definition Rule violations during link-time optimization.
 Requires @option{-flto-odr-type-merging} to be enabled.  Enabled by default.
 
 @item -Wopenmp-simd
-@opindex Wopenm-simd
+@opindex Wopenmp-simd
+@opindex Wno-openmp-simd
 Warn if the vectorizer cost model overrides the OpenMP
 simd directive set by user.  The @option{-fsimd-cost-model=unlimited}
 option can be used to relax the cost model.
@@ -7049,6 +7072,7 @@ This option is implied by @option{-Wpedantic}, and can be disabled with
 
 @item -Wunsuffixed-float-constants @r{(C and Objective-C only)}
 @opindex Wunsuffixed-float-constants
+@opindex Wno-unsuffixed-float-constants
 
 Issue a warning for any floating constant that does not have
 a suffix.  When used together with @option{-Wsystem-headers} it
@@ -16756,11 +16780,13 @@ Don't link against AVR-LibC's device specific library @code{lib<mcu>.a}.
 
 @item -Waddr-space-convert
 @opindex Waddr-space-convert
+@opindex Wno-addr-space-convert
 Warn about conversions between address spaces in the case where the
 resulting address space is not contained in the incoming address space.
 
 @item -Wmisspelled-isr
 @opindex Wmisspelled-isr
+@opindex Wno-misspelled-isr
 Warn if the ISR is misspelled, i.e. without __vector prefix.
 Enabled by default.
 @end table
