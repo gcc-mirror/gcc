@@ -3200,7 +3200,7 @@ package body Sem_Prag is
 
          --  The item appears in the visible state space of some package. In
          --  general this scenario does not warrant Part_Of except when the
-         --  package is a non-generic private child unit and the encapsulating
+         --  package is a nongeneric private child unit and the encapsulating
          --  state is declared in a parent unit or a public descendant of that
          --  parent unit.
 
@@ -3210,7 +3210,7 @@ package body Sem_Prag is
               and then Is_Private_Descendant (Pack_Id)
             then
                --  A variable or state abstraction which is part of the visible
-               --  state of a non-generic private child unit or its public
+               --  state of a nongeneric private child unit or its public
                --  descendants must have its Part_Of indicator specified. The
                --  Part_Of indicator must denote a state declared by either the
                --  parent unit of the private unit or by a public descendant of
@@ -3252,7 +3252,7 @@ package body Sem_Prag is
                end if;
 
             --  Indicator Part_Of is not needed when the related package is
-            --  not a non-generic private child unit or a public descendant
+            --  not a nongeneric private child unit or a public descendant
             --  thereof.
 
             else
@@ -28833,7 +28833,7 @@ package body Sem_Prag is
 
       --  In general an item declared in the visible state space of a package
       --  does not require a Part_Of indicator. The only exception is when the
-      --  related package is a non-generic private child unit in which case
+      --  related package is a nongeneric private child unit, in which case
       --  Part_Of must denote a state in the parent unit or in one of its
       --  descendants.
 

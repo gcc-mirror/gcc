@@ -1,3 +1,8 @@
+2018-06-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch3.adb, exp_unst.adb, inline.adb, sem_prag.adb: Minor
+	reformatting.
+
 2018-06-11  Yannick Moy  <moy@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Add Suppressible
