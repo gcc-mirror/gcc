@@ -826,7 +826,7 @@ package body Exp_Unst is
                   end if;
 
                --  Generic associations are not analyzed: the actuals are
-               --  transferred to renaming qnd subtype declarations that
+               --  transferred to renaming and subtype declarations that
                --  are the ones that must be examined.
 
                when N_Generic_Association =>

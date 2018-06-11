@@ -1098,8 +1098,8 @@ package body Inline is
          if not Has_Single_Return (N)
 
            --  Skip inlining if the function returns an unconstrained type
-           --  using an extended return statement since this part of the
-           --  new inlining model which is not yet supported by the current
+           --  using an extended return statement, since this part of the
+           --  new inlining model is not yet supported by the current
            --  implementation. ???
 
            or else (Returns_Unconstrained_Type (Spec_Id)
