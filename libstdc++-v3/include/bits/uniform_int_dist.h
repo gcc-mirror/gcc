@@ -101,8 +101,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Constructs a uniform distribution object.
        */
+      uniform_int_distribution() : uniform_int_distribution(0) { }
+
+      /**
+       * @brief Constructs a uniform distribution object.
+       */
       explicit
-      uniform_int_distribution(_IntType __a = 0,
+      uniform_int_distribution(_IntType __a,
 			   _IntType __b = std::numeric_limits<_IntType>::max())
       : _M_param(__a, __b)
       { }

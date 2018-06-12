@@ -1,3 +1,92 @@
+2018-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	P0935R0 Eradicating unnecessarily explicit default constructors
+	* include/bits/random.h (linear_congruential_engine)
+	(mersenne_twister_engine, subtract_with_carry_engine, random_device)
+	(uniform_real_distribution, normal_distribution)
+	(lognormal_distribution, gamma_distribution, chi_squared_distribution)
+	(cauchy_distribution, fisher_f_distribution, student_t_distribution)
+	(bernoulli_distribution, binomial_distribution,geometric_distribution)
+	(negative_binomial_distribution, exponential_distribution)
+	(weibull_distribution, extreme_value_distribution): Add non-explicit
+	default constructors. Remove default argument for first parameter of
+	explicit constructors.
+	(piecewise_constant_distribution, piecewise_linear_distribution):
+	Make default constructor non-explicit.
+	* include/bits/uniform_int_dist.h (uniform_int_distribution): Add
+	non-explicit default constructors. Remove default argument for first
+	parameter of explicit constructor.
+	(simd_fast_mersenne_twister_engine, beta_distribution)
+	(rice_distribution, nakagami_distribution, pareto_distribution)
+	(k_distribution, arcsine_distribution, hoyt_distribution)
+	(triangular_distribution, von_mises_distribution)
+	(hypergeometric_distribution, logistic_distribution)
+	(uniform_inside_sphere_distribution): Likewise.
+	(uniform_on_sphere_distribution): Make default constructor
+	non-explicit.
+	* testsuite/26_numerics/random/bernoulli_distribution/cons/default.cc:
+	Test for non-explicit default constructor. Fix references to standard.
+	* testsuite/26_numerics/random/binomial_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/chi_squared_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/exponential_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/fisher_f_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/gamma_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/lognormal_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/normal_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/uniform_real_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/weibull_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/ext/random/arcsine_distribution/cons/default.cc: Likewise.
+	* testsuite/ext/random/beta_distribution/cons/default.cc: Likewise.
+	* testsuite/ext/random/hoyt_distribution/cons/default.cc: Likewise.
+	* testsuite/ext/random/hypergeometric_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/ext/random/k_distribution/cons/default.cc: Likewise.
+	* testsuite/ext/random/logistic_distribution/cons/default.cc: Likewise.
+	* testsuite/ext/random/nakagami_distribution/cons/default.cc: Likewise.
+	* testsuite/ext/random/normal_mv_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/ext/random/pareto_distribution/cons/default.cc: Likewise.
+	* testsuite/ext/random/rice_distribution/cons/default.cc: Likewise.
+	* testsuite/ext/random/triangular_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/ext/random/uniform_inside_sphere_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/ext/random/uniform_on_sphere_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/ext/random/von_mises_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/util/testsuite_common_types.h
+	(implicitly_default_constructible): New helper.
+
 2018-06-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ios_base.h (ios::Init::Init(const Init&))

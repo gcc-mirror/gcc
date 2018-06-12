@@ -22,6 +22,7 @@
 
 #include <ext/random>
 #include <testsuite_hooks.h>
+#include <testsuite_common_types.h>
 
 void
 test01()
@@ -33,9 +34,16 @@ test01()
   VERIFY( u.max() == 1.0 );
 }
 
+void
+test02()
+{
+  __gnu_test::implicitly_default_constructible test;
+  test.operator()<__gnu_cxx::arcsine_distribution<>>();
+}
+
 int
 main()
 {
   test01();
-  return 0;
+  test02();
 }
