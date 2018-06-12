@@ -1,5 +1,11 @@
 2018-06-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/p8-vec-xl-xst-v2.c: New.
+	* gcc.target/powerpc/p8-vec-xl-xst.c: Disable gimple-folding.
+	* gcc.target/powerpc/swaps-p8-17.c: Same.
+
+2018-06-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-store-vec_vsx_st-char.c: New.
 	* gcc.target/powerpc/fold-vec-store-vec_vsx_st-double.c: New.
 	* gcc.target/powerpc/fold-vec-store-vec_vsx_st-float.c: New.
