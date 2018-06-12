@@ -1,3 +1,8 @@
+2018-06-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/85931
+	* fold-const.c (operand_equal_p): Handle SAVE_EXPR.
+
 2018-06-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add

@@ -3358,6 +3358,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 	case CLEANUP_POINT_EXPR:
 	case EXPR_STMT:
+	case SAVE_EXPR:
 	  if (flags & OEP_LEXICOGRAPHIC)
 	    return OP_SAME (0);
 	  return 0;
