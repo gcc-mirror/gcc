@@ -603,13 +603,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* If we have a constant that we are not defining, get the expression it
 	 was defined to represent.  This is necessary to avoid generating dumb
 	 elaboration code in simple cases, but we may throw it away later if it
-	 is not a constant.  But do not retrieve it if it is an allocator since
+	 is not a constant.  But do not do it for dispatch tables because they
+	 are only referenced indirectly and we need to have a consistent view
+	 of the exported and of the imported declarations of the tables from
+	 external units for them to be properly merged in LTO mode.  Moreover
+	 simply do not retrieve the expression it if it is an allocator since
 	 the designated type might still be dummy at this point.  Note that we
 	 invoke gnat_to_gnu_external and not gnat_to_gnu because the expression
 	 may contain N_Expression_With_Actions nodes and thus declarations of
 	 objects from other units that we need to discard.  */
       if (!definition
 	  && !No_Initialization (Declaration_Node (gnat_entity))
+	  && !Is_Dispatch_Table_Entity (gnat_entity)
 	  && Present (gnat_temp = Expression (Declaration_Node (gnat_entity)))
 	  && Nkind (gnat_temp) != N_Allocator
 	  && (!type_annotate_only || Compile_Time_Known_Value (gnat_temp)))
@@ -3404,20 +3409,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    {
 	      maybe_present = true;
 	      break;
-	    }
-
-	  /* If this is a record subtype associated with a dispatch table,
-	     strip the suffix.  This is necessary to make sure 2 different
-	     subtypes associated with the imported and exported views of a
-	     dispatch table are properly merged in LTO mode.  */
-	  if (Is_Dispatch_Table_Entity (gnat_entity))
-	    {
-	      char *p;
-	      Get_Encoded_Name (gnat_entity);
-	      p = strchr (Name_Buffer, '_');
-	      gcc_assert (p);
-	      strcpy (p+2, "dtS");
-	      gnu_entity_name = get_identifier (Name_Buffer);
 	    }
 
 	  /* When the subtype has discriminants and these discriminants affect
