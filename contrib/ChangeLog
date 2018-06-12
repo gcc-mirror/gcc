@@ -1,3 +1,7 @@
+2018-06-12  Jeff Law  <law@redhat.com>
+
+	* config-list.mk (LIST): Remove alpha-freebsd6.
+
 2018-05-08  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/85571
