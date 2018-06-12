@@ -1,3 +1,7 @@
+2018-06-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* g++.dg/torture/aarch64-vect-init-1.C: New test.
+
 2018-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/init/delete3.C: New.
