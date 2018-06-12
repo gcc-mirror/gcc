@@ -1,3 +1,12 @@
+2018-06-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-load-vec_xl-char.c: New testcase.
+	* gcc.target/powerpc/fold-vec-load-vec_xl-double.c: New testcase.
+	* gcc.target/powerpc/fold-vec-load-vec_xl-float.c: New testcase.
+	* gcc.target/powerpc/fold-vec-load-vec_xl-int.c: New testcase.
+	* gcc.target/powerpc/fold-vec-load-vec_xl-longlong.c: New testcase.
+	* gcc.target/powerpc/fold-vec-load-vec_xl-short.c: New testcase.
+
 2018-06-12  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/opt/mpx.C: New test.
