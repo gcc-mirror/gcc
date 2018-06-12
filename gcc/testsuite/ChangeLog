@@ -1,5 +1,14 @@
 2018-06-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/fold-vec-store-vec_vsx_st-char.c: New.
+	* gcc.target/powerpc/fold-vec-store-vec_vsx_st-double.c: New.
+	* gcc.target/powerpc/fold-vec-store-vec_vsx_st-float.c: New.
+	* gcc.target/powerpc/fold-vec-store-vec_vsx_st-int.c: New.
+	* gcc.target/powerpc/fold-vec-store-vec_vsx_st-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-store-vec_vsx_st-short.c: New.
+
+2018-06-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-store-builtin_vec_xst-char.c: New.
 	* gcc.target/powerpc/fold-vec-store-builtin_vec_xst-double.c: New.
 	* gcc.target/powerpc/fold-vec-store-builtin_vec_xst-float.c: New.
