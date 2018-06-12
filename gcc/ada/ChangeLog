@@ -1,5 +1,19 @@
 2018-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (TYPE_RETURN_BY_DIRECT_REF_P): Change from
+	using TYPE_LANG_FLAG_4 to using TYPE_LANG_FLAG_0.
+	(TYPE_ALIGN_OK): Move around.
+	(TYPE_PADDING_FOR_COMPONENT): Remove superfluous parentheses.
+	* gcc-interface/decl.c (change_qualified_type): Move to...
+	(gnat_to_gnu_entity): Adjust comment.
+	* gcc-interface/gigi.h (change_qualified_type): ...here; make inline.
+	(ceil_pow2): Use ceil_log2.
+	* gcc-interface/utils.c (finish_subprog_decl): Add couple of comments
+	and do not set TREE_SIDE_EFFECTS.
+	(handle_noreturn_attribute): Use change_qualified_type.
+
+2018-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: Do not get
 	the expression of a dispatch table that is not being defined.
 	<E_Record_Subtype>: Remove obsolete kludge.
