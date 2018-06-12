@@ -1,3 +1,11 @@
+2018-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/init/delete3.C: New.
+	* g++.dg/init/new49.C: Likewise.
+	* g++.dg/init/new25.C: Test locations too.
+	* g++.dg/template/new4.C: Likewise.
+	* g++.old-deja/g++.jason/operator.C: Likewise.
+
 2018-06-12  Marek Polacek  <polacek@redhat.com>
 
 	Core issue 1331 - const mismatch with defaulted copy constructor
