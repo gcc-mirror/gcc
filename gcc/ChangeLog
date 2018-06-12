@@ -1,3 +1,13 @@
+2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-arch.h: Update ARC_OPTX macro.
+	* config/arc/arc-options.def (ARC_OPTX): Introduce a new doc
+	field.
+	* config/arc/arc.c (arc_init): Update pic warning.
+	(irq_range): Update irq range parsing warnings.
+	(arc_override_options): Update various warning messages.
+	(arc_handle_aux_attribute): Likewise.
+
 2018-06-12  Robert Suchanek  <robert.suchanek@mips.com>
 
 	* config/mips/i6400.md (i6400_fpu_fadd): Remove frint.

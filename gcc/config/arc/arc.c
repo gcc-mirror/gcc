@@ -934,7 +934,7 @@ arc_init (void)
   /* Warn for unimplemented PIC in pre-ARC700 cores, and disable flag_pic.  */
   if (flag_pic && TARGET_ARC600_FAMILY)
     {
-      warning (DK_WARNING,
+      warning (0,
 	       "PIC is not supported for %s. Generating non-PIC code only..",
 	       arc_cpu_string);
       flag_pic = 0;
@@ -998,7 +998,7 @@ irq_range (const char *cstr)
   dash = strchr (str, '-');
   if (!dash)
     {
-      warning (0, "value of -mirq-ctrl-saved must have form R0-REGx");
+      warning (OPT_mirq_ctrl_saved_, "missing dash");
       return;
     }
   *dash = '\0';
@@ -1010,7 +1010,7 @@ irq_range (const char *cstr)
   first = decode_reg_name (str);
   if (first != 0)
     {
-      warning (0, "first register must be R0");
+      warning (OPT_mirq_ctrl_saved_, "first register must be R0");
       return;
     }
 
@@ -1023,13 +1023,14 @@ irq_range (const char *cstr)
 
   if (last < 0)
     {
-      warning (0, "unknown register name: %s", dash + 1);
+      warning (OPT_mirq_ctrl_saved_, "unknown register name: %s", dash + 1);
       return;
     }
 
   if (!(last & 0x01))
     {
-      warning (0, "last register name %s must be an odd register", dash + 1);
+      warning (OPT_mirq_ctrl_saved_,
+	       "last register name %s must be an odd register", dash + 1);
       return;
     }
 
@@ -1037,7 +1038,8 @@ irq_range (const char *cstr)
 
   if (first > last)
     {
-      warning (0, "%s-%s is an empty range", str, dash + 1);
+      warning (OPT_mirq_ctrl_saved_,
+	       "%s-%s is an empty range", str, dash + 1);
       return;
     }
 
@@ -1062,7 +1064,8 @@ irq_range (const char *cstr)
 	  break;
 
 	default:
-	  warning (0, "unknown register name: %s", str);
+	  warning (OPT_mirq_ctrl_saved_,
+		   "unknown register name: %s", str);
 	  return;
 	}
     }
@@ -1147,14 +1150,16 @@ arc_override_options (void)
 	    if (TARGET_V2)
 	      irq_range (opt->arg);
 	    else
-	      warning (0, "option -mirq-ctrl-saved valid only for ARC v2 processors");
+	      warning (OPT_mirq_ctrl_saved_,
+		       "option -mirq-ctrl-saved valid only for ARC v2 processors");
 	    break;
 
 	  case OPT_mrgf_banked_regs_:
 	    if (TARGET_V2)
 	      parse_mrgf_banked_regs_option (opt->arg);
 	    else
-	      warning (0, "option -mrgf-banked-regs valid only for ARC v2 processors");
+	      warning (OPT_mrgf_banked_regs_,
+		       "option -mrgf-banked-regs valid only for ARC v2 processors");
 	    break;
 
 	  default:
@@ -1186,6 +1191,42 @@ arc_override_options (void)
 	}
     }
 
+  /* Check options against architecture options.  Throw an error if
+     option is not allowed.  Extra, check options against default
+     architecture/cpu flags and throw an warning if we find a
+     mismatch.  */
+#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC0, DOC1)		\
+  do {								\
+    if ((!(arc_selected_cpu->arch_info->flags & CODE))		\
+	&& (VAR == VAL))					\
+      error ("Option %s=%s is not available for %s CPU.",	\
+	     DOC0, DOC1, arc_selected_cpu->name);		\
+    if ((arc_selected_cpu->arch_info->dflags & CODE)		\
+	&& (VAR != DEFAULT_##VAR)				\
+	&& (VAR != VAL))					\
+      warning (0, "Option %s is ignored, the default value %s"	\
+	       " is considered for %s CPU.", DOC0, DOC1,	\
+	       arc_selected_cpu->name);				\
+ } while (0);
+#define ARC_OPT(NAME, CODE, MASK, DOC)				\
+  do {								\
+    if ((!(arc_selected_cpu->arch_info->flags & CODE))		\
+	&& (target_flags & MASK))				\
+      error ("Option %s is not available for %s CPU",		\
+	     DOC, arc_selected_cpu->name);			\
+    if ((arc_selected_cpu->arch_info->dflags & CODE)		\
+	&& (target_flags_explicit & MASK)			\
+	&& (!(target_flags & MASK)))				\
+      warning (0, "Unset option %s is ignored, it is always"	\
+	       " enabled for %s CPU.", DOC,			\
+	       arc_selected_cpu->name);				\
+  } while (0);
+
+#include "arc-options.def"
+
+#undef ARC_OPTX
+#undef ARC_OPT
+
   /* Set cpu flags accordingly to architecture/selected cpu.  The cpu
      specific flags are set in arc-common.c.  The architecture forces
      the default hardware configurations in, regardless what command
@@ -1199,37 +1240,13 @@ arc_override_options (void)
     if (arc_selected_cpu->arch_info->dflags & CODE)	\
       target_flags |= MASK;				\
   } while (0);
-#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)		\
+#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC0, DOC1)	\
   do {							\
     if ((arc_selected_cpu->flags & CODE)		\
 	&& (VAR == DEFAULT_##VAR))			\
       VAR = VAL;					\
     if (arc_selected_cpu->arch_info->dflags & CODE)	\
       VAR = VAL;					\
-  } while (0);
-
-#include "arc-options.def"
-
-#undef ARC_OPTX
-#undef ARC_OPT
-
-  /* Check options against architecture options.  Throw an error if
-     option is not allowed.  */
-#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)			\
-  do {								\
-    if ((VAR == VAL)						\
-	&& (!(arc_selected_cpu->arch_info->flags & CODE)))	\
-      {								\
-	error ("%s is not available for %s architecture",	\
-	       DOC, arc_selected_cpu->arch_info->name);		\
-      }								\
-  } while (0);
-#define ARC_OPT(NAME, CODE, MASK, DOC)				\
-  do {								\
-    if ((target_flags & MASK)					\
-	&& (!(arc_selected_cpu->arch_info->flags & CODE)))	\
-      error ("%s is not available for %s architecture",		\
-	     DOC, arc_selected_cpu->arch_info->name);		\
   } while (0);
 
 #include "arc-options.def"
@@ -1249,7 +1266,8 @@ arc_override_options (void)
     {
       if (TARGET_COMPACT_CASESI)
 	{
-	  warning (0, "compact-casesi is not applicable to ARCv2");
+	  warning (OPT_mcompact_casesi,
+		   "compact-casesi is not applicable to ARCv2");
 	  TARGET_COMPACT_CASESI = 0;
 	}
     }
@@ -10717,7 +10735,7 @@ arc_handle_aux_attribute (tree *node,
 	  tree arg = TREE_VALUE (args);
 	  if (TREE_CODE (arg) != INTEGER_CST)
 	    {
-	      warning (0, "%qE attribute allows only an integer "
+	      warning (OPT_Wattributes, "%qE attribute allows only an integer "
 		       "constant argument", name);
 	      *no_add_attrs = true;
 	    }
