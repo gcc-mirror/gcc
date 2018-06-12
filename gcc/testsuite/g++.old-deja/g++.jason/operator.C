@@ -25,8 +25,8 @@ struct B {
 
 int operator-(int a, int b);	// { dg-error "5:.int operator-\\(int, int\\). must have an argument of class or enumerated type" }
 
-void * operator new (A a);	// { dg-error "first parameter" }
-void operator delete (A a);	// { dg-error "first parameter" }
+void * operator new (A a);	// { dg-error ".operator new. takes type .size_t." }
+void operator delete (A a);	// { dg-error ".operator delete. takes type .void\\*. as first parameter" }
 
 char * operator char * (int);	// { dg-error "return type" "ret" }
 // { dg-error "8:.operator char\\*\\*\\(int\\). must be a nonstatic member function" "mem" { target *-*-* } .-1 }
