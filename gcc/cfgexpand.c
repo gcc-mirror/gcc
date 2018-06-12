@@ -4373,10 +4373,11 @@ expand_debug_expr (tree exp)
 	    goto component_ref;
 
 	  op1 = expand_debug_expr (TREE_OPERAND (exp, 1));
-	  if (!op1 || !CONST_INT_P (op1))
+	  poly_int64 offset;
+	  if (!op1 || !poly_int_rtx_p (op1, &offset))
 	    return NULL;
 
-	  op0 = plus_constant (inner_mode, op0, INTVAL (op1));
+	  op0 = plus_constant (inner_mode, op0, offset);
 	}
 
       as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))));
@@ -4890,10 +4891,11 @@ expand_debug_expr (tree exp)
 		{
 		  op1 = expand_debug_expr (TREE_OPERAND (TREE_OPERAND (exp, 0),
 							 1));
-		  if (!op1 || !CONST_INT_P (op1))
+		  poly_int64 offset;
+		  if (!op1 || !poly_int_rtx_p (op1, &offset))
 		    return NULL;
 
-		  return plus_constant (mode, op0, INTVAL (op1));
+		  return plus_constant (mode, op0, offset);
 		}
 	    }
 

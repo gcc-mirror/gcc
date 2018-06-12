@@ -2346,6 +2346,27 @@ can_div_trunc_p (const poly_int_pod<N, Ca> &a, Cb b,
   return true;
 }
 
+/* Return true if we can compute A / B at compile time, rounding towards zero.
+   Store the result in QUOTIENT if so.
+
+   This handles cases in which either B is constant or the result is
+   constant.  */
+
+template<unsigned int N, typename Ca, typename Cb, typename Cq>
+inline bool
+can_div_trunc_p (const poly_int_pod<N, Ca> &a,
+		 const poly_int_pod<N, Cb> &b,
+		 poly_int_pod<N, Cq> *quotient)
+{
+  if (b.is_constant ())
+    return can_div_trunc_p (a, b.coeffs[0], quotient);
+  if (!can_div_trunc_p (a, b, &quotient->coeffs[0]))
+    return false;
+  for (unsigned int i = 1; i < N; ++i)
+    quotient->coeffs[i] = 0;
+  return true;
+}
+
 /* Return true if there is some constant Q and polynomial r such that:
 
      (1) a = b * Q + r

@@ -5676,15 +5676,9 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	  rtx x = arg->value;
 	  poly_int64 i = 0;
 
-	  if (XEXP (x, 0) == crtl->args.internal_arg_pointer
-	      || (GET_CODE (XEXP (x, 0)) == PLUS
-		  && XEXP (XEXP (x, 0), 0) ==
-		     crtl->args.internal_arg_pointer
-		  && CONST_INT_P (XEXP (XEXP (x, 0), 1))))
+	  if (strip_offset (XEXP (x, 0), &i)
+	      == crtl->args.internal_arg_pointer)
 	    {
-	      if (XEXP (x, 0) != crtl->args.internal_arg_pointer)
-		i = rtx_to_poly_int64 (XEXP (XEXP (x, 0), 1));
-
 	      /* arg.locate doesn't contain the pretend_args_size offset,
 		 it's part of argblock.  Ensure we don't count it in I.  */
 	      if (STACK_GROWS_DOWNWARD)

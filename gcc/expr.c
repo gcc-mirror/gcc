@@ -1612,12 +1612,13 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 
   /* Set MEM_SIZE as appropriate for this block copy.  The main place this
      can be incorrect is coming from __builtin_memcpy.  */
-  if (CONST_INT_P (size))
+  poly_int64 const_size;
+  if (poly_int_rtx_p (size, &const_size))
     {
       x = shallow_copy_rtx (x);
       y = shallow_copy_rtx (y);
-      set_mem_size (x, INTVAL (size));
-      set_mem_size (y, INTVAL (size));
+      set_mem_size (x, const_size);
+      set_mem_size (y, const_size);
     }
 
   if (CONST_INT_P (size) && can_move_by_pieces (INTVAL (size), align))
@@ -2146,7 +2147,7 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type,
   for (i = start; i < XVECLEN (dst, 0); i++)
     {
       machine_mode mode = GET_MODE (XEXP (XVECEXP (dst, 0, i), 0));
-      poly_int64 bytepos = INTVAL (XEXP (XVECEXP (dst, 0, i), 1));
+      poly_int64 bytepos = rtx_to_poly_int64 (XEXP (XVECEXP (dst, 0, i), 1));
       poly_int64 bytelen = GET_MODE_SIZE (mode);
       poly_int64 shift = 0;
 
@@ -2477,7 +2478,8 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	{
 	  inner = GET_MODE (tmps[start]);
 	  bytepos = subreg_lowpart_offset (inner, outer);
-	  if (known_eq (INTVAL (XEXP (XVECEXP (src, 0, start), 1)), bytepos))
+	  if (known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0, start), 1)),
+			bytepos))
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[start],
 					  inner, 0);
@@ -2496,7 +2498,8 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	{
 	  inner = GET_MODE (tmps[finish - 1]);
 	  bytepos = subreg_lowpart_offset (inner, outer);
-	  if (known_eq (INTVAL (XEXP (XVECEXP (src, 0, finish - 1), 1)),
+	  if (known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0,
+							  finish - 1), 1)),
 			bytepos))
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[finish - 1],
@@ -2518,7 +2521,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
   /* Process the pieces.  */
   for (i = start; i < finish; i++)
     {
-      poly_int64 bytepos = INTVAL (XEXP (XVECEXP (src, 0, i), 1));
+      poly_int64 bytepos = rtx_to_poly_int64 (XEXP (XVECEXP (src, 0, i), 1));
       machine_mode mode = GET_MODE (tmps[i]);
       poly_int64 bytelen = GET_MODE_SIZE (mode);
       poly_uint64 adj_bytelen;
@@ -2974,9 +2977,10 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
 
   /* If OBJECT is not BLKmode and SIZE is the same size as its mode,
      just move a zero.  Otherwise, do this a piece at a time.  */
+  poly_int64 size_val;
   if (mode != BLKmode
-      && CONST_INT_P (size)
-      && known_eq (INTVAL (size), GET_MODE_SIZE (mode)))
+      && poly_int_rtx_p (size, &size_val)
+      && known_eq (size_val, GET_MODE_SIZE (mode)))
     {
       rtx zero = CONST0_RTX (mode);
       if (zero != NULL)
@@ -3912,9 +3916,10 @@ push_block (rtx size, poly_int64 extra, int below)
     }
   else
     {
-      if (CONST_INT_P (size))
+      poly_int64 csize;
+      if (poly_int_rtx_p (size, &csize))
 	temp = plus_constant (Pmode, virtual_outgoing_args_rtx,
-			      -INTVAL (size) - (below ? 0 : extra));
+			      -csize - (below ? 0 : extra));
       else if (maybe_ne (extra, 0) && !below)
 	temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
 			     negate_rtx (Pmode, plus_constant (Pmode, size,
@@ -4034,11 +4039,10 @@ find_args_size_adjust (rtx_insn *insn)
       /* Look for a trivial adjustment, otherwise assume nothing.  */
       /* Note that the SPU restore_stack_block pattern refers to
 	 the stack pointer in V4SImode.  Consider that non-trivial.  */
+      poly_int64 offset;
       if (SCALAR_INT_MODE_P (GET_MODE (dest))
-	  && GET_CODE (SET_SRC (set)) == PLUS
-	  && XEXP (SET_SRC (set), 0) == stack_pointer_rtx
-	  && CONST_INT_P (XEXP (SET_SRC (set), 1)))
-	return INTVAL (XEXP (SET_SRC (set), 1));
+	  && strip_offset (SET_SRC (set), &offset) == stack_pointer_rtx)
+	return offset;
       /* ??? Reload can generate no-op moves, which will be cleaned
 	 up later.  Recognize it and continue searching.  */
       else if (rtx_equal_p (dest, SET_SRC (set)))
@@ -4076,8 +4080,7 @@ find_args_size_adjust (rtx_insn *insn)
 	  addr = XEXP (addr, 1);
 	  gcc_assert (GET_CODE (addr) == PLUS);
 	  gcc_assert (XEXP (addr, 0) == stack_pointer_rtx);
-	  gcc_assert (CONST_INT_P (XEXP (addr, 1)));
-	  return INTVAL (XEXP (addr, 1));
+	  return rtx_to_poly_int64 (XEXP (addr, 1));
 	default:
 	  gcc_unreachable ();
 	}
@@ -4419,15 +4422,16 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	  /* Get the address of the stack space.
 	     In this case, we do not deal with EXTRA separately.
 	     A single stack adjust will do.  */
+	  poly_int64 offset;
 	  if (! args_addr)
 	    {
 	      temp = push_block (size, extra, where_pad == PAD_DOWNWARD);
 	      extra = 0;
 	    }
-	  else if (CONST_INT_P (args_so_far))
+	  else if (poly_int_rtx_p (args_so_far, &offset))
 	    temp = memory_address (BLKmode,
 				   plus_constant (Pmode, args_addr,
-						  skip + INTVAL (args_so_far)));
+						  skip + offset));
 	  else
 	    temp = memory_address (BLKmode,
 				   plus_constant (Pmode,
@@ -5724,12 +5728,11 @@ store_expr (tree exp, rtx target, int call_param_p,
 
 	      /* Figure out how much is left in TARGET that we have to clear.
 		 Do all calculations in pointer_mode.  */
-	      if (CONST_INT_P (copy_size_rtx))
+	      poly_int64 const_copy_size;
+	      if (poly_int_rtx_p (copy_size_rtx, &const_copy_size))
 		{
-		  size = plus_constant (address_mode, size,
-					-INTVAL (copy_size_rtx));
-		  target = adjust_address (target, BLKmode,
-					   INTVAL (copy_size_rtx));
+		  size = plus_constant (address_mode, size, -const_copy_size);
+		  target = adjust_address (target, BLKmode, const_copy_size);
 		}
 	      else
 		{
@@ -11203,10 +11206,10 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
   if (target && GET_MODE (target) != GET_MODE (exp))
     target = 0;
   /* For constant values, reduce using build_int_cst_type. */
-  if (CONST_INT_P (exp))
+  poly_int64 const_exp;
+  if (poly_int_rtx_p (exp, &const_exp))
     {
-      HOST_WIDE_INT value = INTVAL (exp);
-      tree t = build_int_cst_type (type, value);
+      tree t = build_int_cst_type (type, const_exp);
       return expand_expr (t, target, VOIDmode, EXPAND_NORMAL);
     }
   else if (TYPE_UNSIGNED (type))
