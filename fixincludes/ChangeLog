@@ -1,3 +1,8 @@
+2018-06-12    Rasmus Villemoes <rasmus.villemoes@prevas.dk>
+
+	* inclhack.def: Fix fixup for assert.h on vxworks.
+	* fixincl.x: Regenerate.
+
 2018-05-25  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
 	* inclhack.def (vxworks_iolib_include_unistd): New fix.
