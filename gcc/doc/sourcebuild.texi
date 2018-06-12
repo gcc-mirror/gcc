@@ -1177,6 +1177,8 @@ conditions (which are the same as for @code{dg-skip-if}) are met.
 @end table
 
 @subsubsection Verify compiler messages
+Where @var{line} is an accepted argument for these commands, a value of @samp{0}
+can be used if there is no line associated with the message.
 
 @table @code
 @item @{ dg-error @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] ]] @}
