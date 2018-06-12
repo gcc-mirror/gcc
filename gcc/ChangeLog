@@ -1,3 +1,17 @@
+2018-06-12  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.opt: Make MPX-related options as Deprecated.
+	* opt-functions.awk: Handle Deprecated flag.
+	* opts-common.c (decode_cmdline_option): Handle cl_deprecated
+        and report error.
+	(read_cmdline_option): Report warning for a deprecated option.
+	* opts.h (struct cl_option): Add new field cl_deprecated.
+	(CL_ERR_DEPRECATED): New.
+
+2018-06-12  Martin Liska  <mliska@suse.cz>
+
+	* doc/options.texi: Document Deprecated option flag.
+
 2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-arch.h (arc_extras): New enum.

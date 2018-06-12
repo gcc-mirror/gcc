@@ -1,3 +1,8 @@
+2018-06-12  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/opt/mpx.C: New test.
+	* gcc.target/i386/mpx.c: New test.
+
 2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/builtin_simdarc.c: Update test.
