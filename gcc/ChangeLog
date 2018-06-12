@@ -1,3 +1,11 @@
+2018-06-12  Matthew Fortune  <mfortune@gmail.com>
+
+	* config/mips/mips-cpus.def: New MIPS_CPU for i6500.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Mark i6500 as
+	mips64r6.
+	* doc/invoke.texi: Document -march=i6500.
+
 2018-06-12  Prachi Godbole  <prachi.godbole@imgtec.com>
 
 	* config/mips/i6400.md (i6400_gpmuldiv): Remove cpu_unit.

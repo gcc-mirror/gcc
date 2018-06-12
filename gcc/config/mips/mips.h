@@ -782,7 +782,7 @@ struct mips_cpu_info {
      %{march=mips64r2|march=loongson3a|march=octeon|march=xlp: -mips64r2} \
      %{march=mips64r3: -mips64r3} \
      %{march=mips64r5: -mips64r5} \
-     %{march=mips64r6|march=i6400: -mips64r6}}"
+     %{march=mips64r6|march=i6400|march=i6500: -mips64r6}}"
 
 /* A spec that injects the default multilib ISA if no architecture is
    specified.  */
