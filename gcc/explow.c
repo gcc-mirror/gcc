@@ -955,8 +955,9 @@ adjust_stack (rtx adjust)
 
   /* We expect all variable sized adjustments to be multiple of
      PREFERRED_STACK_BOUNDARY.  */
-  if (CONST_INT_P (adjust))
-    stack_pointer_delta -= INTVAL (adjust);
+  poly_int64 const_adjust;
+  if (poly_int_rtx_p (adjust, &const_adjust))
+    stack_pointer_delta -= const_adjust;
 
   adjust_stack_1 (adjust, false);
 }
@@ -972,8 +973,9 @@ anti_adjust_stack (rtx adjust)
 
   /* We expect all variable sized adjustments to be multiple of
      PREFERRED_STACK_BOUNDARY.  */
-  if (CONST_INT_P (adjust))
-    stack_pointer_delta += INTVAL (adjust);
+  poly_int64 const_adjust;
+  if (poly_int_rtx_p (adjust, &const_adjust))
+    stack_pointer_delta += const_adjust;
 
   adjust_stack_1 (adjust, true);
 }

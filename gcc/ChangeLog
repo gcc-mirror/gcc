@@ -1,3 +1,39 @@
+2018-06-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* poly-int.h (can_div_trunc_p): Add new overload in which all values
+	are poly_ints.
+	* alias.c (get_addr): Extend CONST_INT handling to poly_int_rtx_p.
+	(memrefs_conflict_p): Likewise.
+	(init_alias_analysis): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* combine.c (combine_simplify_rtx, force_int_to_mode): Likewise.
+	* cse.c (fold_rtx): Likewise.
+	* explow.c (adjust_stack, anti_adjust_stack): Likewise.
+	* expr.c (emit_block_move_hints): Likewise.
+	(clear_storage_hints, push_block, emit_push_insn): Likewise.
+	(store_expr_with_bounds, reduce_to_bit_field_precision): Likewise.
+	(emit_group_load_1): Use rtx_to_poly_int64 for group offsets.
+	(emit_group_store): Likewise.
+	(find_args_size_adjust): Use strip_offset.  Use rtx_to_poly_int64
+	to read the PRE/POST_MODIFY increment.
+	* calls.c (store_one_arg): Use strip_offset.
+	* rtlanal.c (rtx_addr_can_trap_p_1): Extend CONST_INT handling to
+	poly_int_rtx_p.
+	(set_noop_p): Use rtx_to_poly_int64 for the elements selected
+	by a VEC_SELECT.
+	* simplify-rtx.c (avoid_constant_pool_reference): Use strip_offset.
+	(simplify_binary_operation_1): Extend CONST_INT handling to
+	poly_int_rtx_p.
+	* var-tracking.c (compute_cfa_pointer): Take a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(hard_frame_pointer_adjustment): Change from HOST_WIDE_INT to
+	poly_int64.
+	(adjust_mems, add_stores): Update accodingly.
+	(vt_canonicalize_addr): Track polynomial offsets.
+	(emit_note_insn_var_location): Likewise.
+	(vt_add_function_parameter): Likewise.
+	(vt_initialize): Likewise.
+
 2018-06-12  Jeff Law  <law@redhat.com>
 
 	* config.gcc (alpha*-*-freebsd*): Remove.

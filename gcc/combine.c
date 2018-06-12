@@ -5978,8 +5978,11 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 			      GET_MODE_MASK (mode), 0));
 
       /* We can truncate a constant value and return it.  */
-      if (CONST_INT_P (XEXP (x, 0)))
-	return gen_int_mode (INTVAL (XEXP (x, 0)), mode);
+      {
+	poly_int64 c;
+	if (poly_int_rtx_p (XEXP (x, 0), &c))
+	  return gen_int_mode (c, mode);
+      }
 
       /* Similarly to what we do in simplify-rtx.c, a truncate of a register
 	 whose value is a comparison can be replaced with a subreg if
@@ -8700,6 +8703,7 @@ force_int_to_mode (rtx x, scalar_int_mode mode, scalar_int_mode xmode,
   int next_select = just_select || code == XOR || code == NOT || code == NEG;
   unsigned HOST_WIDE_INT fuller_mask;
   rtx op0, op1, temp;
+  poly_int64 const_op0;
 
   /* When we have an arithmetic operation, or a shift whose count we
      do not know, we need to assume that all bits up to the highest-order
@@ -8823,8 +8827,8 @@ force_int_to_mode (rtx x, scalar_int_mode mode, scalar_int_mode xmode,
     case MINUS:
       /* If X is (minus C Y) where C's least set bit is larger than any bit
 	 in the mask, then we may replace with (neg Y).  */
-      if (CONST_INT_P (XEXP (x, 0))
-	  && least_bit_hwi (UINTVAL (XEXP (x, 0))) > mask)
+      if (poly_int_rtx_p (XEXP (x, 0), &const_op0)
+	  && (unsigned HOST_WIDE_INT) known_alignment (const_op0) > mask)
 	{
 	  x = simplify_gen_unary (NEG, xmode, XEXP (x, 1), xmode);
 	  return force_to_mode (x, mode, mask, next_select);
