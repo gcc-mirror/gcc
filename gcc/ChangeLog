@@ -1,3 +1,7 @@
+2018-06-12  Robert Suchanek  <robert.suchanek@mips.com>
+
+	* config/mips/i6400.md (i6400_fpu_fadd): Remove frint.
+
 2018-06-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* doc/sourcebuild.texi: Document usage of line number 0 in verify
