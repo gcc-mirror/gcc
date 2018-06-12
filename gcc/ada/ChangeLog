@@ -1,5 +1,12 @@
 2018-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (warn_on_field_placement): Use specific wording
+	for discriminants.
+	(warn_on_list_placement): New static function.
+	(components_to_record): Use it to warn on multiple fields in list.
+
+2018-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	Backport from mainline
 	2018-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
