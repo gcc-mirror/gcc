@@ -1,5 +1,11 @@
 2018-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: Do not get
+	the expression of a dispatch table that is not being defined.
+	<E_Record_Subtype>: Remove obsolete kludge.
+
+2018-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (warn_on_field_placement): Use specific wording
 	for discriminants.
 	(warn_on_list_placement): New static function.
