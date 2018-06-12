@@ -278,6 +278,18 @@
 #endif
 
 
+/* Define if AF_INET6 supported. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AF_INET6
+#endif
+
+
+/* Define if AF_UNIX supported. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AF_UNIX
+#endif
+
+
 /* Define if your assembler supports architecture modifiers. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_ARCHITECTURE_MODIFIERS
@@ -1969,18 +1981,6 @@
 /* Define if isl is in use. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_isl
-#endif
-
-
-/* Define if AF_INET6 supported by host. */
-#ifndef USED_FOR_TARGET
-#undef HOST_HAS_AF_INET6
-#endif
-
-
-/* Define if AF_UNIX supported by host. */
-#ifndef USED_FOR_TARGET
-#undef HOST_HAS_AF_UNIX
 #endif
 
 

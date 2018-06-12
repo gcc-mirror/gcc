@@ -1395,7 +1395,7 @@ if test $ac_cv_f_setlkw = yes; then
 fi
 
 # Check for AF_UNIX networking
-AC_CACHE_CHECK(for AF_UNIX, ac_cv_host_af_unix, [
+AC_CACHE_CHECK(for AF_UNIX, ac_cv_af_unix, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -1405,15 +1405,15 @@ sockaddr_un un;
 un.sun_family = AF_UNSPEC;
 int fd = socket (AF_UNIX, SOCK_STREAM, 0);
 connect (fd, (sockaddr *)&un, sizeof (un));]])],
-[ac_cv_host_af_unix=yes],
-[ac_cv_host_af_unix=no])])
-if test $ac_cv_host_af_unix = yes; then
-  AC_DEFINE(HOST_HAS_AF_UNIX, 1,
-  [Define if AF_UNIX supported by host.])
+[ac_cv_af_unix=yes],
+[ac_cv_af_unix=no])])
+if test $ac_cv_af_unix = yes; then
+  AC_DEFINE(HAVE_AF_UNIX, 1,
+  [Define if AF_UNIX supported.])
 fi
 
 # Check for AF_INET6 networking
-AC_CACHE_CHECK(for AF_INET6, ac_cv_host_af_inet6, [
+AC_CACHE_CHECK(for AF_INET6, ac_cv_af_inet6, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -1425,11 +1425,11 @@ hostent *hent = gethostbyname2 ("localhost", AF_INET6);
 const char *str = hstrerror (h_errno);
 int fd = socket (AF_INET6, SOCK_STREAM, 0);
 connect (fd, (sockaddr *)&in6, sizeof (in6));]])],
-[ac_cv_host_af_inet6=yes],
-[ac_cv_host_af_inet6=no])])
-if test $ac_cv_host_af_inet6 = yes; then
-  AC_DEFINE(HOST_HAS_AF_INET6, 1,
-  [Define if AF_INET6 supported by host.])
+[ac_cv_af_inet6=yes],
+[ac_cv_af_inet6=no])])
+if test $ac_cv_af_inet6 = yes; then
+  AC_DEFINE(HAVE_AF_INET6, 1,
+  [Define if AF_INET6 supported.])
 fi
 
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.

@@ -11406,7 +11406,7 @@ fi
 # Check for AF_UNIX networking
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for AF_UNIX" >&5
 $as_echo_n "checking for AF_UNIX... " >&6; }
-if test "${ac_cv_host_af_unix+set}" = set; then :
+if test "${ac_cv_af_unix+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -11430,24 +11430,24 @@ connect (fd, (sockaddr *)&un, sizeof (un));
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_cv_host_af_unix=yes
+  ac_cv_af_unix=yes
 else
-  ac_cv_host_af_unix=no
+  ac_cv_af_unix=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host_af_unix" >&5
-$as_echo "$ac_cv_host_af_unix" >&6; }
-if test $ac_cv_host_af_unix = yes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_af_unix" >&5
+$as_echo "$ac_cv_af_unix" >&6; }
+if test $ac_cv_af_unix = yes; then
 
-$as_echo "#define HOST_HAS_AF_UNIX 1" >>confdefs.h
+$as_echo "#define HAVE_AF_UNIX 1" >>confdefs.h
 
 fi
 
 # Check for AF_INET6 networking
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for AF_INET6" >&5
 $as_echo_n "checking for AF_INET6... " >&6; }
-if test "${ac_cv_host_af_inet6+set}" = set; then :
+if test "${ac_cv_af_inet6+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -11473,17 +11473,17 @@ connect (fd, (sockaddr *)&in6, sizeof (in6));
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_cv_host_af_inet6=yes
+  ac_cv_af_inet6=yes
 else
-  ac_cv_host_af_inet6=no
+  ac_cv_af_inet6=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host_af_inet6" >&5
-$as_echo "$ac_cv_host_af_inet6" >&6; }
-if test $ac_cv_host_af_inet6 = yes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_af_inet6" >&5
+$as_echo "$ac_cv_af_inet6" >&6; }
+if test $ac_cv_af_inet6 = yes; then
 
-$as_echo "#define HOST_HAS_AF_INET6 1" >>confdefs.h
+$as_echo "#define HAVE_AF_INET6 1" >>confdefs.h
 
 fi
 

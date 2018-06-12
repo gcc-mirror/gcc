@@ -160,18 +160,18 @@ Classes used:
 #include "toplev.h"
 #include "opts.h"
 
-#if defined (HOST_HAS_AF_UNIX) || defined (HOST_HAS_AF_INET6)
-# define HOST_HAS_AF 1
+#if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
+# define HAVE_NET 1
 # include <sys/socket.h>
-# ifdef HOST_HAS_AF_UNIX
+# ifdef HAVE_AF_UNIX
 #  include <sys/un.h>
 # endif
 # include <netinet/in.h>
-# ifdef HOST_HAS_AF_INET6
+# ifdef HAVE_AF_INET6
 #  include <netdb.h>
 # endif
 #endif
-#ifndef HOST_HAS_AF_INET6
+#ifndef HAVE_AF_INET6
 # define hstrerror(X) ""
 #endif
 
@@ -1471,7 +1471,7 @@ elf_in::defrost (const char *name)
       if (ok)
 	{
 	  char *mapping = reinterpret_cast <char *>
-	    (mmap (NULL, hdr.pos, PROT_READ, MAP_PRIVATE, fd, 0));
+	    (mmap (NULL, hdr.pos, PROT_READ, MAP_SHARED, fd, 0));
 	  if (mapping == MAP_FAILED)
 	    set_error (errno);
 	  else
@@ -1571,7 +1571,9 @@ elf_in::begin (location_t loc)
     }
 
 #ifdef MAPPED_READING
-  void *mapping = mmap (NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  /* MAP_SHARED so that the file is backing store.  If someone else
+     concurrently writes it, they're wrong.  */
+  void *mapping = mmap (NULL, size, PROT_READ, MAP_SHARED, fd, 0);
   if (mapping == MAP_FAILED)
     {
       set_error (errno);
@@ -1709,6 +1711,8 @@ elf_out::remove_mapping ()
 {
   if (hdr.buffer)
     {
+      /* MS_ASYNC dtrt with the removed mapping, including a
+	 subsequent overlapping remap.  */
       if (msync (hdr.buffer, extent, MS_ASYNC)
 	  || munmap (hdr.buffer, extent))
 	/* We're somewhat screwed at this point.  */
@@ -6739,26 +6743,26 @@ module_mapper::module_mapper (location_t loc, const char *option)
   if (!name)
     {
       /* Does it look like a socket?  */
-#ifdef HOST_HAS_AF
+#ifdef HAVE_NET
       union saddr {
 	sa_family_t fam;
-#ifdef HOST_HAS_AF_UNIX
+#ifdef HAVE_AF_UNIX
 	sockaddr_un un;
 #endif
-#ifdef HOST_HAS_AF_INET6
+#ifdef HAVE_AF_INET6
 	sockaddr_in6 in6;
 #endif
       } saddr;
 #endif
       size_t saddr_len = 0;
 
-#ifdef HOST_HAS_AF
+#ifdef HAVE_NET
       saddr.fam = AF_UNSPEC;
 #endif
       if (writable[0] == '=')
 	{
 	  /* A local socket.  */
-#ifdef HOST_HAS_AF_UNIX
+#ifdef HAVE_AF_UNIX
 	  if (len < sizeof (saddr.un.sun_path))
 	    {
 	      memset (&saddr.un, 0, sizeof (saddr.un));
@@ -6782,7 +6786,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    {
 	      /* Ends in ':number', treat as ipv6 domain socket.  */
 	      *colon = 0;
-#ifdef HOST_HAS_AF_INET6
+#ifdef HAVE_AF_INET6
 	      if (struct hostent *hent
 		  = gethostbyname2 (colon != writable
 				    ? writable : "localhost", AF_INET6))
@@ -6807,7 +6811,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    }
 	}
 
-#ifdef HOST_HAS_AF
+#ifdef HAVE_NET
       if (saddr.fam != AF_UNSPEC)
 	{
 	  fd_in = socket (saddr.fam, SOCK_STREAM, 0);
@@ -9440,8 +9444,13 @@ module_state::check_read (bool outermost, tree ns, tree id)
       else
 	error_at  (loc, "failed to read BMI: %s", err);
 
-      if (e == EMFILE)
-	inform (loc, "consider reducing %<--param %s%> value",
+      if (e == EMFILE
+#ifdef MAPPED_READING
+	  || e == ENOMEM
+#endif
+	  || false)
+	inform (loc, "consider using %<-fno-module-lazy%> or"
+		" reducing %<--param %s%> value",
 		compiler_params[PARAM_LAZY_MODULES].option);
     }
 

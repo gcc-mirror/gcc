@@ -1,3 +1,11 @@
+2018-06-12  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* configure.ac: Rename HOST_HAS_AF_$FOO to HAVE_AF_$FOO.
+	* configure, config.in: Rebuilt.
+	gcc/cp/
+	* module.c: Adjust.
+
 2018-06-11  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
