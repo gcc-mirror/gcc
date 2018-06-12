@@ -1,5 +1,9 @@
 2018-06-12  Martin Liska  <mliska@suse.cz>
 
+	* doc/options.texi: Document IntegerRange.
+
+2018-06-12  Martin Liska  <mliska@suse.cz>
+
 	* config/i386/i386.opt: Make MPX-related options as Deprecated.
 	* opt-functions.awk: Handle Deprecated flag.
 	* opts-common.c (decode_cmdline_option): Handle cl_deprecated

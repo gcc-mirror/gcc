@@ -264,6 +264,11 @@ option handler.  @code{UInteger} should also be used on options like
 @code{-falign-loops}=@var{n} are supported to make sure the saved
 options are given a full integer.
 
+@item IntegerRange(@var{n}, @var{m})
+The options's arguments are integer numbers.  The option's parser
+will check that value of an option is inclusively within the
+range [@var{n}, @var{m}].
+
 @item ToLower
 The option's argument should be converted to lowercase as part of
 putting it in canonical form, and before comparing with the strings
