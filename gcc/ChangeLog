@@ -1,3 +1,8 @@
+2018-06-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	BUILTIN_VEC_XST entries for pointer to double and long long.
+
 2018-06-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/85990
