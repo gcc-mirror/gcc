@@ -1,3 +1,7 @@
+2018-06-12  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg-selftests/dg-final.exp: New file.
+
 2018-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/lookup/new2.C: Test locations too.
