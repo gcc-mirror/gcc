@@ -1,5 +1,14 @@
 2018-06-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-char.c: New.
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-double.c: New.
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-float.c: New.
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-int.c: New.
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-short.c: New.
+
+2018-06-12  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-load-vec_xl-char.c: New testcase.
 	* gcc.target/powerpc/fold-vec-load-vec_xl-double.c: New testcase.
 	* gcc.target/powerpc/fold-vec-load-vec_xl-float.c: New testcase.
