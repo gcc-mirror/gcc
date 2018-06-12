@@ -1316,10 +1316,10 @@ private:
   void remove_mapping ();
 #endif
 
-#ifdef MAPPED_WRITING
 protected:
   using allocator::grow;
   virtual char *grow (char *, unsigned needed);
+#ifdef MAPPED_WRITING
   using allocator::shrink;
   virtual void shrink (char *);
 #endif
@@ -1719,7 +1719,6 @@ elf_out::remove_mapping ()
 }
 #endif
 
-#ifdef MAPPED_WRITING
 /* Grow a mapping of PTR to be NEEDED bytes long.  This gets
    interesting if the new size grows the EXTENT.  */
 
@@ -1732,17 +1731,30 @@ elf_out::grow (char *data, unsigned needed)
   if (!data)
     {
       /* First allocation, align to SECTION_ALIGN now.  */
-      pos = (pos + SECTION_ALIGN - 1) & ~(SECTION_ALIGN - 1);
-
+      if (unsigned padding = pos & (SECTION_ALIGN - 1))
+	{
+#ifndef MAPPED_WRITING
+	  /* Align the section on disk, should help the necessary copies.
+	     fseeking to extend is non-portable.  */
+	  static char zero[SECTION_ALIGN];
+	  padding = SECTION_ALIGN - padding;
+	  if (::write (fd, &zero, padding) != padding)
+	    set_error (errno);
+#endif
+	  pos += padding;
+	}
+#ifdef MAPPED_WRITING
       data = hdr.buffer + (pos - offset);
+#endif
     }
-  
-  unsigned pos = data - hdr.buffer;
-  if (pos + needed > extent)
+
+#ifdef MAPPED_WRITING
+  unsigned off = data - hdr.buffer;
+  if (off + needed > extent)
     {
       /* We need to grow the mapping.  */
-      unsigned lwm = pos & ~(page_size - 1);
-      unsigned hwm = (pos + needed + page_size - 1) & ~(page_size - 1);
+      unsigned lwm = off & ~(page_size - 1);
+      unsigned hwm = (off + needed + page_size - 1) & ~(page_size - 1);
 
       gcc_checking_assert (hwm > extent);
 
@@ -1751,12 +1763,14 @@ elf_out::grow (char *data, unsigned needed)
       offset += lwm;
       create_mapping (extent < hwm - lwm ? hwm - lwm : extent);
 
-      data = hdr.buffer + (pos - lwm);
+      data = hdr.buffer + (off - lwm);
     }
+#else
+  data = allocator::grow (data, needed);
+#endif
 
   return data;
 }
-#endif
 
 #ifdef MAPPED_WRITING
 /* Shrinking is a NOP.  */
@@ -1871,32 +1885,19 @@ elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
 unsigned
 elf_out::write (const data &buffer)
 {
-#ifndef MAPPED_WRITING
-  if (unsigned padding = pos & (SECTION_ALIGN - 1))
-    {
-      /* Align the section on disk, should help the necessary copies.
-	 fseeking to extend is non-portable.  */
-      static char zero[SECTION_ALIGN];
-      padding = SECTION_ALIGN - padding;
-      pos += padding;
-      if (::write (fd, &zero, padding) != padding)
-	set_error (errno);
-    }
-#endif
-
-  unsigned res = pos;
-
 #ifdef MAPPED_WRITING
-  /* HDR is always mapped, even though it's not bytes_out.  */
+  /* HDR is always mapped.  */
   if (&buffer != &hdr)
     {
       bytes_out out (this);
       grow (out, buffer.pos, true);
-      res = pos;
       if (out.buffer)
 	memcpy (out.buffer, buffer.buffer, buffer.pos);
       shrink (out);
     }
+  else
+    /* We should have been aligned during the first allocation.  */
+    gcc_checking_assert (!(pos & (SECTION_ALIGN - 1)));
 #else
   if (::write (fd, buffer.buffer, buffer.pos) != buffer.pos)
     {
@@ -1904,25 +1905,24 @@ elf_out::write (const data &buffer)
       return 0;
     }
 #endif
+  unsigned res = pos;
   pos += buffer.pos;
   return res;
 }
+
+/* Write a streaming buffer.  It must be using us as an allocator.  */
 
 #ifdef MAPPED_WRITING
 unsigned
 elf_out::write (const bytes_out &buf)
 {
-  if (buf.memory == this)
-    {
-      /* A directly mapped buffer.  */
-      gcc_checking_assert (buf.buffer - hdr.buffer >= 0
-			   && buf.buffer - hdr.buffer + buf.size <= extent);
-      unsigned res = pos;
-      pos += buf.pos;
-      return res;
-    }
-  else
-    return write (static_cast <const data &> (buf));
+  gcc_checking_assert (buf.memory == this);
+  /* A directly mapped buffer.  */
+  gcc_checking_assert (buf.buffer - hdr.buffer >= 0
+		       && buf.buffer - hdr.buffer + buf.size <= extent);
+  unsigned res = pos;
+  pos += buf.pos;
+  return res;
 }
 #endif
 

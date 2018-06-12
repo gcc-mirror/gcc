@@ -1,5 +1,11 @@
 2018-06-11  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c
+	(elf_out::grow): Always define, always align.
+	(elf_out::write): Streaming buffers must be using our
+	allocator.  No need to align here.
+
 	MMAP writing
 	gcc/
 	* configure.ac: Check for posix_fallocate.
