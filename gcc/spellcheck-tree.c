@@ -27,18 +27,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "stringpool.h"
 
-/* Calculate Levenshtein distance between two identifiers.  */
+/* Calculate edit distance between two identifiers.  */
 
 edit_distance_t
-levenshtein_distance (tree ident_s, tree ident_t)
+get_edit_distance (tree ident_s, tree ident_t)
 {
   gcc_assert (TREE_CODE (ident_s) == IDENTIFIER_NODE);
   gcc_assert (TREE_CODE (ident_t) == IDENTIFIER_NODE);
 
-  return levenshtein_distance (IDENTIFIER_POINTER (ident_s),
-			       IDENTIFIER_LENGTH (ident_s),
-			       IDENTIFIER_POINTER (ident_t),
-			       IDENTIFIER_LENGTH (ident_t));
+  return get_edit_distance (IDENTIFIER_POINTER (ident_s),
+			    IDENTIFIER_LENGTH (ident_s),
+			    IDENTIFIER_POINTER (ident_t),
+			    IDENTIFIER_LENGTH (ident_t));
 }
 
 /* Given TARGET, an identifier, and CANDIDATES, a vec of identifiers,

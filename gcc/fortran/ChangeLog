@@ -1,3 +1,9 @@
+2018-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/69968
+	* misc.c (gfc_closest_fuzzy_match): Update for renaming of
+	levenshtein_distance to get_edit_distance.
+
 2018-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44491

@@ -1,3 +1,30 @@
+2018-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/69968
+	* spellcheck-tree.c (levenshtein_distance): Rename to...
+	(get_edit_distance): ...this, and update for underlying renaming.
+	* spellcheck-tree.h (levenshtein_distance): Rename to...
+	(get_edit_distance): ...this.
+	* spellcheck.c (levenshtein_distance): Rename to...
+	(get_edit_distance): ...this.  Convert from Levenshtein distance
+	to Damerau-Levenshtein distance by supporting transpositions of
+	adjacent characters.  Rename "v1" to "v_next" and "v0" to
+	"v_one_ago".
+	(selftest::levenshtein_distance_unit_test_oneway): Rename to...
+	(selftest::test_edit_distance_unit_test_oneway): ...this, and
+	update for underlying renaming.
+	(selftest::levenshtein_distance_unit_test): Rename to...
+	(selftest::test_get_edit_distance_unit): ...this, and update for
+	underlying renaming.
+	(selftest::test_find_closest_string): Add example from PR 69968
+	where transposition helps
+	(selftest::test_metric_conditions): Update for renaming.
+	(selftest::test_metric_conditions): Likewise.
+	(selftest::spellcheck_c_tests): Likewise.
+	* spellcheck.h (levenshtein_distance): Rename both overloads to...
+	(get_edit_distance): ...this.
+	(best_match::consider): Update for renaming.
+
 2018-06-12  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/85259
