@@ -1,3 +1,17 @@
+2018-06-12  Marek Polacek  <polacek@redhat.com>
+
+	Core issue 1331 - const mismatch with defaulted copy constructor
+	* g++.dg/cpp0x/defaulted15.C (struct F): Remove dg-error.
+	* g++.dg/cpp0x/defaulted52.C: New test.
+	* g++.dg/cpp0x/defaulted53.C: New test.
+	* g++.dg/cpp0x/defaulted54.C: New test.
+	* g++.dg/cpp0x/defaulted55.C: New test.
+	* g++.dg/cpp0x/defaulted56.C: New test.
+	* g++.dg/cpp0x/defaulted57.C: New test.
+	* g++.dg/cpp0x/defaulted58.C: New test.
+	* g++.dg/cpp0x/defaulted59.C: New test.
+	* g++.dg/cpp0x/defaulted60.C: New test.
+
 2018-06-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/69968

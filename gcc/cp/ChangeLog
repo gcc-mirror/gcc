@@ -1,3 +1,9 @@
+2018-06-12  Marek Polacek  <polacek@redhat.com>
+
+	Core issue 1331 - const mismatch with defaulted copy constructor
+	* class.c (check_bases_and_members): When checking a defaulted
+	function, mark it as deleted rather than giving an error.
+
 2018-06-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85792 -Wctor-dtor-privacy and inherited constructor.
