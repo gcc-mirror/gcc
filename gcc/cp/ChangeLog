@@ -1,3 +1,10 @@
+2018-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (coerce_new_type, coerce_delete_type): Add location_t
+	parameter and adjust error_at calls.
+	* decl.c (grok_op_properties): Adjust calls.
+	* cp-tree.h (oerce_new_type, coerce_delete_type): Adjust decls.
+
 2018-06-12  Marek Polacek  <polacek@redhat.com>
 
 	Core issue 1331 - const mismatch with defaulted copy constructor

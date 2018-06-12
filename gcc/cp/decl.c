@@ -13153,11 +13153,11 @@ grok_op_properties (tree decl, bool complain)
 	}
 
       if (op_flags & OVL_OP_FLAG_DELETE)
-	TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
+	TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl), loc);
       else
 	{
 	  DECL_IS_OPERATOR_NEW (decl) = 1;
-	  TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
+	  TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl), loc);
 	}
 
       return true;
