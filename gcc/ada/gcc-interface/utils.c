@@ -1054,12 +1054,6 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
       new_field_list = new_field;
     }
 
-  finish_record_type (new_type, nreverse (new_field_list), 2, false);
-  relate_alias_sets (new_type, type, ALIAS_SET_COPY);
-  if (TYPE_STUB_DECL (type))
-    SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
-			    DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
-
   /* If this is a padding record, we never want to make the size smaller
      than what was specified.  For QUAL_UNION_TYPE, also copy the size.  */
   if (TYPE_IS_PADDING_P (type) || TREE_CODE (type) == QUAL_UNION_TYPE)
@@ -1077,7 +1071,11 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
   if (!TYPE_CONTAINS_TEMPLATE_P (type))
     SET_TYPE_ADA_SIZE (new_type, TYPE_ADA_SIZE (type));
 
-  compute_record_mode (new_type);
+  finish_record_type (new_type, nreverse (new_field_list), 2, false);
+  relate_alias_sets (new_type, type, ALIAS_SET_COPY);
+  if (TYPE_STUB_DECL (type))
+    SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
+			    DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
 
   /* Try harder to get a packable type if necessary, for example
      in case the record itself contains a BLKmode field.  */
@@ -1951,33 +1949,40 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
   if (code == QUAL_UNION_TYPE)
     nreverse (field_list);
 
-  if (rep_level < 2)
+  /* We need to set the regular sizes if REP_LEVEL is one.  */
+  if (rep_level == 1)
     {
       /* If this is a padding record, we never want to make the size smaller
 	 than what was specified in it, if any.  */
       if (TYPE_IS_PADDING_P (record_type) && TYPE_SIZE (record_type))
 	size = TYPE_SIZE (record_type);
 
+      tree size_unit = had_size_unit
+		       ? TYPE_SIZE_UNIT (record_type)
+		       : convert (sizetype,
+				  size_binop (CEIL_DIV_EXPR, size,
+					      bitsize_unit_node));
+      const unsigned int align = TYPE_ALIGN (record_type);
+
+      TYPE_SIZE (record_type) = variable_size (round_up (size, align));
+      TYPE_SIZE_UNIT (record_type)
+	= variable_size (round_up (size_unit, align / BITS_PER_UNIT));
+    }
+
+  /* We need to set the Ada size if REP_LEVEL is zero or one.  */
+  if (rep_level < 2)
+    {
       /* Now set any of the values we've just computed that apply.  */
       if (!TYPE_FAT_POINTER_P (record_type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (record_type))
 	SET_TYPE_ADA_SIZE (record_type, ada_size);
+    }
 
-      if (rep_level > 0)
-	{
-	  tree size_unit = had_size_unit
-			   ? TYPE_SIZE_UNIT (record_type)
-			   : convert (sizetype,
-				      size_binop (CEIL_DIV_EXPR, size,
-						  bitsize_unit_node));
-	  unsigned int align = TYPE_ALIGN (record_type);
-
-	  TYPE_SIZE (record_type) = variable_size (round_up (size, align));
-	  TYPE_SIZE_UNIT (record_type)
-	    = variable_size (round_up (size_unit, align / BITS_PER_UNIT));
-
-	  compute_record_mode (record_type);
-	}
+  /* We need to set the mode if REP_LEVEL is one or two.  */
+  if (rep_level > 0)
+    {
+      compute_record_mode (record_type);
+      finish_bitfield_layout (record_type);
     }
 
   /* Reset the TYPE_MAX_ALIGN field since it's private to gigi.  */

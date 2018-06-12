@@ -1,3 +1,21 @@
+2018-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (variant_desc): Add AUX field.
+	(gnat_to_gnu_entity) <discrete_type>: Do not call compute_record_mode
+	directly.
+	(reverse_sort_field_list): New static function.
+	(components_to_record): Place the variant part at the beginning of the
+	field list when there is an obvious order of increasing position.
+	(build_variant_list): Initialize it.
+	(create_variant_part_from): Do not call compute_record_mode directly.
+	(copy_and_substitute_in_layout): Likewise.  Always sort the fields with
+	fixed position in order of increasing position, in the record and all
+	the variants, in any.  Call reverse_sort_field_list.
+	* gcc-interface/utils.c (make_packable_type): Compute the sizes before
+	calling finish_record_type.  Do not call compute_record_mode directly.
+	(finish_record_type): Overhaul final processing depending on REP_LEVEL
+	and call finish_bitfield_layout if it is equal to one or two.
+
 2018-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Reuse the
