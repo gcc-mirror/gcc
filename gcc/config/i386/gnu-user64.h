@@ -86,7 +86,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_THREAD_SSP_OFFSET \
   (TARGET_64BIT ? (TARGET_X32 ? 0x18 : 0x28) : 0x14)
 
-/* We steal the last transactional memory word.  */
+/* i386 glibc provides __private_ss in %gs:0x30.
+   x32 glibc provides it in %fs:0x40.
+   x86_64 glibc provides it in %fs:0x70.  */
 #define TARGET_THREAD_SPLIT_STACK_OFFSET \
   (TARGET_64BIT ? (TARGET_X32 ? 0x40 : 0x70) : 0x30)
 #endif

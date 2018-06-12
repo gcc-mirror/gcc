@@ -1,3 +1,11 @@
+2018-06-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85990
+	* config/i386/gnu-user.h (TARGET_THREAD_SPLIT_STACK_OFFSET):
+	Update comments.
+	* config/i386/gnu-user64.h (TARGET_THREAD_SPLIT_STACK_OFFSET):
+	Likewise.
+
 2018-06-12  Martin Liska  <mliska@suse.cz>
 
 	* doc/options.texi: Document IntegerRange.

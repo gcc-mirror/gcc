@@ -134,6 +134,6 @@ along with GCC; see the file COPYING3.  If not see
 /* i386 glibc provides __stack_chk_guard in %gs:0x14.  */
 #define TARGET_THREAD_SSP_OFFSET	0x14
 
-/* We steal the last transactional memory word.  */
+/* i386 glibc provides __private_ss in %gs:0x30.  */
 #define TARGET_THREAD_SPLIT_STACK_OFFSET 0x30
 #endif
