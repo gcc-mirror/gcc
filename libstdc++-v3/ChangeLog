@@ -1,3 +1,22 @@
+2018-06-12  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/macros.h (__glibcxx_check_can_increment_range): New.
+	(__glibcxx_check_can_decrement_range): New.
+	* include/debug/debug.h (__glibcxx_requires_can_increment_range): New.
+	(__glibcxx_requires_can_decrement_range): New.
+	* include/bits/stl_algobase.h (std::copy(_II, _II, _OI)): Use
+	__glibcxx_requires_can_increment_range.
+	(std::move(_II, _II, _OI)): Likewise.
+	(std::copy_backward(_BI, _BI, _BI2)): Use
+	__glibcxx_requires_can_decrement_range.
+	(std::move_backward(_BI, _BI, _BI2)): Likewise.
+	* testsuite/25_algorithms/copy_backward/debug/1_neg.cc: New.
+	* testsuite/25_algorithms/copy_backward/debug/2_neg.cc: New.
+	* testsuite/25_algorithms/copy_backward/debug/3_neg.cc: New.
+	* testsuite/25_algorithms/equal/debug/1_neg.cc: New.
+	* testsuite/25_algorithms/equal/debug/2_neg.cc: New.
+	* testsuite/25_algorithms/equal/debug/3_neg.cc: New.
+
 2018-06-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	P0935R0 Eradicating unnecessarily explicit default constructors
