@@ -1,5 +1,11 @@
 2018-06-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* lra-constraints.c (simplify_operand_subreg): In the paradoxical
+	case, check whether the outer register overlaps an unallocatable
+	register, not just whether it fits the required class.
+
+2018-06-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* poly-int.h (can_div_trunc_p): Add new overload in which all values
 	are poly_ints.
 	* alias.c (get_addr): Extend CONST_INT handling to poly_int_rtx_p.
