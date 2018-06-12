@@ -1,3 +1,8 @@
+2018-06-12  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* doc/sourcebuild.texi: Document usage of line number 0 in verify
+	compiler messages directives.
+
 2018-06-12  Matthew Fortune  <mfortune@gmail.com>
 
 	* config/mips/mips-cpus.def: New MIPS_CPU for i6500.
