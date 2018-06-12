@@ -136,7 +136,8 @@ function switch_bit_fields (flags)
 	  flag_init("UInteger", flags) \
 	  flag_init("Host_Wide_Int", hwi) \
 	  flag_init("ToLower", flags) \
-	  flag_init("Report", flags)
+	  flag_init("Report", flags) \
+	  flag_init("Deprecated", flags)
 
 	sub(", $", "", result)
 	return result

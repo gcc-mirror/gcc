@@ -409,7 +409,7 @@ C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ Obj
 Warn about subscripts whose type is \"char\".
 
 Wchkp
-C ObjC C++ ObjC++ Var(warn_chkp) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+C ObjC C++ ObjC++ Var(warn_chkp) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 Wclobbered
@@ -1259,86 +1259,86 @@ C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
 
 fcheck-pointer-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_check_pointer_bounds)
+C ObjC C++ ObjC++ LTO Report Var(flag_check_pointer_bounds) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-check-incomplete-type
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_incomplete_type) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_incomplete_type) Init(1) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-zero-input-bounds-for-main
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_input_bounds_for_main) Init(0)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_input_bounds_for_main) Init(0) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-first-field-has-own-bounds
-C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_first_field_has_own_bounds)
+C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_first_field_has_own_bounds) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-narrow-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_narrow_bounds) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_narrow_bounds) Init(1) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-narrow-to-innermost-array
-C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_narrow_to_innermost_arrray)
+C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_narrow_to_innermost_arrray) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-flexible-struct-trailing-arrays
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_flexible_struct_trailing_arrays)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_flexible_struct_trailing_arrays) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-optimize
 C ObjC C++ ObjC++ LTO Report Var(flag_chkp_optimize) Init(-1)
 
 fchkp-use-fast-string-functions
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_fast_string_functions) Init(0)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_fast_string_functions) Init(0) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-use-nochk-string-functions
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_nochk_string_functions) Init(0)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_nochk_string_functions) Init(0) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-use-static-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_bounds) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_bounds) Init(1) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-use-static-const-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_const_bounds) Init(-1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_const_bounds) Init(-1) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-treat-zero-dynamic-size-as-infinite
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_dynamic_size_as_infinite) Init(0)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_dynamic_size_as_infinite) Init(0) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-check-read
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_check_read) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_check_read) Init(1) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-check-write
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_check_write) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_check_write) Init(1) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-store-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_store_bounds) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_store_bounds) Init(1) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-instrument-calls
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_calls) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_calls) Init(1) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-instrument-marked-only
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_marked_only) Init(0)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_marked_only) Init(0) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-use-wrappers
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_wrappers) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_wrappers) Init(1) Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 static-libmpx
-Driver
+Driver Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 static-libmpxwrappers
-Driver
+Driver Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 fcilkplus Undocumented

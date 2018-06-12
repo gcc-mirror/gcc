@@ -280,6 +280,10 @@ The state of this option should be stored in variable @var{var}
 (actually a macro for @code{global_options.x_@var{var}}).
 The way that the state is stored depends on the type of option:
 
+@item Deprecated
+The option is deprecated and every usage of such option will
+result in a warning.
+
 @itemize @bullet
 @item
 If the option uses the @code{Mask} or @code{InverseMask} properties,
