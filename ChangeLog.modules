@@ -1,5 +1,19 @@
 2018-06-12  Nathan Sidwell  <nathan@acm.org>
 
+	Better socket handling.  Kill mapping from fd
+	gcc/cp/
+	* module.c (class module_mapper): Add from & to fds.
+	(module_mapper::{module_mapper,kill}): Adjust.
+	(module_mapper::{send_command,get_response}): Likewise.
+	(module_from_cmp): New.
+	(module_state::atom_preamble): Reimplement.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Remove fd mapper options.
+	gcc/testsuite/
+	* g++.dg/modules/import-2.C: Adjust messages.
+	* g++.dg/modules/flag-1_b.C: Likewise.
+	* g++.dg/modules/mod-stamp-1_d.C: Likewise.
+
 	gcc/
 	* configure.ac: Rename HOST_HAS_AF_$FOO to HAVE_AF_$FOO.
 	* configure, config.in: Rebuilt.

@@ -29267,18 +29267,6 @@ operand may have one of the following forms:
 
 @table @gcctabopt
 
-@item @var{number}
-@itemx @var{number}?@var{cookie}
-A file number associated with a bidirectional streaming socket.  The spawning
-environment must have made this available.  FIXME: I am considering
-removing this alternative.
-
-@item @var{number},@var{number}
-@itemx @var{number},@var{number}?@var{cookie}
-Two file numbers associated with read and write pipes.  The spawning
-environment must have made these available.  FIXME: I am considering
-removing this alternative.
-
 @item @var{hostname}:@var{port}
 @itemx :@var{port}
 @itemx @var{hostname}:@var{port}?@var{cookie}

@@ -161,13 +161,16 @@ Classes used:
 #include "opts.h"
 
 #if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
-# define HAVE_NET 1
+/* socket, connect, shutdown  */
+# define NETWORKING 1
 # include <sys/socket.h>
 # ifdef HAVE_AF_UNIX
+/* sockaddr_un  */
 #  include <sys/un.h>
 # endif
 # include <netinet/in.h>
 # ifdef HAVE_AF_INET6
+/* sockaddr_in6, gethostbyname2, ntohs, htons.  */
 #  include <netdb.h>
 # endif
 #endif
@@ -2717,19 +2720,24 @@ GTY(()) vec<module_state *, va_gc> *module_state::modules;
 hash_table<module_state_hash> *module_state::hash;
 
 /* Mapper to query and inform of modular compilations.  This is a
-   singleton.  */
+   singleton.  It contains both FILE and fd entities.  The PEX
+   interface provides the former, so we need to keep them around.
+   the fd entities are used when networking is supported.  */
+
 class module_mapper {
   const char *name;
   FILE *from;   /* Read from mapper.  */
   FILE *to;	/* Write to mapper.  */
   pex_obj *pex; /* If it's a subprocess.  */
-  sighandler_t sigpipe; /* Sig pipe disposition.  */
+  sighandler_t sigpipe; /* Original sigpipe disposition.  */
 
   char *buffer; /* Line buffer.  */
   size_t size;  /* Allocated size of buffer.  */
   char *pos;	/* Read/Write point in buffer.  */
   char *end;	/* Ending NUL byte.  */
   char *start;  /* Start of current response line.  */
+  int fd_from;	/* Fileno from mapper. */
+  int fd_to;	/* Fileno to mapper. */
   bool batching;/* Batching requests or responses.  */
 
 private:
@@ -2768,15 +2776,15 @@ public:
 public:
   bool is_live () const
   {
-    return from != NULL;
+    return fd_from >= 0;
   }
   bool is_server () const
   {
-    return is_live () && to;
+    return is_live () && fd_to >= 0;
   }
   bool is_file () const
   {
-    return is_live () && !to;
+    return is_live () && fd_to < 0;
   }
 
 public:
@@ -2805,16 +2813,25 @@ public:
   {
     return get_response (state->from_loc) > 0 ? bmi_resp (state) : NULL;
   }
-  void await_cmd ()
+  void await_cmd (location_t loc)
   {
-    send_command ("AWAIT");
+    send_command (loc, "AWAIT");
   }
   bool async_response (location_t);
-  module_state *await_response (location_t, char *&);
+  module_state *await_response (location_t);
+
+  /* After a response that may be corked, eat balnk lines until it is
+     uncorked.  */
+  void maybe_uncork (location_t loc)
+  {
+    while (corked ())
+      if (get_response (loc) > 0)
+	response_unexpected (loc);
+  }
 
 private:
   bool handshake (location_t, const char *main_src);
-  void send_command (const char * = NULL, ...) ATTRIBUTE_PRINTF_2;
+  void send_command (location_t, const char * = NULL, ...) ATTRIBUTE_PRINTF_3;
   int get_response (location_t);
   char *response_token (location_t, bool all = false);
   int response_word (location_t, const char *, ...);
@@ -6688,7 +6705,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
   : name (NULL), from (NULL), to (NULL), pex (NULL), sigpipe (SIG_IGN),
     /* Exercise buffer expansion code.  */
     buffer (NULL), size (MODULE_STAMP ? 3 : 200), pos (NULL), end (NULL),
-    start (NULL), batching (false)
+    start (NULL), fd_from (-1), fd_to (-1), batching (false)
 {
   pex = NULL;
 
@@ -6721,143 +6738,8 @@ module_mapper::module_mapper (location_t loc, const char *option)
       cookie = writable + len;
       *cookie = 0;
     }
-  int fd_in = -1, fd_out = -1;
 
-  if (!name)
-    {
-      /* Does it look like one or two fule numbers?  */
-      char *endp;
-      unsigned long lfd_in = strtoul (writable, &endp, 10);
-      unsigned long lfd_out = lfd_in;
-      if (endp != writable && *endp == ',')
-	lfd_out = strtoul (endp + 1, &endp, 10);
-
-      if (!*endp && lfd_in != ULONG_MAX && lfd_out != ULONG_MAX)
-	{
-	  fd_in = int (lfd_in);
-	  fd_out = int (lfd_out);
-	  name = writable;
-	}
-    }
-
-  if (!name)
-    {
-      /* Does it look like a socket?  */
-#ifdef HAVE_NET
-      union saddr {
-	sa_family_t fam;
-#ifdef HAVE_AF_UNIX
-	sockaddr_un un;
-#endif
-#ifdef HAVE_AF_INET6
-	sockaddr_in6 in6;
-#endif
-      } saddr;
-#endif
-      size_t saddr_len = 0;
-
-#ifdef HAVE_NET
-      saddr.fam = AF_UNSPEC;
-#endif
-      if (writable[0] == '=')
-	{
-	  /* A local socket.  */
-#ifdef HAVE_AF_UNIX
-	  if (len < sizeof (saddr.un.sun_path))
-	    {
-	      memset (&saddr.un, 0, sizeof (saddr.un));
-	      saddr.un.sun_family = AF_UNIX;
-	      memcpy (saddr.un.sun_path, option, len + 1);
-	    }
-	  saddr_len = offsetof (union saddr, un.sun_path) + len + 1;
-#else
-	  saddr_len = 1;
-	  errmsg = "unix protocol unsupported";
-#endif
-	  name = writable;
-	}
-      else if (char *colon = (char *)memrchr (writable, ':', len))
-	{
-	  /* Try a hostname:port address.  */
-	  char *endp;
-	  int port = strtoul (colon + 1, &endp, 10);
-
-	  if (endp != colon + 1 && !*endp)
-	    {
-	      /* Ends in ':number', treat as ipv6 domain socket.  */
-	      *colon = 0;
-#ifdef HAVE_AF_INET6
-	      if (struct hostent *hent
-		  = gethostbyname2 (colon != writable
-				    ? writable : "localhost", AF_INET6))
-		{
-		  memset (&saddr.in6, 0, sizeof (saddr.in6));
-		  saddr.in6.sin6_port = htons (port);
-		  if (ntohs (saddr.in6.sin6_port) != port)
-		    errno = EINVAL;
-		  else
-		    saddr.in6.sin6_family = AF_INET6;
-		  memcpy (&saddr.in6.sin6_addr, hent->h_addr, hent->h_length);
-		}
-	      else
-		errno = -h_errno;
-	      saddr_len = sizeof (saddr.in6);
-#else
-	      saddr_len = 1;
-	      errmsg = "ipv6 protocol unsupported";
-#endif
-	      *colon = ':';
-	      name = writable;
-	    }
-	}
-
-#ifdef HAVE_NET
-      if (saddr.fam != AF_UNSPEC)
-	{
-	  fd_in = socket (saddr.fam, SOCK_STREAM, 0);
-	  if (fd_in < 0 || connect (fd_in, (sockaddr *)&saddr, saddr_len) < 0)
-	    {
-	      err = errno;
-	      errmsg = "connecting socket";
-	      if (fd_in >= 0)
-		close (fd_in);
-	      fd_in = -1;
-	    }
-	}
-      else
-#endif
-	if (saddr_len && !errmsg)
-	  {
-	    err = errno;
-	    errmsg = "resolving address";
-	  }
-    }
-
-  if (fd_in >= 0)
-    {
-      /* We were given filenums, or successfully created a socket.  */
-      gcc_assert (!errmsg);
-
-      if (fd_out < 0)
-	fd_out = dup (fd_in);
-
-      if (fd_in >= 0)
-	from = fdopen (fd_in, "r+");
-      if (fd_out >= 0)
-	  to = fdopen (fd_out, "w+");
-
-      if (!from || !to)
-	{
-	  err = errno;
-	  errmsg = "connecting streams";
-	  if (from)
-	    fclose (from);
-	  if (to)
-	    fclose (to);
-	  from = to = NULL;
-	}
-    }
-  else if (option[0] == '|')
+  if (option[0] == '|')
     {
       /* A program to spawn and talk to.  */
       /* Split writable at white-space.  No space-containing args
@@ -6922,7 +6804,12 @@ module_mapper::module_mapper (location_t loc, const char *option)
       if (!errmsg)
 	{
 	  from = pex_read_output (pex, false);
-	  if (!from)
+	  if (from)
+	    {
+	      fd_to = fileno (to);
+	      fd_from = fileno (from);
+	    }
+	  else
 	    {
 	      err = errno;
 	      errmsg = "connecting output";
@@ -6935,9 +6822,109 @@ module_mapper::module_mapper (location_t loc, const char *option)
 
   if (!name)
     {
+      int fd;
+
+      /* Does it look like a socket?  */
+#ifdef NETWORKING
+      union saddr {
+	sa_family_t fam;
+#ifdef HAVE_AF_UNIX
+	sockaddr_un un;
+#endif
+#ifdef HAVE_AF_INET6
+	sockaddr_in6 in6;
+#endif
+      } saddr;
+#endif
+      size_t saddr_len = 0;
+
+#ifdef NETWORKING
+      saddr.fam = AF_UNSPEC;
+#endif
+      if (writable[0] == '=')
+	{
+	  /* A local socket.  */
+#ifdef HAVE_AF_UNIX
+	  if (len < sizeof (saddr.un.sun_path))
+	    {
+	      memset (&saddr.un, 0, sizeof (saddr.un));
+	      saddr.un.sun_family = AF_UNIX;
+	      memcpy (saddr.un.sun_path, option, len + 1);
+	    }
+	  saddr_len = offsetof (union saddr, un.sun_path) + len + 1;
+#else
+	  saddr_len = 1;
+	  errmsg = "unix protocol unsupported";
+#endif
+	  name = writable;
+	}
+      else if (char *colon = (char *)memrchr (writable, ':', len))
+	{
+	  /* Try a hostname:port address.  */
+	  char *endp;
+	  int port = strtoul (colon + 1, &endp, 10);
+
+	  if (endp != colon + 1 && !*endp)
+	    {
+	      /* Ends in ':number', treat as ipv6 domain socket.  */
+	      *colon = 0;
+#ifdef HAVE_AF_INET6
+	      if (struct hostent *hent
+		  = gethostbyname2 (colon != writable
+				    ? writable : "localhost", AF_INET6))
+		{
+		  memset (&saddr.in6, 0, sizeof (saddr.in6));
+		  saddr.in6.sin6_port = htons (port);
+		  if (ntohs (saddr.in6.sin6_port) != port)
+		    errno = EINVAL;
+		  else
+		    saddr.in6.sin6_family = AF_INET6;
+		  memcpy (&saddr.in6.sin6_addr, hent->h_addr, hent->h_length);
+		}
+	      else
+		errno = -h_errno;
+	      saddr_len = sizeof (saddr.in6);
+#else
+	      saddr_len = 1;
+	      errmsg = "ipv6 protocol unsupported";
+#endif
+	      *colon = ':';
+	      name = writable;
+	    }
+	}
+
+#ifdef NETWORKING
+      if (saddr.fam != AF_UNSPEC)
+	{
+	  fd = socket (saddr.fam, SOCK_STREAM, 0);
+	  if (fd < 0 || connect (fd, (sockaddr *)&saddr, saddr_len) < 0)
+	    {
+	      err = errno;
+	      errmsg = "connecting socket";
+	      if (fd >= 0)
+		close (fd);
+	      fd = -1;
+	    }
+	  else
+	    /* We have a socket.  */
+	    fd_from = fd_to = fd;
+	}
+      else
+#endif
+	if (saddr_len && !errmsg)
+	  {
+	    err = errno;
+	    errmsg = "resolving address";
+	  }
+    }
+
+  if (!name)
+    {
       /* Try a mapping file.  */
       from = fopen (writable, "r");
-      if (!from)
+      if (from)
+	fd_from = fileno (from);
+      else
 	{
 	  err = errno;
 	  errmsg = "opening";
@@ -6965,11 +6952,8 @@ module_mapper::module_mapper (location_t loc, const char *option)
 
   pos = end = buffer = XNEWVEC (char, size);
 
-  setvbuf (from, NULL, _IOLBF, 0); /* We read lines.  */
-  if (to)
+  if (fd_to >= 0)
     {
-      /* A server, say Hello!.  */
-      setvbuf (to, NULL, _IONBF, 0); /* We write whole buffers.  */
 #ifdef SIGPIPE
       /* We need to ignore sig pipe for a while.  */
       sigpipe = signal (SIGPIPE, SIG_IGN);
@@ -7027,7 +7011,8 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	      }
 	  }
       fclose (from);
-      /* Leave from non-null to show liveness.  */
+      from = NULL;
+      /* Leave fd_from alone to show liveness.  */
     }
 }
 
@@ -7042,7 +7027,18 @@ module_mapper::kill (location_t loc)
   dump () && dump ("Killing mapper %s", name);
 
   if (to)
-    fclose (to);
+    {
+      fclose (to);
+      to = NULL;
+      fd_to = -1;
+    }
+#ifdef NETWORKING
+  else if (fd_to >= 0)
+    {
+      shutdown (fd_to, SHUT_WR);
+      fd_to = -1;
+    }
+#endif
 
   if (pex)
     {
@@ -7058,16 +7054,21 @@ module_mapper::kill (location_t loc)
       else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
 	error_at (loc, "mapper %qs exit status %d",
 		  name, WEXITSTATUS (status));
+      from = NULL;
+      fd_from = -1;
     }
-  else if (from && !is_file ())
-    fclose (from);
+  else if (fd_from >= 0)
+    {
+      if (!is_file ())
+	close (fd_from);
+      fd_from = -1;
+    }
 
 #ifdef SIGPIPE
   if (sigpipe != SIG_IGN)
     /* Restore sigpipe.  */
     signal (SIGPIPE, sigpipe);
 #endif
-  from = to = NULL;
 
   XDELETEVEC (buffer);
   buffer = NULL;
@@ -7084,7 +7085,7 @@ module_mapper::make (location_t loc, const char *option)
 /* Send a command to the mapper.  */
 
 void
-module_mapper::send_command (const char *format, ...)
+module_mapper::send_command (location_t loc, const char *format, ...)
 {
   size_t actual = 0;
   if (pos != buffer)
@@ -7120,8 +7121,8 @@ module_mapper::send_command (const char *format, ...)
   *end++ = '\n';
   if (!batching)
     {
-      if (is_live ())
-	fwrite (buffer, 1, end - buffer, to);
+      if (is_live () && end - buffer != write (fd_to, buffer, end - buffer))
+	error_at (loc, "failed write to mapper %qs: %m", name);
       end = pos = buffer;
     }
 }
@@ -7138,37 +7139,72 @@ module_mapper::get_response (location_t loc)
       gcc_assert (pos == end);
       end = pos = buffer;
       size_t off = 0;
+      bool bol = true;
+      bool last = false;
+      int stop = 0;
 
       if (is_live ())
 	{
-	  while (buffer[off] = !0, fgets (buffer + off, size - off, from))
+	  for (;;)
 	    {
-	      off += strlen (buffer + off);
-	      if (buffer[off - 1] != '\n')
+	      if (fd_to < 0)
+		{
+		  /* We're reading a file.  There can be no
+		     continuations.  */
+		  if (!fgets (buffer + off, size - off, from))
+		    {
+		      stop = feof (from) ? +1 : -1;
+		      break;
+		    }
+		  off += strlen (buffer + off);
+		  if (off && buffer[off - 1] == '\n')
+		    break;
+		}
+	      else
+		{
+		  /* Reading a pipe or socket.  */
+		  int bytes = read (fd_from, buffer + off, size - off - 1);
+		  if (bytes <= 0)
+		    {
+		      stop = bytes ? -1 : +1;
+		      break;
+		    }
+		  while (bytes)
+		    {
+		      if (bol)
+			{
+			  if (buffer[off] == '+')
+			    batching = true;
+			  else
+			    last = true;
+			}
+		      if (char *eol
+			  = (char *)memchr (buffer + off, '\n', size - off))
+			{
+			  bol = true;
+			  unsigned nline = eol + 1 - buffer;
+			  bytes -= nline - off;
+			  off = nline;
+			}
+		    }
+		  if (bol && last)
+		    break;
+		}
+	      if (off + 1 == size)
 		{
 		  size *= 2;
 		  char *next = XRESIZEVEC (char, buffer, size);
 		  pos = (pos - buffer) + next;
 		  buffer = next;
 		}
-	      else if (pos[0] == '+')
-		{
-		  batching = true;
-		  pos = buffer + off;
-		}
-	      else
-		break;
 	    }
 
-	  if (buffer[off])
+	  if (stop)
 	    {
-	      const char *err = NULL;
-	      if (ferror (from))
-		err = "error";
-	      else if (!is_file ())
-		err = "end of file";
-	      if (err)
-		error_at (loc, "unexpected %s from mapper %qs", err, name);
+	      if (stop < 0)
+		error_at (loc, "failed read of mapper %qs: %m", name);
+	      else if (is_server ())
+		error_at (loc, "unexpected close from mapper %qs", name);
 	      start = NULL;
 	      return -1;
 	    }
@@ -7183,21 +7219,22 @@ module_mapper::get_response (location_t loc)
     }
 
   start = pos;
-  batching = *pos == '+';
-  if (batching || *pos == '-')
-    pos++;
+  if (*pos == '+')
+    {
+      pos++;
+      end = strchr (pos, '\n');
+      *end = 0;
+    }
+  else
+    {
+      if (*pos == '-')
+	pos++;
+      end = pos + strlen (pos);
+      batching = false;
+    }
 
   while (*pos != '\n' && ISSPACE (*pos))
     pos++;
-
-  if (batching)
-    {
-      end = strchr (pos, '\n');
-      if (end)
-	*end = 0;
-      else
-	end = pos + strlen (pos);
-    }
 
   return *pos != 0;
 }
@@ -7308,7 +7345,7 @@ module_mapper::response_word (location_t loc, const char *option, ...)
 bool
 module_mapper::handshake (location_t loc, const char *cookie)
 {
-  send_command ("HELLO %d 0 %s", MAPPER_VERSION, cookie);
+  send_command (loc, "HELLO %d 0 %s", MAPPER_VERSION, cookie);
 
   bool ok = get_response (loc) > 0;
   switch (response_word (loc, "HELLO", "ERROR", NULL))
@@ -7345,7 +7382,7 @@ module_mapper::handshake (location_t loc, const char *cookie)
 void
 module_mapper::import_query (const module_state *state, bool async)
 {
-  send_command ("%sBMI %s %s", async ? "ASYNC " : "",
+  send_command (state->from_loc, "%sBMI %s %s", async ? "ASYNC " : "",
 		IDENTIFIER_POINTER (state->name),
 		LOCATION_FILE (state->from_loc));
 }
@@ -7353,7 +7390,7 @@ module_mapper::import_query (const module_state *state, bool async)
 void
 module_mapper::export_query (const module_state *state)
 {
-  send_command ("EXPORT %s", IDENTIFIER_POINTER (state->name));
+  send_command (state->from_loc, "EXPORT %s", IDENTIFIER_POINTER (state->name));
 }
 
 char *
@@ -7403,7 +7440,7 @@ module_mapper::async_response (location_t loc)
 }
 
 module_state *
-module_mapper::await_response (location_t loc, char *&fname)
+module_mapper::await_response (location_t loc)
 {
   if (get_response (loc) <= 0)
     return NULL;
@@ -7415,10 +7452,16 @@ module_mapper::await_response (location_t loc, char *&fname)
   if (!name_str)
     return NULL;
 
-  tree name = get_identifier (name_str);
-  module_state *state = module_state::get_module (name);
-  if (state)
-    fname = bmi_resp (state);
+  tree mod_name = get_identifier (name_str);
+  module_state *state = module_state::get_module (mod_name);
+  char *fname = state ? bmi_resp (state) : NULL;
+
+  if (!state || !state->direct || state->filename)
+    error_at (loc, "unexpected reponse from mapper %qs for module %qE",
+	      name, mod_name);
+  else if (fname)
+    state->filename = xstrdup (fname);
+
   return state;
 }
 
@@ -7452,7 +7495,8 @@ module_mapper::export_done (const module_state *state)
   if (mapper->is_server ())
     {
       dump () && dump ("Completed mapper");
-      mapper->send_command ("DONE %s", IDENTIFIER_POINTER (state->name));
+      mapper->send_command (state->from_loc,
+			    "DONE %s", IDENTIFIER_POINTER (state->name));
       mapper->get_response (state->from_loc);
       ok = mapper->response_word (state->from_loc, "OK", NULL) == 0;
     }
@@ -9440,11 +9484,12 @@ module_state::check_read (bool outermost, tree ns, tree id)
 	error_at (loc, "failed to load binding %<%E%s%E@%E%>: %s",
 		  ns, &"::"[ns == global_namespace ? 2 : 0], id, name, err);
       else if (filename)
-	error_at  (loc, "failed to read BMI %qs: %s", filename, err);
+	error_at  (loc, "failed to read module %qs: %s", filename, err);
       else
-	error_at  (loc, "failed to read BMI: %s", err);
+	error_at  (loc, "failed to read module: %s", err);
 
       if (e == EMFILE
+	  || e == ENFILE
 #ifdef MAPPED_READING
 	  || e == ENOMEM
 #endif
@@ -9968,6 +10013,17 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
     }
 }
 
+/* Reverse source import location order.  */
+
+static int
+module_from_cmp (const void *a_, const void *b_)
+{
+  module_state *a = *(module_state *const *)a_;
+  module_state *b = *(module_state *const *)b_;
+
+  return a->from_loc > b->from_loc ? -1 : +1;
+}
+
 /* The module preamble has been parsed.  Now load all the imports.  */
 
 bool
@@ -9975,11 +10031,16 @@ module_state::atom_preamble (location_t loc)
 {
   /* Iterate over the module hash, informing the mapper of every not
      loaded (direct) import.  */
-  if (!hash->elements ())
+  unsigned limit = hash->elements ();
+  if (!limit)
     return true;
 
   dump.push (NULL);
   dump () && dump ("Processing preamble");
+
+  /* For a consistent order, and avoiding hash table iteration durig
+     actual import, we create a vector of imports.  */
+  auto_vec<module_state *> directs (limit);
 
   module_state *interface = NULL;
   if (module_state *mod = (*modules)[MODULE_PURVIEW])
@@ -9990,12 +10051,7 @@ module_state::atom_preamble (location_t loc)
   if (!mapper->is_live ())
     return false;
 
-  /* Importing stuff perturbs the hash table, so we can't just iterate
-     it in mapping-file mode.  */
-  auto_vec<module_state *> directs;
-  unsigned imports = 0;
 
-  mapper->cork ();
   hash_table<module_state_hash>::iterator end (hash->end ());
   for (hash_table<module_state_hash>::iterator iter (hash->begin ());
        iter != end; ++iter)
@@ -10003,70 +10059,84 @@ module_state::atom_preamble (location_t loc)
       module_state *imp = *iter;
       gcc_assert (mapper->is_file () || !imp->filename);
       if (imp->direct)
-	{
-	  if (mapper->is_file ())
-	    directs.safe_push (imp);
-	  else
-	    mapper->import_query (imp, true);
-	  imports++;
-	}
+	directs.quick_push (imp);
       else
 	gcc_assert (imp == interface || imp->is_mapping ());
     }
 
   if (!mapper->is_file ())
     {
-      if (!imports)
-	mapper->uncork ();
+      /* Send batched request to mapper.  */
+      if (directs.length ())
+	mapper->cork ();
       if (interface)
 	mapper->export_query (interface);
-      if (imports)
+      if (directs.length ())
 	{
+	  /* Put in reverse source order, for consistency.  */
+	  (directs.qsort) (module_from_cmp);
+	  for (unsigned ix = directs.length (); ix--;)
+	    mapper->import_query (directs[ix], true);
 	  mapper->uncork ();
-	  mapper->await_cmd ();
-	  mapper->async_response (loc);
+	  mapper->await_cmd (loc);
 	}
+
+      /* Read the mapper's responses.  */
       if (interface)
 	if (char *fname = mapper->bmi_response (interface))
 	  interface->filename = xstrdup (fname);
+      if (directs.length ())
+	{
+	  mapper->async_response (loc);
+	  for (unsigned ix = directs.length (); ix--;)
+	    {
+	      if (!mapper->corked ())
+		mapper->await_cmd (loc);
+	      if (module_state *imp = mapper->await_response (loc))
+		dump () && dump ("Received BMI name for %M", imp);
+	      else
+		break;
+	    }
+	}
+      mapper->maybe_uncork (loc);
     }
 
-  if (imports)
+  /* Check we know all the BMIs.  There's no point trying to load any
+     if some are missing.  */
+  bool ok = true;
+  for (unsigned ix = directs.length (); ix--;)
     {
-      char *fname = NULL;
-      while (module_state *imp =
-	     !mapper->is_file () ? mapper->await_response (loc, fname)
-	     : directs.length () ? directs.pop () : NULL)
+      module_state *imp = directs[ix];
+      if (!imp->filename)
 	{
-	  if (!mapper->is_file ())
-	    {
-	      if (!fname)
-		continue;
+	  ok = false;
+	  error_at (imp->from_loc, "module %qE is unknown", imp->name);
+	}
+    }
 
-	      if (!imp->direct || imp == interface
-		  || (imp->filename && strcmp (imp->filename, fname)))
-		{
-		  error_at (imp->from_loc,
-			    "unexpected mapper response for %qE: %qs",
-			    imp->name, fname);
-		  break;
-		}
-	    }
-
+  if (ok)
+    {
+      /* Now do the importing, which might cause additional requests
+	 (although nested import filenames are usually in their
+	 importer's import table).  */
+      while (directs.length ())
+	{
+	  module_state *imp = directs.pop ();
 	  unsigned n = dump.push (imp);
-	  if (imp->is_imported () || imp->do_import (fname, false))
+	  if (imp->is_imported () || imp->do_import (NULL, false))
 	    {
 	      if (imp->mod != MODULE_PURVIEW)
 		(*modules)[MODULE_NONE]->set_import (imp, imp->exported);
-	      imports--;
 	    }
+	  else
+	    ok = false;
 	  dump.pop (n);
 	}
     }
 
   dump.pop (0);
 
-  return imports == 0;
+  return ok;
 }
 
 /* Do processing after a (non-empty) atom preamble has been parsed.  LOC is the

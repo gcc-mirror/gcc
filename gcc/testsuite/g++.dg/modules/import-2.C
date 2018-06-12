@@ -5,9 +5,9 @@
 // { dg-module-bmi "!bob" }
 // { dg-module-bmi "!bill" }
 
-import bill;  // { dg-error "mapper cannot provide" }
-import bob;  // { dg-error "mapper cannot provide" }
-// { dg-prune-output "unknown BMI file" }
+import bill;  // { dg-error "module 'bill' is unknown" }
+import bob;  // { dg-error "module 'bob' is unknown" }
+// { dg-prune-output "mapper cannot provide" }
 // { dg-prune-output "fatal error:" }
 // { dg-prune-output "compilation terminated" }
 
