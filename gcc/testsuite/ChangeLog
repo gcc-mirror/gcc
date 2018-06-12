@@ -1,6 +1,11 @@
 2018-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44491
+	* gfortran.dg/pr44491.f90: Add dg-options omitted in previous commit.
+
+2018-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/44491
 	* gfortran.dg/pr44491.f90: New testcase
 
 2018-06-11  Marek Polacek  <polacek@redhat.com>
