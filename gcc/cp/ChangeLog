@@ -1,5 +1,9 @@
 2018-06-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/85815 - reference to member of enclosing template.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Check
+	currently_open_class.
+
 	PR c++/86060 - ICE on range for with -std=c++98.
 	* parser.c (cp_parser_init_statement): Don't clobber *decl after
 	pedwarn.

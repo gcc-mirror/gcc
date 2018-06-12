@@ -7364,9 +7364,7 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
       if (postfix_expression != current_class_ref
 	  && scope != error_mark_node
 	  && !(processing_template_decl
-	       && current_class_type
-	       && (same_type_ignoring_top_level_qualifiers_p
-		   (scope, current_class_type))))
+	       && currently_open_class (scope)))
 	{
 	  scope = complete_type (scope);
 	  if (!COMPLETE_TYPE_P (scope)
