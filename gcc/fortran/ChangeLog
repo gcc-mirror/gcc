@@ -1,3 +1,8 @@
+2018-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/44491
+	* expr.c (gfc_check_assign): Select non-NULL locus.
+
 2018-06-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45521
