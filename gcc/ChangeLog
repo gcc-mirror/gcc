@@ -1,5 +1,16 @@
 2018-06-12  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/85259
+	* builtins.c (compute_objsize): Handle constant offsets.
+	* gimple-ssa-warn-restrict.c (maybe_diag_offset_bounds): Return
+	true iff a warning has been issued.
+	* gimple.h (gimple_nonartificial_location): New function.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Call
+	gimple_nonartificial_location and handle -Wno-system-headers.
+	(handle_builtin_stxncpy): Same.
+
+2018-06-12  Martin Sebor  <msebor@redhat.com>
+
 	PR c/85931
 	* fold-const.c (operand_equal_p): Handle SAVE_EXPR.
 

@@ -1796,6 +1796,20 @@ gimple_has_location (const gimple *g)
 }
 
 
+/* Return non-artificial location information for statement G.  */
+
+static inline location_t
+gimple_nonartificial_location (const gimple *g)
+{
+  location_t *ploc = NULL;
+
+  if (tree block = gimple_block (g))
+    ploc = block_nonartificial_location (block);
+
+  return ploc ? *ploc : gimple_location (g);
+}
+
+
 /* Return the file name of the location of STMT.  */
 
 static inline const char *

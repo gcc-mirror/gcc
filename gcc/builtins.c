@@ -3326,10 +3326,29 @@ compute_objsize (tree dest, int ostype)
 	{
 	  /* compute_builtin_object_size fails for addresses with
 	     non-constant offsets.  Try to determine the range of
-	     such an offset here and use it to adjus the constant
+	     such an offset here and use it to adjust the constant
 	     size.  */
 	  tree off = gimple_assign_rhs2 (stmt);
-	  if (TREE_CODE (off) == SSA_NAME
+	  if (TREE_CODE (off) == INTEGER_CST)
+	    {
+	      if (tree size = compute_objsize (dest, ostype))
+		{
+		  wide_int wioff = wi::to_wide (off);
+		  wide_int wisiz = wi::to_wide (size);
+
+		  /* Ignore negative offsets for now.  For others,
+		     use the lower bound as the most optimistic
+		     estimate of the (remaining) size.  */
+		  if (wi::sign_mask (wioff))
+		    ;
+		  else if (wi::ltu_p (wioff, wisiz))
+		    return wide_int_to_tree (TREE_TYPE (size),
+					     wi::sub (wisiz, wioff));
+		  else
+		    return size_zero_node;
+		}
+	    }
+	  else if (TREE_CODE (off) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (off)))
 	    {
 	      wide_int min, max;
