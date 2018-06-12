@@ -1,3 +1,9 @@
+2018-06-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/85931
+	* c-warn.c (sizeof_pointer_memaccess_warning): Avoid warning when
+	sizeof source and destination yields the same value.
+
 2018-06-12  Martin Liska  <mliska@suse.cz>
 
 	* c.opt: Make MPX-related options as Deprecated.
