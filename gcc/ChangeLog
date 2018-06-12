@@ -1,3 +1,36 @@
+2018-06-12  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* config/mips/i6400.md (i6400_gpmuldiv): Remove cpu_unit.
+	(i6400_gpmul): Add cpu_unit.
+	(i6400_gpdiv): Likewise.
+	(i6400_msa_add_d): Update reservations.
+	(i6400_msa_int_add) Likewise.
+	(i6400_msa_short_logic3) Likewise.
+	(i6400_msa_short_logic2) Likewise.
+	(i6400_msa_short_logic) Likewise.
+	(i6400_msa_move) Likewise.
+	(i6400_msa_cmp) Likewise.
+	(i6400_msa_short_float2) Likewise.
+	(i6400_msa_div_d) Likewise.
+	(i6400_msa_long_logic1) Likewise.
+	(i6400_msa_long_logic2) Likewise.
+	(i6400_msa_mult) Likewise.
+	(i6400_msa_long_float2) Likewise.
+	(i6400_msa_long_float4) Likewise.
+	(i6400_msa_long_float5) Likewise.
+	(i6400_msa_long_float8) Likewise.
+	(i6400_fpu_fadd): Include frint type.
+	(i6400_fpu_store): New define_insn_reservation.
+	(i6400_fpu_load): Likewise.
+	(i6400_fpu_move): Likewise.
+	(i6400_fpu_fcmp): Likewise.
+	(i6400_fpu_fmadd): Likewise.
+	(i6400_int_mult): Include imul3nc type and update reservation.
+	(i6400_int_div): Include idiv3 type and update reservation.
+	(i6400_int_load): Update to check type not move_type.
+	(i6400_int_store): Likewise.
+	(i6400_int_prefetch): Set zero latency.
+
 2018-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c: Document new %@{...} sequence.
