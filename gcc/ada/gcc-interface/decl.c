@@ -210,7 +210,6 @@ static tree gnat_to_gnu_subprog_type (Entity_Id, bool, bool, tree *);
 static int adjust_packed (tree, tree, int);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
 static tree gnu_ext_name_for_subprog (Entity_Id, tree);
-static tree change_qualified_type (tree, int);
 static void set_nonaliased_component_on_array_type (tree);
 static void set_reverse_storage_order_on_array_type (tree);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
@@ -4447,7 +4446,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* If this is not an unconstrained array type, set some flags.  */
       if (TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE)
 	{
-	  /* Tell the middle-end that objects of tagged types are guaranteed to
+	  /* Record the property that objects of tagged types are guaranteed to
 	     be properly aligned.  This is necessary because conversions to the
 	     class-wide type are translated into conversions to the root type,
 	     which can be less aligned than some of its derived types.  */
@@ -6063,19 +6062,6 @@ gnu_ext_name_for_subprog (Entity_Id gnat_subprog, tree gnu_entity_name)
     gnu_ext_name = NULL_TREE;
 
   return gnu_ext_name;
-}
-
-/* Like build_qualified_type, but TYPE_QUALS is added to the existing
-   qualifiers on TYPE.  */
-
-static tree
-change_qualified_type (tree type, int type_quals)
-{
-  /* Qualifiers must be put on the associated array type.  */
-  if (TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
-    return type;
-
-  return build_qualified_type (type, TYPE_QUALS (type) | type_quals);
 }
 
 /* Set TYPE_NONALIASED_COMPONENT on an array type built by means of
