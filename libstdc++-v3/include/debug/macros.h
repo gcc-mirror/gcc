@@ -38,12 +38,15 @@
  * the user error and where the error is reported.
  *
  */
+#define _GLIBCXX_DEBUG_VERIFY_COND_AT(_Cond,_ErrMsg,_File,_Line,_Func)	\
+  if (! (_Cond))							\
+    __gnu_debug::_Error_formatter::_S_at(_File, _Line, _Func)		\
+      ._ErrMsg._M_error()
+
 #define _GLIBCXX_DEBUG_VERIFY_AT_F(_Cond,_ErrMsg,_File,_Line,_Func)	\
   do									\
   {									\
-    if (! (_Cond))							\
-      __gnu_debug::_Error_formatter::_S_at(_File, _Line, _Func)		\
-	._ErrMsg._M_error();						\
+    _GLIBCXX_DEBUG_VERIFY_COND_AT(_Cond,_ErrMsg,_File,_Line,_Func);	\
   } while (false)
 
 #define _GLIBCXX_DEBUG_VERIFY_AT(_Cond,_ErrMsg,_File,_Line)		\
@@ -83,6 +86,42 @@ _GLIBCXX_DEBUG_VERIFY(_First != _Last,					\
 		      _M_message(__gnu_debug::__msg_non_empty_range)	\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
+
+#define __glibcxx_check_can_increment_range(_First1,_Last1,_First2)	\
+  do									\
+  {									\
+    typename __gnu_debug::_Distance_traits<__decltype(_First1)>::__type __dist;\
+    _GLIBCXX_DEBUG_VERIFY_COND_AT(					\
+			__gnu_debug::__valid_range(_First1, _Last1, __dist),\
+			_M_message(__gnu_debug::__msg_valid_range)	\
+			._M_iterator(_First1, #_First1)			\
+			._M_iterator(_Last1, #_Last1),			\
+			__FILE__,__LINE__,__PRETTY_FUNCTION__);		\
+    _GLIBCXX_DEBUG_VERIFY_COND_AT(					\
+			__gnu_debug::__can_advance(_First2, __dist.first),\
+			_M_message(__gnu_debug::__msg_iter_subscript_oob)\
+			._M_iterator(_First2, #_First2)			\
+			._M_integer(__dist.first),			\
+			__FILE__,__LINE__,__PRETTY_FUNCTION__);		\
+  } while(false)
+
+#define __glibcxx_check_can_decrement_range(_First1,_Last1,_First2)	\
+  do									\
+  {									\
+    typename __gnu_debug::_Distance_traits<__decltype(_First1)>::__type __dist;\
+    _GLIBCXX_DEBUG_VERIFY_COND_AT(					\
+			__gnu_debug::__valid_range(_First1, _Last1, __dist),\
+			_M_message(__gnu_debug::__msg_valid_range)	\
+			._M_iterator(_First1, #_First1)			\
+			._M_iterator(_Last1, #_Last1),			\
+			__FILE__,__LINE__,__PRETTY_FUNCTION__);		\
+    _GLIBCXX_DEBUG_VERIFY_COND_AT(					\
+			__gnu_debug::__can_advance(_First2, -__dist.first),\
+			_M_message(__gnu_debug::__msg_iter_subscript_oob)\
+			._M_iterator(_First2, #_First2)			\
+			._M_integer(-__dist.first),			\
+			__FILE__,__LINE__,__PRETTY_FUNCTION__);		\
+  } while(false)
 
 /** Verify that we can insert into *this with the iterator _Position.
  *  Insertion into a container at a specific position requires that
@@ -145,7 +184,7 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__foreign_iterator(_Position,_First,_Last),\
  *  _Safe_sequence and the _Position iterator is a _Safe_iterator.
 */
 #define __glibcxx_check_insert_range_after(_Position,_First,_Last,_Dist)\
-  __glibcxx_check_valid_range2(_First,_Last,_Dist);			\
+__glibcxx_check_valid_range2(_First,_Last,_Dist);			\
 __glibcxx_check_insert_after(_Position);				\
 _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__foreign_iterator(_Position,_First,_Last),\
 		      _M_message(__gnu_debug::__msg_insert_range_from_self)\
