@@ -1,5 +1,14 @@
 2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc-arch.h (arc_extras): New enum.
+	(arc_cpu_t):Add field extra.
+	(arc_cpu_types): Consider the extras.
+	* config/arc/arc-cpus.def: Add extras info.
+	* config/arc/arc-opts.h (processor_type): Consider extra field.
+	* config/arc/arc.c (arc_override_options): Handle extra field.
+
+2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-arch.h: Update ARC_OPTX macro.
 	* config/arc/arc-options.def (ARC_OPTX): Introduce a new doc
 	field.
