@@ -1,3 +1,8 @@
+2018-06-12  Jeff Law  <law@redhat.com>
+
+	* config.gcc (alpha*-*-freebsd*): Remove.
+	* config/alpha/freebsd.h: Remove.
+
 2018-06-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/69968

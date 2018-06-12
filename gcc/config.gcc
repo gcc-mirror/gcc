@@ -1026,11 +1026,6 @@ alpha*-*-linux*)
 	tmake_file="${tmake_file} alpha/t-linux alpha/t-alpha"
 	extra_options="${extra_options} alpha/elf.opt"
 	;;
-alpha*-*-freebsd*)
-	tm_file="elfos.h ${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
-	tmake_file="${tmake_file} alpha/t-alpha"
-	extra_options="${extra_options} alpha/elf.opt"
-	;;
 alpha*-*-netbsd*)
 	tm_file="elfos.h ${tm_file} ${nbsd_tm_file} alpha/elf.h alpha/netbsd.h"
 	tmake_file="${tmake_file} alpha/t-alpha"
