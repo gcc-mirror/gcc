@@ -5,6 +5,12 @@
 
 2018-06-12  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/85259
+	* gcc.dg/Wstringop-overflow-5.c: New test.
+	* gcc.dg/Wstringop-overflow-6.c: New test.
+
+2018-06-12  Martin Sebor  <msebor@redhat.com>
+
 	PR c/85931
 	* gcc.dg/Wstringop-truncation-3.c: New test.
 
