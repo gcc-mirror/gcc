@@ -1,3 +1,23 @@
+2018-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c: Document new %@{...} sequence.
+	(LINK_COMMAND_SPEC): Use it for the -L switches.
+	(cpp_unique_options): Use it for the -I switches.
+	(at_file_argbuf): New global variable.
+	(in_at_file): Likewise.
+	(alloc_args): Create at_file_argbuf.
+	(clear_args): Truncate at_file_argbuf.
+	(store_arg): If in_at_file, push the argument onto at_file_argbuf.
+	(open_at_file): New function.
+	(close_at_file): Likewise.
+	(create_at_file): Delete.
+	(do_spec_1) <'i'>: Use open_at_file/close_at_file.
+	<'o'>: Likewise.
+	<'@'>: New case.
+	(validate_switches_from_spec): Deal with %@{...} sequence.
+	(validate_switches): Likewise.
+	(driver::finalize): Call clear_args.
+
 2018-06-11  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
 	* config/vx-common.h (USE_TM_CLONE_REGISTRY): #define to 0.
