@@ -2185,6 +2185,11 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
 				       TYPE_PRECISION (TREE_TYPE (oprnd1)));
 	      def = vect_recog_temp_ssa_var (TREE_TYPE (rhs1), NULL);
 	      def_stmt = gimple_build_assign (def, BIT_AND_EXPR, rhs1, mask);
+	      stmt_vec_info new_stmt_info
+		= new_stmt_vec_info (def_stmt, vinfo);
+	      set_vinfo_for_stmt (def_stmt, new_stmt_info);
+	      STMT_VINFO_VECTYPE (new_stmt_info)
+		= get_vectype_for_scalar_type (TREE_TYPE (rhs1));
 	      new_pattern_def_seq (stmt_vinfo, def_stmt);
 	    }
 	}
