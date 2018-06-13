@@ -1,3 +1,23 @@
+2018-06-13  Matthew Fortune  <matthew.fortune@mips.com>
+	    Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* config/mips/mips-cpus.def: Define P6600.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.c (mips_ucbranch_type): New enum.
+	(mips_rtx_cost_data): Add support for P6600.
+	(mips_issue_rate): Likewise.
+	(mips_multipass_dfa_lookahead): Likewise.
+	(mips_avoid_hazard): Likewise.
+	(mips_reorg_process_insns): Likewise.
+	(mips_classify_branch_p6600): New function.
+	* config/mips/mips.h (TUNE_P6600): New define.
+	(MIPS_ISA_LEVEL_SPEC): Infer mips64r6 from p6600.
+	(ENABLE_LD_ST_PAIRS): Enable load/store bonding for p6600.
+	* config/mips/mips.md: Include p6600.md.
+	(processor): Add p6600.
+	* config/mips/p6600.md: New file.
+	* doc/invoke.texi: Add p6600 to supported architectures.
+
 2018-06-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86114
