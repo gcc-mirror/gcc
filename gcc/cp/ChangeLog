@@ -1,3 +1,10 @@
+2018-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86094 - wrong code with defaulted move ctor.
+	* class.c (classtype_has_non_deleted_move_ctor): New.
+	* tree.c (maybe_warn_parm_abi, type_has_nontrivial_copy_init):
+	Handle v12 breakage.
+
 2018-06-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85792 -Wctor-dtor-privacy and inherited constructor.
