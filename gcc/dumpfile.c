@@ -64,6 +64,7 @@ static struct dump_file_info dump_files[TDI_end] =
   DUMP_FILE_INFO (".original", "tree-original", DK_tree, 0),
   DUMP_FILE_INFO (".gimple", "tree-gimple", DK_tree, 0),
   DUMP_FILE_INFO (".nested", "tree-nested", DK_tree, 0),
+  DUMP_FILE_INFO (".lto-stream-out", "ipa-lto-stream-out", DK_ipa, 0),
 #define FIRST_AUTO_NUMBERED_DUMP 1
 #define FIRST_ME_AUTO_NUMBERED_DUMP 4
 

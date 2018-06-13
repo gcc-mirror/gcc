@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "langhooks.h"
 #include "lto-compress.h"
+#include "print-tree.h"
 
 static vec<lto_out_decl_state_ptr> decl_state_stack;
 
@@ -66,6 +67,9 @@ lto_begin_section (const char *name, bool compress)
 {
   lang_hooks.lto.begin_section (name);
 
+  if (streamer_dump_file)
+    fprintf (streamer_dump_file, "Creating %ssection %s\n",
+	     compress ? "compressed " : "", name);
   gcc_assert (compression_stream == NULL);
   if (compress)
     compression_stream = lto_start_compression (lto_append_data, NULL);
@@ -158,6 +162,12 @@ lto_output_decl_index (struct lto_output_stream *obs,
   if (!existed_p)
     {
       index = encoder->trees.length ();
+      if (streamer_dump_file)
+	{
+	  print_node_brief (streamer_dump_file, "    Encoding indexable ",
+			    name, 4);
+	  fprintf (streamer_dump_file, "  as %i \n", index);
+	}
       encoder->trees.safe_push (name);
       new_entry_p = TRUE;
     }

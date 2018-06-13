@@ -3543,6 +3543,8 @@ cgraph_node::get_untransformed_body (void)
 
   gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 
+  if (!quiet_flag)
+    fprintf (stderr, " in:%s", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
   lto_input_function_body (file_data, this, data);
   lto_stats.num_function_bodies++;
   lto_free_section_data (file_data, LTO_section_function_body, name,

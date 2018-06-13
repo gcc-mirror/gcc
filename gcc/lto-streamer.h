@@ -1221,5 +1221,6 @@ struct dref_entry {
 
 extern vec<dref_entry> dref_queue;
 
+extern FILE *streamer_dump_file;
 
 #endif /* GCC_LTO_STREAMER_H  */
