@@ -1,3 +1,9 @@
+2018-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/86110
+	* array.c (gfc_resolve_character_array_constructor): Avoid NULL 
+	pointer dereference.
+
 2018-06-13  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/85703
