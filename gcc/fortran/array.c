@@ -2007,7 +2007,9 @@ got_charlen:
 	  gfc_ref *ref;
 	  for (ref = p->expr->ref; ref; ref = ref->next)
 	    if (ref->type == REF_SUBSTRING
+		&& ref->u.ss.start
 		&& ref->u.ss.start->expr_type == EXPR_CONSTANT
+		&& ref->u.ss.end
 		&& ref->u.ss.end->expr_type == EXPR_CONSTANT)
 	      break;
 
