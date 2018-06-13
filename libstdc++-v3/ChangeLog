@@ -1,3 +1,16 @@
+2018-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86127
+	* include/bits/forward_list.h (_Fwd_list_base::_Tp_alloc_type): Remove
+	unused typedef.
+	(_Fwd_list_base::_Node_alloc_traits): Use allocator_traits instead of
+	__gnu_cxx::__alloc_traits.
+	(_Fwd_list_base::_M_create_node, _Fwd_list_base::_M_erase_after):
+	Use node allocator to create and destroy elements.
+	(forward_list::_Tp_alloc_type): Remove unused typedef.
+	(forward_list::_Alloc_traits): Use allocator_traits instead of
+	__gnu_cxx::__alloc_traits.
+
 2018-06-13  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/debug.h (__glibcxx_requires_can_increment_range): New.
