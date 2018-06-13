@@ -915,30 +915,37 @@ c_common_post_options (const char **pfilename)
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;
 
-  if (warn_abi_version == -1)
-    {
-      if (flag_abi_compat_version != -1)
-	warn_abi_version = flag_abi_compat_version;
-      else
-	warn_abi_version = 0;
-    }
-
   if (flag_abi_compat_version == 1)
     {
       warning (0, "%<-fabi-compat-version=1%> is not supported, using =2");
       flag_abi_compat_version = 2;
     }
-  else if (flag_abi_compat_version == -1)
-    {
-      /* Generate compatibility aliases for ABI v11 (7.1) by default. */
-      flag_abi_compat_version
-	= (flag_abi_version == 0 ? 11 : 0);
-    }
 
-  /* Change flag_abi_version to be the actual current ABI level for the
-     benefit of c_cpp_builtins.  */
-  if (flag_abi_version == 0)
-    flag_abi_version = 12;
+  /* Change flag_abi_version to be the actual current ABI level, for the
+     benefit of c_cpp_builtins, and to make comparison simpler.  */
+  const int latest_abi_version = 13;
+  /* Generate compatibility aliases for ABI v11 (7.1) by default.  */
+  const int abi_compat_default = 11;
+
+#define clamp(X) if (X == 0 || X > latest_abi_version) X = latest_abi_version
+  clamp (flag_abi_version);
+  clamp (warn_abi_version);
+  clamp (flag_abi_compat_version);
+#undef clamp
+
+  /* Default -Wabi= or -fabi-compat-version= from each other.  */
+  if (warn_abi_version == -1 && flag_abi_compat_version != -1)
+    warn_abi_version = flag_abi_compat_version;
+  else if (flag_abi_compat_version == -1 && warn_abi_version != -1)
+    flag_abi_compat_version = warn_abi_version;
+  else if (warn_abi_version == -1 && flag_abi_compat_version == -1)
+    {
+      warn_abi_version = latest_abi_version;
+      if (flag_abi_version == latest_abi_version)
+	flag_abi_compat_version = abi_compat_default;
+      else
+	flag_abi_compat_version = latest_abi_version;
+    }
 
   /* By default, enable the new inheriting constructor semantics along with ABI
      11.  New and old should coexist fine, but it is a change in what

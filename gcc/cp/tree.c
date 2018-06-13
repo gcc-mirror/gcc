@@ -4071,8 +4071,21 @@ maybe_warn_parm_abi (tree t, location_t loc)
       || !deleted_copy_types->contains (t))
     return;
 
+  if ((flag_abi_version == 12 || warn_abi_version == 12)
+      && classtype_has_non_deleted_move_ctor (t))
+    {
+      if (flag_abi_version > 12)
+	warning_at (loc, OPT_Wabi, "-fabi-version=13 (GCC 8.2) fixes the "
+		    "calling convention for %qT, which was accidentally "
+		    "changed in 8.1", t);
+      else
+	warning_at (loc, OPT_Wabi, "-fabi-version=12 (GCC 8.1) accidentally "
+		    "changes the calling convention for %qT", t);
+      return;
+    }
+
   warning_at (loc, OPT_Wabi, "the calling convention for %qT changes in "
-	      "-fabi-version=12 (GCC 8)", t);
+	      "-fabi-version=13 (GCC 8.2)", t);
   static bool explained = false;
   if (!explained)
     {
@@ -4114,6 +4127,7 @@ type_has_nontrivial_copy_init (const_tree type)
 
       bool saw_copy = false;
       bool saw_non_deleted = false;
+      bool saw_non_deleted_move = false;
 
       if (CLASSTYPE_LAZY_MOVE_CTOR (t))
 	saw_copy = saw_non_deleted = true;
@@ -4135,7 +4149,7 @@ type_has_nontrivial_copy_init (const_tree type)
 	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
 	  {
 	    tree fn = *iter;
-	    if (copy_fn_p (fn) || move_fn_p (fn))
+	    if (copy_fn_p (fn))
 	      {
 		saw_copy = true;
 		if (!DECL_DELETED_FN (fn))
@@ -4145,19 +4159,27 @@ type_has_nontrivial_copy_init (const_tree type)
 		    break;
 		  }
 	      }
+	    else if (move_fn_p (fn))
+	      if (!DECL_DELETED_FN (fn))
+		saw_non_deleted_move = true;
 	  }
 
       gcc_assert (saw_copy);
 
-      if (saw_copy && !saw_non_deleted)
-	{
-	  if (warn_abi && abi_version_crosses (12))
-	    remember_deleted_copy (t);
-	  if (abi_version_at_least (12))
-	    return true;
-	}
+      /* ABI v12 buggily ignored move constructors.  */
+      bool v11nontriv = false;
+      bool v12nontriv = !saw_non_deleted;
+      bool v13nontriv = !saw_non_deleted && !saw_non_deleted_move;
+      bool nontriv = (abi_version_at_least (13) ? v13nontriv
+		      : flag_abi_version == 12 ? v12nontriv
+		      : v11nontriv);
+      bool warn_nontriv = (warn_abi_version >= 13 ? v13nontriv
+			   : warn_abi_version == 12 ? v12nontriv
+			   : v11nontriv);
+      if (nontriv != warn_nontriv)
+	remember_deleted_copy (t);
 
-      return false;
+      return nontriv;
     }
   else
     return 0;

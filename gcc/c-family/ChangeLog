@@ -1,3 +1,11 @@
+2018-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86094 - wrong code with defaulted move ctor.
+	* c-opts.c (c_common_post_options): Bump the current ABI version to
+	13.  Set warn_abi_version and flag_abi_compat_version to the current
+	version rather than 0.  Fix defaulting flag_abi_compat_version from
+	warn_abi_version.
+
 2018-06-12  Martin Sebor  <msebor@redhat.com>
 
 	PR c/85931
