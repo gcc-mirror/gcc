@@ -1,9 +1,12 @@
+2018-06-13  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/debug.h (__glibcxx_requires_can_increment_range): New.
+	(__glibcxx_requires_can_decrement_range): New.
+
 2018-06-12  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/macros.h (__glibcxx_check_can_increment_range): New.
 	(__glibcxx_check_can_decrement_range): New.
-	* include/debug/debug.h (__glibcxx_requires_can_increment_range): New.
-	(__glibcxx_requires_can_decrement_range): New.
 	* include/bits/stl_algobase.h (std::copy(_II, _II, _OI)): Use
 	__glibcxx_requires_can_increment_range.
 	(std::move(_II, _II, _OI)): Likewise.
