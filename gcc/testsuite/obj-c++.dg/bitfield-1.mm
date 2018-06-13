@@ -5,7 +5,7 @@
    superclasses should be removed).  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
-/* { dg-options "-Wpadded -Wabi" } */
+/* { dg-options "-Wpadded -Wabi=8" } */
 
 /* Leave blank lines here to keep warnings on the same lines.  */
 
