@@ -1,5 +1,9 @@
 2018-06-13  Jason Merrill  <jason@redhat.com>
 
+	* c-opts.c (c_common_post_options): Warn about useless -Wabi.
+	(c_common_handle_option) [OPT_Wabi_]: Remove flag_abi_compat_version
+	handling.
+
 	PR c++/86094 - wrong code with defaulted move ctor.
 	* c-opts.c (c_common_post_options): Bump the current ABI version to
 	13.  Set warn_abi_version and flag_abi_compat_version to the current
