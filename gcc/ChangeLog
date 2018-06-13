@@ -1,5 +1,9 @@
 2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/elf.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+
+2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/builtins.def (SYNC): SYNC instruction is valid on all
 	ARC cores.
 
