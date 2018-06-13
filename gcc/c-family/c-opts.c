@@ -417,8 +417,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	  value = 2;
 	}
       warn_abi_version = value;
-      if (flag_abi_compat_version == -1)
-	flag_abi_compat_version = value;
       break;
 
     case OPT_fcanonical_system_headers:
@@ -942,7 +940,17 @@ c_common_post_options (const char **pfilename)
     {
       warn_abi_version = latest_abi_version;
       if (flag_abi_version == latest_abi_version)
-	flag_abi_compat_version = abi_compat_default;
+	{
+	  if (warning (OPT_Wabi, "-Wabi won't warn about anything"))
+	    {
+	      inform (input_location, "-Wabi warns about differences "
+		      "from the most up-to-date ABI, which is also used "
+		      "by default");
+	      inform (input_location, "use e.g. -Wabi=11 to warn about "
+		      "changes from GCC 7");
+	    }
+	  flag_abi_compat_version = abi_compat_default;
+	}
       else
 	flag_abi_compat_version = latest_abi_version;
     }
