@@ -1,3 +1,8 @@
+2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (atomic_exchangesi): EX instruction is default
+	for ARC700 and ARCv2.
+
 2018-06-13  Chenghua Xu <paul.hua.gm@gmail.com>
 
 	PR target/86076
