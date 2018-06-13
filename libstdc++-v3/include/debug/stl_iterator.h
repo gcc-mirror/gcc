@@ -47,6 +47,11 @@ namespace __gnu_debug
 		   const std::reverse_iterator<_Iterator>& __last)
     { return __get_distance(__last.base(), __first.base()); }
 
+  template<typename _Iterator, typename _Size>
+    inline bool
+    __can_advance(const std::reverse_iterator<_Iterator>& __it, _Size __n)
+    { return __can_advance(__it.base(), -__n); }
+
 #if __cplusplus < 201103L
   template<typename _Iterator>
     struct __is_safe_random_iterator<std::reverse_iterator<_Iterator> >
@@ -95,6 +100,11 @@ namespace __gnu_debug
     __get_distance(const std::move_iterator<_Iterator>& __first,
 		   const std::move_iterator<_Iterator>& __last)
     { return __get_distance(__first.base(), __last.base()); }
+
+  template<typename _Iterator, typename _Size>
+    inline bool
+    __can_advance(const std::move_iterator<_Iterator>& __it, _Size __n)
+    { return __can_advance(__it.base(), __n); }
 
   template<typename _Iterator>
     inline auto

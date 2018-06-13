@@ -862,6 +862,11 @@ namespace __gnu_debug
       return __res;
     }
 
+  template<typename _Iterator, typename _Sequence, typename _Size>
+    inline bool
+    __can_advance(const _Safe_iterator<_Iterator, _Sequence>& __it, _Size __n)
+    { return __it._M_can_advance(__n); }
+
 #if __cplusplus < 201103L
   template<typename _Iterator, typename _Sequence>
     struct __is_safe_random_iterator<_Safe_iterator<_Iterator, _Sequence> >

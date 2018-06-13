@@ -783,6 +783,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // concept requirements
       __glibcxx_function_requires(_OutputIteratorConcept<_OI, _Tp>)
+      __glibcxx_requires_can_increment(__first, __n);
 
       return _OI(std::__fill_n_a(std::__niter_base(__first), __n, __value));
     }
