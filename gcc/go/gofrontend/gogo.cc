@@ -8444,6 +8444,9 @@ Traverse::function_declaration(Named_object*)
 void
 Statement_inserter::insert(Statement* s)
 {
+  if (this->statements_added_ != NULL)
+    this->statements_added_->insert(s);
+
   if (this->block_ != NULL)
     {
       go_assert(this->pindex_ != NULL);
