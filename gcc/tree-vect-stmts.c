@@ -5981,16 +5981,19 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
     dump_printf_loc (MSG_NOTE, vect_location,
                      "transform binary/unary operation.\n");
 
-  /* Handle def.  */
-  vec_dest = vect_create_destination_var (scalar_dest, vectype);
-
   /* POINTER_DIFF_EXPR has pointer arguments which are vectorized as
      vectors with unsigned elements, but the result is signed.  So, we
      need to compute the MINUS_EXPR into vectype temporary and
      VIEW_CONVERT_EXPR it into the final vectype_out result.  */
   tree vec_cvt_dest = NULL_TREE;
   if (orig_code == POINTER_DIFF_EXPR)
-    vec_cvt_dest = vect_create_destination_var (scalar_dest, vectype_out);
+    {
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+      vec_cvt_dest = vect_create_destination_var (scalar_dest, vectype_out);
+    }
+  /* Handle def.  */
+  else
+    vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate

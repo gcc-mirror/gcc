@@ -1,3 +1,10 @@
+2018-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.c (vect_recog_vector_vector_shift_pattern):
+	Properly set vector type of the intermediate stmt.
+	* tree-vect-stmts.c (vectorizable_operation): The destination
+	var always has vectype_out type.
+
 2018-06-13  Jeff Law  <law@redhat.com>
 
 	* config/rl78/rl78.c (move_elim_pass): Use TDF_NONE rather than
