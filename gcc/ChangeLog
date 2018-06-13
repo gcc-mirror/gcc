@@ -1,3 +1,10 @@
+2018-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/86048
+	* config/i386/winnt.c (i386_pe_seh_cold_init): Do not emit negative
+	offsets for register save directives.  Emit a second batch of save
+	directives, if need be, when the function accesses prior frames.
+
 2018-06-11  Jason Merrill  <jason@redhat.com>
 
         PR c++/80485 - inline function non-zero address.
