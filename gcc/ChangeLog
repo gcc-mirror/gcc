@@ -1,3 +1,85 @@
+2018-06-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/arc/arc.c (hwloop_optimize): Strengthen local "end_label"
+	from rtx to rtx_insn *.
+	* config/bfin/bfin.c (hwloop_optimize): Likewise for local
+	"label".
+	(add_sched_insns_for_speculation): Likewise for local "target",
+	converting usage of JUMP_LABEL to JUMP_LABEL_AS_INSN.
+	* config/c6x/c6x.c (reorg_split_calls): Strengthen param "call_labels"
+	from rtx_insn ** to rtx_code_label **.
+	(reorg_emit_nops): Likewise.
+	(c6x_reorg): Likewise for local "call_labels".
+	* config/sh/sh-protos.h (get_dest_uid): Strengthen 1st param from
+	rtx to rtx_insn *.
+	* config/sh/sh.c (dump_table): Strengthen local "lab" from rtx to
+	rtx_code_label *, adding safe_as_a <rtx_code_label *> casts to
+	the loops over LABEL_REFS.
+	(fixup_addr_diff_vecs): Add as_a <rtx_insn *> to usage of
+	braf_label.
+	(barrier_align): Convert usage of JUMP_LABEL to JUMP_LABEL_AS_INSN.
+	(get_dest_uid): Strengthen param "label" from rtx to rtx_insn *.
+	(split_branches): Strengthen local "olabel" from rtx to
+	rtx_insn *, adding a safe_as_a cast.
+	* emit-rtl.c (next_real_insn): Strengthen param from "rtx"
+	to "rtx_insn *".
+	(add_insn_after): Likewise for first two params.
+	(add_insn_before): Likewise.
+	(remove_insn): Likewise for param.
+	(emit_pattern_before_noloc): Likewise for second and third params.
+	(emit_jump_insn_before_noloc): Convert NULL_RTX to NULL.
+	(emit_call_insn_before_noloc): Likewise.
+	(emit_debug_insn_before_noloc): Strengthen "before" param from "rtx"
+	to "rtx_insn *".
+	(emit_barrier_before): Likewise.
+	(emit_label_before): Strengthen "label" param from "rtx" to
+	"rtx_code_label *".  Strengthen "before" param from "rtx" to
+	"rtx_insn *".
+	(emit_insn_after_1): Strengthen "after" param from "rtx" to
+	"rtx_insn *".
+	(emit_pattern_after_noloc): Likewise.
+	(emit_insn_after_noloc): Likewise.
+	(emit_jump_insn_after_noloc): Likewise.
+	(emit_call_insn_after_noloc): Likewise.
+	(emit_debug_insn_after_noloc): Likewise.
+	(emit_barrier_after): Likewise.
+	(emit_label_after): Likewise for both params.
+	(emit_pattern_after_setloc): Likewise for "after" param.  Convert
+	"loc" param from "int" to "location_t".
+	(emit_insn_after_setloc): Likewise.
+	(emit_jump_insn_after_setloc): Likewise.
+	(emit_call_insn_after_setloc): Likewise.
+	(emit_debug_insn_after_setloc): Likewise.
+	(emit_pattern_before_setloc): Likewise for "before" param.  Convert
+	"loc" param from "int" to "location_t".
+	(emit_pattern_before): Convert NULL_RTX to NULL.
+	(emit_insn_before_setloc): Convert "loc" param from "int" to
+	"location_t".
+	(emit_jump_insn_before_setloc): Likewise.
+	(emit_call_insn_before_setloc): Likewise.
+	(emit_debug_insn_before_setloc): Strengthen "before" param from rtx to
+	rtx_insn *.  Convert "loc" param from "int" to "location_t".
+	* rtl.h (emit_insn_before_setloc, emit_jump_insn_before_setloc,
+	emit_call_insn_before_setloc, emit_debug_insn_before_setloc):
+	Convert 3rd param from "int" to "location_t".
+	(emit_barrier_before, emit_barrier_after, next_real_insn):
+	Strengthen param from rtx to rtx_insn *.
+	(emit_label_before): Strengthen 1st param from "rtx" to
+	"rtx_code_label *".  Strengthen 2nd param from "rtx" to
+	"rtx_insn *".
+	(emit_insn_after_noloc, emit_jump_insn_after_noloc,
+	emit_call_insn_after_noloc, emit_debug_insn_after_noloc):
+	Strengthen 2nd param from "rtx" to "rtx_insn *".
+	(emit_insn_after_setloc, emit_jump_insn_after_setloc)
+	emit_call_insn_after_setloc, emit_debug_insn_after_setloc):
+	Likewise. Convert 3rd param from "int" to "location_t".
+	(emit_label_after): Strengthen 1st param from "rtx" to
+	"rtx_code_label *".
+	(next_real_insn, remove_insn): Strengthen param from "rtx" to
+	"rtx_insn *".
+	(add_insn_before, add_insn_after): Strengthen 1st and 2nd params
+	from "rtx" to "rtx_insn *".
+
 2018-06-13  Jan Hubicka  <hubicka@gcc.gnu.org>
 
 	* cgraph.c (cgraph_node::get_untransformed_body): Dump function

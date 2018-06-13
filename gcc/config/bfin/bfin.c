@@ -3773,7 +3773,7 @@ hwloop_optimize (hwloop_info loop)
      point.  */
   if (!loop->incoming_src && loop->head != loop->incoming_dest)
     {
-      rtx label = BB_HEAD (loop->incoming_dest);
+      rtx_insn *label = BB_HEAD (loop->incoming_dest);
       /* If we're jumping to the final basic block in the loop, and there's
 	 only one cheap instruction before the end (typically an increment of
 	 an induction variable), we can just emit a copy here instead of a
@@ -4607,7 +4607,7 @@ add_sched_insns_for_speculation (void)
 	  && any_condjump_p (insn)
 	  && (cbranch_predicted_taken_p (insn)))
 	{
-	  rtx target = JUMP_LABEL (insn);
+	  rtx_insn *target = JUMP_LABEL_AS_INSN (insn);
 	  rtx_insn *next = next_real_insn (target);
 
 	  if (GET_CODE (PATTERN (next)) == UNSPEC_VOLATILE

@@ -7306,8 +7306,8 @@ hwloop_optimize (hwloop_info loop)
   int i;
   edge entry_edge;
   basic_block entry_bb, bb;
-  rtx iter_reg, end_label;
-  rtx_insn *insn, *seq, *entry_after, *last_insn;
+  rtx iter_reg;
+  rtx_insn *insn, *seq, *entry_after, *last_insn, *end_label;
   unsigned int length;
   bool need_fix = false;
   rtx lp_reg = gen_rtx_REG (SImode, LP_COUNT);
