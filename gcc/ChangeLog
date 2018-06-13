@@ -1,5 +1,10 @@
 2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/fpu.md (fmasf4): Force operand to register.
+	(fnmasf4): Likewise.
+
+2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-protos.h (arc_pad_return): Remove.
 	* config/arc/arc.c (machine_function): Remove force_short_suffix
 	and size_reason.
