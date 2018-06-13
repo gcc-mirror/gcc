@@ -29,7 +29,7 @@ class Ast_dump_traverse_blocks_and_functions : public Traverse
 {
  public:
   Ast_dump_traverse_blocks_and_functions(Ast_dump_context* ast_dump_context)
-      : Traverse(traverse_blocks | traverse_functions),
+      : Traverse(traverse_blocks | traverse_functions | traverse_variables),
       ast_dump_context_(ast_dump_context)
   { }
 
@@ -39,6 +39,9 @@ class Ast_dump_traverse_blocks_and_functions : public Traverse
 
   int
   function(Named_object*);
+
+  int
+  variable(Named_object*);
 
  private:
   Ast_dump_context* ast_dump_context_;
@@ -149,6 +152,27 @@ Ast_dump_traverse_blocks_and_functions::function(Named_object* no)
 
   return TRAVERSE_CONTINUE;
 }
+
+// Dump variable preinits
+
+int
+Ast_dump_traverse_blocks_and_functions::variable(Named_object* no)
+{
+  if (!no->is_variable())
+    return TRAVERSE_CONTINUE;
+
+  Variable* var = no->var_value();
+  if (var->has_pre_init())
+    {
+      this->ast_dump_context_->ostream() << "// preinit block for var "
+                                         << no->message_name() << "\n";
+      var->preinit()->traverse(this);
+    }
+
+  return TRAVERSE_CONTINUE;
+}
+
+
 
 // Class Ast_dump_context.
 
