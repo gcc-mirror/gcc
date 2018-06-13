@@ -1,3 +1,7 @@
+2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/pr9001107555.c: New file.
+
 2018-06-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* g++.dg/torture/aarch64-vect-init-1.C: New test.
