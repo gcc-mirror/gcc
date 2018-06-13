@@ -1,3 +1,9 @@
+2018-06-13  Jeff Law  <law@redhat.com>
+
+	* config/rl78/rl78.c (move_elim_pass): Use TDF_NONE rather than
+	integer 0 for argument to print_rtl_with_bb.
+	(rl78_reorg): Likewise.
+ 
 2018-06-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/arc/arc.c (hwloop_optimize): Strengthen local "end_label"
