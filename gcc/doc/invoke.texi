@@ -2348,7 +2348,12 @@ implies @option{-fnew-inheriting-ctors}.
 
 Version 12, which first appeared in G++ 8, corrects the calling
 conventions for empty classes on the x86_64 target and for classes
-with only deleted copy/move constructors.
+with only deleted copy/move constructors.  It accidentally changes the
+calling convention for classes with a deleted copy constructor and a
+trivial move constructor.
+
+Version 13, which first appeared in G++ 8.2, fixes the accidental
+change in version 12.
 
 See also @option{-Wabi}.
 
@@ -2359,7 +2364,7 @@ works around mangling changes by creating an alias with the correct
 mangled name when defining a symbol with an incorrect mangled name.
 This switch specifies which ABI version to use for the alias.
 
-With @option{-fabi-version=0} (the default), this defaults to 8 (GCC 5
+With @option{-fabi-version=0} (the default), this defaults to 11 (GCC 7
 compatibility).  If another ABI version is explicitly selected, this
 defaults to 0.  For compatibility with GCC versions 3.2 through 4.9,
 use @option{-fabi-compat-version=2}.
