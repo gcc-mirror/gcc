@@ -2641,6 +2641,9 @@ ipa_write_summaries (void)
   if ((!flag_generate_lto && !flag_generate_offload) || seen_error ())
     return;
 
+  gcc_assert (!dump_file);
+  streamer_dump_file = dump_begin (TDI_lto_stream_out, NULL);
+
   select_what_to_stream ();
 
   encoder = lto_symtab_encoder_new (false);
@@ -2683,6 +2686,11 @@ ipa_write_summaries (void)
   ipa_write_summaries_1 (compute_ltrans_boundary (encoder));
 
   free (order);
+  if (streamer_dump_file)
+    {
+      dump_end (TDI_lto_stream_out, streamer_dump_file);
+      streamer_dump_file = NULL;
+    }
 }
 
 /* Same as execute_pass_list but assume that subpasses of IPA passes

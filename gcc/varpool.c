@@ -307,6 +307,8 @@ varpool_node::get_constructor (void)
 		 file_data->file_name,
 		 name);
 
+  if (!quiet_flag)
+    fprintf (stderr, " in:%s", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
   lto_input_variable_constructor (file_data, this, data);
   gcc_assert (DECL_INITIAL (decl) != error_mark_node);
   lto_stats.num_function_bodies++;

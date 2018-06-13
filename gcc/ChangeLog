@@ -1,3 +1,27 @@
+2018-06-13  Jan Hubicka  <hubicka@gcc.gnu.org>
+
+	* cgraph.c (cgraph_node::get_untransformed_body): Dump function
+	bodies streamed in with -Q.
+	* dumpfile.c (dump_files): Add lto-stream-out dump file.
+	* dumpfile.h (tree_dump_index): Add lto_stream_out.
+	* gimple-streamer-out.c: Include gimple-pretty-print.h
+	(output_bb): Dump stmts streamed.
+	* lto-section-out.c: Include print-tree.h
+	(lto_begin_section): Dump sections created.
+	(lto_output_decl_index): Dump decl encoded.
+	* lto-streamer-out.c: Include print-tree.h
+	(create_output_block): Dump output block created.
+	(DFS::DFS_write_tree_body): Dump DFS SCCs streamed.
+	(output_function): Dump function output.
+	(output_constructor): Dump constructor streamed.
+	(write_global_stream): Output indexes encoded.
+	(produce_asm_for_decls): Dump streams encoded.
+	* lto-streamer.c (streamer_dump_file): New global var.
+	* lto-streamer.h (streamer_dump_file): Declare.
+	* passes.c (ipa_write_summaries): Initialize streamer dump.
+	* varpool.c (varpool_node::get_constructor): Dump constructors streamed
+	in.
+
 2018-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/86048
