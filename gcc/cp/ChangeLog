@@ -1,3 +1,9 @@
+2018-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86098 - ICE with template placeholder for TTP.
+	* typeck.c (structural_comptypes) [TEMPLATE_TYPE_PARM]: Check
+	CLASS_PLACEHOLDER_TEMPLATE.
+
 2018-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl2.c (coerce_new_type, coerce_delete_type): Add location_t
