@@ -13,6 +13,26 @@
 
 2018-06-13  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/debug/helper_functions.h
+	(__gnu_debug::_Safe_iterator<>): Add declaration.
+	(__can_advance(_Ite, _Size)): New.
+	(__can_advance(const _Safe_iterator<>&, _Size)): Overload declaration.
+	* include/debug/functions.h
+	(__gnu_debug::_Safe_iterator<>): Remove declaration.
+	* include/debug/stl_iterator.h
+	(__can_advance(const _Safe_iterator<>&)): New definition.
+	* include/debug/stl_iterator.h
+	(__can_advance(const std::reverse_iterator<>&, _Size)): New.
+	(__can_advance(const std::move_iterator<>&, _Size)): New.
+	* include/debug/macros.h (__glibcxx_check_can_increment): New.
+	* include/debug/debug.h (__glibcxx_requires_can_increment): New.
+	* include/bits/stl_algobase.h (fill_n): Use latter.
+	* testsuite/25_algorithms/fill_n/2.cc: New.
+	* testsuite/25_algorithms/fill_n/debug/1_neg.cc: New.
+	* testsuite/25_algorithms/fill_n/debug/2_neg.cc: New.
+	* testsuite/25_algorithms/fill_n/debug/3_neg.cc: New.
+	* testsuite/25_algorithms/fill_n/debug/4_neg.cc: New.
+
 	* include/debug/debug.h (__glibcxx_requires_can_increment_range): New.
 	(__glibcxx_requires_can_decrement_range): New.
 

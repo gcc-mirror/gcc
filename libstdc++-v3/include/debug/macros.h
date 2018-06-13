@@ -87,6 +87,13 @@ _GLIBCXX_DEBUG_VERIFY(_First != _Last,					\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
 
+// Verify that [_First, _First + _Size) forms a valid range.
+#define __glibcxx_check_can_increment(_First,_Size)			\
+_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__can_advance(_First, _Size),	\
+		      _M_message(__gnu_debug::__msg_iter_subscript_oob)	\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_integer(_Size, #_Size))
+
 #define __glibcxx_check_can_increment_range(_First1,_Last1,_First2)	\
   do									\
   {									\
