@@ -1,3 +1,10 @@
+2018-06-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86114
+	* gimple-fold.c (gimple_fold_builtin_strlen): Only handle LHS
+	of integer types.
+	* tree-ssa-strlen.c (maybe_set_strlen_range): Same.
+
 2018-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/86048
