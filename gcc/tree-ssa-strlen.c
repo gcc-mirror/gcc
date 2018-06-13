@@ -1124,14 +1124,15 @@ adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
   update_stmt (last.stmt);
 }
 
-/* For an LHS that is an SSA_NAME and for strlen() argument SRC, set
-   LHS range info to [0, N] if SRC refers to a character array A[N]
-   with unknown length bounded by N.  */
+/* For an LHS that is an SSA_NAME with integer type and for strlen()
+   argument SRC, set LHS range info to [0, N] if SRC refers to
+   a character array A[N] with unknown length bounded by N.  */
 
 static void
 maybe_set_strlen_range (tree lhs, tree src)
 {
-  if (TREE_CODE (lhs) != SSA_NAME)
+  if (TREE_CODE (lhs) != SSA_NAME
+      || !INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
     return;
 
   if (TREE_CODE (src) == SSA_NAME)
