@@ -1,3 +1,16 @@
+2018-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_iterators): New function.
+	(cp_parser_omp_clause_depend): Parse iterator modifier and handle
+	iterators.
+	* semantics.c (handle_omp_array_sections): Handle depend clauses
+	with iterators.
+	(cp_omp_finish_iterators): New function.
+	(finish_omp_clauses): Handle depend clauses with iterators.
+	* pt.c (tsubst_omp_clause_decl): Add iterators_cache argument.
+	Adjust recursive calls.  Handle iterators.
+	(tsubst_omp_clauses): Adjust tsubst_omp_clause_decl callers.
+
 2018-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-gimplify.c (cxx_omp_predetermined_sharing_1): Don't return

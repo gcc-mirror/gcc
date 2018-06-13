@@ -12747,7 +12747,13 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
   bool maybe_zero_len = false;
   unsigned int first_non_one = 0;
   auto_vec<tree, 10> types;
-  tree first = handle_omp_array_sections_1 (c, OMP_CLAUSE_DECL (c), types,
+  tree *tp = &OMP_CLAUSE_DECL (c);
+  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+      && TREE_CODE (*tp) == TREE_LIST
+      && TREE_PURPOSE (*tp)
+      && TREE_CODE (TREE_PURPOSE (*tp)) == TREE_VEC)
+    tp = &TREE_VALUE (*tp);
+  tree first = handle_omp_array_sections_1 (c, *tp, types,
 					    maybe_zero_len, first_non_one,
 					    ort);
   if (first == error_mark_node)
@@ -12756,7 +12762,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
     return false;
   if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND)
     {
-      tree t = OMP_CLAUSE_DECL (c);
+      tree t = *tp;
       tree tem = NULL_TREE;
       /* Need to evaluate side effects in the length expressions
 	 if any.  */
@@ -12775,7 +12781,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
       if (tem)
 	first = build2 (COMPOUND_EXPR, TREE_TYPE (first), tem, first);
       first = c_fully_fold (first, false, NULL, true);
-      OMP_CLAUSE_DECL (c) = first;
+      *tp = first;
     }
   else
     {
@@ -13038,6 +13044,162 @@ c_find_omp_placeholder_r (tree *tp, int *, void *data)
   return NULL_TREE;
 }
 
+/* Similarly, but also walk aggregate fields.  */
+
+struct c_find_omp_var_s { tree var; hash_set<tree> *pset; };
+
+static tree
+c_find_omp_var_r (tree *tp, int *, void *data)
+{
+  if (*tp == ((struct c_find_omp_var_s *) data)->var)
+    return *tp;
+  if (RECORD_OR_UNION_TYPE_P (*tp))
+    {
+      tree field;
+      hash_set<tree> *pset = ((struct c_find_omp_var_s *) data)->pset;
+
+      for (field = TYPE_FIELDS (*tp); field;
+	   field = DECL_CHAIN (field))
+	if (TREE_CODE (field) == FIELD_DECL)
+	  {
+	    tree ret = walk_tree (&DECL_FIELD_OFFSET (field),
+				  c_find_omp_var_r, data, pset);
+	    if (ret)
+	      return ret;
+	    ret = walk_tree (&DECL_SIZE (field), c_find_omp_var_r, data, pset);
+	    if (ret)
+	      return ret;
+	    ret = walk_tree (&DECL_SIZE_UNIT (field), c_find_omp_var_r, data,
+			     pset);
+	    if (ret)
+	      return ret;
+	    ret = walk_tree (&TREE_TYPE (field), c_find_omp_var_r, data, pset);
+	    if (ret)
+	      return ret;
+	  }
+    }
+  else if (INTEGRAL_TYPE_P (*tp))
+    return walk_tree (&TYPE_MAX_VALUE (*tp), c_find_omp_var_r, data,
+		      ((struct c_find_omp_var_s *) data)->pset);
+  return NULL_TREE;
+}
+
+/* Finish OpenMP iterators ITER.  Return true if they are errorneous
+   and clauses containing them should be removed.  */
+
+static bool
+c_omp_finish_iterators (tree iter)
+{
+  bool ret = false;
+  for (tree it = iter; it; it = TREE_CHAIN (it))
+    {
+      tree var = TREE_VEC_ELT (it, 0);
+      tree begin = TREE_VEC_ELT (it, 1);
+      tree end = TREE_VEC_ELT (it, 2);
+      tree step = TREE_VEC_ELT (it, 3);
+      tree type = TREE_TYPE (var);
+      location_t loc = DECL_SOURCE_LOCATION (var);
+      if (type == error_mark_node)
+	{
+	  ret = true;
+	  continue;
+	}
+      if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
+	{
+	  error_at (loc, "iterator %qD has neither integral nor pointer type",
+		    var);
+	  ret = true;
+	  continue;
+	}
+      else if (TYPE_ATOMIC (type))
+	{
+	  error_at (loc, "iterator %qD has %<_Atomic%> qualified type", var);
+	  ret = true;
+	  continue;
+	}
+      else if (TYPE_READONLY (type))
+	{
+	  error_at (loc, "iterator %qD has const qualified type", var);
+	  ret = true;
+	  continue;
+	}
+
+      begin = c_fully_fold (build_c_cast (loc, type, begin), false, NULL);
+      end = c_fully_fold (build_c_cast (loc, type, end), false, NULL);
+      tree stype = POINTER_TYPE_P (type) ? sizetype : type;
+      step = c_fully_fold (build_c_cast (loc, stype, step), false, NULL);
+      if (POINTER_TYPE_P (type))
+	{
+	  begin = save_expr (begin);
+	  step = pointer_int_sum (loc, PLUS_EXPR, begin, step);
+	  step = fold_build2_loc (loc, MINUS_EXPR, sizetype,
+				  fold_convert (sizetype, step),
+				  fold_convert (sizetype, begin));
+	  step = fold_convert (ssizetype, step);
+	}
+      if (integer_zerop (step))
+	{
+	  error_at (loc, "iterator %qD has zero step", var);
+	  ret = true;
+	  continue;
+	}
+
+      if (begin == error_mark_node
+	  || end == error_mark_node
+	  || step == error_mark_node)
+	{
+	  ret = true;
+	  continue;
+	}
+      hash_set<tree> pset;
+      tree it2;
+      for (it2 = TREE_CHAIN (it); it2; it2 = TREE_CHAIN (it2))
+	{
+	  tree var2 = TREE_VEC_ELT (it2, 0);
+	  tree begin2 = TREE_VEC_ELT (it2, 1);
+	  tree end2 = TREE_VEC_ELT (it2, 2);
+	  tree step2 = TREE_VEC_ELT (it2, 3);
+	  tree type2 = TREE_TYPE (var2);
+	  location_t loc2 = DECL_SOURCE_LOCATION (var2);
+	  struct c_find_omp_var_s data = { var, &pset };
+	  if (walk_tree (&type2, c_find_omp_var_r, &data, &pset))
+	    {
+	      error_at (loc2,
+			"type of iterator %qD refers to outer iterator %qD",
+			var2, var);
+	      break;
+	    }
+	  else if (walk_tree (&begin2, c_find_omp_var_r, &data, &pset))
+	    {
+	      error_at (EXPR_LOC_OR_LOC (begin2, loc2),
+			"begin expression refers to outer iterator %qD", var);
+	      break;
+	    }
+	  else if (walk_tree (&end2, c_find_omp_var_r, &data, &pset))
+	    {
+	      error_at (EXPR_LOC_OR_LOC (end2, loc2),
+			"end expression refers to outer iterator %qD", var);
+	      break;
+	    }
+	  else if (walk_tree (&step2, c_find_omp_var_r, &data, &pset))
+	    {
+	      error_at (EXPR_LOC_OR_LOC (step2, loc2),
+			"step expression refers to outer iterator %qD", var);
+	      break;
+	    }
+	}
+      if (it2)
+	{
+	  ret = true;
+	  continue;
+	}
+      TREE_VEC_ELT (it, 1) = begin;
+      TREE_VEC_ELT (it, 2) = end;
+      TREE_VEC_ELT (it, 3) = step;
+    }
+  return ret;
+}
+
 /* For all elements of CLAUSES, validate them against their constraints.
    Remove any elements from the list that are invalid.  */
 
@@ -13055,6 +13217,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool ordered_seen = false;
   tree schedule_clause = NULL_TREE;
   bool oacc_async = false;
+  tree last_iterators = NULL_TREE;
+  bool last_iterators_remove = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -13589,6 +13753,20 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	      break;
 	    }
+	  if (TREE_CODE (t) == TREE_LIST
+	      && TREE_PURPOSE (t)
+	      && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	    {
+	      if (TREE_PURPOSE (t) != last_iterators)
+		last_iterators_remove
+		  = c_omp_finish_iterators (TREE_PURPOSE (t));
+	      last_iterators = TREE_PURPOSE (t);
+	      t = TREE_VALUE (t);
+	      if (last_iterators_remove)
+		t = error_mark_node;
+	    }
+	  else
+	    last_iterators = NULL_TREE;
 	  if (TREE_CODE (t) == TREE_LIST)
 	    {
 	      if (handle_omp_array_sections (c, ort))

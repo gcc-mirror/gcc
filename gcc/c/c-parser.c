@@ -13802,6 +13802,106 @@ c_parser_omp_clause_depend_sink (c_parser *parser, location_t clause_loc,
   return u;
 }
 
+/* OpenMP 5.0:
+   iterators ( iterators-definition )
+
+   iterators-definition:
+     iterator-specifier
+     iterator-specifier , iterators-definition
+
+   iterator-specifier:
+     identifier = range-specification
+     iterator-type identifier = range-specification
+
+   range-specification:
+     begin : end
+     begin : end : step  */
+
+static tree
+c_parser_omp_iterators (c_parser *parser)
+{
+  tree ret = NULL_TREE, *last = &ret;
+  c_parser_consume_token (parser);
+
+  push_scope ();
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return error_mark_node;
+
+  do
+    {
+      tree iter_type = NULL_TREE, type_expr = NULL_TREE;
+      if (c_parser_next_tokens_start_typename (parser, cla_prefer_id))
+	{
+	  struct c_type_name *type = c_parser_type_name (parser);
+	  if (type != NULL)
+	    iter_type = groktypename (type, &type_expr, NULL);
+	}
+      if (iter_type == NULL_TREE)
+	iter_type = integer_type_node;
+
+      location_t loc = c_parser_peek_token (parser)->location;
+      if (!c_parser_next_token_is (parser, CPP_NAME))
+	{
+	  c_parser_error (parser, "expected identifier");
+	  break;
+	}
+
+      tree id = c_parser_peek_token (parser)->value;
+      c_parser_consume_token (parser);
+
+      if (!c_parser_require (parser, CPP_EQ, "expected %<=%>"))
+	break;
+
+      location_t eloc = c_parser_peek_token (parser)->location;
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
+      expr = convert_lvalue_to_rvalue (eloc, expr, true, false);
+      tree begin = expr.value;
+
+      if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
+	break;
+
+      eloc = c_parser_peek_token (parser)->location;
+      expr = c_parser_expr_no_commas (parser, NULL);
+      expr = convert_lvalue_to_rvalue (eloc, expr, true, false);
+      tree end = expr.value;
+
+      tree step = integer_one_node;
+      if (c_parser_next_token_is (parser, CPP_COLON))
+	{
+	  c_parser_consume_token (parser);
+	  eloc = c_parser_peek_token (parser)->location;
+	  expr = c_parser_expr_no_commas (parser, NULL);
+	  expr = convert_lvalue_to_rvalue (eloc, expr, true, false);
+	  step = expr.value;
+	}
+
+      tree iter_var = build_decl (loc, VAR_DECL, id, iter_type);
+      DECL_ARTIFICIAL (iter_var) = 1;
+      DECL_CONTEXT (iter_var) = current_function_decl;
+      pushdecl (iter_var);
+
+      *last = make_tree_vec (5);
+      TREE_VEC_ELT (*last, 0) = iter_var;
+      TREE_VEC_ELT (*last, 1) = begin;
+      TREE_VEC_ELT (*last, 2) = end;
+      TREE_VEC_ELT (*last, 3) = step;
+      last = &TREE_CHAIN (*last);
+
+      if (c_parser_next_token_is (parser, CPP_COMMA))
+	{
+	  c_parser_consume_token (parser);
+	  continue;
+	}
+      break;
+    }
+  while (1);
+
+  parens.skip_until_found_close (parser);
+  return ret;
+}
+
 /* OpenMP 4.0:
    depend ( depend-kind: variable-list )
 
@@ -13818,14 +13918,17 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
 {
   location_t clause_loc = c_parser_peek_token (parser)->location;
   enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_INOUT;
-  tree nl, c;
+  tree nl, c, iterators = NULL_TREE;
 
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
 
-  if (c_parser_next_token_is (parser, CPP_NAME))
+  do
     {
+      if (c_parser_next_token_is_not (parser, CPP_NAME))
+	goto invalid_kind;
+
       const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
       if (strcmp ("in", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_IN;
@@ -13839,13 +13942,28 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
 	kind = OMP_CLAUSE_DEPEND_SOURCE;
       else if (strcmp ("sink", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_SINK;
+      else if (strcmp ("iterator", p) == 0 && iterators == NULL_TREE)
+	{
+	  iterators = c_parser_omp_iterators (parser);
+	  c_parser_require (parser, CPP_COLON, "expected %<:%>");
+	  continue;
+	}
       else
 	goto invalid_kind;
+      break;
     }
-  else
-    goto invalid_kind;
+  while (1);
 
   c_parser_consume_token (parser);
+
+  if (iterators
+      && (kind == OMP_CLAUSE_DEPEND_SOURCE || kind == OMP_CLAUSE_DEPEND_SINK))
+    {
+      pop_scope ();
+      error_at (clause_loc, "%<iterator%> modifier incompatible with %qs",
+		kind == OMP_CLAUSE_DEPEND_SOURCE ? "source" : "sink");
+      iterators = NULL_TREE;
+    }
 
   if (kind == OMP_CLAUSE_DEPEND_SOURCE)
     {
@@ -13867,8 +13985,22 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
       nl = c_parser_omp_variable_list (parser, clause_loc,
 				       OMP_CLAUSE_DEPEND, list);
 
+      if (iterators)
+	{
+	  tree block = pop_scope ();
+	  if (iterators == error_mark_node)
+	    iterators = NULL_TREE;
+	  else
+	    TREE_VEC_ELT (iterators, 4) = block;
+	}
+
       for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
-	OMP_CLAUSE_DEPEND_KIND (c) = kind;
+	{
+	  OMP_CLAUSE_DEPEND_KIND (c) = kind;
+	  if (iterators)
+	    OMP_CLAUSE_DECL (c)
+	      = build_tree_list (iterators, OMP_CLAUSE_DECL (c));
+	}
     }
 
   parens.skip_until_found_close (parser);
@@ -13878,6 +14010,8 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
   c_parser_error (parser, "invalid depend kind");
  resync_fail:
   parens.skip_until_found_close (parser);
+  if (iterators)
+    pop_scope ();
   return list;
 }
 

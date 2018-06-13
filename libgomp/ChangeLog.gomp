@@ -1,3 +1,8 @@
+2018-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/depend-iterator-1.c: New test.
+	* testsuite/libgomp.c++/depend-iterator-1.C: New test.
+
 2018-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/simd-1.c: New test.

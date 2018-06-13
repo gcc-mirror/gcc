@@ -15941,10 +15941,48 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 static tree
 tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
-			tree in_decl)
+			tree in_decl, tree *iterator_cache)
 {
   if (decl == NULL_TREE)
     return NULL_TREE;
+
+  /* Handle OpenMP iterators.  */
+  if (TREE_CODE (decl) == TREE_LIST
+      && TREE_PURPOSE (decl)
+      && TREE_CODE (TREE_PURPOSE (decl)) == TREE_VEC)
+    {
+      tree ret;
+      if (iterator_cache[0] == TREE_PURPOSE (decl))
+	ret = iterator_cache[1];
+      else
+	{
+	  tree *tp = &ret;
+	  begin_scope (sk_omp, NULL);
+	  for (tree it = TREE_PURPOSE (decl); it; it = TREE_CHAIN (it))
+	    {
+	      *tp = copy_node (it);
+	      TREE_VEC_ELT (*tp, 0)
+		= tsubst_decl (TREE_VEC_ELT (it, 0), args, complain);
+	      TREE_VEC_ELT (*tp, 1)
+		= tsubst_expr (TREE_VEC_ELT (it, 1), args, complain, in_decl,
+			       /*integral_constant_expression_p=*/false);
+	      TREE_VEC_ELT (*tp, 2)
+		= tsubst_expr (TREE_VEC_ELT (it, 2), args, complain, in_decl,
+			       /*integral_constant_expression_p=*/false);
+	      TREE_VEC_ELT (*tp, 3)
+		= tsubst_expr (TREE_VEC_ELT (it, 3), args, complain, in_decl,
+			       /*integral_constant_expression_p=*/false);
+	      TREE_CHAIN (*tp) = NULL_TREE;
+	      tp = &TREE_CHAIN (*tp);
+	    }
+	  TREE_VEC_ELT (ret, 4) = poplevel (1, 1, 0);
+	  iterator_cache[0] = TREE_PURPOSE (decl);
+	  iterator_cache[1] = ret;
+	}
+      return build_tree_list (ret, tsubst_omp_clause_decl (TREE_VALUE (decl),
+							   args, complain,
+							   in_decl, NULL));
+    }
 
   /* Handle an OpenMP array section represented as a TREE_LIST (or
      OMP_CLAUSE_DEPEND_KIND).  An OMP_CLAUSE_DEPEND (with a depend
@@ -15960,7 +15998,7 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
       tree length = tsubst_expr (TREE_VALUE (decl), args, complain, in_decl,
 				 /*integral_constant_expression_p=*/false);
       tree chain = tsubst_omp_clause_decl (TREE_CHAIN (decl), args, complain,
-					   in_decl);
+					   in_decl, NULL);
       if (TREE_PURPOSE (decl) == low_bound
 	  && TREE_VALUE (decl) == length
 	  && TREE_CHAIN (decl) == chain)
@@ -15988,6 +16026,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 {
   tree new_clauses = NULL_TREE, nc, oc;
   tree linear_no_step = NULL_TREE;
+  tree iterator_cache[2] = { NULL_TREE, NULL_TREE };
 
   for (oc = clauses; oc ; oc = OMP_CLAUSE_CHAIN (oc))
     {
@@ -16022,7 +16061,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	  OMP_CLAUSE_DECL (nc)
 	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
-				      in_decl);
+				      in_decl, iterator_cache);
 	  break;
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_IF:
@@ -16070,13 +16109,13 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	    }
 	  OMP_CLAUSE_DECL (nc)
 	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
-				      in_decl);
+				      in_decl, NULL);
 	  break;
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_ALIGNED:
 	  OMP_CLAUSE_DECL (nc)
 	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
-				      in_decl);
+				      in_decl, NULL);
 	  OMP_CLAUSE_OPERAND (nc, 1)
 	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 1), args, complain,
 			   in_decl, /*integral_constant_expression_p=*/false);
@@ -16084,7 +16123,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_LINEAR:
 	  OMP_CLAUSE_DECL (nc)
 	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
-				      in_decl);
+				      in_decl, NULL);
 	  if (OMP_CLAUSE_LINEAR_STEP (oc) == NULL_TREE)
 	    {
 	      gcc_assert (!linear_no_step);
@@ -16093,7 +16132,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	  else if (OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (oc))
 	    OMP_CLAUSE_LINEAR_STEP (nc)
 	      = tsubst_omp_clause_decl (OMP_CLAUSE_LINEAR_STEP (oc), args,
-					complain, in_decl);
+					complain, in_decl, NULL);
 	  else
 	    OMP_CLAUSE_LINEAR_STEP (nc)
 	      = tsubst_expr (OMP_CLAUSE_LINEAR_STEP (oc), args, complain,

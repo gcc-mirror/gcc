@@ -33598,6 +33598,118 @@ cp_parser_omp_clause_depend_sink (cp_parser *parser, location_t clause_loc,
   return list;
 }
 
+/* OpenMP 5.0:
+   iterators ( iterators-definition )
+
+   iterators-definition:
+     iterator-specifier
+     iterator-specifier , iterators-definition
+
+   iterator-specifier:
+     identifier = range-specification
+     iterator-type identifier = range-specification
+
+   range-specification:
+     begin : end
+     begin : end : step  */
+
+static tree
+cp_parser_omp_iterators (cp_parser *parser)
+{
+  tree ret = NULL_TREE, *last = &ret;
+  cp_lexer_consume_token (parser->lexer);
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return error_mark_node;
+
+  bool saved_colon_corrects_to_scope_p
+    = parser->colon_corrects_to_scope_p;
+  bool saved_colon_doesnt_start_class_def_p
+    = parser->colon_doesnt_start_class_def_p;
+
+  do
+    {
+      tree iter_type;
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_EQ))
+	iter_type = integer_type_node;
+      else
+	{
+	  const char *saved_message
+	    = parser->type_definition_forbidden_message;
+	  parser->type_definition_forbidden_message
+	    = G_("types may not be defined in iterator type");
+
+	  iter_type = cp_parser_type_id (parser);
+
+	  parser->type_definition_forbidden_message = saved_message;
+	}
+
+      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
+	{
+	  cp_parser_error (parser, "expected identifier");
+	  break;
+	}
+
+      tree id = cp_parser_identifier (parser);
+      if (id == error_mark_node)
+	break;
+
+      if (!cp_parser_require (parser, CPP_EQ, RT_EQ))
+	break;
+
+      parser->colon_corrects_to_scope_p = false;
+      parser->colon_doesnt_start_class_def_p = true;
+      tree begin = cp_parser_assignment_expression (parser);
+
+      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+	break;
+
+      tree end = cp_parser_assignment_expression (parser);
+
+      tree step = integer_one_node;
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  step = cp_parser_assignment_expression (parser);
+	}
+
+      tree iter_var = build_decl (loc, VAR_DECL, id, iter_type);
+      DECL_ARTIFICIAL (iter_var) = 1;
+      DECL_CONTEXT (iter_var) = current_function_decl;
+      pushdecl (iter_var);
+
+      *last = make_tree_vec (5);
+      TREE_VEC_ELT (*last, 0) = iter_var;
+      TREE_VEC_ELT (*last, 1) = begin;
+      TREE_VEC_ELT (*last, 2) = end;
+      TREE_VEC_ELT (*last, 3) = step;
+      last = &TREE_CHAIN (*last);
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+      break;
+    }
+  while (1);
+
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
+  parser->colon_doesnt_start_class_def_p
+    = saved_colon_doesnt_start_class_def_p;
+
+  if (!parens.require_close (parser))
+    cp_parser_skip_to_closing_parenthesis (parser,
+					   /*recovering=*/true,
+					   /*or_comma=*/false,
+					   /*consume_paren=*/true);
+
+  return ret;
+}
+
 /* OpenMP 4.0:
    depend ( depend-kind : variable-list )
 
@@ -33612,15 +33724,18 @@ cp_parser_omp_clause_depend_sink (cp_parser *parser, location_t clause_loc,
 static tree
 cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
 {
-  tree nlist, c;
+  tree nlist, c, iterators = NULL_TREE;
   enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_INOUT;
 
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
 
-  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  do
     {
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
+	goto invalid_kind;
+
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
 
@@ -33636,13 +33751,29 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
 	kind = OMP_CLAUSE_DEPEND_SOURCE;
       else if (strcmp ("sink", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_SINK;
+      else if (strcmp ("iterator", p) == 0 && iterators == NULL_TREE)
+	{
+	  begin_scope (sk_omp, NULL);
+	  iterators = cp_parser_omp_iterators (parser);
+	  cp_parser_require (parser, CPP_COLON, RT_COLON);
+	  continue;
+	}
       else
 	goto invalid_kind;
+      break;
     }
-  else
-    goto invalid_kind;
+  while (1);
 
   cp_lexer_consume_token (parser->lexer);
+
+  if (iterators
+      && (kind == OMP_CLAUSE_DEPEND_SOURCE || kind == OMP_CLAUSE_DEPEND_SINK))
+    {
+      poplevel (0, 1, 0);
+      error_at (loc, "%<iterator%> modifier incompatible with %qs",
+		kind == OMP_CLAUSE_DEPEND_SOURCE ? "source" : "sink");
+      iterators = NULL_TREE;
+    }
 
   if (kind == OMP_CLAUSE_DEPEND_SOURCE)
     {
@@ -33667,14 +33798,30 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
       nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_DEPEND,
 					      list, NULL);
 
+      if (iterators)
+	{
+	  tree block = poplevel (1, 1, 0);
+	  if (iterators == error_mark_node)
+	    iterators = NULL_TREE;
+	  else
+	    TREE_VEC_ELT (iterators, 4) = block;
+	}
+
       for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
-	OMP_CLAUSE_DEPEND_KIND (c) = kind;
+	{
+	  OMP_CLAUSE_DEPEND_KIND (c) = kind;
+	  if (iterators)
+	    OMP_CLAUSE_DECL (c)
+	      = build_tree_list (iterators, OMP_CLAUSE_DECL (c));
+	}
     }
   return nlist;
 
  invalid_kind:
   cp_parser_error (parser, "invalid depend kind");
  resync_fail:
+  if (iterators)
+    poplevel (0, 1, 0);
   cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
 					 /*or_comma=*/false,
 					 /*consume_paren=*/true);

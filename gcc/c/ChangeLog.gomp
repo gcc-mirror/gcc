@@ -1,3 +1,15 @@
+2018-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_iterators): New function.
+	(c_parser_omp_clause_depend): Parse iterator modifier and handle
+	iterators.
+	* c-typeck.c (handle_omp_array_sections): Handle depend clauses
+	with iterators.
+	(struct c_find_omp_var_s): New type.
+	(c_find_omp_var_r): New function.
+	(c_omp_finish_iterators): New function.
+	(c_finish_omp_clauses): Handle depend clauses with iterators.
+
 2018-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (c_finish_omp_clauses): Remove no longer needed special

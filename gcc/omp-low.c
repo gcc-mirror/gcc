@@ -7347,6 +7347,9 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND)
       switch (OMP_CLAUSE_DEPEND_KIND (c))
 	{
+	case OMP_CLAUSE_DEPEND_LAST:
+	  /* Lowering already done at gimplification.  */
+	  return;
 	case OMP_CLAUSE_DEPEND_IN:
 	  n_in++;
 	  break;
@@ -7390,6 +7393,7 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 	  }
     }
   c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_DEPEND);
+  OMP_CLAUSE_DEPEND_KIND (c) = OMP_CLAUSE_DEPEND_LAST;
   OMP_CLAUSE_DECL (c) = build_fold_addr_expr (array);
   OMP_CLAUSE_CHAIN (c) = *pclauses;
   *pclauses = c;

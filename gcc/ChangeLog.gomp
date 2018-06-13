@@ -1,3 +1,14 @@
+2018-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_omp_depend): New function.
+	(gimplify_scan_omp_clauses): Gimplify depend clauses with iterators.
+	* omp-low.c (lower_depend_clauses): If OMP_CLAUSE_DEPEND_LAST is seen,
+	assume lowering is done already and return early.  Set kind
+	on artificial depend clause to OMP_CLAUSE_DEPEND_LAST.
+	* tree-pretty-print.c (dump_omp_iterators): New function.
+	(dump_omp_clause): Print iterators in depend clauses.  Print
+	__internal__ for OMP_CLAUSE_DEPEND_LAST.
+
 2018-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (omp_is_private): Allow simd iterator to be lastprivate
