@@ -1,5 +1,10 @@
 2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/builtins.def (SYNC): SYNC instruction is valid on all
+	ARC cores.
+
+2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (atomic_exchangesi): EX instruction is default
 	for ARC700 and ARCv2.
 
