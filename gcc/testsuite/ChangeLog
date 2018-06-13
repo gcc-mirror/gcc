@@ -1,3 +1,7 @@
+2018-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/pr86048.c: New test.
+
 2018-06-12  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/fma-1.c: New test.
