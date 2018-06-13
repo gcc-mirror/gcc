@@ -1,3 +1,10 @@
+2018-06-13  Chenghua Xu <paul.hua.gm@gmail.com>
+
+	PR target/86076
+	* config/mips/loongson.md (vec_setv4hi): Gen_lowpart for
+	operands[2] instead of operands[1].
+
+
 2018-06-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* lra-constraints.c (simplify_operand_subreg): In the paradoxical
