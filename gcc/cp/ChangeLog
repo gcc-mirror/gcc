@@ -1,3 +1,14 @@
+2018-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (duplicate_decls): Use DECL_SOURCE_LOCATION in
+	OPT_Wshadow warning_at.
+	(grokfndecl): Consistently use the location_t argument in
+	literal operator diagnostic messages.
+	(grokdeclarator): Use declspecs->locations[ds_storage_class]
+	in error_at call.
+	* decl2.c (finish_static_data_member_decl): Use DECL_SOURCE_LOCATION
+	in permerror call.
+
 2018-06-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86099 - ICE with trivial copy and non-trivial default ctor.

@@ -1398,10 +1398,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	     bad choice of name.  */
 	  if (! TREE_PUBLIC (newdecl))
 	    {
-	      warning (OPT_Wshadow, 
-                       DECL_BUILT_IN (olddecl)
-                       ? G_("shadowing built-in function %q#D")
-                       : G_("shadowing library function %q#D"), olddecl);
+	      warning_at (DECL_SOURCE_LOCATION (newdecl),
+			  OPT_Wshadow, 
+			  DECL_BUILT_IN (olddecl)
+			  ? G_("shadowing built-in function %q#D")
+			  : G_("shadowing library function %q#D"), olddecl);
 	      /* Discard the old built-in function.  */
 	      return NULL_TREE;
 	    }
@@ -8863,7 +8864,7 @@ grokfndecl (tree ctype,
       /* [over.literal]/6: Literal operators shall not have C linkage. */
       if (DECL_LANGUAGE (decl) == lang_c)
 	{
-	  error ("literal operator with C linkage");
+	  error_at (location, "literal operator with C linkage");
 	  maybe_show_extern_c_location ();
 	  return NULL_TREE;
 	}
@@ -8873,7 +8874,7 @@ grokfndecl (tree ctype,
 	  if (!check_literal_operator_args (decl, &long_long_unsigned_p,
 					    &long_double_p))
 	    {
-	      error ("%qD has invalid argument list", decl);
+	      error_at (location, "%qD has invalid argument list", decl);
 	      return NULL_TREE;
 	    }
 
@@ -8881,26 +8882,26 @@ grokfndecl (tree ctype,
 	  if (long_long_unsigned_p)
 	    {
 	      if (cpp_interpret_int_suffix (parse_in, suffix, strlen (suffix)))
-		warning (0, "integer suffix %qs"
+		warning_at (location, 0, "integer suffix %qs"
 			    " shadowed by implementation", suffix);
 	    }
 	  else if (long_double_p)
 	    {
 	      if (cpp_interpret_float_suffix (parse_in, suffix, strlen (suffix)))
-		warning (0, "floating point suffix %qs"
+		warning_at (location, 0, "floating point suffix %qs"
 			    " shadowed by implementation", suffix);
 	    }
 	  /* 17.6.3.3.5  */
 	  if (suffix[0] != '_'
-	      && !in_system_header_at (DECL_SOURCE_LOCATION (decl))
+	      && !in_system_header_at (location)
 	      && !current_function_decl && !(friendp && !funcdef_flag))
-	    warning (OPT_Wliteral_suffix,
-		     "literal operator suffixes not preceded by %<_%>"
-		     " are reserved for future standardization");
+	    warning_at (location, OPT_Wliteral_suffix,
+			"literal operator suffixes not preceded by %<_%>"
+			" are reserved for future standardization");
 	}
       else
 	{
-	  error ("%qD must be a non-member function", decl);
+	  error_at (location, "%qD must be a non-member function", decl);
 	  return NULL_TREE;
 	}
     }
@@ -12408,7 +12409,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		/* 7.1.1: There can be no static function declarations within a
 		   block.  */
-		error ("cannot declare static function inside another function");
+		error_at (declspecs->locations[ds_storage_class],
+			  "cannot declare static function inside another function");
 		invalid_static = 1;
 	      }
 

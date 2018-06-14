@@ -1,3 +1,16 @@
+2018-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/other/static3.C: New.
+	* g++.dg/other/static4.C: Likewise.
+	* g++.dg/warn/Wshadow-15.C: Likewise.
+	* g++.dg/cpp0x/gnu_fext-numeric-literals.C: Test locations too.
+	* g++.dg/cpp0x/std_fext-numeric-literals.C: Likewise.
+	* g++.dg/cpp0x/std_fno-ext-numeric-literals.C: Likewise.
+	* g++.dg/cpp0x/udlit-args-neg.C: Likewise.
+	* g++.dg/cpp0x/udlit-clink-neg.C: Likewise.
+	* g++.dg/cpp0x/udlit-extern-c.C: Likewise.
+	* g++.dg/cpp0x/udlit-member-neg.C: Likewise.
+
 2018-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85945
