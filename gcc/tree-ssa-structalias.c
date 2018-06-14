@@ -6120,7 +6120,8 @@ create_variable_info_for (tree decl, const char *name, bool add_id)
   cgraph_node *node;
   if (in_ipa_mode
       && TREE_CODE (decl) == FUNCTION_DECL
-      && (node = cgraph_node::get (decl))->ifunc_resolver)
+      && (node = cgraph_node::get (decl))
+      && node->ifunc_resolver)
     {
       varinfo_t fi = get_vi_for_tree (node->get_alias_target ()->decl);
       constraint_expr rhs
