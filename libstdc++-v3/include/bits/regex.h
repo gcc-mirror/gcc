@@ -1600,11 +1600,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**
        * @brief Constructs a default %match_results container.
        * @post size() returns 0 and str() returns an empty string.
+       * @{
        */
+      match_results() : match_results(_Alloc()) { }
+
       explicit
-      match_results(const _Alloc& __a = _Alloc()) noexcept
+      match_results(const _Alloc& __a) noexcept
       : _Base_type(__a)
       { }
+
+      // @}
 
       /**
        * @brief Copy constructs a %match_results.
