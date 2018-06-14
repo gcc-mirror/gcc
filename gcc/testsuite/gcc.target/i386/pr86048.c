@@ -1,6 +1,6 @@
 /* PR target/86048 */
-/* { dg-do assemble } */
-/* { dg-options "-O2" } */
+/* { dg-do assemble { target sse2 } } */
+/* { dg-options "-O2 -msse2" } */
 /* { dg-require-effective-target return_address } */
 
 extern void abort (void);
