@@ -2656,6 +2656,8 @@ class GTY(()) module_state {
   /* Import tables. */
   void write_imports (bytes_out &cfg, bool direct_p);
   int read_imports (bytes_in &cfg, bool direct_p);
+  void write_imports (elf_out *to, unsigned *crc_ptr);
+  bool read_imports ();
 
   /* The configuration.  */
   void write_config (elf_out *to, const char *opts, const range_t &sec_range,
@@ -7716,7 +7718,7 @@ module_state::write_readme (elf_out *to, const char *options)
  */
 
 void
-module_state::write_imports (bytes_out &cfg, bool direct)
+module_state::write_imports (bytes_out &sec, bool direct)
 {
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
@@ -7727,45 +7729,46 @@ module_state::write_imports (bytes_out &cfg, bool direct)
 			   !direct ? "indirect "
 			   : state->exported ? "exported " : "",
 			   ix, state->name, state->crc);
-	  cfg.u (ix);
-	  cfg.str (IDENTIFIER_POINTER (state->name),
+	  sec.u (ix);
+	  sec.str (IDENTIFIER_POINTER (state->name),
 		   IDENTIFIER_LENGTH (state->name));
-	  cfg.u32 (state->crc);
+	  sec.u32 (state->crc);
 	  if (direct)
 	    {
 	      /* write_readme will have relativized this.  */
-	      cfg.str (state->filename);
-	      cfg.u (state->exported);
+	      sec.str (state->filename);
+	      sec.u (state->exported);
 	    }
 	}
     }
-  cfg.u (0);
+  /* Mark end of table.  */
+  sec.u (0);
 }
 
 int
-module_state::read_imports (bytes_in &cfg, bool direct)
+module_state::read_imports (bytes_in &sec, bool direct)
 {
   unsigned count = 0;
   int from_len = -1;
-  for (unsigned ix; (ix = cfg.u ()); count++)
+  for (unsigned ix; (ix = sec.u ()); count++)
     {
       if (ix >= slurp->remap->length ()
 	  || ix < MODULE_IMPORT_BASE || (*slurp->remap)[ix])
 	return -1;
 
       size_t len;
-      const char *name_str = cfg.str (&len);
+      const char *name_str = sec.str (&len);
       tree name = get_identifier_with_length (name_str, len);
-      unsigned crc = cfg.u32 ();
+      unsigned crc = sec.u32 ();
       module_state *imp;
 
       if (direct)
 	{
 	  size_t len;
-	  const char *filename_str = cfg.str (&len);
-	  bool exported = cfg.u ();
+	  const char *filename_str = sec.str (&len);
+	  bool exported = sec.u ();
 
-	  if (cfg.get_overrun ())
+	  if (sec.get_overrun ())
 	    return -1;
 	  imp = find_module (loc, name, false);
 	  if (imp && !imp->is_imported ())
@@ -7834,6 +7837,58 @@ module_state::read_imports (bytes_in &cfg, bool direct)
   return count;
 }
 
+/* Write the import table to MOD_SNAME_PFX.imp.  */
+
+void
+module_state::write_imports (elf_out *to, unsigned *crc_ptr)
+{
+  if (modules->length () == MODULE_IMPORT_BASE)
+    return;
+
+  dump () && dump ("Writing imports");
+  dump.indent ();
+
+  bytes_out sec (to);
+  sec.begin ();
+
+  write_imports (sec, true);
+  write_imports (sec, false);
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".imp"), crc_ptr);
+  dump.outdent ();
+}
+
+bool
+module_state::read_imports ()
+{
+  if (slurp->remap->length () == MODULE_IMPORT_BASE)
+    return true;
+
+  bytes_in sec;
+
+  if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".imp"))
+    return false;
+
+  dump () && dump ("Reading %u imports",
+		   slurp->remap->length () - MODULE_IMPORT_BASE);
+  dump.indent ();
+
+  /* Read the imports.  */
+  int direct = -1, indirect = -1;
+  direct = read_imports (sec, true);
+  if (direct >= 0)
+    indirect = read_imports (sec, false);
+  if (indirect >= 0)
+    if (unsigned (direct) + unsigned (indirect) + MODULE_IMPORT_BASE
+	!= slurp->remap->length ())
+      sec.set_overrun ();
+
+  dump.outdent ();
+  if (!sec.end (slurp->from))
+    return false;
+  return true;
+}
+
 /* Tool configuration:  MOD_SNAME_PFX .config
 
    This is data that confirms current state (or fails).
@@ -7898,10 +7953,6 @@ module_state::write_config (elf_out *to, const char *opt_str,
   cfg.u32 (global_crc);
 
   cfg.u (modules->length ());
-
-  /* Write the imports.  */
-  write_imports (cfg, true);
-  write_imports (cfg, false);
 
   dump () && dump ("Declaration sections are [%u,%u)",
 		   sec_range.first, sec_range.second);
@@ -8028,16 +8079,6 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   /* Allocate the REMAP vector.  */
   unsigned imports = cfg.u ();
   slurp->alloc_remap (imports);
-  
-  /* Read the imports.  */
-  int direct = read_imports (cfg, true);
-  if (direct < 0)
-    goto fail;
-  int indirect = read_imports (cfg, false);
-  if (indirect < 0)
-    goto fail;
-  if (unsigned (direct) + unsigned (indirect) + MODULE_IMPORT_BASE != imports)
-    goto fail;
 
   sec_range.first = cfg.u ();
   sec_range.second = cfg.u ();
@@ -9614,6 +9655,9 @@ module_state::write (elf_out *to, line_maps *lmaps)
   /* Write the unnamed.  */
   write_unnamed (to, sccs, unnamed, &crc);
 
+  /* Write the import table.  */
+  write_imports (to, &crc);
+
   /* Write the line maps.  */
   write_locations (to, lmaps, &crc);
 
@@ -9639,6 +9683,10 @@ module_state::read (int fd, int e, bool check_crc)
   unsigned unnamed;
 
   if (!read_config (range, unnamed, check_crc))
+    return;
+
+  /* Read the import table.  */
+  if (!read_imports ())
     return;
 
   /* Determine the module's number.  */

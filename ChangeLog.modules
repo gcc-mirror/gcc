@@ -1,5 +1,11 @@
 2018-06-14  Nathan Sidwell  <nathan@acm.org>
 
+	Break out import section.
+	gcc/cp/
+	* module.c (module_state::{read,write}_imports): New.
+	(module_state::{read,write}_config): Don't do imports here ...
+	(module_state::{read,write}): ... do them here.
+
 	Fix section alignment.
 	gcc/cp/
 	* module.c (elf_out::grow): Fix padding calc.
