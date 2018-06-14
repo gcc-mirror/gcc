@@ -12,8 +12,6 @@
 	PR libstdc++/86127
 	* include/bits/forward_list.h (_Fwd_list_base::_Tp_alloc_type): Remove
 	unused typedef.
-	(_Fwd_list_base::_Node_alloc_traits): Use allocator_traits instead of
-	__gnu_cxx::__alloc_traits.
 	(_Fwd_list_base::_M_create_node, _Fwd_list_base::_M_erase_after):
 	Use node allocator to create and destroy elements.
 	(forward_list::_Tp_alloc_type): Remove unused typedef.
@@ -80,6 +78,7 @@
 	* include/bits/uniform_int_dist.h (uniform_int_distribution): Add
 	non-explicit default constructors. Remove default argument for first
 	parameter of explicit constructor.
+	* include/ext/random
 	(simd_fast_mersenne_twister_engine, beta_distribution)
 	(rice_distribution, nakagami_distribution, pareto_distribution)
 	(k_distribution, arcsine_distribution, hoyt_distribution)
