@@ -1,5 +1,16 @@
 2018-06-14  Nathan Sidwell  <nathan@acm.org>
 
+	Write out line maps.
+	gcc/cp/
+	* cp-tree.g (atom_module_preamble, finish_module): Add line_maps.
+	* decl2.c (c_parse_final_cleanups): Pass line_table.
+	* parser.c (c_parse_file): Adjst.
+	* module.c (struct spewing): New.
+	(struct slurping): Add GTY tagging.
+	(module_state::spewer): New.
+	(module_state::{write,atom_preamble}): Add linemaps.
+	(module_state::{find,write,read}_locations): New.
+
 	gcc/cp/
 	* module.c (struct slurping): New, broken out of ...
 	(struct module_state): ... here.  Move loading data there and

@@ -2486,11 +2486,13 @@ struct module_state_hash : nodel_ptr_hash<module_state> {
 typedef std::pair<unsigned,unsigned> range_t;
 
 /* Data needed by a module during the process of loading.  */
-struct GTY(()) slurping
+struct GTY((tag("true"), desc ("%h.from != NULL"))) slurping
 {
   vec<mc_slot, va_gc> *unnamed;		/* Unnamed decls.  */
   vec<unsigned, va_gc_atomic> *remap;	/* Module owner remapping.  */
   elf_in *GTY((skip)) from;     	/* The elf loader.  */
+
+  range_t ord_locs;	/* Ordinary location base and limit.  */
 
   unsigned current;	/* Section currently being loaded.  */
   unsigned remaining;	/* Number of lazy sections yet to read.  */
@@ -2527,8 +2529,9 @@ struct GTY(()) slurping
 };
 
 slurping::slurping (elf_in *from)
-  :unnamed (NULL), remap (NULL), from (from),
-   current (~0u), remaining (0), lru (0)
+  : unnamed (NULL), remap (NULL), from (from),
+    ord_locs (0,0),
+    current (~0u), remaining (0), lru (0)
 {
 }
 
@@ -2545,6 +2548,31 @@ slurping::~slurping ()
       from = NULL;
     }
 }
+
+/* Additional data needed when writing.  There's only ever one
+   writer, so we don't mind wasting some space of the base class.   */
+
+struct GTY ((tag ("false"))) spewing : public slurping 
+{
+ public:
+  range_t ord_hole;  /* Ordinary location map preamble hole.  */
+  range_t pre_ords;  /* Ordinary locations before the preamble.  */
+  range_t post_ords; /* Ordinary locations after the preamble.  */
+  range_t ord_shifts; /* Pre & post preamble ordinary location
+			 shifts.  */
+ public:
+  spewing ()
+    : slurping (NULL),
+    ord_hole (0, 0)
+    {
+    }
+
+ public:
+  void linemaps (bytes_out &sec, ptr_int_hash_map &fmap, line_maps *lmaps,
+		 unsigned hwm);
+  void linemaps (ptr_int_hash_map &fmap, line_maps *lmaps, unsigned hwm);
+  void linemaps (line_maps *, unsigned);
+};
 
 /* State of a particular module. */
 
@@ -2589,12 +2617,19 @@ class GTY(()) module_state {
   }
 
  public:
+  spewing *spewer () const
+  {
+    gcc_checking_assert (slurp && !slurp->from);
+    return static_cast <spewing *> (slurp);
+  }
+
+ public:
   void set_import (module_state const *, bool is_export);
   void announce (const char *) const;
 
  public:
   /* Read and write module.  */
-  void write (elf_out *to);
+  void write (elf_out *to, line_maps *);
   void read (int fd, int e, bool);
 
   /* Read a section.  */
@@ -2676,8 +2711,9 @@ class GTY(()) module_state {
 		      unsigned count, unsigned *crc_ptr);
   bool read_unnamed (unsigned count, const range_t &range);
 
-  void write_line_maps (elf_out *to, line_maps *);
-  bool read_line_maps (line_map *);
+  void find_locations (line_maps *);
+  void write_locations (elf_out *to, line_maps *, unsigned *crc_ptr);
+  bool read_locations (line_maps *);
 
  public:
   static module_state *find_module (location_t, tree, bool module_p);
@@ -2692,7 +2728,7 @@ class GTY(()) module_state {
  public:
   static void init ();
   static void fini ();
-  static bool atom_preamble (location_t loc);
+  static bool atom_preamble (location_t loc, line_maps *, unsigned);
 
  public:
   /* Vector indexed by OWNER.  */
@@ -6732,8 +6768,14 @@ module_state::release (bool at_eof)
       exports = NULL;
     }
 
-  delete slurp;
-  slurp = NULL;
+  if (slurp)
+    {
+      if (slurp->from)
+	delete slurp;
+      else
+	delete spewer ();
+      slurp = NULL;
+    }
 }
 
 /* Announce WHAT about the module.  */
@@ -9162,9 +9204,180 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 }
 
 void
-module_state::write_line_maps (elf_out *, line_maps *)
+spewing::linemaps (line_maps *lmaps, unsigned hwm)
 {
-  // FIXME:Write something
+  bool is_post = hwm != 0;
+  unsigned lwm = 0;
+  unsigned used = 0;
+  if (is_post)
+    {
+      lwm = ord_hole.second;
+      used = pre_ords.second - ord_shifts.first;
+    }
+  else
+    hwm = ord_hole.first;
+
+  unsigned mask = 0;
+  for (unsigned ix = lwm; ix != hwm; ix++)
+    {
+      const line_map_ordinary *map = LINEMAPS_ORDINARY_MAP_AT (lmaps, ix);
+      if (map->m_column_and_range_bits > mask)
+	mask = map->m_column_and_range_bits;
+    }
+
+  unsigned first = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (lmaps, lwm));
+  unsigned last = (is_post ? lmaps->highest_location + 1
+		   : MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (lmaps, hwm)));
+  (is_post ? post_ords : pre_ords).first = first;
+  (is_post ? post_ords : pre_ords).second = last;
+
+  /* We must preserve the leftmost MASK bits of FIRST.  */
+  unsigned shift = (first & ~((1u << mask) - 1u)) - used;
+  (is_post ? ord_shifts.second : ord_shifts.first) = shift;
+}
+
+void
+spewing::linemaps (ptr_int_hash_map &fmap, line_maps *lmaps, unsigned hwm)
+{
+  bool is_post = hwm != 0;
+  unsigned lwm = 0;
+  if (is_post)
+    lwm = ord_hole.second;
+  else
+    hwm = ord_hole.first;
+
+  for (unsigned ix = lwm; ix != hwm; ix++)
+    {
+      const line_map_ordinary *map = LINEMAPS_ORDINARY_MAP_AT (lmaps, ix);
+      if (const char *fname = ORDINARY_MAP_FILE_NAME (map))
+	fmap.put (const_cast <char *> (fname), 0);
+    }
+}
+
+/* Write linemaps [lwm,hwm).
+
+   u:src_loc
+   u:reason
+   u:sysp
+   u:colrange
+   u:range
+   u:fname_index
+   u:line_no
+   u:included_at
+*/
+
+void
+spewing::linemaps (bytes_out &sec, ptr_int_hash_map &fmap, line_maps *lmaps,
+		   unsigned hwm)
+{
+  bool is_post = hwm != 0;
+  unsigned lwm = 0;
+  if (is_post)
+    lwm = ord_hole.second;
+  else
+    hwm = ord_hole.first;
+
+  unsigned shift = is_post ? ord_shifts.second : ord_shifts.first;
+  unsigned first = (is_post ? post_ords : pre_ords).first;
+
+  for (unsigned ix = lwm; ix != hwm; ix++)
+    {
+      const line_map_ordinary *map = LINEMAPS_ORDINARY_MAP_AT (lmaps, ix);
+
+      sec.u (MAP_START_LOCATION (map) - shift);
+      /* Making accessors just for here, seems excessive.  */
+      sec.u (map->reason);
+      sec.u (map->sysp);
+      sec.u (map->m_column_and_range_bits);
+      sec.u (map->m_range_bits);
+      sec.u (*fmap.get (const_cast <char *> (ORDINARY_MAP_FILE_NAME (map))));
+      sec.u (ORDINARY_MAP_STARTING_LINE_NUMBER (map));
+      source_location inc = INCLUDED_AT (map);
+      if (inc)
+	{
+	  if (inc >= first)
+	    {
+	      gcc_assert (inc < MAP_START_LOCATION (map));
+	      inc -= shift;
+	    }
+	  else
+	    {
+	      gcc_assert (is_post
+			  && inc >= pre_ords.first && inc < pre_ords.second);
+	      inc -= ord_shifts.first;
+	    }
+	}
+      sec.u (inc);
+    }
+}
+
+/* Setup for location writing.  */
+
+void
+module_state::find_locations (line_maps *lmaps)
+{
+  spewer ()->linemaps (lmaps, 0);
+  spewer ()->linemaps (lmaps, LINEMAPS_ORDINARY_USED (lmaps));
+}
+
+/* Write the line maps to MOD_SNAME_PFX.loc
+
+   The serialize source locations are offsets, so need to be adjusted
+   when deserializing.
+
+   u:num_fnames
+   str[] filenames
+   u:num_maps
+   maps[] maps
+   u:hwm
+
+   Currently only ordinary maps, so no adhoc or macro locations.  */
+
+void
+module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
+{
+  if (!modules_atom_p ())
+    /* The global module really makes this more complicated.  Let's
+       not go there until we're forced to.  */
+    return;
+
+  dump () && dump ("Writing unnamed");
+  dump.indent ();
+
+  bytes_out sec (to);
+  sec.begin ();
+
+  /* Find the set of filenames, we expect this to be very few, and
+     for the lexer to have done reasonable de-duping when reading
+     preprocessed source.  */
+  ptr_int_hash_map fnames (20);
+  spewer ()->linemaps (fnames, lmaps, 0);
+  spewer ()->linemaps (fnames, lmaps, LINEMAPS_ORDINARY_USED (lmaps));
+
+  unsigned num_files = 0;
+  sec.u (fnames.elements ());
+  ptr_int_hash_map::iterator end (fnames.end ());
+  for (ptr_int_hash_map::iterator iter (fnames.begin ()); iter != end; ++iter)
+    {
+      const char *fname = reinterpret_cast <const char *> ((*iter).first);
+      fnames.put (const_cast <char * > (fname), num_files++);
+      sec.str (fname);
+    }
+  gcc_assert (fnames.elements () == num_files);
+  dump () && dump ("Wrote %u filenames", num_files);
+
+  unsigned num_maps = LINEMAPS_ORDINARY_USED (lmaps)
+    - (spewer ()->ord_hole.second - spewer ()->ord_hole.first);
+  sec.u (num_maps);
+  spewer ()->linemaps (sec, fnames, lmaps, 0);
+  spewer ()->linemaps (sec, fnames, lmaps, LINEMAPS_ORDINARY_USED (lmaps));
+  unsigned used = spewer ()->post_ords.second - spewer ()->ord_shifts.second;
+
+  sec.u (used);
+  dump () && dump ("Wrote %u ordinary line maps using %u locs", num_maps, used);
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".loc"), crc_p);
+  dump.outdent ();
 }
 
 /* Recursively find all the namespace bindings of NS.
@@ -9272,7 +9485,7 @@ space_cmp (const void *a_, const void *b_)
 */
 
 void
-module_state::write (elf_out *to)
+module_state::write (elf_out *to, line_maps *lmaps)
 {
   unsigned crc = 0;
 
@@ -9286,6 +9499,8 @@ module_state::write (elf_out *to)
   add_writables (table, global_namespace);
 
   find_dependencies (table);
+
+  find_locations (lmaps);
 
   /* Find the SCCs. */
   auto_vec<depset *> sccs (table.size ());
@@ -9399,7 +9614,7 @@ module_state::write (elf_out *to)
   write_unnamed (to, sccs, unnamed, &crc);
 
   /* Write the line maps.  */
-  write_line_maps (to, line_table);
+  write_locations (to, lmaps, &crc);
 
   /* And finish up.  */
   write_config (to, our_opts, range, unnamed, crc);
@@ -10054,6 +10269,7 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 	{
 	  state->mod = MODULE_PURVIEW;
 	  state->exported = true;
+	  state->slurp = new spewing ();
 	}
       else
 	state->direct = true;
@@ -10085,7 +10301,8 @@ module_from_cmp (const void *a_, const void *b_)
 /* The module preamble has been parsed.  Now load all the imports.  */
 
 bool
-module_state::atom_preamble (location_t loc)
+module_state::atom_preamble (location_t loc, line_maps *lmaps,
+			     unsigned ord_map_hwm)
 {
   /* Iterate over the module hash, informing the mapper of every not
      loaded (direct) import.  */
@@ -10191,6 +10408,14 @@ module_state::atom_preamble (location_t loc)
 	}
     }
 
+  if (interface)
+    {
+      /* Record the size of the hole the preamble created in the line
+	 table.  */
+      interface->spewer ()->ord_hole.first = ord_map_hwm;
+      interface->spewer ()->ord_hole.second = LINEMAPS_ORDINARY_USED (lmaps);
+    }
+
   dump.pop (0);
 
   return ok;
@@ -10200,9 +10425,9 @@ module_state::atom_preamble (location_t loc)
    final location of the preamble.  */
 
 void
-atom_module_preamble (location_t loc)
+atom_module_preamble (location_t loc, line_maps *lmaps, unsigned hwm)
 {
-  if (!module_state::atom_preamble (loc))
+  if (!module_state::atom_preamble (loc, lmaps, hwm))
     fatal_error (loc, "returning to gate for a mechanical issue");
 }
 
@@ -10220,7 +10445,7 @@ init_module_processing ()
 /* Finalize the module at end of parsing.  */
 
 void
-finish_module ()
+finish_module (line_maps *lmaps)
 {
   module_state::fini ();
 
@@ -10245,7 +10470,7 @@ finish_module ()
 
       elf_out to (fd, e);
       if (to.begin ())
-	state->write (&to);
+	state->write (&to, lmaps);
       if (to.end ())
 	error_at (state->loc, "failed to export module: %s",
 		  to.get_error (state->filename));

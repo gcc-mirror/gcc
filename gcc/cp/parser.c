@@ -39494,11 +39494,10 @@ c_parse_file (void)
 	  location_t end = cp_parser_get_module_preamble_tokens (the_parser);
 	  if (end != UNKNOWN_LOCATION)
 	    {
-	      unsigned cookie = linemap_save_pre_module (line_table, end);
+	      unsigned hwm = linemap_save_pre_module (line_table, end);
 	      location_t loc = cp_parser_parse_module_preamble (the_parser);
-	      atom_module_preamble (loc);
-	      if (unsigned adjust
-		  = linemap_restore_pre_module (line_table, cookie))
+	      atom_module_preamble (loc, line_table, hwm);
+	      if (unsigned adjust = linemap_restore_pre_module (line_table, hwm))
 		cpp_relocate_peeked_tokens (parse_in, adjust);
 	    }
 	}
