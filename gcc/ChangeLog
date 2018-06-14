@@ -1,3 +1,10 @@
+2018-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86139
+	* tree-vect-generic.c (build_word_mode_vector_type): Remove
+	duplicate and harmful type_hash_canon.
+	* tree.c (type_hash_canon): Assert we didn't find ourselves.
+
 2018-06-14  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline

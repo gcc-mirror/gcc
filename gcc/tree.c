@@ -6616,7 +6616,8 @@ type_hash_canon (unsigned int hashcode, tree type)
   if (*loc)
     {
       tree t1 = ((type_hash *) *loc)->type;
-      gcc_assert (TYPE_MAIN_VARIANT (t1) == t1);
+      gcc_assert (TYPE_MAIN_VARIANT (t1) == t1
+		  && t1 != type);
       if (TYPE_UID (type) + 1 == next_type_uid)
 	--next_type_uid;
       /* Free also min/max values and the cache for integer
