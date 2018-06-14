@@ -1,5 +1,10 @@
 2018-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/tuple (__cpp_lib_tuple_element_t, tuple_element_t):
+	Move back to <utility>.
+	* include/std/utility (__cpp_lib_tuple_element_t. tuple_element_t):
+	Restore to here.
+
 	P0935R0 Eradicating unnecessarily explicit default constructors
 	* include/backward/strstream (strstreambuf): Add non-explicit default
 	constructor.
