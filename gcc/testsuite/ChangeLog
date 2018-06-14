@@ -1,3 +1,10 @@
+2018-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	P0624R2 - Default constructible and assignable stateless lambdas
+	* g++.dg/cpp2a/lambda1.C: New test.
+	* g++.dg/cpp0x/lambda/lambda-ice2.C: Adjust expected diagnostics
+	for -std=c++2a.
+
 2018-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/other/static3.C: New.

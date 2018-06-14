@@ -1,3 +1,10 @@
+2018-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	P0624R2 - Default constructible and assignable stateless lambdas
+	* method.c (synthesized_method_walk): For C++2a don't mark
+	sfk_constructor or sfk_copy_assignment as deleted if lambda has
+	no lambda-captures.
+
 2018-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (duplicate_decls): Use DECL_SOURCE_LOCATION in
