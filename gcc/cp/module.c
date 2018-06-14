@@ -119,6 +119,9 @@ Classes used:
 
    module_state - module object
 
+   loading_data - data needed during loading
+   storing_data : loading_data - data needed for interface
+
    module_mapper - mapper object
 
    The ELROND objects use FILE * handling.  It may be worth
@@ -2482,9 +2485,70 @@ struct module_state_hash : nodel_ptr_hash<module_state> {
 
 typedef std::pair<unsigned,unsigned> range_t;
 
+/* Data needed by a module during the process of loading.  */
+struct GTY(()) slurping
+{
+  vec<mc_slot, va_gc> *unnamed;		/* Unnamed decls.  */
+  vec<unsigned, va_gc_atomic> *remap;	/* Module owner remapping.  */
+  elf_in *GTY((skip)) from;     	/* The elf loader.  */
+
+  unsigned current;	/* Section currently being loaded.  */
+  unsigned remaining;	/* Number of lazy sections yet to read.  */
+  unsigned lru;		/* An LRU counter.  */
+
+ public:
+  slurping (elf_in *);
+  ~slurping ();
+
+ public:
+  void alloc_remap (unsigned size)
+  {
+    gcc_assert (!remap);
+    vec_safe_reserve (remap, size);
+    for (unsigned ix = size; ix--;)
+      remap->quick_push (0);
+  }
+  void alloc_unnamed (unsigned size)
+  {
+    gcc_assert (!unnamed);
+    vec_safe_reserve (unnamed, size);
+  }
+
+ public:
+  /* GC allocation.  But we must explicitly delete it.   */
+  static void *operator new (size_t x)
+  {
+    return ggc_alloc_atomic (x);
+  }
+  static void operator delete (void *p)
+  {
+    ggc_free (p);
+  }
+};
+
+slurping::slurping (elf_in *from)
+  :unnamed (NULL), remap (NULL), from (from),
+   current (~0u), remaining (0), lru (0)
+{
+}
+
+slurping::~slurping ()
+{
+  vec_free (remap);
+  remap = NULL;
+  vec_free (unnamed);
+  unnamed = NULL;
+  if (from)
+    {
+      from->end ();
+      delete from;
+      from = NULL;
+    }
+}
+
 /* State of a particular module. */
 
-struct GTY(()) module_state {
+class GTY(()) module_state {
  public:
   /* We always import & export ourselves.  */
   bitmap imports;	/* Transitive modules we're importing.  */
@@ -2493,17 +2557,11 @@ struct GTY(()) module_state {
   tree name;		/* Name of the module.  */
   tree vec_name;  	/* Name as a vector.  */
 
-  vec<unsigned, va_gc_atomic> *remap;	/* Module owner remapping.  */
-  vec<mc_slot, va_gc> *unnamed;		/* Unnamed decls.  */
-  elf_in *GTY((skip)) from;     /* Lazy loading.  */
-
+  slurping *slurp;	/* Data for loading.  */
+  
   char *filename;	/* BMI Filename */
   location_t loc; 	/* Location referring to module itself.  */
   location_t from_loc;  /* Location module was imported at.  */
-
-  unsigned lazy;	/* Number of lazy sections yet to read.  */
-  unsigned loading;	/* Section currently being loaded.  */
-  unsigned lru;		/* An LRU counter.  */
 
   unsigned mod;		/* Module owner number.  */
   unsigned crc;		/* CRC we saw reading it in. */
@@ -2618,6 +2676,9 @@ struct GTY(()) module_state {
 		      unsigned count, unsigned *crc_ptr);
   bool read_unnamed (unsigned count, const range_t &range);
 
+  void write_line_maps (elf_out *to, line_maps *);
+  bool read_line_maps (line_map *);
+
  public:
   static module_state *find_module (location_t, tree, bool module_p);
   bool do_import (const char *filename, bool check_crc);
@@ -2653,15 +2714,14 @@ struct GTY(()) module_state {
 
  private:
   static unsigned lazy_lru;  /* LRU counter.  */
-  static int lazy_open;      /* Remaining limit for unfrozen loaders.  */
+  static int lazy_open;      /* Remaining limit for unfrozen loaders.   */
 };
 
 module_state::module_state (tree name)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (name), vec_name (NULL_TREE),
-    remap (NULL), unnamed (NULL), from (NULL),
+    name (name), vec_name (NULL_TREE), slurp (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
-    lazy (0), loading (~0u), lru (0), mod (MODULE_UNKNOWN), crc (0)
+    mod (MODULE_UNKNOWN), crc (0)
 {
   direct = exported = imported = false;
 }
@@ -6047,8 +6107,8 @@ trees_in::tree_node ()
 	owner = u ();
 	tree ctx = tree_node ();
 	tree name = tree_node ();
-	owner = (owner < state->remap->length ()
-		 ? (*state->remap)[owner] : MODULE_NONE);
+	owner = (owner < state->slurp->remap->length ()
+		 ? (*state->slurp->remap)[owner] : MODULE_NONE);
 	int ident = i ();
 	if (owner != MODULE_NONE && !get_overrun ())
 	  res = lookup_by_ident (ctx, owner, name, ident);
@@ -6672,16 +6732,8 @@ module_state::release (bool at_eof)
       exports = NULL;
     }
 
-  vec_free (remap);
-  remap = NULL;
-  vec_free (unnamed);
-  unnamed = NULL;
-  if (from)
-    {
-      from->end ();
-      delete from;
-      from = NULL;
-    }
+  delete slurp;
+  slurp = NULL;
 }
 
 /* Announce WHAT about the module.  */
@@ -7654,7 +7706,8 @@ module_state::read_imports (bytes_in &cfg, bool direct)
   int from_len = -1;
   for (unsigned ix; (ix = cfg.u ()); count++)
     {
-      if (ix >= remap->length () || ix < MODULE_IMPORT_BASE || (*remap)[ix])
+      if (ix >= slurp->remap->length ()
+	  || ix < MODULE_IMPORT_BASE || (*slurp->remap)[ix])
 	return -1;
 
       size_t len;
@@ -7724,11 +7777,11 @@ module_state::read_imports (bytes_in &cfg, bool direct)
 
       if (!imp)
 	{
-	  from->set_error (elf::E_BAD_IMPORT);
+	  slurp->from->set_error (elf::E_BAD_IMPORT);
 	  return -1;
 	}
 
-      (*remap)[ix] = imp->mod;
+      (*slurp->remap)[ix] = imp->mod;
       dump () && dump ("Read %simport:%u %I->%u",
 		       !direct ? "indirect "
 		       : imp->exported ? "exported " : "", ix,
@@ -7827,7 +7880,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
 {
   bytes_in cfg;
 
-  if (!cfg.begin (loc, from, MOD_SNAME_PFX ".cfg"))
+  if (!cfg.begin (loc, slurp->from, MOD_SNAME_PFX ".cfg"))
     return false;
 
   /* Check version.  */
@@ -7869,7 +7922,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
       error_at (loc, "TS/ATOM mismatch");
     fail:
       cfg.set_overrun ();
-      return cfg.end (from);
+      return cfg.end (slurp->from);
     }
 
   /* Check the CRC after the above sanity checks, so that the user is
@@ -7884,7 +7937,7 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
     }
 
   /* Check module name.  */
-  const char *their_name = from->name (cfg.u ());
+  const char *their_name = slurp->from->name (cfg.u ());
   if (strlen (their_name) != IDENTIFIER_LENGTH (name)
       || memcmp (their_name, IDENTIFIER_POINTER (name),
 		 IDENTIFIER_LENGTH (name)))
@@ -7894,8 +7947,8 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
     }
 
   /* Check target & host.  */
-  const char *their_target = from->name (cfg.u ());
-  const char *their_host = from->name (cfg.u ());
+  const char *their_target = slurp->from->name (cfg.u ());
+  const char *their_host = slurp->from->name (cfg.u ());
   dump () && dump ("Read target='%s', host='%s'", their_target, their_host);
   if (strcmp (their_target, TARGET_MACHINE)
       || strcmp (their_host, HOST_MACHINE))
@@ -7931,12 +7984,8 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
 
   /* Allocate the REMAP vector.  */
   unsigned imports = cfg.u ();
-  gcc_assert (!remap);
-  remap = NULL;
-  vec_safe_reserve (remap, imports);
-  for (unsigned ix = imports; ix--;)
-    remap->quick_push (0);
-
+  slurp->alloc_remap (imports);
+  
   /* Read the imports.  */
   int direct = read_imports (cfg, true);
   if (direct < 0)
@@ -7956,13 +8005,13 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed,
   dump () && dump ("%u unnamed decls", unnamed);
 
   if (sec_range.first > sec_range.second
-      || sec_range.second > from->get_section_limit ())
+      || sec_range.second > slurp->from->get_section_limit ())
     {
       error_at (loc, "paradoxical declaration section range");
       goto fail;
     }
 
-  return cfg.end (from);
+  return cfg.end (slurp->from);
 }
 
 /* The following writer functions rely on the current behaviour of
@@ -8766,7 +8815,7 @@ module_state::read_cluster (unsigned snum)
 {
   trees_in sec (this);
 
-  if (!sec.begin (loc, from, snum))
+  if (!sec.begin (loc, slurp->from, snum))
     return false;
 
   dump () && dump ("Reading section:%u", snum);
@@ -8826,9 +8875,9 @@ module_state::read_cluster (unsigned snum)
 	  /* Resurrect a node from a horcrux.  */
 	  {
 	    unsigned index = sec.u ();
-	    if (index < vec_safe_length (unnamed))
+	    if (index < vec_safe_length (slurp->unnamed))
 	      {
-		mc_slot *slot = &(*unnamed)[index];
+		mc_slot *slot = &(*slurp->unnamed)[index];
 
 		if (slot->is_lazy ())
 		  lazy_load (NULL, NULL, slot, false);
@@ -8851,9 +8900,9 @@ module_state::read_cluster (unsigned snum)
 	    if (unsigned voldemort = sec.u ())
 	      {
 		/* An unnamed node, register it.  */
-		if (voldemort - 1 < vec_safe_length (unnamed))
+		if (voldemort - 1 < vec_safe_length (slurp->unnamed))
 		  {
-		    (*unnamed)[voldemort - 1] = decl;
+		    (*slurp->unnamed)[voldemort - 1] = decl;
 		    dump () && dump ("Voldemort decl:%u %N",
 				     voldemort - 1, decl);
 		  }
@@ -8869,7 +8918,7 @@ module_state::read_cluster (unsigned snum)
     }
   dump.outdent ();
 
-  if (!sec.end (from))
+  if (!sec.end (slurp->from))
     return false;
 
   return true;
@@ -8930,7 +8979,7 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
 {
   bytes_in sec;
 
-  if (!sec.begin (loc, from, MOD_SNAME_PFX ".nms"))
+  if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".nms"))
     return false;
 
   dump () && dump ("Reading namespaces");
@@ -8939,7 +8988,7 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
   spaces.safe_push (global_namespace);
   while (sec.more_p ())
     {
-      const char *name = from->name (sec.u ());
+      const char *name = slurp->from->name (sec.u ());
       unsigned parent = sec.u ();
       /* See comment in write_namespace about why not a bit.  */
       bool inline_p = bool (sec.u ());
@@ -8957,7 +9006,7 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
       spaces.safe_push (inner);
     }
   dump.outdent ();
-  if (!sec.end (from))
+  if (!sec.end (slurp->from))
     return false;
 
   return true;
@@ -9008,14 +9057,14 @@ module_state::read_bindings (auto_vec<tree> &spaces, const range_t &range)
 {
   bytes_in sec;
 
-  if (!sec.begin (loc, from, MOD_SNAME_PFX ".bnd"))
+  if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".bnd"))
     return false;
 
   dump () && dump ("Reading binding table");
   dump.indent ();
   while (sec.more_p ())
     {
-      const char *name = from->name (sec.u ());
+      const char *name = slurp->from->name (sec.u ());
       unsigned nsnum = sec.u ();
       unsigned snum = sec.u ();
 
@@ -9033,7 +9082,7 @@ module_state::read_bindings (auto_vec<tree> &spaces, const range_t &range)
     }
 
   dump.outdent ();
-  if (!sec.end (from))
+  if (!sec.end (slurp->from))
     return false;
   return true;
 }
@@ -9082,15 +9131,13 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 
   bytes_in sec;
 
-  if (!sec.begin (loc, from, MOD_SNAME_PFX ".vld"))
+  if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".vld"))
     return false;
 
   dump () && dump ("Reading unnamed");
   dump.indent ();
 
-  gcc_assert (!unnamed);
-  unnamed = NULL;
-  vec_safe_reserve (unnamed, count);
+  slurp->alloc_unnamed (count);
   for (unsigned ix = 0; ix != count; ix++)
     {
       unsigned snum = sec.u ();
@@ -9105,13 +9152,19 @@ module_state::read_unnamed (unsigned count, const range_t &range)
       mc_slot s;
       s = NULL_TREE;
       s.set_lazy (snum);
-      unnamed->quick_push (s);
+      slurp->unnamed->quick_push (s);
     }
 
   dump.outdent ();
-  if (!sec.end (from))
+  if (!sec.end (slurp->from))
     return false;
   return true;
+}
+
+void
+module_state::write_line_maps (elf_out *, line_maps *)
+{
+  // FIXME:Write something
 }
 
 /* Recursively find all the namespace bindings of NS.
@@ -9345,6 +9398,9 @@ module_state::write (elf_out *to)
   /* Write the unnamed.  */
   write_unnamed (to, sccs, unnamed, &crc);
 
+  /* Write the line maps.  */
+  write_line_maps (to, line_table);
+
   /* And finish up.  */
   write_config (to, our_opts, range, unnamed, crc);
 
@@ -9358,8 +9414,9 @@ module_state::write (elf_out *to)
 void
 module_state::read (int fd, int e, bool check_crc)
 {
-  from = new elf_in (fd, e);
-  if (!from->begin (loc))
+  gcc_checking_assert (!slurp);
+  slurp = new slurping (new elf_in (fd, e));
+  if (!slurp->from->begin (loc))
     return;
 
   range_t range;
@@ -9375,7 +9432,7 @@ module_state::read (int fd, int e, bool check_crc)
       if (ix == MODULE_LIMIT)
 	{
 	  sorry ("too many modules loaded (limit is %u)", ix);
-	  from->set_error (elf::E_BAD_IMPORT);
+	  slurp->from->set_error (elf::E_BAD_IMPORT);
 	  return;
 	}
       else
@@ -9389,12 +9446,12 @@ module_state::read (int fd, int e, bool check_crc)
   else
     gcc_assert (mod == MODULE_PURVIEW);
 
-  (*remap)[MODULE_PURVIEW] = mod;
+  (*slurp->remap)[MODULE_PURVIEW] = mod;
   dump () && dump ("Assigning %N module number %u", name, mod);
 
   /* We should not have been frozen during the importing done by
      read_config.  */
-  gcc_assert (!from->is_frozen ());
+  gcc_assert (!slurp->from->is_frozen ());
 
   /* Read the namespace hierarchy. */
   auto_vec<tree> spaces;
@@ -9410,8 +9467,9 @@ module_state::read (int fd, int e, bool check_crc)
     return;
 
   /* We're done with the string and non-decl sections now.  */
-  from->release ();
-  lazy = range.second - range.first;
+  slurp->from->release ();
+  slurp->remaining = range.second - range.first;
+  slurp->lru = ++lazy_lru;
 
   if (mod == MODULE_PURVIEW || !flag_module_lazy)
     {
@@ -9421,7 +9479,7 @@ module_state::read (int fd, int e, bool check_crc)
       for (unsigned ix = range.first; ix != hwm; ix++)
 	{
 	  load_section (ix);
-	  if (from->has_error ())
+	  if (slurp->from->has_error ())
 	    break;
 	}
     }
@@ -9430,12 +9488,12 @@ module_state::read (int fd, int e, bool check_crc)
 void
 module_state::maybe_defrost ()
 {
-  if (from->is_frozen ())
+  if (slurp->from->is_frozen ())
     {
       if (lazy_open <= 0)
 	freeze_an_elf ();
       dump () && dump ("Defrosting %s", filename);
-      from->defrost (maybe_add_bmi_prefix (filename));
+      slurp->from->defrost (maybe_add_bmi_prefix (filename));
       lazy_open--;
     }
 }
@@ -9447,13 +9505,13 @@ module_state::load_section (unsigned snum)
 {
   maybe_defrost ();
 
-  unsigned old_loading = loading;
-  loading = snum;
-  lru = 0;  /* Do not swap out.  */
+  unsigned old_current = slurp->current;
+  slurp->current = snum;
+  slurp->lru = 0;  /* Do not swap out.  */
   read_cluster (snum);
-  lru = ++lazy_lru;
-  loading = old_loading;
-  lazy--;
+  slurp->lru = ++lazy_lru;
+  slurp->current = old_current;
+  slurp->remaining--;
 }
 
 /* After a reading operation, make sure things are still ok.  If not,
@@ -9465,22 +9523,23 @@ module_state::load_section (unsigned snum)
 bool
 module_state::check_read (bool outermost, tree ns, tree id)
 {
-  bool done = loading == ~0u && (from->has_error () || !lazy);
+  bool done = (slurp->current == ~0u
+	       && (slurp->from->has_error () || !slurp->remaining));
   if (done)
     {
       lazy_open++;
-      from->end ();
+      slurp->from->end ();
     }
 
-  int e = from->has_error ();
+  int e = slurp->from->has_error ();
   if (e)
     {
-      const char *err = from->get_error (filename);
+      const char *err = slurp->from->get_error (filename);
       /* Failure to read a module is going to cause big
 	 problems, so bail out, if this is the top level.
 	 Otherwise return NULL to let our importer know (and
 	 fail).  */
-      if (lazy && id)
+      if (slurp->remaining && id)
 	error_at (loc, "failed to load binding %<%E%s%E@%E%>: %s",
 		  ns, &"::"[ns == global_namespace ? 2 : 0], id, name, err);
       else if (filename)
@@ -9879,7 +9938,6 @@ module_state::do_import (char const *fname, bool check_crc)
 
   announce ("importing");
   imported = true;
-  lru = ++lazy_lru;
   lazy_open--;
   
   read (fd, e, check_crc);
@@ -9898,16 +9956,16 @@ module_state::freeze_an_elf ()
   for (unsigned ix = modules->length (); ix--;)
     {
       module_state *candidate = (*modules)[ix];
-      if (candidate && candidate->from && candidate->lru
-	  && candidate->from->is_freezable ()
-	  && (!victim || victim->lru > candidate->lru))
+      if (candidate && candidate->slurp && candidate->slurp->lru
+	  && candidate->slurp->from->is_freezable ()
+	  && (!victim || victim->slurp->lru > candidate->slurp->lru))
 	victim = candidate;
     }
 
   if (victim)
     {
       dump () && dump ("Freezing %s", victim->filename);
-      victim->from->freeze ();
+      victim->slurp->from->freeze ();
       lazy_open++;
     }
   else
@@ -9925,11 +9983,11 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
   unsigned snum = mslot->get_lazy ();
   dump () && dump ("Lazily binding %P@%N section:%u", ns, id, name, snum);
 
-  if (snum < loading && flag_module_lazy)
+  if (snum < slurp->current && flag_module_lazy)
     load_section (snum);
 
   if (mslot->is_lazy ())
-    from->set_error (elf::E_BAD_LAZY);
+    slurp->from->set_error (elf::E_BAD_LAZY);
 
   bool failed = check_read (outermost, ns, id);
   gcc_assert (!failed || !outermost);
@@ -10051,17 +10109,16 @@ module_state::atom_preamble (location_t loc)
   if (!mapper->is_live ())
     return false;
 
-
   hash_table<module_state_hash>::iterator end (hash->end ());
   for (hash_table<module_state_hash>::iterator iter (hash->begin ());
        iter != end; ++iter)
     {
       module_state *imp = *iter;
-      gcc_assert (mapper->is_file () || !imp->filename);
+      gcc_checking_assert (mapper->is_file () || !imp->filename);
       if (imp->direct)
 	directs.quick_push (imp);
       else
-	gcc_assert (imp == interface || imp->is_mapping ());
+	gcc_checking_assert (imp == interface || imp->is_mapping ());
     }
 
   if (!mapper->is_file ())

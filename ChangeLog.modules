@@ -1,3 +1,10 @@
+2018-06-14  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (struct slurping): New, broken out of ...
+	(struct module_state): ... here.  Move loading data there and
+	adjust all users.
+
 2018-06-13  Nathan Sidwell  <nathan@acm.org>
 
 	Reorg line_map data structures.
