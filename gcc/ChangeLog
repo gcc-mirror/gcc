@@ -1,3 +1,9 @@
+2018-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85945
+	* lower-subreg.c (find_decomposable_subregs): Don't decompose float
+	subregs of multi-word pseudos unless the float mode has word size.
+
 2018-06-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/86139
