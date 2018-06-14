@@ -1298,6 +1298,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  "tuple index is in range");
     };
 
+#if __cplusplus >= 201402L
+#define __cpp_lib_tuple_element_t 201402L
+
+  template<size_t __i, typename _Tp>
+    using tuple_element_t = typename tuple_element<__i, _Tp>::type;
+#endif
+
   template<std::size_t __i, typename _Head, typename... _Tail>
     constexpr _Head&
     __get_helper(_Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
@@ -1338,7 +1345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::forward<const __element_type&&>(std::get<__i>(__t));
     }
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
 
 #define __cpp_lib_tuples_by_type 201304
 
@@ -1470,6 +1477,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2275. Why is forward_as_tuple not constexpr?
+  /// std::forward_as_tuple
   template<typename... _Elements>
     constexpr tuple<_Elements&&...>
     forward_as_tuple(_Elements&&... __args) noexcept
