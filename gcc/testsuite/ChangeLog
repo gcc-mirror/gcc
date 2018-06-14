@@ -1,5 +1,9 @@
 2018-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/86048
+	* gcc.target/i386/pr86048.c: Require sse2 effective target.  Add
+	-msse2 to dg-options.
+
 	PR middle-end/86122
 	* gcc.c-torture/compile/pr86122.c: New test.
 
