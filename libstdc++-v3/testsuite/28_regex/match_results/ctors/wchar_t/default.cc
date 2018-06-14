@@ -23,8 +23,9 @@
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_common_types.h>
 
-// Tests default constructor of the match_result class.  
+// Tests default constructor of the match_result class.
 void test01()
 {
   std::wcmatch cm;
@@ -43,10 +44,18 @@ void test02()
   VERIFY( sm.begin() == sm.end() ); // PR libstdc++/83600
 }
 
+void test03()
+{
+  // P0935R0
+  __gnu_test::implicitly_default_constructible test;
+  test.operator()<std::wcmatch>();
+  test.operator()<std::wsmatch>();
+}
+
 int
 main()
-{ 
+{
   test01();
   test02();
-  return 0;
+  test03();
 }

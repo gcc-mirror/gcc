@@ -1,5 +1,17 @@
 2018-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	P0935R0 Eradicating unnecessarily explicit default constructors
+	* include/backward/strstream (strstreambuf): Add non-explicit default
+	constructor.
+	* include/bits/locale_conv.h (wbuffer_convert, wstring_convert):
+	Likewise.
+	* include/bits/regex.h (match_results): Likewise.
+	* testsuite/22_locale/conversions/buffer/1.cc: Test for non-explicit
+	default constructor.
+	* testsuite/22_locale/conversions/string/1.cc: Likewise.
+	* testsuite/28_regex/match_results/ctors/char/default.cc: Likewise.
+	* testsuite/28_regex/match_results/ctors/wchar_t/default.cc: Likewise.
+
 	* include/std/tuple (__cpp_lib_tuple_element_t): Move feature test
 	macro from <utility> and change type to long.
 	* include/std/utility (__cpp_lib_tuple_element_t): Remove.
