@@ -46,6 +46,7 @@ test02()
 {
   __gnu_test::implicitly_default_constructible test;
   test.operator()<__gnu_cxx::normal_mv_distribution<2>>();
+  test.operator()<__gnu_cxx::normal_mv_distribution<2>::param_type>();
 }
 
 int main()

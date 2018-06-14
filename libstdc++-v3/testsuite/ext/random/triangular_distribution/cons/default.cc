@@ -41,6 +41,7 @@ test02()
 {
   __gnu_test::implicitly_default_constructible test;
   test.operator()<__gnu_cxx::triangular_distribution<>>();
+  test.operator()<__gnu_cxx::triangular_distribution<>::param_type>();
 }
 
 int main()

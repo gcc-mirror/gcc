@@ -44,6 +44,7 @@ test02()
 {
   __gnu_test::implicitly_default_constructible test;
   test.operator()<std::negative_binomial_distribution<>>();
+  test.operator()<std::negative_binomial_distribution<>::param_type>();
 }
 
 int

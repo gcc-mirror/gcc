@@ -39,6 +39,7 @@ test02()
 {
   __gnu_test::implicitly_default_constructible test;
   test.operator()<__gnu_cxx::arcsine_distribution<>>();
+  test.operator()<__gnu_cxx::arcsine_distribution<>::param_type>();
 }
 
 int

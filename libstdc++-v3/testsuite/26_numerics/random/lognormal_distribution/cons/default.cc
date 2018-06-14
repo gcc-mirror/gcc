@@ -44,6 +44,7 @@ test02()
 {
   __gnu_test::implicitly_default_constructible test;
   test.operator()<std::lognormal_distribution<>>();
+  test.operator()<std::lognormal_distribution<>::param_type>();
 }
 
 int

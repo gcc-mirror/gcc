@@ -44,6 +44,7 @@ test02()
 {
   __gnu_test::implicitly_default_constructible test;
   test.operator()<std::cauchy_distribution<>>();
+  test.operator()<std::cauchy_distribution<>::param_type>();
 }
 
 int main()
