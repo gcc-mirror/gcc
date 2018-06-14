@@ -1,5 +1,13 @@
 2018-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	LWG 3074 make scalar types non-deduced in valarray non-member functions
+	* include/bits/valarray_after.h (_DEFINE_EXPR_BINARY_FUNCTION): Change
+	scalar parameters to be a non-deduced context.
+	* include/std/valarray (_DEFINE_BINARY_OPERATOR): Likewise. Adjust
+	whitespace.
+	* testsuite/26_numerics/valarray/operators.cc: Test scalar operands.
+	* testsuite/26_numerics/valarray/transcend.cc: New.
+
 	* include/std/tuple (__cpp_lib_tuple_element_t, tuple_element_t):
 	Move back to <utility>.
 	* include/std/utility (__cpp_lib_tuple_element_t. tuple_element_t):

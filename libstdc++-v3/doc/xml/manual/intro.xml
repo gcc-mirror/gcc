@@ -1160,6 +1160,14 @@ requirements of the license of GCC.
     <listitem><para>Add noexcept.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr3074"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#3074">3074</link>:
+       <emphasis>Non-member functions for <code>valarray</code> should only deduce from the <code>valarray</code>
+       </emphasis>
+    </term>
+    <listitem><para>Change scalar operands to be non-deduced context, so that
+      they will allow conversions from other types to the value_type.
+    </para></listitem></varlistentry>
+
   </variablelist>
 
  </section>
