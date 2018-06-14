@@ -1298,13 +1298,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  "tuple index is in range");
     };
 
-#if __cplusplus >= 201402L
-#define __cpp_lib_tuple_element_t 201402L
-
-  template<size_t __i, typename _Tp>
-    using tuple_element_t = typename tuple_element<__i, _Tp>::type;
-#endif
-
   template<std::size_t __i, typename _Head, typename... _Tail>
     constexpr _Head&
     __get_helper(_Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
