@@ -48,3 +48,7 @@
  -latomic -lc -lgcc --end-group %{!qnolinkcmds: -T linkcmds%s}}}"
 
 #define TARGET_POSIX_IO
+
+/* Prefer int for int32_t (see stdint-newlib.h).  */
+#undef STDINT_LONG32
+#define STDINT_LONG32 (INT_TYPE_SIZE != 32 && LONG_TYPE_SIZE == 32)
