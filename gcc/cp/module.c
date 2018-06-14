@@ -1743,11 +1743,11 @@ elf_out::grow (char *data, unsigned needed)
       /* First allocation, align to SECTION_ALIGN now.  */
       if (unsigned padding = pos & (SECTION_ALIGN - 1))
 	{
+	  padding = SECTION_ALIGN - padding;
 #ifndef MAPPED_WRITING
 	  /* Align the section on disk, should help the necessary copies.
 	     fseeking to extend is non-portable.  */
 	  static char zero[SECTION_ALIGN];
-	  padding = SECTION_ALIGN - padding;
 	  if (::write (fd, &zero, padding) != padding)
 	    set_error (errno);
 #endif
@@ -1872,6 +1872,7 @@ unsigned
 elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
 	      unsigned flags)
 {
+  gcc_checking_assert (!(off & (SECTION_ALIGN - 1)));
   if (sectab.pos + sizeof (section) > sectab.size)
     data::simple_memory.grow (sectab, sectab.pos + sizeof (section), false);
   section *sec = reinterpret_cast <section *> (sectab.buffer + sectab.pos);

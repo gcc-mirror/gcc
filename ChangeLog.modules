@@ -1,5 +1,10 @@
 2018-06-14  Nathan Sidwell  <nathan@acm.org>
 
+	Fix section alignment.
+	gcc/cp/
+	* module.c (elf_out::grow): Fix padding calc.
+	(elf_out::add): Assert aligned.
+
 	Write out line maps.
 	gcc/cp/
 	* cp-tree.g (atom_module_preamble, finish_module): Add line_maps.
