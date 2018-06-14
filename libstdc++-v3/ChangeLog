@@ -1,3 +1,12 @@
+2018-06-14  Daniel Trebbien <dtrebbien@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83982
+	* include/bits/vector.tcc (vector::_M_default_append(size_type)):
+	Default-construct new elements before moving existing ones.
+	* testsuite/23_containers/vector/capacity/resize/strong_guarantee.cc:
+	New.
+
 2018-06-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86127
