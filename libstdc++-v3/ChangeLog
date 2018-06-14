@@ -1,5 +1,11 @@
 2018-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/tuple (__cpp_lib_tuple_element_t): Move feature test
+	macro from <utility> and change type to long.
+	* include/std/utility (__cpp_lib_tuple_element_t): Remove.
+	* testsuite/20_util/tuple/tuple_element_t.cc: Check for feature test
+	macro.
+
 	P0935R0 Eradicating unnecessarily explicit default constructors
 	* include/bits/random.h (uniform_real_distribution::param_type)
 	(normal_distribution::param_type, lognormal_distribution::param_type)

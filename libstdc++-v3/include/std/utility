@@ -135,13 +135,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename add_cv<__tuple_element_t<__i, _Tp>>::type type;
     };
 
-#if __cplusplus > 201103L
-#define __cpp_lib_tuple_element_t 201402
-
-  template<std::size_t __i, typename _Tp>
-    using tuple_element_t = typename tuple_element<__i, _Tp>::type;
-#endif
-
   // Various functions which give std::pair a tuple-like interface.
 
   /// Partial specialization for std::pair
