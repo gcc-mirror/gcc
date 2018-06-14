@@ -4841,6 +4841,7 @@ instantiate_cx_fn_r (tree *tp, int *walk_subtrees, void */*data*/)
   if (TREE_CODE (*tp) == FUNCTION_DECL
       && DECL_DECLARED_CONSTEXPR_P (*tp)
       && !DECL_INITIAL (*tp)
+      && !trivial_fn_p (*tp)
       && DECL_TEMPLOID_INSTANTIATION (*tp))
     {
       ++function_depth;

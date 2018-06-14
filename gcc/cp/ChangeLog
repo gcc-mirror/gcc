@@ -1,5 +1,9 @@
 2018-06-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86099 - ICE with trivial copy and non-trivial default ctor.
+	* constexpr.c (instantiate_cx_fn_r): Don't synthesize trivial
+	constructors.
+
 	PR c++/86094 - wrong code with defaulted move ctor.
 	* class.c (classtype_has_non_deleted_move_ctor): New.
 	* tree.c (maybe_warn_parm_abi, type_has_nontrivial_copy_init):
