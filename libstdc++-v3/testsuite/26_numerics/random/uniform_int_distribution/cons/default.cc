@@ -44,6 +44,7 @@ test02()
 {
   __gnu_test::implicitly_default_constructible test;
   test.operator()<std::uniform_int_distribution<>>();
+  test.operator()<std::uniform_int_distribution<>::param_type>();
 }
 
 int

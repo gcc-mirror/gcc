@@ -1745,9 +1745,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef uniform_real_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(0) { }
+
 	explicit
-	param_type(_RealType __a = _RealType(0),
-		   _RealType __b = _RealType(1))
+	param_type(_RealType __a, _RealType __b = _RealType(1))
 	: _M_a(__a), _M_b(__b)
 	{
 	  __glibcxx_assert(_M_a <= _M_b);
@@ -1974,9 +1975,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef normal_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(0.0) { }
+
 	explicit
-	param_type(_RealType __mean = _RealType(0),
-		   _RealType __stddev = _RealType(1))
+	param_type(_RealType __mean, _RealType __stddev = _RealType(1))
 	: _M_mean(__mean), _M_stddev(__stddev)
 	{
 	  __glibcxx_assert(_M_stddev > _RealType(0));
@@ -2194,9 +2196,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef lognormal_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(0.0) { }
+
 	explicit
-	param_type(_RealType __m = _RealType(0),
-		   _RealType __s = _RealType(1))
+	param_type(_RealType __m, _RealType __s = _RealType(1))
 	: _M_m(__m), _M_s(__s)
 	{ }
 
@@ -2405,9 +2408,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef gamma_distribution<_RealType> distribution_type;
 	friend class gamma_distribution<_RealType>;
 
+	param_type() : param_type(1.0) { }
+
 	explicit
-	param_type(_RealType __alpha_val = _RealType(1),
-		   _RealType __beta_val = _RealType(1))
+	param_type(_RealType __alpha_val, _RealType __beta_val = _RealType(1))
 	: _M_alpha(__alpha_val), _M_beta(__beta_val)
 	{
 	  __glibcxx_assert(_M_alpha > _RealType(0));
@@ -2631,8 +2635,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef chi_squared_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_RealType __n = _RealType(1))
+	param_type(_RealType __n)
 	: _M_n(__n)
 	{ }
 
@@ -2853,9 +2859,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef cauchy_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(0) { }
+
 	explicit
-	param_type(_RealType __a = _RealType(0),
-		   _RealType __b = _RealType(1))
+	param_type(_RealType __a, _RealType __b = _RealType(1))
 	: _M_a(__a), _M_b(__b)
 	{ }
 
@@ -3060,9 +3067,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef fisher_f_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_RealType __m = _RealType(1),
-		   _RealType __n = _RealType(1))
+	param_type(_RealType __m, _RealType __n = _RealType(1))
 	: _M_m(__m), _M_n(__n)
 	{ }
 
@@ -3291,8 +3299,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef student_t_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_RealType __n = _RealType(1))
+	param_type(_RealType __n)
 	: _M_n(__n)
 	{ }
 
@@ -3513,8 +3523,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef bernoulli_distribution distribution_type;
 
+      param_type() : param_type(0.5) { }
+
       explicit
-      param_type(double __p = 0.5)
+      param_type(double __p)
       : _M_p(__p)
       {
 	__glibcxx_assert((_M_p >= 0.0) && (_M_p <= 1.0));
@@ -3732,8 +3744,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef binomial_distribution<_IntType> distribution_type;
 	friend class binomial_distribution<_IntType>;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_IntType __t = _IntType(1), double __p = 0.5)
+	param_type(_IntType __t, double __p = 0.5)
 	: _M_t(__t), _M_p(__p)
 	{
 	  __glibcxx_assert((_M_t >= _IntType(0))
@@ -3970,8 +3984,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef geometric_distribution<_IntType> distribution_type;
 	friend class geometric_distribution<_IntType>;
 
+	param_type() : param_type(0.5) { }
+
 	explicit
-	param_type(double __p = 0.5)
+	param_type(double __p)
 	: _M_p(__p)
 	{
 	  __glibcxx_assert((_M_p > 0.0) && (_M_p < 1.0));
@@ -4177,8 +4193,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef negative_binomial_distribution<_IntType> distribution_type;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_IntType __k = 1, double __p = 0.5)
+	param_type(_IntType __k, double __p = 0.5)
 	: _M_k(__k), _M_p(__p)
 	{
 	  __glibcxx_assert((_M_k > 0) && (_M_p > 0.0) && (_M_p <= 1.0));
@@ -4407,8 +4425,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef poisson_distribution<_IntType> distribution_type;
 	friend class poisson_distribution<_IntType>;
 
+	param_type() : param_type(1.0) { }
+
 	explicit
-	param_type(double __mean = 1.0)
+	param_type(double __mean)
 	: _M_mean(__mean)
 	{
 	  __glibcxx_assert(_M_mean > 0.0);
@@ -4630,8 +4650,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef exponential_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(1.0) { }
+
 	explicit
-	param_type(_RealType __lambda = _RealType(1))
+	param_type(_RealType __lambda)
 	: _M_lambda(__lambda)
 	{
 	  __glibcxx_assert(_M_lambda > _RealType(0));
@@ -4843,9 +4865,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef weibull_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(1.0) { }
+
 	explicit
-	param_type(_RealType __a = _RealType(1),
-		   _RealType __b = _RealType(1))
+	param_type(_RealType __a, _RealType __b = _RealType(1.0))
 	: _M_a(__a), _M_b(__b)
 	{ }
 
@@ -5052,9 +5075,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef extreme_value_distribution<_RealType> distribution_type;
 
+	param_type() : param_type(0.0) { }
+
 	explicit
-	param_type(_RealType __a = _RealType(0),
-		   _RealType __b = _RealType(1))
+	param_type(_RealType __a, _RealType __b = _RealType(1.0))
 	: _M_a(__a), _M_b(__b)
 	{ }
 

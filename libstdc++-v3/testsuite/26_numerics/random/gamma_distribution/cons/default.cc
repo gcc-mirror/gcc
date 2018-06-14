@@ -44,6 +44,7 @@ test02()
 {
   __gnu_test::implicitly_default_constructible test;
   test.operator()<std::gamma_distribution<>>();
+  test.operator()<std::gamma_distribution<>::param_type>();
 }
 
 int main()

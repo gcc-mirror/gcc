@@ -43,6 +43,7 @@ test02()
 {
   __gnu_test::implicitly_default_constructible test;
   test.operator()<std::exponential_distribution<>>();
+  test.operator()<std::exponential_distribution<>::param_type>();
 }
 
 int main()

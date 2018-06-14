@@ -42,6 +42,7 @@ test02()
 {
   __gnu_test::implicitly_default_constructible test;
   test.operator()<std::discrete_distribution<>>();
+  test.operator()<std::discrete_distribution<>::param_type>();
 }
 
 int main()
