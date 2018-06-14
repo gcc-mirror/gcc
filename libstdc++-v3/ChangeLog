@@ -1,5 +1,11 @@
 2018-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	LWG 3075 basic_string needs deduction guides from basic_string_view
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc: Test
+	deduction from string views.
+	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc:
+	Likewise.
+
 	LWG 3074 make scalar types non-deduced in valarray non-member functions
 	* include/bits/valarray_after.h (_DEFINE_EXPR_BINARY_FUNCTION): Change
 	scalar parameters to be a non-deduced context.
