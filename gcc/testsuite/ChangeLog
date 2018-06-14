@@ -1,3 +1,8 @@
+2018-06-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86063
+	* g++.dg/cpp0x/gen-attrs-65.C: New test.
+
 2018-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/86048
