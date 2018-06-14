@@ -1,3 +1,8 @@
+2018-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85945
+	* gcc.c-torture/compile/pr85945.c: New test.
+
 2018-06-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86114
