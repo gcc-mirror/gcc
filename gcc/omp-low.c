@@ -2463,9 +2463,13 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		  return true;
 		}
 	    }
+	  else if (gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
+		   || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE)
+	    return true;
 	  error_at (gimple_location (stmt),
 		    "OpenMP constructs other than %<#pragma omp ordered simd%>"
-		    " may not be nested inside %<simd%> region");
+		    " or %<#pragma omp atomic%> may not be nested inside"
+		    " %<simd%> region");
 	  return false;
 	}
       else if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS)

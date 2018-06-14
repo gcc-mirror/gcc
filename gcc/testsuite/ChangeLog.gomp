@@ -1,3 +1,7 @@
+2018-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/simd7.c: New test.
+
 2018-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/depend-iterator-1.c: New test.
