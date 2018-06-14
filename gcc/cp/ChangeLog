@@ -1,3 +1,9 @@
+2018-06-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86063
+	* decl2.c (cp_check_const_attributes): Skip trees that are not
+	TREE_LISTs.
+
 2018-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	P0624R2 - Default constructible and assignable stateless lambdas
