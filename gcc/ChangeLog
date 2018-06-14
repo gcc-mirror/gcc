@@ -1,3 +1,7 @@
+2018-06-14  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rtems.h (STDINT_LONG32): Define.
+
 2018-06-13  Matthew Fortune  <matthew.fortune@mips.com>
 	    Prachi Godbole  <prachi.godbole@imgtec.com>
 
