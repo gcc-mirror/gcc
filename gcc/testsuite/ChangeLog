@@ -1,5 +1,8 @@
 2018-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/86122
+	* gcc.c-torture/compile/pr86122.c: New test.
+
 	PR target/85945
 	* gcc.c-torture/compile/pr85945.c: New test.
 

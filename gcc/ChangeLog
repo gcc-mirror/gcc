@@ -1,5 +1,9 @@
 2018-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/86122
+	* match.pd ((A +- CST1) +- CST2): Punt if last resort
+	unsigned_type_for returns NULL.
+
 	PR target/85945
 	* lower-subreg.c (find_decomposable_subregs): Don't decompose float
 	subregs of multi-word pseudos unless the float mode has word size.

@@ -1759,10 +1759,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   (neg_inner_op @0 { wide_int_to_tree (type, wi::to_wide (cst)); })
 	   /* Last resort, use some unsigned type.  */
 	   (with { tree utype = unsigned_type_for (type); }
-	    (view_convert (inner_op
-			   (view_convert:utype @0)
-			   (view_convert:utype
-			    { drop_tree_overflow (cst); })))))))))))))
+	    (if (utype)
+	     (view_convert (inner_op
+			    (view_convert:utype @0)
+			    (view_convert:utype
+			     { drop_tree_overflow (cst); }))))))))))))))
 
   /* (CST1 - A) +- CST2 -> CST3 - A  */
   (for outer_op (plus minus)
