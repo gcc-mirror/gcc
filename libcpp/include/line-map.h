@@ -1131,12 +1131,12 @@ extern const struct line_map *linemap_add
   (struct line_maps *, enum lc_reason, unsigned int sysp,
    const char *to_file, linenum_type to_line);
 
-/* Create a source location for a module.  These are constructed after
-   the TU has been tokenized, and the regular linemap stuff
-   created.  */
+/* Create or reseat a source location for a module.  The creator must
+   either do this after the TU is tokenized, or deal with saving and
+   restoring map state.  */
 
 extern source_location linemap_module_loc
-  (line_maps *, source_location from, const char *name);
+  (line_maps *, source_location from, source_location current, const char *name);
 
 /* Restore the linemap state such that the map at LWM-1 continues.  */
 extern unsigned linemap_module_restore

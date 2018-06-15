@@ -2611,6 +2611,8 @@ class GTY(()) module_state {
   unsigned mod;		/* Module owner number.  */
   unsigned crc;		/* CRC we saw reading it in. */
 
+  unsigned depth : 16;  /* Depth, direct imports are 0 */
+
   bool direct : 1;	/* A direct import.  */
   bool exported : 1;	/* We are exported.  */
   bool imported : 1;	/* Import has been done.  */
@@ -2676,7 +2678,7 @@ class GTY(()) module_state {
 
   /* Import tables. */
   void write_imports (bytes_out &cfg, bool direct_p);
-  int read_imports (bytes_in &cfg, line_maps *maps);
+  unsigned read_imports (bytes_in &cfg, line_maps *maps);
   void write_imports (elf_out *to, unsigned *crc_ptr);
   bool read_imports (line_maps *);
 
@@ -2740,7 +2742,7 @@ class GTY(()) module_state {
   bool read_locations (line_maps *);
 
  public:
-  void set_loc (const module_state *container);
+  void set_loc (line_maps *lmaps, const module_state *container);
   static module_state *find_module (location_t, tree, bool module_p);
   bool do_import (const char *filename, line_maps *, bool check_crc);
   static module_state *get_module (tree name, module_state * = NULL,
@@ -2782,7 +2784,7 @@ module_state::module_state (tree name)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     name (name), vec_name (NULL_TREE), slurp (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
-    mod (MODULE_UNKNOWN), crc (0)
+    mod (MODULE_UNKNOWN), crc (0), depth (65535)
 {
   direct = exported = imported = false;
 }
@@ -7766,6 +7768,7 @@ module_state::write_readme (elf_out *to, const char *options)
 }
 
 /* Write the direct or indirect imports.
+   u:N
    {
      u:index
      s:name
@@ -7773,12 +7776,17 @@ module_state::write_readme (elf_out *to, const char *options)
      s:filename (direct)
      u:exported (direct)
    } imports[N]
-   u:0
  */
 
 void
 module_state::write_imports (bytes_out &sec, bool direct)
 {
+  unsigned count = 0;
+  
+  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
+    count += (*modules)[ix]->direct == direct;
+
+  sec.u (count);
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
@@ -7800,106 +7808,111 @@ module_state::write_imports (bytes_out &sec, bool direct)
 	    }
 	}
     }
-  /* Mark end of table.  */
-  sec.u (0);
 }
 
-int
+unsigned
 module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 {
-  unsigned count = 0;
-  int from_len = -1;
-  for (unsigned ix; (ix = sec.u ()); count++)
+  struct tuple
+  {
+    module_state *imp;
+    unsigned ix;
+    bool exported;
+
+    tuple (module_state *imp, unsigned ix, bool exported)
+      : imp (imp), ix (ix), exported (exported)
     {
+    }
+  };
+  unsigned count = sec.u ();
+  auto_vec<tuple> imports (count);
+  unsigned loaded = 0;
+
+  /* First read the table, and initialize locations.
+     We do this in two passes to cluster line maps.  */
+  while (count--)
+    {
+      unsigned ix = sec.u ();
       if (ix >= slurp->remap->length ()
 	  || ix < MODULE_IMPORT_BASE || (*slurp->remap)[ix])
-	return -1;
+	break;
 
       size_t len;
       const char *name_str = sec.str (&len);
       tree name = get_identifier_with_length (name_str, len);
       unsigned crc = sec.u32 ();
       module_state *imp;
+      bool exported = false;
 
       if (lmaps)
 	{
 	  /* A direct import, maybe load it.  */
 	  size_t len;
 	  const char *filename_str = sec.str (&len);
-	  bool exported = sec.u ();
 
+	  exported = sec.u ();
 	  if (sec.get_overrun ())
-	    return -1;
+	    break;
 	  imp = find_module (loc, name, false);
 	  if (imp)
 	    {
-	      imp->set_loc (this);
+	      imp->set_loc (lmaps, this);
 	      if (!imp->is_imported ())
 		{
 		  imp->crc = crc;
-		  unsigned n = dump.push (imp);
-		  if (imp->filename)
-		    /* The mapper already specified.  Assume it knows what
-		       it's doing.  */
-		    filename_str = NULL;
-		  else if (filename_str[0])
+		  if (!imp->filename && filename_str[0])
 		    {
-		      /* Make it relative to how we got to this module.  */
-		      if (from_len < 0)
-			{
-			  from_len = 0;
-			  for (size_t pos = 0; filename[pos]; pos++)
-			    if (IS_DIR_SEPARATOR (filename[pos]))
-			      from_len = pos + 1;
-			}
-
-		      if (from_len)
-			{
-			  char *rel = XNEWVEC (char, from_len + len + 1);
-			  memcpy (rel, filename, from_len);
-			  memcpy (rel + from_len, filename_str, len + 1);
-			  imp->filename = rel;
-			  filename_str = NULL;
-			}
+		      char *rel = XNEWVEC (char, len + 1);
+		      memcpy (rel, filename_str, len + 1);
+		      imp->filename = rel;
 		    }
-		  else
-		    /* Ask the mapper.  */
-		    filename_str = module_mapper::import_export (imp, false);
-
-		  if (imp->do_import (filename_str, lmaps, true))
-		    set_import (imp, exported);
-		  else
-		    imp = NULL;
-		  dump.pop (n);
+		}
+	      else if (imp->crc != crc)
+		{
+		  error_at (loc, "import %qE has CRC mismatch", name);
+		  imp = NULL;
 		}
 	    }
 	}
       else
-	/* An indirect import, find it, it should be there.  */
-	imp = get_module (name);
-
-      if (imp && imp->filename && imp->crc != crc)
 	{
-	  error_at (loc, "import %qE has CRC mismatch", name);
-	  imp = NULL;
+	  /* An indirect import, find it, it should be there.  */
+	  imp = get_module (name);
+	  if (!imp)
+	    error_at (loc, "indirect import %qE is not already loaded", name);
 	}
-      else if (!imp && !direct)
-	error_at (loc, "indirect import %qE is not already loaded", name);
-
-      if (!imp)
-	{
-	  slurp->from->set_error (elf::E_BAD_IMPORT);
-	  return -1;
-	}
-
-      (*slurp->remap)[ix] = imp->mod;
-      dump () && dump ("Read %simport:%u %I->%u",
-		       !lmaps ? "indirect "
-		       : imp->exported ? "exported " : "", ix,
-		       imp->name, imp->mod);
+      if (imp)
+	imports.quick_push (tuple (imp, ix, exported));
     }
 
-  return count;
+  /* Now process the imports.  */
+  for (unsigned ix = 0; ix != imports.length (); ix++)
+    {
+      tuple &imp = imports[ix];
+      if (!imp.imp->is_imported ())
+	{
+	  char *fname = NULL;
+	  unsigned n = dump.push (imp.imp);
+	  if (!imp.imp->filename)
+	    fname = module_mapper::import_export (imp.imp, false);
+	  if (!imp.imp->do_import (fname, lmaps, true))
+	    imp.imp = NULL;
+	  dump.pop (n);
+	}
+
+      if (imp.imp)
+	{
+	  (*slurp->remap)[imp.ix] = imp.imp->mod;
+	  if (lmaps)
+	    set_import (imp.imp, imp.exported);
+	  dump () && dump ("Found %simport:%u %I->%u",
+			   !lmaps ? "indirect " : imp.imp->exported
+			   ? "exported " : "", imp.ix, imp.imp->name,
+			   imp.imp->mod);
+	  loaded++;
+	}
+    }
+  return loaded;
 }
 
 /* Write the import table to MOD_SNAME_PFX.imp.  */
@@ -7939,14 +7952,10 @@ module_state::read_imports (line_maps *lmaps)
   dump.indent ();
 
   /* Read the imports.  */
-  int direct = -1, indirect = -1;
-  direct = read_imports (sec, lmaps);
-  if (direct >= 0)
-    indirect = read_imports (sec, NULL);
-  if (indirect >= 0)
-    if (unsigned (direct) + unsigned (indirect) + MODULE_IMPORT_BASE
-	!= slurp->remap->length ())
-      sec.set_overrun ();
+  unsigned direct = read_imports (sec, lmaps);
+  unsigned indirect = read_imports (sec, NULL);
+  if (direct + indirect + MODULE_IMPORT_BASE != slurp->remap->length ())
+    slurp->from->set_error (elf::E_BAD_IMPORT);
 
   dump.outdent ();
   if (!sec.end (slurp->from))
@@ -10253,14 +10262,27 @@ make_flat_name (tree name)
   return get_identifier_with_length (&buffer[0], buffer.length ());
 }
 
-/* Create a location for module. */
-// FIXME: allow a more direct container import to take 'ownership'
+/* Create a location for module.  FROM is the importing module, which
+   is NULL for direct importation.  If FROM is shallower than
+   whatever may have previously set the location, we're reseated to
+   be FROM from.  */
 
 void
-module_state::set_loc (const module_state *)
+module_state::set_loc (line_maps *lmaps, const module_state *from)
 {
-  if (loc == UNKNOWN_LOCATION)
-    loc = make_module_loc (from_loc, IDENTIFIER_POINTER (name));
+  unsigned lwm = (from ? from->depth : 0) + 1;
+  gcc_checking_assert (lwm != 65536);
+  if (depth > lwm)
+    {
+      depth = lwm;
+      source_location import_loc = from ? from->loc : from_loc;
+      const char *name_str = NULL;
+      if (loc == UNKNOWN_LOCATION)
+	name_str = IDENTIFIER_POINTER (name);
+      else
+	dump () && dump ("Reseating %M to import of %M", this, from);
+      loc = linemap_module_loc (lmaps, import_loc, loc, name_str);
+    }
 }
 
 /* Module NAME is being imported or defined in the current TU.
@@ -10463,7 +10485,7 @@ import_module (const cp_expr &name, bool exporting, tree, line_maps *lmaps)
 	    {
 	      unsigned n = dump.push (imp);
 	      char *fname = module_mapper::import_export (imp, false);
-	      imp->set_loc (NULL);
+	      imp->set_loc (lmaps, NULL);
 	      imp->do_import (fname, lmaps, false);
 	      dump.pop (n);
 	    }
@@ -10498,7 +10520,7 @@ declare_module (const cp_expr &name, bool exporting_p, tree, line_maps *lmaps)
 	{
 	  unsigned n = dump.push (state);
 	  char *fname = module_mapper::import_export (state, exporting_p);
-	  state->set_loc (NULL);
+	  state->set_loc (lmaps, NULL);
 	  if (!exporting_p)
 	    state->do_import (fname, lmaps, false);
 	  else if (fname)
@@ -10612,7 +10634,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
 	  ok = false;
 	  error_at (imp->from_loc, "module %qE is unknown", imp->name);
 	}
-      imp->set_loc (NULL);
+      imp->set_loc (lmaps, NULL);
     }
 
   if (ok)
@@ -10637,7 +10659,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
 
   if (interface)
     {
-      interface->set_loc (NULL);
+      interface->set_loc (lmaps, NULL);
 
       /* Record the size of the hole the preamble created in the line
 	 table.  */

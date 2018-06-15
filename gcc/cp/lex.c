@@ -615,22 +615,6 @@ handle_pragma_implementation (cpp_reader* /*dfile*/)
     }
 }
 
-/* Create the module location, included at FROM.  */
-
-location_t
-make_module_loc (location_t from, const char *name)
-{
-  while (linemap_location_from_macro_expansion_p (line_table, from))
-    {
-      /* Find the ordinary location nearest FROM.  */
-      const line_map *map = linemap_lookup (line_table, from);
-      const line_map_macro *mac_map = linemap_check_macro (map);
-      from = MACRO_MAP_EXPANSION_POINT_LOCATION (mac_map);
-    }
-
-  return linemap_module_loc (line_table, from, name);
-}
-
 /* Issue an error message indicating that the lookup of NAME (an
    IDENTIFIER_NODE) failed.  Returns the ERROR_MARK_NODE.  */
 

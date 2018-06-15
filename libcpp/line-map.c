@@ -590,17 +590,44 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   return map;
 }
 
-/* Create a location for a module NAME imported at FROM.  */
+/* Create or reseat a location for a module NAME imported at FROM.  */
 
 source_location
-linemap_module_loc (line_maps *set, source_location from, const char *name)
+linemap_module_loc (line_maps *set, source_location from,
+		    source_location loc, const char *name)
 {
-  const line_map *map = linemap_add (set, LC_MODULE, false, name, 0);
+  /* Exactly one of LOC and NAME must be provided.  */
+  gcc_assert (!loc != !name);
 
-  const_cast <line_map_ordinary *> (linemap_check_ordinary (map))
-    ->included_at = from;
+  while (!IS_ORDINARY_LOC (from))
+    {
+      if (IS_ADHOC_LOC (from))
+	from = get_location_from_adhoc_loc (set, from);
+      if (IS_MACRO_LOC (from))
+	{
+	  /* Find the ordinary location nearest FROM.  */
+	  const line_map *map = linemap_lookup (set, from);
+	  const line_map_macro *mac_map = linemap_check_macro (map);
+	  from = MACRO_MAP_EXPANSION_POINT_LOCATION (mac_map);
+	}
+    }
 
-  return linemap_line_start (set, 0, 0);
+  const line_map_ordinary *map;
+
+  if (!loc)
+    {
+      /* Make a new loc.  */
+      map = linemap_check_ordinary (linemap_add
+				    (set, LC_MODULE, false, name, 0));
+      loc = linemap_line_start (set, 0, 0);
+    }
+  else
+    /* Reseat an existing loc.  */
+    map = linemap_ordinary_map_lookup (set, loc);
+
+  const_cast <line_map_ordinary *> (map)->included_at = from;
+
+  return loc;
 }
 
 /* A linemap at LWM-1 was interrupted to insert module locations & imports.

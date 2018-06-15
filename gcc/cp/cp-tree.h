@@ -6614,7 +6614,6 @@ extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
-extern location_t make_module_loc		(location_t, const char *name);
 extern unsigned atom_preamble_prefix_peek	(bool, bool, cpp_reader *);
 extern unsigned atom_preamble_prefix_next	(unsigned, cpp_reader *,
 						 unsigned, source_location);

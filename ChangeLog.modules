@@ -1,5 +1,19 @@
 2018-06-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (make_module_loc): Delete.
+	* lex.c (make_module_loc): Delete.
+	* module.c (module_state): Add depth field.
+	(module_state::set_loc): Deal with reseating.  Add line_maps parm.
+	(module_state::read_imports): Do two passes.
+	(module_state::write_imports): Write length.
+	gcc/testsuite/
+	* g++.dg/modules/import-1_e.C Adjust lang dump scan.
+	* g++.dg/modules/mod-imp-1_d.C: Likewise.
+	libcpp/
+	* include/line-map.h (linemap_module_loc): Add incomping loc parm.
+	* line-map.c (linemap_module_loc): Do reseating.
+
 	Location! Location! Location!
 	gcc/cp/
 	* module.c (module_state::slurper): New.
