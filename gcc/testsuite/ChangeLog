@@ -1,3 +1,8 @@
+2018-06-15  Nick Clifton  <nickc@redhat.com>
+
+	PR 84195
+	* gcc.c-torture/compile/pr84195.c: New test.
+
 2018-06-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/86159
