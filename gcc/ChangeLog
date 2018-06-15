@@ -1,3 +1,9 @@
+2018-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86076
+	* tree-cfg.c (move_stmt_op): unshare invariant addresses
+	before adjusting their block.
+
 2018-06-15  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (riscv*-*-elf* | riscv*-*-rtems*): Use custom
