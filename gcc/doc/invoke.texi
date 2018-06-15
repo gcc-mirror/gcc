@@ -878,6 +878,8 @@ Objective-C and Objective-C++ Dialects}.
 -meva  -mno-eva @gol
 -mvirt  -mno-virt @gol
 -mxpa  -mno-xpa @gol
+-mcrc -mno-crc @gol
+-mginv -mno-ginv @gol
 -mmicromips  -mno-micromips @gol
 -mmsa  -mno-msa @gol
 -mfpu=@var{fpu-type} @gol
@@ -20589,6 +20591,18 @@ Use (do not use) the MIPS Virtualization (VZ) instructions.
 @opindex mxpa
 @opindex mno-xpa
 Use (do not use) the MIPS eXtended Physical Address (XPA) instructions.
+
+@item -mcrc
+@itemx -mno-crc
+@opindex mcrc
+@opindex mno-crc
+Use (do not use) the MIPS Cyclic Redundancy Check (CRC) instructions.
+
+@item -mginv
+@itemx -mno-ginv
+@opindex mginv
+@opindex mno-ginv
+Use (do not use) the MIPS Global INValidate (GINV) instructions.
 
 @item -mlong64
 @opindex mlong64
