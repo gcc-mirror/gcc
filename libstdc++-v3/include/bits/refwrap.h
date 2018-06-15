@@ -291,14 +291,25 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
     {
       _Tp* _M_data;
 
+      static _Tp* _S_fun(_Tp& __r) noexcept { return std::__addressof(__r); }
+      static void _S_fun(_Tp&&) = delete;
+
+      template<typename _Up, typename _Up2 = __remove_cvref_t<_Up>>
+	using __not_same
+	  = typename enable_if<!is_same<reference_wrapper, _Up2>::value>::type;
+
     public:
       typedef _Tp type;
 
-      reference_wrapper(_Tp& __indata) noexcept
-      : _M_data(std::__addressof(__indata))
-      { }
-
-      reference_wrapper(_Tp&&) = delete;
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2993. reference_wrapper<T> conversion from T&&
+      // 3041. Unnecessary decay in reference_wrapper
+      template<typename _Up, typename = __not_same<_Up>, typename
+		= decltype(reference_wrapper::_S_fun(std::declval<_Up>()))>
+	reference_wrapper(_Up&& __uref)
+	noexcept(noexcept(reference_wrapper::_S_fun(std::declval<_Up>())))
+	: _M_data(reference_wrapper::_S_fun(std::forward<_Up>(__uref)))
+	{ }
 
       reference_wrapper(const reference_wrapper&) = default;
 
@@ -320,6 +331,10 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
 	}
     };
 
+#if __cpp_deduction_guides
+  template<typename _Tp>
+    reference_wrapper(_Tp&) -> reference_wrapper<_Tp>;
+#endif
 
   /// Denotes a reference should be taken to a variable.
   template<typename _Tp>
