@@ -780,8 +780,7 @@ struct GTY(()) line_maps {
      may require allocating a new line_map.  */
   unsigned int max_column_hint;
 
-  /* If non-null, the allocator to use when resizing 'maps'.  If null,
-     xrealloc is used.  */
+  /* The allocator to use when resizing 'maps', defaults to xrealloc.  */
   line_map_realloc reallocator;
 
   /* The allocators' function used to know the actual size it
@@ -1127,12 +1126,8 @@ extern const struct line_map *linemap_add
 extern source_location linemap_module_loc
   (line_maps *, source_location from, const char *name);
 
-/* Save linemap state just before parsing an ATOM preamble.  */
-extern unsigned linemap_save_pre_module
-  (line_maps *, source_location);
-
-/* Restore the linemap state such that the map at LWM continues.  */
-extern unsigned linemap_restore_pre_module
+/* Restore the linemap state such that the map at LWM-1 continues.  */
+extern unsigned linemap_module_restore
   (line_maps *, unsigned lwm);
 
 /* Given a logical source location, returns the map which the

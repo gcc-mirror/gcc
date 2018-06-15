@@ -603,27 +603,12 @@ linemap_module_loc (line_maps *set, source_location from, const char *name)
   return linemap_line_start (set, 0, 0);
 }
 
-/* We're about to parse a module preamble, and this will insert
-   linemaps.  Reset the current line map to end at FINAL, and return a
-   cookie we can use to restore the linemap state to that point.  */
-   
-unsigned
-linemap_save_pre_module (line_maps *set, source_location final)
-{
-  unsigned hwm = LINEMAPS_USED (set, false);
-
-  if (hwm)
-    set->highest_line = final;
-
-  return hwm;
-}
-
-/* A linemap at LWM was interrupted to insert module locations.
+/* A linemap at LWM-1 was interrupted to insert module locations & imports.
    Append a new map, continuing the interrupted one.  Return
    adjustment to apply to peeked cpp tokens.. */
 
 unsigned
-linemap_restore_pre_module (line_maps *set, unsigned lwm)
+linemap_module_restore (line_maps *set, unsigned lwm)
 {
   unsigned adjust = 0;
 
@@ -633,11 +618,12 @@ linemap_restore_pre_module (line_maps *set, unsigned lwm)
 	= linemap_check_ordinary (LINEMAPS_MAP_AT (set, false, lwm - 1));
       unsigned src_line = SOURCE_LINE (pre_map,
 				       LAST_SOURCE_LINE_LOCATION (pre_map));
-      const line_map_ordinary *post_map = linemap_check_ordinary
-	(linemap_add (set, LC_RENAME_VERBATIM,
-		      ORDINARY_MAP_IN_SYSTEM_HEADER_P (pre_map),
-		      ORDINARY_MAP_FILE_NAME (pre_map), src_line));
-      adjust = post_map->start_location - pre_map->start_location;
+      unsigned src_loc = pre_map->start_location;
+      if (const line_map *post_map
+	  = linemap_add (set, LC_RENAME_VERBATIM,
+			 ORDINARY_MAP_IN_SYSTEM_HEADER_P (pre_map),
+			 ORDINARY_MAP_FILE_NAME (pre_map), src_line))
+	  adjust = post_map->start_location - src_loc;
     }
 
   return adjust;

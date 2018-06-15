@@ -2647,7 +2647,7 @@ class GTY(()) module_state {
  public:
   /* Read and write module.  */
   void write (elf_out *to, line_maps *);
-  void read (int fd, int e, bool);
+  void read (int fd, int e, line_maps *, bool);
 
   /* Read a section.  */
   void load_section (unsigned snum);
@@ -2671,9 +2671,9 @@ class GTY(()) module_state {
 
   /* Import tables. */
   void write_imports (bytes_out &cfg, bool direct_p);
-  int read_imports (bytes_in &cfg, bool direct_p);
+  int read_imports (bytes_in &cfg, line_maps *maps);
   void write_imports (elf_out *to, unsigned *crc_ptr);
-  bool read_imports ();
+  bool read_imports (line_maps *);
 
   /* The configuration.  */
   void write_config (elf_out *to, const char *opts, const range_t &sec_range,
@@ -2735,8 +2735,9 @@ class GTY(()) module_state {
   bool read_locations (line_maps *);
 
  public:
+  void set_loc (const module_state *container);
   static module_state *find_module (location_t, tree, bool module_p);
-  bool do_import (const char *filename, bool check_crc);
+  bool do_import (const char *filename, line_maps *, bool check_crc);
   static module_state *get_module (tree name, module_state * = NULL,
 				   bool insert = false);
   static module_state *insert_mapping (tree name, char *filename);
@@ -2747,7 +2748,7 @@ class GTY(()) module_state {
  public:
   static void init ();
   static void fini ();
-  static bool atom_preamble (location_t loc, line_maps *, unsigned);
+  static int atom_preamble (location_t loc, line_maps *);
 
  public:
   /* Vector indexed by OWNER.  */
@@ -7762,7 +7763,7 @@ module_state::write_imports (bytes_out &sec, bool direct)
 }
 
 int
-module_state::read_imports (bytes_in &sec, bool direct)
+module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 {
   unsigned count = 0;
   int from_len = -1;
@@ -7778,8 +7779,9 @@ module_state::read_imports (bytes_in &sec, bool direct)
       unsigned crc = sec.u32 ();
       module_state *imp;
 
-      if (direct)
+      if (lmaps)
 	{
+	  /* A direct import, maybe load it.  */
 	  size_t len;
 	  const char *filename_str = sec.str (&len);
 	  bool exported = sec.u ();
@@ -7787,46 +7789,51 @@ module_state::read_imports (bytes_in &sec, bool direct)
 	  if (sec.get_overrun ())
 	    return -1;
 	  imp = find_module (loc, name, false);
-	  if (imp && !imp->is_imported ())
+	  if (imp)
 	    {
-	      imp->crc = crc;
-	      unsigned n = dump.push (imp);
-	      if (imp->filename)
-		/* The mapper already specified.  Assume it knows what
-		   it's doing.  */
-		filename_str = NULL;
-	      else if (filename_str[0])
+	      imp->set_loc (this);
+	      if (!imp->is_imported ())
 		{
-		  /* Make it relative to how we got to this module.  */
-		  if (from_len < 0)
+		  imp->crc = crc;
+		  unsigned n = dump.push (imp);
+		  if (imp->filename)
+		    /* The mapper already specified.  Assume it knows what
+		       it's doing.  */
+		    filename_str = NULL;
+		  else if (filename_str[0])
 		    {
-		      from_len = 0;
-		      for (size_t pos = 0; filename[pos]; pos++)
-			if (IS_DIR_SEPARATOR (filename[pos]))
-			  from_len = pos + 1;
-		    }
+		      /* Make it relative to how we got to this module.  */
+		      if (from_len < 0)
+			{
+			  from_len = 0;
+			  for (size_t pos = 0; filename[pos]; pos++)
+			    if (IS_DIR_SEPARATOR (filename[pos]))
+			      from_len = pos + 1;
+			}
 
-		  if (from_len)
-		    {
-		      char *rel = XNEWVEC (char, from_len + len + 1);
-		      memcpy (rel, filename, from_len);
-		      memcpy (rel + from_len, filename_str, len + 1);
-		      imp->filename = rel;
-		      filename_str = NULL;
+		      if (from_len)
+			{
+			  char *rel = XNEWVEC (char, from_len + len + 1);
+			  memcpy (rel, filename, from_len);
+			  memcpy (rel + from_len, filename_str, len + 1);
+			  imp->filename = rel;
+			  filename_str = NULL;
+			}
 		    }
+		  else
+		    /* Ask the mapper.  */
+		    filename_str = module_mapper::import_export (imp, false);
+
+		  if (imp->do_import (filename_str, lmaps, true))
+		    set_import (imp, exported);
+		  else
+		    imp = NULL;
+		  dump.pop (n);
 		}
-	      else
-		/* Ask the mapper.  */
-		filename_str = module_mapper::import_export (imp, false);
-
-	      if (!imp->do_import (filename_str, true))
-		imp = NULL;
-	      else
-		set_import (imp, exported);
-	      dump.pop (n);
 	    }
 	}
       else
+	/* An indirect import, find it, it should be there.  */
 	imp = get_module (name);
 
       if (imp && imp->filename && imp->crc != crc)
@@ -7845,7 +7852,7 @@ module_state::read_imports (bytes_in &sec, bool direct)
 
       (*slurp->remap)[ix] = imp->mod;
       dump () && dump ("Read %simport:%u %I->%u",
-		       !direct ? "indirect "
+		       !lmaps ? "indirect "
 		       : imp->exported ? "exported " : "", ix,
 		       imp->name, imp->mod);
     }
@@ -7875,7 +7882,7 @@ module_state::write_imports (elf_out *to, unsigned *crc_ptr)
 }
 
 bool
-module_state::read_imports ()
+module_state::read_imports (line_maps *lmaps)
 {
   if (slurp->remap->length () == MODULE_IMPORT_BASE)
     return true;
@@ -7891,9 +7898,9 @@ module_state::read_imports ()
 
   /* Read the imports.  */
   int direct = -1, indirect = -1;
-  direct = read_imports (sec, true);
+  direct = read_imports (sec, lmaps);
   if (direct >= 0)
-    indirect = read_imports (sec, false);
+    indirect = read_imports (sec, NULL);
   if (indirect >= 0)
     if (unsigned (direct) + unsigned (indirect) + MODULE_IMPORT_BASE
 	!= slurp->remap->length ())
@@ -7985,8 +7992,7 @@ module_state::write_config (elf_out *to, const char *opt_str,
 }
 
 bool
-module_state::read_config (range_t &sec_range, unsigned &unnamed,
-			   bool check_crc)
+module_state::read_config (range_t &sec_range, unsigned &unnamed, bool check_crc)
 {
   bytes_in cfg;
 
@@ -9438,6 +9444,13 @@ module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
   dump.outdent ();
 }
 
+bool
+module_state::read_locations (line_maps *)
+{
+  // FIXME:Implement
+  return true;
+}
+
 /* Recursively find all the namespace bindings of NS.
    Add a depset for every binding that contains an export or
    module-linkage entity.  Add a defining depset for every such decl
@@ -9688,7 +9701,7 @@ module_state::write (elf_out *to, line_maps *lmaps)
    be lazy, if this is an import and flag_module_lazy is in effect.  */
 
 void
-module_state::read (int fd, int e, bool check_crc)
+module_state::read (int fd, int e, line_maps *lmaps, bool check_crc)
 {
   gcc_checking_assert (!slurp);
   slurp = new slurping (new elf_in (fd, e));
@@ -9701,8 +9714,12 @@ module_state::read (int fd, int e, bool check_crc)
   if (!read_config (range, unnamed, check_crc))
     return;
 
+  /* Reading locations preallocates the line maps we'll use.  */
+  if (!read_locations (lmaps))
+    return;
+
   /* Read the import table.  */
-  if (!read_imports ())
+  if (!read_imports (lmaps))
     return;
 
   /* Determine the module's number.  */
@@ -10108,6 +10125,16 @@ make_flat_name (tree name)
   return get_identifier_with_length (&buffer[0], buffer.length ());
 }
 
+/* Create a location for module. */
+// FIXME: allow a more direct container import to take 'ownership'
+
+void
+module_state::set_loc (const module_state *)
+{
+  if (loc == UNKNOWN_LOCATION)
+    loc = make_module_loc (from_loc, IDENTIFIER_POINTER (name));
+}
+
 /* Module NAME is being imported or defined in the current TU.
    MODULE_P indicates whether this is the module unit, or an import.  */
 
@@ -10141,7 +10168,6 @@ module_state::find_module (location_t from_loc, tree name, bool module_p)
 	}
 
       state->from_loc = from_loc;
-      state->loc = make_module_loc (from_loc, IDENTIFIER_POINTER (name));
       if (identifier_p (maybe_vec_name))
 	{
 	  /* Create a TREE_VEC of components.  */
@@ -10194,10 +10220,10 @@ module_state::find_module (location_t from_loc, tree name, bool module_p)
    know it as.  CRC_PTR points to the CRC value we expect.  */
 
 bool
-module_state::do_import (char const *fname, bool check_crc)
+module_state::do_import (char const *fname, line_maps *lmaps, bool check_crc)
 {
   gcc_assert (global_namespace == current_scope ()
-	      && !is_imported ());
+	      && !is_imported () && loc != UNKNOWN_LOCATION);
 
   if (lazy_open <= 0)
     freeze_an_elf ();
@@ -10220,7 +10246,7 @@ module_state::do_import (char const *fname, bool check_crc)
   imported = true;
   lazy_open--;
   
-  read (fd, e, check_crc);
+  read (fd, e, lmaps, check_crc);
   bool failed = check_read (direct && !modules_atom_p ());
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
 
@@ -10291,7 +10317,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
-import_module (const cp_expr &name, bool exporting, tree)
+import_module (const cp_expr &name, bool exporting, tree, line_maps *lmaps)
 {
   if (export_depth)
     exporting = true;
@@ -10309,7 +10335,8 @@ import_module (const cp_expr &name, bool exporting, tree)
 	    {
 	      unsigned n = dump.push (imp);
 	      char *fname = module_mapper::import_export (imp, false);
-	      imp->do_import (fname, false);
+	      imp->set_loc (NULL);
+	      imp->do_import (fname, lmaps, false);
 	      dump.pop (n);
 	    }
 	  (*module_state::modules)[MODULE_NONE]->set_import (imp, imp->exported);
@@ -10323,7 +10350,7 @@ import_module (const cp_expr &name, bool exporting, tree)
    true if this TU is the exporting module unit.  */
 
 void
-declare_module (const cp_expr &name, bool exporting_p, tree)
+declare_module (const cp_expr &name, bool exporting_p, tree, line_maps *lmaps)
 {
   gcc_assert (global_namespace == current_scope ());
 
@@ -10343,8 +10370,9 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 	{
 	  unsigned n = dump.push (state);
 	  char *fname = module_mapper::import_export (state, exporting_p);
+	  state->set_loc (NULL);
 	  if (!exporting_p)
-	    state->do_import (fname, false);
+	    state->do_import (fname, lmaps, false);
 	  else if (fname)
 	    state->filename = xstrdup (fname);
 	  dump.pop (n);
@@ -10363,20 +10391,25 @@ module_from_cmp (const void *a_, const void *b_)
   return a->from_loc > b->from_loc ? -1 : +1;
 }
 
-/* The module preamble has been parsed.  Now load all the imports.  */
+/* The module preamble has been parsed.  Now load all the imports.
+   LOC is the location of the first declaration (the module decl, if
+   this is a module).  */
 
-bool
-module_state::atom_preamble (location_t loc, line_maps *lmaps,
-			     unsigned ord_map_hwm)
+int
+module_state::atom_preamble (location_t loc, line_maps *lmaps)
 {
   /* Iterate over the module hash, informing the mapper of every not
      loaded (direct) import.  */
   unsigned limit = hash->elements ();
   if (!limit)
-    return true;
+    /* The hash table could be empty due to parse errors.  */
+    return 0;
 
   dump.push (NULL);
   dump () && dump ("Processing preamble");
+
+  /* Preserve the state of the line-map.  */
+  unsigned pre_hwm = LINEMAPS_USED (lmaps, false);
 
   /* For a consistent order, and avoiding hash table iteration durig
      actual import, we create a vector of imports.  */
@@ -10451,6 +10484,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps,
 	  ok = false;
 	  error_at (imp->from_loc, "module %qE is unknown", imp->name);
 	}
+      imp->set_loc (NULL);
     }
 
   if (ok)
@@ -10462,7 +10496,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps,
 	{
 	  module_state *imp = directs.pop ();
 	  unsigned n = dump.push (imp);
-	  if (imp->is_imported () || imp->do_import (NULL, false))
+	  if (imp->is_imported () || imp->do_import (NULL, lmaps, false))
 	    {
 	      if (imp->mod != MODULE_PURVIEW)
 		(*modules)[MODULE_NONE]->set_import (imp, imp->exported);
@@ -10475,25 +10509,32 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps,
 
   if (interface)
     {
+      interface->set_loc (NULL);
+
       /* Record the size of the hole the preamble created in the line
 	 table.  */
-      interface->spewer ()->ord_hole.first = ord_map_hwm;
+      interface->spewer ()->ord_hole.first = pre_hwm;
       interface->spewer ()->ord_hole.second = LINEMAPS_ORDINARY_USED (lmaps);
     }
 
   dump.pop (0);
 
-  return ok;
+  unsigned adj = linemap_module_restore (lmaps, pre_hwm);
+
+  return ok ? int (adj) : -1;
 }
 
 /* Do processing after a (non-empty) atom preamble has been parsed.  LOC is the
    final location of the preamble.  */
 
-void
-atom_module_preamble (location_t loc, line_maps *lmaps, unsigned hwm)
+unsigned
+atom_module_preamble (location_t loc, line_maps *lmaps)
 {
-  if (!module_state::atom_preamble (loc, lmaps, hwm))
+  int adj = module_state::atom_preamble (loc, lmaps);
+  if (adj < 0)
     fatal_error (loc, "returning to gate for a mechanical issue");
+
+  return unsigned (adj);
 }
 
 /* Convert the module search path.  */

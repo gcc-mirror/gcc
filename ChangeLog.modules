@@ -1,5 +1,24 @@
 2018-06-15  Nathan Sidwell  <nathan@acm.org>
 
+	Line_maps args everywhere!
+	gcc/cp/
+	* cp-tree.h (declare_module, import_module, atom_module_preamble):
+	Add line_maps arg.
+	* module.c (module_state::{read_imports,do_import}): Add line_maps.
+	(module_state::set_loc): New.
+	(module_state::atom_preamble): Deal with restoring line_maps.
+	(module_state::read): Add line_maps.  Call read_locations.
+	* parser.c (cp_parser_module_declaration)
+	(cp_parser_import_declaration): Adjust.
+	(c_parse_file): Line_maps restoration is moved.
+	libcpp/
+	* include/line-map.h (linemap_save_pre_module): Delete.
+	(linemap_restore_pre_module): Rename to ...
+	(linemap_module_restore): ... here.
+	* line-map.c (linemap_save_pre_module): Delete.
+	(linemap_restore_pre_module): Rename to ...
+	(linemap_module_restore): ... here.
+
 	gcc/cp/
 	* module.c (bytes_{in,out}::align): New.
 	(bytes_{in,out}::buf): Use it.

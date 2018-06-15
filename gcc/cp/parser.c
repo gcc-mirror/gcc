@@ -12761,7 +12761,7 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
   if (!check_module_outermost (token, "module declaration"))
     return;
 
-  declare_module (name, exporting, attrs);
+  declare_module (name, exporting, attrs, line_table);
 }
 
 /* Import-declaration
@@ -12805,7 +12805,7 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
 	       || IDENTIFIER_POINTER (*name)[0] == '<'))
     ; // FIXME:Ignore legacy headers for now.
   else
-    import_module (name, exporting, attrs);
+    import_module (name, exporting, attrs, line_table);
 }
 
 /*  export-declaration.
@@ -12875,7 +12875,8 @@ cp_parser_module_proclamation (cp_parser *parser)
   pop_module_export (prev);
 }
 
-/* Tokenize an atom preamble.  */
+/* Tokenize an atom preamble.  If there is one, returns the location
+   of the final ';'.  Otherwise UNKNOWN_LOCATION.  */
 
 static location_t
 cp_parser_get_module_preamble_tokens (cp_parser *parser)
@@ -12919,7 +12920,8 @@ cp_parser_get_module_preamble_tokens (cp_parser *parser)
 }
 
 /* Parse an atom preamble.  This is done before tokenizing the rest
-   of the source, as it can affect preprocessor state.  */
+   of the source, as it can affect preprocessor state.  Returns the
+   location of the first declaration.  */
 
 location_t
 cp_parser_parse_module_preamble (cp_parser *parser)
@@ -39494,10 +39496,10 @@ c_parse_file (void)
 	  location_t end = cp_parser_get_module_preamble_tokens (the_parser);
 	  if (end != UNKNOWN_LOCATION)
 	    {
-	      unsigned hwm = linemap_save_pre_module (line_table, end);
+	      /* There is a non-empty preamble.  */
 	      location_t loc = cp_parser_parse_module_preamble (the_parser);
-	      atom_module_preamble (loc, line_table, hwm);
-	      if (unsigned adjust = linemap_restore_pre_module (line_table, hwm))
+	      gcc_assert (loc != UNKNOWN_LOCATION);
+	      if (unsigned adjust = atom_module_preamble (loc, line_table))
 		cpp_relocate_peeked_tokens (parse_in, adjust);
 	    }
 	}
