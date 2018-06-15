@@ -1,3 +1,11 @@
+2018-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	LWG 3039 Unnecessary decay in thread and packaged_task
+	* include/std/future (__constrain_pkgdtask): Replace with ...
+	(packaged_task::__not_same): New alias template, using
+	__remove_cvref_t instead of decay.
+	* include/std/thread (thread::__not_same): Add comment.
+
 2018-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	LWG 3075 basic_string needs deduction guides from basic_string_view
