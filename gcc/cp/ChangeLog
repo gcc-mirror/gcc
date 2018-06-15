@@ -1,3 +1,7 @@
+2018-06-15  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (maybe_warn_parm_abi): Inform the location of the class.
+
 2018-06-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86094 - wrong code with defaulted move ctor.
