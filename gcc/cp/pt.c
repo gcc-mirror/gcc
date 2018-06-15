@@ -17530,7 +17530,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
 
   if (LAMBDA_EXPR_EXTRA_SCOPE (t) == NULL_TREE)
-    LAMBDA_EXPR_EXTRA_SCOPE (r) = NULL_TREE;
+    /* A lambda in a default argument outside a class gets no
+       LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
+       tsubst_default_argument calls start_lambda_scope, so we need to
+       specifically ignore it here, and use the global scope.  */
+    record_null_lambda_scope (r);
   else
     record_lambda_scope (r);
 

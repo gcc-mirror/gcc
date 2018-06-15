@@ -1380,6 +1380,24 @@ record_lambda_scope (tree lambda)
   LAMBDA_EXPR_DISCRIMINATOR (lambda) = lambda_count++;
 }
 
+/* This lambda is an instantiation of a lambda in a template default argument
+   that got no LAMBDA_EXPR_EXTRA_SCOPE, so this shouldn't either.  But we do
+   need to use and increment the global count to avoid collisions.  */
+
+void
+record_null_lambda_scope (tree lambda)
+{
+  if (vec_safe_is_empty (lambda_scope_stack))
+    record_lambda_scope (lambda);
+  else
+    {
+      tree_int *p = lambda_scope_stack->begin();
+      LAMBDA_EXPR_EXTRA_SCOPE (lambda) = p->t;
+      LAMBDA_EXPR_DISCRIMINATOR (lambda) = p->i++;
+    }
+  gcc_assert (LAMBDA_EXPR_EXTRA_SCOPE (lambda) == NULL_TREE);
+}
+
 void
 finish_lambda_scope (void)
 {

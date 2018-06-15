@@ -1,5 +1,11 @@
 2018-06-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/82882 - ICE with lambda in template default argument.
+	* lambda.c (record_null_lambda_scope): New.
+	* pt.c (tsubst_lambda_expr): Use it.
+	* name-lookup.c (do_pushtag): Don't give a lambda DECL_CONTEXT of a
+	function that isn't open.
+
 	* tree.c (maybe_warn_parm_abi): Inform the location of the class.
 
 2018-06-14  Marek Polacek  <polacek@redhat.com>
