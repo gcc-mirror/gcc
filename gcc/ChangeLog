@@ -1,3 +1,11 @@
+2018-06-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_bb): Dump MSG_OPTIMIZED_LOCATIONS
+	here, also noting vector size used.
+	* tree-vectorizer.c (vectorize_loops): Adjust.  Note vector
+	size used in MSG_OPTIMIZED_LOCATIONS dump.
+	(pass_slp_vectorize::execute): Adjust.
+
 2018-06-15  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	PR target/85968

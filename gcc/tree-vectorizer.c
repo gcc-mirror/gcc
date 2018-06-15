@@ -794,7 +794,7 @@ vectorize_loops (void)
 		  }
 		if (! has_mask_load_store && vect_slp_bb (bb))
 		  {
-		    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+		    dump_printf_loc (MSG_NOTE, vect_location,
 				     "basic block vectorized\n");
 		    fold_loop_internal_call (loop_vectorized_call,
 					     boolean_true_node);
@@ -827,10 +827,17 @@ vectorize_loops (void)
 
 	if (loop_vectorized_call)
 	  set_uid_loop_bbs (loop_vinfo, loop_vectorized_call);
-        if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
-	    && dump_enabled_p ())
-          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-                           "loop vectorized\n");
+
+	unsigned HOST_WIDE_INT bytes;
+	if (current_vector_size.is_constant (&bytes))
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			   "loop vectorized vectorized using "
+			   HOST_WIDE_INT_PRINT_UNSIGNED " byte "
+			   "vectors\n", bytes);
+	else
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			   "loop vectorized using variable length vectors\n");
+
 	new_loop = vect_transform_loop (loop_vinfo);
 	num_vectorized_loops++;
 	/* Now that the loop has been vectorized, allow it to be unrolled
@@ -1066,8 +1073,7 @@ pass_slp_vectorize::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       if (vect_slp_bb (bb))
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			 "basic block vectorized\n");
+	dump_printf_loc (MSG_NOTE, vect_location, "basic block vectorized\n");
     }
 
   if (!in_loop_pipeline)
