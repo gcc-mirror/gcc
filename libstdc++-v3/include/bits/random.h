@@ -1614,7 +1614,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     random_device() { _M_init("mt19937"); }
 
     explicit
-    random_device(const std::string& __token = "mt19937")
+    random_device(const std::string& __token)
     { _M_init_pretr1(__token); }
 #endif
 
