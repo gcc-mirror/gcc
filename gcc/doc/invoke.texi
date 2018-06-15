@@ -3536,6 +3536,11 @@ Try to format error messages so that they fit on lines of about
 done; each error message appears on a single line.  This is the
 default for all front ends.
 
+Note - this option also affects the display of the @samp{#error} and
+@samp{#warning} pre-processor directives, and the @samp{deprecated}
+function/type/variable attribute.  It does not however affect the
+@samp{pragma GCC warning} and @samp{pragma GCC error} pragmas.
+
 @item -fdiagnostics-show-location=once
 @opindex fdiagnostics-show-location
 Only meaningful in line-wrapping mode.  Instructs the diagnostic messages

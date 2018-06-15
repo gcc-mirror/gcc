@@ -2553,6 +2553,9 @@ present.
 The @code{deprecated} attribute can also be used for variables and
 types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
 
+The message attached to the attribute is affected by the setting of
+the @option{-fmessage-length} option.
+
 @item error ("@var{message}")
 @itemx warning ("@var{message}")
 @cindex @code{error} function attribute
@@ -6092,6 +6095,9 @@ The @code{deprecated} attribute can also be used for functions and
 types (@pxref{Common Function Attributes},
 @pxref{Common Type Attributes}).
 
+The message attached to the attribute is affected by the setting of
+the @option{-fmessage-length} option.
+
 @item nonstring
 @cindex @code{nonstring} variable attribute
 The @code{nonstring} variable attribute specifies that an object or member
@@ -7018,10 +7024,15 @@ warning is issued for line 4 because T2 is not explicitly
 deprecated.  Line 5 has no warning because T3 is explicitly
 deprecated.  Similarly for line 6.  The optional @var{msg}
 argument, which must be a string, is printed in the warning if
-present.
+present.  Control characters in the string will be replaced with
+escape sequences, and if the @option{-fmessage-length} option is set
+to 0 (its default value) then any newline characters will be ignored.
 
 The @code{deprecated} attribute can also be used for functions and
 variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
+
+The message attached to the attribute is affected by the setting of
+the @option{-fmessage-length} option.
 
 @item designated_init
 @cindex @code{designated_init} type attribute
@@ -21973,7 +21984,9 @@ compilation.
 @cindex pragma, diagnostic
 
 Prints @var{string} as a compiler message on compilation.  The message
-is informational only, and is neither a compilation warning nor an error.
+is informational only, and is neither a compilation warning nor an
+error.  Newlines can be included in the string by using the @samp{\n}
+escape sequence.
 
 @smallexample
 #pragma message "Compiling " __FILE__ "..."
@@ -21992,6 +22005,37 @@ TODO(Remember to fix this)
 @noindent
 prints @samp{/tmp/file.c:4: note: #pragma message:
 TODO - Remember to fix this}.
+
+@item #pragma GCC error @var{message}
+@cindex pragma, diagnostic
+Generates an error message.  This pragma @emph{is} considered to
+indicate an error in the compilation, and it will be treated as such.
+
+Newlines can be included in the string by using the @samp{\n}
+escape sequence.  They will be displayed as newlines even if the
+@option{-fmessage-length} option is set to zero.
+
+The error is only generated if the pragma is present in the code after
+pre-processing has been completed.  It does not matter however if the
+code containing the pragma is unreachable:
+
+@smallexample
+#if 0
+#pragma GCC error "this error is not seen"
+#endif
+void foo (void)
+@{
+  return;
+#pragma GCC error "this error is seen"
+@}
+@end smallexample
+
+@item #pragma GCC warning @var{message}
+@cindex pragma, diagnostic
+This is just like @samp{pragma GCC error} except that a warning
+message is issued instead of an error message.  Unless
+@option{-Werror} is in effect, in which case this pragma will generate
+an error as well.
 
 @end table
 
