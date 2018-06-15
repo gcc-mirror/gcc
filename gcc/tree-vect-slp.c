@@ -3036,9 +3036,16 @@ vect_slp_bb (basic_block bb)
 
 	  vect_schedule_slp (bb_vinfo);
 
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "basic block part vectorized\n");
+	  unsigned HOST_WIDE_INT bytes;
+	  if (current_vector_size.is_constant (&bytes))
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			     "basic block part vectorized using "
+			     HOST_WIDE_INT_PRINT_UNSIGNED " byte "
+			     "vectors\n", bytes);
+	  else
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			     "basic block part vectorized using variable "
+			     "length vectors\n");
 
 	  vectorized = true;
 	}
