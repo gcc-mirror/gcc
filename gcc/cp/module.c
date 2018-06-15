@@ -2634,6 +2634,11 @@ class GTY(()) module_state {
   }
 
  public:
+  slurping *slurper () const
+  {
+    gcc_checking_assert (slurp && slurp->from);
+    return slurp;
+  }
   spewing *spewer () const
   {
     gcc_checking_assert (slurp && !slurp->from);
@@ -3669,16 +3674,54 @@ trees_in::tree_pair_vec ()
 /* Read & write locations.  */
 
 void
-trees_out::loc (location_t)
+trees_out::loc (location_t loc)
 {
-  // FIXME:Do something
+  if (!modules_atom_p ())
+    return;
+
+  if (!IS_ORDINARY_LOC (loc))
+    // FIXME: implement macro & adhoc
+    loc = UNKNOWN_LOCATION;
+
+  unsigned off = 0;
+  if (loc <= BUILTINS_LOCATION)
+    off = loc;
+  else
+    {
+      spewing *spew = state->spewer ();
+      if (loc >= spew->pre_ords.first && loc < spew->pre_ords.second)
+	off = loc - spew->ord_shifts.first;
+      else if (loc >= spew->post_ords.first && loc < spew->post_ords.second)
+	off = loc - spew->ord_shifts.second;
+      else
+	gcc_unreachable ();
+      gcc_assert (off > BUILTINS_LOCATION);
+    }
+
+  u (off);
+  return;
 }
 
 location_t
 trees_in::loc ()
 {
-  // FIXME:Do something^-1
-  return UNKNOWN_LOCATION;
+  if (!modules_atom_p ())
+    return state->loc;
+
+  unsigned off = u ();
+  source_location loc = UNKNOWN_LOCATION;
+  if (off <= BUILTINS_LOCATION)
+    loc = off;
+  else
+    {
+      slurping *slurp = state->slurper ();
+      if (off < slurp->ord_locs.second)
+	loc = off + slurp->ord_locs.first;
+      else
+	set_overrun ();
+    }
+
+  return loc;
 }
 
 /* Start tree write.  Write information to allocate the receiving
@@ -4862,8 +4905,7 @@ trees_in::core_vals (tree t)
 
       /* Don't zap the locus just yet, we don't record it correctly
 	 and thus lose all location information.  */
-      /* t->decl_minimal.locus = */
-      loc ();
+      t->decl_minimal.locus = loc ();
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
@@ -9305,7 +9347,12 @@ spewing::linemaps (line_maps *lmaps, unsigned hwm)
   (is_post ? post_ords : pre_ords).second = last;
 
   /* We must preserve the leftmost MASK bits of FIRST.  */
-  unsigned shift = (first & ~((1u << mask) - 1u)) - used;
+  unsigned used_rem = used & ((1u << mask) - 1u);
+  unsigned first_rem = first & ((1u << mask) - 1u);
+  unsigned shift = (first - used) & ~((1u << mask) - 1u);
+  if (used_rem > first_rem)
+    shift += 2u << mask;
+  
   (is_post ? ord_shifts.second : ord_shifts.first) = shift;
 
   return mask;
@@ -9519,6 +9566,9 @@ module_state::read_locations (line_maps *lmaps)
     }
 
   lmaps->highest_location = origin + sec.u () - 1;
+
+  slurp->ord_locs.first = origin;
+  slurp->ord_locs.second = lmaps->highest_location;
 
   dump () && dump ("Read %u linemaps locations [%u,%u]",
 		   num_maps, origin, lmaps->highest_location);

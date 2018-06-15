@@ -1,5 +1,15 @@
 2018-06-15  Nathan Sidwell  <nathan@acm.org>
 
+	Location! Location! Location!
+	gcc/cp/
+	* module.c (module_state::slurper): New.
+	(trees_{in,out}::loc): Implement.
+	(trees_in::core_vals): Set locus.
+	(spewing::linemaps): Fixup offset calculation.
+	(module_state::read_locations): Set ord_locs.
+	gcc/testsuite/
+	* g++.dg/module/loc-1_[abc].C: New.
+
 	libcpp/
 	* include/line-map.h (IS_ORDINARY_LOC, IS_MACRO_LOC): New.
 	(IS_ADHOC_LOC): Simplify.
