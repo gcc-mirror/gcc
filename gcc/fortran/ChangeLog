@@ -3,6 +3,16 @@
 	Backport from mainline
 	2018-06-13  Cesar Philippidis  <cesar@codesourcery.com>
 
+	PR fortran/85703
+	* parse.c (decode_oacc_directive): Set gfc_matching_function
+	to false.
+	(decode_omp_directive): Likewise.
+
+2018-06-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	Backport from mainline
+	2018-06-13  Cesar Philippidis  <cesar@codesourcery.com>
+
 	PR fortran/85702
 	* openmp.c (gfc_match_oacc_wait): Use %C to report error location.
 
