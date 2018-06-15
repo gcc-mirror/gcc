@@ -9818,7 +9818,7 @@ arc_return_address_register (unsigned int fn_type)
 
   if (ARC_INTERRUPT_P (fn_type))
     {
-      if (((fn_type & ARC_FUNCTION_ILINK1) | ARC_FUNCTION_FIRQ) != 0)
+      if ((fn_type & (ARC_FUNCTION_ILINK1 | ARC_FUNCTION_FIRQ)) != 0)
         regno = ILINK1_REGNUM;
       else if ((fn_type & ARC_FUNCTION_ILINK2) != 0)
         regno = ILINK2_REGNUM;

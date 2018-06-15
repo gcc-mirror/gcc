@@ -1,3 +1,9 @@
+2018-06-15  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	PR target/85968
+	* config/arc/arc.c (arc_return_address_register): Fix
+	if-condition.
+
 2018-06-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/86159
