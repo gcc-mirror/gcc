@@ -1,3 +1,29 @@
+2018-06-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* typed-splay-tree.h (typed_splay_tree::remove): New function.
+	(typed_splay_tree::closure,
+	typed_splay_tree::inner_foreach_fn, typed_splay_tree::m_inner): Deleted.
+	(typed_splay_tree::typed_splay_tree,
+	typed_splay_tree::operator =): Declared private.
+	(typed_splay_tree::splay_tree_key, typed_splay_tree::splay_tree_value,
+	typed_splay_tree::splay_tree_node_s, typed_splay_tree::KDEL,
+	typed_splay_tree::VDEL, typed_splay_tree::splay_tree_delete_helper,
+	typed_splay_tree::rotate_left, typed_splay_tree::rotate_right,
+	typed_splay_tree::splay_tree_splay,
+	typed_splay_tree::splay_tree_foreach_helper,
+	typed_splay_tree::splay_tree_insert,
+	typed_splay_tree::splay_tree_remove,
+	typed_splay_tree::splay_tree_lookup,
+	typed_splay_tree::splay_tree_predecessor,
+	typed_splay_tree::splay_tree_successor,
+	typed_splay_tree::splay_tree_min,
+	typed_splay_tree::splay_tree_max): Took over from splay-tree.c/.h.
+	(typed_splay_tree::root, typed_splay_tree::comp,
+	typed_splay_tree::delete_key,
+	typed_splay_tree::delete_value): New data members.
+	* typed-splay-tree.c (selftest::test_str_to_int): Add a test for
+	typed_splay_tree::remove.
+
 2018-06-15  Matthew Fortune  <matthew.fortune@mips.com>
 
 	* config/mips/mips.h (ASM_SPEC): Pass through -mcrc, -mno-crc,
