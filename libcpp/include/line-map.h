@@ -1100,6 +1100,9 @@ extern void linemap_check_files_exited (struct line_maps *);
 extern source_location linemap_line_start
 (struct line_maps *set, linenum_type to_line,  unsigned int max_column_hint);
 
+/* Allocate a raw block of line maps, zero initialized.  */
+extern line_map *line_map_new_raw (line_maps *, bool, unsigned);
+
 /* Add a mapping of logical source line to physical source file and
    line number. This function creates an "ordinary map", which is a
    map that records locations of tokens that are not part of macro

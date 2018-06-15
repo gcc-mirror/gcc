@@ -1,3 +1,11 @@
+2018-06-15  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* line-map.c (linemap_init): Set default allocator here.
+	(line_map_new_raw): Break out of ...
+	(new_linemap): ... here.  Call it.
+	* include/line-map.h (line_map_new_raw): Declare
+
 2018-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	Break out import section.

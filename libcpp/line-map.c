@@ -346,6 +346,8 @@ linemap_init (struct line_maps *set,
 #else
   new (set) line_maps();
 #endif
+  /* Set default allocator.  */
+  set->reallocator = (line_map_realloc) xrealloc;
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
   set->location_adhoc_data_map.htab =
@@ -376,32 +378,36 @@ linemap_check_files_exited (struct line_maps *set)
 	     ORDINARY_MAP_FILE_NAME (map));
 }
 
-/* Create a new line map in the line map set SET, and return it.
-   REASON is the reason of creating the map. It determines the type
-   of map created (ordinary or macro map). Note that ordinary maps and
-   macro maps are allocated in different memory location.  */
+/* Create NUM zero-initialized maps of type MACRO_P.  */
 
-static struct line_map *
-new_linemap (struct line_maps *set,  source_location start_location)
+line_map *
+line_map_new_raw (line_maps *set, bool macro_p, unsigned num)
 {
-  struct line_map *result;
-  bool macro_map_p = start_location >= LINE_MAP_MAX_LOCATION;
-
-  if (LINEMAPS_USED (set, macro_map_p) == LINEMAPS_ALLOCATED (set, macro_map_p))
+  unsigned alloc = LINEMAPS_ALLOCATED (set, macro_p);
+  unsigned used = LINEMAPS_USED (set, macro_p);
+  
+  if (num > alloc - used)
     {
-      /* We ran out of allocated line maps. Let's allocate more.  */
-      size_t alloc_size;
+      /* We need more space!  */
+      if (!alloc)
+	alloc = 128;
+      if (alloc < used + num)
+	alloc = used + num;
+      alloc *= 2;
 
-      /* Cast away extern "C" from the type of xrealloc.  */
-      line_map_realloc reallocator = (set->reallocator
-				      ? set->reallocator
-				      : (line_map_realloc) xrealloc);
-      line_map_round_alloc_size_func round_alloc_size =
-	set->round_alloc_size;
+      size_t map_size;
+      void *buffer;
 
-      size_t map_size = (macro_map_p
-			 ? sizeof (line_map_macro)
-			 : sizeof (line_map_ordinary));
+      if (macro_p)
+	{
+	  map_size = sizeof (line_map_macro);
+	  buffer = set->info_macro.maps;
+	}
+      else
+	{
+	  map_size = sizeof (line_map_ordinary);
+	  buffer = set->info_ordinary.maps;
+	}
 
       /* We are going to execute some dance to try to reduce the
 	 overhead of the memory allocator, in case we are using the
@@ -411,54 +417,42 @@ new_linemap (struct line_maps *set,  source_location start_location)
 	 allocator is the smallest power of 2 that is greater than the
 	 size we requested.  So let's consider that size then.  */
 
-      alloc_size =
-	(2 * LINEMAPS_ALLOCATED (set, macro_map_p) +  256)
-	* map_size;
-
-      /* Get the actual size of memory that is going to be allocated
-	 by the allocator.  */
-      alloc_size = round_alloc_size (alloc_size);
+      size_t alloc_size = set->round_alloc_size (alloc * map_size);
 
       /* Now alloc_size contains the exact memory size we would get if
 	 we have asked for the initial alloc_size amount of memory.
 	 Let's get back to the number of macro map that amounts
 	 to.  */
-      LINEMAPS_ALLOCATED (set, macro_map_p) =
-	alloc_size / map_size;
+      unsigned num_maps = alloc_size / map_size;
+      buffer = set->reallocator (buffer, num_maps * map_size);
+      memset ((char *)buffer + used * map_size, 0, (num_maps - used) * map_size);
+      if (macro_p)
+	set->info_macro.maps = (line_map_macro *)buffer;
+      else
+	set->info_ordinary.maps = (line_map_ordinary *)buffer;
+      LINEMAPS_ALLOCATED (set, macro_p) = num_maps;
+    }
 
-      /* And now let's really do the re-allocation.  */
-      if (macro_map_p)
-	{
-	  set->info_macro.maps
-	    = (line_map_macro *) (*reallocator) (set->info_macro.maps,
-						 (LINEMAPS_ALLOCATED (set, macro_map_p)
-						  * map_size));
-	  result = &set->info_macro.maps[LINEMAPS_USED (set, macro_map_p)];
-	}
-      else
-	{
-	  set->info_ordinary.maps =
-	    (line_map_ordinary *) (*reallocator) (set->info_ordinary.maps,
-						  (LINEMAPS_ALLOCATED (set, macro_map_p)
-						   * map_size));
-	  result = &set->info_ordinary.maps[LINEMAPS_USED (set, macro_map_p)];
-	}
-      memset (result, 0,
-	      ((LINEMAPS_ALLOCATED (set, macro_map_p)
-		- LINEMAPS_USED (set, macro_map_p))
-	       * map_size));
-    }
-  else
-    {
-      if (macro_map_p)
-	result = &set->info_macro.maps[LINEMAPS_USED (set, macro_map_p)];
-      else
-	result = &set->info_ordinary.maps[LINEMAPS_USED (set, macro_map_p)];
-    }
+  struct line_map *result = (macro_p ? (line_map *)&set->info_macro.maps[used]
+			     : (line_map *)&set->info_ordinary.maps[used]);
+  LINEMAPS_USED (set, macro_p) += num;
+
+  return result;
+}
+
+/* Create a new line map in the line map set SET, and return it.
+   REASON is the reason of creating the map. It determines the type
+   of map created (ordinary or macro map). Note that ordinary maps and
+   macro maps are allocated in different memory location.  */
+
+static struct line_map *
+new_linemap (struct line_maps *set, source_location start_location)
+{
+  line_map *result = line_map_new_raw (set,
+				       start_location >= LINE_MAP_MAX_LOCATION,
+				       1);
 
   result->start_location = start_location;
-
-  LINEMAPS_USED (set, macro_map_p)++;
 
   return result;
 }
