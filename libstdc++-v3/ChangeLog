@@ -1,5 +1,15 @@
 2018-06-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	LWG 2993 reference_wrapper<T> conversion from T&&
+	* doc/xml/manual/intro.xml: Document LWG 2993 change.
+	* include/bits/refwrap.h (reference_wrapper(_Tp&)): Remove.
+	(reference_wrapper(_Tp&&)): Remove.
+	(reference_wrapper<_Up>(_Up&&)): Define new constructor as constrained
+	template.
+	(reference_wrapper): Add deduction guide.
+	* testsuite/20_util/reference_wrapper/deduction.cc: New.
+	* testsuite/20_util/reference_wrapper/lwg2993.cc: New.
+
 	LWG 3039 Unnecessary decay in thread and packaged_task
 	* include/std/future (__constrain_pkgdtask): Replace with ...
 	(packaged_task::__not_same): New alias template, using
