@@ -593,25 +593,35 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
       set_last_module (context, map);
       if (! MAIN_FILE_P (map))
 	{
-	  bool first = true;
-	  bool was_module = true;
+	  bool first = true, need_inc = true, was_module = false;
 	  do
 	    {
-	      bool is_module = MAP_MODULE_P (map);
 	      where = INCLUDED_AT (map);
 	      map = linemap_included_at (line_table, map);
+	      bool is_module = MAP_MODULE_P (map);
 	      const char *line_col
 		= maybe_line_and_column (SOURCE_LINE (map, where),
 					 first && context->show_column
 					 ? SOURCE_COLUMN (map, where) : 0);
-	      pp_verbatim (context->printer, "%s %s %r%s%s%R",
-			   first ? "In" : ",\n  ",
-			      is_module ? "module at"
-			   : was_module ? "file included from"
-			   :              "              from",
+	      static const char *const msgs[] =
+		{
+		 NULL,
+		 "                 from",
+		 "In file included from",
+		 "        included from",
+		 "In file of module",
+		 "        of module",
+		 NULL,
+		 "          imported at",
+		};
+
+	      unsigned index = (was_module ? 6 : is_module ? 4
+				: need_inc ? 2 : 0) + !first;
+
+	      pp_verbatim (context->printer, "%s%s %r%s%s%R",
+			   first ? "" : ",\n", msgs[index],
 			   "locus", LINEMAP_FILE (map), line_col);
-	      first = false;
-	      was_module = is_module;
+	      first = false, need_inc = was_module, was_module = is_module;
 	    }
 	  while (! MAIN_FILE_P (map));
 	  pp_verbatim (context->printer, ":");

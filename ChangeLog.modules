@@ -1,5 +1,11 @@
 2018-06-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* diagnostic.c (diagnostic_report_current_module): Fixup include
+	stack messages.
+	gcc/testsuite/
+	* lib/prune.exp (prune_gcc_output): Adjust include stack regexps.
+
 	gcc/cp/
 	* module.c (spewer::linemaps): Return mask.
 	(module_state::{find,write}_locations): Use mask.
