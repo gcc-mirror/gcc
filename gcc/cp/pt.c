@@ -12675,8 +12675,6 @@ tree
 tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
 			 tsubst_flags_t complain)
 {
-  tree saved_class_ptr = NULL_TREE;
-  tree saved_class_ref = NULL_TREE;
   int errs = errorcount + sorrycount;
 
   /* This can happen in invalid code.  */
@@ -12709,19 +12707,10 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
 
      we must be careful to do name lookup in the scope of S<T>,
      rather than in the current class.  */
+  push_to_top_level ();
   push_access_scope (fn);
-  /* The "this" pointer is not valid in a default argument.  */
-  if (cfun)
-    {
-      saved_class_ptr = current_class_ptr;
-      cp_function_chain->x_current_class_ptr = NULL_TREE;
-      saved_class_ref = current_class_ref;
-      cp_function_chain->x_current_class_ref = NULL_TREE;
-    }
-
   start_lambda_scope (parm);
 
-  push_deferring_access_checks(dk_no_deferred);
   /* The default argument expression may cause implicitly defined
      member functions to be synthesized, which will result in garbage
      collection.  We must treat this situation as if we were within
@@ -12732,16 +12721,8 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
 		     complain, NULL_TREE,
 		     /*integral_constant_expression_p=*/false);
   --function_depth;
-  pop_deferring_access_checks();
 
   finish_lambda_scope ();
-
-  /* Restore the "this" pointer.  */
-  if (cfun)
-    {
-      cp_function_chain->x_current_class_ptr = saved_class_ptr;
-      cp_function_chain->x_current_class_ref = saved_class_ref;
-    }
 
   if (errorcount+sorrycount > errs
       && (complain & tf_warning_or_error))
@@ -12752,6 +12733,7 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
   arg = check_default_argument (type, arg, complain);
 
   pop_access_scope (fn);
+  pop_from_top_level ();
 
   if (arg != error_mark_node && !cp_unevaluated_operand)
     {
