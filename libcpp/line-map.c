@@ -619,11 +619,19 @@ linemap_module_restore (line_maps *set, unsigned lwm)
       unsigned src_line = SOURCE_LINE (pre_map,
 				       LAST_SOURCE_LINE_LOCATION (pre_map));
       unsigned src_loc = pre_map->start_location;
-      if (const line_map *post_map
-	  = linemap_add (set, LC_RENAME_VERBATIM,
-			 ORDINARY_MAP_IN_SYSTEM_HEADER_P (pre_map),
-			 ORDINARY_MAP_FILE_NAME (pre_map), src_line))
+      source_location inc_at = pre_map->included_at;
+      if (const line_map_ordinary *post_map
+	  = (linemap_check_ordinary
+	     (linemap_add (set, LC_RENAME_VERBATIM,
+			   ORDINARY_MAP_IN_SYSTEM_HEADER_P (pre_map),
+			   ORDINARY_MAP_FILE_NAME (pre_map), src_line))))
+	{
+	  /* linemap_add will think we were included from the same as
+	     the preceeding map.  */
+	  const_cast <line_map_ordinary *> (post_map)->included_at = inc_at;
 	  adjust = post_map->start_location - src_loc;
+	}
+      
     }
 
   return adjust;

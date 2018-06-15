@@ -1,5 +1,11 @@
 2018-06-15  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/line-map.h (IS_ORDINARY_LOC, IS_MACRO_LOC): New.
+	(IS_ADHOC_LOC): Simplify.
+	(MAP_ORDINARY_P): Use IS_ORDINARY_LOC.
+	* line-map.c (linemap_module_restore): Fixup included_at.
+
 	gcc/
 	* diagnostic.c (diagnostic_report_current_module): Fixup include
 	stack messages.
