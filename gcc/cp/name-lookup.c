@@ -6624,6 +6624,14 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	{
 	  tree cs = current_scope ();
 
+	  /* Avoid setting the lambda context to a current_function_decl that
+	     we aren't actually inside, e.g. one set by push_access_scope
+	     during tsubst_default_argument.  */
+	  if (cs && TREE_CODE (cs) == FUNCTION_DECL
+	      && LAMBDA_TYPE_P (type)
+	      && !at_function_scope_p ())
+	    cs = DECL_CONTEXT (cs);
+
 	  if (scope == ts_current
 	      || (cs && TREE_CODE (cs) == FUNCTION_DECL))
 	    context = cs;
