@@ -3,7 +3,7 @@
 // { dg-additional-options "-fabi-version=12 -Wabi -fdump-tree-gimple" }
 // { dg-final { scan-tree-dump "struct S &" "gimple" } }
 
-struct S {
+struct S {			// { dg-message "" }
   S(S&&) = default;
   int i;
 };
