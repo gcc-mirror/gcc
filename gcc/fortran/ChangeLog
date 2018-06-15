@@ -1,3 +1,12 @@
+2018-06-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	Backport from mainline
+	2018-06-05  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/85701
+	* openmp.c (gfc_resolve_oacc_declare): Error on functions and
+	subroutine data clause arguments.
+
 2018-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/86110
