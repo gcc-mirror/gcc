@@ -2177,8 +2177,7 @@ gfc_match_oacc_wait (void)
       {
 	if (el->expr == NULL)
 	  {
-	    gfc_error ("Invalid argument to !$ACC WAIT at %L",
-		       &wait_list->expr->where);
+	    gfc_error ("Invalid argument to !$ACC WAIT at %C");
 	    return MATCH_ERROR;
 	  }
 
