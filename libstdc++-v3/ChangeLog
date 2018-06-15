@@ -1,3 +1,8 @@
+2018-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h (__cpp_lib_constexpr_char_traits): Only
+	define for C++17 and above.
+
 2018-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85812
