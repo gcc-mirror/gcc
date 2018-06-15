@@ -1,6 +1,14 @@
 2018-06-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	Backport from mainline
+	2018-06-13  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/85702
+	* openmp.c (gfc_match_oacc_wait): Use %C to report error location.
+
+2018-06-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	Backport from mainline
 	2018-06-05  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/85701
