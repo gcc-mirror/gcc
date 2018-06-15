@@ -14131,8 +14131,6 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	  enumtype = error_mark_node;
 	}
       else if (underlying_type && ENUM_UNDERLYING_TYPE (enumtype)
-	       && !dependent_type_p (underlying_type)
-	       && !dependent_type_p (ENUM_UNDERLYING_TYPE (enumtype))
 	       && !same_type_p (underlying_type,
 				ENUM_UNDERLYING_TYPE (enumtype)))
 	{
@@ -14157,7 +14155,7 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 
       /* enumtype may be an ENUMERAL_TYPE if this is a redefinition
          of an opaque enum, or an opaque enum of an already defined
-	 enumeration (C++0x only).
+	 enumeration (C++11).
 	 In any other case, it'll be NULL_TREE. */
       if (!enumtype)
 	{
@@ -14166,14 +14164,9 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	}
       prevtype = enumtype;
 
-      /* Do not push the decl more than once, unless we need to
-	 compare underlying types at instantiation time */
+      /* Do not push the decl more than once.  */
       if (!enumtype
-	  || TREE_CODE (enumtype) != ENUMERAL_TYPE
-	  || (underlying_type
-	      && dependent_type_p (underlying_type))
-	  || (ENUM_UNDERLYING_TYPE (enumtype)
-	      && dependent_type_p (ENUM_UNDERLYING_TYPE (enumtype))))
+	  || TREE_CODE (enumtype) != ENUMERAL_TYPE)
 	{
 	  enumtype = cxx_make_type (ENUMERAL_TYPE);
 	  enumtype = pushtag (name, enumtype, /*tag_scope=*/ts_current);
