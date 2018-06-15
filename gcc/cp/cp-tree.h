@@ -7018,6 +7018,7 @@ extern tree finish_builtin_launder		(location_t, tree,
 						 tsubst_flags_t);
 extern void start_lambda_scope			(tree);
 extern void record_lambda_scope			(tree);
+extern void record_null_lambda_scope		(tree);
 extern void finish_lambda_scope			(void);
 extern tree start_lambda_function		(tree fn, tree lambda_expr);
 extern void finish_lambda_function		(tree body);
