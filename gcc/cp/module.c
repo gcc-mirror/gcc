@@ -460,6 +460,13 @@ public:
   }
 
 public:
+  void align (unsigned boundary)
+  {
+    if (unsigned pad = pos & (boundary - 1))
+      read (boundary - pad);
+  }
+
+public:
   const char *read (unsigned count)
   {
     char *ptr = use (count);
@@ -557,6 +564,13 @@ public:
   /* Finish writing.  Spill to section by number.  */
   unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL);
 
+public:
+  void align (unsigned boundary)
+  {
+    if (unsigned pad = pos & (boundary - 1))
+      write (boundary - pad);
+  }
+  
 public:
   char *write (unsigned count, bool exact = false)
   {
@@ -924,6 +938,7 @@ bytes_in::z ()
 void
 bytes_out::buf (const char *buf, size_t len)
 {
+  align (sizeof (void *) * 2);
   if (char *ptr = write (len))
     memcpy (ptr, buf, len);
 }
@@ -931,6 +946,7 @@ bytes_out::buf (const char *buf, size_t len)
 const char *
 bytes_in::buf (size_t len)
 {
+  align (sizeof (void *) * 2);
   const char *ptr = read (len);
 
   return ptr;

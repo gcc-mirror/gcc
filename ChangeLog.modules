@@ -1,5 +1,9 @@
 2018-06-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (bytes_{in,out}::align): New.
+	(bytes_{in,out}::buf): Use it.
+
 	libcpp/
 	* line-map.c (linemap_init): Set default allocator here.
 	(line_map_new_raw): Break out of ...
