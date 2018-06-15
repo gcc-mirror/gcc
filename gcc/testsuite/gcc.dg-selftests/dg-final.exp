@@ -98,4 +98,9 @@ proc dg_final_directive_check_num_args {} {
     unset testname_with_flags
 }
 
+if ![gcc_parallel_test_run_p dg-final] {
+    return
+}
+gcc_parallel_test_enable 0
 dg_final_directive_check_num_args
+gcc_parallel_test_enable 1
