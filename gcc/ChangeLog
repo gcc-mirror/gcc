@@ -1,3 +1,12 @@
+2018-06-15  Matthew Fortune  <matthew.fortune@mips.com>
+
+	* config/mips/mips.h (ASM_SPEC): Pass through -mcrc, -mno-crc,
+	-mginv and -mno-ginv to the assembler.
+	* config/mips/mips.opt (-mcrc): New option.
+	(-mginv): Likewise.
+	* doc/invoke.text (-mcrc): Document.
+	(-mginv): Likewise.
+
 2018-06-15  Nick Clifton  <nickc@redhat.com>
 
 	PR 84195
