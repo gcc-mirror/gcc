@@ -1,5 +1,13 @@
 2018-06-15  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/86159
+	* tree-cfg.c (gimplify_build3): Do not strip sign conversions,
+	leave useless conversion stripping to force_gimple_operand_gsi.
+	(gimplify_build2): Likewise.
+	(gimplify_build1): Likewise.
+
+2018-06-15  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/86076
 	* tree-cfg.c (move_stmt_op): unshare invariant addresses
 	before adjusting their block.

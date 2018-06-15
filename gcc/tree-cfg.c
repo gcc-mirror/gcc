@@ -8976,8 +8976,6 @@ gimplify_build3 (gimple_stmt_iterator *gsi, enum tree_code code,
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
   ret = fold_build3_loc (loc, code, type, a, b, c);
-  STRIP_NOPS (ret);
-
   return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
                                    GSI_SAME_STMT);
 }
@@ -8992,8 +8990,6 @@ gimplify_build2 (gimple_stmt_iterator *gsi, enum tree_code code,
   tree ret;
 
   ret = fold_build2_loc (gimple_location (gsi_stmt (*gsi)), code, type, a, b);
-  STRIP_NOPS (ret);
-
   return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
                                    GSI_SAME_STMT);
 }
@@ -9008,8 +9004,6 @@ gimplify_build1 (gimple_stmt_iterator *gsi, enum tree_code code, tree type,
   tree ret;
 
   ret = fold_build1_loc (gimple_location (gsi_stmt (*gsi)), code, type, a);
-  STRIP_NOPS (ret);
-
   return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
                                    GSI_SAME_STMT);
 }
