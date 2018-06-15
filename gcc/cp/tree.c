@@ -4074,25 +4074,23 @@ maybe_warn_parm_abi (tree t, location_t loc)
   if ((flag_abi_version == 12 || warn_abi_version == 12)
       && classtype_has_non_deleted_move_ctor (t))
     {
+      bool w;
       if (flag_abi_version > 12)
-	warning_at (loc, OPT_Wabi, "-fabi-version=13 (GCC 8.2) fixes the "
-		    "calling convention for %qT, which was accidentally "
-		    "changed in 8.1", t);
+	w = warning_at (loc, OPT_Wabi, "-fabi-version=13 (GCC 8.2) fixes the "
+			"calling convention for %qT, which was accidentally "
+			"changed in 8.1", t);
       else
-	warning_at (loc, OPT_Wabi, "-fabi-version=12 (GCC 8.1) accidentally "
-		    "changes the calling convention for %qT", t);
+	w = warning_at (loc, OPT_Wabi, "-fabi-version=12 (GCC 8.1) accident"
+			"ally changes the calling convention for %qT", t);
+      if (w)
+	inform (location_of (t), " declared here");
       return;
     }
 
-  warning_at (loc, OPT_Wabi, "the calling convention for %qT changes in "
-	      "-fabi-version=13 (GCC 8.2)", t);
-  static bool explained = false;
-  if (!explained)
-    {
-      inform (loc, " because all of its copy and move constructors "
-	      "are deleted");
-      explained = true;
-    }
+  if (warning_at (loc, OPT_Wabi, "the calling convention for %qT changes in "
+		  "-fabi-version=13 (GCC 8.2)", t))
+    inform (location_of (t), " because all of its copy and move "
+	    "constructors are deleted");
 }
 
 /* Returns true iff copying an object of type T (including via move
