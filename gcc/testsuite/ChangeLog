@@ -1,3 +1,7 @@
+2018-06-15  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg-selftests/dg-final.exp: Force sequential execution.
+
 2018-06-15  Nick Clifton  <nickc@redhat.com>
 
 	PR 84195
