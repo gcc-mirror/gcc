@@ -1,3 +1,19 @@
+2018-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	LWG 3076 basic_string CTAD ambiguity
+	* doc/xml/manual/intro.xml: Document LWG 3076 change.
+	* include/bits/basic_string.h
+	[__cpp_deduction_guides && !_GLIBCXX_DEFINING_STRING_INSTANTIATIONS]
+	(basic_string(const _CharT*, const _Alloc&)): Turn into a function
+	template constrained by _RequireAllocator.
+	(basic_string(size_type, _CharT, const _Alloc&)): Likewise.
+	* src/c++11/string-inst.cc (_GLIBCXX_DEFINING_STRING_INSTANTIATIONS):
+	Define.
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc: Test
+	deduction
+	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc:
+	Likewise.
+
 2018-06-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86169
