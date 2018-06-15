@@ -5130,7 +5130,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
       */
       _CharT*
       data() noexcept
-      { return _M_data(); }
+      {
+	_M_leak();
+	return _M_data();
+      }
 #endif
 
       /**
