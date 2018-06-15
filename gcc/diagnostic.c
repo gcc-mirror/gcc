@@ -593,7 +593,7 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
       set_last_module (context, map);
       if (! MAIN_FILE_P (map))
 	{
-	  bool first = true, need_inc = true, was_module = false;
+	  bool first = true, need_inc = true, was_module = MAP_MODULE_P (map);
 	  do
 	    {
 	      where = INCLUDED_AT (map);
@@ -611,7 +611,7 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 		 "        included from",
 		 "In file of module",
 		 "        of module",
-		 NULL,
+		 "In module imported at",
 		 "          imported at",
 		};
 

@@ -2348,7 +2348,6 @@ private:
 private:
   tree start (tree_code);
   tree finish (tree);
-  location_t loc ();
 
 public:
   /* Needed for binfo writing  */
@@ -2432,7 +2431,6 @@ public:
 
 private:
   void start (tree_code, tree);
-  void loc (location_t);
 
 public:
   void core_bools (tree);
@@ -2742,7 +2740,12 @@ class GTY(()) module_state {
   bool read_locations (line_maps *);
 
  public:
-  void set_loc (line_maps *lmaps, const module_state *container);
+  void write_location (bytes_out &, location_t);
+  location_t read_location (bytes_in &);
+
+ public:
+  void set_loc (line_maps *lmaps, const module_state *container = NULL,
+		location_t floc = UNKNOWN_LOCATION);
   static module_state *find_module (location_t, tree, bool module_p);
   bool do_import (const char *filename, line_maps *, bool check_crc);
   static module_state *get_module (tree name, module_state * = NULL,
@@ -3673,59 +3676,6 @@ trees_in::tree_pair_vec ()
   return v;
 }
 
-/* Read & write locations.  */
-
-void
-trees_out::loc (location_t loc)
-{
-  if (!modules_atom_p ())
-    return;
-
-  if (!IS_ORDINARY_LOC (loc))
-    // FIXME: implement macro & adhoc
-    loc = UNKNOWN_LOCATION;
-
-  unsigned off = 0;
-  if (loc <= BUILTINS_LOCATION)
-    off = loc;
-  else
-    {
-      spewing *spew = state->spewer ();
-      if (loc >= spew->pre_ords.first && loc < spew->pre_ords.second)
-	off = loc - spew->ord_shifts.first;
-      else if (loc >= spew->post_ords.first && loc < spew->post_ords.second)
-	off = loc - spew->ord_shifts.second;
-      else
-	gcc_unreachable ();
-      gcc_assert (off > BUILTINS_LOCATION);
-    }
-
-  u (off);
-  return;
-}
-
-location_t
-trees_in::loc ()
-{
-  if (!modules_atom_p ())
-    return state->loc;
-
-  unsigned off = u ();
-  source_location loc = UNKNOWN_LOCATION;
-  if (off <= BUILTINS_LOCATION)
-    loc = off;
-  else
-    {
-      slurping *slurp = state->slurper ();
-      if (off < slurp->ord_locs.second)
-	loc = off + slurp->ord_locs.first;
-      else
-	set_overrun ();
-    }
-
-  return loc;
-}
-
 /* Start tree write.  Write information to allocate the receiving
    node.  */
 
@@ -4486,7 +4436,7 @@ trees_out::core_vals (tree t)
       tree_ctx (t->decl_minimal.context, true, MODULE_PURVIEW);
 
       if (streaming_p ())
-	loc (t->decl_minimal.locus);
+	state->write_location (*this, t->decl_minimal.locus);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
@@ -4907,7 +4857,7 @@ trees_in::core_vals (tree t)
 
       /* Don't zap the locus just yet, we don't record it correctly
 	 and thus lose all location information.  */
-      t->decl_minimal.locus = loc ();
+      t->decl_minimal.locus = state->read_location (*this);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
@@ -7802,7 +7752,7 @@ module_state::write_imports (bytes_out &sec, bool direct)
 	  sec.u32 (state->crc);
 	  if (direct)
 	    {
-	      /* write_readme will have relativized this.  */
+	      write_location (sec, state->from_loc);
 	      sec.str (state->filename);
 	      sec.u (state->exported);
 	    }
@@ -7848,15 +7798,16 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	{
 	  /* A direct import, maybe load it.  */
 	  size_t len;
+	  location_t floc = read_location (sec);
 	  const char *filename_str = sec.str (&len);
 
 	  exported = sec.u ();
 	  if (sec.get_overrun ())
 	    break;
-	  imp = find_module (loc, name, false);
+	  imp = find_module (floc, name, false);
 	  if (imp)
 	    {
-	      imp->set_loc (lmaps, this);
+	      imp->set_loc (lmaps, this, floc);
 	      if (!imp->is_imported ())
 		{
 		  imp->crc = crc;
@@ -9318,6 +9269,58 @@ module_state::read_unnamed (unsigned count, const range_t &range)
   return true;
 }
 
+/* Read & write locations.  */
+
+void
+module_state::write_location (bytes_out &sec, location_t loc)
+{
+  if (!modules_atom_p ())
+    return;
+
+  if (!IS_ORDINARY_LOC (loc))
+    // FIXME: implement macro & adhoc
+    loc = UNKNOWN_LOCATION;
+
+  unsigned off = 0;
+  if (loc <= BUILTINS_LOCATION)
+    off = loc;
+  else
+    {
+      spewing *spew = spewer ();
+      if (loc >= spew->pre_ords.first && loc < spew->pre_ords.second)
+	off = loc - spew->ord_shifts.first;
+      else if (loc >= spew->post_ords.first && loc < spew->post_ords.second)
+	off = loc - spew->ord_shifts.second;
+      else
+	gcc_unreachable ();
+      gcc_assert (off > BUILTINS_LOCATION);
+    }
+
+  sec.u (off);
+}
+
+location_t
+module_state::read_location (bytes_in &sec)
+{
+  if (!modules_atom_p ())
+    return loc;
+
+  unsigned off = sec.u ();
+  source_location loc = UNKNOWN_LOCATION;
+  if (off <= BUILTINS_LOCATION)
+    loc = off;
+  else
+    {
+      slurping *slurp = slurper ();
+      if (off < slurp->ord_locs.second)
+	loc = off + slurp->ord_locs.first;
+      else
+	sec.set_overrun ();
+    }
+
+  return loc;
+}
+
 /* Prepare for location streaming.  We break the line maps into two
    blocks -- those before the preamble processing, and those after.
    The gap will be occupied by maps from imports (including each
@@ -10268,20 +10271,22 @@ make_flat_name (tree name)
    be FROM from.  */
 
 void
-module_state::set_loc (line_maps *lmaps, const module_state *from)
+module_state::set_loc (line_maps *lmaps,
+		       const module_state *from, location_t floc)
 {
   unsigned lwm = (from ? from->depth : 0) + 1;
   gcc_checking_assert (lwm != 65536);
   if (depth > lwm)
     {
       depth = lwm;
-      source_location import_loc = from ? from->loc : from_loc;
+      if (!from)
+	floc = from_loc;
       const char *name_str = NULL;
       if (loc == UNKNOWN_LOCATION)
 	name_str = IDENTIFIER_POINTER (name);
       else
 	dump () && dump ("Reseating %M to import of %M", this, from);
-      loc = linemap_module_loc (lmaps, import_loc, loc, name_str);
+      loc = linemap_module_loc (lmaps, floc, loc, name_str);
     }
 }
 
@@ -10485,7 +10490,7 @@ import_module (const cp_expr &name, bool exporting, tree, line_maps *lmaps)
 	    {
 	      unsigned n = dump.push (imp);
 	      char *fname = module_mapper::import_export (imp, false);
-	      imp->set_loc (lmaps, NULL);
+	      imp->set_loc (lmaps);
 	      imp->do_import (fname, lmaps, false);
 	      dump.pop (n);
 	    }
@@ -10520,7 +10525,7 @@ declare_module (const cp_expr &name, bool exporting_p, tree, line_maps *lmaps)
 	{
 	  unsigned n = dump.push (state);
 	  char *fname = module_mapper::import_export (state, exporting_p);
-	  state->set_loc (lmaps, NULL);
+	  state->set_loc (lmaps);
 	  if (!exporting_p)
 	    state->do_import (fname, lmaps, false);
 	  else if (fname)
@@ -10634,7 +10639,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
 	  ok = false;
 	  error_at (imp->from_loc, "module %qE is unknown", imp->name);
 	}
-      imp->set_loc (lmaps, NULL);
+      imp->set_loc (lmaps);
     }
 
   if (ok)
@@ -10659,7 +10664,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
 
   if (interface)
     {
-      interface->set_loc (lmaps, NULL);
+      interface->set_loc (lmaps);
 
       /* Record the size of the hole the preamble created in the line
 	 table.  */
