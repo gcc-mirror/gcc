@@ -1,5 +1,8 @@
 2018-06-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/char_traits.h (__cpp_lib_constexpr_char_traits): Only
+	define for C++17 and above.
+
 	LWG 2993 reference_wrapper<T> conversion from T&&
 	* doc/xml/manual/intro.xml: Document LWG 2993 change.
 	* include/bits/refwrap.h (reference_wrapper(_Tp&)): Remove.
