@@ -6521,12 +6521,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	 || (b->kind == sk_template_parms
 	     && (b->explicit_spec_p || scope == ts_global))
 	 || (b->kind == sk_class
-	     && (scope != ts_current
-		 /* We may be defining a new type in the initializer
-		    of a static member variable. We allow this when
-		    not pedantic, and it is particularly useful for
-		    type punning via an anonymous union.  */
-		 || COMPLETE_TYPE_P (b->this_entity))))
+	     && scope != ts_current))
     b = b->level_chain;
 
   gcc_assert (identifier_p (name));
@@ -6540,15 +6535,18 @@ do_pushtag (tree name, tree type, tag_scope scope)
 
       if (! context)
 	{
-	  tree cs = current_scope ();
+	  cp_binding_level *cb = b;
+	  while (cb->kind != sk_namespace
+		 && cb->kind != sk_class
+		 && (cb->kind != sk_function_parms
+		     || !cb->this_entity))
+	    cb = cb->level_chain;
+	  tree cs = cb->this_entity;
 
-	  /* Avoid setting the lambda context to a current_function_decl that
-	     we aren't actually inside, e.g. one set by push_access_scope
-	     during tsubst_default_argument.  */
-	  if (cs && TREE_CODE (cs) == FUNCTION_DECL
-	      && LAMBDA_TYPE_P (type)
-	      && !at_function_scope_p ())
-	    cs = DECL_CONTEXT (cs);
+	  gcc_checking_assert (TREE_CODE (cs) == FUNCTION_DECL
+			       ? cs == current_function_decl
+			       : TYPE_P (cs) ? cs == current_class_type
+			       : cs == current_namespace);
 
 	  if (scope == ts_current
 	      || (cs && TREE_CODE (cs) == FUNCTION_DECL))
@@ -6587,11 +6585,11 @@ do_pushtag (tree name, tree type, tag_scope scope)
 
       if (b->kind == sk_class)
 	{
-	  if (!TYPE_BEING_DEFINED (current_class_type)
-	      && !LAMBDA_TYPE_P (type))
-	    return error_mark_node;
-
-	  if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
+	  if (!TYPE_BEING_DEFINED (current_class_type))
+	    /* Don't push anywhere if the class is complete; a lambda in an
+	       NSDMI is not a member of the class.  */
+	    ;
+	  else if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
 	    /* Put this TYPE_DECL on the TYPE_FIELDS list for the
 	       class.  But if it's a member template class, we want
 	       the TEMPLATE_DECL, not the TYPE_DECL, so this is done
