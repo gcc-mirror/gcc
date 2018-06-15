@@ -138,3 +138,20 @@ test05()
   std::basic_string s4(sv, 2u, 6u, a);
   check_type<std::string>(s4);
 }
+
+void
+test06()
+{
+  // LWG 3076 basic_string CTAD ambiguity
+  using namespace std;
+  string s0;
+
+  basic_string s1(s0, 1, 1);
+  check_type<std::string>(s1);
+
+  basic_string s2("cat"sv, 1, 1);
+  check_type<std::string>(s2);
+
+  basic_string s3("cat", 1);
+  check_type<std::string>(s3);
+}

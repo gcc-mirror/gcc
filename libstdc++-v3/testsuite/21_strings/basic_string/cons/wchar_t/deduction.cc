@@ -97,3 +97,20 @@ test05()
   std::basic_string s4(sv, 2u, 6u, a);
   check_type<std::wstring>(s4);
 }
+
+void
+test06()
+{
+  // LWG 3076 basic_string CTAD ambiguity
+  using namespace std;
+  wstring s0;
+
+  basic_string s1(s0, 1, 1);
+  check_type<std::wstring>(s1);
+
+  basic_string s2(L"cat"sv, 1, 1);
+  check_type<std::wstring>(s2);
+
+  basic_string s3(L"cat", 1);
+  check_type<std::wstring>(s3);
+}
