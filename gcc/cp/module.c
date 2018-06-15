@@ -2588,7 +2588,7 @@ struct GTY ((tag ("false"))) spewing : public slurping
   void linemaps (bytes_out &sec, ptr_int_hash_map &fmap, line_maps *lmaps,
 		 unsigned hwm);
   void linemaps (ptr_int_hash_map &fmap, line_maps *lmaps, unsigned hwm);
-  void linemaps (line_maps *, unsigned);
+  unsigned linemaps (line_maps *, unsigned);
 };
 
 /* State of a particular module. */
@@ -2730,8 +2730,8 @@ class GTY(()) module_state {
 		      unsigned count, unsigned *crc_ptr);
   bool read_unnamed (unsigned count, const range_t &range);
 
-  void find_locations (line_maps *);
-  void write_locations (elf_out *to, line_maps *, unsigned *crc_ptr);
+  unsigned find_locations (line_maps *);
+  void write_locations (elf_out *to, line_maps *, unsigned, unsigned *crc_ptr);
   bool read_locations (line_maps *);
 
  public:
@@ -9267,7 +9267,15 @@ module_state::read_unnamed (unsigned count, const range_t &range)
   return true;
 }
 
-void
+/* Prepare for location streaming.  We break the line maps into two
+   blocks -- those before the preamble processing, and those after.
+   The gap will be occupied by maps from imports (including each
+   import itself).  */
+// FIXME: We should do something about commonizing the <built-in>,
+// <command-line> and stdc-predef.h maps.  There's no point
+// duplicating them in each import.
+
+unsigned
 spewing::linemaps (line_maps *lmaps, unsigned hwm)
 {
   bool is_post = hwm != 0;
@@ -9285,6 +9293,7 @@ spewing::linemaps (line_maps *lmaps, unsigned hwm)
   for (unsigned ix = lwm; ix != hwm; ix++)
     {
       const line_map_ordinary *map = LINEMAPS_ORDINARY_MAP_AT (lmaps, ix);
+      dump () && dump ("Map %u file=%s", ix, ORDINARY_MAP_FILE_NAME (map));
       if (map->m_column_and_range_bits > mask)
 	mask = map->m_column_and_range_bits;
     }
@@ -9298,6 +9307,8 @@ spewing::linemaps (line_maps *lmaps, unsigned hwm)
   /* We must preserve the leftmost MASK bits of FIRST.  */
   unsigned shift = (first & ~((1u << mask) - 1u)) - used;
   (is_post ? ord_shifts.second : ord_shifts.first) = shift;
+
+  return mask;
 }
 
 void
@@ -9377,11 +9388,17 @@ spewing::linemaps (bytes_out &sec, ptr_int_hash_map &fmap, line_maps *lmaps,
 
 /* Setup for location writing.  */
 
-void
+unsigned
 module_state::find_locations (line_maps *lmaps)
 {
-  spewer ()->linemaps (lmaps, 0);
-  spewer ()->linemaps (lmaps, LINEMAPS_ORDINARY_USED (lmaps));
+  if (!modules_atom_p ())
+    return 0;
+
+  unsigned pre_mask = spewer ()->linemaps (lmaps, 0);
+  unsigned post_mask
+    = spewer ()->linemaps (lmaps, LINEMAPS_ORDINARY_USED (lmaps));
+
+  return pre_mask > post_mask ? pre_mask : post_mask;
 }
 
 /* Write the line maps to MOD_SNAME_PFX.loc
@@ -9392,20 +9409,22 @@ module_state::find_locations (line_maps *lmaps)
    u:num_fnames
    str[] filenames
    u:num_maps
+   u:mask
    maps[] maps
    u:hwm
 
    Currently only ordinary maps, so no adhoc or macro locations.  */
 
 void
-module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
+module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned mask,
+			       unsigned *crc_p)
 {
   if (!modules_atom_p ())
     /* The global module really makes this more complicated.  Let's
        not go there until we're forced to.  */
     return;
 
-  dump () && dump ("Writing unnamed");
+  dump () && dump ("Writing locations");
   dump.indent ();
 
   bytes_out sec (to);
@@ -9433,6 +9452,7 @@ module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
   unsigned num_maps = LINEMAPS_ORDINARY_USED (lmaps)
     - (spewer ()->ord_hole.second - spewer ()->ord_hole.first);
   sec.u (num_maps);
+  sec.u (mask);
   spewer ()->linemaps (sec, fnames, lmaps, 0);
   spewer ()->linemaps (sec, fnames, lmaps, LINEMAPS_ORDINARY_USED (lmaps));
   unsigned used = spewer ()->post_ords.second - spewer ()->ord_shifts.second;
@@ -9445,9 +9465,67 @@ module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
 }
 
 bool
-module_state::read_locations (line_maps *)
+module_state::read_locations (line_maps *lmaps)
 {
-  // FIXME:Implement
+  if (!modules_atom_p ())
+    return true;
+
+  bytes_in sec;
+
+  if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".loc"))
+    return false;
+  dump () && dump ("Reading locations");
+  dump.indent ();
+
+  /* Read the file names.  */
+  unsigned num_files = sec.u ();
+  auto_vec<const char *> file_names (num_files);
+  for (unsigned ix = 0; ix != num_files; ix++)
+    {
+      size_t len;
+      const char *fname = sec.str (&len);
+      char *duped = (char *)xmalloc (len + 1);
+      memcpy (duped, fname, len + 1);
+      /* We leak these names into the line-map table.  But it doesn't
+	 own them.  */
+      file_names.quick_push (duped);
+    }
+
+  dump () && dump ("Read %u filenames", num_files);
+
+  /* Allocate the maps.  */
+  unsigned num_maps = sec.u ();
+  unsigned mask = sec.u ();
+  unsigned origin
+    = (lmaps->highest_location + (1u << mask)) & ~((1u << mask) - 1);
+
+  line_map_ordinary *base = static_cast <line_map_ordinary *>
+    (line_map_new_raw (lmaps, false, num_maps));
+  
+  /* Read the maps.  */
+  for (unsigned ix = 0; ix != num_maps; ix++)
+    {
+      line_map_ordinary *map = base + ix;
+      map->start_location = sec.u () + origin;
+      map->reason = lc_reason (sec.u ());
+      map->sysp = sec.u ();
+      map->m_column_and_range_bits = sec.u ();
+      map->m_range_bits = sec.u ();
+      unsigned fnum = sec.u ();
+      map->to_file = fnum < file_names.length () ? file_names[fnum] : "";
+      map->to_line = sec.u ();
+      unsigned from = sec.u ();
+      map->included_at = from ? from + origin : loc;
+    }
+
+  lmaps->highest_location = origin + sec.u () - 1;
+
+  dump () && dump ("Read %u linemaps locations [%u,%u]",
+		   num_maps, origin, lmaps->highest_location);
+
+  dump.outdent ();
+  if (!sec.end (slurp->from))
+    return false;
   return true;
 }
 
@@ -9571,7 +9649,7 @@ module_state::write (elf_out *to, line_maps *lmaps)
 
   find_dependencies (table);
 
-  find_locations (lmaps);
+  unsigned mask = find_locations (lmaps);
 
   /* Find the SCCs. */
   auto_vec<depset *> sccs (table.size ());
@@ -9688,7 +9766,7 @@ module_state::write (elf_out *to, line_maps *lmaps)
   write_imports (to, &crc);
 
   /* Write the line maps.  */
-  write_locations (to, lmaps, &crc);
+  write_locations (to, lmaps, mask, &crc);
 
   /* And finish up.  */
   write_config (to, our_opts, range, unnamed, crc);

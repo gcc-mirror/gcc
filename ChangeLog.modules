@@ -1,5 +1,10 @@
 2018-06-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (spewer::linemaps): Return mask.
+	(module_state::{find,write}_locations): Use mask.
+	(module_state::read_locations): Implement.
+
 	Line_maps args everywhere!
 	gcc/cp/
 	* cp-tree.h (declare_module, import_module, atom_module_preamble):
