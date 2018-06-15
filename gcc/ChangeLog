@@ -1,5 +1,10 @@
 2018-06-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/85878
+	* expr.c (expand_assignment): Remove now redundant COMPLEX_MODE_P
+	check from first store_expr, use to_mode instead of GET_MODE (to_rtx).
+	Only call store_expr for halves if the mode is the same.
+
 	PR middle-end/86123
 	* match.pd ((X / Y) == 0 -> X < Y): Don't transform complex divisions.
 	Fix up comment formatting.

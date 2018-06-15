@@ -5145,12 +5145,12 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  gcc_checking_assert (COMPLEX_MODE_P (to_mode));
 	  poly_int64 mode_bitsize = GET_MODE_BITSIZE (to_mode);
 	  unsigned short inner_bitsize = GET_MODE_UNIT_BITSIZE (to_mode);
-	  if (TYPE_MODE (TREE_TYPE (from)) == GET_MODE (to_rtx)
-	      && COMPLEX_MODE_P (GET_MODE (to_rtx))
+	  if (TYPE_MODE (TREE_TYPE (from)) == to_mode
 	      && known_eq (bitpos, 0)
 	      && known_eq (bitsize, mode_bitsize))
 	    result = store_expr (from, to_rtx, false, nontemporal, reversep);
-	  else if (known_eq (bitsize, inner_bitsize)
+	  else if (TYPE_MODE (TREE_TYPE (from)) == GET_MODE_INNER (to_mode)
+		   && known_eq (bitsize, inner_bitsize)
 		   && (known_eq (bitpos, 0)
 		       || known_eq (bitpos, inner_bitsize)))
 	    result = store_expr (from, XEXP (to_rtx, maybe_ne (bitpos, 0)),
