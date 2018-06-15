@@ -1,5 +1,21 @@
 2018-06-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/string_view (basic_string_view(const CharT*)): Remove
+	check for null pointer and add nonnull attribute.
+	(compare(const CharT*), compare(size_type, size_type, const CharT*))
+	(find(const CharT*, size_type), rfind(const CharT*, size_type))
+	(find_first_of(const CharT*, size_type))
+	(find_last_of(const CharT*, size_type))
+	(find_first_not_of(const CharT*, size_type))
+	(find_last_not_of(const CharT*, size_type)): Add nonnull attribute.
+	* testsuite/21_strings/basic_string_view/cons/char/nonnull.cc: New.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/
+	nonnull.cc: New.
+	* testsuite/21_strings/basic_string_view/operations/find/char/
+	nonnull.cc: New.
+	* testsuite/21_strings/basic_string_view/operations/rfind/char/
+	nonnull.cc: New.
+
 	PR libstdc++/86168
 	* include/bits/random.h (random_device(const string&)): Remove
 	default argument.
