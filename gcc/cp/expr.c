@@ -186,12 +186,15 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	    expr = convert_from_reference (r);
 	}
       break;
-    default:
+
+    CASE_CONVERT:
+    case VIEW_CONVERT_EXPR:
       if (location_wrapper_p (expr))
-	{
-	  loc = EXPR_LOCATION (expr);
-	  recurse_op[0] = true;
-	}
+	loc = EXPR_LOCATION (expr);
+      recurse_op[0] = true;
+      break;
+
+    default:
       break;
     }
 
