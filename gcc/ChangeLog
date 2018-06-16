@@ -1,5 +1,10 @@
 2018-06-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/86095
+	* common.opt (Wunsafe-loop-optimizations): Add Ignore, remove Var,
+	documented as preserved for backward compatibility only.
+	* doc/invoke.texi: Remove -Wunsafe-loop-optimizations documentation.
+
 	PR rtl-optimization/86108
 	* bb-reorder.c (create_forwarder_block): Renamed to ...
 	(create_eh_forwarder_block): ... this.  Split OLD_BB after labels and
