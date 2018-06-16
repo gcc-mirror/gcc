@@ -1,5 +1,16 @@
 2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	PR middle-end/82479
+	* ipa-fnsummary.c (will_be_nonconstant_expr_predicate): Handle CALL_EXPR.
+	* tree-scalar-evolution.c (interpret_expr): Likewise.
+	(expression_expensive_p): Likewise.
+	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Likewise.
+	* tree-ssa-loop-niter.c (number_of_iterations_popcount): New.
+	(number_of_iterations_exit_assumptions): Use number_of_iterations_popcount.
+	(ssa_defined_by_minus_one_stmt_p): New.
+
+2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	PR middle-end/64946
 	* cfgexpand.c (expand_debug_expr): Hande ABSU_EXPR.
 	* config/i386/i386.c (ix86_add_stmt_cost): Likewise.

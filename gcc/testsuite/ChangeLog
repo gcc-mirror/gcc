@@ -1,5 +1,11 @@
 2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	PR middle-end/82479
+	* gcc.dg/tree-ssa/popcount.c: New test.
+	* gcc.dg/tree-ssa/popcount2.c: New test.
+
+2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	PR middle-end/64946
 	* gcc.dg/absu.c: New test.
 	* gcc.dg/gimplefe-29.c: New test.
