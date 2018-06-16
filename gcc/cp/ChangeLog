@@ -1,5 +1,8 @@
 2018-06-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86147 - wrong capture for template argument.
+	* expr.c (mark_use): Look through NOP_EXPR.
+
 	* name-lookup.c (do_pushtag): Don't look through complete types, but
 	don't add to them either.  Get context from current_binding_level.
 	* pt.c (tsubst_default_argument): Use push_to/pop_from_top_level.
