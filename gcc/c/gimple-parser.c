@@ -328,7 +328,8 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
     case CPP_NAME:
       {
 	tree id = c_parser_peek_token (parser)->value;
-	if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0)
+	if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0
+	    || strcmp (IDENTIFIER_POINTER (id), "__ABSU") == 0)
 	  goto build_unary_expr;
 	break;
       }
@@ -637,6 +638,12 @@ c_parser_gimple_unary_expression (c_parser *parser)
 	      c_parser_consume_token (parser);
 	      op = c_parser_gimple_postfix_expression (parser);
 	      return parser_build_unary_op (op_loc, ABS_EXPR, op);
+	    }
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__ABSU") == 0)
+	    {
+	      c_parser_consume_token (parser);
+	      op = c_parser_gimple_postfix_expression (parser);
+	      return parser_build_unary_op (op_loc, ABSU_EXPR, op);
 	    }
 	  else
 	    return c_parser_gimple_postfix_expression (parser);

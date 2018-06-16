@@ -1,3 +1,9 @@
+2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* c-typeck.c (build_unary_op): Handle ABSU_EXPR;
+	* gimple-parser.c (c_parser_gimple_statement): Likewise.
+	(c_parser_gimple_unary_expression): Likewise.
+
 2018-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/86093

@@ -2462,6 +2462,12 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_greater (pp);
       break;
 
+    case ABSU_EXPR:
+      pp_string (pp, "ABSU_EXPR <");
+      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_greater (pp);
+      break;
+
     case RANGE_EXPR:
       NIY;
       break;

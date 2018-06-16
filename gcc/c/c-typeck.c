@@ -4319,6 +4319,16 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	arg = default_conversion (arg);
       break;
 
+    case ABSU_EXPR:
+      if (!(typecode == INTEGER_TYPE))
+	{
+	  error_at (location, "wrong type argument to absu");
+	  return error_mark_node;
+	}
+      else if (!noconvert)
+	arg = default_conversion (arg);
+      break;
+
     case CONJ_EXPR:
       /* Conjugating a real value is a no-op, but allow it anyway.  */
       if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE

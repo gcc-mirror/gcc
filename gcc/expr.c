@@ -8962,6 +8962,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       return REDUCE_BIT_FIELD (temp);
 
     case ABS_EXPR:
+    case ABSU_EXPR:
       op0 = expand_expr (treeop0, subtarget,
 			 VOIDmode, EXPAND_NORMAL);
       if (modifier == EXPAND_STACK_PARM)
@@ -8973,7 +8974,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 
       /* Unsigned abs is simply the operand.  Testing here means we don't
 	 risk generating incorrect code below.  */
-      if (TYPE_UNSIGNED (type))
+      if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
 	return op0;
 
       return expand_abs (mode, op0, target, unsignedp,

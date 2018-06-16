@@ -1,3 +1,10 @@
+2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/64946
+	* gcc.dg/absu.c: New test.
+	* gcc.dg/gimplefe-29.c: New test.
+	* gcc.target/aarch64/pr64946.c: New test.
+
 2018-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/86093

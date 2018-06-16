@@ -615,7 +615,8 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
   gcc_assert (abs_stmt_vinfo);
   if (STMT_VINFO_DEF_TYPE (abs_stmt_vinfo) != vect_internal_def)
     return NULL;
-  if (gimple_assign_rhs_code (abs_stmt) != ABS_EXPR)
+  if (gimple_assign_rhs_code (abs_stmt) != ABS_EXPR
+      && gimple_assign_rhs_code (abs_stmt) != ABSU_EXPR)
     return NULL;
 
   tree abs_oprnd = gimple_assign_rhs1 (abs_stmt);

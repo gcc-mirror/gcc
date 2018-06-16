@@ -5816,6 +5816,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case FLOAT_EXPR:
     case NEGATE_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
     case TRUTH_NOT_EXPR:
     case FIXED_CONVERT_EXPR:
     case UNARY_PLUS_EXPR:

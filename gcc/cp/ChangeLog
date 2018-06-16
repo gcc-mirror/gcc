@@ -1,3 +1,8 @@
+2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* constexpr.c (potential_constant_expression_1): Handle ABSU_EXPR.
+	* cp-gimplify.c (cp_fold): Likewise.
+
 2018-06-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86147 - wrong capture for template argument.

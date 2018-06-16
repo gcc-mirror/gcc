@@ -358,14 +358,17 @@ dump_unary_rhs (pretty_printer *buffer, gassign *gs, int spc,
       break;
 
     case ABS_EXPR:
+    case ABSU_EXPR:
       if (flags & TDF_GIMPLE)
 	{
-	  pp_string (buffer, "__ABS ");
+	  pp_string (buffer,
+		     rhs_code == ABS_EXPR ? "__ABS " : "__ABSU ");
 	  dump_generic_node (buffer, rhs, spc, flags, false);
 	}
       else
 	{
-	  pp_string (buffer, "ABS_EXPR <");
+	  pp_string (buffer,
+		     rhs_code == ABS_EXPR ? "ABS_EXPR <" : "ABSU_EXPR <");
 	  dump_generic_node (buffer, rhs, spc, flags, false);
 	  pp_greater (buffer);
 	}
