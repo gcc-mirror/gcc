@@ -1487,6 +1487,8 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
 					       nonconstant_names);
       return p2.or_with (summary->conds, p1);
     }
+  else if (TREE_CODE (expr) == CALL_EXPR)
+    return true;
   else
     {
       debug_tree (expr);

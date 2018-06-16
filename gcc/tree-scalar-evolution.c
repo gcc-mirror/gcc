@@ -281,6 +281,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "gimple-fold.h"
 #include "tree-into-ssa.h"
+#include "builtins.h"
 
 static tree analyze_scalar_evolution_1 (struct loop *, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
@@ -1984,6 +1985,7 @@ interpret_expr (struct loop *loop, gimple *at_stmt, tree expr)
     return expr;
 
   if (TREE_CODE (expr) == POLYNOMIAL_CHREC
+      || TREE_CODE (expr) == CALL_EXPR
       || get_gimple_rhs_class (TREE_CODE (expr)) == GIMPLE_TERNARY_RHS)
     return chrec_dont_know;
 
@@ -3491,6 +3493,19 @@ expression_expensive_p (tree expr)
 	 Forbid anything else.  */
       if (!integer_pow2p (TREE_OPERAND (expr, 1)))
 	return true;
+    }
+
+  if (code == CALL_EXPR)
+    {
+      tree arg;
+      call_expr_arg_iterator iter;
+
+      if (!is_inexpensive_builtin (get_callee_fndecl (expr)))
+	return true;
+      FOR_EACH_CALL_EXPR_ARG (arg, iter, expr)
+	if (expression_expensive_p (arg))
+	  return true;
+      return false;
     }
 
   switch (TREE_CODE_CLASS (code))
