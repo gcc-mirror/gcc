@@ -1413,8 +1413,12 @@ get_uncond_jump_length (void)
    other partition wrt OLD_BB.  */
 
 static basic_block
-create_forwarder_block (rtx_code_label *new_label, basic_block old_bb)
+create_eh_forwarder_block (rtx_code_label *new_label, basic_block old_bb)
 {
+  /* Split OLD_BB, so that EH pads have always only incoming EH edges,
+     bb_has_eh_pred bbs are treated specially by DF infrastructure.  */
+  old_bb = split_block_after_labels (old_bb)->dest;
+
   /* Put the new label and a jump in the new basic block.  */
   rtx_insn *label = emit_label (new_label);
   rtx_code_label *old_label = block_label (old_bb);
@@ -1456,7 +1460,7 @@ sjlj_fix_up_crossing_landing_pad (basic_block old_bb)
   LABEL_PRESERVE_P (new_label) = 1;
 
   /* Create the forwarder block.  */
-  basic_block new_bb = create_forwarder_block (new_label, old_bb);
+  basic_block new_bb = create_eh_forwarder_block (new_label, old_bb);
 
   /* Create the map from old to new lp index and initialize it.  */
   unsigned *index_map = (unsigned *) alloca (lp_len * sizeof (unsigned));
@@ -1508,7 +1512,7 @@ dw2_fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
   LABEL_PRESERVE_P (new_lp->landing_pad) = 1;
 
   /* Create the forwarder block.  */
-  basic_block new_bb = create_forwarder_block (new_lp->landing_pad, old_bb);
+  basic_block new_bb = create_eh_forwarder_block (new_lp->landing_pad, old_bb);
 
   /* Fix up the edges.  */
   for (ei = ei_start (old_bb->preds); (e = ei_safe_edge (ei)) != NULL; )
