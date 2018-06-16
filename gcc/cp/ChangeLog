@@ -1,5 +1,8 @@
 2018-06-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86147 - wrong capture for template argument.
+	* expr.c (mark_use): Look through NOP_EXPR.
+
 	PR c++/82882 - ICE with lambda in template default argument.
 	* lambda.c (record_null_lambda_scope): New.
 	* pt.c (tsubst_lambda_expr): Use it.
