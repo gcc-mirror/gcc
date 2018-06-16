@@ -102,6 +102,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match (nop_convert @0)
  @0) 
 
+/* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
+   ABSU_EXPR returns unsigned absolute value of the operand and the operand
+   of the ABSU_EXPR will have the corresponding signed type.  */
+(simplify (abs (convert @0))
+ (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && !TYPE_UNSIGNED (TREE_TYPE (@0))
+      && element_precision (type) > element_precision (TREE_TYPE (@0)))
+  (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+   (convert (absu:utype @0)))))
+
+
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
 

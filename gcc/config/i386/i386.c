@@ -50350,6 +50350,7 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 
 	case BIT_IOR_EXPR:
 	case ABS_EXPR:
+	case ABSU_EXPR:
 	case MIN_EXPR:
 	case MAX_EXPR:
 	case BIT_XOR_EXPR:

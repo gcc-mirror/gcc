@@ -1,3 +1,24 @@
+2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/64946
+	* cfgexpand.c (expand_debug_expr): Hande ABSU_EXPR.
+	* config/i386/i386.c (ix86_add_stmt_cost): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* expr.c (expand_expr_real_2): Check operand type's sign.
+	* fold-const.c (const_unop): Handle ABSU_EXPR.
+	(fold_abs_const): Likewise.
+	* gimple-pretty-print.c (dump_unary_rhs): Likewise.
+	* gimple-ssa-backprop.c (backprop::process_assign_use): Likesie.
+	(strip_sign_op_1): Likesise.
+	* match.pd: Add new pattern to generate ABSU_EXPR.
+	* optabs-tree.c (optab_for_tree_code): Handle ABSU_EXPR.
+	* tree-cfg.c (verify_gimple_assign_unary): Likewise.
+	* tree-eh.c (operation_could_trap_helper_p): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-vect-patterns.c (vect_recog_sad_pattern): Likewise.
+	* tree.def (ABSU_EXPR): New.
+
 2018-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86095

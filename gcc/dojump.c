@@ -467,6 +467,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
       /* FALLTHRU */
     case NON_LVALUE_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
     case NEGATE_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:

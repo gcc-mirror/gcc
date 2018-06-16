@@ -3801,6 +3801,7 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
     case MIN_EXPR:
     case MAX_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
 
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:

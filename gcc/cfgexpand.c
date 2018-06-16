@@ -4545,6 +4545,7 @@ expand_debug_expr (tree exp)
       }
 
     case ABS_EXPR:
+    case ABSU_EXPR:
       return simplify_gen_unary (ABS, mode, op0, mode);
 
     case NEGATE_EXPR:

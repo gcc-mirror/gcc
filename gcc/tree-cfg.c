@@ -3722,6 +3722,20 @@ verify_gimple_assign_unary (gassign *stmt)
     case CONJ_EXPR:
       break;
 
+    case ABSU_EXPR:
+      if (!ANY_INTEGRAL_TYPE_P (lhs_type)
+	  || !TYPE_UNSIGNED (lhs_type)
+	  || !ANY_INTEGRAL_TYPE_P (rhs1_type)
+	  || TYPE_UNSIGNED (rhs1_type)
+	  || element_precision (lhs_type) != element_precision (rhs1_type))
+	{
+	  error ("invalid types for ABSU_EXPR");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
+	}
+      return false;
+
     case VEC_DUPLICATE_EXPR:
       if (TREE_CODE (lhs_type) != VECTOR_TYPE
 	  || !useless_type_conversion_p (TREE_TYPE (lhs_type), rhs1_type))

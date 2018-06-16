@@ -2471,6 +2471,10 @@ operation_could_trap_helper_p (enum tree_code op,
 	return true;
       return false;
 
+    case ABSU_EXPR:
+      /* ABSU_EXPR never traps.  */
+      return false;
+
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:

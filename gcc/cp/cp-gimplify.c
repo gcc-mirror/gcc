@@ -2272,6 +2272,7 @@ cp_fold (tree x)
     case FLOAT_EXPR:
     case NEGATE_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
     case FIXED_CONVERT_EXPR:

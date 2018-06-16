@@ -1,3 +1,7 @@
+2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* c-common.c (c_common_truthvalue_conversion): Handle ABSU_EXPR.
+
 2018-06-13  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.c (c_common_post_options): Warn about useless -Wabi.

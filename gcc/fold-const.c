@@ -1726,7 +1726,8 @@ const_unop (enum tree_code code, tree type, tree arg0)
       && HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
       && REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg0))
       && code != NEGATE_EXPR
-      && code != ABS_EXPR)
+      && code != ABS_EXPR
+      && code != ABSU_EXPR)
     return NULL_TREE;
 
   switch (code)
@@ -1761,6 +1762,7 @@ const_unop (enum tree_code code, tree type, tree arg0)
       }
 
     case ABS_EXPR:
+    case ABSU_EXPR:
       if (TREE_CODE (arg0) == INTEGER_CST || TREE_CODE (arg0) == REAL_CST)
 	return fold_abs_const (arg0, type);
       break;
@@ -13867,20 +13869,21 @@ fold_abs_const (tree arg0, tree type)
       {
         /* If the value is unsigned or non-negative, then the absolute value
 	   is the same as the ordinary value.  */
-	if (!wi::neg_p (wi::to_wide (arg0), TYPE_SIGN (type)))
-	  t = arg0;
+	wide_int val = wi::to_wide (arg0);
+	bool overflow = false;
+	if (!wi::neg_p (val, TYPE_SIGN (TREE_TYPE (arg0))))
+	  ;
 
 	/* If the value is negative, then the absolute value is
 	   its negation.  */
 	else
-	  {
-	    bool overflow;
-	    wide_int val = wi::neg (wi::to_wide (arg0), &overflow);
-	    t = force_fit_type (type, val, -1,
-				overflow | TREE_OVERFLOW (arg0));
-	  }
+	  val = wi::neg (val, &overflow);
+
+	/* Force to the destination type, set TREE_OVERFLOW for signed
+	   TYPE only.  */
+	t = force_fit_type (type, val, 1, overflow | TREE_OVERFLOW (arg0));
       }
-      break;
+    break;
 
     case REAL_CST:
       if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg0)))

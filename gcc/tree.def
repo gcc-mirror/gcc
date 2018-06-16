@@ -752,6 +752,11 @@ DEFTREECODE (MAX_EXPR, "max_expr", tcc_binary, 2)
    operand of the ABS_EXPR must have the same type.  */
 DEFTREECODE (ABS_EXPR, "abs_expr", tcc_unary, 1)
 
+/* Represents the unsigned absolute value of the operand.
+   An ABSU_EXPR must have unsigned INTEGER_TYPE.  The operand of the ABSU_EXPR
+   must have the corresponding signed type.  */
+DEFTREECODE (ABSU_EXPR, "absu_expr", tcc_unary, 1)
+
 /* Shift operations for shift and rotate.
    Shift means logical shift if done on an
    unsigned type, arithmetic shift if done on a signed type.
