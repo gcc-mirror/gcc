@@ -323,7 +323,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wswitch-unreachable  -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
 -Wtype-limits  -Wundef @gol
--Wuninitialized  -Wunknown-pragmas  -Wunsafe-loop-optimizations @gol
+-Wuninitialized  -Wunknown-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
 -Wunused-label  -Wunused-local-typedefs  -Wunused-macros @gol
 -Wunused-parameter  -Wno-unused-result @gol
@@ -5966,14 +5966,6 @@ If the stack usage is (partly) dynamic and not bounded, it's:
   warning: stack usage might be unbounded
 @end smallexample
 @end itemize
-
-@item -Wunsafe-loop-optimizations
-@opindex Wunsafe-loop-optimizations
-@opindex Wno-unsafe-loop-optimizations
-Warn if the loop cannot be optimized because the compiler cannot
-assume anything on the bounds of the loop indices.  With
-@option{-funsafe-loop-optimizations} warn if the compiler makes
-such assumptions.
 
 @item -Wno-pedantic-ms-format @r{(MinGW targets only)}
 @opindex Wno-pedantic-ms-format
