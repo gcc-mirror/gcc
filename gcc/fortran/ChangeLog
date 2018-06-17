@@ -1,3 +1,14 @@
+2018-06-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fortran/trans-decl.c (nonlocal_dummy_decl_pset): Delete.
+	(nonlocal_dummy_decls): Likewise.
+	(gfc_nonlocal_dummy_array_decl): Likewise.
+	(gfc_get_symbol_decl): Do not call gfc_nonlocal_dummy_array_decl.
+	(gfc_get_fake_result_decl): Do not generate a new DECL if simply
+	reusing the result of a recursive call.
+	(gfc_generate_function_code): Do not create, insert and destroy
+	nonlocal_dummy_decls.
+
 2018-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/86110

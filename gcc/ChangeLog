@@ -1,3 +1,28 @@
+2018-06-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (nonlocal_vlas): Delete.
+	(nonlocal_vla_vars): Likewise.
+	(gimplify_var_or_parm_decl): Do not add debug VAR_DECLs for non-local
+	referenced VLAs.
+	(gimplify_body): Do not create and destroy nonlocal_vlas.
+	* tree-nested.c: Include diagnostic.h.
+	(use_pointer_in_frame): Tweak.
+	(lookup_field_for_decl): Add assertion and declare the transformation.
+	(convert_nonlocal_reference_op) <PARM_DECL>: Rework and issue an
+	internal error when the reference is in a wrong context.  Do not
+	create a debug decl by default.
+	(note_nonlocal_block_vlas): Delete.
+	(convert_nonlocal_reference_stmt) <GIMPLE_BIND>: Do not call it.
+	(convert_local_reference_op) <PARM_DECL>: Skip the frame decl.  Do not
+	create a debug decl by default.
+	(convert_gimple_call) <GIMPLE_CALL>: Issue an internal error when the
+	call is in a wrong context.
+	(fixup_vla_decls): New function.
+	(finalize_nesting_tree_1): Adjust comment.  Call fixup_vla_decls if no
+	debug variables were created.
+	* tree.c (decl_value_expr_lookup): Add checking assertion.
+	(decl_value_expr_insert): Likewise.
+
 2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/82479

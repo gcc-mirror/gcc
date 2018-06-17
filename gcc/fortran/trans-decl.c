@@ -61,9 +61,6 @@ static GTY(()) tree parent_fake_result_decl;
 static GTY(()) tree saved_function_decls;
 static GTY(()) tree saved_parent_function_decls;
 
-static hash_set<tree> *nonlocal_dummy_decl_pset;
-static GTY(()) tree nonlocal_dummy_decls;
-
 /* Holds the variable DECLs that are locals.  */
 
 static GTY(()) tree saved_local_decls;
@@ -1284,39 +1281,6 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
   return decl;
 }
 
-/* For symbol SYM with GFC_DECL_SAVED_DESCRIPTOR used in contained
-   function add a VAR_DECL to the current function with DECL_VALUE_EXPR
-   pointing to the artificial variable for debug info purposes.  */
-
-static void
-gfc_nonlocal_dummy_array_decl (gfc_symbol *sym)
-{
-  tree decl, dummy;
-
-  if (! nonlocal_dummy_decl_pset)
-    nonlocal_dummy_decl_pset = new hash_set<tree>;
-
-  if (nonlocal_dummy_decl_pset->add (sym->backend_decl))
-    return;
-
-  dummy = GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl);
-  decl = build_decl (input_location, VAR_DECL, DECL_NAME (dummy),
-		     TREE_TYPE (sym->backend_decl));
-  DECL_ARTIFICIAL (decl) = 0;
-  TREE_USED (decl) = 1;
-  TREE_PUBLIC (decl) = 0;
-  TREE_STATIC (decl) = 0;
-  DECL_EXTERNAL (decl) = 0;
-  if (DECL_BY_REFERENCE (dummy))
-    DECL_BY_REFERENCE (decl) = 1;
-  DECL_LANG_SPECIFIC (decl) = DECL_LANG_SPECIFIC (sym->backend_decl);
-  SET_DECL_VALUE_EXPR (decl, sym->backend_decl);
-  DECL_HAS_VALUE_EXPR_P (decl) = 1;
-  DECL_CONTEXT (decl) = DECL_CONTEXT (sym->backend_decl);
-  DECL_CHAIN (decl) = nonlocal_dummy_decls;
-  nonlocal_dummy_decls = decl;
-}
-
 /* Return a constant or a variable to use as a string length.  Does not
    add the decl to the current scope.  */
 
@@ -1642,12 +1606,6 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	{
 	  gfc_add_assign_aux_vars (sym);
 	}
-
-      if ((sym->attr.dimension || IS_CLASS_ARRAY (sym))
-	  && DECL_LANG_SPECIFIC (sym->backend_decl)
-	  && GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl)
-	  && DECL_CONTEXT (sym->backend_decl) != current_function_decl)
-	gfc_nonlocal_dummy_array_decl (sym);
 
       if (sym->ts.type == BT_CLASS && sym->backend_decl)
 	GFC_DECL_CLASS(sym->backend_decl) = 1;
@@ -2950,13 +2908,14 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
       && sym->ns->proc_name->attr.entry_master
       && sym != sym->ns->proc_name)
     {
-      tree t = NULL, var;
+      tree t = NULL, var, field;
       if (this_fake_result_decl != NULL)
 	for (t = TREE_CHAIN (this_fake_result_decl); t; t = TREE_CHAIN (t))
 	  if (strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t)), sym->name) == 0)
 	    break;
       if (t)
 	return TREE_VALUE (t);
+
       decl = gfc_get_fake_result_decl (sym->ns->proc_name, parent_flag);
 
       if (parent_flag)
@@ -2964,20 +2923,17 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
       else
 	this_fake_result_decl = current_fake_result_decl;
 
-      if (decl && sym->ns->proc_name->attr.mixed_entry_master)
-	{
-	  tree field;
+      if (!sym->ns->proc_name->attr.mixed_entry_master)
+	return decl;
 
-	  for (field = TYPE_FIELDS (TREE_TYPE (decl));
-	       field; field = DECL_CHAIN (field))
-	    if (strcmp (IDENTIFIER_POINTER (DECL_NAME (field)),
-		sym->name) == 0)
-	      break;
+      for (field = TYPE_FIELDS (TREE_TYPE (decl));
+	   field; field = DECL_CHAIN (field))
+	if (strcmp (IDENTIFIER_POINTER (DECL_NAME (field)), sym->name) == 0)
+	  break;
 
-	  gcc_assert (field != NULL_TREE);
-	  decl = fold_build3_loc (input_location, COMPONENT_REF,
-				  TREE_TYPE (field), decl, field, NULL_TREE);
-	}
+      gcc_assert (field != NULL_TREE);
+      decl = fold_build3_loc (input_location, COMPONENT_REF,
+			      TREE_TYPE (field), decl, field, NULL_TREE);
 
       var = create_tmp_var_raw (TREE_TYPE (decl), sym->name);
       if (parent_flag)
@@ -6442,9 +6398,6 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   gfc_generate_contained_functions (ns);
 
-  nonlocal_dummy_decls = NULL;
-  nonlocal_dummy_decl_pset = NULL;
-
   has_coarray_vars = false;
   generate_local_vars (ns);
 
@@ -6643,15 +6596,6 @@ gfc_generate_function_code (gfc_namespace * ns)
   DECL_SAVED_TREE (fndecl)
     = build3_v (BIND_EXPR, decl, DECL_SAVED_TREE (fndecl),
 		DECL_INITIAL (fndecl));
-
-  if (nonlocal_dummy_decls)
-    {
-      BLOCK_VARS (DECL_INITIAL (fndecl))
-	= chainon (BLOCK_VARS (DECL_INITIAL (fndecl)), nonlocal_dummy_decls);
-      delete nonlocal_dummy_decl_pset;
-      nonlocal_dummy_decls = NULL;
-      nonlocal_dummy_decl_pset = NULL;
-    }
 
   /* Output the GENERIC tree.  */
   dump_function (TDI_original, fndecl);

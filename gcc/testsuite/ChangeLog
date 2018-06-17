@@ -1,3 +1,9 @@
+2018-06-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/debug/dwarf2/pr37726.c: Move to...
+	* gcc.dg/guality/pr37726.c: ...here and turn into GDB test.
+	* gnat.dg/stack_usage5.adb: New test.
+
 2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/82479
