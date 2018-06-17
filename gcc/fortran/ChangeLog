@@ -1,6 +1,6 @@
 2018-06-17  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* fortran/trans-decl.c (nonlocal_dummy_decl_pset): Delete.
+	* trans-decl.c (nonlocal_dummy_decl_pset): Delete.
 	(nonlocal_dummy_decls): Likewise.
 	(gfc_nonlocal_dummy_array_decl): Likewise.
 	(gfc_get_symbol_decl): Do not call gfc_nonlocal_dummy_array_decl.
