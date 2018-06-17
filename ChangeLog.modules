@@ -1,3 +1,12 @@
+2018-06-17  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cxx-module-mapper.sh: Remove recompilation capability.
+	gcc/testsuite/
+	* g++.dg/modules/import-2.C: Adjust messages.
+	* g++.dg/modules/main-aux.cc: Delete.
+	* g++.dg/modules/main_1.C: Delete.
+
 2018-06-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/

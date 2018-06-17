@@ -27,50 +27,9 @@ progname=${0##*/}
 main=
 
 verbose=false
-compile=true
 declare -A mapping
 
 shopt -s extglob nullglob
-
-invoke_compiler () {
-    local src=$1
-    local from=$2
-    local ign=false
-    local -a cmd=("$COLLECT_GCC")
-
-    if test -z "$cmd" ; then
-	echo "not inferior of compiler driver"
-	return
-    fi
-    local action=-c
-    local arg
-    for arg in $(eval echo $COLLECT_GCC_OPTIONS)
-    do
-	$ign || case "$arg" in
-	    (-S) action=-S ; ign=true ;;
-	    (-c) ign=true ;;
-	    (-o) ign=true ;;
-	    (-fmodule-preamble=*) ign=true ;;
-	    (*)  ;;
-	esac
-	$ign || cmd=("${cmd[@]}" "$arg")
-	test "$arg" = '-o' || ign=false
-    done
-
-    # look for something named by the module name
-    if test "$from" != '.' -a -e "$from/$src" ; then
-	src="$from/$src"
-    elif ! test -e "$src" ; then
-	src=$(dirname $main)/$src
-	if ! test -e "$src" ; then
-	    echo "cannot find module source"
-	    return
-	fi
-    fi
-
-    $verbose && echo "$progname: compiling module interface $src" >&2
-    "${cmd[@]}" $action "$src" || echo "compilation $src failed"
-}
 
 bmi () {
     if test ${#mapping[@]} -ne 0 ; then
@@ -108,19 +67,12 @@ cmd () {
 	    resp=OK
 	    ;;
 	(BMI)
-	    # We try and build a BMI from source
+	    # Map to a bmi name
 	    bmi=$(bmi $2)
 	    if test -z "$bmi" ; then
 		resp="ERROR Unknown module name"
 	    else
-		if $compile && ! test -e $bmi ; then
-		    resp=$(invoke_compiler $(search $2) $(dirname $3))
-		fi
-		if test -e $bmi ; then
-		    resp="BMI $bmi"
-		else
-		    resp="ERROR $resp"
-		fi
+		resp="BMI $bmi"
 	    fi
 	    ;;
 	(EXPORT)
