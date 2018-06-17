@@ -6337,7 +6337,15 @@ decl_value_expr_lookup (tree from)
 
   h = value_expr_for_decl->find_with_hash (&in, DECL_UID (from));
   if (h)
-    return h->to;
+    {
+      /* Chains of value expressions may run afoul of garbage collection.  */
+      gcc_checking_assert (!(h->to
+			     && (TREE_CODE (h->to) == PARM_DECL
+				 || TREE_CODE (h->to) == VAR_DECL)
+			     && DECL_HAS_VALUE_EXPR_P (h->to)));
+      return h->to;
+    }
+
   return NULL_TREE;
 }
 
@@ -6347,6 +6355,12 @@ void
 decl_value_expr_insert (tree from, tree to)
 {
   struct tree_decl_map *h;
+
+  /* Chains of value expressions may run afoul of garbage collection.  */
+  gcc_checking_assert (!(to
+			 && (TREE_CODE (to) == PARM_DECL
+			     || TREE_CODE (to) == VAR_DECL)
+			 && DECL_HAS_VALUE_EXPR_P (to)));
 
   h = ggc_alloc<tree_decl_map> ();
   h->base.from = from;

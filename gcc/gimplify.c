@@ -2674,12 +2674,6 @@ gimplify_conversion (tree *expr_p)
   return GS_OK;
 }
 
-/* Nonlocal VLAs seen in the current function.  */
-static hash_set<tree> *nonlocal_vlas;
-
-/* The VAR_DECLs created for nonlocal VLAs for debug info purposes.  */
-static tree nonlocal_vla_vars;
-
 /* Gimplify a VAR_DECL or PARM_DECL.  Return GS_OK if we expanded a
    DECL_VALUE_EXPR, and it's worth re-examining things.  */
 
@@ -2710,38 +2704,7 @@ gimplify_var_or_parm_decl (tree *expr_p)
   /* If the decl is an alias for another expression, substitute it now.  */
   if (DECL_HAS_VALUE_EXPR_P (decl))
     {
-      tree value_expr = DECL_VALUE_EXPR (decl);
-
-      /* For referenced nonlocal VLAs add a decl for debugging purposes
-	 to the current function.  */
-      if (VAR_P (decl)
-	  && TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST
-	  && nonlocal_vlas != NULL
-	  && TREE_CODE (value_expr) == INDIRECT_REF
-	  && TREE_CODE (TREE_OPERAND (value_expr, 0)) == VAR_DECL
-	  && decl_function_context (decl) != current_function_decl)
-	{
-	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
-	  while (ctx
-		 && (ctx->region_type == ORT_WORKSHARE
-		     || ctx->region_type == ORT_SIMD
-		     || ctx->region_type == ORT_ACC))
-	    ctx = ctx->outer_context;
-	  if (!ctx && !nonlocal_vlas->add (decl))
-	    {
-	      tree copy = copy_node (decl);
-
-	      lang_hooks.dup_lang_specific_decl (copy);
-	      SET_DECL_RTL (copy, 0);
-	      TREE_USED (copy) = 1;
-	      DECL_CHAIN (copy) = nonlocal_vla_vars;
-	      nonlocal_vla_vars = copy;
-	      SET_DECL_VALUE_EXPR (copy, unshare_expr (value_expr));
-	      DECL_HAS_VALUE_EXPR_P (copy) = 1;
-	    }
-	}
-
-      *expr_p = unshare_expr (value_expr);
+      *expr_p = unshare_expr (DECL_VALUE_EXPR (decl));
       return GS_OK;
     }
 
@@ -12591,7 +12554,6 @@ gimplify_body (tree fndecl, bool do_parms)
   gimple_seq parm_stmts, parm_cleanup = NULL, seq;
   gimple *outer_stmt;
   gbind *outer_bind;
-  struct cgraph_node *cgn;
 
   timevar_push (TV_TREE_GIMPLIFY);
 
@@ -12617,10 +12579,6 @@ gimplify_body (tree fndecl, bool do_parms)
      first, but the g++ front end doesn't always do it that way.  */
   unshare_body (fndecl);
   unvisit_body (fndecl);
-
-  cgn = cgraph_node::get (fndecl);
-  if (cgn && cgn->origin)
-    nonlocal_vlas = new hash_set<tree>;
 
   /* Make sure input_location isn't set to something weird.  */
   input_location = DECL_SOURCE_LOCATION (fndecl);
@@ -12672,27 +12630,6 @@ gimplify_body (tree fndecl, bool do_parms)
 	    DECL_HAS_VALUE_EXPR_P (parm) = 0;
 	    DECL_IGNORED_P (parm) = 0;
 	  }
-    }
-
-  if (nonlocal_vlas)
-    {
-      if (nonlocal_vla_vars)
-	{
-	  /* tree-nested.c may later on call declare_vars (..., true);
-	     which relies on BLOCK_VARS chain to be the tail of the
-	     gimple_bind_vars chain.  Ensure we don't violate that
-	     assumption.  */
-	  if (gimple_bind_block (outer_bind)
-	      == DECL_INITIAL (current_function_decl))
-	    declare_vars (nonlocal_vla_vars, outer_bind, true);
-	  else
-	    BLOCK_VARS (DECL_INITIAL (current_function_decl))
-	      = chainon (BLOCK_VARS (DECL_INITIAL (current_function_decl)),
-			 nonlocal_vla_vars);
-	  nonlocal_vla_vars = NULL_TREE;
-	}
-      delete nonlocal_vlas;
-      nonlocal_vlas = NULL;
     }
 
   if ((flag_openacc || flag_openmp || flag_openmp_simd)
