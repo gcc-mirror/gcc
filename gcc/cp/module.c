@@ -6838,7 +6838,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
       if (option[len] == '?' && !cookie)
 	cookie = const_cast <char *> (&option[len]);
     }
-  char *writable XNEWVEC (char, len + 1);
+  char *writable = XNEWVEC (char, len + 1);
   memcpy (writable, option, len + 1);
   if (cookie)
     {
@@ -6957,7 +6957,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    {
 	      memset (&saddr.un, 0, sizeof (saddr.un));
 	      saddr.un.sun_family = AF_UNIX;
-	      memcpy (saddr.un.sun_path, option, len + 1);
+	      memcpy (saddr.un.sun_path, writable + 1, len);
 	    }
 	  saddr_len = offsetof (union saddr, un.sun_path) + len + 1;
 #else
@@ -6970,7 +6970,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	{
 	  /* Try a hostname:port address.  */
 	  char *endp;
-	  int port = strtoul (colon + 1, &endp, 10);
+	  int port ATTRIBUTE_UNUSED = strtoul (colon + 1, &endp, 10);
 
 	  if (endp != colon + 1 && !*endp)
 	    {
