@@ -1170,6 +1170,12 @@
 #endif
 
 
+/* Define if epoll_create, epoll_ctl, epoll_pwait provided. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_EPOLL
+#endif
+
+
 /* Define to 1 if you have the `execv' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_EXECV
@@ -1730,6 +1736,12 @@
 /* Define to 1 if you have the `posix_fallocate' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_POSIX_FALLOCATE
+#endif
+
+
+/* Define if pselect provided. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_PSELECT
 #endif
 
 

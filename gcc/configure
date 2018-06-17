@@ -11487,6 +11487,81 @@ $as_echo "#define HAVE_AF_INET6 1" >>confdefs.h
 
 fi
 
+# Check for epoll_create, epoll_ctl, epoll_pwait
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for epoll" >&5
+$as_echo_n "checking for epoll... " >&6; }
+if test "${ac_cv_epoll+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/epoll.h>
+int
+main ()
+{
+
+int fd = epoll_create (1);
+epoll_event ev;
+ev.events = EPOLLIN;
+ev.data.fd = 0;
+epoll_ctl (fd, EPOLL_CTL_ADD, 0, &ev);
+epoll_pwait (fd, 0, 0, -1, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_epoll=yes
+else
+  ac_cv_epoll=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_epoll" >&5
+$as_echo "$ac_cv_epoll" >&6; }
+if test $ac_cv_epoll = yes; then
+
+$as_echo "#define HAVE_EPOLL 1" >>confdefs.h
+
+fi
+
+# Check for pselect
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pselect" >&5
+$as_echo_n "checking for pselect... " >&6; }
+if test "${ac_cv_pselect+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/select.h>
+int
+main ()
+{
+
+pselect (0, 0, 0, 0, 0, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_pselect=yes
+else
+  ac_cv_pselect=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_pselect" >&5
+$as_echo "$ac_cv_pselect" >&6; }
+if test $ac_cv_pselect = yes; then
+
+$as_echo "#define HAVE_PSELECT 1" >>confdefs.h
+
+fi
+
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
 CFLAGS="$saved_CFLAGS"
 CXXFLAGS="$saved_CXXFLAGS"
@@ -18534,7 +18609,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18537 "configure"
+#line 18612 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18640,7 +18715,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18643 "configure"
+#line 18718 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

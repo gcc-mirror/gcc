@@ -1,5 +1,9 @@
 2018-06-17  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* configure.ac: Detect epoll & pselect.
+	* configure, config.in: Rebuilt.
+
 	gcc/cp/
 	* module.c (module_mapper::module_mapper): Fixup length errors.
 

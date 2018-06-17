@@ -1432,6 +1432,35 @@ if test $ac_cv_af_inet6 = yes; then
   [Define if AF_INET6 supported.])
 fi
 
+# Check for epoll_create, epoll_ctl, epoll_pwait
+AC_CACHE_CHECK(for epoll, ac_cv_epoll, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/epoll.h>]],[[
+int fd = epoll_create (1);
+epoll_event ev;
+ev.events = EPOLLIN;
+ev.data.fd = 0;
+epoll_ctl (fd, EPOLL_CTL_ADD, 0, &ev);
+epoll_pwait (fd, 0, 0, -1, 0);]])],
+[ac_cv_epoll=yes],
+[ac_cv_epoll=no])])
+if test $ac_cv_epoll = yes; then
+  AC_DEFINE(HAVE_EPOLL, 1,
+  [Define if epoll_create, epoll_ctl, epoll_pwait provided.])
+fi
+
+# Check for pselect
+AC_CACHE_CHECK(for pselect, ac_cv_pselect, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/select.h>]],[[
+pselect (0, 0, 0, 0, 0, 0);]])],
+[ac_cv_pselect=yes],
+[ac_cv_pselect=no])])
+if test $ac_cv_pselect = yes; then
+  AC_DEFINE(HAVE_PSELECT, 1,
+  [Define if pselect provided.])
+fi
+
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
 CFLAGS="$saved_CFLAGS"
 CXXFLAGS="$saved_CXXFLAGS"
