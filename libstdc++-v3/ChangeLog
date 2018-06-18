@@ -1,5 +1,12 @@
 2018-06-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	LWG 2975 ensure construct(pair<T,U>*, ...) used to construct pairs
+	* include/std/scoped_allocator (__not_pair): Define SFINAE helper.
+	(construct(_Tp*, _Args&&...)): Remove from overload set when _Tp is
+	a specialization of std::pair.
+	* testsuite/20_util/scoped_allocator/construct_pair.cc: Ensure
+	pair elements are constructed correctly.
+
 	LWG 2989 hide path iostream operators from normal lookup
 	* include/bits/fs_path.h (operator<<, operator>>): Define inline as
 	friends.
