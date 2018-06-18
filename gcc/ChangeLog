@@ -14,6 +14,16 @@
 	(strlen_check_and_optimize_stmt): Same.
 	* doc/extend.texi (Other Builtins): Document strnlen.
 
+2018-06-18  Maya Rashish  <coypu@sdf.org>
+
+	* config/alpha/openbsd.h (TARGET_DEFAULT): Define.
+	(LINK_SPEC, STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
+	(INTMAX_TYPE, UINTMAX_TYPE, WINT_TYPE): Likewise.
+
+	* config/alpha/elf.h (STARTFILE_SPEC, ENDFILE_SPEC): Move from
+	here to ...
+	* config/alpha/linux.h (STARTFILE_SPEC, ENDFILE_SPEC): Here.
+
 2018-06-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* tree.c (escaped_string::escape): Replace cast to char * by

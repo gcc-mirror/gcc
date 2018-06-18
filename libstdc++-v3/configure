@@ -66148,7 +66148,7 @@ fi
 done
 
     ;;
-  *-netbsd*)
+  *-netbsd* | *-openbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
 
 

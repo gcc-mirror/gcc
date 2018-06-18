@@ -1,3 +1,8 @@
+2018-06-18  Maya Rashish  <coypu@sdf.org>
+
+	* crossconfig.m4: Handle OpenBSD just like NetBSD.
+	* configure: Rebuilt.
+
 2018-06-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	P0754R2 <version> header
