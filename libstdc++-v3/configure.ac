@@ -420,7 +420,6 @@ GLIBCXX_CHECK_GTHREADS
 
 # For Filesystem TS.
 AC_CHECK_HEADERS([fcntl.h dirent.h sys/statvfs.h utime.h])
-AC_CHECK_FUNCS(link readlink symlink)
 GLIBCXX_ENABLE_FILESYSTEM_TS
 GLIBCXX_CHECK_FILESYSTEM_DEPS
 
