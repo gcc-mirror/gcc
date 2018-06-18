@@ -1,5 +1,10 @@
 2018-06-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	LWG 2989 hide path iostream operators from normal lookup
+	* include/bits/fs_path.h (operator<<, operator>>): Define inline as
+	friends.
+	* testsuite/27_io/filesystem/path/io/dr2989.cc: New.
+
 	LWG 3050 Fix cv-qualification of convertibility constraints
 	* include/std/chrono (duration, operator*, operator/, operator%): Use
 	const-qualified type as source type in is_convertible constraints.
