@@ -296,9 +296,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   unsigned i;
   auto_vec<stmt_vec_info> mask_producers;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_determine_vectorization_factor ===\n");
+  DUMP_VECT_SCOPE ("vect_determine_vectorization_factor");
 
   for (i = 0; i < nbbs; i++)
     {
@@ -479,9 +477,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
   gphi_iterator gsi;
   bool double_reduc;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_analyze_scalar_cycles ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_scalar_cycles");
 
   /* First - identify all inductions.  Reduction detection assumes that all the
      inductions have been identified, therefore, this order must not be
@@ -727,9 +723,7 @@ vect_get_loop_niters (struct loop *loop, tree *assumptions,
   *assumptions = boolean_true_node;
   *number_of_iterationsm1 = chrec_dont_know;
   *number_of_iterations = chrec_dont_know;
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== get_loop_niters ===\n");
+  DUMP_VECT_SCOPE ("get_loop_niters");
 
   if (!exit)
     return cond;
@@ -1170,9 +1164,7 @@ vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
 			  tree *assumptions, tree *number_of_iterationsm1,
 			  tree *number_of_iterations, gcond **inner_loop_cond)
 {
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_analyze_loop_form ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_loop_form");
 
   /* Different restrictions apply when we are considering an inner-most loop,
      vs. an outer (nested) loop.
@@ -1422,9 +1414,7 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
   poly_uint64 vectorization_factor;
   int i;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_update_vf_for_slp ===\n");
+  DUMP_VECT_SCOPE ("vect_update_vf_for_slp");
 
   vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   gcc_assert (known_ne (vectorization_factor, 0U));
@@ -1527,9 +1517,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
   bool need_to_vectorize = false;
   bool ok;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_analyze_loop_operations ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_loop_operations");
 
   stmt_vector_for_cost cost_vec;
   cost_vec.create (2);
@@ -2308,9 +2296,7 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo)
   targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
   unsigned int next_size = 0;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "===== analyze_loop_nest =====\n");
+  DUMP_VECT_SCOPE ("analyze_loop_nest");
 
   if (loop_outer (loop)
       && loop_vec_info_for_loop (loop_outer (loop))
@@ -7460,9 +7446,7 @@ vectorizable_induction (gimple *phi,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = induc_vec_info_type;
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "=== vectorizable_induction ===\n");
+      DUMP_VECT_SCOPE ("vectorizable_induction");
       vect_model_induction_cost (stmt_info, ncopies, cost_vec);
       return true;
     }
@@ -8335,8 +8319,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   bool check_profitability = false;
   unsigned int th;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "=== vec_transform_loop ===\n");
+  DUMP_VECT_SCOPE ("vec_transform_loop");
 
   /* Use the more conservative vectorization threshold.  If the number
      of iterations is constant assume the cost check has been performed
@@ -8618,9 +8601,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		{
 		  slp_scheduled = true;
 
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_NOTE, vect_location,
-				     "=== scheduling SLP instances ===\n");
+		  DUMP_VECT_SCOPE ("scheduling SLP instances");
 
 		  vect_schedule_slp (loop_vinfo);
 		}

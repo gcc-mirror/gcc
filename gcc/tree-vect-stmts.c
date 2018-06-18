@@ -640,9 +640,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
   bool live_p;
   enum vect_relevant relevant;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_mark_stmts_to_be_vectorized ===\n");
+  DUMP_VECT_SCOPE ("vect_mark_stmts_to_be_vectorized");
 
   auto_vec<gimple *, 64> worklist;
 
@@ -3027,9 +3025,7 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
   if (! vec_stmt)
     {
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location, "=== vectorizable_bswap ==="
-                         "\n");
+      DUMP_VECT_SCOPE ("vectorizable_bswap");
       if (! slp_node)
 	{
 	  record_stmt_cost (cost_vec,
@@ -3346,9 +3342,7 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location, "=== vectorizable_call ==="
-                         "\n");
+      DUMP_VECT_SCOPE ("vectorizable_call");
       vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node, cost_vec);
       if (ifn != IFN_LAST && modifier == NARROW && !slp_node)
 	record_stmt_cost (cost_vec, ncopies / 2,
@@ -4023,9 +4017,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 	    STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (sll);
 	  }
       STMT_VINFO_TYPE (stmt_info) = call_simd_clone_vec_info_type;
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "=== vectorizable_simd_clone_call ===\n");
+      DUMP_VECT_SCOPE ("vectorizable_simd_clone_call");
 /*      vect_model_simple_cost (stmt_info, ncopies, dt, slp_node, cost_vec); */
       return true;
     }
@@ -4865,9 +4857,7 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 
   if (!vec_stmt)		/* transformation not required.  */
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-                         "=== vectorizable_conversion ===\n");
+      DUMP_VECT_SCOPE ("vectorizable_conversion");
       if (code == FIX_TRUNC_EXPR || code == FLOAT_EXPR)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
@@ -5279,9 +5269,7 @@ vectorizable_assignment (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "=== vectorizable_assignment ===\n");
+      DUMP_VECT_SCOPE ("vectorizable_assignment");
       vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node, cost_vec);
       return true;
     }
@@ -5644,9 +5632,7 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "=== vectorizable_shift ===\n");
+      DUMP_VECT_SCOPE ("vectorizable_shift");
       vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node, cost_vec);
       return true;
     }
@@ -5968,9 +5954,7 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = op_vec_info_type;
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "=== vectorizable_operation ===\n");
+      DUMP_VECT_SCOPE ("vectorizable_operation");
       vect_model_simple_cost (stmt_info, ncopies, dt, ndts, slp_node, cost_vec);
       return true;
     }

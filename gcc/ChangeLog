@@ -1,3 +1,40 @@
+2018-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences):
+	Replace dump_printf_loc call with DUMP_VECT_SCOPE.
+	(vect_slp_analyze_instance_dependence): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_analyze_data_refs_alignment): Likewise.
+	(vect_slp_analyze_and_verify_instance_alignment
+	(vect_analyze_data_ref_accesses): Likewise.
+	(vect_prune_runtime_alias_test_list): Likewise.
+	(vect_analyze_data_refs): Likewise.
+	* tree-vect-loop-manip.c (vect_update_inits_of_drs): Likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Likewise.
+	(vect_analyze_scalar_cycles_1): Likewise.
+	(vect_get_loop_niters): Likewise.
+	(vect_analyze_loop_form_1): Likewise.
+	(vect_update_vf_for_slp): Likewise.
+	(vect_analyze_loop_operations): Likewise.
+	(vect_analyze_loop): Likewise.
+	(vectorizable_induction): Likewise.
+	(vect_transform_loop): Likewise.
+	* tree-vect-patterns.c (vect_pattern_recog): Likewise.
+	* tree-vect-slp.c (vect_analyze_slp): Likewise.
+	(vect_make_slp_decision): Likewise.
+	(vect_detect_hybrid_slp): Likewise.
+	(vect_slp_analyze_operations): Likewise.
+	(vect_slp_bb): Likewise.
+	* tree-vect-stmts.c (vect_mark_stmts_to_be_vectorized): Likewise.
+	(vectorizable_bswap): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	* tree-vectorizer.h (DUMP_VECT_SCOPE): New macro.
+
 2018-06-18  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/81384
