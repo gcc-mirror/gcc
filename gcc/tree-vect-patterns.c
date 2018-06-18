@@ -4670,9 +4670,7 @@ vect_pattern_recog (vec_info *vinfo)
   auto_vec<gimple *, 1> stmts_to_replace;
   gimple *stmt;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_pattern_recog ===\n");
+  DUMP_VECT_SCOPE ("vect_pattern_recog");
 
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     {

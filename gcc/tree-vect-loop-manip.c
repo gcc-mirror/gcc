@@ -1733,9 +1733,7 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters,
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_update_inits_of_dr ===\n");
+  DUMP_VECT_SCOPE ("vect_update_inits_of_dr");
 
   /* Adjust niters to sizetype and insert stmts on loop preheader edge.  */
   if (!types_compatible_p (sizetype, TREE_TYPE (niters)))

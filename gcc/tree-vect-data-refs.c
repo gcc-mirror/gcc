@@ -562,9 +562,7 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
   unsigned int i;
   struct data_dependence_relation *ddr;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_analyze_data_ref_dependences ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_data_ref_dependences");
 
   LOOP_VINFO_DDRS (loop_vinfo)
     .create (LOOP_VINFO_DATAREFS (loop_vinfo).length ()
@@ -741,9 +739,7 @@ vect_slp_analyze_node_dependences (slp_instance instance, slp_tree node,
 bool
 vect_slp_analyze_instance_dependence (slp_instance instance)
 {
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_slp_analyze_instance_dependence ===\n");
+  DUMP_VECT_SCOPE ("vect_slp_analyze_instance_dependence");
 
   /* The stores of this instance are at the root of the SLP tree.  */
   slp_tree store = SLP_INSTANCE_TREE (instance);
@@ -1685,9 +1681,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   unsigned int mis, same_align_drs_max = 0;
   hash_table<peel_info_hasher> peeling_htab (1);
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_enhance_data_refs_alignment ===\n");
+  DUMP_VECT_SCOPE ("vect_enhance_data_refs_alignment");
 
   /* Reset data so we can safely be called multiple times.  */
   LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).truncate (0);
@@ -2345,9 +2339,7 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr)
 bool
 vect_analyze_data_refs_alignment (loop_vec_info vinfo)
 {
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_analyze_data_refs_alignment ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_data_refs_alignment");
 
   /* Mark groups of data references with same alignment using
      data dependence information.  */
@@ -2426,9 +2418,7 @@ vect_slp_analyze_and_verify_node_alignment (slp_tree node)
 bool
 vect_slp_analyze_and_verify_instance_alignment (slp_instance instance)
 {
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_slp_analyze_and_verify_instance_alignment ===\n");
+  DUMP_VECT_SCOPE ("vect_slp_analyze_and_verify_instance_alignment");
 
   slp_tree node;
   unsigned i;
@@ -2931,9 +2921,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
   vec<data_reference_p> datarefs = vinfo->datarefs;
   struct data_reference *dr;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_analyze_data_ref_accesses ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_data_ref_accesses");
 
   if (datarefs.is_empty ())
     return true;
@@ -3379,9 +3367,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   unsigned int i;
   tree length_factor;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_prune_runtime_alias_test_list ===\n");
+  DUMP_VECT_SCOPE ("vect_prune_runtime_alias_test_list");
 
   /* Step values are irrelevant for aliasing if the number of vector
      iterations is equal to the number of scalar iterations (which can
@@ -4075,9 +4061,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
   struct data_reference *dr;
   tree scalar_type;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_analyze_data_refs ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_data_refs");
 
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     loop = LOOP_VINFO_LOOP (loop_vinfo);
