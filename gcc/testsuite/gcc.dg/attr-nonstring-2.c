@@ -52,7 +52,7 @@ void test_strnlen_array_range (void)
   T (strnlen (ns3, UR (0, 9)));
   T (strnlen (ns3, UR (3, 4)));
   T (strnlen (ns3, UR (3, DIFF_MAX)));
-  T (strnlen (ns3, UR (4, 5)));     /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound \[0-9\]+" } */
+  T (strnlen (ns3, UR (4, 5)));     /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound \\\[4, 5]" } */
   T (strnlen (ns3, UR (DIFF_MAX, SIZE_MAX)));  /* { dg-warning "argument 1 declared attribute .nonstring. is smaller " } */
 }
 
@@ -110,6 +110,6 @@ void test_strnlen_string_range (void)
 {
   T (3, "1",   2, UR (0, 1));
   T (3, "1",   2, UR (3, 9));
-  T (3, "123", 3, UR (4, 5));       /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound 4" } */
-  T (3, "123", 3, UR (5, 9));       /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound 5" } */
+  T (3, "123", 3, UR (4, 5));       /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound \\\[4, 5]" } */
+  T (3, "123", 3, UR (5, 9));       /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound \\\[5, 9]" } */
 }

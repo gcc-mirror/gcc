@@ -1,5 +1,11 @@
 2018-06-18  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/85602
+	* gcc.dg/attr-nonstring-2.c: Adjust text of expected warning.
+	* c-c++-common/attr-nonstring-8.c: New test.
+
+2018-06-18  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/81384
 	* gcc.c-torture/execute/builtins/lib/strnlen.c: New test.
 	* gcc.c-torture/execute/builtins/strnlen-lib.c: New test.
