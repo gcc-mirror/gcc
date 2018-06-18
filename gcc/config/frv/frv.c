@@ -318,7 +318,7 @@ static rtx frv_expand_mwtacc_builtin		(enum insn_code, tree);
 static rtx frv_expand_noargs_builtin		(enum insn_code);
 static void frv_split_iacc_move			(rtx, rtx);
 static rtx frv_emit_comparison			(enum rtx_code, rtx, rtx);
-static void frv_ifcvt_add_insn			(rtx, rtx, int);
+static void frv_ifcvt_add_insn			(rtx, rtx_insn *, int);
 static rtx frv_ifcvt_rewrite_mem		(rtx, machine_mode, rtx);
 static rtx frv_ifcvt_load_value			(rtx, rtx);
 static unsigned int frv_insn_unit		(rtx_insn *);
@@ -5160,7 +5160,7 @@ frv_ifcvt_machdep_init (void *ce_info ATTRIBUTE_UNUSED)
    if the conditional execution conversion is successful.  */
 
 static void
-frv_ifcvt_add_insn (rtx pattern, rtx insn, int before_p)
+frv_ifcvt_add_insn (rtx pattern, rtx_insn *insn, int before_p)
 {
   rtx link = alloc_EXPR_LIST (VOIDmode, pattern, insn);
 
@@ -5842,7 +5842,7 @@ single_set_pattern (rtx pattern)
 rtx
 frv_ifcvt_modify_insn (ce_if_block *ce_info,
                        rtx pattern,
-                       rtx insn)
+                       rtx_insn *insn)
 {
   rtx orig_ce_pattern = pattern;
   rtx set;
@@ -6106,7 +6106,7 @@ frv_ifcvt_modify_insn (ce_if_block *ce_info,
 void
 frv_ifcvt_modify_final (ce_if_block *ce_info ATTRIBUTE_UNUSED)
 {
-  rtx existing_insn;
+  rtx_insn *existing_insn;
   rtx check_insn;
   rtx p = frv_ifcvt.added_insns_list;
   int i;
@@ -6121,7 +6121,7 @@ frv_ifcvt_modify_final (ce_if_block *ce_info ATTRIBUTE_UNUSED)
       rtx old_p = p;
 
       check_insn = XEXP (check_and_insert_insns, 0);
-      existing_insn = XEXP (check_and_insert_insns, 1);
+      existing_insn = as_a <rtx_insn *> (XEXP (check_and_insert_insns, 1));
       p = XEXP (p, 1);
 
       /* The jump bit is used to say that the new insn is to be inserted BEFORE
@@ -6142,7 +6142,7 @@ frv_ifcvt_modify_final (ce_if_block *ce_info ATTRIBUTE_UNUSED)
   /* Load up any constants needed into temp gprs */
   for (i = 0; i < frv_ifcvt.cur_scratch_regs; i++)
     {
-      rtx insn = emit_insn_before (frv_ifcvt.scratch_regs[i], existing_insn);
+      rtx_insn *insn = emit_insn_before (frv_ifcvt.scratch_regs[i], existing_insn);
       if (! frv_ifcvt.scratch_insns_bitmap)
 	frv_ifcvt.scratch_insns_bitmap = BITMAP_ALLOC (NULL);
       bitmap_set_bit (frv_ifcvt.scratch_insns_bitmap, INSN_UID (insn));

@@ -3214,10 +3214,10 @@ extern rtx simplify_subtraction (rtx);
 extern void decide_function_section (tree);
 
 /* In emit-rtl.c */
-extern rtx_insn *emit_insn_before (rtx, rtx);
+extern rtx_insn *emit_insn_before (rtx, rtx_insn *);
 extern rtx_insn *emit_insn_before_noloc (rtx, rtx_insn *, basic_block);
 extern rtx_insn *emit_insn_before_setloc (rtx, rtx_insn *, location_t);
-extern rtx_jump_insn *emit_jump_insn_before (rtx, rtx);
+extern rtx_jump_insn *emit_jump_insn_before (rtx, rtx_insn *);
 extern rtx_jump_insn *emit_jump_insn_before_noloc (rtx, rtx_insn *);
 extern rtx_jump_insn *emit_jump_insn_before_setloc (rtx, rtx_insn *,
 						    location_t);
@@ -3225,21 +3225,21 @@ extern rtx_insn *emit_call_insn_before (rtx, rtx_insn *);
 extern rtx_insn *emit_call_insn_before_noloc (rtx, rtx_insn *);
 extern rtx_insn *emit_call_insn_before_setloc (rtx, rtx_insn *, location_t);
 extern rtx_insn *emit_debug_insn_before (rtx, rtx_insn *);
-extern rtx_insn *emit_debug_insn_before_noloc (rtx, rtx);
+extern rtx_insn *emit_debug_insn_before_noloc (rtx, rtx_insn *);
 extern rtx_insn *emit_debug_insn_before_setloc (rtx, rtx_insn *, location_t);
 extern rtx_barrier *emit_barrier_before (rtx_insn *);
 extern rtx_code_label *emit_label_before (rtx_code_label *, rtx_insn *);
 extern rtx_note *emit_note_before (enum insn_note, rtx_insn *);
-extern rtx_insn *emit_insn_after (rtx, rtx);
+extern rtx_insn *emit_insn_after (rtx, rtx_insn *);
 extern rtx_insn *emit_insn_after_noloc (rtx, rtx_insn *, basic_block);
 extern rtx_insn *emit_insn_after_setloc (rtx, rtx_insn *, location_t);
-extern rtx_jump_insn *emit_jump_insn_after (rtx, rtx);
+extern rtx_jump_insn *emit_jump_insn_after (rtx, rtx_insn *);
 extern rtx_jump_insn *emit_jump_insn_after_noloc (rtx, rtx_insn *);
 extern rtx_jump_insn *emit_jump_insn_after_setloc (rtx, rtx_insn *, location_t);
-extern rtx_insn *emit_call_insn_after (rtx, rtx);
+extern rtx_insn *emit_call_insn_after (rtx, rtx_insn *);
 extern rtx_insn *emit_call_insn_after_noloc (rtx, rtx_insn *);
 extern rtx_insn *emit_call_insn_after_setloc (rtx, rtx_insn *, location_t);
-extern rtx_insn *emit_debug_insn_after (rtx, rtx);
+extern rtx_insn *emit_debug_insn_after (rtx, rtx_insn *);
 extern rtx_insn *emit_debug_insn_after_noloc (rtx, rtx_insn *);
 extern rtx_insn *emit_debug_insn_after_setloc (rtx, rtx_insn *, location_t);
 extern rtx_barrier *emit_barrier_after (rtx_insn *);
@@ -3355,7 +3355,7 @@ extern const HARD_REG_SET &simplifiable_subregs (const subreg_shape &);
 extern rtx set_for_reg_notes (rtx);
 extern rtx set_unique_reg_note (rtx, enum reg_note, rtx);
 extern rtx set_dst_reg_note (rtx, enum reg_note, rtx, rtx);
-extern void set_insn_deleted (rtx);
+extern void set_insn_deleted (rtx_insn *);
 
 /* Functions in rtlanal.c */
 
