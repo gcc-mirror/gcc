@@ -1,5 +1,10 @@
 2018-06-18  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	PR tree-optimization/86076
+	* gcc.dg/pr86076.c: Add target pthread for bare-metal targets.
+
+2018-06-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	PR tree-optimization/64946
 	* gcc.target/aarch64/vect-abs-compile.c: Remove xfail.
 

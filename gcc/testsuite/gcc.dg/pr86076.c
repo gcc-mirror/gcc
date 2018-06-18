@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target pthread } }  */
 /* { dg-options "-O2 -ftree-parallelize-loops=2 -fno-tree-dce -fno-tree-pre -fno-tree-vrp --param max-loop-header-insns=1" } */
 
 int __attribute__ ((noinline))
