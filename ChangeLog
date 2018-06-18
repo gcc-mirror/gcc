@@ -1,3 +1,9 @@
+2018-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.def (fortran): Add check-target-libgomp-fortran.
+	* Makefile.tpl (check-target-libgomp-fortran): New phony target.
+	* Makefile.in: Regenerate.
+
 2018-06-16  Ben Elliston  <bje@gnu.org>
 
 	* config.guess: Import latest version.
@@ -7,9 +13,9 @@
 
 	* MAINTAINERS: Remove MPX-related entries.
 	* Makefile.def: Remove libmpx support.
-	* Makefile.in: Likewise.
-	* configure: Remove removed files.
-	* configure.ac: Likewise.
+	* Makefile.in: Regenerate.
+	* configure.ac: Remove removed files.
+	* configure: Regenerate.
 	* libmpx/ChangeLog: Remove.
 	* libmpx/Makefile.am: Remove.
 	* libmpx/Makefile.in: Remove.
