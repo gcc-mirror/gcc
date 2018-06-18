@@ -1,3 +1,8 @@
+2018-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (decl_value_expr_lookup): Revert latest change.
+	(decl_value_expr_insert): Likewise.
+
 2018-06-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (nonlocal_vlas): Delete.
