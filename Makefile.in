@@ -52232,6 +52232,10 @@ maintainer-clean-target-libatomic:
 check-target-libgomp-c++:
 	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) c++.exp" check-target-libgomp
 
+.PHONY: check-target-libgomp-fortran
+check-target-libgomp-fortran:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) fortran.exp" check-target-libgomp
+
 @endif target-libgomp
 
 @if target-libitm
@@ -52283,7 +52287,7 @@ check-gcc-fortran:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-fortran);
-check-fortran: check-gcc-fortran check-target-libquadmath check-target-libgfortran
+check-fortran: check-gcc-fortran check-target-libquadmath check-target-libgfortran check-target-libgomp-fortran
 
 .PHONY: check-gcc-ada check-ada
 check-gcc-ada:

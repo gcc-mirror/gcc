@@ -1470,6 +1470,10 @@ ENDIF raw_cxx +]
 check-target-libgomp-c++:
 	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) c++.exp" check-target-libgomp
 
+.PHONY: check-target-libgomp-fortran
+check-target-libgomp-fortran:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) fortran.exp" check-target-libgomp
+
 @endif target-libgomp
 
 @if target-libitm
