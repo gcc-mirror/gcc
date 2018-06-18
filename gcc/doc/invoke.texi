@@ -5497,6 +5497,9 @@ precision would exceed @code{SIZE_MAX / 2}.  The option argument @var{n}
 may end in one of the standard suffixes designating a multiple of bytes
 such as @code{kB} and @code{KiB} for kilobyte and kibibyte, respectively,
 @code{MB} and @code{MiB} for megabyte and mebibyte, and so on.
+@option{-Walloc-size-larger-than=}@var{PTRDIFF_MAX} is enabled by default.
+Warnings controlled by the option can be disabled by specifying @var{n}
+of @var{SIZE_MAX} or more.
 @xref{Function Attributes}.
 
 @item -Walloca
