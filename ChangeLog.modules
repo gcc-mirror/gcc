@@ -1,3 +1,8 @@
+2018-06-18  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/testsuite/
+	* g++.dg/modules/loc-2_[a-f].C: New.
+
 2018-06-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
