@@ -24,7 +24,7 @@
 
 /** @file bits/c++config.h
  *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{iosfwd}
+ *  Do not attempt to use it directly. @headername{version}
  */
 
 #ifndef _GLIBCXX_CXX_CONFIG_H

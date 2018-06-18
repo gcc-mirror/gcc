@@ -1,0 +1,134 @@
+// -*- C++ -*- Libstdc++ version details header.
+
+// Copyright (C) 2018 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file version
+ *  This is a Standard C++ Library file.  You should @c \#include this file
+ *  in your programs, rather than any of the @a *.h implementation files.
+ */
+
+#ifndef _GLIBCXX_VERSION_INCLUDED
+#define _GLIBCXX_VERSION_INCLUDED
+
+#pragma GCC system_header
+
+#include <bits/c++config.h>
+
+// c++03
+#define __cpp_lib_incomplete_container_elements 201505
+
+#if !defined(__STRICT_ANSI__)
+// gnu++03
+# define __cpp_lib_uncaught_exceptions 201411
+#endif
+
+#if __cplusplus >= 201103L
+// c++11
+#define __cpp_lib_allocator_is_always_equal 201411
+#define __cpp_lib_allocator_traits_is_always_equal 201411
+#define __cpp_lib_is_null_pointer 201309
+#define __cpp_lib_result_of_sfinae 201210
+#define __cpp_lib_shared_ptr_arrays 201603
+
+#if !defined(__STRICT_ANSI__)
+// gnu++11
+# define __cpp_lib_enable_shared_from_this 201603
+# define __cpp_lib_is_swappable 201603
+# define __cpp_lib_void_t 201411
+#endif
+
+// For C++11 and later we support ISO/IEC 29124 Mathematical Special Functions
+#define __STDCPP_MATH_SPEC_FUNCS__ 201003L
+
+#if __cplusplus >= 201402L
+// c++14
+#define __cpp_lib_chrono_udls 201304
+#define __cpp_lib_complex_udls 201309
+#define __cpp_lib_exchange_function 201304
+#define __cpp_lib_generic_associative_lookup 201304
+#define __cpp_lib_integer_sequence 201304
+#define __cpp_lib_integral_constant_callable 201304
+#define __cpp_lib_is_final 201402L
+#define __cpp_lib_make_reverse_iterator 201402
+#define __cpp_lib_make_unique 201304
+#define __cpp_lib_quoted_string_io 201304
+#define __cpp_lib_robust_nonmodifying_seq_ops 201304
+#define __cpp_lib_shared_timed_mutex 201402
+#define __cpp_lib_string_udls 201304
+#define __cpp_lib_transformation_trait_aliases 201304
+#define __cpp_lib_transparent_operators 201510
+#define __cpp_lib_tuple_element_t 201402L
+#define __cpp_lib_tuples_by_type 201304
+
+#if __cplusplus >= 201703L
+// c++17
+#define __cpp_lib_addressof_constexpr 201603
+#define __cpp_lib_apply 201603
+#define __cpp_lib_array_constexpr 201603
+#define __cpp_lib_as_const 201510
+#define __cpp_lib_atomic_is_always_lock_free 201603
+#define __cpp_lib_bool_constant 201505
+#define __cpp_lib_boyer_moore_searcher 201603
+#define __cpp_lib_byte 201603
+#define __cpp_lib_chrono 201611
+#define __cpp_lib_clamp 201603
+#define __cpp_lib_constexpr_char_traits 201611
+#define __cpp_lib_enable_shared_from_this 201603
+#define __cpp_lib_filesystem 201703
+#define __cpp_lib_gcd 201606
+#define __cpp_lib_gcd_lcm 201606
+#define __cpp_lib_has_unique_object_representations 201606
+#define __cpp_lib_hypot 201603
+#define __cpp_lib_invoke 201411
+#define __cpp_lib_is_aggregate 201703
+#define __cpp_lib_is_invocable 201703
+#define __cpp_lib_is_swappable 201603
+#define __cpp_lib_launder 201606
+#define __cpp_lib_lcm 201606
+#define __cpp_lib_logical_traits 201510
+#define __cpp_lib_make_from_tuple 201606
+#define __cpp_lib_map_insertion 201411
+#define __cpp_lib_map_try_emplace 201411
+#define __cpp_lib_math_special_functions 201603L
+#define __cpp_lib_node_extract 201606
+#define __cpp_lib_nonmember_container_access 201411
+#define __cpp_lib_not_fn 201603
+#define __cpp_lib_optional 201603
+#define __cpp_lib_sample 201603
+#define __cpp_lib_scoped_lock 201703
+#define __cpp_lib_shared_mutex 201505
+#define __cpp_lib_shared_ptr_weak_type 201606
+#define __cpp_lib_string_view 201603
+#define __cpp_lib_type_trait_variable_templates 201510L
+#define __cpp_lib_unordered_map_insertion 201411
+#define __cpp_lib_unordered_map_try_emplace 201411
+#define __cpp_lib_void_t 201411
+
+#if __cplusplus > 201703L
+// c++2a
+#endif // C++2a
+#endif // C++17
+#endif // C++14
+#endif // C++11
+
+#endif // _GLIBCXX_VERSION_INCLUDED
