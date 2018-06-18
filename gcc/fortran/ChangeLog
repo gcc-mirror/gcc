@@ -1,3 +1,7 @@
+2018-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans-decl.c (gfc_get_fake_result_decl): Revert latest change.
+
 2018-06-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans-decl.c (nonlocal_dummy_decl_pset): Delete.

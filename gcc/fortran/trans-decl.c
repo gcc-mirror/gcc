@@ -2908,14 +2908,13 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
       && sym->ns->proc_name->attr.entry_master
       && sym != sym->ns->proc_name)
     {
-      tree t = NULL, var, field;
+      tree t = NULL, var;
       if (this_fake_result_decl != NULL)
 	for (t = TREE_CHAIN (this_fake_result_decl); t; t = TREE_CHAIN (t))
 	  if (strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t)), sym->name) == 0)
 	    break;
       if (t)
 	return TREE_VALUE (t);
-
       decl = gfc_get_fake_result_decl (sym->ns->proc_name, parent_flag);
 
       if (parent_flag)
@@ -2923,17 +2922,20 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
       else
 	this_fake_result_decl = current_fake_result_decl;
 
-      if (!sym->ns->proc_name->attr.mixed_entry_master)
-	return decl;
+      if (decl && sym->ns->proc_name->attr.mixed_entry_master)
+	{
+	  tree field;
 
-      for (field = TYPE_FIELDS (TREE_TYPE (decl));
-	   field; field = DECL_CHAIN (field))
-	if (strcmp (IDENTIFIER_POINTER (DECL_NAME (field)), sym->name) == 0)
-	  break;
+	  for (field = TYPE_FIELDS (TREE_TYPE (decl));
+	       field; field = DECL_CHAIN (field))
+	    if (strcmp (IDENTIFIER_POINTER (DECL_NAME (field)),
+		sym->name) == 0)
+	      break;
 
-      gcc_assert (field != NULL_TREE);
-      decl = fold_build3_loc (input_location, COMPONENT_REF,
-			      TREE_TYPE (field), decl, field, NULL_TREE);
+	  gcc_assert (field != NULL_TREE);
+	  decl = fold_build3_loc (input_location, COMPONENT_REF,
+				  TREE_TYPE (field), decl, field, NULL_TREE);
+	}
 
       var = create_tmp_var_raw (TREE_TYPE (decl), sym->name);
       if (parent_flag)
