@@ -1,3 +1,8 @@
+2018-06-18  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/64946
+	* gcc.target/aarch64/vect-abs-compile.c: Remove xfail.
+
 2018-06-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/debug/dwarf2/pr37726.c: Move to...
