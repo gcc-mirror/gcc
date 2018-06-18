@@ -1,3 +1,16 @@
+2018-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	LWG 3035. std::allocator's constructors should be constexpr
+	* include/bits/allocator.h (allocator): Add constexpr to constructors
+	for C++2a. Replace dynamic exception specifications with NOTHROW
+	macro.
+	(allocator, operator==, operator!=): Replace USE_NOEXCEPT macro with
+	NOTHROW.
+	* include/bits/c++config (_GLIBCXX20_CONSTEXPR): Define.
+	* include/ext/malloc_allocator.h (malloc_allocator): Add constexpr
+	to constructors for C++2a.
+	* include/ext/new_allocator.h (new_allocator): Likewise.
+
 2018-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	LWG 3076 basic_string CTAD ambiguity
