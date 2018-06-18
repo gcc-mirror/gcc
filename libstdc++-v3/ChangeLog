@@ -1,5 +1,32 @@
 2018-06-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	P0754R2 <version> header
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config: Change doxygen comment to suggest <version>
+	instead of <iosfwd>.
+	* include/precompiled/stdc++.h: Include <cwchar> and <cwctype>
+	unconditionally.  Add C++17 and C++20 headers.
+	* include/std/version: New header.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc: New.
+	* testsuite/17_intro/headers/c++2017/all_no_exceptions.cc: New.
+	* testsuite/17_intro/headers/c++2017/all_no_rtti.cc: New.
+	* testsuite/17_intro/headers/c++2017/all_pedantic_errors.cc: New.
+	* testsuite/17_intro/headers/c++2017/operator_names.cc: New.
+	* testsuite/17_intro/headers/c++2017/stdc++.cc: New.
+	* testsuite/17_intro/headers/c++2017/stdc++_multiple_inclusion.cc:
+	New.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc: New.
+	* testsuite/17_intro/headers/c++2020/all_no_exceptions.cc: New.
+	* testsuite/17_intro/headers/c++2020/all_no_rtti.cc: New.
+	* testsuite/17_intro/headers/c++2020/all_pedantic_errors.cc: New.
+	* testsuite/17_intro/headers/c++2020/operator_names.cc: New.
+	* testsuite/17_intro/headers/c++2020/stdc++.cc: New.
+	* testsuite/17_intro/headers/c++2020/stdc++_multiple_inclusion.cc:
+	New.
+	* testsuite/18_support/headers/version/macros.cc: New.
+	* testsuite/18_support/headers/version/macros.cc: New.
+
 	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Only check when
 	enable_libstdcxx_filesystem_ts = yes. Check for link, readlink and
 	symlink.
