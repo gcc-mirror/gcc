@@ -1,5 +1,12 @@
 2018-06-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Only check when
+	enable_libstdcxx_filesystem_ts = yes. Check for link, readlink and
+	symlink.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove AC_CHECK_FUNCS for link, readlink and symlink.
+
 	LWG 3035. std::allocator's constructors should be constexpr
 	* include/bits/allocator.h (allocator): Add constexpr to constructors
 	for C++2a. Replace dynamic exception specifications with NOTHROW
