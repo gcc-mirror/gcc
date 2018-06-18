@@ -13639,7 +13639,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  }
 
 	/* Create a new node for the specialization we need.  */
-	r = copy_decl (t);
 	if (type == NULL_TREE)
 	  {
 	    if (is_typedef_decl (t))
@@ -13664,7 +13663,16 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		  sub_args = strip_innermost_template_args (args, extra);
 	      }
 	    type = tsubst (type, sub_args, complain, in_decl);
+	    /* Substituting the type might have recursively instantiated this
+	       same alias (c++/86171).  */
+	    if (gen_tmpl && DECL_ALIAS_TEMPLATE_P (gen_tmpl)
+		&& (spec = retrieve_specialization (gen_tmpl, argvec, hash)))
+	      {
+		r = spec;
+		break;
+	      }
 	  }
+	r = copy_decl (t);
 	if (VAR_P (r))
 	  {
 	    DECL_INITIALIZED_P (r) = 0;
