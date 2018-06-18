@@ -12454,7 +12454,7 @@ escaped_string::escape (const char *unescaped)
   if (m_owned)
     free (m_str);
 
-  m_str = (char *) unescaped;
+  m_str = const_cast<char *> (unescaped);
   m_owned = false;
 
   if (unescaped == NULL || *unescaped == 0)
