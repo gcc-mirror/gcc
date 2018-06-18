@@ -2887,7 +2887,7 @@ rs6000_debug_reg_global (void)
   fprintf (stderr, DEBUG_FMT_D, "tls_size", rs6000_tls_size);
   fprintf (stderr, DEBUG_FMT_D, "long_double_size",
 	   rs6000_long_double_type_size);
-  if (rs6000_long_double_type_size == 128)
+  if (rs6000_long_double_type_size > 64)
     {
       fprintf (stderr, DEBUG_FMT_S, "long double type",
 	       TARGET_IEEEQUAD ? "IEEE" : "IBM");
@@ -4558,16 +4558,25 @@ rs6000_option_override_internal (bool global_init_p)
 	}
     }
 
+  /* Use long double size to select the appropriate long double.  We use
+     TYPE_PRECISION to differentiate the 3 different long double types.  We map
+     128 into the precision used for TFmode.  */
+  int default_long_double_size = (RS6000_DEFAULT_LONG_DOUBLE_SIZE == 64
+				  ? 64
+				  : FLOAT_PRECISION_TFmode);
+
   /* Set long double size before the IEEE 128-bit tests.  */
   if (!global_options_set.x_rs6000_long_double_type_size)
     {
       if (main_target_opt != NULL
 	  && (main_target_opt->x_rs6000_long_double_type_size
-	      != RS6000_DEFAULT_LONG_DOUBLE_SIZE))
+	      != default_long_double_size))
 	error ("target attribute or pragma changes long double size");
       else
-	rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
+	rs6000_long_double_type_size = default_long_double_size;
     }
+  else if (rs6000_long_double_type_size == 128)
+    rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
 
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
