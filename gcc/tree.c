@@ -12423,13 +12423,103 @@ typedef_variant_p (const_tree type)
   return is_typedef_decl (TYPE_NAME (type));
 }
 
+/* A class to handle converting a string that might contain
+   control characters, (eg newline, form-feed, etc), into one
+   in which contains escape sequences instead.  */
+
+class escaped_string
+{
+ public:
+  escaped_string () { m_owned = false; m_str = NULL; };
+  ~escaped_string () { if (m_owned) free (m_str); }
+  operator const char *() const { return (const char *) m_str; }
+  void escape (const char *);
+ private:
+  char *m_str;
+  bool  m_owned;
+};
+
+/* PR 84195: Replace control characters in "unescaped" with their
+   escaped equivalents.  Allow newlines if -fmessage-length has
+   been set to a non-zero value.  This is done here, rather than
+   where the attribute is recorded as the message length can
+   change between these two locations.  */
+
+void
+escaped_string::escape (const char *unescaped)
+{
+  char *escaped;
+  size_t i, new_i, len;
+
+  if (m_owned)
+    free (m_str);
+
+  m_str = (char *) unescaped;
+  m_owned = false;
+
+  if (unescaped == NULL || *unescaped == 0)
+    return;
+
+  len = strlen (unescaped);
+  escaped = NULL;
+  new_i = 0;
+
+  for (i = 0; i < len; i++)
+    {
+      char c = unescaped[i];
+
+      if (!ISCNTRL (c))
+	{
+	  if (escaped)
+	    escaped[new_i++] = c;
+	  continue;
+	}
+
+      if (c != '\n' || !pp_is_wrapping_line (global_dc->printer))
+	{
+	  if (escaped == NULL)
+	    {
+	      /* We only allocate space for a new string if we
+		 actually encounter a control character that
+		 needs replacing.  */
+	      escaped = (char *) xmalloc (len * 2 + 1);
+	      strncpy (escaped, unescaped, i);
+	      new_i = i;
+	    }
+
+	  escaped[new_i++] = '\\';
+
+	  switch (c)
+	    {
+	    case '\a': escaped[new_i++] = 'a'; break;
+	    case '\b': escaped[new_i++] = 'b'; break;
+	    case '\f': escaped[new_i++] = 'f'; break;
+	    case '\n': escaped[new_i++] = 'n'; break;
+	    case '\r': escaped[new_i++] = 'r'; break;
+	    case '\t': escaped[new_i++] = 't'; break;
+	    case '\v': escaped[new_i++] = 'v'; break;
+	    default:   escaped[new_i++] = '?'; break;
+	    }
+	}
+      else if (escaped)
+	escaped[new_i++] = c;
+    }
+
+  if (escaped)
+    {
+      escaped[new_i] = 0;
+      m_str = escaped;
+      m_owned = true;
+    }
+}
+
 /* Warn about a use of an identifier which was marked deprecated.  Returns
    whether a warning was given.  */
 
 bool
 warn_deprecated_use (tree node, tree attr)
 {
-  const char *msg;
+  escaped_string msg;
 
   if (node == 0 || !warn_deprecated_decl)
     return false;
@@ -12451,16 +12541,14 @@ warn_deprecated_use (tree node, tree attr)
     attr = lookup_attribute ("deprecated", attr);
 
   if (attr)
-    msg = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
-  else
-    msg = NULL;
+    msg.escape (TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
 
   bool w = false;
   if (DECL_P (node))
     {
       if (msg)
 	w = warning (OPT_Wdeprecated_declarations,
-		     "%qD is deprecated: %s", node, msg);
+		     "%qD is deprecated: %s", node, (const char *) msg);
       else
 	w = warning (OPT_Wdeprecated_declarations,
 		     "%qD is deprecated", node);
@@ -12485,7 +12573,7 @@ warn_deprecated_use (tree node, tree attr)
 	{
 	  if (msg)
 	    w = warning (OPT_Wdeprecated_declarations,
-			 "%qE is deprecated: %s", what, msg);
+			 "%qE is deprecated: %s", what, (const char *) msg);
 	  else
 	    w = warning (OPT_Wdeprecated_declarations,
 			 "%qE is deprecated", what);
@@ -12494,11 +12582,12 @@ warn_deprecated_use (tree node, tree attr)
 	{
 	  if (msg)
 	    w = warning (OPT_Wdeprecated_declarations,
-			 "type is deprecated: %s", msg);
+			 "type is deprecated: %s", (const char *) msg);
 	  else
 	    w = warning (OPT_Wdeprecated_declarations,
 			 "type is deprecated");
 	}
+
       if (w && decl)
 	inform (DECL_SOURCE_LOCATION (decl), "declared here");
     }
@@ -14537,6 +14626,49 @@ test_location_wrappers ()
   check_strip_nops (wrapped_int_var, int_var);
 }
 
+/* Check that string escaping works correctly.  */
+
+static void
+test_escaped_strings (void)
+{
+  int saved_cutoff;
+  escaped_string msg;
+
+  msg.escape (NULL);
+  /* ASSERT_STREQ does not accept NULL as a valid test
+     result, so we have to use ASSERT_EQ instead.  */
+  ASSERT_EQ (NULL, (const char *) msg);
+
+  msg.escape ("");
+  ASSERT_STREQ ("", (const char *) msg);
+
+  msg.escape ("foobar");
+  ASSERT_STREQ ("foobar", (const char *) msg);
+
+  /* Ensure that we have -fmessage-length set to 0.  */
+  saved_cutoff = pp_line_cutoff (global_dc->printer);
+  pp_line_cutoff (global_dc->printer) = 0;
+
+  msg.escape ("foo\nbar");
+  ASSERT_STREQ ("foo\\nbar", (const char *) msg);
+
+  msg.escape ("\a\b\f\n\r\t\v");
+  ASSERT_STREQ ("\\a\\b\\f\\n\\r\\t\\v", (const char *) msg);
+
+  /* Now repeat the tests with -fmessage-length set to 5.  */
+  pp_line_cutoff (global_dc->printer) = 5;
+
+  /* Note that the newline is not translated into an escape.  */
+  msg.escape ("foo\nbar");
+  ASSERT_STREQ ("foo\nbar", (const char *) msg);
+
+  msg.escape ("\a\b\f\n\r\t\v");
+  ASSERT_STREQ ("\\a\\b\\f\n\\r\\t\\v", (const char *) msg);
+
+  /* Restore the original message length setting.  */
+  pp_line_cutoff (global_dc->printer) = saved_cutoff;
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -14547,6 +14679,7 @@ tree_c_tests ()
   test_labels ();
   test_vector_cst_patterns ();
   test_location_wrappers ();
+  test_escaped_strings ();
 }
 
 } // namespace selftest

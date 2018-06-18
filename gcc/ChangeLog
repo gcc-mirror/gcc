@@ -1,3 +1,21 @@
+2018-06-18  Nick Clifton  <nickc@redhat.com>
+
+	PR 84195
+	* tree.c (escaped_string): New class.  Converts an unescaped
+	string into its escaped equivalent.
+	(warn_deprecated_use): Use the new class to convert the
+	deprecation message, if present.
+	(test_escaped_strings): New self test.
+	(test_c_tests): Add test_escaped_strings.
+	* doc/extend.texi (deprecated): Add a note that the
+	deprecation message is affected by the -fmessage-length
+	option, and that control characters will be escaped.
+	(#pragma GCC error): Document this pragma.
+	(#pragma GCC warning): Likewise.
+	* doc/invoke.texi (-fmessage-length): Document this option's
+	effect on the #warning and #error preprocessor directives and
+	the deprecated attribute.
+
 2018-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (decl_value_expr_lookup): Revert latest change.
