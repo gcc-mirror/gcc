@@ -1124,16 +1124,17 @@ adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
   update_stmt (last.stmt);
 }
 
-/* For an LHS that is an SSA_NAME with integer type and for strlen()
-   argument SRC, set LHS range info to [0, N] if SRC refers to
-   a character array A[N] with unknown length bounded by N.  */
+/* For an LHS that is an SSA_NAME and for strlen() or strnlen() argument
+   SRC, set LHS range info to [0, min (N, BOUND)] if SRC refers to
+   a character array A[N] with unknown length bounded by N, and for
+   strnlen(), by min (N, BOUND).  */
 
-static void
-maybe_set_strlen_range (tree lhs, tree src)
+static tree
+maybe_set_strlen_range (tree lhs, tree src, tree bound)
 {
   if (TREE_CODE (lhs) != SSA_NAME
       || !INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
-    return;
+    return NULL_TREE;
 
   if (TREE_CODE (src) == SSA_NAME)
     {
@@ -1143,24 +1144,87 @@ maybe_set_strlen_range (tree lhs, tree src)
 	src = gimple_assign_rhs1 (def);
     }
 
-  if (TREE_CODE (src) != ADDR_EXPR)
-    return;
+  wide_int max = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node));
+  wide_int min = wi::zero (max.get_precision ());
 
-  /* The last array member of a struct can be bigger than its size
-     suggests if it's treated as a poor-man's flexible array member.  */
-  src = TREE_OPERAND (src, 0);
-  if (TREE_CODE (TREE_TYPE (src)) != ARRAY_TYPE
-      || array_at_struct_end_p (src))
-    return;
+  if (TREE_CODE (src) == ADDR_EXPR)
+    {
+      /* The last array member of a struct can be bigger than its size
+	 suggests if it's treated as a poor-man's flexible array member.  */
+      src = TREE_OPERAND (src, 0);
+      bool src_is_array = TREE_CODE (TREE_TYPE (src)) == ARRAY_TYPE;
+      if (src_is_array && !array_at_struct_end_p (src))
+	{
+	  tree type = TREE_TYPE (src);
+	  if (tree dom = TYPE_DOMAIN (type))
+	    {
+	      tree maxval = TYPE_MAX_VALUE (dom);
+	      if (maxval)
+		max = wi::to_wide (maxval);
+	      else
+		max = wi::zero (min.get_precision ());
 
-  tree type = TREE_TYPE (src);
-  if (tree dom = TYPE_DOMAIN (type))
-    if (tree maxval = TYPE_MAX_VALUE (dom))
-      {
-	wide_int max = wi::to_wide (maxval);
-	wide_int min = wi::zero (max.get_precision ());
-	set_range_info (lhs, VR_RANGE, min, max);
-      }
+	      /* For strlen() the upper bound above is equal to
+		 the longest string that can be stored in the array
+		 (i.e., it accounts for the terminating nul.  For
+		 strnlen() bump up the maximum by one since the array
+		 need not be nul-terminated.  */
+	      if (bound)
+		++max;
+	    }
+	}
+      else
+	{
+	  if (TREE_CODE (src) == COMPONENT_REF && !src_is_array)
+	    src = TREE_OPERAND (src, 1);
+	  if (DECL_P (src))
+	    {
+	      /* Handle the unlikely case of strlen (&c) where c is some
+		 variable.  */
+	      if (tree size = DECL_SIZE_UNIT (src))
+		if (TREE_CODE (size) == INTEGER_CST)
+		  max = wi::to_wide (size);
+	    }
+	}
+    }
+
+  if (bound)
+    {
+      /* For strnlen, adjust MIN and MAX as necessary.  If the bound
+	 is less than the size of the array set MAX to it.  It it's
+	 greater than MAX and MAX is non-zero bump MAX down to account
+	 for the necessary terminating nul.  Otherwise leave it alone.  */
+      if (TREE_CODE (bound) == INTEGER_CST)
+	{
+	  wide_int wibnd = wi::to_wide (bound);
+	  int cmp = wi::cmpu (wibnd, max);
+	  if (cmp < 0)
+	    max = wibnd;
+	  else if (cmp && wi::ne_p (max, min))
+	    --max;
+	}
+      else if (TREE_CODE (bound) == SSA_NAME)
+	{
+	  wide_int minbound, maxbound;
+	  value_range_type rng = get_range_info (bound, &minbound, &maxbound);
+	  if (rng == VR_RANGE)
+	    {
+	      /* For a bound in a known range, adjust the range determined
+		 above as necessary.  For a bound in some anti-range or
+		 in an unknown range, use the range determined above.  */
+	      if (wi::ltu_p (minbound, min))
+		min = minbound;
+	      if (wi::ltu_p (maxbound, max))
+		max = maxbound;
+	    }
+	}
+    }
+
+  if (min == max)
+    return wide_int_to_tree (size_type_node, min);
+
+  set_range_info (lhs, VR_RANGE, min, max);
+  return lhs;
 }
 
 /* Handle a strlen call.  If strlen of the argument is known, replace
@@ -1170,16 +1234,18 @@ maybe_set_strlen_range (tree lhs, tree src)
 static void
 handle_builtin_strlen (gimple_stmt_iterator *gsi)
 {
-  int idx;
-  tree src;
   gimple *stmt = gsi_stmt (*gsi);
   tree lhs = gimple_call_lhs (stmt);
 
   if (lhs == NULL_TREE)
     return;
 
-  src = gimple_call_arg (stmt, 0);
-  idx = get_stridx (src);
+  location_t loc = gimple_location (stmt);
+  tree callee = gimple_call_fndecl (stmt);
+  tree src = gimple_call_arg (stmt, 0);
+  tree bound = (DECL_FUNCTION_CODE (callee) == BUILT_IN_STRNLEN
+		? gimple_call_arg (stmt, 1) : NULL_TREE);
+  int idx = get_stridx (src);
   if (idx)
     {
       strinfo *si = NULL;
@@ -1203,8 +1269,9 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	    }
 	  rhs = unshare_expr (rhs);
 	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
-	    rhs = fold_convert_loc (gimple_location (stmt),
-				    TREE_TYPE (lhs), rhs);
+	    rhs = fold_convert_loc (loc, TREE_TYPE (lhs), rhs);
+	  if (bound)
+	    rhs = fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (rhs), rhs, bound);
 	  if (!update_call_from_tree (gsi, rhs))
 	    gimplify_and_update_call_from_tree (gsi, rhs);
 	  stmt = gsi_stmt (*gsi);
@@ -1225,10 +1292,8 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	    }
 
 	  if (strlen_to_stridx)
-	    {
-	      location_t loc = gimple_location (stmt);
-	      strlen_to_stridx->put (lhs, stridx_strlenloc (idx, loc));
-	    }
+	    strlen_to_stridx->put (lhs, stridx_strlenloc (idx, loc));
+
 	  return;
 	}
     }
@@ -1251,7 +1316,6 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	      si->full_string_p = true;
 	      if (TREE_CODE (old) == INTEGER_CST)
 		{
-		  location_t loc = gimple_location (stmt);
 		  old = fold_convert_loc (loc, TREE_TYPE (lhs), old);
 		  tree adj = fold_build2_loc (loc, MINUS_EXPR,
 					      TREE_TYPE (lhs), lhs, old);
@@ -1274,14 +1338,32 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
       find_equal_ptrs (src, idx);
 
       /* For SRC that is an array of N elements, set LHS's range
-	 to [0, N].  */
-      maybe_set_strlen_range (lhs, src);
+	 to [0, min (N, BOUND)].  A constant return value means
+	 the range would have consisted of a single value.  In
+	 that case, fold the result into the returned constant.  */
+      if (tree ret = maybe_set_strlen_range (lhs, src, bound))
+	if (TREE_CODE (ret) == INTEGER_CST)
+	  {
+	    if (dump_file && (dump_flags & TDF_DETAILS) != 0)
+	      {
+		fprintf (dump_file, "Optimizing: ");
+		print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	      }
+	    if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (ret)))
+	      ret = fold_convert_loc (loc, TREE_TYPE (lhs), ret);
+	    if (!update_call_from_tree (gsi, ret))
+	      gimplify_and_update_call_from_tree (gsi, ret);
+	    stmt = gsi_stmt (*gsi);
+	    update_stmt (stmt);
+	    if (dump_file && (dump_flags & TDF_DETAILS) != 0)
+	      {
+		fprintf (dump_file, "into: ");
+		print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	      }
+	  }
 
       if (strlen_to_stridx)
-	{
-	  location_t loc = gimple_location (stmt);
-	  strlen_to_stridx->put (lhs, stridx_strlenloc (idx, loc));
-	}
+	strlen_to_stridx->put (lhs, stridx_strlenloc (idx, loc));
     }
 }
 
@@ -3333,6 +3415,7 @@ strlen_check_and_optimize_stmt (gimple_stmt_iterator *gsi, bool *cleanup_eh)
 	switch (DECL_FUNCTION_CODE (callee))
 	  {
 	  case BUILT_IN_STRLEN:
+	  case BUILT_IN_STRNLEN:
 	    handle_builtin_strlen (gsi);
 	    break;
 	  case BUILT_IN_STRCHR:

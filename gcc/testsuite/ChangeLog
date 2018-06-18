@@ -1,3 +1,15 @@
+2018-06-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/81384
+	* gcc.c-torture/execute/builtins/lib/strnlen.c: New test.
+	* gcc.c-torture/execute/builtins/strnlen-lib.c: New test.
+	* gcc.c-torture/execute/builtins/strnlen.c: New test.
+	* gcc.dg/attr-nonstring-2.c: New test.
+	* gcc.dg/attr-nonstring-3.c: New test.
+	* gcc.dg/attr-nonstring-4.c: New test.
+	* gcc.dg/strlenopt-45.c: New test.
+	* gcc.dg/strlenopt.h (strnlen):  Declare.
+
 2018-06-18  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR tree-optimization/86076

@@ -140,6 +140,7 @@ static rtx expand_builtin_memset (tree, rtx, machine_mode);
 static rtx expand_builtin_memset_args (tree, tree, tree, rtx, machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
 static rtx expand_builtin_strlen (tree, rtx, machine_mode);
+static rtx expand_builtin_strnlen (tree, rtx, machine_mode);
 static rtx expand_builtin_alloca (tree);
 static rtx expand_builtin_unop (machine_mode, tree, rtx, rtx, optab);
 static rtx expand_builtin_frame_address (tree, tree);
@@ -2820,7 +2821,7 @@ expand_builtin_powi (tree exp, rtx target)
 }
 
 /* Expand expression EXP which is a call to the strlen builtin.  Return
-   NULL_RTX if we failed the caller should emit a normal call, otherwise
+   NULL_RTX if we failed and the caller should emit a normal call, otherwise
    try to get the result in TARGET, if convenient.  */
 
 static rtx
@@ -2923,6 +2924,74 @@ expand_builtin_strlen (tree exp, rtx target,
     target = convert_to_mode (target_mode, ops[0].value, 0);
 
   return target;
+}
+
+/* Expand call EXP to the strnlen built-in, returning the result
+   and setting it in TARGET.  Otherwise return NULL_RTX on failure.  */
+
+static rtx
+expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
+{
+  if (!validate_arglist (exp, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  tree src = CALL_EXPR_ARG (exp, 0);
+  tree bound = CALL_EXPR_ARG (exp, 1);
+
+  if (!bound)
+    return NULL_RTX;
+
+  location_t loc = UNKNOWN_LOCATION;
+  if (EXPR_HAS_LOCATION (exp))
+    loc = EXPR_LOCATION (exp);
+
+  tree maxobjsize = max_object_size ();
+  tree func = get_callee_fndecl (exp);
+
+  tree len = c_strlen (src, 0);
+
+  if (TREE_CODE (bound) == INTEGER_CST)
+    {
+      if (!TREE_NO_WARNING (exp)
+	  && tree_int_cst_lt (maxobjsize, bound)
+	  && warning_at (loc, OPT_Wstringop_overflow_,
+			 "%K%qD specified bound %E "
+			 "exceeds maximum object size %E",
+			 exp, func, bound, maxobjsize))
+	  TREE_NO_WARNING (exp) = true;
+
+      if (!len || TREE_CODE (len) != INTEGER_CST)
+	return NULL_RTX;
+
+      len = fold_convert_loc (loc, size_type_node, len);
+      len = fold_build2_loc (loc, MIN_EXPR, size_type_node, len, bound);
+      return expand_expr (len, target, target_mode, EXPAND_NORMAL);
+    }
+
+  if (TREE_CODE (bound) != SSA_NAME)
+    return NULL_RTX;
+
+  wide_int min, max;
+  enum value_range_type rng = get_range_info (bound, &min, &max);
+  if (rng != VR_RANGE)
+    return NULL_RTX;
+
+  if (!TREE_NO_WARNING (exp)
+      && wi::ltu_p (wi::to_wide (maxobjsize), min)
+      && warning_at (loc, OPT_Wstringop_overflow_,
+		     "%K%qD specified bound [%wu, %wu] "
+		     "exceeds maximum object size %E",
+		     exp, func, min.to_uhwi (), max.to_uhwi (), maxobjsize))
+      TREE_NO_WARNING (exp) = true;
+
+  if (!len || TREE_CODE (len) != INTEGER_CST)
+    return NULL_RTX;
+
+  if (wi::gtu_p (min, wi::to_wide (len)))
+    return expand_expr (len, target, target_mode, EXPAND_NORMAL);
+
+  len = fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (len), len, bound);
+  return expand_expr (len, target, target_mode, EXPAND_NORMAL);
 }
 
 /* Callback routine for store_by_pieces.  Read GET_MODE_BITSIZE (MODE)
@@ -3121,20 +3190,27 @@ check_access (tree exp, tree, tree, tree dstwrite,
      object size.  */
   if (range[0] && tree_int_cst_lt (maxobjsize, range[0]))
     {
+      if (TREE_NO_WARNING (exp))
+	return false;
+
       location_t loc = tree_nonartificial_location (exp);
       loc = expansion_point_location_if_in_system_header (loc);
 
+      bool warned;
       if (range[0] == range[1])
-	warning_at (loc, opt,
-		    "%K%qD specified size %E "
-		    "exceeds maximum object size %E",
-		    exp, func, range[0], maxobjsize);
-	  else
-	    warning_at (loc, opt,
-			"%K%qD specified size between %E and %E "
-			"exceeds maximum object size %E",
-			exp, func,
-			range[0], range[1], maxobjsize);
+	warned = warning_at (loc, opt,
+			     "%K%qD specified size %E "
+			     "exceeds maximum object size %E",
+			     exp, func, range[0], maxobjsize);
+      else
+	warned = warning_at (loc, opt,
+			     "%K%qD specified size between %E and %E "
+			     "exceeds maximum object size %E",
+			     exp, func,
+			     range[0], range[1], maxobjsize);
+      if (warned)
+	TREE_NO_WARNING (exp) = true;
+
       return false;
     }
 
@@ -6963,6 +7039,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	return target;
       break;
 
+    case BUILT_IN_STRNLEN:
+      target = expand_builtin_strnlen (exp, target, target_mode);
+      if (target)
+	return target;
+      break;
+
     case BUILT_IN_STRCAT:
       target = expand_builtin_strcat (exp, target);
       if (target)
@@ -9174,7 +9256,6 @@ fold_builtin_n (location_t loc, tree fndecl, tree *args, int nargs, bool)
     {
       ret = build1 (NOP_EXPR, TREE_TYPE (ret), ret);
       SET_EXPR_LOCATION (ret, loc);
-      TREE_NO_WARNING (ret) = 1;
       return ret;
     }
   return NULL_TREE;

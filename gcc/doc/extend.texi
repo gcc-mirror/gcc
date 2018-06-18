@@ -11255,6 +11255,7 @@ is called and the @var{flag} argument passed to it.
 @findex strncmp
 @findex strncpy
 @findex strndup
+@findex strnlen
 @findex strpbrk
 @findex strrchr
 @findex strspn
@@ -11338,8 +11339,8 @@ Outside strict ISO C mode (@option{-ansi}, @option{-std=c90},
 @code{significandl}, @code{significand}, @code{sincosf},
 @code{sincosl}, @code{sincos}, @code{stpcpy}, @code{stpncpy},
 @code{strcasecmp}, @code{strdup}, @code{strfmon}, @code{strncasecmp},
-@code{strndup}, @code{toascii}, @code{y0f}, @code{y0l}, @code{y0},
-@code{y1f}, @code{y1l}, @code{y1}, @code{ynf}, @code{ynl} and
+@code{strndup}, @code{strnlen}, @code{toascii}, @code{y0f}, @code{y0l},
+@code{y0}, @code{y1f}, @code{y1l}, @code{y1}, @code{ynf}, @code{ynl} and
 @code{yn}
 may be handled as built-in functions.
 All these functions have corresponding versions
