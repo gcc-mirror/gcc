@@ -1613,6 +1613,9 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
   if (!fndecl || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
     return;
 
+  if (TREE_NO_WARNING (exp))
+    return;
+
   unsigned nargs = call_expr_nargs (exp);
 
   /* The bound argument to a bounded string function like strncpy.  */
@@ -1647,18 +1650,23 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
     case BUILT_IN_STPNCPY:
     case BUILT_IN_STRNCPY:
-      {
-	unsigned argno = 2;
-	if (argno < nargs)
-	  bound = CALL_EXPR_ARG (exp, argno);
-	break;
-      }
+      if (2 < nargs)
+	bound = CALL_EXPR_ARG (exp, 2);
+      break;
 
     case BUILT_IN_STRNDUP:
+      if (1 < nargs)
+	bound = CALL_EXPR_ARG (exp, 1);
+      break;
+
+    case BUILT_IN_STRNLEN:
       {
-	unsigned argno = 1;
-	if (argno < nargs)
-	  bound = CALL_EXPR_ARG (exp, argno);
+	tree arg = CALL_EXPR_ARG (exp, 0);
+	if (!get_attr_nonstring_decl (arg))
+	  get_range_strlen (arg, lenrng);
+
+	if (1 < nargs)
+	  bound = CALL_EXPR_ARG (exp, 1);
 	break;
       }
 
@@ -1672,6 +1680,29 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
     {
       STRIP_NOPS (bound);
       get_size_range (bound, bndrng);
+    }
+
+  location_t loc = EXPR_LOCATION (exp);
+
+  if (bndrng[0])
+    {
+      /* Diagnose excessive bound prior the adjustment below and
+	 regardless of attribute nonstring.  */
+      tree maxobjsize = max_object_size ();
+      if (tree_int_cst_lt (maxobjsize, bndrng[0]))
+	{
+	  if (tree_int_cst_equal (bndrng[0], bndrng[1]))
+	    warning_at (loc, OPT_Wstringop_overflow_,
+			"%K%qD specified bound %E "
+			"exceeds maximum object size %E",
+			exp, fndecl, bndrng[0], maxobjsize);
+	  else
+	    warning_at (loc, OPT_Wstringop_overflow_,
+			"%K%qD specified bound [%E, %E] "
+			"exceeds maximum object size %E",
+			exp, fndecl, bndrng[0], bndrng[1], maxobjsize);
+	  return;
+	}
     }
 
   if (*lenrng)
@@ -1765,8 +1796,6 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	}
       else if (bound == void_type_node)
 	bound = NULL_TREE;
-
-      location_t loc = EXPR_LOCATION (exp);
 
       bool warned = false;
 

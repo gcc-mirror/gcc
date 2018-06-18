@@ -1,3 +1,19 @@
+2018-06-18  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/81384
+	* builtin-types.def (BT_FN_SIZE_CONST_STRING_SIZE): New.
+	* builtins.c (expand_builtin_strnlen): New function.
+	(expand_builtin): Call it.
+	(fold_builtin_n): Avoid setting TREE_NO_WARNING.
+	* builtins.def (BUILT_IN_STRNLEN): New.
+	* calls.c (maybe_warn_nonstring_arg): Handle BUILT_IN_STRNLEN.
+	Warn for bounds in excess of maximum object size.
+	* tree-ssa-strlen.c (maybe_set_strlen_range): Return tree representing
+	single-value ranges.  Handle strnlen.
+	(handle_builtin_strlen): Handle strnlen.
+	(strlen_check_and_optimize_stmt): Same.
+	* doc/extend.texi (Other Builtins): Document strnlen.
+
 2018-06-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* tree.c (escaped_string::escape): Replace cast to char * by
