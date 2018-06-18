@@ -1,3 +1,45 @@
+2018-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/frv/frv-protos.h (frv_ifcvt_modify_insn): Strengthen 3rd
+	param from rtx to rtx_insn *.
+	* config/frv/frv.c (frv_ifcvt_add_insn): Likewise for "insn"
+	param.
+	(frv_ifcvt_modify_insn): Likwise.
+	(frv_ifcvt_modify_final): Likwise for local "existing_insn",
+	adding an as_a <rtx_insn *> cast.  Likewise for local "insn".
+	* config/mips/mips.c (r10k_insert_cache_barriers): Add an
+	as_a <rtx_insn *> cast to local "unprotected_region" once
+	it's been established that it's not NULL or pc_rtx.
+	* config/nds32/nds32-relax-opt.c (nds32_group_insns): Strengthen
+	param "sethi" from rtx to rtx_insn *.
+	(nds32_group_float_insns): Likewise for param "insn".
+	* config/vax/vax-protos.h (vax_output_int_add): Likewise for 1st
+	param.
+	(vax_output_int_subtract): Likewise.
+	* config/vax/vax.c (vax_output_int_add): Likewise for param
+	"insn".
+	(vax_output_int_subtract): Likewise.
+	* emit-rtl.c (set_insn_deleted): Likewise, removing cast.
+	(emit_pattern_after): Likewise for param "after".
+	(emit_insn_after): Likewise.
+	(emit_jump_insn_after): Likewise.
+	(emit_call_insn_after): Likewise.
+	(emit_debug_insn_after): Likewise.
+	(emit_pattern_before): Likewise for param "before".
+	(emit_insn_before): Likewise.
+	(emit_jump_insn_before): Likewise.
+	* final.c (get_insn_template): Likewise for param "insn", removing
+	a cast.
+	* output.h (get_insn_template): Likewise for 2nd param.
+	* rtl.h (emit_insn_before): Likewise.
+	(emit_jump_insn_before): Likewise.
+	(emit_debug_insn_before_noloc): Likewise.
+	(emit_insn_after): Likewise.
+	(emit_jump_insn_after): Likewise.
+	(emit_call_insn_after): Likewise.
+	(emit_debug_insn_after): Likewise.
+	(set_insn_deleted): Likewise for param.
+
 2018-06-18  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/85358

@@ -17823,7 +17823,7 @@ r10k_insert_cache_barriers (void)
 		  if (r10k_needs_protection_p (insn))
 		    {
 		      emit_insn_before (gen_r10k_cache_barrier (),
-					unprotected_region);
+					as_a <rtx_insn *> (unprotected_region));
 		      unprotected_region = NULL_RTX;
 		    }
 		}
