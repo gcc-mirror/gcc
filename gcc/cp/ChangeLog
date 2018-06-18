@@ -1,3 +1,8 @@
+2018-06-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86171 - ICE with recursive alias instantiation.
+	* pt.c (tsubst_decl): Handle recursive alias instantiation.
+
 2018-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (duplicate_decls): Consistently use DECL_SOURCE_LOCATION
