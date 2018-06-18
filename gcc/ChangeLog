@@ -1,3 +1,12 @@
+2018-06-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/85602
+	* calls.c (maybe_warn_nonstring_arg): Handle strncat.
+	* tree-ssa-strlen.c (is_strlen_related_p): Make extern.
+	Handle integer subtraction.
+	(maybe_diag_stxncpy_trunc): Handle nonstring source arguments.
+	* tree-ssa-strlen.h (is_strlen_related_p): Declare.
+
 2018-06-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/frv/frv-protos.h (frv_ifcvt_modify_insn): Strengthen 3rd

@@ -1,3 +1,9 @@
+2018-06-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/85602
+	* c-warn.c (sizeof_pointer_memaccess_warning): Check for attribute
+	nonstring.
+
 2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* c-common.c (c_common_truthvalue_conversion): Handle ABSU_EXPR.

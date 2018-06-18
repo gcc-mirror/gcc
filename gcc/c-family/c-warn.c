@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "gimplify.h"
 #include "c-family/c-indentation.h"
+#include "calls.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -800,6 +801,12 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
 	  tem = tree_strip_nop_conversions (src);
 	  if (TREE_CODE (tem) == ADDR_EXPR)
 	    tem = TREE_OPERAND (tem, 0);
+
+	  /* Avoid diagnosing sizeof SRC when SRC is declared with
+	     attribute nonstring.  */
+	  tree dummy;
+	  if (get_attr_nonstring_decl (tem, &dummy))
+	    return;
 
 	  tree d = tree_strip_nop_conversions (dest);
 	  if (TREE_CODE (d) == ADDR_EXPR)
