@@ -1,3 +1,8 @@
+2018-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (duplicate_decls): Consistently use DECL_SOURCE_LOCATION
+	in errors about redefined default arguments; tidy.
+
 2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* constexpr.c (potential_constant_expression_1): Handle ABSU_EXPR.
