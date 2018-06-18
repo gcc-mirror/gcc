@@ -1,3 +1,8 @@
+2018-06-18  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree.c (escaped_string::escape): Replace cast to char * by
+	const_cast<char *> (unescaped).
+
 2018-06-18  Nick Clifton  <nickc@redhat.com>
 
 	PR 84195
