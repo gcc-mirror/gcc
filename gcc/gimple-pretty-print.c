@@ -2334,6 +2334,8 @@ dump_gimple_omp_task (pretty_printer *buffer, gomp_task *gs, int spc,
       gimple_seq body;
       if (gimple_omp_task_taskloop_p (gs))
 	pp_string (buffer, "#pragma omp taskloop");
+      else if (gimple_omp_task_taskwait_p (gs))
+	pp_string (buffer, "#pragma omp taskwait");
       else
 	pp_string (buffer, "#pragma omp task");
       dump_omp_clauses (buffer, gimple_omp_task_clauses (gs), spc, flags);

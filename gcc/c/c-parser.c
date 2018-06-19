@@ -17029,16 +17029,35 @@ c_parser_omp_task (location_t loc, c_parser *parser, bool *if_p)
 
 /* OpenMP 3.0:
    # pragma omp taskwait new-line
+
+   OpenMP 5.0:
+   # pragma omp taskwait taskwait-clause[optseq] new-line
 */
+
+#define OMP_TASKWAIT_CLAUSE_MASK					\
+	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)
 
 static void
 c_parser_omp_taskwait (c_parser *parser)
 {
   location_t loc = c_parser_peek_token (parser)->location;
   c_parser_consume_pragma (parser);
-  c_parser_skip_to_pragma_eol (parser);
 
-  c_finish_omp_taskwait (loc);
+  tree clauses
+    = c_parser_omp_all_clauses (parser, OMP_TASKWAIT_CLAUSE_MASK,
+				"#pragma omp taskwait");
+
+  if (clauses)
+    {
+      tree stmt = make_node (OMP_TASK);
+      TREE_TYPE (stmt) = void_node;
+      OMP_TASK_CLAUSES (stmt) = clauses;
+      OMP_TASK_BODY (stmt) = NULL_TREE;
+      SET_EXPR_LOCATION (stmt, loc);
+      add_stmt (stmt);
+    }
+  else
+    c_finish_omp_taskwait (loc);
 }
 
 /* OpenMP 3.1:

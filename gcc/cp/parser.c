@@ -36471,13 +36471,32 @@ cp_parser_omp_task (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 }
 
 /* OpenMP 3.0:
-   # pragma omp taskwait new-line  */
+   # pragma omp taskwait new-line
+
+   OpenMP 5.0:
+   # pragma omp taskwait taskwait-clause[opt] new-line  */
+
+#define OMP_TASKWAIT_CLAUSE_MASK				\
+	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)
 
 static void
 cp_parser_omp_taskwait (cp_parser *parser, cp_token *pragma_tok)
 {
-  cp_parser_require_pragma_eol (parser, pragma_tok);
-  finish_omp_taskwait ();
+  tree clauses
+    = cp_parser_omp_all_clauses (parser, OMP_TASKWAIT_CLAUSE_MASK,
+				 "#pragma omp taskwait", pragma_tok);
+
+  if (clauses)
+    {
+      tree stmt = make_node (OMP_TASK);
+      TREE_TYPE (stmt) = void_node;
+      OMP_TASK_CLAUSES (stmt) = clauses;
+      OMP_TASK_BODY (stmt) = NULL_TREE;
+      SET_EXPR_LOCATION (stmt, pragma_tok->location);
+      add_stmt (stmt);
+    }
+  else
+    finish_omp_taskwait ();
 }
 
 /* OpenMP 3.1:

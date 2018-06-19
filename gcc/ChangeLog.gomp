@@ -1,3 +1,20 @@
+2018-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple.h (enum gf_mask): Add GF_OMP_TASK_TASKWAIT.
+	(gimple_omp_task_taskwait_p, gimple_omp_task_set_taskwait_p): New
+	inline functions.
+	* gimplify.c (gimplify_omp_task): Handle taskwait with depend clauses.
+	* tree-pretty-print.c (dump_generic_node): Print taskwait with depend
+	clauses.
+	* gimple-pretty-print.c (dump_gimple_omp_task): Likewise.
+	* omp-low.c (scan_omp_task): Handle taskwait with depend clauses.
+	(lower_omp_taskreg): Likewise.
+	* omp-expand.c (expand_taskwait_call): New function.
+	(expand_omp_taskreg): Handle taskwait with depend clauses.
+	(build_omp_regions_1, omp_make_gimple_edges): Treat taskwait with
+	depend clauses as a standalone directive.
+	* omp-builtins.def (BUILT_IN_GOMP_TASKWAIT_DEPEND): New builtin.
+
 2018-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (check_omp_nesting_restrictions): Allow OpenMP atomics

@@ -310,6 +310,11 @@ GOMP_4.5 {
 	GOMP_parallel_loop_nonmonotonic_guided;
 } GOMP_4.0.1;
 
+GOMP_5.0 {
+  global:
+	GOMP_taskwait_depend;
+} GOMP_4.5;
+
 OACC_2.0 {
   global:
 	acc_get_num_devices;

@@ -1,3 +1,8 @@
+2018-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (OMP_TASKWAIT_CLAUSE_MASK): Define.
+	(c_parser_omp_taskwait): Handle taskwait with depend clauses.
+
 2018-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_iterators): New function.

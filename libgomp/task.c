@@ -1456,6 +1456,25 @@ GOMP_taskwait (void)
     }
 }
 
+/* Called when encountering a taskwait directive with depend clause(s).
+   Wait as if it was an mergeable included task construct with empty body.  */
+
+void
+GOMP_taskwait_depend (void **depend)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+
+  /* If parallel or taskgroup has been cancelled, return early.  */
+  if (team
+      && (gomp_team_barrier_cancelled (&team->barrier)
+	  || (thr->task->taskgroup && thr->task->taskgroup->cancelled)))
+    return;
+
+  if (thr->task && thr->task->depend_hash)
+    gomp_task_maybe_wait_for_dependencies (depend);
+}
+
 /* An undeferred task is about to run.  Wait for all tasks that this
    undeferred task depends on.
 
@@ -1464,7 +1483,7 @@ GOMP_taskwait (void)
    the scheduling queues.  Then we iterate through these imminently
    ready tasks (and possibly other high priority tasks), and run them.
    If we run out of ready dependencies to execute, we either wait for
-   the reamining dependencies to finish, or wait for them to get
+   the remaining dependencies to finish, or wait for them to get
    scheduled so we can run them.
 
    DEPEND is as in GOMP_task.  */

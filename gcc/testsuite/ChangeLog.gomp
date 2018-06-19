@@ -1,3 +1,7 @@
+2018-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/taskwait-depend-1.c: New test.
+
 2018-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/simd7.c: New test.

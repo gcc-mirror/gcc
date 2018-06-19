@@ -1816,6 +1816,7 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   /* Ignore task directives with empty bodies, unless they have depend
      clause.  */
   if (optimize > 0
+      && gimple_omp_body (stmt)
       && empty_body_p (gimple_omp_body (stmt))
       && !omp_find_clause (gimple_omp_task_clauses (stmt), OMP_CLAUSE_DEPEND))
     {
@@ -1827,6 +1828,13 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
     add_taskreg_looptemp_clauses (GF_OMP_FOR_KIND_TASKLOOP, stmt, outer_ctx);
 
   ctx = new_omp_context (stmt, outer_ctx);
+
+  if (gimple_omp_task_taskwait_p (stmt))
+    {
+      scan_sharing_clauses (gimple_omp_task_clauses (stmt), ctx);
+      return;
+    }
+
   taskreg_contexts.safe_push (ctx);
   if (taskreg_nesting_level > 1)
     ctx->is_nested = true;
@@ -7421,9 +7429,18 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   location_t loc = gimple_location (stmt);
 
   clauses = gimple_omp_taskreg_clauses (stmt);
-  par_bind
-    = as_a <gbind *> (gimple_seq_first_stmt (gimple_omp_body (stmt)));
-  par_body = gimple_bind_body (par_bind);
+  if (gimple_code (stmt) == GIMPLE_OMP_TASK
+      && gimple_omp_task_taskwait_p (stmt))
+    {
+      par_bind = NULL;
+      par_body = NULL;
+    }
+  else
+    {
+      par_bind
+	= as_a <gbind *> (gimple_seq_first_stmt (gimple_omp_body (stmt)));
+      par_body = gimple_bind_body (par_bind);
+    }
   child_fn = ctx->cb.dst_fn;
   if (gimple_code (stmt) == GIMPLE_OMP_PARALLEL
       && !gimple_omp_parallel_combined_p (stmt))
@@ -7447,6 +7464,20 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       dep_bind = gimple_build_bind (NULL, NULL, make_node (BLOCK));
       lower_depend_clauses (gimple_omp_task_clauses_ptr (stmt),
 			    &dep_ilist, &dep_olist);
+    }
+
+  if (gimple_code (stmt) == GIMPLE_OMP_TASK
+      && gimple_omp_task_taskwait_p (stmt))
+    {
+      if (dep_bind)
+	{
+	  gsi_replace (gsi_p, dep_bind, true);
+	  gimple_bind_add_seq (dep_bind, dep_ilist);
+	  gimple_bind_add_stmt (dep_bind, stmt);
+	  gimple_bind_add_seq (dep_bind, dep_olist);
+	  pop_gimplify_context (dep_bind);
+	}
+      return;
     }
 
   if (ctx->srecord_type)

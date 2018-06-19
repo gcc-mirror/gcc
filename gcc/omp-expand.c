@@ -866,6 +866,29 @@ expand_task_call (struct omp_region *region, basic_block bb,
 			    false, GSI_CONTINUE_LINKING);
 }
 
+/* Build the function call to GOMP_taskwait_depend to actually
+   generate the taskwait operation.  BB is the block where to insert the
+   code.  */
+
+static void
+expand_taskwait_call (basic_block bb, gomp_task *entry_stmt)
+{
+  tree clauses = gimple_omp_task_clauses (entry_stmt);
+  tree depend = omp_find_clause (clauses, OMP_CLAUSE_DEPEND);
+  if (depend == NULL_TREE)
+    return;
+
+  depend = OMP_CLAUSE_DECL (depend);
+
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
+  tree t
+    = build_call_expr (builtin_decl_explicit (BUILT_IN_GOMP_TASKWAIT_DEPEND),
+		       1, depend);
+
+  force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
+			    false, GSI_CONTINUE_LINKING);
+}
+
 /* Chain all the DECLs in LIST by their TREE_CHAIN fields.  */
 
 static tree
@@ -1112,6 +1135,17 @@ expand_omp_taskreg (struct omp_region *region)
   vec<tree, va_gc> *ws_args;
 
   entry_stmt = last_stmt (region->entry);
+  if (gimple_code (entry_stmt) == GIMPLE_OMP_TASK
+      && gimple_omp_task_taskwait_p (entry_stmt))
+    {
+      new_bb = region->entry;
+      gsi = gsi_last_nondebug_bb (region->entry);
+      gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_TASK);
+      gsi_remove (&gsi, true);
+      expand_taskwait_call (new_bb, as_a <gomp_task *> (entry_stmt));
+      return;
+    }
+
   child_fn = gimple_omp_taskreg_child_fn (entry_stmt);
   child_cfun = DECL_STRUCT_FUNCTION (child_fn);
 
@@ -7933,6 +7967,10 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	    /* #pragma omp ordered depend is also just a stand-alone
 	       directive.  */
 	    region = NULL;
+	  else if (code == GIMPLE_OMP_TASK
+		   && gimple_omp_task_taskwait_p (stmt))
+	    /* #pragma omp taskwait depend(...) is a stand-alone directive.  */
+	    region = NULL;
 	  /* ..., this directive becomes the parent for a new region.  */
 	  if (region)
 	    parent = region;
@@ -8123,7 +8161,6 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
   switch (code)
     {
     case GIMPLE_OMP_PARALLEL:
-    case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_FOR:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_TEAMS:
@@ -8134,6 +8171,13 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
     case GIMPLE_OMP_GRID_BODY:
       cur_region = new_omp_region (bb, code, cur_region);
       fallthru = true;
+      break;
+
+    case GIMPLE_OMP_TASK:
+      cur_region = new_omp_region (bb, code, cur_region);
+      fallthru = true;
+      if (gimple_omp_task_taskwait_p (last))
+	cur_region = cur_region->outer;
       break;
 
     case GIMPLE_OMP_ORDERED:

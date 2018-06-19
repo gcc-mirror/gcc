@@ -152,6 +152,7 @@ enum gf_mask {
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_PARALLEL_GRID_PHONY = 1 << 1,
     GF_OMP_TASK_TASKLOOP	= 1 << 0,
+    GF_OMP_TASK_TASKWAIT	= 1 << 1,
     GF_OMP_FOR_KIND_MASK	= (1 << 4) - 1,
     GF_OMP_FOR_KIND_FOR		= 0,
     GF_OMP_FOR_KIND_DISTRIBUTE	= 1,
@@ -5498,6 +5499,31 @@ gimple_omp_task_set_taskloop_p (gimple *g, bool taskloop_p)
     g->subcode |= GF_OMP_TASK_TASKLOOP;
   else
     g->subcode &= ~GF_OMP_TASK_TASKLOOP;
+}
+
+
+/* Return true if OMP task statement G has the
+   GF_OMP_TASK_TASKWAIT flag set.  */
+
+static inline bool
+gimple_omp_task_taskwait_p (const gimple *g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_TASK);
+  return (gimple_omp_subcode (g) & GF_OMP_TASK_TASKWAIT) != 0;
+}
+
+
+/* Set the GF_OMP_TASK_TASKWAIT field in G depending on the boolean
+   value of TASKWAIT_P.  */
+
+static inline void
+gimple_omp_task_set_taskwait_p (gimple *g, bool taskwait_p)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_TASK);
+  if (taskwait_p)
+    g->subcode |= GF_OMP_TASK_TASKWAIT;
+  else
+    g->subcode &= ~GF_OMP_TASK_TASKWAIT;
 }
 
 

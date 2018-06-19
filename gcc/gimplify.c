@@ -10079,18 +10079,32 @@ gimplify_omp_task (tree *expr_p, gimple_seq *pre_p)
   gimple *g;
   gimple_seq body = NULL;
 
+  if (OMP_TASK_BODY (expr) == NULL_TREE)
+    for (tree c = OMP_TASK_CLAUSES (expr); c; c = OMP_CLAUSE_CHAIN (c))
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+	  && OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_MUTEXINOUTSET)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "%<mutexinoutset%> kind in %<depend%> clause on a "
+		    "%<taskwait%> construct");
+	  break;
+	}
+
   gimplify_scan_omp_clauses (&OMP_TASK_CLAUSES (expr), pre_p,
 			     omp_find_clause (OMP_TASK_CLAUSES (expr),
 					      OMP_CLAUSE_UNTIED)
 			     ? ORT_UNTIED_TASK : ORT_TASK, OMP_TASK);
 
-  push_gimplify_context ();
+  if (OMP_TASK_BODY (expr))
+    {
+      push_gimplify_context ();
 
-  g = gimplify_and_return_first (OMP_TASK_BODY (expr), &body);
-  if (gimple_code (g) == GIMPLE_BIND)
-    pop_gimplify_context (g);
-  else
-    pop_gimplify_context (NULL);
+      g = gimplify_and_return_first (OMP_TASK_BODY (expr), &body);
+      if (gimple_code (g) == GIMPLE_BIND)
+	pop_gimplify_context (g);
+      else
+	pop_gimplify_context (NULL);
+    }
 
   gimplify_adjust_omp_clauses (pre_p, body, &OMP_TASK_CLAUSES (expr),
 			       OMP_TASK);
@@ -10099,6 +10113,8 @@ gimplify_omp_task (tree *expr_p, gimple_seq *pre_p)
 			     OMP_TASK_CLAUSES (expr),
 			     NULL_TREE, NULL_TREE,
 			     NULL_TREE, NULL_TREE, NULL_TREE);
+  if (OMP_TASK_BODY (expr) == NULL_TREE)
+    gimple_omp_task_set_taskwait_p (g, true);
   gimplify_seq_add_stmt (pre_p, g);
   *expr_p = NULL_TREE;
 }

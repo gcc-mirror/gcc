@@ -17131,6 +17131,15 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case OMP_TASK:
+      if (OMP_TASK_BODY (t) == NULL_TREE)
+	{
+	  tmp = tsubst_omp_clauses (OMP_TASK_CLAUSES (t), C_ORT_OMP, args,
+				    complain, in_decl);
+	  t = copy_node (t);
+	  OMP_TASK_CLAUSES (t) = tmp;
+	  add_stmt (t);
+	  break;
+	}
       r = push_omp_privatization_clauses (false);
       tmp = tsubst_omp_clauses (OMP_TASK_CLAUSES (t), C_ORT_OMP, args,
 				complain, in_decl);

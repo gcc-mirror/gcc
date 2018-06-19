@@ -3102,7 +3102,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
     case OMP_TASK:
-      pp_string (pp, "#pragma omp task");
+      pp_string (pp, OMP_TASK_BODY (node) ? "#pragma omp task"
+					  : "#pragma omp taskwait");
       dump_omp_clauses (pp, OMP_TASK_CLAUSES (node), spc, flags);
       goto dump_omp_body;
 
