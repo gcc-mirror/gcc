@@ -99,6 +99,18 @@ public:
     return get (node->get_uid (), false);
   }
 
+  /* Remove node from summary.  */
+  void remove (cgraph_node *node)
+  {
+    int uid = node->get_uid ();
+    T **v = m_map.get (uid);
+    if (v)
+      {
+	m_map.remove (uid);
+	release (*v);
+      }
+  }
+
   /* Return number of elements handled by data structure.  */
   size_t elements ()
   {

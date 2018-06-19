@@ -736,7 +736,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
   init_caller_stats (&stats);
   node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats, false);
 
-  if (ipa_fn_summaries->get_create (node)->self_size < stats.n_calls)
+  if (ipa_fn_summaries->get (node)->self_size < stats.n_calls)
     {
       if (dump_file)
 	fprintf (dump_file, "Considering %s for cloning; code might shrink.\n",
@@ -2583,7 +2583,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
       callee = callee->function_symbol (&avail);
       if (avail < AVAIL_AVAILABLE)
 	continue;
-      isummary = ipa_fn_summaries->get_create (callee);
+      isummary = ipa_fn_summaries->get (callee);
       if (!isummary->inlinable)
 	continue;
 
@@ -3287,8 +3287,9 @@ ipcp_propagate_stage (struct ipa_topo_info *topo)
 				   ipa_get_param_count (info));
 	initialize_node_lattices (node);
       }
-    if (node->definition && !node->alias)
-      overall_size += ipa_fn_summaries->get_create (node)->self_size;
+    ipa_fn_summary *s = ipa_fn_summaries->get (node);
+    if (node->definition && !node->alias && s != NULL)
+      overall_size += s->self_size;
     max_count = max_count.max (node->count.ipa ());
   }
 
