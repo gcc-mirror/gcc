@@ -1,3 +1,7 @@
+2018-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/utility: Remove unused <exception> header.
+
 2018-06-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	LWG 2975 ensure construct(pair<T,U>*, ...) used to construct pairs
