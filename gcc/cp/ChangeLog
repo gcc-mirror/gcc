@@ -1,5 +1,8 @@
 2018-06-19  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (CONSTRUCTOR_NO_IMPLICIT_ZERO): Remove.
+	* constexpr.c: Use CONSTRUCTOR_NO_CLEARING instead.
+
 	PR c++/86192 - ICE with anonymous union passed to template.
 	* pt.c (tsubst_expr) [DECL_EXPR]: Handle an anonymous union type
 	used to declare a named variable.
