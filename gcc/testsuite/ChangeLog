@@ -1,5 +1,10 @@
 2018-06-19  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/48560
+	* gcc.dg/Warray-bounds-28.c: New test.
+
+2018-06-19  Martin Sebor  <msebor@redhat.com>
+
 	PR middle-end/85602
 	* c-c++-common/attr-nonstring-8.c: Adjust text of expected warning
 	to also match C++.
