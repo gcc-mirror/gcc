@@ -1,5 +1,8 @@
 2018-06-18  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_lambda_expression): Use a range for
+	LAMBDA_EXPR_LOCATION.
+
 	PR c++/86200 - ICE with unexpanded pack in lambda parameter.
 	* pt.c (find_parameter_packs_r) [LAMBDA_EXPR]: Also look into the
 	function type.

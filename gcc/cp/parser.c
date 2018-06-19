@@ -10198,6 +10198,12 @@ cp_parser_lambda_expression (cp_parser* parser)
   /* And now that we're done, push proxies for an enclosing lambda.  */
   insert_pending_capture_proxies ();
 
+  /* Update the lambda expression to a range.  */
+  cp_token *end_tok = cp_lexer_previous_token (parser->lexer);
+  LAMBDA_EXPR_LOCATION (lambda_expr) = make_location (token->location,
+						      token->location,
+						      end_tok->location);
+
   if (ok)
     lambda_expr = build_lambda_object (lambda_expr);
   else
