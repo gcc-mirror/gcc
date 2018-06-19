@@ -1,3 +1,8 @@
+2018-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Do not return false at
+	-O0 if the locus represent UNKNOWN_LOCATION but have different values.
+        
 2018-06-19  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000-string.c (select_block_compare_mode): Check
