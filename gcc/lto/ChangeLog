@@ -1,3 +1,7 @@
+2018-06-19  Martin Liska  <mliska@suse.cz>
+
+	* config-lang.in: Remove stagestuff.
+
 2018-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-lang.c (lto_link_dump_id, decl_merge_dump_id, partition_dump_id):
