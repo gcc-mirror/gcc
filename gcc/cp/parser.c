@@ -22350,7 +22350,7 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 	  {
 	    if (IDENTIFIER_MARKED (designator))
 	      {
-		error_at (EXPR_LOC_OR_LOC (val, input_location),
+		error_at (cp_expr_loc_or_loc (val, input_location),
 			  "%<.%s%> designator used multiple times in "
 			  "the same initializer list",
 			  IDENTIFIER_POINTER (designator));
@@ -34812,7 +34812,7 @@ cp_parser_omp_for_cond (cp_parser *parser, tree decl)
 	  || CLASS_TYPE_P (TREE_TYPE (decl))))
     return cond;
 
-  return build_x_binary_op (EXPR_LOC_OR_LOC (cond, input_location),
+  return build_x_binary_op (cp_expr_loc_or_loc (cond, input_location),
 			    TREE_CODE (cond),
 			    TREE_OPERAND (cond, 0), ERROR_MARK,
 			    TREE_OPERAND (cond, 1), ERROR_MARK,

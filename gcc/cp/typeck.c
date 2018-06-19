@@ -1990,7 +1990,7 @@ decay_conversion (tree exp,
 {
   tree type;
   enum tree_code code;
-  location_t loc = EXPR_LOC_OR_LOC (exp, input_location);
+  location_t loc = cp_expr_loc_or_loc (exp, input_location);
 
   type = TREE_TYPE (exp);
   if (type == error_mark_node)
@@ -2254,7 +2254,7 @@ static tree
 rationalize_conditional_expr (enum tree_code code, tree t,
                               tsubst_flags_t complain)
 {
-  location_t loc = EXPR_LOC_OR_LOC (t, input_location);
+  location_t loc = cp_expr_loc_or_loc (t, input_location);
 
   /* For MIN_EXPR or MAX_EXPR, fold-const.c has arranged things so that
      the first operand is always the one to be used if both operands
@@ -6041,7 +6041,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 {
   /* No default_conversion here.  It causes trouble for ADDR_EXPR.  */
   tree arg = xarg;
-  location_t location = EXPR_LOC_OR_LOC (arg, input_location);
+  location_t location = cp_expr_loc_or_loc (arg, input_location);
   tree argtype = 0;
   const char *errstring = NULL;
   tree val;
@@ -6593,7 +6593,7 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
       && !CONSTRUCTOR_IS_DIRECT_INIT (expr))
     {
       if (complain & tf_error)
-	pedwarn (EXPR_LOC_OR_LOC (expr, input_location), 0,
+	pedwarn (cp_expr_loc_or_loc (expr, input_location), 0,
 		 "list-initializer for non-class type must not "
 		 "be parenthesized");
       else
@@ -8802,7 +8802,7 @@ convert_for_assignment (tree type, tree rhs,
 		}
 	      else if (fndecl)
 		{
-		  error_at (EXPR_LOC_OR_LOC (rhs, input_location),
+		  error_at (cp_expr_loc_or_loc (rhs, input_location),
 			    "cannot convert %qH to %qI",
 			    rhstype, type);
 		  inform (get_fndecl_argument_location (fndecl, parmnum),
@@ -8904,7 +8904,7 @@ convert_for_assignment (tree type, tree rhs,
       && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
       && (complain & tf_warning))
     {
-      location_t loc = EXPR_LOC_OR_LOC (rhs, input_location);
+      location_t loc = cp_expr_loc_or_loc (rhs, input_location);
 
       warning_at (loc, OPT_Wparentheses,
 		  "suggest parentheses around assignment used as truth value");
@@ -9016,7 +9016,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 {
   tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
   tree whats_returned = fold_for_warn (retval);
-  location_t loc = EXPR_LOC_OR_LOC (retval, input_location);
+  location_t loc = cp_expr_loc_or_loc (retval, input_location);
 
   for (;;)
     {

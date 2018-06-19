@@ -47,6 +47,8 @@ c-common.h, not after.
    but not all node kinds do (e.g. constants, and references to
    params, locals, etc), so we stash a copy here.  */
 
+extern location_t cp_expr_location		(const_tree);
+
 class cp_expr
 {
 public:
@@ -54,7 +56,7 @@ public:
     m_value (NULL), m_loc (UNKNOWN_LOCATION) {}
 
   cp_expr (tree value) :
-    m_value (value), m_loc (EXPR_LOCATION (m_value)) {}
+    m_value (value), m_loc (cp_expr_location (m_value)) {}
 
   cp_expr (tree value, location_t loc):
     m_value (value), m_loc (loc) {}
@@ -7317,11 +7319,21 @@ extern tree finish_binary_fold_expr          (tree, tree, int);
 extern void require_complete_eh_spec_types	(tree, tree);
 extern void cxx_incomplete_type_diagnostic	(location_t, const_tree,
 						 const_tree, diagnostic_t);
+
+inline location_t
+cp_expr_loc_or_loc (const_tree t, location_t or_loc)
+{
+  location_t loc = cp_expr_location (t);
+  if (loc == UNKNOWN_LOCATION)
+    loc = or_loc;
+  return loc;
+}
+
 inline void
 cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 				diagnostic_t diag_kind)
 {
-  cxx_incomplete_type_diagnostic (EXPR_LOC_OR_LOC (value, input_location),
+  cxx_incomplete_type_diagnostic (cp_expr_loc_or_loc (value, input_location),
 				  value, type, diag_kind);
 }
 

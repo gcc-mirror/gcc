@@ -1,5 +1,11 @@
 2018-06-18  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (cp_expr_location): New.
+	* cp-tree.h (cp_expr_loc_or_loc): New.
+	* call.c, cvt.c, constexpr.c, constraint.cc, cp-gimplify.c, decl.c,
+	error.c, init.c, lex.c, parser.c, pt.c, semantics.c, typeck.c,
+	typeck2.c: Use it instead of EXPR_LOC_OR_LOC.
+
 	* parser.c (cp_parser_lambda_expression): Use a range for
 	LAMBDA_EXPR_LOCATION.
 
