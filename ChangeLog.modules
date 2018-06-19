@@ -1,3 +1,12 @@
+2018-06-19  Nathan Sidwell  <nathan@acm.org>
+
+	Early & late location maps.
+	gcc/cp/
+	* modules.c (slurping, spewing): Rearrange.
+	(module_state::{prepare,read,write}_locations): Reimplement.
+	(module_state::{read,write}): Adjust.
+	(module_state::atom_preamble): Adjust.
+
 2018-06-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/testsuite/
