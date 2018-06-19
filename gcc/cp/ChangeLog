@@ -1,3 +1,9 @@
+2018-06-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86192 - ICE with anonymous union passed to template.
+	* pt.c (tsubst_expr) [DECL_EXPR]: Handle an anonymous union type
+	used to declare a named variable.
+
 2018-06-18  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (cp_expr_location): New.
