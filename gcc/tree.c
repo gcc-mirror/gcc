@@ -5173,7 +5173,10 @@ free_lang_data_in_type (tree type)
   /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
      TYPE_DECL if the type doesn't have linkage.  */
   if (! type_with_linkage_p (type))
-    TYPE_NAME (type) = TYPE_IDENTIFIER (type);
+    {
+      TYPE_NAME (type) = TYPE_IDENTIFIER (type);
+      TYPE_STUB_DECL (type) = NULL;
+    }
 }
 
 
@@ -5556,10 +5559,22 @@ find_decls_types_r (tree *tp, int *ws, void *data)
     }
   else if (TREE_CODE (t) == BLOCK)
     {
-      tree tem;
-      for (tem = BLOCK_VARS (t); tem; tem = TREE_CHAIN (tem))
-	fld_worklist_push (tem, fld);
-      for (tem = BLOCK_SUBBLOCKS (t); tem; tem = BLOCK_CHAIN (tem))
+      for (tree *tem = &BLOCK_VARS (t); *tem; )
+	{
+	  if (TREE_CODE (*tem) != VAR_DECL
+	      || !auto_var_in_fn_p (*tem, DECL_CONTEXT (*tem)))
+	    {
+	      gcc_assert (TREE_CODE (*tem) != RESULT_DECL
+			  && TREE_CODE (*tem) != PARM_DECL);
+	      *tem = TREE_CHAIN (*tem);
+	    }
+	  else 
+	    {
+	      fld_worklist_push (*tem, fld);
+	      tem = &TREE_CHAIN (*tem);
+	    }
+	}
+      for (tree tem = BLOCK_SUBBLOCKS (t); tem; tem = BLOCK_CHAIN (tem))
 	fld_worklist_push (tem, fld);
       fld_worklist_push (BLOCK_ABSTRACT_ORIGIN (t), fld);
     }
