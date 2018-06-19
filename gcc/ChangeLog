@@ -1,3 +1,70 @@
+2018-06-19  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.c (ix86_can_inline_p): Do not use
+        ipa_fn_summaries::get_create.
+	* ipa-cp.c (ipcp_cloning_candidate_p): Replace get_create with
+        get.
+	(devirtualization_time_bonus): Likewise.
+	(ipcp_propagate_stage): Likewise.
+	* ipa-fnsummary.c (redirect_to_unreachable): Likewise.
+	(edge_set_predicate): Likewise.
+	(evaluate_conditions_for_known_args): Likewise.
+	(evaluate_properties_for_edge): Likewise.
+	(ipa_call_summary::reset): Tranform to ...
+	(ipa_call_summary::~ipa_call_summary): ... this.
+	(ipa_fn_summary::reset): Transform to ...
+	(ipa_fn_summary::~ipa_fn_summary): ... this.
+	(ipa_fn_summary_t::remove): Rename to ...
+	(ipa_fn_summary_t::remove_callees): ... this.
+	(ipa_fn_summary_t::duplicate): Use placement new
+        instead of memory copy.
+	(ipa_call_summary_t::duplicate): Likewise.
+	(ipa_call_summary_t::remove): Remove.
+	(dump_ipa_call_summary): Change get_create to get.
+	(ipa_dump_fn_summary): Dump only when summary exists.
+	(analyze_function_body): Use symbol_summary::get instead
+        of get_create.
+	(compute_fn_summary): Likewise.
+	(estimate_edge_devirt_benefit): Likewise.
+	(estimate_edge_size_and_time): Likewise.
+	(inline_update_callee_summaries): Likewise.
+	(remap_edge_change_prob): Likewise.
+	(remap_edge_summaries): Likewise.
+	(ipa_merge_fn_summary_after_inlining): Likewise.
+	(write_ipa_call_summary): Likewise.
+	(ipa_fn_summary_write): Likewise.
+	(ipa_free_fn_summary): Likewise.
+	* ipa-fnsummary.h (struct GTY): Add new ctor and copy ctor.
+	(struct ipa_call_summary): Likewise.
+	* ipa-icf.c (sem_function::merge): Use symbol_summary::get instead
+        of get_create.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Likewise.
+	(estimate_size_after_inlining): Likewise.
+	(estimate_growth): Likewise.
+	(growth_likely_positive): Likewise.
+	* ipa-inline-transform.c (clone_inlined_nodes): Likewise.
+	(inline_call): Likewise.
+	* ipa-inline.c (caller_growth_limits): Likewise.
+	(can_inline_edge_p): Likewise.
+	(can_inline_edge_by_limits_p): Likewise.
+	(compute_uninlined_call_time): Likewise.
+	(compute_inlined_call_time): Likewise.
+	(want_inline_small_function_p): Likewise.
+	(edge_badness): Likewise.
+	(update_caller_keys): Likewise.
+	(update_callee_keys): Likewise.
+	(inline_small_functions): Likewise.
+	(inline_to_all_callers_1): Likewise.
+	(dump_overall_stats): Likewise.
+	(early_inline_small_functions): Likewise.
+	(early_inliner): Likewise.
+	* ipa-profile.c (ipa_propagate_frequency_1): Likewise.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Likewise.
+	* ipa-pure-const.c (malloc_candidate_p): Likewise.
+	* ipa-split.c (execute_split_functions): Likewise.
+	* symbol-summary.h: Likewise.
+	* tree-sra.c (ipa_sra_preliminary_function_checks): Likewise.
+
 2018-06-19  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.c (try_vectorize_loop_1): Split out of ...

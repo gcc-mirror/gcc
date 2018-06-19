@@ -5760,6 +5760,7 @@ ix86_can_inline_p (tree caller, tree callee)
       && lookup_attribute ("always_inline",
 			   DECL_ATTRIBUTES (callee)));
 
+  cgraph_node *callee_node = cgraph_node::get (callee);
   /* Callee's isa options should be a subset of the caller's, i.e. a SSE4
      function can inline a SSE2 function but a SSE2 function can't inline
      a SSE4 function.  */
@@ -5789,8 +5790,8 @@ ix86_can_inline_p (tree caller, tree callee)
 	      for multi-versioning call optimization, so beware of
 	      ipa_fn_summaries not available.  */
 	   && (! ipa_fn_summaries
-	       || ipa_fn_summaries->get_create
-	       (cgraph_node::get (callee))->fp_expressions))
+	       || ipa_fn_summaries->get (callee_node) == NULL
+	       || ipa_fn_summaries->get (callee_node)->fp_expressions))
     ret = false;
 
   else if (!always_inline

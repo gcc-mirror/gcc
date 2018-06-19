@@ -1,5 +1,12 @@
 2018-06-19  Martin Liska  <mliska@suse.cz>
 
+	* lto-partition.c (add_symbol_to_partition_1): Use symbol_summary::get instead
+        of get_create.
+	(undo_partition): Likewise.
+	(lto_balanced_map): Likewise.
+
+2018-06-19  Martin Liska  <mliska@suse.cz>
+
 	* config-lang.in: Remove stagestuff.
 
 2018-06-08  Jan Hubicka  <hubicka@ucw.cz>

@@ -923,7 +923,7 @@ malloc_candidate_p (function *fun, bool ipa)
 	  cgraph_edge *cs = node->get_edge (call_stmt);
 	  if (cs)
 	    {
-	      ipa_call_summary *es = ipa_call_summaries->get_create (cs);
+	      ipa_call_summary *es = ipa_call_summaries->get (cs);
 	      gcc_assert (es);
 	      es->is_return_callee_uncaptured = true;
 	    }
@@ -959,7 +959,7 @@ malloc_candidate_p (function *fun, bool ipa)
 	      cgraph_edge *cs = node->get_edge (call_stmt);
 	      if (cs)
 		{
-		  ipa_call_summary *es = ipa_call_summaries->get_create (cs);
+		  ipa_call_summary *es = ipa_call_summaries->get (cs);
 		  gcc_assert (es);
 		  es->is_return_callee_uncaptured = true;
 		}
