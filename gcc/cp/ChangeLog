@@ -1,3 +1,9 @@
+2018-06-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81060 - ICE with unexpanded parameter pack.
+	* pt.c (check_for_bare_parameter_packs): Add loc parameter.
+	* decl.c (grokdeclarator): Call it for qualifying_scope.
+
 2018-06-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86147 - wrong capture for template argument.

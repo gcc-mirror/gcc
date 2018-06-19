@@ -6645,7 +6645,7 @@ extern bool template_parameter_pack_p           (const_tree);
 extern bool function_parameter_pack_p		(const_tree);
 extern bool function_parameter_expanded_from_pack_p (tree, tree);
 extern tree make_pack_expansion                 (tree, tsubst_flags_t = tf_warning_or_error);
-extern bool check_for_bare_parameter_packs      (tree);
+extern bool check_for_bare_parameter_packs      (tree, location_t = UNKNOWN_LOCATION);
 extern tree build_template_info			(tree, tree);
 extern tree get_template_info			(const_tree);
 extern vec<qualified_typedef_usage_t, va_gc> *get_types_needing_access_check (tree);
