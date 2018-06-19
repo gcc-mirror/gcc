@@ -75,10 +75,6 @@
 #include <bits/move.h>
 #include <initializer_list>
 
-#if __cplusplus > 201402L
-#include <exception>
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
