@@ -10255,6 +10255,9 @@ grokdeclarator (const cp_declarator *declarator,
 	      break;
 	    if (qualifying_scope)
 	      {
+		if (check_for_bare_parameter_packs (qualifying_scope,
+						    id_declarator->id_loc))
+		  return error_mark_node;
 		if (at_function_scope_p ())
 		  {
 		    /* [dcl.meaning] 

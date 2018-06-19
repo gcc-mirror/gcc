@@ -4035,7 +4035,7 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
    Returns TRUE and emits an error if there were bare parameter packs,
    returns FALSE otherwise.  */
 bool 
-check_for_bare_parameter_packs (tree t)
+check_for_bare_parameter_packs (tree t, location_t loc /* = UNKNOWN_LOCATION */)
 {
   tree parameter_packs = NULL_TREE;
   struct find_parameter_pack_data ppd;
@@ -4059,7 +4059,8 @@ check_for_bare_parameter_packs (tree t)
 
   if (parameter_packs) 
     {
-      location_t loc = EXPR_LOC_OR_LOC (t, input_location);
+      if (loc == UNKNOWN_LOCATION)
+	loc = EXPR_LOC_OR_LOC (t, input_location);
       error_at (loc, "parameter packs not expanded with %<...%>:");
       while (parameter_packs)
         {
