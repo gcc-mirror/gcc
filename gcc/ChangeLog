@@ -1,3 +1,14 @@
+2018-06-19  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (select_block_compare_mode): Check
+	TARGET_EFFICIENT_OVERLAPPING_UNALIGNED here instead of in caller.
+	(do_and3, do_and3_mask, do_compb3, do_rotl3): New functions.
+	(expand_block_compare): Change select_block_compare_mode call.
+	(expand_strncmp_align_check): Use new functions, fix comment.
+	(emit_final_str_compare_gpr): New function.
+	(expand_strn_compare): Refactor and clean up code.
+	* config/rs6000/vsx.md (vsx_mov<mode>_64bit): Remove *.
+
 2018-06-19  Tony Reix  <tony.reix@atos.com>
 	    Damien Bergamini  <damien.bergamini@atos.com>
 	    David Edelsohn  <dje.gcc@gmail.com>
