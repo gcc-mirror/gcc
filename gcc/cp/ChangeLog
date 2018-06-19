@@ -1,5 +1,9 @@
 2018-06-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81060 - ICE with unexpanded parameter pack.
+	* pt.c (check_for_bare_parameter_packs): Add loc parameter.
+	* decl.c (grokdeclarator): Call it for qualifying_scope.
+
 	PR c++/86171 - ICE with recursive alias instantiation.
 	* pt.c (tsubst_decl): Handle recursive alias instantiation.
 
