@@ -479,8 +479,8 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
 	return error_mark_node;
     }
   t = build4 (TARGET_EXPR, type, decl, value, t, NULL_TREE);
-  if (EXPR_HAS_LOCATION (value))
-    SET_EXPR_LOCATION (t, EXPR_LOCATION (value));
+  if (location_t eloc = cp_expr_location (value))
+    SET_EXPR_LOCATION (t, eloc);
   /* We always set TREE_SIDE_EFFECTS so that expand_expr does not
      ignore the TARGET_EXPR.  If there really turn out to be no
      side-effects, then the optimizer should be able to get rid of
@@ -5451,6 +5451,26 @@ cp_tree_code_length (enum tree_code code)
 
     default:
       return TREE_CODE_LENGTH (code);
+    }
+}
+
+/* Like EXPR_LOCATION, but also handle some tcc_exceptional that have
+   locations.  */
+
+location_t
+cp_expr_location (const_tree t_)
+{
+  tree t = CONST_CAST_TREE (t_);
+  if (t == NULL_TREE)
+    return UNKNOWN_LOCATION;
+  switch (TREE_CODE (t))
+    {
+    case LAMBDA_EXPR:
+      return LAMBDA_EXPR_LOCATION (t);
+    case STATIC_ASSERT:
+      return STATIC_ASSERT_SOURCE_LOCATION (t);
+    default:
+      return EXPR_LOCATION (t);
     }
 }
 

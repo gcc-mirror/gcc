@@ -4,9 +4,9 @@
 template<typename ... Args>
 static void foo()
 {
-  [](Args, int x) {
+  [](Args, int x) {		// { dg-error "packs not expanded" }
     x;
-  };				// { dg-error "packs not expanded" }
+  };
 }
 int main()
 {

@@ -3480,7 +3480,7 @@ pop_switch (void)
   location_t switch_location;
 
   /* Emit warnings as needed.  */
-  switch_location = EXPR_LOC_OR_LOC (cs->switch_stmt, input_location);
+  switch_location = cp_expr_loc_or_loc (cs->switch_stmt, input_location);
   const bool bool_cond_p
     = (SWITCH_STMT_TYPE (cs->switch_stmt)
        && TREE_CODE (SWITCH_STMT_TYPE (cs->switch_stmt)) == BOOLEAN_TYPE);
@@ -5410,7 +5410,7 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 					    do_default);
 	  if (failure == 1)
 	    {
-	      error_at (EXPR_LOC_OR_LOC (initializer,
+	      error_at (cp_expr_loc_or_loc (initializer,
 					 DECL_SOURCE_LOCATION (decl)),
 			"initializer fails to determine size of %qD", decl);
 	    }
@@ -6266,7 +6266,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	    }
 	  else if (init_len != 1 && TREE_CODE (type) != COMPLEX_TYPE)
 	    {
-	      error_at (EXPR_LOC_OR_LOC (init, DECL_SOURCE_LOCATION (decl)),
+	      error_at (cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (decl)),
 			"scalar object %qD requires one element in "
 			"initializer", decl);
 	      TREE_TYPE (decl) = error_mark_node;
@@ -6311,7 +6311,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	    {
 	      /* Don't reshape if the class has constructors.  */
 	      if (cxx_dialect == cxx98)
-		error_at (EXPR_LOC_OR_LOC (init, DECL_SOURCE_LOCATION (decl)),
+		error_at (cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (decl)),
 			  "in C++98 %qD must be initialized by "
 			  "constructor, not by %<{...}%>",
 			  decl);
@@ -6407,7 +6407,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      && DECL_INITIAL (decl)
 	      && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
 	      && PAREN_STRING_LITERAL_P (DECL_INITIAL (decl)))
-	    warning_at (EXPR_LOC_OR_LOC (DECL_INITIAL (decl),
+	    warning_at (cp_expr_loc_or_loc (DECL_INITIAL (decl),
 					 DECL_SOURCE_LOCATION (decl)),
 			0, "array %qD initialized by parenthesized "
 			"string literal %qE",

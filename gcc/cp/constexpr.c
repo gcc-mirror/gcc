@@ -1412,7 +1412,7 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 
     default:
       if (!ctx->quiet)
-	error_at (EXPR_LOC_OR_LOC (t, input_location),
+	error_at (cp_expr_loc_or_loc (t, input_location),
 		  "call to internal function %qE", t);
       *non_constant_p = true;
       return t;
@@ -1427,7 +1427,7 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 
   if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
     {
-      location_t loc = EXPR_LOC_OR_LOC (t, input_location);
+      location_t loc = cp_expr_loc_or_loc (t, input_location);
       tree type = TREE_TYPE (TREE_TYPE (t));
       tree result = fold_binary_loc (loc, opcode, type,
 				     fold_convert_loc (loc, type, arg0),
@@ -1469,7 +1469,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 			  bool lval,
 			  bool *non_constant_p, bool *overflow_p)
 {
-  location_t loc = EXPR_LOC_OR_LOC (t, input_location);
+  location_t loc = cp_expr_loc_or_loc (t, input_location);
   tree fun = get_function_named_in_call (t);
   constexpr_call new_call = { NULL, NULL, NULL, 0 };
   bool depth_ok;
@@ -3981,7 +3981,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
       if (++count >= constexpr_loop_limit)
 	{
 	  if (!ctx->quiet)
-	    error_at (EXPR_LOC_OR_LOC (t, input_location),
+	    error_at (cp_expr_loc_or_loc (t, input_location),
 		      "%<constexpr%> loop iteration count exceeds limit of %d "
 		      "(use -fconstexpr-loop-limit= to increase the limit)",
 		      constexpr_loop_limit);
@@ -4597,7 +4597,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (REINTERPRET_CAST_P (t))
 	{
 	  if (!ctx->quiet)
-	    error_at (EXPR_LOC_OR_LOC (t, input_location),
+	    error_at (cp_expr_loc_or_loc (t, input_location),
 		      "a reinterpret_cast is not a constant expression");
 	  *non_constant_p = true;
 	  return t;
@@ -4634,7 +4634,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		if (TYPE_REF_P (type))
 		  {
 		    if (!ctx->quiet)
-		      error_at (EXPR_LOC_OR_LOC (t, input_location),
+		      error_at (cp_expr_loc_or_loc (t, input_location),
 				"dereferencing a null pointer");
 		    *non_constant_p = true;
 		    return t;
@@ -4646,7 +4646,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		    if (!can_convert (type, from, tf_none))
 		      {
 			if (!ctx->quiet)
-			  error_at (EXPR_LOC_OR_LOC (t, input_location),
+			  error_at (cp_expr_loc_or_loc (t, input_location),
 				    "conversion of %qT null pointer to %qT "
 				    "is not a constant expression",
 				    from, type);
@@ -4661,7 +4661,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		     reinterpret_cast<void*>(sizeof 0)
 		*/
 		if (!ctx->quiet)
-		  error_at (EXPR_LOC_OR_LOC (t, input_location),
+		  error_at (cp_expr_loc_or_loc (t, input_location),
 			    "%<reinterpret_cast<%T>(%E)%> is not "
 			    "a constant expression",
 			    type, op);
@@ -4726,7 +4726,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case BASELINK:
     case OFFSET_REF:
       if (!ctx->quiet)
-        error_at (EXPR_LOC_OR_LOC (t, input_location),
+        error_at (cp_expr_loc_or_loc (t, input_location),
 		  "expression %qE is not a constant expression", t);
       *non_constant_p = true;
       break;
@@ -5327,7 +5327,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     return false;
   if (t == NULL_TREE)
     return true;
-  location_t loc = EXPR_LOC_OR_LOC (t, input_location);
+  location_t loc = cp_expr_loc_or_loc (t, input_location);
   if (TREE_THIS_VOLATILE (t) && !DECL_P (t))
     {
       if (flags & tf_error)

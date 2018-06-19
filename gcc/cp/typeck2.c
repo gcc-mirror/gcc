@@ -959,7 +959,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
 
   if (!ok)
     {
-      location_t loc = EXPR_LOC_OR_LOC (init, input_location);
+      location_t loc = cp_expr_loc_or_loc (init, input_location);
       if (cxx_dialect == cxx98)
 	{
 	  if (complain & tf_warning)
@@ -1032,7 +1032,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);
 
-  location_t loc = EXPR_LOC_OR_LOC (init, input_location);
+  location_t loc = cp_expr_loc_or_loc (init, input_location);
 
   /* Initialization of an array of chars from a string constant. The initializer
      can be optionally enclosed in braces, but reshape_init has already removed
@@ -1293,7 +1293,7 @@ process_init_constructor_array (tree type, tree init, int nested,
       if (nested == 2 && !domain && !vec_safe_is_empty (v))
 	{
 	  if (complain & tf_error)
-	    error_at (EXPR_LOC_OR_LOC (init, input_location),
+	    error_at (cp_expr_loc_or_loc (init, input_location),
 		      "initialization of flexible array member "
 		      "in a nested context");
 	  return PICFLAG_ERRONEOUS;
