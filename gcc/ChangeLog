@@ -1,3 +1,8 @@
+2018-06-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_init_constructor): Really never clear for an
+	incomplete constructor if CONSTRUCTOR_NO_CLEARING is set.
+
 2018-06-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86179
