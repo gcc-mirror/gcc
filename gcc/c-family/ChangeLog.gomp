@@ -1,3 +1,10 @@
+2018-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_flush): Add MO argument.
+	* c-omp.c: Include memmodel.h.
+	(c_finish_omp_flush): Add MO argument, if not MEMMODEL_LAST, emit
+	__atomic_thread_fence call with the given value.
+
 2018-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_omp_predetermined_sharing): Don't return

@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "tree-iterator.h"
 #include "c-family/name-hint.h"
+#include "memmodel.h"
 
 
 /* The lexer.  */
@@ -35256,16 +35257,41 @@ cp_parser_omp_critical (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
    # pragma omp flush flush-vars[opt] new-line
 
    flush-vars:
-     ( variable-list ) */
+     ( variable-list )
+
+   OpenMP 5.0:
+   # pragma omp flush memory-order-clause new-line  */
 
 static void
 cp_parser_omp_flush (cp_parser *parser, cp_token *pragma_tok)
 {
+  enum memmodel mo = MEMMODEL_LAST;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+      if (!strcmp (p, "acq_rel"))
+	mo = MEMMODEL_ACQ_REL;
+      else if (!strcmp (p, "release"))
+	mo = MEMMODEL_RELEASE;
+      else if (!strcmp (p, "acquire"))
+	mo = MEMMODEL_ACQUIRE;
+      else
+	error_at (cp_lexer_peek_token (parser->lexer)->location,
+		  "expected %<acq_rel%>, %<release%> or %<acquire%>");
+      cp_lexer_consume_token (parser->lexer);
+    }
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
-    (void) cp_parser_omp_var_list (parser, OMP_CLAUSE_ERROR, NULL);
+    {
+      if (mo != MEMMODEL_LAST)
+	error_at (cp_lexer_peek_token (parser->lexer)->location,
+		  "%<flush%> list specified together with memory order "
+		  "clause");
+      (void) cp_parser_omp_var_list (parser, OMP_CLAUSE_ERROR, NULL);
+    }
   cp_parser_require_pragma_eol (parser, pragma_tok);
 
-  finish_omp_flush ();
+  finish_omp_flush (mo);
 }
 
 /* Helper function, to parse omp for increment expression.  */

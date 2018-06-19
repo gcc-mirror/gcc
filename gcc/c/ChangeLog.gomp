@@ -1,5 +1,8 @@
 2018-06-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-parser.c: Include memmodel.h.
+	(c_parser_omp_flush): Parse flush with memory-order-clause.
+
 	* c-parser.c (OMP_TASKWAIT_CLAUSE_MASK): Define.
 	(c_parser_omp_taskwait): Handle taskwait with depend clauses.
 

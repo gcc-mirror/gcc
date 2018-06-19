@@ -6968,7 +6968,7 @@ extern void finish_omp_atomic			(enum tree_code, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 tree, enum omp_memory_order);
 extern void finish_omp_barrier			(void);
-extern void finish_omp_flush			(void);
+extern void finish_omp_flush			(int);
 extern void finish_omp_taskwait			(void);
 extern void finish_omp_taskyield		(void);
 extern void finish_omp_cancel			(tree);

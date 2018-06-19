@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "c-family/name-hint.h"
 #include "tree-iterator.h"
+#include "memmodel.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -16109,20 +16110,46 @@ c_parser_omp_critical (location_t loc, c_parser *parser, bool *if_p)
    # pragma omp flush flush-vars[opt] new-line
 
    flush-vars:
-     ( variable-list ) */
+     ( variable-list )
+
+   OpenMP 5.0:
+   # pragma omp flush memory-order-clause new-line  */
 
 static void
 c_parser_omp_flush (c_parser *parser)
 {
   location_t loc = c_parser_peek_token (parser)->location;
   c_parser_consume_pragma (parser);
+  enum memmodel mo = MEMMODEL_LAST;
+  if (c_parser_next_token_is (parser, CPP_NAME))
+    {
+      const char *p
+	= IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+
+      if (!strcmp (p, "acq_rel"))
+	mo = MEMMODEL_ACQ_REL;
+      else if (!strcmp (p, "release"))
+	mo = MEMMODEL_RELEASE;
+      else if (!strcmp (p, "acquire"))
+	mo = MEMMODEL_ACQUIRE;
+      else
+	error_at (c_parser_peek_token (parser)->location,
+		  "expected %<acq_rel%>, %<release%> or %<acquire%>");
+      c_parser_consume_token (parser);
+    }
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
-    c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ERROR, NULL);
+    {
+      if (mo != MEMMODEL_LAST)
+	error_at (c_parser_peek_token (parser)->location,
+		  "%<flush%> list specified together with memory order "
+		  "clause");
+      c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ERROR, NULL);
+    }
   else if (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     c_parser_error (parser, "expected %<(%> or end of line");
   c_parser_skip_to_pragma_eol (parser);
 
-  c_finish_omp_flush (loc);
+  c_finish_omp_flush (loc, mo);
 }
 
 /* Parse the restricted form of loop statements allowed by OpenACC and OpenMP.

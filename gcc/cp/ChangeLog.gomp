@@ -1,5 +1,11 @@
 2018-06-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* cp-tree.h (finish_omp_flush): Add MO argument.
+	* parser.c: Include memmodel.h.
+	(cp_parser_omp_flush): Parse flush with memory-order-clause.
+	* semantics.c (finish_omp_flush): Add MO argument, if not
+	MEMMODEL_LAST, emit __atomic_thread_fence call with the given value.
+
 	* parser.c (OMP_TASKWAIT_CLAUSE_MASK): Define.
 	(cp_parser_omp_taskwait): Handle taskwait with depend clauses.
 	* pt.c (tsubst_expr): Likewise.

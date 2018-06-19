@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "gomp-constants.h"
 #include "predict.h"
+#include "memmodel.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -8754,10 +8755,15 @@ finish_omp_barrier (void)
 }
 
 void
-finish_omp_flush (void)
+finish_omp_flush (int mo)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
   vec<tree, va_gc> *vec = make_tree_vector ();
+  if (mo != MEMMODEL_LAST)
+    {
+      fn = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
+      vec->quick_push (build_int_cst (integer_type_node, mo));
+    }
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
   release_tree_vector (vec);
   finish_expr_stmt (stmt);

@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "omp-general.h"
 #include "gomp-constants.h"
+#include "memmodel.h"
 
 
 /* Complete a #pragma oacc wait construct.  LOC is the location of
@@ -421,12 +422,21 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
    the #pragma.  */
 
 void
-c_finish_omp_flush (location_t loc)
+c_finish_omp_flush (location_t loc, int mo)
 {
   tree x;
 
-  x = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
-  x = build_call_expr_loc (loc, x, 0);
+  if (mo == MEMMODEL_LAST)
+    {
+      x = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
+      x = build_call_expr_loc (loc, x, 0);
+    }
+  else
+    {
+      x = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
+      x = build_call_expr_loc (loc, x, 1,
+			       build_int_cst (integer_type_node, mo));
+    }
   add_stmt (x);
 }
 
