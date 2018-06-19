@@ -1,3 +1,7 @@
+2018-06-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-rtl.vim: New file.
+
 2018-06-12  Jeff Law  <law@redhat.com>
 
 	* config-list.mk (LIST): Remove alpha-freebsd6.
