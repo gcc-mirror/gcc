@@ -4496,7 +4496,18 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
   stmts_to_replace->quick_push (stmt);
   pattern_stmt = recog_func->fn (stmts_to_replace, &type_in, &type_out);
   if (!pattern_stmt)
-    return false;
+    {
+      /* Clear related stmt info that analysis might have noted for
+         to be replaced stmts.  */
+      for (i = 0; stmts_to_replace->iterate (i, &stmt)
+	   && (unsigned) i < stmts_to_replace->length ();
+	   i++)
+	{
+	  stmt_info = vinfo_for_stmt (stmt);
+	  STMT_VINFO_RELATED_STMT (stmt_info) = NULL;
+	}
+      return false;
+    }
 
   stmt = stmts_to_replace->last ();
   stmt_info = vinfo_for_stmt (stmt);
@@ -4668,7 +4679,6 @@ vect_pattern_recog (vec_info *vinfo)
   gimple_stmt_iterator si;
   unsigned int i, j;
   auto_vec<gimple *, 1> stmts_to_replace;
-  gimple *stmt;
 
   DUMP_VECT_SCOPE ("vect_pattern_recog");
 
@@ -4685,6 +4695,10 @@ vect_pattern_recog (vec_info *vinfo)
 	  basic_block bb = bbs[i];
 	  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	    {
+	      gimple *stmt = gsi_stmt (si);
+	      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	      if (stmt_info && STMT_VINFO_IN_PATTERN_P (stmt_info))
+		continue;
 	      /* Scan over all generic vect_recog_xxx_pattern functions.  */
 	      for (j = 0; j < NUM_PATTERNS; j++)
 		if (vect_pattern_recog_1 (&vect_vect_recog_func_ptrs[j], si,
@@ -4699,9 +4713,11 @@ vect_pattern_recog (vec_info *vinfo)
       for (si = bb_vinfo->region_begin;
 	   gsi_stmt (si) != gsi_stmt (bb_vinfo->region_end); gsi_next (&si))
 	{
-	  if ((stmt = gsi_stmt (si))
-	      && vinfo_for_stmt (stmt)
-	      && !STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)))
+	  gimple *stmt = gsi_stmt (si);
+	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  if (stmt_info
+	      && (!STMT_VINFO_VECTORIZABLE (stmt_info)
+		  || STMT_VINFO_IN_PATTERN_P (stmt_info)))
 	    continue;
 
 	  /* Scan over all generic vect_recog_xxx_pattern functions.  */
