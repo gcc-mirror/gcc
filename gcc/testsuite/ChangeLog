@@ -1,3 +1,24 @@
+2018-06-18  Martin Sebor  <msebor@redhat.com>
+
+        PR middle-end/82063
+        * gcc.dg/Walloc-size-larger-than-1.c: New test.
+        * gcc.dg/Walloc-size-larger-than-10.c: New test.
+        * gcc.dg/Walloc-size-larger-than-11.c: New test.
+        * gcc.dg/Walloc-size-larger-than-12.c: New test.
+        * gcc.dg/Walloc-size-larger-than-13.c: New test.
+        * gcc.dg/Walloc-size-larger-than-14.c: New test.
+        * gcc.dg/Walloc-size-larger-than-15.c: New test.
+        * gcc.dg/Walloc-size-larger-than-16.c: New test.
+        * gcc.dg/Walloc-size-larger-than-2.c: New test.
+        * gcc.dg/Walloc-size-larger-than-3.c: New test.
+        * gcc.dg/Walloc-size-larger-than-4.c: New test.
+        * gcc.dg/Walloc-size-larger-than-5.c: New test.
+        * gcc.dg/Walloc-size-larger-than-6.c: New test.
+        * gcc.dg/Walloc-size-larger-than-7.c: New test.
+        * gcc.dg/Walloc-size-larger-than-8.c: New test.
+        * gcc.dg/Walloc-size-larger-than-9.c: New test.
+        * gcc.dg/Walloc-size-larger-than.c: New test.
+
 2018-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/86110

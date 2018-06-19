@@ -1,3 +1,10 @@
+2018-06-18  Martin Sebor  <msebor@redhat.com>
+
+        PR middle-end/82063
+        * calls.c (alloc_max_size): Correct a logic error/typo.
+        Treat excessive arguments as infinite.  Warn for invalid arguments.
+        * doc/invoke.texi (-Walloc-size-larger-than): Update.
+
 2018-06-14  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
