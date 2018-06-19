@@ -1445,14 +1445,14 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
   return t;
 }
 
-/* Clean CONSTRUCTOR_NO_IMPLICIT_ZERO from CTOR and its sub-aggregates.  */
+/* Clean CONSTRUCTOR_NO_CLEARING from CTOR and its sub-aggregates.  */
 
 static void
 clear_no_implicit_zero (tree ctor)
 {
-  if (CONSTRUCTOR_NO_IMPLICIT_ZERO (ctor))
+  if (CONSTRUCTOR_NO_CLEARING (ctor))
     {
-      CONSTRUCTOR_NO_IMPLICIT_ZERO (ctor) = false;
+      CONSTRUCTOR_NO_CLEARING (ctor) = false;
       tree elt; unsigned HOST_WIDE_INT idx;
       FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), idx, elt)
 	if (TREE_CODE (elt) == CONSTRUCTOR)
@@ -1525,7 +1525,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	 If we don't already have one in CTX, use the AGGR_INIT_EXPR_SLOT.  */
       new_ctx.object = AGGR_INIT_EXPR_SLOT (t);
       tree ctor = new_ctx.ctor = build_constructor (DECL_CONTEXT (fun), NULL);
-      CONSTRUCTOR_NO_IMPLICIT_ZERO (ctor) = true;
+      CONSTRUCTOR_NO_CLEARING (ctor) = true;
       ctx->values->put (new_ctx.object, ctor);
       ctx = &new_ctx;
     }
@@ -1787,7 +1787,7 @@ reduced_constant_expression_p (tree t)
     case CONSTRUCTOR:
       /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
       tree idx, val, field; unsigned HOST_WIDE_INT i;
-      if (CONSTRUCTOR_NO_IMPLICIT_ZERO (t))
+      if (CONSTRUCTOR_NO_CLEARING (t))
 	{
 	  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
 	    /* An initialized vector would have a VECTOR_CST.  */
@@ -1812,9 +1812,9 @@ reduced_constant_expression_p (tree t)
 	}
       if (field)
 	return false;
-      else if (CONSTRUCTOR_NO_IMPLICIT_ZERO (t))
+      else if (CONSTRUCTOR_NO_CLEARING (t))
 	/* All the fields are initialized.  */
-	CONSTRUCTOR_NO_IMPLICIT_ZERO (t) = false;
+	CONSTRUCTOR_NO_CLEARING (t) = false;
       return true;
 
     default:
@@ -2487,7 +2487,7 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
   /* Not found.  */
 
   if (TREE_CODE (ary) == CONSTRUCTOR
-      && CONSTRUCTOR_NO_IMPLICIT_ZERO (ary))
+      && CONSTRUCTOR_NO_CLEARING (ary))
     {
       /* 'ary' is part of the aggregate initializer we're currently
 	 building; if there's no initializer for this element yet,
@@ -2582,7 +2582,7 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
 
   gcc_assert (DECL_CONTEXT (part) == TYPE_MAIN_VARIANT (TREE_TYPE (whole)));
 
-  if (CONSTRUCTOR_NO_IMPLICIT_ZERO (whole))
+  if (CONSTRUCTOR_NO_CLEARING (whole))
     {
       /* 'whole' is part of the aggregate initializer we're currently
 	 building; if there's no initializer for this member yet, that's an
@@ -2788,7 +2788,7 @@ init_subob_ctx (const constexpr_ctx *ctx, constexpr_ctx &new_ctx,
   if (ctx->object)
     new_ctx.object = build_ctor_subob_ref (index, type, ctx->object);
   tree elt = build_constructor (type, NULL);
-  CONSTRUCTOR_NO_IMPLICIT_ZERO (elt) = true;
+  CONSTRUCTOR_NO_CLEARING (elt) = true;
   new_ctx.ctor = elt;
 
   if (TREE_CODE (value) == TARGET_EXPR)
@@ -2920,7 +2920,7 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   t = ctx->ctor;
   /* We're done building this CONSTRUCTOR, so now we can interpret an
      element without an explicit initializer as value-initialized.  */
-  CONSTRUCTOR_NO_IMPLICIT_ZERO (t) = false;
+  CONSTRUCTOR_NO_CLEARING (t) = false;
   TREE_CONSTANT (t) = constant_p;
   TREE_SIDE_EFFECTS (t) = side_effects_p;
   if (VECTOR_TYPE_P (type))
@@ -3055,7 +3055,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
   if (!*non_constant_p)
     {
       init = ctx->ctor;
-      CONSTRUCTOR_NO_IMPLICIT_ZERO (init) = false;
+      CONSTRUCTOR_NO_CLEARING (init) = false;
     }
   return init;
 }
@@ -3619,7 +3619,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       if (*valp == NULL_TREE)
 	{
 	  *valp = build_constructor (type, NULL);
-	  CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp) = no_zero_init;
+	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
 	}
       else if (TREE_CODE (*valp) == STRING_CST)
 	{
@@ -3652,7 +3652,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
       /* If the value of object is already zero-initialized, any new ctors for
 	 subobjects will also be zero-initialized.  */
-      no_zero_init = CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp);
+      no_zero_init = CONSTRUCTOR_NO_CLEARING (*valp);
 
       vec_safe_push (ctors, *valp);
 
@@ -3722,7 +3722,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       if (*valp == NULL_TREE)
 	{
 	  *valp = build_constructor (type, NULL);
-	  CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp) = no_zero_init;
+	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
 	}
       else if (TREE_CODE (*valp) == PTRMEM_CST)
 	*valp = cplus_expand_constant (*valp);
@@ -3745,8 +3745,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
       TREE_CONSTANT (*valp) = TREE_CONSTANT (init);
       TREE_SIDE_EFFECTS (*valp) = TREE_SIDE_EFFECTS (init);
-      CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp)
-	= CONSTRUCTOR_NO_IMPLICIT_ZERO (init);
+      CONSTRUCTOR_NO_CLEARING (*valp)
+	= CONSTRUCTOR_NO_CLEARING (init);
     }
   else
     *valp = init;
@@ -4236,7 +4236,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    new_ctx = *ctx;
 	    new_ctx.object = r;
 	    new_ctx.ctor = build_constructor (TREE_TYPE (r), NULL);
-	    CONSTRUCTOR_NO_IMPLICIT_ZERO (new_ctx.ctor) = true;
+	    CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = true;
 	    new_ctx.values->put (r, new_ctx.ctor);
 	    ctx = &new_ctx;
 	  }
@@ -4276,7 +4276,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	     strips the TARGET_EXPR before we get here.  */
 	  new_ctx = *ctx;
 	  new_ctx.ctor = build_constructor (TREE_TYPE (t), NULL);
-	  CONSTRUCTOR_NO_IMPLICIT_ZERO (new_ctx.ctor) = true;
+	  CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = true;
 	  new_ctx.object = TARGET_EXPR_SLOT (t);
 	  ctx->values->put (new_ctx.object, new_ctx.ctor);
 	  ctx = &new_ctx;
@@ -4893,7 +4893,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	 for C++11 constexpr constructors that refer to the object being
 	 initialized.  */
       ctx.ctor = build_constructor (type, NULL);
-      CONSTRUCTOR_NO_IMPLICIT_ZERO (ctx.ctor) = true;
+      CONSTRUCTOR_NO_CLEARING (ctx.ctor) = true;
       if (!object)
 	{
 	  if (TREE_CODE (t) == TARGET_EXPR)
@@ -4932,7 +4932,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     }
 
   if (TREE_CODE (r) == CONSTRUCTOR
-      && CONSTRUCTOR_NO_IMPLICIT_ZERO (r))
+      && CONSTRUCTOR_NO_CLEARING (r))
     {
       if (!allow_non_constant)
 	error ("%qE is not a constant expression because it refers to "
