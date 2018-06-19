@@ -3843,8 +3843,10 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 	     cap; cap = TREE_CHAIN (cap))
 	  cp_walk_tree (&TREE_VALUE (cap), &find_parameter_packs_r, ppd,
 			ppd->visited);
-	/* Since we defer implicit capture, look in the body as well.  */
+	/* Since we defer implicit capture, look in the parms and body.  */
 	tree fn = lambda_function (t);
+	cp_walk_tree (&TREE_TYPE (fn), &find_parameter_packs_r, ppd,
+		      ppd->visited);
 	cp_walk_tree (&DECL_SAVED_TREE (fn), &find_parameter_packs_r, ppd,
 		      ppd->visited);
 	*walk_subtrees = 0;

@@ -1,5 +1,9 @@
 2018-06-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86200 - ICE with unexpanded pack in lambda parameter.
+	* pt.c (find_parameter_packs_r) [LAMBDA_EXPR]: Also look into the
+	function type.
+
 	PR c++/81060 - ICE with unexpanded parameter pack.
 	* pt.c (check_for_bare_parameter_packs): Add loc parameter.
 	* decl.c (grokdeclarator): Call it for qualifying_scope.
