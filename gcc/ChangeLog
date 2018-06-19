@@ -1,3 +1,9 @@
+2018-06-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86179
+	* tree-vect-patterns.c (vect_pattern_recog_1): Clean up
+	after failed recognition.
+
 2018-06-18  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/85602
