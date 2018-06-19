@@ -1,3 +1,7 @@
+2018-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/utility: Remove unused <exception> header.
+
 2018-06-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86169
