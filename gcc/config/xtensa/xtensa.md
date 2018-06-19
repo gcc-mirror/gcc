@@ -38,6 +38,7 @@
   (UNSPEC_MEMW		11)
   (UNSPEC_LSETUP_START  12)
   (UNSPEC_LSETUP_END    13)
+  (UNSPEC_FRAME_BLOCKAGE 14)
 
   (UNSPECV_SET_FP	1)
   (UNSPECV_ENTRY	2)
@@ -1676,6 +1677,32 @@
 
 ;; Miscellaneous instructions.
 
+;; In windowed ABI stack pointer adjustment must happen before any access
+;; to the space allocated on stack is allowed, otherwise register spill
+;; area may be clobbered.  That's what frame blockage is supposed to enforce.
+
+(define_expand "allocate_stack"
+  [(set (match_operand 0 "nonimmed_operand")
+        (minus (reg A1_REG) (match_operand 1 "add_operand")))
+   (set (reg A1_REG)
+        (minus (reg A1_REG) (match_dup 1)))]
+  "TARGET_WINDOWED_ABI"
+{
+  if (CONST_INT_P (operands[1]))
+    {
+      rtx neg_op0 = GEN_INT (-INTVAL (operands[1]));
+      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, neg_op0));
+    }
+  else
+    {
+      emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
+			     operands[1]));
+    }
+  emit_move_insn (operands[0], virtual_stack_dynamic_rtx);
+  emit_insn (gen_frame_blockage ());
+  DONE;
+})
+
 (define_expand "prologue"
   [(const_int 0)]
   ""
@@ -1766,6 +1793,25 @@
   ""
   [(set_attr "length" "0")
    (set_attr "type" "nop")])
+
+;; Do not schedule instructions accessing memory before this point.
+
+(define_expand "frame_blockage"
+  [(set (match_dup 0)
+        (unspec:BLK [(match_dup 1)] UNSPEC_FRAME_BLOCKAGE))]
+  ""
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+  operands[1] = stack_pointer_rtx;
+})
+
+(define_insn "*frame_blockage"
+  [(set (match_operand:BLK 0 "" "")
+        (unspec:BLK [(match_operand:SI 1 "" "")] UNSPEC_FRAME_BLOCKAGE))]
+  ""
+  ""
+  [(set_attr "length" "0")])
 
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 0))]
