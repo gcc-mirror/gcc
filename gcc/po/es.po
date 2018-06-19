@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-05-01 20:30+0000\n"
-"PO-Revision-Date: 2018-06-08 15:55+0200\n"
+"PO-Revision-Date: 2018-06-19 15:51+0200\n"
 "Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -36078,51 +36078,44 @@ msgid "%qE has not been declared"
 msgstr "%qE no se ha declarado"
 
 #: c/c-parser.c:14878
-#, fuzzy, gcc-internal-format
-#| msgid "expected function"
+#, gcc-internal-format
 msgid "expected function name"
-msgstr "se esperaba función"
+msgstr "se esperaba nombre de función"
 
 #: c/c-parser.c:14893 cp/parser.c:38064
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D is not a function,"
+#, gcc-internal-format
 msgid "%qD does not refer to a function"
-msgstr "%q+D no es una función,"
+msgstr "%qD no hace referencia a una función"
 
 #: c/c-parser.c:14913 c/c-parser.c:14961 cp/parser.c:1388
-#, fuzzy, gcc-internal-format
-#| msgid "the %<constexpr%> specifier cannot be used in a function declaration that is not a definition"
+#, gcc-internal-format
 msgid "%<#pragma acc routine%> not immediately followed by function declaration or definition"
-msgstr "no se puede usar el especificador %<constexpr%> en una declaración de función que no es una definición"
+msgstr "%<#pragma acc routine%> no está inmediatamente seguido de una declaración o definición de función"
 
 #: c/c-parser.c:14953 cp/parser.c:38118 cp/parser.c:38160
-#, fuzzy, gcc-internal-format
-#| msgid "the %<constexpr%> specifier cannot be used in a function declaration that is not a definition"
+#, gcc-internal-format
 msgid "%<#pragma acc routine%> not immediately followed by a single function declaration or definition"
-msgstr "no se puede usar el especificador %<constexpr%> en una declaración de función que no es una definición"
+msgstr "%<#pragma acc routine%> no está inmediatamente seguido de una única declaración o definición de función"
 
 #: c/c-parser.c:14970 cp/parser.c:38174
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma GCC pch_preprocess%> must be first"
+#, gcc-internal-format
 msgid "%<#pragma acc routine%> already applied to %qD"
-msgstr "%<#pragma GCC pch_preprocess%> debe ser primero"
+msgstr "%<#pragma acc routine%> ya se le aplicó a %qD"
 
 #: c/c-parser.c:14979 cp/parser.c:38183
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma GCC pch_preprocess%> must be first"
+#, gcc-internal-format
 msgid "%<#pragma acc routine%> must be applied before use"
-msgstr "%<#pragma GCC pch_preprocess%> debe ser primero"
+msgstr "%<#pragma acc routine%> debe aplicarse antes de uso"
 
 #: c/c-parser.c:14980 cp/parser.c:38184
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma GCC pch_preprocess%> must be first"
+#, gcc-internal-format
 msgid "%<#pragma acc routine%> must be applied before definition"
-msgstr "%<#pragma GCC pch_preprocess%> debe ser primero"
+msgstr "%<#pragma acc routine%> debe aplicarse antes de definición"
 
 #: c/c-parser.c:15023 cp/parser.c:37152
 #, gcc-internal-format
 msgid "%<#pragma acc update%> must contain at least one %<device%> or %<host%> or %<self%> clause"
-msgstr ""
+msgstr "%<#pragma acc update%> debe contener al menos una cláusula %<device%>, %<host%> o %<self%>"
 
 #: c/c-parser.c:15435 cp/parser.c:34511 cp/parser.c:34537
 #, gcc-internal-format
@@ -36135,10 +36128,9 @@ msgid "invalid operator for %<#pragma omp atomic%>"
 msgstr "operador no válido para %<#pragma omp atomic%>"
 
 #: c/c-parser.c:15488 cp/semantics.c:8401 cp/semantics.c:8411
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma omp atomic capture%> uses two different variables for memory"
+#, gcc-internal-format
 msgid "%<#pragma omp atomic capture%> uses two different expressions for memory"
-msgstr "%<#pragma omp atomic capture%> usa dos variables diferentes para la memoria"
+msgstr "%<#pragma omp atomic capture%> usa dos expresiones diferentes para la memoria"
 
 #: c/c-parser.c:15553 c/c-parser.c:15575
 #, gcc-internal-format
@@ -36148,12 +36140,12 @@ msgstr "se esperaba %<(%> o fin de línea"
 #: c/c-parser.c:15619 cp/parser.c:35103
 #, gcc-internal-format
 msgid "%<ordered%> clause parameter is less than %<collapse%>"
-msgstr ""
+msgstr "el parámetro de la cláusula %<ordered%> es menor que %<collapse%>"
 
 #: c/c-parser.c:15630 cp/parser.c:35114
 #, gcc-internal-format
 msgid "%<linear%> clause may not be specified together with %<ordered%> clause with a parameter"
-msgstr ""
+msgstr "la cláusula %<linear%> no puede especificarse junto con la cláusula %<ordered%> con un parámetro"
 
 #: c/c-parser.c:15648 cp/parser.c:35141
 #, gcc-internal-format
@@ -36181,10 +36173,9 @@ msgid "iteration variable %qD should not be firstprivate"
 msgstr "la variable de iteración %qD no debe ser firstprivate"
 
 #: c/c-parser.c:16000 cp/parser.c:35437
-#, fuzzy, gcc-internal-format
-#| msgid "%<void%> as only parameter may not be qualified"
+#, gcc-internal-format
 msgid "%<ordered%> clause with parameter may not be specified on %qs construct"
-msgstr "no se puede calificar %<void%> si es el único parámetro"
+msgstr "la cláusula %<ordered%> con parámetro no se puede especificar en la construcción %qs"
 
 #: c/c-parser.c:16166 cp/parser.c:35600
 #, fuzzy, gcc-internal-format
@@ -36193,67 +36184,64 @@ msgid "%<#pragma omp ordered%> with %<depend%> clause may only be used in compou
 msgstr "%<#pragma omp barrier%> sólo se puede usar en declaraciones compuestas"
 
 #: c/c-parser.c:16374 cp/parser.c:35799
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<operator%>"
+#, gcc-internal-format
 msgid "expected %<for%> after %qs"
-msgstr "se esperaba %<operator%>"
+msgstr "se esperaba %<fork%> después de %qs"
 
 #: c/c-parser.c:16573 cp/parser.c:35995
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<using%>"
+#, gcc-internal-format
 msgid "expected %<point%>"
-msgstr "se esperaba %<using%>"
+msgstr "se esperaba %<point%>"
 
 #: c/c-parser.c:16793 cp/parser.c:36232
 #, gcc-internal-format
 msgid "%<#pragma omp target data%> with map-type other than %<to%>, %<from%>, %<tofrom%> or %<alloc%> on %<map%> clause"
-msgstr ""
+msgstr "%<#pragma omp target data%> con map-type distinto de %<to%>, %<from%>, %<tofrom%> y %<alloc%> en la cláusula %<map%>"
 
 #: c/c-parser.c:16806 cp/parser.c:36245
 #, gcc-internal-format
 msgid "%<#pragma omp target data%> must contain at least one %<map%> clause"
-msgstr ""
+msgstr "%<#pragma omp target data%> debe contener al menos una cláusula %<map%>"
 
 #: c/c-parser.c:16853 cp/parser.c:36470
 #, gcc-internal-format
 msgid "%<#pragma omp target update%> must contain at least one %<from%> or %<to%> clauses"
-msgstr ""
+msgstr "%<#pragma omp target update%> debe contener al menos una cláusula %<from%> o %<to%>"
 
 #: c/c-parser.c:16925 cp/parser.c:36325
 #, gcc-internal-format
 msgid "%<#pragma omp target enter data%> with map-type other than %<to%> or %<alloc%> on %<map%> clause"
-msgstr ""
+msgstr "%<#pragma omp target enter data%> con map-type distinto de %<to%> y %<alloc%> en la cláusula %<map%>"
 
 #: c/c-parser.c:16937 cp/parser.c:36337
 #, gcc-internal-format
 msgid "%<#pragma omp target enter data%> must contain at least one %<map%> clause"
-msgstr ""
+msgstr "%<#pragma omp target enter data%> debe contener al menos una cláusula %<map%>"
 
 #: c/c-parser.c:17011 cp/parser.c:36414
 #, gcc-internal-format
 msgid "%<#pragma omp target exit data%> with map-type other than %<from%>, %<release%> or %<delete%> on %<map%> clause"
-msgstr ""
+msgstr "%<#pragma omp target exit data%> con map-type distinto de %<from%>, %<release%> y %<delete%> en la cláusula %<map%>"
 
 #: c/c-parser.c:17024 cp/parser.c:36427
 #, gcc-internal-format
 msgid "%<#pragma omp target exit data%> must contain at least one %<map%> clause"
-msgstr ""
+msgstr "%<#pragma omp target exit data%> debe contener al menos una cláusula %<map%>"
 
 #: c/c-parser.c:17238 cp/parser.c:36680
 #, gcc-internal-format
 msgid "%<#pragma omp target%> with map-type other than %<to%>, %<from%>, %<tofrom%> or %<alloc%> on %<map%> clause"
-msgstr ""
+msgstr "%<#pragma omp target%> con map-type distinto de %<to%>, %<from%>, %<tofrom%> y %<alloc%> en la cláusula %<map%>"
 
 #: c/c-parser.c:17288
 #, gcc-internal-format
 msgid "%<#pragma omp declare simd%> must be followed by function declaration or definition or another %<#pragma omp declare simd%>"
-msgstr ""
+msgstr "%<#pragma omp declare simd%> debe ir seguida de una declaración o definición de función o de otra %<#pragma omp declare simd%>"
 
 #: c/c-parser.c:17338 c/c-parser.c:17365
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma align%> must appear before the declaration of %D, ignoring"
+#, gcc-internal-format
 msgid "%<#pragma omp declare simd%> must be followed by function declaration or definition"
-msgstr "%<#pragma align%> debe aparecer antes de la declaración de %D, se descarta"
+msgstr "%<#pragma omp declare simd%> debe ir seguida de una declaración o definición de función"
 
 #: c/c-parser.c:17387
 #, gcc-internal-format
