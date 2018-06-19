@@ -1,5 +1,9 @@
 2018-06-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/utility: Remove unused <exception> header.
+
+2018-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
 	Backport from mainline
 	2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
