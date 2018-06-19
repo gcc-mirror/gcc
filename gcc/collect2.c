@@ -911,7 +911,9 @@ main (int argc, char **argv)
   int first_file;
   int num_c_args;
   char **old_argv;
+#ifdef COLLECT_EXPORT_LIST
   bool is_static = false;
+#endif
   int i;
 
   for (i = 0; i < USE_LD_MAX; i++)
@@ -1272,7 +1274,9 @@ main (int argc, char **argv)
   /* Parse arguments.  Remember output file spec, pass the rest to ld.  */
   /* After the first file, put in the c++ rt0.  */
 
+#ifdef COLLECT_EXPORT_LIST
   is_static = static_obj;
+#endif
   first_file = 1;
   while ((arg = *++argv) != (char *) 0)
     {
