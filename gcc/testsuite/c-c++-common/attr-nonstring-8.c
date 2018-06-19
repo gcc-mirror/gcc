@@ -60,7 +60,7 @@ void test_strncat_nonstring_cst (char *d)
   T (strncat (nd3, ns3, 4));     /* { dg-warning "argument 2 declared attribute .nonstring. is smaller than the specified bound 4" } */
   /* { dg-warning "specified bound 4 exceeds destination size 3" "" { target *-*-* } .-1 } */
 
-  T (strncat (d, pns, sizeof pns));   /* { dg-warning "argument to .sizeof. in .strncat. call is the same expression as the source" } */
+  T (strncat (d, pns, sizeof pns));   /* { dg-warning "argument to .sizeof. in .\[^\n\r\]*strncat\[^\n\r\]*. call is the same expression as the source" } */
 }
 
 
