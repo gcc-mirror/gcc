@@ -1,3 +1,10 @@
+2018-06-19  Nick Clifton  <nickc@redhat.com>
+
+	* zlib/configure.ac: Restore old behaviour of only enabling
+	multilibs when a target subdirectory is defined.  This allows
+	building with srcdir == builddir.
+	* zlib/configure: Regenerate.
+
 2018-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.def (fortran): Add check-target-libgomp-fortran.
