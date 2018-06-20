@@ -297,7 +297,7 @@ int main ()
    vec_mul             mulld | mullw, mulhwu
    vec_nor             xxlnor
    vec_or              xxlor
-   vec_packsu          vpksdus
+   vec_packsu          vpkudus (matches twice due to -dp option)
    vec_                perm vperm
    vec_                round xvrdpi
    vec_sel             xxsel
@@ -335,7 +335,7 @@ int main ()
 /* { dg-final { scan-assembler-times "xxlnor" 6 } } */
 /* { dg-final { scan-assembler-times "xxlor" 11 { target { ilp32 } } } } */
 /* { dg-final { scan-assembler-times "xxlor" 7  { target { lp64 } } } } */
-/* { dg-final { scan-assembler-times "vpksdus" 2 } } */
+/* { dg-final { scan-assembler-times {\mvpkudus\M} 1 } } */
 /* { dg-final { scan-assembler-times "vperm" 4 } } */
 /* { dg-final { scan-assembler-times "xvrdpi" 2 } } */
 /* { dg-final { scan-assembler-times "xxsel" 10 } } */

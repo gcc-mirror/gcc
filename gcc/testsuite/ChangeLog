@@ -1,3 +1,9 @@
+2018-06-20  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/builtins-1.c: Adjust dg directives to scan
+	for vpkudus in place of vpksdus.
+	* gcc.target/powerpc/builtins-3-p8.c: Likewise.
+
 2018-06-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/85634
