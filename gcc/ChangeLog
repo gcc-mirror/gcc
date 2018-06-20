@@ -1,3 +1,7 @@
+2018-06-20  Maya Rashish  <coypu@sdf.org>
+
+	* ginclude/stddef.h: Limit #include <machine/ansi.h> to NetBSD.
+
 2018-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-tuning-flags.def (no_ldp_stp_qregs): New.
