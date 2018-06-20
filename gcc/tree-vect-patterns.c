@@ -405,13 +405,13 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
       stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
       if (gimple_assign_rhs_code (stmt) != WIDEN_MULT_EXPR)
         return NULL;
+      STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (last_stmt))
+	= STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo);
       stmt_vinfo = vinfo_for_stmt (stmt);
       gcc_assert (stmt_vinfo);
       gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_internal_def);
       oprnd00 = gimple_assign_rhs1 (stmt);
       oprnd01 = gimple_assign_rhs2 (stmt);
-      STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (last_stmt))
-	  = STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo);
     }
   else
     {
@@ -4433,28 +4433,23 @@ vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
   STMT_VINFO_VECTYPE (pattern_stmt_info) = pattern_vectype;
   STMT_VINFO_IN_PATTERN_P (orig_stmt_info) = true;
   STMT_VINFO_RELATED_STMT (orig_stmt_info) = pattern_stmt;
-  STMT_VINFO_PATTERN_DEF_SEQ (pattern_stmt_info)
-    = STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_info);
-  if (STMT_VINFO_PATTERN_DEF_SEQ (pattern_stmt_info))
-    {
-      gimple_stmt_iterator si;
-      for (si = gsi_start (STMT_VINFO_PATTERN_DEF_SEQ (pattern_stmt_info));
-	   !gsi_end_p (si); gsi_next (&si))
-	{
-	  def_stmt = gsi_stmt (si);
-	  def_stmt_info = vinfo_for_stmt (def_stmt);
-	  if (def_stmt_info == NULL)
-	    {
-	      def_stmt_info = new_stmt_vec_info (def_stmt, vinfo);
-	      set_vinfo_for_stmt (def_stmt, def_stmt_info);
-	    }
-	  gimple_set_bb (def_stmt, gimple_bb (orig_stmt));
-	  STMT_VINFO_RELATED_STMT (def_stmt_info) = orig_stmt;
-	  STMT_VINFO_DEF_TYPE (def_stmt_info) = vect_internal_def;
-	  if (STMT_VINFO_VECTYPE (def_stmt_info) == NULL_TREE)
-	    STMT_VINFO_VECTYPE (def_stmt_info) = pattern_vectype;
-	}
-    }
+  if (gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_info))
+    for (gimple_stmt_iterator si = gsi_start (def_seq);
+	 !gsi_end_p (si); gsi_next (&si))
+      {
+	def_stmt = gsi_stmt (si);
+	def_stmt_info = vinfo_for_stmt (def_stmt);
+	if (def_stmt_info == NULL)
+	  {
+	    def_stmt_info = new_stmt_vec_info (def_stmt, vinfo);
+	    set_vinfo_for_stmt (def_stmt, def_stmt_info);
+	  }
+	gimple_set_bb (def_stmt, gimple_bb (orig_stmt));
+	STMT_VINFO_RELATED_STMT (def_stmt_info) = orig_stmt;
+	STMT_VINFO_DEF_TYPE (def_stmt_info) = vect_internal_def;
+	if (STMT_VINFO_VECTYPE (def_stmt_info) == NULL_TREE)
+	  STMT_VINFO_VECTYPE (def_stmt_info) = pattern_vectype;
+      }
 }
 
 /* Function vect_pattern_recog_1
