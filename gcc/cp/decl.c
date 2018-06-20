@@ -8588,6 +8588,7 @@ grokfndecl (tree ctype,
 	    tree declarator,
 	    tree parms,
 	    tree orig_declarator,
+	    const cp_decl_specifier_seq *declspecs,
 	    tree decl_reqs,
 	    int virtualp,
 	    enum overload_flags flags,
@@ -8611,19 +8612,22 @@ grokfndecl (tree ctype,
   int staticp = ctype && TREE_CODE (type) == FUNCTION_TYPE;
   tree t;
 
+  if (location == UNKNOWN_LOCATION)
+    location = input_location;
+
   // Was the concept specifier present?
   bool concept_p = inlinep & 4;
 
   // Concept declarations must have a corresponding definition.
   if (concept_p && !funcdef_flag)
     {
-      error ("concept %qD has no definition", declarator);
+      error_at (location, "concept %qD has no definition", declarator);
       return NULL_TREE;
     }
 
   type = build_cp_fntype_variant (type, rqual, raises, late_return_type_p);
 
-  decl = build_lang_decl (FUNCTION_DECL, declarator, type);
+  decl = build_lang_decl_loc (location, FUNCTION_DECL, declarator, type);
 
   /* Set the constraints on the declaration. */
   if (flag_concepts)
@@ -8639,11 +8643,6 @@ grokfndecl (tree ctype,
       tree ci = build_constraints (tmpl_reqs, decl_reqs);
       set_constraints (decl, ci);
     }
-
-  /* If we have an explicit location, use it, otherwise use whatever
-     build_lang_decl used (probably input_location).  */
-  if (location != UNKNOWN_LOCATION)
-    DECL_SOURCE_LOCATION (decl) = location;
 
   if (TREE_CODE (type) == METHOD_TYPE)
     {
@@ -8713,17 +8712,19 @@ grokfndecl (tree ctype,
 	    if (TREE_PURPOSE (t)
 		&& TREE_CODE (TREE_PURPOSE (t)) == DEFAULT_ARG)
 	    {
-	      error ("default arguments are not allowed in declaration "
-		     "of friend template specialization %qD",
-		     decl);
+	      error_at (defarg_location (TREE_PURPOSE (t)),
+			"default arguments are not allowed in declaration "
+			"of friend template specialization %qD",
+			decl);
 	      return NULL_TREE;
 	    }
 
 	  if (inlinep & 1)
 	    {
-	      error ("%<inline%> is not allowed in declaration of friend "
-		     "template specialization %qD",
-		     decl);
+	      error_at (declspecs->locations[ds_inline],
+			"%<inline%> is not allowed in declaration of friend "
+			"template specialization %qD",
+			decl);
 	      return NULL_TREE;
 	    }
 	}
@@ -8770,13 +8771,15 @@ grokfndecl (tree ctype,
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {
       if (PROCESSING_REAL_TEMPLATE_DECL_P())
-	error ("cannot declare %<::main%> to be a template");
+	error_at (location, "cannot declare %<::main%> to be a template");
       if (inlinep & 1)
-	error ("cannot declare %<::main%> to be inline");
+	error_at (declspecs->locations[ds_inline],
+		  "cannot declare %<::main%> to be inline");
       if (inlinep & 2)
-	error ("cannot declare %<::main%> to be %<constexpr%>");
+	error_at (declspecs->locations[ds_constexpr],
+		  "cannot declare %<::main%> to be %<constexpr%>");
       if (!publicp)
-	error ("cannot declare %<::main%> to be static");
+	error_at (location, "cannot declare %<::main%> to be static");
       inlinep = 0;
       publicp = 1;
     }
@@ -8989,7 +8992,8 @@ grokfndecl (tree ctype,
 	{
 	  tree oldtypeargs = TYPE_ARG_TYPES (TREE_TYPE (decl));
 	  tree newtype;
-	  error ("%<::main%> must return %<int%>");
+	  error_at (declspecs->locations[ds_type_spec],
+		    "%<::main%> must return %<int%>");
 	  newtype = build_function_type (integer_type_node, oldtypeargs);
 	  TREE_TYPE (decl) = newtype;
 	}
@@ -12145,6 +12149,7 @@ grokdeclarator (const cp_declarator *declarator,
 			       ? unqualified_id : dname,
 			       parms,
 			       unqualified_id,
+			       declspecs,
 			       reqs,
 			       virtualp, flags, memfn_quals, rqual, raises,
 			       friendp ? -1 : 0, friendp, publicp,
@@ -12389,6 +12394,7 @@ grokdeclarator (const cp_declarator *declarator,
 		   || storage_class != sc_static);
 
 	decl = grokfndecl (ctype, type, original_name, parms, unqualified_id,
+			   declspecs,
                            reqs, virtualp, flags, memfn_quals, rqual, raises,
 			   1, friendp,
 			   publicp,

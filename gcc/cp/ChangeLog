@@ -1,3 +1,10 @@
+2018-06-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokfndecl): Add const cp_decl_specifier_seq* parameter;
+	tidy handling of a null location_t argument; use proper location
+	information in a few additional error messages.
+	(grokdeclarator): Update calls.
+
 2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
