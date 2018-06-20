@@ -8290,6 +8290,74 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
     scale_bbs_frequencies (&loop->latch, 1, exit_l->probability / prob);
 }
 
+/* Vectorize STMT if relevant, inserting any new instructions before GSI.
+   When vectorizing STMT as a store, set *SEEN_STORE to its stmt_vec_info.
+   *SLP_SCHEDULE is a running record of whether we have called
+   vect_schedule_slp.  */
+
+static void
+vect_transform_loop_stmt (loop_vec_info loop_vinfo, gimple *stmt,
+			  gimple_stmt_iterator *gsi,
+			  stmt_vec_info *seen_store, bool *slp_scheduled)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  if (!stmt_info)
+    return;
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "------>vectorizing statement: ");
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+    }
+
+  if (MAY_HAVE_DEBUG_BIND_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
+    vect_loop_kill_debug_uses (loop, stmt);
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info)
+      && !STMT_VINFO_LIVE_P (stmt_info))
+    return;
+
+  if (STMT_VINFO_VECTYPE (stmt_info))
+    {
+      poly_uint64 nunits
+	= TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
+      if (!STMT_SLP_TYPE (stmt_info)
+	  && maybe_ne (nunits, vf)
+	  && dump_enabled_p ())
+	/* For SLP VF is set according to unrolling factor, and not
+	   to vector size, hence for SLP this print is not valid.  */
+	dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
+    }
+
+  /* SLP.  Schedule all the SLP instances when the first SLP stmt is
+     reached.  */
+  if (STMT_SLP_TYPE (stmt_info))
+    {
+      if (!*slp_scheduled)
+	{
+	  *slp_scheduled = true;
+
+	  DUMP_VECT_SCOPE ("scheduling SLP instances");
+
+	  vect_schedule_slp (loop_vinfo);
+	}
+
+      /* Hybrid SLP stmts must be vectorized in addition to SLP.  */
+      if (PURE_SLP_STMT (stmt_info))
+	return;
+    }
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "transform statement.\n");
+
+  bool grouped_store = false;
+  if (vect_transform_stmt (stmt, gsi, &grouped_store, NULL, NULL))
+    *seen_store = stmt_info;
+}
+
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -8310,12 +8378,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   tree niters_vector_mult_vf = NULL_TREE;
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   unsigned int lowest_vf = constant_lower_bound (vf);
-  bool grouped_store;
   bool slp_scheduled = false;
-  gimple *stmt, *pattern_stmt;
-  gimple_seq pattern_def_seq = NULL;
-  gimple_stmt_iterator pattern_def_si = gsi_none ();
-  bool transform_pattern_stmt = false;
+  gimple *stmt;
   bool check_profitability = false;
   unsigned int th;
 
@@ -8466,194 +8530,67 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	    }
 	}
 
-      pattern_stmt = NULL;
       for (gimple_stmt_iterator si = gsi_start_bb (bb);
-	   !gsi_end_p (si) || transform_pattern_stmt;)
+	   !gsi_end_p (si);)
 	{
-	  bool is_store;
-
-          if (transform_pattern_stmt)
-	    stmt = pattern_stmt;
-          else
+	  stmt = gsi_stmt (si);
+	  /* During vectorization remove existing clobber stmts.  */
+	  if (gimple_clobber_p (stmt))
 	    {
-	      stmt = gsi_stmt (si);
-	      /* During vectorization remove existing clobber stmts.  */
-	      if (gimple_clobber_p (stmt))
+	      unlink_stmt_vdef (stmt);
+	      gsi_remove (&si, true);
+	      release_defs (stmt);
+	    }
+	  else
+	    {
+	      stmt_info = vinfo_for_stmt (stmt);
+
+	      /* vector stmts created in the outer-loop during vectorization of
+		 stmts in an inner-loop may not have a stmt_info, and do not
+		 need to be vectorized.  */
+	      stmt_vec_info seen_store = NULL;
+	      if (stmt_info)
 		{
-		  unlink_stmt_vdef (stmt);
-		  gsi_remove (&si, true);
-		  release_defs (stmt);
-		  continue;
-		}
-	    }
-
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "------>vectorizing statement: ");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-	    }
-
-	  stmt_info = vinfo_for_stmt (stmt);
-
-	  /* vector stmts created in the outer-loop during vectorization of
-	     stmts in an inner-loop may not have a stmt_info, and do not
-	     need to be vectorized.  */
-	  if (!stmt_info)
-	    {
-	      gsi_next (&si);
-	      continue;
-	    }
-
-	  if (MAY_HAVE_DEBUG_BIND_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
-	    vect_loop_kill_debug_uses (loop, stmt);
-
-	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
-	      && !STMT_VINFO_LIVE_P (stmt_info))
-            {
-              if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-                  && (pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info))
-                  && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
-                      || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
-                {
-                  stmt = pattern_stmt;
-                  stmt_info = vinfo_for_stmt (stmt);
-                }
-              else
-	        {
-   	          gsi_next (&si);
-	          continue;
-                }
-	    }
-          else if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-                   && (pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info))
-                   && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
-                       || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
-            transform_pattern_stmt = true;
-
-	  /* If pattern statement has def stmts, vectorize them too.  */
-	  if (is_pattern_stmt_p (stmt_info))
-	    {
-	      if (pattern_def_seq == NULL)
-		{
-		  pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
-		  pattern_def_si = gsi_start (pattern_def_seq);
-		}
-	      else if (!gsi_end_p (pattern_def_si))
-		gsi_next (&pattern_def_si);
-	      if (pattern_def_seq != NULL)
-		{
-		  gimple *pattern_def_stmt = NULL;
-		  stmt_vec_info pattern_def_stmt_info = NULL;
-
-		  while (!gsi_end_p (pattern_def_si))
+		  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 		    {
-		      pattern_def_stmt = gsi_stmt (pattern_def_si);
-		      pattern_def_stmt_info
-			= vinfo_for_stmt (pattern_def_stmt);
-		      if (STMT_VINFO_RELEVANT_P (pattern_def_stmt_info)
-			  || STMT_VINFO_LIVE_P (pattern_def_stmt_info))
-			break;
-		      gsi_next (&pattern_def_si);
+		      gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
+		      for (gimple_stmt_iterator subsi = gsi_start (def_seq);
+			   !gsi_end_p (subsi); gsi_next (&subsi))
+			vect_transform_loop_stmt (loop_vinfo,
+						  gsi_stmt (subsi), &si,
+						  &seen_store,
+						  &slp_scheduled);
+		      gimple *pat_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+		      vect_transform_loop_stmt (loop_vinfo, pat_stmt, &si,
+						&seen_store, &slp_scheduled);
 		    }
-
-		  if (!gsi_end_p (pattern_def_si))
+		  vect_transform_loop_stmt (loop_vinfo, stmt, &si,
+					    &seen_store, &slp_scheduled);
+		}
+	      if (seen_store)
+		{
+		  if (STMT_VINFO_GROUPED_ACCESS (seen_store))
 		    {
-		      if (dump_enabled_p ())
-			{
-			  dump_printf_loc (MSG_NOTE, vect_location,
-					   "==> vectorizing pattern def "
-					   "stmt: ");
-			  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
-					    pattern_def_stmt, 0);
-			}
-
-		      stmt = pattern_def_stmt;
-		      stmt_info = pattern_def_stmt_info;
+		      /* Interleaving.  If IS_STORE is TRUE, the
+			 vectorization of the interleaving chain was
+			 completed - free all the stores in the chain.  */
+		      gsi_next (&si);
+		      vect_remove_stores (DR_GROUP_FIRST_ELEMENT (seen_store));
 		    }
 		  else
 		    {
-		      pattern_def_si = gsi_none ();
-		      transform_pattern_stmt = false;
+		      /* Free the attached stmt_vec_info and remove the
+			 stmt.  */
+		      free_stmt_vec_info (stmt);
+		      unlink_stmt_vdef (stmt);
+		      gsi_remove (&si, true);
+		      release_defs (stmt);
 		    }
 		}
 	      else
-		transform_pattern_stmt = false;
-            }
-
-	  if (STMT_VINFO_VECTYPE (stmt_info))
-	    {
-	      poly_uint64 nunits
-		= TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
-	      if (!STMT_SLP_TYPE (stmt_info)
-		  && maybe_ne (nunits, vf)
-		  && dump_enabled_p ())
-		  /* For SLP VF is set according to unrolling factor, and not
-		     to vector size, hence for SLP this print is not valid.  */
-		dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
+		gsi_next (&si);
 	    }
-
-	  /* SLP. Schedule all the SLP instances when the first SLP stmt is
-	     reached.  */
-	  if (STMT_SLP_TYPE (stmt_info))
-	    {
-	      if (!slp_scheduled)
-		{
-		  slp_scheduled = true;
-
-		  DUMP_VECT_SCOPE ("scheduling SLP instances");
-
-		  vect_schedule_slp (loop_vinfo);
-		}
-
-	      /* Hybrid SLP stmts must be vectorized in addition to SLP.  */
-	      if (!vinfo_for_stmt (stmt) || PURE_SLP_STMT (stmt_info))
-		{
-		  if (!transform_pattern_stmt && gsi_end_p (pattern_def_si))
-		    {
-		      pattern_def_seq = NULL;
-		      gsi_next (&si);
-		    }
-		  continue;
-		}
-	    }
-
-	  /* -------- vectorize statement ------------ */
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location, "transform statement.\n");
-
-	  grouped_store = false;
-	  is_store = vect_transform_stmt (stmt, &si, &grouped_store, NULL, NULL);
-          if (is_store)
-            {
-	      if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-		{
-		  /* Interleaving. If IS_STORE is TRUE, the vectorization of the
-		     interleaving chain was completed - free all the stores in
-		     the chain.  */
-		  gsi_next (&si);
-		  vect_remove_stores (DR_GROUP_FIRST_ELEMENT (stmt_info));
-		}
-	      else
-		{
-		  /* Free the attached stmt_vec_info and remove the stmt.  */
-		  gimple *store = gsi_stmt (si);
-		  free_stmt_vec_info (store);
-		  unlink_stmt_vdef (store);
-		  gsi_remove (&si, true);
-		  release_defs (store);
-		}
-
-	      /* Stores can only appear at the end of pattern statements.  */
-	      gcc_assert (!transform_pattern_stmt);
-	      pattern_def_seq = NULL;
-	    }
-	  else if (!transform_pattern_stmt && gsi_end_p (pattern_def_si))
-	    {
-	      pattern_def_seq = NULL;
-	      gsi_next (&si);
-	    }
-	}		        /* stmts in BB */
+	}
 
       /* Stub out scalar statements that must not survive vectorization.
 	 Doing this here helps with grouped statements, or statements that
