@@ -358,9 +358,6 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
 	return NULL;
       oprnd0 = gimple_assign_rhs1 (last_stmt);
       oprnd1 = gimple_assign_rhs2 (last_stmt);
-      if (!types_compatible_p (TREE_TYPE (oprnd0), type)
-	  || !types_compatible_p (TREE_TYPE (oprnd1), type))
-        return NULL;
       stmt = last_stmt;
 
       if (type_conversion_p (oprnd0, stmt, true, &half_type, &def_stmt,
@@ -421,9 +418,6 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
 
       oprnd0 = gimple_assign_rhs1 (stmt);
       oprnd1 = gimple_assign_rhs2 (stmt);
-      if (!types_compatible_p (TREE_TYPE (oprnd0), prod_type)
-          || !types_compatible_p (TREE_TYPE (oprnd1), prod_type))
-        return NULL;
       if (!type_conversion_p (oprnd0, stmt, true, &half_type0, &def_stmt,
 			      &promotion)
 	  || !promotion)
@@ -578,9 +572,6 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
 	return NULL;
       plus_oprnd0 = gimple_assign_rhs1 (last_stmt);
       plus_oprnd1 = gimple_assign_rhs2 (last_stmt);
-      if (!types_compatible_p (TREE_TYPE (plus_oprnd0), sum_type)
-	  || !types_compatible_p (TREE_TYPE (plus_oprnd1), sum_type))
-        return NULL;
 
       /* The type conversion could be promotion, demotion,
          or just signed -> unsigned.  */
@@ -620,8 +611,6 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
     return NULL;
 
   tree abs_oprnd = gimple_assign_rhs1 (abs_stmt);
-  if (!types_compatible_p (TREE_TYPE (abs_oprnd), abs_type))
-    return NULL;
   if (TYPE_UNSIGNED (abs_type))
     return NULL;
 
@@ -655,9 +644,6 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
   tree minus_oprnd0 = gimple_assign_rhs1 (diff_stmt);
   tree minus_oprnd1 = gimple_assign_rhs2 (diff_stmt);
 
-  if (!types_compatible_p (TREE_TYPE (minus_oprnd0), abs_type)
-      || !types_compatible_p (TREE_TYPE (minus_oprnd1), abs_type))
-    return NULL;
   if (!type_conversion_p (minus_oprnd0, diff_stmt, false,
                           &half_type0, &def_stmt, &promotion)
       || !promotion)
@@ -862,9 +848,6 @@ vect_recog_widen_mult_pattern (vec<gimple *> *stmts,
 
   oprnd0 = gimple_assign_rhs1 (last_stmt);
   oprnd1 = gimple_assign_rhs2 (last_stmt);
-  if (!types_compatible_p (TREE_TYPE (oprnd0), type)
-      || !types_compatible_p (TREE_TYPE (oprnd1), type))
-    return NULL;
 
   /* Check argument 0.  */
   if (!type_conversion_p (oprnd0, last_stmt, false, &half_type0, &def_stmt0,
@@ -1264,9 +1247,6 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_in,
 
   oprnd0 = gimple_assign_rhs1 (last_stmt);
   oprnd1 = gimple_assign_rhs2 (last_stmt);
-  if (!types_compatible_p (TREE_TYPE (oprnd0), type)
-      || !types_compatible_p (TREE_TYPE (oprnd1), type))
-    return NULL;
 
   /* So far so good.  Since last_stmt was detected as a (summation) reduction,
      we know that oprnd1 is the reduction variable (defined by a loop-header
