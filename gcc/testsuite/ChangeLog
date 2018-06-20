@@ -1,3 +1,9 @@
+2018-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86231
+	* gcc.dg/tree-ssa/vrp119.c: New test.
+	* gcc.c-torture/execute/pr86231.c: New test.
+
 2018-06-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aggr24.adb: New test.
