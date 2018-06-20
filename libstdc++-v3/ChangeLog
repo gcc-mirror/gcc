@@ -1,3 +1,8 @@
+2018-06-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/arithmetic/dr3050.cc: Add new test
+	missed from recent commit.
+
 2018-06-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/utility: Remove unused <exception> header.
