@@ -1,6 +1,12 @@
 2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Remove
+	redundant WIDEN_SUM_EXPR handling.
+	(vect_recog_sad_pattern): Likewise.
+
+2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Remove
 	redundant check that the types of a PLUS_EXPR or MULT_EXPR agree.
 	(vect_recog_sad_pattern): Likewise PLUS_EXPR, ABS_EXPR and MINUS_EXPR.
 	(vect_recog_widen_mult_pattern): Likewise MULT_EXPR.

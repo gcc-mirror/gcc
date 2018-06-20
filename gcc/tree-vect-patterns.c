@@ -339,37 +339,25 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
     return NULL;
 
   if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-    {
-      /* Has been detected as widening-summation?  */
+    return NULL;
 
-      stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-      type = gimple_expr_type (stmt);
-      if (gimple_assign_rhs_code (stmt) != WIDEN_SUM_EXPR)
-        return NULL;
+  if (!vect_reassociating_reduction_p (stmt_vinfo))
+    return NULL;
+
+  oprnd0 = gimple_assign_rhs1 (last_stmt);
+  oprnd1 = gimple_assign_rhs2 (last_stmt);
+  stmt = last_stmt;
+
+  gimple *def_stmt;
+  if (type_conversion_p (oprnd0, stmt, true, &half_type, &def_stmt,
+			 &promotion)
+      && promotion)
+    {
+      stmt = def_stmt;
       oprnd0 = gimple_assign_rhs1 (stmt);
-      oprnd1 = gimple_assign_rhs2 (stmt);
-      half_type = TREE_TYPE (oprnd0);
     }
   else
-    {
-      gimple *def_stmt;
-
-      if (!vect_reassociating_reduction_p (stmt_vinfo))
-	return NULL;
-      oprnd0 = gimple_assign_rhs1 (last_stmt);
-      oprnd1 = gimple_assign_rhs2 (last_stmt);
-      stmt = last_stmt;
-
-      if (type_conversion_p (oprnd0, stmt, true, &half_type, &def_stmt,
-			     &promotion)
-	  && promotion)
-        {
-          stmt = def_stmt;
-          oprnd0 = gimple_assign_rhs1 (stmt);
-        }
-      else
-        half_type = type;
-    }
+    half_type = type;
 
   /* So far so good.  Since last_stmt was detected as a (summation) reduction,
      we know that oprnd1 is the reduction variable (defined by a loop-header
@@ -553,34 +541,22 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
   tree plus_oprnd0, plus_oprnd1;
 
   if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-    {
-      /* Has been detected as widening-summation?  */
+    return NULL;
 
-      gimple *stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-      sum_type = gimple_expr_type (stmt);
-      if (gimple_assign_rhs_code (stmt) != WIDEN_SUM_EXPR)
-        return NULL;
-      plus_oprnd0 = gimple_assign_rhs1 (stmt);
-      plus_oprnd1 = gimple_assign_rhs2 (stmt);
-      half_type = TREE_TYPE (plus_oprnd0);
-    }
+  if (!vect_reassociating_reduction_p (stmt_vinfo))
+    return NULL;
+
+  plus_oprnd0 = gimple_assign_rhs1 (last_stmt);
+  plus_oprnd1 = gimple_assign_rhs2 (last_stmt);
+
+  /* The type conversion could be promotion, demotion,
+     or just signed -> unsigned.  */
+  gimple *def_stmt;
+  if (type_conversion_p (plus_oprnd0, last_stmt, false,
+			 &half_type, &def_stmt, &promotion))
+    plus_oprnd0 = gimple_assign_rhs1 (def_stmt);
   else
-    {
-      gimple *def_stmt;
-
-      if (!vect_reassociating_reduction_p (stmt_vinfo))
-	return NULL;
-      plus_oprnd0 = gimple_assign_rhs1 (last_stmt);
-      plus_oprnd1 = gimple_assign_rhs2 (last_stmt);
-
-      /* The type conversion could be promotion, demotion,
-         or just signed -> unsigned.  */
-      if (type_conversion_p (plus_oprnd0, last_stmt, false,
-                             &half_type, &def_stmt, &promotion))
-        plus_oprnd0 = gimple_assign_rhs1 (def_stmt);
-      else
-        half_type = sum_type;
-    }
+    half_type = sum_type;
 
   /* So far so good.  Since last_stmt was detected as a (summation) reduction,
      we know that plus_oprnd1 is the reduction variable (defined by a loop-header
@@ -639,7 +615,6 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
     return NULL;
 
   tree half_type0, half_type1;
-  gimple *def_stmt;
 
   tree minus_oprnd0 = gimple_assign_rhs1 (diff_stmt);
   tree minus_oprnd1 = gimple_assign_rhs2 (diff_stmt);
