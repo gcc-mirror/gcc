@@ -243,6 +243,12 @@ __thread struct initial_sp __morestack_initial_sp
 
 static sigset_t __morestack_fullmask;
 
+/* Page size, as returned from getpagesize(). Set on startup. */
+static unsigned int static_pagesize;
+
+/* Set on startup to non-zero value if SPLIT_STACK_GUARD env var is set. */
+static int use_guard_page;
+
 /* Convert an integer to a decimal string without using much stack
    space.  Return a pointer to the part of the buffer to use.  We this
    instead of sprintf because sprintf will require too much stack
@@ -320,8 +326,6 @@ __morestack_fail (const char *msg, size_t len, int err)
 static struct stack_segment *
 allocate_segment (size_t frame_size)
 {
-  static unsigned int static_pagesize;
-  static int use_guard_page;
   unsigned int pagesize;
   unsigned int overhead;
   unsigned int allocate;
@@ -329,27 +333,6 @@ allocate_segment (size_t frame_size)
   struct stack_segment *pss;
 
   pagesize = static_pagesize;
-  if (pagesize == 0)
-    {
-      unsigned int p;
-
-      pagesize = getpagesize ();
-
-#ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
-      p = __sync_val_compare_and_swap (&static_pagesize, 0, pagesize);
-#else
-      /* Just hope this assignment is atomic.  */
-      static_pagesize = pagesize;
-      p = 0;
-#endif
-
-      use_guard_page = getenv ("SPLIT_STACK_GUARD") != 0;
-
-      /* FIXME: I'm not sure this assert should be in the released
-	 code.  */
-      assert (p == 0 || p == pagesize);
-    }
-
   overhead = sizeof (struct stack_segment);
 
   allocate = pagesize;
@@ -815,7 +798,10 @@ __generic_findstack (void *stack)
 /* This function is called at program startup time to make sure that
    mmap, munmap, and getpagesize are resolved if linking dynamically.
    We want to resolve them while we have enough stack for them, rather
-   than calling into the dynamic linker while low on stack space.  */
+   than calling into the dynamic linker while low on stack space.
+   Similarly, invoke getenv here to check for split-stack related control
+   variables, since doing do as part of the __morestack path can result
+   in unwanted use of SSE/AVX registers (see GCC PR 86213). */
 
 void
 __morestack_load_mmap (void)
@@ -825,7 +811,12 @@ __morestack_load_mmap (void)
      TLS accessor function is resolved.  */
   mmap (__morestack_current_segment, 0, PROT_READ, MAP_ANONYMOUS, -1, 0);
   mprotect (NULL, 0, 0);
-  munmap (0, getpagesize ());
+  munmap (0, static_pagesize);
+
+  /* Initialize these values here, so as to avoid dynamic linker
+     activity as part of a __morestack call. */
+  static_pagesize = getpagesize();
+  use_guard_page = getenv ("SPLIT_STACK_GUARD") != 0;
 }
 
 /* This function may be used to iterate over the stack segments.
