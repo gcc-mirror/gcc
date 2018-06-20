@@ -796,7 +796,9 @@ typedef struct _stmt_vec_info {
         pattern).  */
   gimple *related_stmt;
 
-  /* Used to keep a sequence of def stmts of a pattern stmt if such exists.  */
+  /* Used to keep a sequence of def stmts of a pattern stmt if such exists.
+     The sequence is attached to the original statement rather than the
+     pattern statement.  */
   gimple_seq pattern_def_seq;
 
   /* List of datarefs that are known to have the same alignment as the dataref

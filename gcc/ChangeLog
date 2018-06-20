@@ -1,5 +1,17 @@
 2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (_stmt_vec_info): Note above pattern_def_seq
+	that the sequence is attached to the original statement rather
+	than the pattern statement.
+	* tree-vect-loop.c (vect_determine_vf_for_stmt): Take the
+	PATTERN_DEF_SEQ from the original statement rather than
+	the main pattern statement.
+	* tree-vect-stmts.c (free_stmt_vec_info): Likewise.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Likewise.
+	(vect_mark_pattern_stmts): Don't copy the PATTERN_DEF_SEQ.
+
+2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vect_analyze_stmt): Move the handling of pattern
 	definition statements before the early exit for statements that aren't
 	live or relevant.

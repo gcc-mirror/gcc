@@ -224,10 +224,10 @@ vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
   if (STMT_VINFO_IN_PATTERN_P (stmt_info)
       && STMT_VINFO_RELATED_STMT (stmt_info))
     {
+      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
       stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
 
       /* If a pattern statement has def stmts, analyze them too.  */
-      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
       for (gimple_stmt_iterator si = gsi_start (pattern_def_seq);
 	   !gsi_end_p (si); gsi_next (&si))
 	{
@@ -2247,10 +2247,10 @@ again:
 	  STMT_SLP_TYPE (stmt_info) = loop_vect;
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 	    {
+	      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
 	      stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
 	      STMT_SLP_TYPE (stmt_info) = loop_vect;
-	      for (gimple_stmt_iterator pi
-		     = gsi_start (STMT_VINFO_PATTERN_DEF_SEQ (stmt_info));
+	      for (gimple_stmt_iterator pi = gsi_start (pattern_def_seq);
 		   !gsi_end_p (pi); gsi_next (&pi))
 		{
 		  gimple *pstmt = gsi_stmt (pi);
