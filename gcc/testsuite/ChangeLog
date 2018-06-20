@@ -1,3 +1,36 @@
+2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/declare-1.c: Update test case to utilize OpenACC
+	2.5 data clause semantics.
+	* c-c++-common/goacc/declare-2.c: Likewise.
+	* c-c++-common/goacc/default-4.c: Likewise.
+	* c-c++-common/goacc/finalize-1.c: New test.
+	* c-c++-common/goacc/kernels-alias-2.c: Update test case to utilize
+	OpenACC 2.5 data clause semantics.
+	* c-c++-common/goacc/kernels-alias.c: Likewise.
+	* c-c++-common/goacc/routine-5.c: Likewise.
+	* c-c++-common/goacc/update-if_present-1.c: New test.
+	* c-c++-common/goacc/update-if_present-2.c: New test.
+	* g++.dg/goacc/template.C: Update test case to utilize OpenACC
+	2.5 data clause semantics.
+	* gfortran.dg/goacc/combined-directives.f90: Likewise.
+	* gfortran.dg/goacc/data-tree.f95: Likewise.
+	* gfortran.dg/goacc/declare-2.f95: Likewise.
+	* gfortran.dg/goacc/default-4.f: Likewise.
+	* gfortran.dg/goacc/enter-exit-data.f95: Likewise.
+	* gfortran.dg/goacc/finalize-1.f: New test.
+	* gfortran.dg/goacc/kernels-alias-2.f95: Update test case to utilize
+	OpenACC 2.5 data clause semantics.
+	* gfortran.dg/goacc/kernels-alias.f95: Likewise.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+	* gfortran.dg/goacc/nested-function-1.f90: Likewise.
+	* gfortran.dg/goacc/parallel-tree.f95: Likewise.
+	* gfortran.dg/goacc/reduction-promotions.f90: Likewise.
+	* gfortran.dg/goacc/update-if_present-1.f90: New test.
+	* gfortran.dg/goacc/update-if_present-2.f90: New test.
+
 2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86210

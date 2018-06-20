@@ -454,7 +454,13 @@ enum omp_clause_code {
 
   /* OpenMP internal-only clause to specify grid dimensions of a gridified
      kernel.  */
-  OMP_CLAUSE__GRIDDIM_
+  OMP_CLAUSE__GRIDDIM_,
+
+  /* OpenACC clause: if_present.  */
+  OMP_CLAUSE_IF_PRESENT,
+
+  /* OpenACC clause: finalize.  */
+  OMP_CLAUSE_FINALIZE
 };
 
 #undef DEFTREESTRUCT

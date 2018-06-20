@@ -1,3 +1,11 @@
+2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add
+	PRAGMA_OACC_CLAUSE_{FINALIZE,IF_PRESENT}. Remove
+	PRAGMA_OACC_CLAUSE_PRESENT_OR_{COPY,COPYIN,COPYOUT,CREATE}.
+
 2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86210
