@@ -1,3 +1,12 @@
+2018-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86093
+	* c-typeck.c (pointer_diff): Cast both pointers to unqualified types
+	before doing POINTER_DIFF_EXPR.
+
 2018-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

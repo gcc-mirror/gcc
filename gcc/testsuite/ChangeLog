@@ -1,3 +1,11 @@
+2018-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86093
+	* c-c++-common/pr86093.c: New test.
+
 2018-06-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/85634 - tsubst ICE on unmarked lookup
