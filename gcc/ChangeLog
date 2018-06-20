@@ -1,5 +1,17 @@
 2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2018-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/86108
+	* bb-reorder.c (create_forwarder_block): Renamed to ...
+	(create_eh_forwarder_block): ... this.  Split OLD_BB after labels and
+	jump from new landing pad to the second part.
+	(sjlj_fix_up_crossing_landing_pad, dw2_fix_up_crossing_landing_pad):
+	Adjust callers.
+
+2018-06-20  Jakub Jelinek  <jakub@redhat.com>
+
 	PR debug/86194
 	* var-tracking.c (use_narrower_mode_test): Check if shift amount can
 	be narrowed.
