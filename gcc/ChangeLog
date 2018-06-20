@@ -1,3 +1,14 @@
+2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-stmts.c (vect_analyze_stmt): Move the handling of pattern
+	definition statements before the early exit for statements that aren't
+	live or relevant.
+	* tree-vect-loop.c (vect_transform_loop_stmt): New function,
+	split out from...
+	(vect_transform_loop): ...here.  Process pattern definition
+	statements without first checking whether the main pattern
+	statement is live or relevant.
+
 2018-06-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-cfgcleanup.c (tree_forwarder_block_p): Do not return false at
