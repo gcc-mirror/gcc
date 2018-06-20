@@ -1,3 +1,9 @@
+2018-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86210
+	* c-common.c (check_nonnull_arg): Use fold_for_warn.  Adjust obsolete
+	comment.
+
 2018-06-13  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.c (c_common_post_options): Warn about useless -Wabi.

@@ -1,5 +1,8 @@
 2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/86210
+	* g++.dg/warn/Wnonnull4.C: New test.
+
 	PR debug/86194
 	* gcc.target/i386/pr86194.c: New test.
 
