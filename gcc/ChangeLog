@@ -1,6 +1,16 @@
 2018-06-20  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2018-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85597
+	* tree-vect-stmts.c (vectorizable_operation): For ternary SLP
+	do not use split vect_get_vec_defs call but call vect_get_slp_defs
+	directly.
+
+2018-06-20  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2018-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83623

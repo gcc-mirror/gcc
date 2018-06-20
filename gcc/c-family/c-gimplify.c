@@ -240,7 +240,9 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 				    unsigned_type_node)
 	    && !types_compatible_p (TYPE_MAIN_VARIANT (TREE_TYPE (*op1_p)),
 				    integer_type_node))
-	  *op1_p = convert (unsigned_type_node, *op1_p);
+	  /* Make sure to unshare the result, tree sharing is invalid
+	     during gimplification.  */
+	  *op1_p = unshare_expr (convert (unsigned_type_node, *op1_p));
 	break;
       }
 
