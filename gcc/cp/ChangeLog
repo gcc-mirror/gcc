@@ -1,3 +1,8 @@
+2018-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/85634
+	* friend.c (add_friend): Keep lookup sets of tempate sets.
+
 2018-06-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokfndecl): Add const cp_decl_specifier_seq* parameter;
