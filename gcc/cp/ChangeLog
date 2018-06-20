@@ -1,3 +1,8 @@
+2018-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/85634 - tsubst ICE on unmarked lookup
+	* parser.c (cp_parser_primary_expression): Keep lookup in template.
+
 2018-06-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86200 - ICE with unexpanded pack in lambda parameter.

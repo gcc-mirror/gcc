@@ -5609,6 +5609,9 @@ cp_parser_primary_expression (cp_parser *parser,
 	      }
 	  }
 
+	if (processing_template_decl && is_overloaded_fn (decl))
+	  lookup_keep (get_fns (decl), true);
+
 	decl = (finish_id_expression
 		(id_expression, decl, parser->scope,
 		 idk,
