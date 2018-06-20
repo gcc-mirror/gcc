@@ -1,3 +1,8 @@
+2018-06-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86240
+	* g++.dg/pr86240.C: New test.
+
 2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/86194

@@ -1,3 +1,10 @@
+2018-06-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86240
+	* constexpr.c (cxx_eval_constant_expression): Handle ABSU_EXPR.
+	(fold_simple_1): Likewise.
+	* error.c (dump_expr): Likewise.
+
 2018-06-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/85634
