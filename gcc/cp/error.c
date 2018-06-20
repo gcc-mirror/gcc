@@ -2764,6 +2764,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case VEC_DELETE_EXPR:
     case MODOP_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
     case CONJ_EXPR:
     case VECTOR_CST:
     case FIXED_CST:

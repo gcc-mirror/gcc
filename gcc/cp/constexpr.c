@@ -4412,6 +4412,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case FLOAT_EXPR:
     case NEGATE_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
     case FIXED_CONVERT_EXPR:
@@ -5056,6 +5057,7 @@ fold_simple_1 (tree t)
       return fold_sizeof_expr (t);
 
     case ABS_EXPR:
+    case ABSU_EXPR:
     case CONJ_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
