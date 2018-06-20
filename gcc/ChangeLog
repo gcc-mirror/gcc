@@ -1,5 +1,10 @@
 2018-06-20  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-alias.c (stmt_kills_ref_p): Revert accidentially
+	committed change.
+
+2018-06-20  Richard Biener  <rguenther@suse.de>
+
 	Backport from mainline
 	2018-05-02  Richard Biener  <rguenther@suse.de>
 
