@@ -1088,6 +1088,67 @@ jump_table_cluster::emit (tree index_expr, tree,
   gsi_insert_after (&gsi, s, GSI_NEW_STMT);
 }
 
+/* Find jump tables of given CLUSTERS, where all members of the vector
+   are of type simple_cluster.  New clusters are returned.  */
+
+vec<cluster *>
+jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
+{
+  unsigned l = clusters.length ();
+  auto_vec<min_cluster_item> min;
+  min.reserve (l + 1);
+
+  min.quick_push (min_cluster_item (0, 0, 0));
+
+  for (unsigned i = 1; i <= l; i++)
+    {
+      /* Set minimal # of clusters with i-th item to infinite.  */
+      min.quick_push (min_cluster_item (INT_MAX, INT_MAX, INT_MAX));
+
+      for (unsigned j = 0; j < i; j++)
+	{
+	  unsigned HOST_WIDE_INT s = min[j].m_non_jt_cases;
+	  if (i - j < case_values_threshold ())
+	    s += i - j;
+
+	  /* Prefer clusters with smaller number of numbers covered.  */
+	  if ((min[j].m_count + 1 < min[i].m_count
+	       || (min[j].m_count + 1 == min[i].m_count
+		   && s < min[i].m_non_jt_cases))
+	      && can_be_handled (clusters, j, i - 1))
+	    min[i] = min_cluster_item (min[j].m_count + 1, j, s);
+	}
+    }
+
+  /* No result.  */
+  if (min[l].m_count == INT_MAX)
+    return clusters.copy ();
+
+  vec<cluster *> output;
+  output.create (4);
+
+  /* Find and build the clusters.  */
+  for (int end = l;;)
+    {
+      int start = min[end].m_start;
+
+      /* Do not allow clusters with small number of cases.  */
+      if (is_beneficial (clusters, start, end - 1))
+	output.safe_push (new jump_table_cluster (clusters, start, end - 1));
+      else
+	for (int i = end - 1; i >= start; i--)
+	  output.safe_push (clusters[i]);
+
+      end = start;
+
+      if (start <= 0)
+	break;
+    }
+
+  output.reverse ();
+  return output;
+}
+
 /* Return true when cluster starting at START and ending at END (inclusive)
    can build a jump-table.  */
 
@@ -1140,6 +1201,59 @@ jump_table_cluster::is_beneficial (const vec<cluster *> &,
 				   unsigned start, unsigned end)
 {
   return end - start + 1 >= case_values_threshold ();
+}
+
+/* Find bit tests of given CLUSTERS, where all members of the vector
+   are of type simple_cluster.  New clusters are returned.  */
+
+vec<cluster *>
+bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
+{
+  vec<cluster *> output;
+  output.create (4);
+
+  unsigned l = clusters.length ();
+  auto_vec<min_cluster_item> min;
+  min.reserve (l + 1);
+
+  min.quick_push (min_cluster_item (0, 0, 0));
+
+  for (unsigned i = 1; i <= l; i++)
+    {
+      /* Set minimal # of clusters with i-th item to infinite.  */
+      min.quick_push (min_cluster_item (INT_MAX, INT_MAX, INT_MAX));
+
+      for (unsigned j = 0; j < i; j++)
+	{
+	  if (min[j].m_count + 1 < min[i].m_count
+	      && can_be_handled (clusters, j, i - 1))
+	    min[i] = min_cluster_item (min[j].m_count + 1, j, INT_MAX);
+	}
+    }
+
+  /* No result.  */
+  if (min[l].m_count == INT_MAX)
+    return clusters.copy ();
+
+  /* Find and build the clusters.  */
+  for (int end = l;;)
+    {
+      int start = min[end].m_start;
+
+      if (is_beneficial (clusters, start, end - 1))
+	output.safe_push (new bit_test_cluster (clusters, start, end - 1));
+      else
+	for (int i = end - 1; i >=  start; i--)
+	  output.safe_push (clusters[i]);
+
+      end = start;
+
+      if (start <= 0)
+	break;
+    }
+
+  output.reverse ();
+  return output;
 }
 
 /* Return true when RANGE of case values with UNIQ labels
@@ -1485,33 +1599,57 @@ switch_decision_tree::analyze_switch_statement ()
 
   reset_out_edges_aux ();
 
-  vec<cluster *> output;
-  output.create (1);
+  /* Find jump table clusters.  */
+  vec<cluster *> output = jump_table_cluster::find_jump_tables (clusters);
 
-  /* Find whether the switch statement can be expanded with a method
-     different from decision tree.  */
-  unsigned end = clusters.length () - 1;
-  if (jump_table_cluster::can_be_handled (clusters, 0, end)
-      && jump_table_cluster::is_beneficial (clusters, 0, end))
-    output.safe_push (new jump_table_cluster (clusters, 0, end));
-  else if (bit_test_cluster::can_be_handled (clusters, 0, end)
-	   && bit_test_cluster::is_beneficial (clusters, 0, end))
-    output.safe_push (new bit_test_cluster (clusters, 0, end));
-  else
-    output = clusters;
+  /* Find jump table clusters.  */
+  vec<cluster *> output2;
+  auto_vec<cluster *> tmp;
+  output2.create (1);
+  tmp.create (1);
+
+  for (unsigned i = 0; i < output.length (); i++)
+    {
+      cluster *c = output[i];
+      if (c->get_type () != SIMPLE_CASE)
+	{
+	  if (!tmp.is_empty ())
+	    {
+	      vec<cluster *> n = bit_test_cluster::find_bit_tests (tmp);
+	      output2.safe_splice (n);
+	      n.release ();
+	      tmp.truncate (0);
+	    }
+	  output2.safe_push (c);
+	}
+      else
+	tmp.safe_push (c);
+    }
+
+  /* We still can have a temporary vector to test.  */
+  if (!tmp.is_empty ())
+    {
+      vec<cluster *> n = bit_test_cluster::find_bit_tests (tmp);
+      output2.safe_splice (n);
+      n.release ();
+    }
 
   if (dump_file)
     {
       fprintf (dump_file, ";; GIMPLE switch case clusters: ");
-      for (unsigned i = 0; i < output.length (); i++)
-	output[i]->dump (dump_file, dump_flags & TDF_DETAILS);
+      for (unsigned i = 0; i < output2.length (); i++)
+	output2[i]->dump (dump_file, dump_flags & TDF_DETAILS);
       fprintf (dump_file, "\n");
     }
 
-  bool expanded = try_switch_expansion (output);
+  output.release ();
 
-  for (unsigned i = 0; i < output.length (); i++)
-    delete output[i];
+  bool expanded = try_switch_expansion (output2);
+
+  for (unsigned i = 0; i < output2.length (); i++)
+    delete output2[i];
+
+  output2.release ();
 
   return expanded;
 }

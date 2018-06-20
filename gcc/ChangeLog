@@ -1,5 +1,14 @@
 2018-06-20  Martin Liska  <mliska@suse.cz>
 
+	* tree-switch-conversion.c (jump_table_cluster::find_jump_tables):
+        New.
+	(bit_test_cluster::find_bit_tests): Likewise.
+	(switch_decision_tree::analyze_switch_statement): Find clusters.
+	* tree-switch-conversion.h (struct jump_table_cluster): Document
+        hierarchy.
+
+2018-06-20  Martin Liska  <mliska@suse.cz>
+
 	* tree-switch-conversion.c (switch_conversion::collect):
         Record m_uniq property.
 	(switch_conversion::expand): Bail out for special conditions.
