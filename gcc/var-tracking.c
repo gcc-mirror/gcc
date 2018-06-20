@@ -964,6 +964,24 @@ use_narrower_mode_test (rtx x, const_rtx subreg)
 	  case MULT:
 	    break;
 	  case ASHIFT:
+	    if (GET_MODE (XEXP (x, 1)) != VOIDmode)
+	      {
+		enum machine_mode mode = GET_MODE (subreg);
+		rtx op1 = XEXP (x, 1);
+		enum machine_mode op1_mode = GET_MODE (op1);
+		if (GET_MODE_PRECISION (as_a <scalar_int_mode> (mode))
+		    < GET_MODE_PRECISION (as_a <scalar_int_mode> (op1_mode)))
+		  {
+		    poly_uint64 byte = subreg_lowpart_offset (mode, op1_mode);
+		    if (GET_CODE (op1) == SUBREG || GET_CODE (op1) == CONCAT)
+		      {
+			if (!simplify_subreg (mode, op1, op1_mode, byte))
+			  return false;
+		      }
+		    else if (!validate_subreg (mode, op1_mode, op1, byte))
+		      return false;
+		  }
+	      }
 	    iter.substitute (XEXP (x, 0));
 	    break;
 	  default:
