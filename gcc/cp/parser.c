@@ -5603,6 +5603,14 @@ cp_parser_primary_expression (cp_parser *parser,
 	      }
 	  }
 
+	if (processing_template_decl)
+	  if (tree fns = maybe_get_fns (decl))
+	    /* It's too difficult to mark ths in all the places where
+	       we know for sure we need to keep the lookup, so do it
+	       now.  The cost is extra GC to recycle the lookups
+	       resolved at parse time.  */
+	    lookup_keep (fns);
+
 	decl = (finish_id_expression
 		(id_expression, decl, parser->scope,
 		 idk,
@@ -15988,11 +15996,6 @@ cp_parser_template_id (cp_parser *parser,
       /* Reset the contents of the START_OF_ID token.  */
       token->type = CPP_TEMPLATE_ID;
       token->location = combined_loc;
-
-      /* We must mark the lookup as kept, so we don't throw it away on
-	 the first parse.  */
-      if (is_overloaded_fn (template_id))
-	lookup_keep (get_fns (template_id), true);
 
       /* Retrieve any deferred checks.  Do not pop this access checks yet
 	 so the memory will not be reclaimed during token replacing below.  */

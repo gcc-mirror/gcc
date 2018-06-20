@@ -2325,6 +2325,11 @@ perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
 	  else
 	    fn = identifier;
 	}
+      else if (TREE_CODE (fn) == OVERLOAD && processing_template_decl)
+	/* FIXME: We shouldn't really need to mark the lookup here, as
+	   resolving the (non-dependent) call should save the single
+	   function we resolve to.  Related to PR c++/83529.  */
+	lookup_keep (fn);
     }
 
   if (fn && template_id && fn != error_mark_node)
@@ -2385,10 +2390,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	  SET_EXPR_LOCATION (result, cp_expr_loc_or_loc (fn, input_location));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
 	  if (is_overloaded_fn (fn))
-	    {
-	      fn = get_fns (fn);
-	      lookup_keep (fn, true);
-	    }
+	    fn = get_fns (fn);
 
 	  if (cfun)
 	    {
@@ -2574,10 +2576,6 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
       release_tree_vector (orig_args);
       result = convert_from_reference (result);
     }
-
-  /* Free or retain OVERLOADs from lookup.  */
-  if (is_overloaded_fn (orig_fn))
-    lookup_keep (get_fns (orig_fn), processing_template_decl);
 
   return result;
 }

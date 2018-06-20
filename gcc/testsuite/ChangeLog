@@ -1,3 +1,8 @@
+2018-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/85634
+	* g++.dg/lookup/pr85634.C: New.
+
 2018-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/ldp_stp_q.c: New test.
