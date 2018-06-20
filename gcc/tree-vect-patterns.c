@@ -155,6 +155,22 @@ vect_single_imm_use (gimple *def_stmt)
   return use_stmt;
 }
 
+/* If OP is defined by a statement that's being considered for vectorization,
+   return information about that statement, otherwise return NULL.  */
+
+static stmt_vec_info
+vect_get_internal_def (vec_info *vinfo, tree op)
+{
+  vect_def_type dt;
+  gimple *def_stmt;
+  if (TREE_CODE (op) != SSA_NAME
+      || !vect_is_simple_use (op, vinfo, &def_stmt, &dt)
+      || dt != vect_internal_def)
+    return NULL;
+
+  return vinfo_for_stmt (def_stmt);
+}
+
 /* Check whether NAME, an ssa-name used in USE_STMT,
    is a result of a type promotion, such that:
      DEF_STMT: NAME = NOP (name0)
@@ -288,6 +304,7 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
   tree oprnd0, oprnd1;
   tree oprnd00, oprnd01;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
+  vec_info *vinfo = stmt_vinfo->vinfo;
   tree type, half_type;
   gimple *pattern_stmt;
   tree prod_type;
@@ -367,36 +384,29 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
     return NULL;
 
   prod_type = half_type;
-  stmt = SSA_NAME_DEF_STMT (oprnd0);
-
-  /* It could not be the dot_prod pattern if the stmt is outside the loop.  */
-  if (!gimple_bb (stmt) || !flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
+  stmt_vec_info mult_vinfo = vect_get_internal_def (vinfo, oprnd0);
+  if (!mult_vinfo)
     return NULL;
 
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
-  if (!is_gimple_assign (stmt))
+  gassign *mult = dyn_cast <gassign *> (mult_vinfo->stmt);
+  if (!mult || gimple_assign_rhs_code (mult) != MULT_EXPR)
     return NULL;
-  stmt_vinfo = vinfo_for_stmt (stmt);
-  gcc_assert (stmt_vinfo);
-  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_internal_def)
-    return NULL;
-  if (gimple_assign_rhs_code (stmt) != MULT_EXPR)
-    return NULL;
-  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
+  if (STMT_VINFO_IN_PATTERN_P (mult_vinfo))
     {
       /* Has been detected as a widening multiplication?  */
 
-      stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-      if (gimple_assign_rhs_code (stmt) != WIDEN_MULT_EXPR)
+      mult = dyn_cast <gassign *> (STMT_VINFO_RELATED_STMT (mult_vinfo));
+      if (!mult || gimple_assign_rhs_code (mult) != WIDEN_MULT_EXPR)
         return NULL;
-      STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (last_stmt))
-	= STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo);
-      stmt_vinfo = vinfo_for_stmt (stmt);
-      gcc_assert (stmt_vinfo);
-      gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_internal_def);
-      oprnd00 = gimple_assign_rhs1 (stmt);
-      oprnd01 = gimple_assign_rhs2 (stmt);
+      STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo)
+	= STMT_VINFO_PATTERN_DEF_SEQ (mult_vinfo);
+      mult_vinfo = vinfo_for_stmt (mult);
+      gcc_assert (mult_vinfo);
+      gcc_assert (STMT_VINFO_DEF_TYPE (mult_vinfo) == vect_internal_def);
+      oprnd00 = gimple_assign_rhs1 (mult);
+      oprnd01 = gimple_assign_rhs2 (mult);
     }
   else
     {
@@ -404,14 +414,14 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
       gimple *def_stmt;
       tree oprnd0, oprnd1;
 
-      oprnd0 = gimple_assign_rhs1 (stmt);
-      oprnd1 = gimple_assign_rhs2 (stmt);
-      if (!type_conversion_p (oprnd0, stmt, true, &half_type0, &def_stmt,
+      oprnd0 = gimple_assign_rhs1 (mult);
+      oprnd1 = gimple_assign_rhs2 (mult);
+      if (!type_conversion_p (oprnd0, mult, true, &half_type0, &def_stmt,
 			      &promotion)
 	  || !promotion)
         return NULL;
       oprnd00 = gimple_assign_rhs1 (def_stmt);
-      if (!type_conversion_p (oprnd1, stmt, true, &half_type1, &def_stmt,
+      if (!type_conversion_p (oprnd1, mult, true, &half_type1, &def_stmt,
 			      &promotion)
 	  || !promotion)
         return NULL;
@@ -488,6 +498,7 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
   gimple *last_stmt = (*stmts)[0];
   tree sad_oprnd0, sad_oprnd1;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
+  vec_info *vinfo = stmt_vinfo->vinfo;
   tree half_type;
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop;
@@ -567,23 +578,16 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
     return NULL;
 
   tree abs_type = half_type;
-  gimple *abs_stmt = SSA_NAME_DEF_STMT (plus_oprnd0);
-
-  /* It could not be the sad pattern if the abs_stmt is outside the loop.  */
-  if (!gimple_bb (abs_stmt) || !flow_bb_inside_loop_p (loop, gimple_bb (abs_stmt)))
+  stmt_vec_info abs_stmt_vinfo = vect_get_internal_def (vinfo, plus_oprnd0);
+  if (!abs_stmt_vinfo)
     return NULL;
 
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
-  if (!is_gimple_assign (abs_stmt))
-    return NULL;
-
-  stmt_vec_info abs_stmt_vinfo = vinfo_for_stmt (abs_stmt);
-  gcc_assert (abs_stmt_vinfo);
-  if (STMT_VINFO_DEF_TYPE (abs_stmt_vinfo) != vect_internal_def)
-    return NULL;
-  if (gimple_assign_rhs_code (abs_stmt) != ABS_EXPR
-      && gimple_assign_rhs_code (abs_stmt) != ABSU_EXPR)
+  gassign *abs_stmt = dyn_cast <gassign *> (abs_stmt_vinfo->stmt);
+  if (!abs_stmt
+      || (gimple_assign_rhs_code (abs_stmt) != ABS_EXPR
+	  && gimple_assign_rhs_code (abs_stmt) != ABSU_EXPR))
     return NULL;
 
   tree abs_oprnd = gimple_assign_rhs1 (abs_stmt);
@@ -595,23 +599,14 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
   if (TREE_CODE (abs_oprnd) != SSA_NAME)
     return NULL;
 
-  gimple *diff_stmt = SSA_NAME_DEF_STMT (abs_oprnd);
-
-  /* It could not be the sad pattern if the diff_stmt is outside the loop.  */
-  if (!gimple_bb (diff_stmt)
-      || !flow_bb_inside_loop_p (loop, gimple_bb (diff_stmt)))
+  stmt_vec_info diff_stmt_vinfo = vect_get_internal_def (vinfo, abs_oprnd);
+  if (!diff_stmt_vinfo)
     return NULL;
 
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
-  if (!is_gimple_assign (diff_stmt))
-    return NULL;
-
-  stmt_vec_info diff_stmt_vinfo = vinfo_for_stmt (diff_stmt);
-  gcc_assert (diff_stmt_vinfo);
-  if (STMT_VINFO_DEF_TYPE (diff_stmt_vinfo) != vect_internal_def)
-    return NULL;
-  if (gimple_assign_rhs_code (diff_stmt) != MINUS_EXPR)
+  gassign *diff_stmt = dyn_cast <gassign *> (diff_stmt_vinfo->stmt);
+  if (!diff_stmt || gimple_assign_rhs_code (diff_stmt) != MINUS_EXPR)
     return NULL;
 
   tree half_type0, half_type1;
@@ -2076,11 +2071,10 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
 {
   gimple *last_stmt = stmts->pop ();
   tree oprnd0, oprnd1, lhs, var;
-  gimple *pattern_stmt, *def_stmt;
+  gimple *pattern_stmt;
   enum tree_code rhs_code;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
   vec_info *vinfo = stmt_vinfo->vinfo;
-  enum vect_def_type dt;
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -2111,10 +2105,8 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
 	 != TYPE_PRECISION (TREE_TYPE (oprnd0)))
     return NULL;
 
-  if (!vect_is_simple_use (oprnd1, vinfo, &def_stmt, &dt))
-    return NULL;
-
-  if (dt != vect_internal_def)
+  stmt_vec_info def_vinfo = vect_get_internal_def (vinfo, oprnd1);
+  if (!def_vinfo)
     return NULL;
 
   *type_in = get_vectype_for_scalar_type (TREE_TYPE (oprnd0));
@@ -2123,8 +2115,10 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
     return NULL;
 
   tree def = NULL_TREE;
-  stmt_vec_info def_vinfo = vinfo_for_stmt (def_stmt);
-  if (!STMT_VINFO_IN_PATTERN_P (def_vinfo) && gimple_assign_cast_p (def_stmt))
+  gassign *def_stmt = dyn_cast <gassign *> (def_vinfo->stmt);
+  if (!STMT_VINFO_IN_PATTERN_P (def_vinfo)
+      && def_stmt
+      && gimple_assign_cast_p (def_stmt))
     {
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
       if (TYPE_MODE (TREE_TYPE (rhs1)) == TYPE_MODE (TREE_TYPE (oprnd0))
@@ -3180,18 +3174,15 @@ vect_recog_mixed_size_cond_pattern (vec<gimple *> *stmts, tree *type_in,
 static bool
 check_bool_pattern (tree var, vec_info *vinfo, hash_set<gimple *> &stmts)
 {
-  gimple *def_stmt;
-  enum vect_def_type dt;
   tree rhs1;
   enum tree_code rhs_code;
 
-  if (!vect_is_simple_use (var, vinfo, &def_stmt, &dt))
+  stmt_vec_info def_stmt_info = vect_get_internal_def (vinfo, var);
+  if (!def_stmt_info)
     return false;
 
-  if (dt != vect_internal_def)
-    return false;
-
-  if (!is_gimple_assign (def_stmt))
+  gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt);
+  if (!def_stmt)
     return false;
 
   if (stmts.contains (def_stmt))
@@ -3512,25 +3503,19 @@ static tree
 search_type_for_mask_1 (tree var, vec_info *vinfo,
 			hash_map<gimple *, tree> &cache)
 {
-  gimple *def_stmt;
-  enum vect_def_type dt;
   tree rhs1;
   enum tree_code rhs_code;
   tree res = NULL_TREE, res2;
 
-  if (TREE_CODE (var) != SSA_NAME)
-    return NULL_TREE;
-
   if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (var)))
     return NULL_TREE;
 
-  if (!vect_is_simple_use (var, vinfo, &def_stmt, &dt))
+  stmt_vec_info def_stmt_info = vect_get_internal_def (vinfo, var);
+  if (!def_stmt_info)
     return NULL_TREE;
 
-  if (dt != vect_internal_def)
-    return NULL_TREE;
-
-  if (!is_gimple_assign (def_stmt))
+  gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt);
+  if (!def_stmt)
     return NULL_TREE;
 
   tree *c = cache.get (def_stmt);
