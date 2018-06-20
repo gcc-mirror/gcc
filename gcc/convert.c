@@ -459,8 +459,10 @@ do_narrow (location_t loc,
 	     type in case the operation in outprec precision
 	     could overflow.  Otherwise, we would introduce
 	     signed-overflow undefinedness.  */
-	  || ((!TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0))
-	       || !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
+	  || ((!(INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+		 && TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
+	       || !(INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+		    && TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1))))
 	      && ((TYPE_PRECISION (TREE_TYPE (arg0)) * 2u
 		   > outprec)
 		  || (TYPE_PRECISION (TREE_TYPE (arg1)) * 2u

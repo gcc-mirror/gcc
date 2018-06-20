@@ -1,3 +1,54 @@
+2018-06-20  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83623
+	* expmed.c (expand_shift_1): For 2-byte rotates by BITS_PER_UNIT,
+	check for bswap in mode rather than HImode and use that in expand_unop
+	too.
+
+	2017-09-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82264
+	* tree-ssa-sccvn.c (vn_phi_eq): Use safe_dyn_cast to check
+	for GIMPLE_CONDs.
+	(vn_phi_lookup): Likewise.
+	(vn_phi_insert): Likewise.
+	* is-a.h (safe_dyn_cast): New.
+
+	2017-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82285
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Also handle
+	enumeral types.
+
+	2017-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82402
+	* tree-vect-loop-manip.c (create_lcssa_for_virtual_phi): Properly
+	set SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+
+	2017-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82697
+	* tree-ssa-phiopt.c (cond_store_replacement): Use alias-set
+	zero for conditional load and unconditional store.
+
+	2017-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82765
+	* varasm.c (decode_addr_const): Make offset HOST_WIDE_INT.
+	Truncate ARRAY_REF index and element size.
+
+	2018-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/83713
+	* convert.c (do_narrow): Properly guard TYPE_OVERFLOW_WRAPS checks.
+
 2018-06-19  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline

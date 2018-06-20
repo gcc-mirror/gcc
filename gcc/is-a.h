@@ -103,6 +103,11 @@ TYPE dyn_cast <TYPE> (pointer)
     Note that we have converted two sets of assertions in the calls to varpool
     into safe and efficient use of a variable.
 
+TYPE safe_dyn_cast <TYPE> (pointer)
+
+    Like dyn_cast <TYPE> (pointer), except that it accepts null pointers
+    and returns null results for them.
+
 
 If you use these functions and get a 'inline function not defined' or a
 'missing symbol' error message for 'is_a_helper<....>::test', it means that
@@ -220,6 +225,15 @@ dyn_cast (U *p)
     return is_a_helper <T>::cast (p);
   else
     return static_cast <T> (0);
+}
+
+/* Similar to dyn_cast, except that the pointer may be null.  */
+
+template <typename T, typename U>
+inline T
+safe_dyn_cast (U *p)
+{
+  return p ? dyn_cast <T> (p) : 0;
 }
 
 #endif  /* GCC_IS_A_H  */
