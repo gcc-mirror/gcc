@@ -1165,17 +1165,11 @@ jump_table_cluster::can_be_handled (const vec<cluster *> &clusters,
      make a sequence of conditional branches instead of a dispatch.
 
      The definition of "much bigger" depends on whether we are
-     optimizing for size or for speed.  If the former, the maximum
-     ratio range/count = 3, because this was found to be the optimal
-     ratio for size on i686-pc-linux-gnu, see PR11823.  The ratio
-     10 is much older, and was probably selected after an extensive
-     benchmarking investigation on numerous platforms.  Or maybe it
-     just made sense to someone at some point in the history of GCC,
-     who knows...  */
+     optimizing for size or for speed.  */
   if (!flag_jump_tables)
     return false;
 
-  unsigned HOST_WIDE_INT max_ratio = optimize_insn_for_size_p () ? 3 : 10;
+  unsigned HOST_WIDE_INT max_ratio = optimize_insn_for_size_p () ? 3 : 8;
 
   unsigned HOST_WIDE_INT range = get_range (clusters[start]->get_low (),
 					    clusters[end]->get_high ());
