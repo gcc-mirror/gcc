@@ -1,5 +1,66 @@
 2018-06-20  Martin Liska  <mliska@suse.cz>
 
+	* tree-switch-conversion.c (switch_conversion::collect):
+        Record m_uniq property.
+	(switch_conversion::expand): Bail out for special conditions.
+	(group_cluster::~group_cluster): New.
+	(group_cluster::group_cluster): Likewise.
+	(group_cluster::dump): Likewise.
+	(jump_table_cluster::emit): New.
+	(switch_decision_tree::fix_phi_operands_for_edges): New.
+	(struct case_node): Remove struct.
+	(jump_table_cluster::can_be_handled): New.
+	(case_values_threshold): Moved to header.
+	(reset_out_edges_aux): Likewise.
+	(jump_table_cluster::is_beneficial): New.
+	(bit_test_cluster::can_be_handled): Likewise.
+	(add_case_node): Remove.
+	(bit_test_cluster::is_beneficial): New.
+	(case_bit_test::cmp): New.
+	(bit_test_cluster::emit): New.
+	(expand_switch_as_decision_tree_p): Remove.
+	(bit_test_cluster::hoist_edge_and_branch_if_true): New.
+	(fix_phi_operands_for_edge): Likewise.
+	(switch_decision_tree::analyze_switch_statement): New.
+	(compute_cases_per_edge): Move ...
+	(switch_decision_tree::compute_cases_per_edge): ... here.
+	(try_switch_expansion): Likewise.
+	(switch_decision_tree::try_switch_expansion): Likewise.
+	(record_phi_operand_mapping): Likewise.
+	(switch_decision_tree::record_phi_operand_mapping): Likewise.
+	(emit_case_decision_tree): Likewise.
+	(switch_decision_tree::emit): Likewise.
+	(balance_case_nodes): Likewise.
+	(switch_decision_tree::balance_case_nodes): Likewise.
+	(dump_case_nodes): Likewise.
+	(switch_decision_tree::dump_case_nodes): Likewise.
+	(emit_jump): Likewise.
+	(switch_decision_tree::emit_jump): Likewise.
+	(emit_cmp_and_jump_insns): Likewise.
+	(switch_decision_tree::emit_cmp_and_jump_insns): Likewise.
+	(emit_case_nodes): Likewise.
+	(switch_decision_tree::emit_case_nodes): Likewise.
+	(conditional_probability): Remove.
+	* tree-switch-conversion.h (enum cluster_type): New.
+	(PRINT_CASE): New.
+	(struct cluster): Likewise.
+	(cluster::cluster): Likewise.
+	(struct simple_cluster): Likewise.
+	(simple_cluster::simple_cluster): Likewise.
+	(struct group_cluster): Likewise.
+	(struct jump_table_cluster): Likewise.
+	(struct bit_test_cluster): Likewise.
+	(struct min_cluster_item): Likewise.
+	(struct case_tree_node): Likewise.
+	(case_tree_node::case_tree_node): Likewise.
+	(jump_table_cluster::case_values_threshold): Likewise.
+	(struct case_bit_test): Likewise.
+	(struct switch_decision_tree): Likewise.
+	(struct switch_conversion): Likewise.
+	(switch_decision_tree::reset_out_edges_aux): Likewise.
+
+2018-06-20  Martin Liska  <mliska@suse.cz>
+
 	* tree-switch-conversion.c (MAX_CASE_BIT_TESTS): Remove.
 	(hoist_edge_and_branch_if_true): Likewise.
 	(expand_switch_using_bit_tests_p): Likewise.

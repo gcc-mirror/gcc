@@ -22,6 +22,536 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace tree_switch_conversion {
 
+/* Type of cluster.  */
+
+enum cluster_type
+{
+  SIMPLE_CASE,
+  JUMP_TABLE,
+  BIT_TEST
+};
+
+#define PRINT_CASE(f,c) print_generic_expr (f, c)
+
+/* Abstract base class for representing a cluster of cases.  */
+
+struct cluster
+{
+  /* Constructor.  */
+  cluster (tree case_label_expr, basic_block case_bb, profile_probability prob,
+	   profile_probability subtree_prob);
+
+  /* Destructor.  */
+  virtual ~cluster ()
+  {}
+
+  /* Return type.  */
+  virtual cluster_type get_type () = 0;
+
+  /* Get low value covered by a cluster.  */
+  virtual tree get_low () = 0;
+
+  /* Get high value covered by a cluster.  */
+  virtual tree get_high () = 0;
+
+  /* Debug content of a cluster.  */
+  virtual void debug () = 0;
+
+  /* Dump content of a cluster.  */
+  virtual void dump (FILE *f, bool details = false) = 0;
+
+  /* Emit GIMPLE code to handle the cluster.  */
+  virtual void emit (tree, tree, tree, basic_block) = 0;
+
+  /* Return range of a cluster.  If value would overflow in type of LOW,
+     then return 0.  */
+  static unsigned HOST_WIDE_INT get_range (tree low, tree high)
+  {
+    tree r = fold_build2 (MINUS_EXPR, TREE_TYPE (low), high, low);
+    if (!tree_fits_uhwi_p (r))
+      return 0;
+
+    return tree_to_uhwi (r) + 1;
+  }
+
+  /* Case label.  */
+  tree m_case_label_expr;
+
+  /* Basic block of the case.  */
+  basic_block m_case_bb;
+
+  /* Probability of taking this cluster.  */
+  profile_probability m_prob;
+
+  /* Probability of reaching subtree rooted at this node.  */
+  profile_probability m_subtree_prob;
+
+protected:
+  /* Default constructor.  */
+  cluster () {}
+};
+
+cluster::cluster (tree case_label_expr, basic_block case_bb,
+		  profile_probability prob, profile_probability subtree_prob):
+  m_case_label_expr (case_label_expr), m_case_bb (case_bb), m_prob (prob),
+  m_subtree_prob (subtree_prob)
+{
+}
+
+/* Subclass of cluster representing a simple contiguous range
+   from [low..high].  */
+
+struct simple_cluster: public cluster
+{
+  /* Constructor.  */
+  simple_cluster (tree low, tree high, tree case_label_expr,
+		  basic_block case_bb, profile_probability prob);
+
+  /* Destructor.  */
+  ~simple_cluster ()
+  {}
+
+  cluster_type
+  get_type ()
+  {
+    return SIMPLE_CASE;
+  }
+
+  tree
+  get_low ()
+  {
+    return m_low;
+  }
+
+  tree
+  get_high ()
+  {
+    return m_high;
+  }
+
+  void
+  debug ()
+  {
+    dump (stderr);
+  }
+
+  void
+  dump (FILE *f, bool details ATTRIBUTE_UNUSED = false)
+  {
+    PRINT_CASE (f, get_low ());
+    if (get_low () != get_high ())
+      {
+	fprintf (f, "-");
+	PRINT_CASE (f, get_high ());
+      }
+    fprintf (f, " ");
+  }
+
+  void emit (tree, tree, tree, basic_block)
+  {
+    gcc_unreachable ();
+  }
+
+  /* Low value of the case.  */
+  tree m_low;
+
+  /* High value of the case.  */
+  tree m_high;
+
+  /* True if case is a range.  */
+  bool m_range_p;
+};
+
+simple_cluster::simple_cluster (tree low, tree high, tree case_label_expr,
+				basic_block case_bb, profile_probability prob):
+  cluster (case_label_expr, case_bb, prob, prob),
+  m_low (low), m_high (high)
+{
+  m_range_p = m_high != NULL;
+  if (m_high == NULL)
+    m_high = m_low;
+}
+
+/* Abstract subclass of jump table and bit test cluster,
+   handling a collection of simple_cluster instances.  */
+
+struct group_cluster: public cluster
+{
+  /* Constructor.  */
+  group_cluster (vec<cluster *> &clusters, unsigned start, unsigned end);
+
+  /* Destructor.  */
+  ~group_cluster ();
+
+  tree
+  get_low ()
+  {
+    return m_cases[0]->get_low ();
+  }
+
+  tree
+  get_high ()
+  {
+    return m_cases[m_cases.length () - 1]->get_high ();
+  }
+
+  void
+  debug ()
+  {
+    dump (stderr);
+  }
+
+  void dump (FILE *f, bool details = false);
+
+  /* List of simple clusters handled by the group.  */
+  vec<simple_cluster *> m_cases;
+};
+
+/* Concrete subclass of group_cluster representing a collection
+   of cases to be implemented as a jump table.
+   The "emit" vfunc gernerates a nested switch statement which
+   is later lowered to a jump table.  */
+
+struct jump_table_cluster: public group_cluster
+{
+  /* Constructor.  */
+  jump_table_cluster (vec<cluster *> &clusters, unsigned start, unsigned end)
+  : group_cluster (clusters, start, end)
+  {}
+
+  cluster_type
+  get_type ()
+  {
+    return JUMP_TABLE;
+  }
+
+  void emit (tree index_expr, tree index_type,
+	     tree default_label_expr, basic_block default_bb);
+
+  /* Return true when cluster starting at START and ending at END (inclusive)
+     can build a jump-table.  */
+  static bool can_be_handled (const vec<cluster *> &clusters, unsigned start,
+			      unsigned end);
+
+  /* Return true if cluster starting at START and ending at END (inclusive)
+     is profitable transformation.  */
+  static bool is_beneficial (const vec<cluster *> &clusters, unsigned start,
+			     unsigned end);
+
+  /* Return the smallest number of different values for which it is best
+     to use a jump-table instead of a tree of conditional branches.  */
+  static inline unsigned int case_values_threshold (void);
+};
+
+/* A GIMPLE switch statement can be expanded to a short sequence of bit-wise
+comparisons.  "switch(x)" is converted into "if ((1 << (x-MINVAL)) & CST)"
+where CST and MINVAL are integer constants.  This is better than a series
+of compare-and-banch insns in some cases,  e.g. we can implement:
+
+	if ((x==4) || (x==6) || (x==9) || (x==11))
+
+as a single bit test:
+
+	if ((1<<x) & ((1<<4)|(1<<6)|(1<<9)|(1<<11)))
+
+This transformation is only applied if the number of case targets is small,
+if CST constains at least 3 bits, and "1 << x" is cheap.  The bit tests are
+performed in "word_mode".
+
+The following example shows the code the transformation generates:
+
+	int bar(int x)
+	{
+		switch (x)
+		{
+		case '0':  case '1':  case '2':  case '3':  case '4':
+		case '5':  case '6':  case '7':  case '8':  case '9':
+		case 'A':  case 'B':  case 'C':  case 'D':  case 'E':
+		case 'F':
+			return 1;
+		}
+		return 0;
+	}
+
+==>
+
+	bar (int x)
+	{
+		tmp1 = x - 48;
+		if (tmp1 > (70 - 48)) goto L2;
+		tmp2 = 1 << tmp1;
+		tmp3 = 0b11111100000001111111111;
+		if ((tmp2 & tmp3) != 0) goto L1 ; else goto L2;
+	L1:
+		return 1;
+	L2:
+		return 0;
+	}
+
+TODO: There are still some improvements to this transformation that could
+be implemented:
+
+* A narrower mode than word_mode could be used if that is cheaper, e.g.
+  for x86_64 where a narrower-mode shift may result in smaller code.
+
+* The compounded constant could be shifted rather than the one.  The
+  test would be either on the sign bit or on the least significant bit,
+  depending on the direction of the shift.  On some machines, the test
+  for the branch would be free if the bit to test is already set by the
+  shift operation.
+
+This transformation was contributed by Roger Sayle, see this e-mail:
+   http://gcc.gnu.org/ml/gcc-patches/2003-01/msg01950.html
+*/
+
+struct bit_test_cluster: public group_cluster
+{
+  /* Constructor.  */
+  bit_test_cluster (vec<cluster *> &clusters, unsigned start, unsigned end)
+  :group_cluster (clusters, start, end)
+  {}
+
+  cluster_type
+  get_type ()
+  {
+    return BIT_TEST;
+  }
+
+/*  Expand a switch statement by a short sequence of bit-wise
+    comparisons.  "switch(x)" is effectively converted into
+    "if ((1 << (x-MINVAL)) & CST)" where CST and MINVAL are
+    integer constants.
+
+    INDEX_EXPR is the value being switched on.
+
+    MINVAL is the lowest case value of in the case nodes,
+    and RANGE is highest value minus MINVAL.  MINVAL and RANGE
+    are not guaranteed to be of the same type as INDEX_EXPR
+    (the gimplifier doesn't change the type of case label values,
+    and MINVAL and RANGE are derived from those values).
+    MAXVAL is MINVAL + RANGE.
+
+    There *MUST* be max_case_bit_tests or less unique case
+    node targets.  */
+  void emit (tree index_expr, tree index_type,
+	     tree default_label_expr, basic_block default_bb);
+
+  /* Return true when RANGE of case values with UNIQ labels
+     can build a bit test.  */
+  static bool can_be_handled (unsigned HOST_WIDE_INT range, unsigned uniq);
+
+  /* Return true when cluster starting at START and ending at END (inclusive)
+     can build a bit test.  */
+  static bool can_be_handled (const vec<cluster *> &clusters, unsigned start,
+			      unsigned end);
+
+  /* Return true when COUNT of cases of UNIQ labels is beneficial for bit test
+     transformation.  */
+  static bool is_beneficial (unsigned count, unsigned uniq);
+
+  /* Return true if cluster starting at START and ending at END (inclusive)
+     is profitable transformation.  */
+  static bool is_beneficial (const vec<cluster *> &clusters, unsigned start,
+			     unsigned end);
+
+/* Split the basic block at the statement pointed to by GSIP, and insert
+   a branch to the target basic block of E_TRUE conditional on tree
+   expression COND.
+
+   It is assumed that there is already an edge from the to-be-split
+   basic block to E_TRUE->dest block.  This edge is removed, and the
+   profile information on the edge is re-used for the new conditional
+   jump.
+
+   The CFG is updated.  The dominator tree will not be valid after
+   this transformation, but the immediate dominators are updated if
+   UPDATE_DOMINATORS is true.
+
+   Returns the newly created basic block.  */
+  static basic_block hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
+						    tree cond,
+						    basic_block case_bb);
+
+  /* Maximum number of different basic blocks that can be handled by
+     a bit test.  */
+  static const int m_max_case_bit_tests = 3;
+};
+
+/* Helper struct to find minimal clusters.  */
+
+struct min_cluster_item
+{
+  /* Constructor.  */
+  min_cluster_item (unsigned count, unsigned start, unsigned non_jt_cases):
+    m_count (count), m_start (start), m_non_jt_cases (non_jt_cases)
+  {}
+
+  /* Count of clusters.  */
+  unsigned m_count;
+
+  /* Index where is cluster boundary.  */
+  unsigned m_start;
+
+  /* Total number of cases that will not be in a jump table.  */
+  unsigned m_non_jt_cases;
+};
+
+/* Helper struct to represent switch decision tree.  */
+
+struct case_tree_node
+{
+  /* Empty Constructor.  */
+  case_tree_node ();
+
+  /* Left son in binary tree.  */
+  case_tree_node *m_left;
+
+  /* Right son in binary tree; also node chain.  */
+  case_tree_node *m_right;
+
+  /* Parent of node in binary tree.  */
+  case_tree_node *m_parent;
+
+  /* Cluster represented by this tree node.  */
+  cluster *m_c;
+};
+
+inline
+case_tree_node::case_tree_node ():
+  m_left (NULL), m_right (NULL), m_parent (NULL), m_c (NULL)
+{
+}
+
+unsigned int
+jump_table_cluster::case_values_threshold (void)
+{
+  unsigned int threshold = PARAM_VALUE (PARAM_CASE_VALUES_THRESHOLD);
+
+  if (threshold == 0)
+    threshold = targetm.case_values_threshold ();
+
+  return threshold;
+}
+
+/* A case_bit_test represents a set of case nodes that may be
+   selected from using a bit-wise comparison.  HI and LO hold
+   the integer to be tested against, TARGET_EDGE contains the
+   edge to the basic block to jump to upon success and BITS
+   counts the number of case nodes handled by this test,
+   typically the number of bits set in HI:LO.  The LABEL field
+   is used to quickly identify all cases in this set without
+   looking at label_to_block for every case label.  */
+
+struct case_bit_test
+{
+  wide_int mask;
+  basic_block target_bb;
+  tree label;
+  int bits;
+
+  /* Comparison function for qsort to order bit tests by decreasing
+     probability of execution.  */
+  static int cmp (const void *p1, const void *p2);
+};
+
+struct switch_decision_tree
+{
+  /* Constructor.  */
+  switch_decision_tree (gswitch *swtch): m_switch (swtch), m_phi_mapping (),
+    m_case_bbs (), m_case_node_pool ("struct case_node pool"),
+    m_case_list (NULL)
+  {
+  }
+
+  /* Analyze switch statement and return true when the statement is expanded
+     as decision tree.  */
+  bool analyze_switch_statement ();
+
+  /* Attempt to expand CLUSTERS as a decision tree.  Return true when
+     expanded.  */
+  bool try_switch_expansion (vec<cluster *> &clusters);
+
+  /* Reset the aux field of all outgoing edges of switch basic block.  */
+  inline void reset_out_edges_aux ();
+
+  /* Compute the number of case labels that correspond to each outgoing edge of
+     switch statement.  Record this information in the aux field of the edge.
+     */
+  void compute_cases_per_edge ();
+
+  /* Before switch transformation, record all SSA_NAMEs defined in switch BB
+     and used in a label basic block.  */
+  void record_phi_operand_mapping ();
+
+  /* Append new operands to PHI statements that were introduced due to
+     addition of new edges to case labels.  */
+  void fix_phi_operands_for_edges ();
+
+  /* Generate a decision tree, switching on INDEX_EXPR and jumping to
+     one of the labels in CASE_LIST or to the DEFAULT_LABEL.
+
+     We generate a binary decision tree to select the appropriate target
+     code.  */
+  void emit (basic_block bb, tree index_expr,
+	     profile_probability default_prob, tree index_type);
+
+  /* Emit step-by-step code to select a case for the value of INDEX.
+     The thus generated decision tree follows the form of the
+     case-node binary tree NODE, whose nodes represent test conditions.
+     DEFAULT_PROB is probability of cases leading to default BB.
+     INDEX_TYPE is the type of the index of the switch.  */
+  basic_block emit_case_nodes (basic_block bb, tree index,
+			       case_tree_node *node,
+			       profile_probability default_prob,
+			       tree index_type);
+
+  /* Take an ordered list of case nodes
+     and transform them into a near optimal binary tree,
+     on the assumption that any target code selection value is as
+     likely as any other.
+
+     The transformation is performed by splitting the ordered
+     list into two equal sections plus a pivot.  The parts are
+     then attached to the pivot as left and right branches.  Each
+     branch is then transformed recursively.  */
+  static void balance_case_nodes (case_tree_node **head,
+				  case_tree_node *parent);
+
+  /* Dump ROOT, a list or tree of case nodes, to file F.  */
+  static void dump_case_nodes (FILE *f, case_tree_node *root, int indent_step,
+			       int indent_level);
+
+  /* Add an unconditional jump to CASE_BB that happens in basic block BB.  */
+  static void emit_jump (basic_block bb, basic_block case_bb);
+
+  /* Generate code to compare OP0 with OP1 so that the condition codes are
+     set and to jump to LABEL_BB if the condition is true.
+     COMPARISON is the GIMPLE comparison (EQ, NE, GT, etc.).
+     PROB is the probability of jumping to LABEL_BB.  */
+  static basic_block emit_cmp_and_jump_insns (basic_block bb, tree op0,
+					      tree op1, tree_code comparison,
+					      basic_block label_bb,
+					      profile_probability prob);
+
+  /* Switch statement.  */
+  gswitch *m_switch;
+
+  /* Map of PHI nodes that have to be fixed after expansion.  */
+  hash_map<tree, tree> m_phi_mapping;
+
+  /* List of basic blocks that belong to labels of the switch.  */
+  auto_vec<basic_block> m_case_bbs;
+
+  /* Basic block with default label.  */
+  basic_block m_default_bb;
+
+  /* A pool for case nodes.  */
+  object_allocator<case_tree_node> m_case_node_pool;
+
+  /* Balanced tree of case nodes.  */
+  case_tree_node *m_case_list;
+};
+
 /*
      Switch initialization conversion
 
@@ -254,12 +784,25 @@ struct switch_conversion
      labels.  */
   bool m_default_case_nonstandard;
 
+  /* Number of uniq labels for non-default edges.  */
+  unsigned int m_uniq;
+
   /* Count is number of non-default edges.  */
   unsigned int m_count;
 
   /* True if CFG has been changed.  */
   bool m_cfg_altered;
 };
+
+void
+switch_decision_tree::reset_out_edges_aux ()
+{
+  basic_block bb = gimple_bb (m_switch);
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    e->aux = (void *) 0;
+}
 
 } // tree_switch_conversion namespace
 
