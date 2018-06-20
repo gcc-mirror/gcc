@@ -1,5 +1,10 @@
 2018-06-20  Martin Liska  <mliska@suse.cz>
 
+	* tree-switch-conversion.c (jump_table_cluster::can_be_handled):
+        Change default ratio from 10 to 8.
+
+2018-06-20  Martin Liska  <mliska@suse.cz>
+
 	* tree-switch-conversion.c (jump_table_cluster::find_jump_tables):
         New.
 	(bit_test_cluster::find_bit_tests): Likewise.
