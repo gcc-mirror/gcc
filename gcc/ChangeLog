@@ -1,5 +1,13 @@
 2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Remove
+	redundant check that the types of a PLUS_EXPR or MULT_EXPR agree.
+	(vect_recog_sad_pattern): Likewise PLUS_EXPR, ABS_EXPR and MINUS_EXPR.
+	(vect_recog_widen_mult_pattern): Likewise MULT_EXPR.
+	(vect_recog_widen_sum_pattern): Likewise PLUS_EXPR.
+
+2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-stmts.c (vectorizable_call): Make sure that we
 	use the stmt_vec_info of the original bb statement for the
 	new zero assignment, even if the call is part of a pattern.
