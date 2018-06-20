@@ -1,5 +1,14 @@
 2018-06-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/70966
+	* include/experimental/memory_resource (__resource_adaptor_imp): Add
+	static assertions to enforce requirements on pointer types.
+	(__resource_adaptor_imp::get_allocator()): Add noexcept.
+	(new_delete_resource, null_memory_resource): Return address of an
+	object with dynamic storage duration.
+	(__null_memory_resource): Remove.
+	* testsuite/experimental/memory_resource/70966.cc: New.
+
 	* testsuite/20_util/duration/arithmetic/dr3050.cc: Add new test
 	missed from recent commit.
 
