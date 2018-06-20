@@ -564,8 +564,6 @@ lto_symtab_merge_p (tree prevailing, tree decl)
 	}
     }
 
-  /* FIXME: after MPX is removed, use flags_from_decl_or_type
-     function instead.  PR lto/85248.  */
   if (DECL_ATTRIBUTES (prevailing) != DECL_ATTRIBUTES (decl))
     {
       tree prev_attr = lookup_attribute ("error", DECL_ATTRIBUTES (prevailing));
