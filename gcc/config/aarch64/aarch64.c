@@ -880,7 +880,7 @@ static const struct tune_params xgene1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -5690,7 +5690,10 @@ aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
   return mode == SImode || mode == DImode
 	 || mode == SFmode || mode == DFmode
 	 || (aarch64_vector_mode_supported_p (mode)
-	     && known_eq (GET_MODE_SIZE (mode), 8));
+	     && (known_eq (GET_MODE_SIZE (mode), 8)
+		 || (known_eq (GET_MODE_SIZE (mode), 16)
+		    && (aarch64_tune_params.extra_tuning_flags
+			& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0)));
 }
 
 /* Return true if REGNO is a virtual pointer register, or an eliminable
@@ -5847,7 +5850,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
 	  if (load_store_pair_p)
 	    return ((known_eq (GET_MODE_SIZE (mode), 4)
-		     || known_eq (GET_MODE_SIZE (mode), 8))
+		     || known_eq (GET_MODE_SIZE (mode), 8)
+		     || known_eq (GET_MODE_SIZE (mode), 16))
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
 	    return (offset_9bit_signed_unscaled_p (mode, offset)
@@ -5907,7 +5911,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
 	  if (load_store_pair_p)
 	    return ((known_eq (GET_MODE_SIZE (mode), 4)
-		     || known_eq (GET_MODE_SIZE (mode), 8))
+		     || known_eq (GET_MODE_SIZE (mode), 8)
+		     || known_eq (GET_MODE_SIZE (mode), 16))
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
 	    return offset_9bit_signed_unscaled_p (mode, offset);

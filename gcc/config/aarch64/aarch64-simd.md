@@ -205,6 +205,34 @@
   [(set_attr "type" "neon_stp")]
 )
 
+(define_insn "load_pair<VQ:mode><VQ2:mode>"
+  [(set (match_operand:VQ 0 "register_operand" "=w")
+	(match_operand:VQ 1 "aarch64_mem_pair_operand" "Ump"))
+   (set (match_operand:VQ2 2 "register_operand" "=w")
+	(match_operand:VQ2 3 "memory_operand" "m"))]
+  "TARGET_SIMD
+    && rtx_equal_p (XEXP (operands[3], 0),
+		    plus_constant (Pmode,
+			       XEXP (operands[1], 0),
+			       GET_MODE_SIZE (<VQ:MODE>mode)))"
+  "ldp\\t%q0, %q2, %1"
+  [(set_attr "type" "neon_ldp_q")]
+)
+
+(define_insn "vec_store_pair<VQ:mode><VQ2:mode>"
+  [(set (match_operand:VQ 0 "aarch64_mem_pair_operand" "=Ump")
+	(match_operand:VQ 1 "register_operand" "w"))
+   (set (match_operand:VQ2 2 "memory_operand" "=m")
+	(match_operand:VQ2 3 "register_operand" "w"))]
+  "TARGET_SIMD && rtx_equal_p (XEXP (operands[2], 0),
+		plus_constant (Pmode,
+			       XEXP (operands[0], 0),
+			       GET_MODE_SIZE (<VQ:MODE>mode)))"
+  "stp\\t%q1, %q3, %0"
+  [(set_attr "type" "neon_stp_q")]
+)
+
+
 (define_split
   [(set (match_operand:VQ 0 "register_operand" "")
       (match_operand:VQ 1 "register_operand" ""))]
