@@ -38,9 +38,7 @@ program test
   !$acc end parallel
 end program test
 
-! { dg-final { scan-tree-dump-times "map.tofrom:v1" 8 "gimple" } }
-! { dg-final { scan-tree-dump-times "map.tofrom:v2" 8 "gimple" } }
-! { dg-final { scan-tree-dump-times "map.force_tofrom:v1" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "map.force_tofrom:v2" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "map.tofrom:v1" 9 "gimple" } }
+! { dg-final { scan-tree-dump-times "map.tofrom:v2" 9 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map.force_present:v1" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map.force_present:v2" 1 "gimple" } }

@@ -1,3 +1,31 @@
+2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Add support for
+	OMP_CLAUSE_{IF_PRESENT,FINALIZE}.
+	(gimplify_adjust_omp_clauses): Likewise.
+	(gimplify_oacc_declare_1): Add support for GOMP_MAP_RELEASE, remove
+	support for GOMP_MAP_FORCE_{ALLOC,TO,FROM,TOFROM}.
+	(gimplify_omp_target_update): Update handling of acc update and
+	enter/exit data.
+	* omp-low.c (install_var_field): Remove unused parameter
+	base_pointers_restrict.
+	(scan_sharing_clauses): Remove base_pointers_restrict parameter.
+	Update call to install_var_field. Handle OMP_CLAUSE_{IF_PRESENT,
+	FINALIZE}
+	(omp_target_base_pointers_restrict_p): Delete.
+	(scan_omp_target): Update call to scan_sharing_clauses.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_{IF_PRESENT,
+	FINALIZE}.
+	* tree-nested.c (convert_nonlocal_omp_clauses): Handle
+	OMP_CLAUSE_{IF_PRESENT,FINALIZE}.
+	(convert_local_omp_clauses): Likewise.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	* tree.c (omp_clause_num_ops): Add entries for 	OMP_CLAUSE_{IF_PRESENT,
+	FINALIZE}.
+	(omp_clause_code_name): Likewise.
+
 2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/86194

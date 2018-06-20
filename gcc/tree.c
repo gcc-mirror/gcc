@@ -343,6 +343,8 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_VECTOR_LENGTH  */
   3, /* OMP_CLAUSE_TILE  */
   2, /* OMP_CLAUSE__GRIDDIM_  */
+  0, /* OMP_CLAUSE_IF_PRESENT */
+  0, /* OMP_CLAUSE_FINALIZE */
 };
 
 const char * const omp_clause_code_name[] =
@@ -413,7 +415,9 @@ const char * const omp_clause_code_name[] =
   "num_workers",
   "vector_length",
   "tile",
-  "_griddim_"
+  "_griddim_",
+  "if_present",
+  "finalize",
 };
 
 
@@ -11594,6 +11598,8 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE__SIMT_:
+	case OMP_CLAUSE_IF_PRESENT:
+	case OMP_CLAUSE_FINALIZE:
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_LASTPRIVATE:

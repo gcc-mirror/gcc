@@ -1,3 +1,25 @@
+2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.h (gfc_omp_clauses): Add unsigned if_present, finalize
+	bitfields.
+	* openmp.c (enum omp_mask2): Remove OMP_CLAUSE_PRESENT_OR_*. Add
+	OMP_CLAUSE_{IF_PRESENT,FINALIZE}.
+	(gfc_match_omp_clauses): Update handling of copy, copyin, copyout,
+	create, deviceptr, present_of_*. Add support for finalize and
+	if_present.
+	(OACC_PARALLEL_CLAUSES): Remove PRESENT_OR_* clauses.
+	(OACC_KERNELS_CLAUSES): Likewise.
+	(OACC_DATA_CLAUSES): Likewise.
+	(OACC_DECLARE_CLAUSES): Likewise.
+	(OACC_UPDATE_CLAUSES): Add IF_PRESENT clause.
+	(OACC_ENTER_DATA_CLAUSES): Remove PRESENT_OR_* clauses.
+	(OACC_EXIT_DATA_CLAUSES): Add FINALIZE clause.
+	(gfc_match_oacc_declare): Update to OpenACC 2.5 semantics.
+	* trans-openmp.c (gfc_trans_omp_clauses): Add support for IF_PRESENT
+	and FINALIZE.
+
 2018-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans-decl.c (gfc_get_fake_result_decl): Revert latest change.

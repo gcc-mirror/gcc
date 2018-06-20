@@ -1,3 +1,82 @@
+2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* libgomp.h (struct splay_tree_key_s): Add dynamic_refcount member.
+	(gomp_acc_remove_pointer): Update declaration.
+	(gomp_acc_declare_allocate): Declare.
+	(gomp_remove_var): Declare.
+	* libgomp.map (OACC_2.5): Define.
+	* oacc-mem.c (acc_map_data): Update refcount.
+	(acc_unmap_data): Likewise.
+	(present_create_copy): Likewise.
+	(acc_create): Add FLAG_PRESENT when calling present_create_copy.
+	(acc_copyin): Likewise.
+	(FLAG_FINALIZE): Define.
+	(delete_copyout): Update dynamic refcounts, add support for FINALIZE.
+	(acc_delete_finalize): New function.
+	(acc_delete_finalize_async): New function.
+	(acc_copyout_finalize): New function.
+	(acc_copyout_finalize_async): New function.
+	(gomp_acc_insert_pointer): Update refcounts.
+	(gomp_acc_remove_pointer): Return if data is not present on the
+	accelerator.
+	* oacc-parallel.c (find_pset): Rename to find_pointer.
+	(find_pointer): Add support for GOMP_MAP_POINTER.
+	(handle_ftn_pointers): New function.
+	(GOACC_parallel_keyed): Update refcounts of variables.
+	(GOACC_enter_exit_data): Add support for finalized data mappings.
+	Add support for GOMP_MAP_{TO,ALLOC,RELESE,FROM}. Update handling
+	of fortran arrays.
+	(GOACC_update): Add support for GOMP_MAP_{ALWAYS_POINTER,TO,FROM}.
+	(GOACC_declare): Add support for GOMP_MAP_RELEASE, remove support
+	for GOMP_MAP_FORCE_FROM.
+	* openacc.f90 (module openacc_internal): Add
+	acc_copyout_finalize_{32_h,64_h,array_h,_l}, and
+	acc_delete_finalize_{32_h,64_h,array_h,_l}. Add interfaces for
+	acc_copyout_finalize and acc_delete_finalize.
+	(acc_copyout_finalize_32_h): New subroutine.
+	(acc_copyout_finalize_64_h): New subroutine.
+	(acc_copyout_finalize_array_h): New subroutine.
+	(acc_delete_finalize_32_h): New subroutine.
+	(acc_delete_finalize_64_h): New subroutine.
+	(acc_delete_finalize_array_h): New subroutine.
+	* openacc.h (acc_copyout_finalize): Declare.
+	(acc_copyout_finalize_async): Declare.
+	(acc_delete_finalize): Declare.
+	(acc_delete_finalize_async): Declare.
+	* openacc_lib.h (acc_copyout_finalize): New interface.
+	(acc_delete_finalize): New interface.
+	* target.c (gomp_map_vars): Update dynamic_refcount.
+	(gomp_remove_var): New function.
+	(gomp_unmap_vars): Use it.
+	(gomp_unload_image_from_device): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-1.c: Update test
+	case to utilize OpenACC 2.5 data clause semantics.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-6.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-8.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-16.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-25.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-32.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-83.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-5.f90: New test.
+	* testsuite/libgomp.oacc-fortran/data-already-1.f: Update test case to
+	utilize OpenACC 2.5 data clause semantics.
+	* testsuite/libgomp.oacc-fortran/data-already-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-4.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-5.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-6.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-7.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-8.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-32-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-32-2.f: Likewise.
+
 2018-05-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/85841
