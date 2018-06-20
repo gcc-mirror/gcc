@@ -1,3 +1,49 @@
+2018-06-20  Martin Liska  <mliska@suse.cz>
+
+	* tree-switch-conversion.c (MAX_CASE_BIT_TESTS): Remove.
+	(hoist_edge_and_branch_if_true): Likewise.
+	(expand_switch_using_bit_tests_p): Likewise.
+	(struct case_bit_test): Likewise.
+	(case_bit_test_cmp): Likewise.
+	(emit_case_bit_tests): Likewise.
+	(switch_conversion::switch_conversion): New class.
+	(struct switch_conv_info): Remove old struct.
+	(collect_switch_conv_info): More to ...
+	(switch_conversion::collect): ... this.
+	(check_range): Likewise.
+	(switch_conversion::check_range): Likewise.
+	(check_all_empty_except_final): Likewise.
+	(switch_conversion::check_all_empty_except_final): Likewise.
+	(check_final_bb): Likewise.
+	(switch_conversion::check_final_bb): Likewise.
+	(create_temp_arrays): Likewise.
+	(switch_conversion::create_temp_arrays): Likewise.
+	(free_temp_arrays): Likewise.
+	(gather_default_values): Likewise.
+	(switch_conversion::gather_default_values): Likewise.
+	(build_constructors): Likewise.
+	(switch_conversion::build_constructors): Likewise.
+	(constructor_contains_same_values_p): Likewise.
+	(switch_conversion::contains_same_values_p): Likewise.
+	(array_value_type): Likewise.
+	(switch_conversion::array_value_type): Likewise.
+	(build_one_array): Likewise.
+	(switch_conversion::build_one_array): Likewise.
+	(build_arrays): Likewise.
+	(switch_conversion::build_arrays): Likewise.
+	(gen_def_assigns): Likewise.
+	(switch_conversion::gen_def_assigns): Likewise.
+	(prune_bbs): Likewise.
+	(switch_conversion::prune_bbs): Likewise.
+	(fix_phi_nodes): Likewise.
+	(switch_conversion::fix_phi_nodes): Likewise.
+	(gen_inbound_check): Likewise.
+	(switch_conversion::gen_inbound_check): Likewise.
+	(process_switch): Use the newly created class.
+	(switch_conversion::expand): New.
+	(switch_conversion::~switch_conversion): New.
+	* tree-switch-conversion.h: New file.
+
 2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vectorizer.h (NUM_PATTERNS, vect_recog_func_ptr): Move to
