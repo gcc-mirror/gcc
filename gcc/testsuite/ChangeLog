@@ -1,3 +1,9 @@
+2018-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_q.c: New test.
+	* gcc.target/aarch64/stp_vec_128_1.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_q_disable.c: Likewise.
+
 2018-06-20  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/vrp104.c: Grep just for GIMPLE IL.

@@ -1,3 +1,18 @@
+2018-06-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (no_ldp_stp_qregs): New.
+	* config/aarch64/aarch64.c (xgene1_tunings): Add
+	AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS to tune_flags.
+	(aarch64_mode_valid_for_sched_fusion_p):
+	Allow 16-byte modes.
+	(aarch64_classify_address): Allow 16-byte modes for load_store_pair_p.
+	* config/aarch64/aarch64-ldpstp.md: Add peepholes for LDP STP of
+	128-bit modes.
+	* config/aarch64/aarch64-simd.md (load_pair<VQ:mode><VQ2:mode>):
+	New pattern.
+	(vec_store_pair<VQ:mode><VQ2:mode>): Likewise.
+	* config/aarch64/iterators.md (VQ2): New mode iterator.
+
 2018-06-20  Martin Liska  <mliska@suse.cz>
 
 	* tree-switch-conversion.c (jump_table_cluster::can_be_handled):
