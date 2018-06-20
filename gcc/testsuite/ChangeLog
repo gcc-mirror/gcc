@@ -1,3 +1,8 @@
+2018-06-20  Than McIntosh  <thanm@google.com>
+
+	PR libgcc/86213
+	* gcc.dg/split-8.c: New.
+
 2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

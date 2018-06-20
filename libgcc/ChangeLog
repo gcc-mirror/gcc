@@ -1,3 +1,12 @@
+2018-06-20  Than McIntosh  <thanm@google.com>
+
+	PR libgcc/86213
+	* generic-morestack.c (allocate_segment): Move calls to getenv and
+	getpagesize to __morestack_load_mmap.
+	(__morestack_load_mmap) Initialize static_pagesize and
+	use_guard_page here so as to avoid clobbering SSE regs during a
+	__morestack call.
+
 2018-05-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/85591
