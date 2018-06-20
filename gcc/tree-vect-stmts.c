@@ -3605,13 +3605,12 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   type = TREE_TYPE (scalar_dest);
   if (is_pattern_stmt_p (stmt_info))
-    lhs = gimple_call_lhs (STMT_VINFO_RELATED_STMT (stmt_info));
-  else
-    lhs = gimple_call_lhs (stmt);
+    stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
+  lhs = gimple_get_lhs (stmt_info->stmt);
 
   new_stmt = gimple_build_assign (lhs, build_zero_cst (type));
   set_vinfo_for_stmt (new_stmt, stmt_info);
-  set_vinfo_for_stmt (stmt, NULL);
+  set_vinfo_for_stmt (stmt_info->stmt, NULL);
   STMT_VINFO_STMT (stmt_info) = new_stmt;
   gsi_replace (gsi, new_stmt, false);
 
