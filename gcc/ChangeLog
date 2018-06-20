@@ -1,5 +1,11 @@
 2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-stmts.c (vectorizable_call): Make sure that we
+	use the stmt_vec_info of the original bb statement for the
+	new zero assignment, even if the call is part of a pattern.
+
+2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (_stmt_vec_info): Note above pattern_def_seq
 	that the sequence is attached to the original statement rather
 	than the pattern statement.
