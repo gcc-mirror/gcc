@@ -1628,8 +1628,6 @@ extern int vect_get_place_in_interleaving_chain (gimple *, gimple *);
 /* Pattern recognition functions.
    Additional pattern recognition functions can (and will) be added
    in the future.  */
-typedef gimple *(* vect_recog_func_ptr) (vec<gimple *> *, tree *, tree *);
-#define NUM_PATTERNS 15
 void vect_pattern_recog (vec_info *);
 
 /* In tree-vectorizer.c.  */

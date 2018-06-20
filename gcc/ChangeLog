@@ -1,5 +1,34 @@
 2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vectorizer.h (NUM_PATTERNS, vect_recog_func_ptr): Move to
+	tree-vect-patterns.c.
+	* tree-vect-patterns.c (vect_supportable_direct_optab_p): New function.
+	(vect_recog_dot_prod_pattern): Use it.  Remove the type_in argument.
+	(vect_recog_sad_pattern): Likewise.
+	(vect_recog_widen_sum_pattern): Likewise.
+	(vect_recog_pow_pattern): Likewise.  Check for a null vectype.
+	(vect_recog_widen_shift_pattern): Remove the type_in argument.
+	(vect_recog_rotate_pattern): Likewise.
+	(vect_recog_mult_pattern): Likewise.
+	(vect_recog_vector_vector_shift_pattern): Likewise.
+	(vect_recog_divmod_pattern): Likewise.
+	(vect_recog_mixed_size_cond_pattern): Likewise.
+	(vect_recog_bool_pattern): Likewise.
+	(vect_recog_mask_conversion_pattern): Likewise.
+	(vect_try_gather_scatter_pattern): Likewise.
+	(vect_recog_widen_mult_pattern): Likewise.  Check for a null vectype.
+	(vect_recog_over_widening_pattern): Likewise.
+	(vect_recog_gather_scatter_pattern): Likewise.
+	(vect_recog_func_ptr): Move from tree-vectorizer.h
+	(vect_vect_recog_func_ptrs): Move further down the file.
+	(vect_recog_func): Likewise.  Remove the third argument.
+	(NUM_PATTERNS): Define based on vect_vect_recog_func_ptrs.
+	(vect_pattern_recog_1): Expect the pattern function to do any
+	necessary target tests.  Also expect it to provide a vector type.
+	Remove the type_in handling.
+
+2018-06-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-patterns.c (vect_pattern_detected): New function.
 	(vect_recog_dot_prod_patternm, vect_recog_sad_pattern)
 	(vect_recog_widen_mult_pattern, vect_recog_widen_sum_pattern)
