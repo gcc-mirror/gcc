@@ -1,3 +1,8 @@
+2018-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgrtl.c (rtl_verify_edges): Formatting fix.  If bb->preds has any
+	EDGE_EH edges, verify they are all EDGE_EH.
+
 2018-06-20  Maya Rashish  <coypu@sdf.org>
 
 	* ginclude/stddef.h: Limit #include <machine/ansi.h> to NetBSD.

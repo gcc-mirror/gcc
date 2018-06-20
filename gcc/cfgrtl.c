@@ -2540,15 +2540,15 @@ rtl_verify_edges (void)
 	    n_abnormal++;
 	}
 
-        if (!has_crossing_edge
-	    && JUMP_P (BB_END (bb))
-	    && CROSSING_JUMP_P (BB_END (bb)))
-          {
-	    print_rtl_with_bb (stderr, get_insns (), TDF_BLOCKS | TDF_DETAILS);
-            error ("Region crossing jump across same section in bb %i",
-                   bb->index);
-            err = 1;
-          }
+      if (!has_crossing_edge
+	  && JUMP_P (BB_END (bb))
+	  && CROSSING_JUMP_P (BB_END (bb)))
+	{
+	  print_rtl_with_bb (stderr, get_insns (), TDF_BLOCKS | TDF_DETAILS);
+	  error ("Region crossing jump across same section in bb %i",
+		 bb->index);
+	  err = 1;
+	}
 
       if (n_eh && !find_reg_note (BB_END (bb), REG_EH_REGION, NULL_RTX))
 	{
@@ -2605,6 +2605,19 @@ rtl_verify_edges (void)
 	{
 	  error ("abnormal edges for no purpose in bb %i", bb->index);
 	  err = 1;
+	}
+
+      int has_eh = -1;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if (has_eh == -1)
+	    has_eh = (e->flags & EDGE_EH);
+	  if ((e->flags & EDGE_EH) == has_eh)
+	    continue;
+	  error ("EH incoming edge mixed with non-EH incoming edges "
+		 "in bb %i", bb->index);
+	  err = 1;
+	  break;
 	}
     }
 
