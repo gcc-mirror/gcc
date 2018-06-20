@@ -1,3 +1,8 @@
+2018-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/85634 - tsubst ICE on unmarked lookup
+	* g++.dg/lookup/pr85634.C: New.
+
 2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86210
