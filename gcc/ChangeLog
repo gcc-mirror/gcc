@@ -1,3 +1,28 @@
+2018-06-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-data-ref.c (dr_step_indicator): Handle NULL DR_STEP.
+	* tree-vect-data-refs.c (vect_analyze_possibly_independent_ddr):
+	Avoid calling vect_mark_for_runtime_alias_test with gathers or scatters.
+	(vect_analyze_data_ref_dependence): Re-order checks to deal with
+	NULL DR_STEP.
+	(vect_record_base_alignments): Do not record base alignment
+	for gathers or scatters.
+	(vect_compute_data_ref_alignment): Drop return value that is always
+	true.  Bail out early for gathers or scatters.
+	(vect_enhance_data_refs_alignment): Bail out early for gathers
+	or scatters.
+	(vect_find_same_alignment_drs): Likewise.
+	(vect_analyze_data_refs_alignment): Remove dead code.
+	(vect_slp_analyze_and_verify_node_alignment): Likewise.
+	(vect_analyze_data_refs): For possible gathers or scatters do
+	not create an alternate DR, just check their possible validity
+	and mark them.  Adjust DECL_NONALIASED handling to not rely
+	on DR_BASE_ADDRESS.
+	* tree-vect-loop-manip.c (vect_update_inits_of_drs): Do not
+	update inits of gathers or scatters.
+	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern):
+	Also copy gather/scatter flag to pattern vinfo.
+
 2018-06-20  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Change

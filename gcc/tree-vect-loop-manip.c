@@ -1752,7 +1752,11 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters,
     }
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
-    vect_update_init_of_dr (dr, niters, code);
+    {
+      gimple *stmt = DR_STMT (dr);
+      if (!STMT_VINFO_GATHER_SCATTER_P (vinfo_for_stmt (stmt)))
+	vect_update_init_of_dr (dr, niters, code);
+    }
 }
 
 /* For the information recorded in LOOP_VINFO prepare the loop for peeling
