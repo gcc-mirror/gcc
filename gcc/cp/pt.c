@@ -16687,7 +16687,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		   do.  */
 		if (VAR_P (decl))
 		  DECL_TEMPLATE_INSTANTIATED (decl) = 1;
-		if (VAR_P (decl)
+		if (VAR_P (decl) && !DECL_NAME (decl)
 		    && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
 		  /* Anonymous aggregates are a special case.  */
 		  finish_anon_union (decl);

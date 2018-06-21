@@ -1,3 +1,9 @@
+2018-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86182 - ICE with anonymous union passed to template.
+	* pt.c (tsubst_expr) [DECL_EXPR]: Handle an anonymous union type
+	used to declare a named variable.
+
 2018-06-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/85634 - tsubst ICE on unmarked lookup
