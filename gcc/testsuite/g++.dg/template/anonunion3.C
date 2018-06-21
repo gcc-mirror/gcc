@@ -1,4 +1,4 @@
-// PR c++/86192
+// PR c++/86182
 // { dg-do compile { target c++11 } }
 
 extern "C" int printf (const char *, ...);
