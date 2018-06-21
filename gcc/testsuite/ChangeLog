@@ -1,5 +1,9 @@
 2018-06-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* gcc/gcc.target/aarch64/aes_xor_combine.c: New test.
+
+2018-06-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* gcc/gcc.target/aarch64/aes_2.c: New test.
 
 2018-06-20  Than McIntosh  <thanm@google.com>

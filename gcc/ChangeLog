@@ -1,5 +1,10 @@
 2018-06-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_crypto_aes<aes_op>v16qi_xor_combine): New.
+
+2018-06-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_crypto_aes<aes_op>v16qi):
 	Make opernads of the unspec commutative.
 
