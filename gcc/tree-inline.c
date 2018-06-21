@@ -2151,7 +2151,6 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
   edge_iterator ei;
   edge old_edge;
   gimple_stmt_iterator si;
-  int flags;
   bool need_debug_cleanup = false;
 
   /* Use the indices from the original blocks to create edges for the
@@ -2160,14 +2159,14 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
     if (!(old_edge->flags & EDGE_EH))
       {
 	edge new_edge;
+	int flags = old_edge->flags;
 
-	flags = old_edge->flags;
-
-	/* Return edges do get a FALLTHRU flag when the get inlined.  */
+	/* Return edges do get a FALLTHRU flag when they get inlined.  */
 	if (old_edge->dest->index == EXIT_BLOCK
-	    && !(old_edge->flags & (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE|EDGE_FAKE))
+	    && !(flags & (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE|EDGE_FAKE))
 	    && old_edge->dest->aux != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  flags |= EDGE_FALLTHRU;
+
 	new_edge = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
 	new_edge->probability = old_edge->probability;
       }
@@ -2502,7 +2501,10 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 	      si = ssi;
 	      gsi_prev (&ssi);
 	      if (!single_pred_p (e->dest) && gimple_debug_bind_p (stmt))
-		gimple_debug_bind_reset_value (stmt);
+		{
+		  gimple_debug_bind_reset_value (stmt);
+		  gimple_set_location (stmt, UNKNOWN_LOCATION);
+		}
 	      gsi_remove (&si, false);
 	      gsi_insert_before (&dsi, stmt, GSI_SAME_STMT);
 	      continue;
@@ -2515,10 +2517,10 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 		{
 		  value = gimple_debug_bind_get_value (stmt);
 		  value = unshare_expr (value);
+		  new_stmt = gimple_build_debug_bind (var, value, stmt);
 		}
 	      else
-		value = NULL_TREE;
-	      new_stmt = gimple_build_debug_bind (var, value, stmt);
+		new_stmt = gimple_build_debug_bind (var, NULL_TREE, NULL);
 	    }
 	  else if (gimple_debug_source_bind_p (stmt))
 	    {
@@ -4456,9 +4458,9 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   id->assign_stmts.create (0);
 
   /* Update the callers EH personality.  */
-  if (DECL_FUNCTION_PERSONALITY (cg_edge->callee->decl))
+  if (DECL_FUNCTION_PERSONALITY (fn))
     DECL_FUNCTION_PERSONALITY (cg_edge->caller->decl)
-      = DECL_FUNCTION_PERSONALITY (cg_edge->callee->decl);
+      = DECL_FUNCTION_PERSONALITY (fn);
 
   /* Split the block before the GIMPLE_CALL.  */
   stmt_gsi = gsi_for_stmt (stmt);
@@ -4711,6 +4713,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
     {
       gimple *old_stmt = stmt;
       stmt = gimple_build_assign (gimple_call_lhs (stmt), use_retvar);
+      gimple_set_location (stmt, gimple_location (old_stmt));
       gsi_replace (&stmt_gsi, stmt, false);
       maybe_clean_or_replace_eh_stmt (old_stmt, stmt);
       /* Append a clobber for id->retvar if easily possible.  */
@@ -4806,7 +4809,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
      variables in the function when the blocks get blown away as soon as we
      remove the cgraph node.  */
   if (gimple_block (stmt))
-    (*debug_hooks->outlining_inline_function) (cg_edge->callee->decl);
+    (*debug_hooks->outlining_inline_function) (fn);
 
   /* Update callgraph if needed.  */
   cg_edge->callee->remove ();
