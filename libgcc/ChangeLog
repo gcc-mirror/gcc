@@ -1,3 +1,9 @@
+2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/ieee754-df.S: Remove code for __ARM_ARCH__ < 4, no
+	longer supported.
+	* config/arm/ieee754-sf.S: Likewise.
+
 2018-06-20  Than McIntosh  <thanm@google.com>
 
 	PR libgcc/86213
