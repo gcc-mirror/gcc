@@ -245,7 +245,7 @@ LSYM(Lad_a):
 	@ No rounding necessary since ip will always be 0 at this point.
 LSYM(Lad_l):
 
-#if __ARM_ARCH__ < 5
+#if !defined (__ARM_FEATURE_CLZ)
 
 	teq	xh, #0
 	movne	r3, #20

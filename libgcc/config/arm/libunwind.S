@@ -46,7 +46,7 @@
 	EQUIV SYM (\name), SYM (__\name)
 .endm
 
-#if (__ARM_ARCH__ == 4)
+#if (__ARM_ARCH == 4)
 /* Some coprocessors require armv5t.  We know this code will never be run on
    other cpus.  Tell gas to allow armv5t, but only mark the objects as armv4.
  */
