@@ -5089,6 +5089,7 @@ ipcp_driver (void)
   /* Free all IPCP structures.  */
   free_toporder_info (&topo);
   delete edge_clone_summaries;
+  edge_clone_summaries = NULL;
   ipa_free_all_structures_after_ipa_cp ();
   if (dump_file)
     fprintf (dump_file, "\nIPA constant propagation end\n");
