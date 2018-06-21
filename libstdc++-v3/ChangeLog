@@ -1,3 +1,10 @@
+2018-06-21  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/debug.h
+	(_Safe_iterator<>(const _Safe_iterator<_MutableIterator,>& __x)):
+	Compare __x base iterator with a default initialized iterator of the
+	same type.
+
 2018-06-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/70966

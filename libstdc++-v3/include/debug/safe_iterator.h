@@ -180,7 +180,7 @@ namespace __gnu_debug
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-				|| __x.base() == _Iterator(),
+				|| __x.base() == _MutableIterator(),
 				_M_message(__msg_init_const_singular)
 				._M_iterator(*this, "this")
 				._M_iterator(__x, "other"));
