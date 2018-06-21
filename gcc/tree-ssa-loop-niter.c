@@ -2575,9 +2575,6 @@ number_of_iterations_popcount (loop_p loop, edge exit,
     return false;
 
   /* Update NITER params accordingly  */
-  max = TYPE_PRECISION (TREE_TYPE (src));
-  if (adjust)
-    max = max - 1;
   tree utype = unsigned_type_for (TREE_TYPE (src));
   src = fold_convert (utype, src);
   tree call = fold_convert (utype, build_call_expr (fn, 1, src));
@@ -2587,6 +2584,15 @@ number_of_iterations_popcount (loop_p loop, edge exit,
 			build_int_cst (utype, 1));
   else
     iter = call;
+
+  if (TREE_CODE (call) == INTEGER_CST)
+    max = tree_to_uhwi (call);
+  else
+    {
+      max = TYPE_PRECISION (TREE_TYPE (src));
+      if (adjust)
+	max = max - 1;
+    }
 
   niter->niter = iter;
   niter->assumptions = boolean_true_node;
