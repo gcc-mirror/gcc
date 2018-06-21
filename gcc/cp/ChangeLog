@@ -1,3 +1,11 @@
+2018-06-21  Jason Merrill  <jason@redhat.com>
+
+	Let -fmem-report see callers of cxx_make_type.
+	* lex.c (cxx_make_type): Add MEM_STAT_DECL.
+	(make_class_type): Likewise.
+	(cxx_make_type_hook): New.
+	* cp-objcp-common.h (LANG_HOOKS_MAKE_TYPE): Use cxx_make_type_hook.
+
 2018-06-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/85634
