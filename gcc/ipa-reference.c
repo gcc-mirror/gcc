@@ -1230,6 +1230,12 @@ make_pass_ipa_reference (gcc::context *ctxt)
 void
 ipa_reference_c_finalize (void)
 {
+  if (ipa_ref_opt_sum_summaries != NULL)
+    {
+      delete ipa_ref_opt_sum_summaries;
+      ipa_ref_opt_sum_summaries = NULL;
+    }
+
   if (ipa_init_p)
     {
       bitmap_obstack_release (&optimization_summary_obstack);
