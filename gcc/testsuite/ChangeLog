@@ -1,3 +1,8 @@
+2018-06-21  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/85859
+	* gcc.dg/pr85859.c: New test.
+
 2018-06-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86232
