@@ -1,3 +1,11 @@
+2018-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.c (copy_edges_for_bb): Minor tweak.
+	(maybe_move_debug_stmts_to_successors): Also reset the locus of the
+	debug statement when resetting its value.
+	(expand_call_inline): Copy the locus of the call onto the assignment
+	of the return value, if any.  Use local variable in more cases.
+
 2018-06-21  Martin Liska  <mliska@suse.cz>
 
 	* ipa-pure-const.c (propagate_nothrow): Use
