@@ -223,8 +223,15 @@ get_frame_type (struct nesting_info *info)
       free (name);
 
       info->frame_type = type;
-      info->frame_decl = create_tmp_var_for (info, type, "FRAME");
+
+      /* Do not put info->frame_decl on info->new_local_var_chain,
+	 so that we can declare it in the lexical blocks, which
+	 makes sure virtual regs that end up appearing in its RTL
+	 expression get substituted in instantiate_virtual_regs.  */
+      info->frame_decl = create_tmp_var_raw (type, "FRAME");
+      DECL_CONTEXT (info->frame_decl) = info->context;
       DECL_NONLOCAL_FRAME (info->frame_decl) = 1;
+      DECL_SEEN_IN_BIND_EXPR_P (info->frame_decl) = 1;
 
       /* ??? Always make it addressable for now, since it is meant to
 	 be pointed to by the static chain pointer.  This pessimizes
@@ -234,6 +241,7 @@ get_frame_type (struct nesting_info *info)
 	 local frame structure in the first place.  */
       TREE_ADDRESSABLE (info->frame_decl) = 1;
     }
+
   return type;
 }
 
@@ -3117,18 +3125,6 @@ finalize_nesting_tree_1 (struct nesting_info *root)
       gimple_seq_add_stmt (&stmt_list,
 			   gimple_build_assign (fb_ref, fb_tmp));
 
-      /* Remove root->frame_decl from root->new_local_var_chain, so
-	 that we can declare it also in the lexical blocks, which
-	 helps ensure virtual regs that end up appearing in its RTL
-	 expression get substituted in instantiate_virtual_regs().  */
-      tree *adjust;
-      for (adjust = &root->new_local_var_chain;
-	   *adjust != root->frame_decl;
-	   adjust = &DECL_CHAIN (*adjust))
-	gcc_assert (DECL_CHAIN (*adjust));
-      *adjust = DECL_CHAIN (*adjust);
-
-      DECL_CHAIN (root->frame_decl) = NULL_TREE;
       declare_vars (root->frame_decl,
 		    gimple_seq_first_stmt (gimple_body (context)), true);
     }
