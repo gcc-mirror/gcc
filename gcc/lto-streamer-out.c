@@ -801,10 +801,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 
       DFS_follow_tree_edge (DECL_ATTRIBUTES (expr));
 
-      /* Do not follow DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
-	 for early inlining so drop it on the floor instead of ICEing in
-	 dwarf2out.c.
-	 We however use DECL_ABSTRACT_ORIGIN == error_mark_node to mark
+      /* We use DECL_ABSTRACT_ORIGIN == error_mark_node to mark
 	 declarations which should be eliminated by decl merging. Be sure none
 	 leaks to this point.  */
       gcc_assert (DECL_ABSTRACT_ORIGIN (expr) != error_mark_node);
@@ -917,20 +914,8 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	  DFS_follow_tree_edge (t);
 
       DFS_follow_tree_edge (BLOCK_SUPERCONTEXT (expr));
+      DFS_follow_tree_edge (BLOCK_ABSTRACT_ORIGIN (expr));
 
-      /* Follow BLOCK_ABSTRACT_ORIGIN for the limited cases we can
-	 handle - those that represent inlined function scopes.
-	 For the drop rest them on the floor instead of ICEing
-	 in dwarf2out.c, but keep the notion of whether the block
-	 is an inlined block by refering to itself for the sake of
-	 tree_nonartificial_location.  */
-      if (inlined_function_outer_scope_p (expr))
-	{
-	  tree ultimate_origin = block_ultimate_origin (expr);
-	  DFS_follow_tree_edge (ultimate_origin);
-	}
-      else if (BLOCK_ABSTRACT_ORIGIN (expr))
-	DFS_follow_tree_edge (expr);
       /* Do not follow BLOCK_NONLOCALIZED_VARS.  We cannot handle debug
 	 information for early inlined BLOCKs so drop it on the floor instead
 	 of ICEing in dwarf2out.c.  */

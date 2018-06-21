@@ -927,11 +927,6 @@ lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
   BLOCK_VARS (expr) = streamer_read_chain (ib, data_in);
 
   BLOCK_SUPERCONTEXT (expr) = stream_read_tree (ib, data_in);
-
-  /* Stream BLOCK_ABSTRACT_ORIGIN and BLOCK_SOURCE_LOCATION for
-     the limited cases we can handle - those that represent inlined
-     function scopes.  For the rest them on the floor instead of ICEing in
-     dwarf2out.c.  */
   BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree (ib, data_in);
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
