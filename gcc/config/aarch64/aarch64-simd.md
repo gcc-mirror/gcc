@@ -5886,6 +5886,29 @@
   [(set_attr "type" "crypto_aese")]
 )
 
+(define_insn "*aarch64_crypto_aes<aes_op>v16qi_xor_combine"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(xor:V16QI
+			(match_operand:V16QI 1 "register_operand" "%0")
+			(match_operand:V16QI 2 "register_operand" "w"))
+		       (match_operand:V16QI 3 "aarch64_simd_imm_zero" "")]
+		       CRYPTO_AES))]
+  "TARGET_SIMD && TARGET_AES"
+  "aes<aes_op>\\t%0.16b, %2.16b"
+  [(set_attr "type" "crypto_aese")]
+)
+
+(define_insn "*aarch64_crypto_aes<aes_op>v16qi_xor_combine"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(match_operand:V16QI 3 "aarch64_simd_imm_zero" "")
+	(xor:V16QI (match_operand:V16QI 1 "register_operand" "%0")
+		   (match_operand:V16QI 2 "register_operand" "w"))]
+	CRYPTO_AES))]
+  "TARGET_SIMD && TARGET_AES"
+  "aes<aes_op>\\t%0.16b, %2.16b"
+  [(set_attr "type" "crypto_aese")]
+)
+
 ;; When AES/AESMC fusion is enabled we want the register allocation to
 ;; look like:
 ;;    AESE Vn, _
