@@ -1,5 +1,29 @@
 2018-06-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83328
+	* acinclude.m4 (libtool_VERSION): Bump to 6:26:0.
+	* config/abi/pre/gnu.ver: Add GLIBCXX_3.4.26 and export new symbol.
+	* configure: Regenerate.
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::insert(const_iterator, initializer_list<C>)): Add.
+	[_GLIBCXX_USE_CXX11_ABI && !_GLIBCXX_DEFINING_STRING_INSTANTIATIONS]
+	(basic_string::insert(iterator, initializer_list<C>)): Suppress
+	definition.
+	* include/debug/string (basic_string::insert(iterator, C)): Change
+	first parameter to const_iterator.
+	(basic_string::insert(iterator, size_type, C)): Likewise. Change
+	return type to iterator.
+	(basic_string::insert(iterator, InputIterator, InputIterator)):
+	Likewise.
+	(basic_string::insert(iterator, initializer_list<C>)): Change first
+	parameter to const_iterator and return type to iterator.
+	* src/c++11/string-inst.cc: Extend comment.
+	* testsuite/21_strings/basic_string/modifiers/insert/char/83328.cc:
+	New.
+	* testsuite/21_strings/basic_string/modifiers/insert/wchar_t/83328.cc:
+	New.
+	* testsuite/util/testsuite_abi.cc: Add new symbol version.
+
 	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
 
 	PR libstdc++/70940

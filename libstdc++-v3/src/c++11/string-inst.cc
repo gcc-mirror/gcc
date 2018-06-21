@@ -39,6 +39,8 @@
 // basic_string(size_type, _CharT, const _Alloc&) constructors from being
 // replaced by constrained function templates, so that we instantiate the
 // pre-C++17 definitions.
+// This also causes the instantiation of the non-standard C++0x-era
+// insert(iterator, initializer_list<C>) overload, see PR libstdc++/83328
 #define _GLIBCXX_DEFINING_STRING_INSTANTIATIONS 1
 
 #include <string>

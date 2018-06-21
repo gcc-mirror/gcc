@@ -544,7 +544,7 @@ template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
     }
 
     iterator
-    insert(iterator __p, _CharT __c)
+    insert(const_iterator __p, _CharT __c)
     {
       __glibcxx_check_insert(__p);
       typename _Base::iterator __res = _Base::insert(__p.base(), __c);
@@ -552,37 +552,40 @@ template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
       return iterator(__res, this);
     }
 
-    void
-    insert(iterator __p, size_type __n, _CharT __c)
+    iterator
+    insert(const_iterator __p, size_type __n, _CharT __c)
     {
       __glibcxx_check_insert(__p);
-      _Base::insert(__p.base(), __n, __c);
+      typename _Base::iterator __res = _Base::insert(__p.base(), __n, __c);
       this->_M_invalidate_all();
+      return iterator(__res, this);
     }
 
     template<typename _InputIterator>
-      void
-      insert(iterator __p, _InputIterator __first, _InputIterator __last)
+      iterator
+      insert(const_iterator __p, _InputIterator __first, _InputIterator __last)
       {
 	typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
 	__glibcxx_check_insert_range2(__p, __first, __last, __dist);
 
+	typename _Base::iterator __res;
 	if (__dist.second >= __dp_sign)
-	  _Base::insert(__p.base(), __gnu_debug::__unsafe(__first),
-				    __gnu_debug::__unsafe(__last));
+	  __res = _Base::insert(__p.base(), __gnu_debug::__unsafe(__first),
+				__gnu_debug::__unsafe(__last));
 	else
-	  _Base::insert(__p.base(), __first, __last);
-
+	  __res = _Base::insert(__p.base(), __first, __last);
 	this->_M_invalidate_all();
+	return iterator(__res, this);
       }
 
 #if __cplusplus >= 201103L
-    void
-    insert(iterator __p, std::initializer_list<_CharT> __l)
+    iterator
+    insert(const_iterator __p, std::initializer_list<_CharT> __l)
     {
       __glibcxx_check_insert(__p);
-      _Base::insert(__p.base(), __l);
+      const auto __res = _Base::insert(__p.base(), __l);
       this->_M_invalidate_all();
+      return iterator(__res, this);
     }
 #endif // C++11
 
