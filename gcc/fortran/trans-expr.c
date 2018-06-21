@@ -5941,7 +5941,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
     {
       if (ts.u.cl->length == NULL)
 	{
-	  /* Assumed character length results are not allowed by 5.1.1.5 of the
+	  /* Assumed character length results are not allowed by C418 of the 2003
 	     standard and are trapped in resolve.c; except in the case of SPREAD
 	     (and other intrinsics?) and dummy functions.  In the case of SPREAD,
 	     we take the character length of the first argument for the result.
