@@ -1,3 +1,16 @@
+2018-06-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86138
+	* include/bits/basic_string.tcc:
+	[__cplusplus > 201402 && !_GLIBCXX_USE_CXX11_ABI]
+	(basic_string<char>::_Rep::_S_empty_rep_storage)
+	(basic_string<wchar_t>::_Rep::_S_empty_rep_storage): Add explicit
+	instantiation declarations.
+	[__cplusplus > 201402] (operator>>, operator<<, getline): Re-enable
+	explicit instantiation declarations.
+	* testsuite/21_strings/basic_string/cons/char/86138.cc: New.
+	* testsuite/21_strings/basic_string/cons/wchar_t/86138.cc: New.
+
 2018-06-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83328
