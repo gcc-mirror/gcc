@@ -5878,7 +5878,7 @@
 
 (define_insn "aarch64_crypto_aes<aes_op>v16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=w")
-        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "0")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "%0")
 		       (match_operand:V16QI 2 "register_operand" "w")]
          CRYPTO_AES))]
   "TARGET_SIMD && TARGET_AES"
