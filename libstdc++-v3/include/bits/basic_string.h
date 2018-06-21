@@ -1598,12 +1598,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param __l  The initializer_list of characters to insert.
        *  @throw  std::length_error  If new length exceeds @c max_size().
        */
+      iterator
+      insert(const_iterator __p, initializer_list<_CharT> __l)
+      { return this->insert(__p, __l.begin(), __l.end()); }
+
+#ifdef _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
+      // See PR libstdc++/83328
       void
       insert(iterator __p, initializer_list<_CharT> __l)
       {
 	_GLIBCXX_DEBUG_PEDASSERT(__p >= begin() && __p <= end());
 	this->insert(__p - begin(), __l.begin(), __l.size());
       }
+#endif
 #endif // C++11
 
       /**
