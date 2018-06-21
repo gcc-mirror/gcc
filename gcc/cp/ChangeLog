@@ -1,5 +1,9 @@
 2018-06-21  Jason Merrill  <jason@redhat.com>
 
+	* name-lookup.c (do_push_to_top_level): Don't allocate
+	current_lang_base.
+	(do_pop_from_top_level): Release current_lang_base.
+
 	Let -fmem-report see callers of cxx_make_type.
 	* lex.c (cxx_make_type): Add MEM_STAT_DECL.
 	(make_class_type): Likewise.
