@@ -1,3 +1,15 @@
+2018-06-21  Nathan Sidwell  <nathan@acm.org>
+
+	Use getaddrinfo, not gethostbyname2
+	gcc/
+	* configure.ac (HAVE_AF_INET6): Test for getaddrinfo.
+	* configure: Rebuilt.
+	* doc/invoke.text (C++ Modules): Default is loopback.
+	gcc/cp/
+	* module.c (module_mapper::module_mapper): Reorganize network startup.
+	gcc/testsuite/
+	* g++.dg/modules/bad-mapper-[23].C: Adjust diagnostics.
+
 2018-06-19  Nathan Sidwell  <nathan@acm.org>
 
 	Early & late location maps.

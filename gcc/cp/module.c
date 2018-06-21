@@ -173,12 +173,12 @@ Classes used:
 # endif
 # include <netinet/in.h>
 # ifdef HAVE_AF_INET6
-/* sockaddr_in6, gethostbyname2, ntohs, htons.  */
+/* sockaddr_in6, getaddrinfo, freeaddrinfo, gai_strerror, ntohs, htons.  */
 #  include <netdb.h>
 # endif
 #endif
 #ifndef HAVE_AF_INET6
-# define hstrerror(X) ""
+# define gai_strerror(X) ""
 #endif
 
 #if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
@@ -6946,34 +6946,27 @@ module_mapper::module_mapper (location_t loc, const char *option)
 
       /* Does it look like a socket?  */
 #ifdef NETWORKING
-      union saddr {
-	sa_family_t fam;
 #ifdef HAVE_AF_UNIX
-	sockaddr_un un;
+      sockaddr_un un;
+      size_t un_len = 0;
 #endif
 #ifdef HAVE_AF_INET6
-	sockaddr_in6 in6;
+      struct addrinfo *addrs = NULL;
+      int port = 0;
 #endif
-      } saddr;
-#endif
-      size_t saddr_len = 0;
-
-#ifdef NETWORKING
-      saddr.fam = AF_UNSPEC;
 #endif
       if (writable[0] == '=')
 	{
 	  /* A local socket.  */
 #ifdef HAVE_AF_UNIX
-	  if (len < sizeof (saddr.un.sun_path))
+	  if (len < sizeof (un.sun_path))
 	    {
-	      memset (&saddr.un, 0, sizeof (saddr.un));
-	      saddr.un.sun_family = AF_UNIX;
-	      memcpy (saddr.un.sun_path, writable + 1, len);
+	      memset (&un, 0, sizeof (un));
+	      un.sun_family = AF_UNIX;
+	      memcpy (un.sun_path, writable + 1, len);
 	    }
-	  saddr_len = offsetof (union saddr, un.sun_path) + len + 1;
+	  un_len = offsetof (struct sockaddr_un, sun_path) + len + 1;
 #else
-	  saddr_len = 1;
 	  errmsg = "unix protocol unsupported";
 #endif
 	  name = writable;
@@ -6982,60 +6975,86 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	{
 	  /* Try a hostname:port address.  */
 	  char *endp;
-	  int port ATTRIBUTE_UNUSED = strtoul (colon + 1, &endp, 10);
-
-	  if (endp != colon + 1 && !*endp)
+	  port = strtoul (colon + 1, &endp, 10);
+	  if (port && endp != colon + 1 && !*endp)
 	    {
 	      /* Ends in ':number', treat as ipv6 domain socket.  */
-	      *colon = 0;
 #ifdef HAVE_AF_INET6
-	      if (struct hostent *hent
-		  = gethostbyname2 (colon != writable
-				    ? writable : "localhost", AF_INET6))
+	      addrinfo hints;
+
+	      hints.ai_flags = AI_NUMERICSERV;
+	      hints.ai_family = AF_INET6;
+	      hints.ai_socktype = SOCK_STREAM;
+	      hints.ai_protocol = 0;
+	      hints.ai_addrlen = 0;
+	      hints.ai_addr = NULL;
+	      hints.ai_canonname = NULL;
+	      hints.ai_next = NULL;
+
+	      *colon = 0;
+	      /* getaddrinfo requires a port number, but is quite
+		 happy to accept invalid ones.  So don't rely on it.  */
+	      if (int e = getaddrinfo (colon == writable ? NULL : writable,
+				       "0", &hints, &addrs))
 		{
-		  memset (&saddr.in6, 0, sizeof (saddr.in6));
-		  saddr.in6.sin6_port = htons (port);
-		  if (ntohs (saddr.in6.sin6_port) != port)
-		    errno = EINVAL;
-		  else
-		    saddr.in6.sin6_family = AF_INET6;
-		  memcpy (&saddr.in6.sin6_addr, hent->h_addr, hent->h_length);
+		  err = e;
+		  errmsg = "resolving address";
 		}
-	      else
-		errno = -h_errno;
-	      saddr_len = sizeof (saddr.in6);
+	      *colon = ':';
 #else
-	      saddr_len = 1;
 	      errmsg = "ipv6 protocol unsupported";
 #endif
-	      *colon = ':';
 	      name = writable;
 	    }
 	}
-
-#ifdef NETWORKING
-      if (saddr.fam != AF_UNSPEC)
+      
+      if (name)
 	{
-	  fd = socket (saddr.fam, SOCK_STREAM, 0);
-	  if (fd < 0 || connect (fd, (sockaddr *)&saddr, saddr_len) < 0)
+#ifdef HAVE_AF_UNIX
+	  if (un_len)
+	    {
+	      fd = socket (un.sun_family, SOCK_STREAM, 0);
+	      if (fd < 0 || connect (fd, (sockaddr *)&un, un_len) < 0)
+		if (fd >= 0)
+		  {
+		    close (fd);
+		    fd = -1;
+		  }
+	    }
+#endif
+#ifdef HAVE_AF_INET6
+	  fd = socket (AF_INET6, SOCK_STREAM, 0);
+	  if (fd >= 0)
+	    {
+	      struct addrinfo *next;
+	      for (next = addrs; next; next = next->ai_next)
+		if (next->ai_family == AF_INET6
+		    && next->ai_socktype == SOCK_STREAM)
+		  {
+		    sockaddr_in6 *in6 = (sockaddr_in6 *)next->ai_addr;
+		    in6->sin6_port = htons (port);
+		    if (ntohs (in6->sin6_port) != port)
+		      errno = EINVAL;
+		    else if (!connect (fd, next->ai_addr, next->ai_addrlen))
+		      break;
+		  }
+	      if (!next)
+		{
+		  close (fd);
+		  fd = -1;
+		}
+	    }
+	  freeaddrinfo (addrs);
+#endif
+	  if (fd >= 0)
+	    /* We have a socket.  */
+	    fd_from = fd_to = fd;
+	  else if (!errmsg)
 	    {
 	      err = errno;
 	      errmsg = "connecting socket";
-	      if (fd >= 0)
-		close (fd);
-	      fd = -1;
 	    }
-	  else
-	    /* We have a socket.  */
-	    fd_from = fd_to = fd;
 	}
-      else
-#endif
-	if (saddr_len && !errmsg)
-	  {
-	    err = errno;
-	    errmsg = "resolving address";
-	  }
     }
 
   if (!name)
@@ -7058,7 +7077,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
       error_at (loc, err <= 0 ? "failed %s of mapper %qs: %s"
 		: "failed %s of mapper %qs: %m",
 		errmsg, name ? name : option,
-		err < 0 ? hstrerror (-err) : "Facility not provided");
+		err < 0 ? gai_strerror (err) : "Facility not provided");
       kill (loc);
       return;
     }

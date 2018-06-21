@@ -1421,8 +1421,19 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <netdb.h>]],[[
 sockaddr_in6 in6;
 in6.sin6_family = AF_UNSPEC;
-hostent *hent = gethostbyname2 ("localhost", AF_INET6);
-const char *str = hstrerror (h_errno);
+struct addrinfo *addrs = NULL;
+struct addrinfo hints;
+hints.ai_flags = 0;
+hints.ai_family = AF_INET6;
+hints.ai_socktype = SOCK_STREAM;
+hints.ai_protocol = 0;
+hints.ai_canonname = NULL;
+hints.ai_addr = NULL;
+hints.ai_next = NULL;
+
+int e = getaddrinfo ("localhost", NULL, &hints, &addrs);
+const char *str = gai_strerror (e);
+freeaddrinfo (addrs);
 int fd = socket (AF_INET6, SOCK_STREAM, 0);
 connect (fd, (sockaddr *)&in6, sizeof (in6));]])],
 [ac_cv_af_inet6=yes],
