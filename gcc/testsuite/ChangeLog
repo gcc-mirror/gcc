@@ -1,6 +1,20 @@
 2018-06-21  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2018-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84607
+	* gcc.dg/pr84607.c: New testcase.
+
+	2018-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85588
+	* gcc.dg/torture/pr85588.c: New testcase.
+	* gcc.dg/torture/pr57656.c: Use dg-additional-options.
+
+2018-06-21  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2017-08-21  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81884

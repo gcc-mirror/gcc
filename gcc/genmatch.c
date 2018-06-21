@@ -1930,7 +1930,11 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg,
       if (c->what
 	  && (e = dyn_cast <expr *> (c->what)))
 	{
-	  info[where].expr_p = true;
+	  /* Zero-operand expression captures like ADDR_EXPR@0 are
+	     similar as predicates -- if they are not mentioned in
+	     the result we have to force them to have no side-effects.  */
+	  if (e->ops.length () != 0)
+	    info[where].expr_p = true;
 	  info[where].force_single_use |= e->force_single_use;
 	}
     }
