@@ -1,5 +1,10 @@
 2018-06-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* except.c (finish_eh_generation): Commit edge insertions only after
+	the EH edges have been redirected from post-landing to landing pads.
+
+2018-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree-nested.c (get_frame_type): Use create_tmp_var_raw instead of
 	create_tmp_var_for to create the FRAME decl.
 	(finalize_nesting_tree_1): Do not unchain the FRAME decl.
