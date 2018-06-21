@@ -488,7 +488,7 @@ Objective-C and Objective-C++ Dialects}.
 -dD  -dI  -dM  -dN  -dU @gol
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
--finput-charset=@var{charset} -fmodule-prefix @gol
+-finput-charset=@var{charset} -fmodule-preamble @gol
 -fmacro-prefix-map=@var{old}=@var{new}  @gol
 -fno-canonical-system-headers @gol -fpch-deps  -fpch-preprocess  @gol
 -fpreprocessed -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
@@ -29471,7 +29471,7 @@ Usually importing a module will load minimal information, defering the
 bulk of the loading to the point at which name-lookup inspects a
 particular namespace-scope name.
 
-The @option{-fmodule-prefix} option may be added when preprocessing with
+The @option{-fmodule-preamble} option may be added when preprocessing with
 @option{-E}.  This causes preprocessing to terminate once the Atom
 preamble is processed.  Build systems may need to determine the set of
 imports a compilation needed, and this allows that without the expense

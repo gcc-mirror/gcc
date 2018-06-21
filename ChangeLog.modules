@@ -1,5 +1,13 @@
 2018-06-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family/
+	* c.opt: Add -fmodule-header.
+	gcc/cp/
+	* lang-specs.h: Add legacy import options.
+	* module.c (module_header_name): New.
+	(init_module_processing): Default it.
+	(handle_module_option): Set it.
+
 	Use getaddrinfo, not gethostbyname2
 	gcc/
 	* configure.ac (HAVE_AF_INET6): Test for getaddrinfo.

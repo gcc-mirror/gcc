@@ -2827,6 +2827,9 @@ bool module_state_hash::equal (const value_type existing,
 /* Mapper name.  */
 static const char *module_mapper_name;
 
+/* Legacy header mode.  */
+static const char *module_header_name;
+
 /* BMI repository path and workspace.  */
 static char *bmi_repo;
 static size_t bmi_repo_length;
@@ -10736,8 +10739,28 @@ atom_module_preamble (location_t loc, line_maps *lmaps)
 void
 init_module_processing ()
 {
-  if (pch_file)
-    error ("modules and PCH are incompatible");
+  gcc_assert (pch_file);
+
+  if (module_header_name && !module_header_name[0])
+    {
+      /* Set the module header name from the main_input_filename.  */
+      const char *main = main_input_filename;
+      size_t len = strlen (main);
+      for (; len >= 2; len--)
+	if (IS_DIR_SEPARATOR (main[len-1]))
+	  {
+	    /* Is this '//' or '/./'?  */
+	    size_t peek = len - 2;
+	    if (peek && main[peek] == '.')
+	      peek--;
+	    if (IS_DIR_SEPARATOR (main[peek]))
+	      break;
+	  }
+      if (len < 2)
+	len = 0;
+      module_header_name = main + len;
+      else
+    }
 
   module_state::init ();
 }
@@ -10844,7 +10867,9 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
 }
 
 /* If CODE is a module option, handle it & return true.  Otherwise
-   return false.  */
+   return false.  For unknown reasons I cannot get the option
+   generation machinery to set fmodule-mapper pr -fmodule-header to
+   make a string type option variable.  */
 
 bool
 handle_module_option (unsigned code, const char *str, int num)
@@ -10859,6 +10884,15 @@ handle_module_option (unsigned code, const char *str, int num)
       /* Force atom.  */
       flag_modules = -1;
       flag_module_preamble = num;
+      return true;
+
+    case OPT_fmodule_header:
+      str="";
+      /* FALLTHROUGH.  */
+    case OPT_fmodule_header_:
+      module_header_name = str;
+      /* Force atom.  */
+      flag_modules = -1;
       return true;
 
     default:
