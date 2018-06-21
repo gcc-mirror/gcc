@@ -1,5 +1,15 @@
 2018-06-21  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/49630
+	* resolve.c (resolve_contained_fntype): Change standard ref.
+	from F95 to F2003: C418. Correct a spelling error in a comment.
+	It is an error for an abstract interface to have an assumed
+	character length result.
+	* trans-expr.c (gfc_conv_procedure_call): Likewise change the
+	standard reference.
+
+2018-06-21  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/83118
 	* resolve.c (resolve_ordinary_assign): Force the creation of a
 	vtable for assignment of non-polymorphic expressions to an
