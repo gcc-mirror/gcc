@@ -852,9 +852,9 @@ maybe_add_lang_type_raw (tree t)
 }
 
 tree
-cxx_make_type (enum tree_code code)
+cxx_make_type (enum tree_code code MEM_STAT_DECL)
 {
-  tree t = make_node (code);
+  tree t = make_node (code PASS_MEM_STAT);
 
   if (maybe_add_lang_type_raw (t))
     {
@@ -868,10 +868,18 @@ cxx_make_type (enum tree_code code)
   return t;
 }
 
+/* A wrapper without the memory stats for LANG_HOOKS_MAKE_TYPE.  */
+
 tree
-make_class_type (enum tree_code code)
+cxx_make_type_hook (enum tree_code code)
 {
-  tree t = cxx_make_type (code);
+  return cxx_make_type (code);
+}
+
+tree
+make_class_type (enum tree_code code MEM_STAT_DECL)
+{
+  tree t = cxx_make_type (code PASS_MEM_STAT);
   SET_CLASS_TYPE_P (t, 1);
   return t;
 }
