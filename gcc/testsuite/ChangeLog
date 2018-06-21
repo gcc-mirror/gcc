@@ -1,3 +1,19 @@
+2018-06-21  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81884
+	* g++.dg/torture/pr81884.C: New testcase.
+
+	2018-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85244
+	* gcc.dg/torture/pr85244-1.c: New testcase.
+	* gcc.dg/torture/pr85244-2.c: Likewise.
+
+	* gcc.dg/tree-prof/pr66295.c: Remove unsupported dg-error scanning.
+
 2018-06-20  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

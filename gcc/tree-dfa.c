@@ -433,7 +433,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		   referenced the last field of a struct or a union member
 		   then we have to adjust maxsize by the padding at the end
 		   of our field.  */
-		if (seen_variable_array_ref && maxsize != -1)
+		if (seen_variable_array_ref)
 		  {
 		    tree stype = TREE_TYPE (TREE_OPERAND (exp, 0));
 		    tree next = DECL_CHAIN (field);
@@ -449,7 +449,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			    || ssize == NULL
 			    || TREE_CODE (ssize) != INTEGER_CST)
 			  maxsize = -1;
-			else
+			else if (maxsize != -1)
 			  {
 			    offset_int tem = (wi::to_offset (ssize)
 					      - wi::to_offset (fsize));
@@ -458,6 +458,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			    maxsize += tem;
 			  }
 		      }
+		    /* An component ref with an adjacent field up in the
+		       structure hierarchy constrains the size of any variable
+		       array ref lower in the access hierarchy.  */
+		    else
+		      seen_variable_array_ref = false;
 		  }
 	      }
 	    else
@@ -612,8 +617,9 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
   if (DECL_P (exp))
     {
-      if (flag_unconstrained_commons
-	  && TREE_CODE (exp) == VAR_DECL && DECL_COMMON (exp))
+      if (VAR_P (exp)
+	  && ((flag_unconstrained_commons && DECL_COMMON (exp))
+	      || (DECL_EXTERNAL (exp) && seen_variable_array_ref)))
 	{
 	  tree sz_tree = TYPE_SIZE (TREE_TYPE (exp));
 	  /* If size is unknown, or we have read to the end, assume there

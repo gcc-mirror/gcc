@@ -1,3 +1,27 @@
+2018-06-21  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81884
+	* tree-ssa-alias.c (stmt_kills_ref_p): Handle array accesses
+	at struct end conservatively when comparing common bases.
+
+	2017-05-04  Richard Biener  <rguenther@suse.de>
+ 
+ 	* tree.c (array_at_struct_end_p): Handle arrays at struct
+	end with flexarrays more conservatively.  Refactor and treat
+	arrays of arrays or aggregates more strict.  Fix
+	VIEW_CONVERT_EXPR handling.
+
+	2018-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85244
+	* tree-dfa.c (get_ref_base_and_extent): Reset seen_variable_array_ref
+	after seeing a component reference with an adjacent field.  Treat
+	refs to arrays at struct end of external decls similar to
+	refs to unconstrained commons.
+
 2018-06-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (stmt_kills_ref_p): Revert accidentially

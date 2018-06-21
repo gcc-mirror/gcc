@@ -12944,15 +12944,26 @@ array_ref_up_bound (tree exp)
   return NULL_TREE;
 }
 
-/* Returns true if REF is an array reference to an array at the end of
-   a structure.  If this is the case, the array may be allocated larger
+/* Returns true if REF is an array reference or a component reference
+   to an array at the end of a structure.
+   If this is the case, the array may be allocated larger
    than its upper bound implies.  */
 
 bool
 array_at_struct_end_p (tree ref)
 {
-  if (TREE_CODE (ref) != ARRAY_REF
-      && TREE_CODE (ref) != ARRAY_RANGE_REF)
+  tree atype;
+
+  if (TREE_CODE (ref) == ARRAY_REF
+      || TREE_CODE (ref) == ARRAY_RANGE_REF)
+    {
+      atype = TREE_TYPE (TREE_OPERAND (ref, 0));
+      ref = TREE_OPERAND (ref, 0);
+    }
+  else if (TREE_CODE (ref) == COMPONENT_REF
+	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 1))) == ARRAY_TYPE)
+    atype = TREE_TYPE (TREE_OPERAND (ref, 1));
+  else
     return false;
 
   while (handled_component_p (ref))
@@ -12960,24 +12971,47 @@ array_at_struct_end_p (tree ref)
       /* If the reference chain contains a component reference to a
          non-union type and there follows another field the reference
 	 is not at the end of a structure.  */
-      if (TREE_CODE (ref) == COMPONENT_REF
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 0))) == RECORD_TYPE)
+      if (TREE_CODE (ref) == COMPONENT_REF)
 	{
-	  tree nextf = DECL_CHAIN (TREE_OPERAND (ref, 1));
-	  while (nextf && TREE_CODE (nextf) != FIELD_DECL)
-	    nextf = DECL_CHAIN (nextf);
-	  if (nextf)
-	    return false;
+	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 0))) == RECORD_TYPE)
+	    {
+	      tree nextf = DECL_CHAIN (TREE_OPERAND (ref, 1));
+	      while (nextf && TREE_CODE (nextf) != FIELD_DECL)
+		nextf = DECL_CHAIN (nextf);
+	      if (nextf)
+		return false;
+	    }
 	}
+      /* If we have a multi-dimensional array we do not consider
+         a non-innermost dimension as flex array if the whole
+	 multi-dimensional array is at struct end.
+	 Same for an array of aggregates with a trailing array
+	 member.  */
+      else if (TREE_CODE (ref) == ARRAY_REF)
+	return false;
+      else if (TREE_CODE (ref) == ARRAY_RANGE_REF)
+	;
+      /* If we view an underlying object as sth else then what we
+         gathered up to now is what we have to rely on.  */
+      else if (TREE_CODE (ref) == VIEW_CONVERT_EXPR)
+	break;
+      else
+	gcc_unreachable ();
 
       ref = TREE_OPERAND (ref, 0);
     }
+
+  /* The array now is at struct end.  Treat flexible arrays as
+     always subject to extend, even into just padding constrained by
+     an underlying decl.  */
+  if (! TYPE_SIZE (atype))
+    return true;
 
   /* If the reference is based on a declared entity, the size of the array
      is constrained by its given domain.  (Do not trust commons PR/69368).  */
   if (DECL_P (ref)
       && !(flag_unconstrained_commons
-	   && TREE_CODE (ref) == VAR_DECL && DECL_COMMON (ref)))
+	   && VAR_P (ref) && DECL_COMMON (ref)))
     return false;
 
   return true;

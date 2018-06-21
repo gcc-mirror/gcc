@@ -12,7 +12,7 @@ foo (double *__restrict a, double *__restrict b, int n)
 }
 
 double
-bar (double *__restrict a, double *__restrict b, int n)	/* { dg-error "attribute\[^\n\r]*foo\[^\n\r]* is unknown" } */
+bar (double *__restrict a, double *__restrict b, int n)
 {
   double s;
   int i;
