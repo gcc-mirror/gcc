@@ -1,5 +1,13 @@
 2018-06-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* cfgrtl.c (fixup_reorder_chain): Do not emit NOPs in DECL_IGNORED_P
+	functions.
+	(rtl_merge_blocks): Likewise.  Do not emit a NOP if the location of
+	the edge can be forwarded.
+	(cfg_layout_merge_blocks): Likewise.
+
+2018-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* except.c (finish_eh_generation): Commit edge insertions only after
 	the EH edges have been redirected from post-landing to landing pads.
 
