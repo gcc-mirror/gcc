@@ -1,5 +1,9 @@
 2018-06-21  Tom de Vries  <tdevries@suse.de>
 
+	* gcc.dg/guality/pr45882.c (a): Add used attribute.
+
+2018-06-21  Tom de Vries  <tdevries@suse.de>
+
 	PR tree-optimization/85859
 	* gcc.dg/pr85859.c: New test.
 
