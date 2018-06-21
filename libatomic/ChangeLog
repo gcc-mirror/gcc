@@ -1,3 +1,9 @@
+2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-config.h (__ARM_ARCH__): Remove definitions, use
+	__ARM_ARCH instead. Use __ARM_FEATURE_LDREX to define HAVE_STREX
+	and HAVE_STREXBHD
+
 2018-05-23  Florian Weimer  <fweimer@redhat.com>
 
 	PR libgcc/60790

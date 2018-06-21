@@ -175,7 +175,7 @@ LSYM(Lad_a):
 	@ No rounding necessary since r1 will always be 0 at this point.
 LSYM(Lad_l):
 
-#if __ARM_ARCH__ < 5
+#if !defined (__ARM_FEATURE_CLZ)
 
 	movs	ip, r0, lsr #12
 	moveq	r0, r0, lsl #12
@@ -370,7 +370,7 @@ ARM_FUNC_ALIAS aeabi_l2f floatdisf
 	subeq	r3, r3, #(32 << 23)
 2:	sub	r3, r3, #(1 << 23)
 
-#if __ARM_ARCH__ < 5
+#if !defined (__ARM_FEATURE_CLZ)
 
 	mov	r2, #23
 	cmp	ip, #(1 << 16)

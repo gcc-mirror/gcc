@@ -1,5 +1,15 @@
 2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* config/arm/lib1funcs.S (__ARM_ARCH__): Remove definitions, use
+	__ARM_ARCH and __ARM_FEATURE_CLZ instead.
+	(HAVE_ARM_CLZ): Remove definition, use __ARM_FEATURE_CLZ instead.
+	* config/arm/ieee754-df.S: Use __ARM_FEATURE_CLZ instead of
+	__ARM_ARCH__.
+	* config/arm/ieee754-sf.S: Likewise.
+	* config/arm/libunwind.S: Use __ARM_ARCH instead of __ARM_ARCH__.
+
+2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* config/arm/ieee754-df.S: Remove code for __ARM_ARCH__ < 4, no
 	longer supported.
 	* config/arm/ieee754-sf.S: Likewise.
