@@ -1,3 +1,8 @@
+2018-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86232
+	* gcc.dg/torture/pr86232.c: New testcase.
+
 2018-06-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc/gcc.target/aarch64/aes_xor_combine.c: New test.
