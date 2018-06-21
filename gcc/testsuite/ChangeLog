@@ -1,3 +1,8 @@
+2018-06-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83118
+	* gfortran.dg/unlimited_polymorphic_30.f03: New test.
+
 2018-06-21  Tom de Vries  <tdevries@suse.de>
 
 	* gcc.dg/guality/pr45882.c (a): Add used attribute.
