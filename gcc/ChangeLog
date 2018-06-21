@@ -1,4 +1,29 @@
 2018-06-21  Richard Biener  <rguenther@suse.de>
+ 
+	Backport from mainline
+	2017-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82108
+	* tree-vect-stmts.c (vectorizable_load): Fix pointer adjustment
+	for gap in the non-permutation SLP case.
+
+	2017-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81410
+	* tree-vect-stmts.c (vectorizable_load): Properly adjust for
+	the gap in the ! slp_perm SLP case after each group.
+
+	2017-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79920
+	* tree-vect-slp.c (vect_create_mask_and_perm): Remove and inline
+	with ncopies == 1 to ...
+	(vect_transform_slp_perm_load): ... here.  Properly compute
+	all element loads by iterating VF times over the group.  Do
+	not handle ncopies (computed in a broken way) in
+	vect_create_mask_and_perm.
+
+2018-06-21  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
 	2018-02-28  Richard Biener  <rguenther@suse.de>
