@@ -1,6 +1,14 @@
 2018-06-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/70940
+	* include/experimental/memory_resource
+	(__resource_adaptor_imp::do_deallocate): Add missing return.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc: New.
+	* testsuite/experimental/memory_resource/resource_adaptor.cc: Test
+	resource_adaptor with std::allocator, __gnu_cxx::new_allocator and
+	__gnu_cxx::malloc_allocator.
+
+	PR libstdc++/70940
 	* include/experimental/memory_resource (__resource_adaptor_common):
 	New base class.
 	(__resource_adaptor_common::_AlignMgr): Helper for obtaining aligned

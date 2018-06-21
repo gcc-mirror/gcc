@@ -408,7 +408,10 @@ namespace pmr {
       {
 	auto __ptr = static_cast<char*>(__p);
 	if (__alignment == 1)
-	  _M_alloc.deallocate(__ptr, __bytes);
+	  {
+	    _M_alloc.deallocate(__ptr, __bytes);
+	    return;
+	  }
 
 	const _AlignMgr __mgr(__bytes, __alignment);
 	// Use the stored token to retrieve the original pointer to deallocate.
