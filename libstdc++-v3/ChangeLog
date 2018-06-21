@@ -1,5 +1,7 @@
 2018-06-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+
 	PR libstdc++/70940
 	* include/experimental/memory_resource
 	(__resource_adaptor_imp::do_deallocate): Add missing return.
