@@ -1,5 +1,7 @@
 2018-06-21  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst) [TEMPLATE_TYPE_PARM]: Use TEMPLATE_PARM_DESCENDANTS.
+
 	* name-lookup.c (do_push_to_top_level): Don't allocate
 	current_lang_base.
 	(do_pop_from_top_level): Release current_lang_base.
