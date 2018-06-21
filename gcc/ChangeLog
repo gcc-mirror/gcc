@@ -1,3 +1,9 @@
+2018-06-21  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (extendtfif2): Add missing 128-bit
+	conversion insn that shows up when pr85657-3.c is compiled using
+	IEEE 128-bit long double.
+
 2018-06-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgrtl.c (fixup_reorder_chain): Do not emit NOPs in DECL_IGNORED_P
