@@ -3848,6 +3848,8 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_out)
 	= STMT_VINFO_DATA_REF (stmt_vinfo);
       STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
 	= STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
+      STMT_VINFO_GATHER_SCATTER_P (pattern_stmt_info)
+	= STMT_VINFO_GATHER_SCATTER_P (stmt_vinfo);
 
       *type_out = vectype1;
       stmts->safe_push (last_stmt);

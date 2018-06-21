@@ -267,7 +267,11 @@ vect_analyze_possibly_independent_ddr (data_dependence_relation *ddr,
 
 	     Note that the alias checks will be removed if the VF ends up
 	     being small enough.  */
-	  return vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
+	  return (!STMT_VINFO_GATHER_SCATTER_P
+		     (vinfo_for_stmt (DR_STMT (DDR_A (ddr))))
+		  && !STMT_VINFO_GATHER_SCATTER_P
+		        (vinfo_for_stmt (DR_STMT (DDR_B (ddr))))
+		  && vect_mark_for_runtime_alias_test (ddr, loop_vinfo));
 	}
     }
   return true;
@@ -479,15 +483,15 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  if (loop->safelen < 2)
 	    {
 	      tree indicator = dr_zero_step_indicator (dra);
-	      if (TREE_CODE (indicator) != INTEGER_CST)
-		vect_check_nonzero_value (loop_vinfo, indicator);
-	      else if (integer_zerop (indicator))
+	      if (!indicator || integer_zerop (indicator))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "access also has a zero step\n");
 		  return true;
 		}
+	      else if (TREE_CODE (indicator) != INTEGER_CST)
+		vect_check_nonzero_value (loop_vinfo, indicator);
 	    }
 	  continue;
 	}
@@ -832,19 +836,18 @@ vect_record_base_alignments (vec_info *vinfo)
   FOR_EACH_VEC_ELT (vinfo->datarefs, i, dr)
     {
       gimple *stmt = vect_dr_stmt (dr);
+      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
       if (!DR_IS_CONDITIONAL_IN_STMT (dr)
-	  && STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)))
+	  && STMT_VINFO_VECTORIZABLE (stmt_info)
+	  && !STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	{
 	  vect_record_base_alignment (vinfo, stmt, &DR_INNERMOST (dr));
 
 	  /* If DR is nested in the loop that is being vectorized, we can also
 	     record the alignment of the base wrt the outer loop.  */
 	  if (loop && nested_in_vect_loop_p (loop, stmt))
-	    {
-	      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-	      vect_record_base_alignment
-		 (vinfo, stmt, &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info));
-	    }
+	    vect_record_base_alignment
+		(vinfo, stmt, &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info));
 	}
     }
 }
@@ -865,14 +868,12 @@ vect_calculate_target_alignment (struct data_reference *dr)
    Compute the misalignment of the data reference DR.
 
    Output:
-   1. If during the misalignment computation it is found that the data reference
-      cannot be vectorized then false is returned.
-   2. DR_MISALIGNMENT (DR) is defined.
+   1. DR_MISALIGNMENT (DR) is defined.
 
    FOR NOW: No analysis is actually performed. Misalignment is calculated
    only for trivial cases. TODO.  */
 
-static bool
+static void
 vect_compute_data_ref_alignment (struct data_reference *dr)
 {
   gimple *stmt = vect_dr_stmt (dr);
@@ -892,6 +893,9 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
   /* Initialize misalignment to unknown.  */
   SET_DR_MISALIGNMENT (dr, DR_MISALIGNMENT_UNKNOWN);
+
+  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+    return;
 
   innermost_loop_behavior *drb = vect_dr_behavior (dr);
   bool step_preserves_misalignment_p;
@@ -970,7 +974,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, ref);
 	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	}
-      return true;
+      return;
     }
 
   if (base_alignment < vector_alignment)
@@ -988,7 +992,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
 	      dump_printf (MSG_NOTE, "\n");
 	    }
-	  return true;
+	  return;
 	}
 
       /* Force the alignment of the decl.
@@ -1027,7 +1031,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, ref);
 	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	}
-      return true;
+      return;
     }
 
   SET_DR_MISALIGNMENT (dr, const_misalignment);
@@ -1040,7 +1044,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
       dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
     }
 
-  return true;
+  return;
 }
 
 /* Function vect_update_misalignment_for_peel.
@@ -1733,8 +1737,10 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           && DR_GROUP_FIRST_ELEMENT (stmt_info) != stmt)
         continue;
 
-      /* For invariant accesses there is nothing to enhance.  */
-      if (integer_zerop (DR_STEP (dr)))
+      /* For scatter-gather or invariant accesses there is nothing
+	 to enhance.  */
+      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+	  || integer_zerop (DR_STEP (dr)))
 	continue;
 
       /* Strided accesses perform only component accesses, alignment is
@@ -2295,6 +2301,10 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr)
   if (dra == drb)
     return;
 
+  if (STMT_VINFO_GATHER_SCATTER_P (stmtinfo_a)
+      || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_b))
+    return;
+
   if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0)
       || !operand_equal_p (DR_OFFSET (dra), DR_OFFSET (drb), 0)
       || !operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
@@ -2357,22 +2367,8 @@ vect_analyze_data_refs_alignment (loop_vec_info vinfo)
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       stmt_vec_info stmt_info = vinfo_for_stmt (vect_dr_stmt (dr));
-      if (STMT_VINFO_VECTORIZABLE (stmt_info)
-	  && !vect_compute_data_ref_alignment (dr))
-	{
-	  /* Strided accesses perform only component accesses, misalignment
-	     information is irrelevant for them.  */
-	  if (STMT_VINFO_STRIDED_P (stmt_info)
-	      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
-	    continue;
-
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: can't calculate alignment "
-			     "for data ref.\n");
-
-	  return false;
-	}
+      if (STMT_VINFO_VECTORIZABLE (stmt_info))
+	vect_compute_data_ref_alignment (dr);
     }
 
   return true;
@@ -2393,12 +2389,12 @@ vect_slp_analyze_and_verify_node_alignment (slp_tree node)
     first_stmt = DR_GROUP_FIRST_ELEMENT (vinfo_for_stmt (first_stmt));
 
   data_reference_p dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-  if (! vect_compute_data_ref_alignment (dr)
-      /* For creating the data-ref pointer we need alignment of the
-	 first element anyway.  */
-      || (dr != first_dr
-	  && ! vect_compute_data_ref_alignment (first_dr))
-      || ! verify_data_ref_alignment (dr))
+  vect_compute_data_ref_alignment (dr);
+  /* For creating the data-ref pointer we need alignment of the
+     first element anyway.  */
+  if (dr != first_dr)
+    vect_compute_data_ref_alignment (first_dr);
+  if (! verify_data_ref_alignment (dr))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -4102,21 +4098,20 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	  /* If target supports vector gather loads or scatter stores, or if
 	     this might be a SIMD lane access, see if they can't be used.  */
 	  if (is_a <loop_vec_info> (vinfo)
-	      && (maybe_gather || maybe_scatter || maybe_simd_lane_access)
 	      && !nested_in_vect_loop_p (loop, stmt))
 	    {
-	      struct data_reference *newdr
-		= create_data_ref (NULL, loop_containing_stmt (stmt),
-				   DR_REF (dr), stmt, !maybe_scatter,
-				   DR_IS_CONDITIONAL_IN_STMT (dr));
-	      gcc_assert (newdr != NULL && DR_REF (newdr));
-	      if (DR_BASE_ADDRESS (newdr)
-		  && DR_OFFSET (newdr)
-		  && DR_INIT (newdr)
-		  && DR_STEP (newdr)
-		  && integer_zerop (DR_STEP (newdr)))
+	      if (maybe_simd_lane_access)
 		{
-		  if (maybe_simd_lane_access)
+		  struct data_reference *newdr
+		    = create_data_ref (NULL, loop_containing_stmt (stmt),
+				       DR_REF (dr), stmt, !maybe_scatter,
+				       DR_IS_CONDITIONAL_IN_STMT (dr));
+		  gcc_assert (newdr != NULL && DR_REF (newdr));
+		  if (DR_BASE_ADDRESS (newdr)
+		      && DR_OFFSET (newdr)
+		      && DR_INIT (newdr)
+		      && DR_STEP (newdr)
+		      && integer_zerop (DR_STEP (newdr)))
 		    {
 		      tree off = DR_OFFSET (newdr);
 		      STRIP_NOPS (off);
@@ -4130,7 +4125,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 			  if (CONVERT_EXPR_P (off)
 			      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (off,
 									  0)))
-				 < TYPE_PRECISION (TREE_TYPE (off)))
+			      < TYPE_PRECISION (TREE_TYPE (off)))
 			    off = TREE_OPERAND (off, 0);
 			  if (TREE_CODE (off) == SSA_NAME)
 			    {
@@ -4147,15 +4142,15 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 				  if (arg == loop->simduid
 				      /* For now.  */
 				      && tree_int_cst_equal
-					   (TYPE_SIZE_UNIT (reft),
-					    step))
+				      (TYPE_SIZE_UNIT (reft),
+				       step))
 				    {
 				      DR_OFFSET (newdr) = ssize_int (0);
 				      DR_STEP (newdr) = step;
 				      DR_OFFSET_ALIGNMENT (newdr)
-					= BIGGEST_ALIGNMENT;
+					  = BIGGEST_ALIGNMENT;
 				      DR_STEP_ALIGNMENT (newdr)
-					= highest_pow2_factor (step);
+					  = highest_pow2_factor (step);
 				      dr = newdr;
 				      simd_lane_access = true;
 				    }
@@ -4163,17 +4158,16 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 			    }
 			}
 		    }
-		  if (!simd_lane_access && (maybe_gather || maybe_scatter))
-		    {
-		      dr = newdr;
-		      if (maybe_gather)
-			gatherscatter = GATHER;
-		      else
-			gatherscatter = SCATTER;
-		    }
+		  if (!simd_lane_access)
+		    free_data_ref (newdr);
 		}
-	      if (gatherscatter == SG_NONE && !simd_lane_access)
-		free_data_ref (newdr);
+	      if (!simd_lane_access && (maybe_gather || maybe_scatter))
+		{
+		  if (maybe_gather)
+		    gatherscatter = GATHER;
+		  else
+		    gatherscatter = SCATTER;
+		}
 	    }
 
 	  if (gatherscatter == SG_NONE && !simd_lane_access)
@@ -4196,9 +4190,8 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	    }
         }
 
-      if (TREE_CODE (DR_BASE_ADDRESS (dr)) == ADDR_EXPR
-	  && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (dr), 0))
-	  && DECL_NONALIASED (TREE_OPERAND (DR_BASE_ADDRESS (dr), 0)))
+      tree base = get_base_address (DR_REF (dr));
+      if (base && VAR_P (base) && DECL_NONALIASED (base))
 	{
           if (dump_enabled_p ())
             {
@@ -4218,6 +4211,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	}
 
       if (is_a <loop_vec_info> (vinfo)
+	  && DR_STEP (dr)
 	  && TREE_CODE (DR_STEP (dr)) != INTEGER_CST)
 	{
 	  if (nested_in_vect_loop_p (loop, stmt))
@@ -4330,11 +4324,10 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	      continue;
 	    }
 
-	  if (gatherscatter != SG_NONE || simd_lane_access)
+	  if (simd_lane_access)
 	    {
 	      STMT_VINFO_DATA_REF (stmt_info) = NULL;
-	      if (gatherscatter != SG_NONE)
-		free_data_ref (dr);
+	      free_data_ref (dr);
 	    }
 	  return false;
         }
@@ -4363,8 +4356,6 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 					  &gs_info)
 	      || !get_vectype_for_scalar_type (TREE_TYPE (gs_info.offset)))
 	    {
-	      STMT_VINFO_DATA_REF (stmt_info) = NULL;
-	      free_data_ref (dr);
 	      if (dump_enabled_p ())
 		{
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -4377,9 +4368,6 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 		}
 	      return false;
 	    }
-
-	  free_data_ref (datarefs[i]);
-	  datarefs[i] = dr;
 	  STMT_VINFO_GATHER_SCATTER_P (stmt_info) = gatherscatter;
 	}
     }
