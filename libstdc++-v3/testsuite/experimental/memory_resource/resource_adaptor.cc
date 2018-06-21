@@ -20,6 +20,8 @@
 
 #include <experimental/memory_resource>
 #include <ext/debug_allocator.h>
+#include <ext/new_allocator.h>
+#include <ext/malloc_allocator.h>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
@@ -91,8 +93,8 @@ test05()
   VERIFY( aligned<big_al>(p) );
   r3.deallocate(p, 1, big_al);
 
-  __gnu_cxx::debug_allocator<std::allocator<short>> a5;
-  resource_adaptor<decltype(a5)> r5(a5), r6(a5);
+  __gnu_cxx::debug_allocator<std::allocator<short>> a5, a6;
+  resource_adaptor<decltype(a5)> r5(a5), r6(a6);
   VERIFY( r5 == r5 );
   VERIFY( r5 == r6 );
   VERIFY( r5 != r1 );
@@ -121,6 +123,99 @@ test05()
   p = r5.allocate(1024, al18);
   VERIFY( aligned<al18>(p) );
   r5.deallocate(p, 1024, al18);
+
+  __gnu_cxx::new_allocator<short> a7, a8;
+  resource_adaptor<decltype(a7)> r7(a7), r8(a8);
+  VERIFY( r7 == r7 );
+  VERIFY( r7 == r8 );
+  VERIFY( r7 != r1 );
+  VERIFY( r7 != r3 );
+  VERIFY( r7 != r5 );
+  p = r7.allocate(1);
+  VERIFY( aligned<max_align_t>(p) );
+  r7.deallocate(p, 1);
+  p = r7.allocate(1, alignof(short));
+  VERIFY( aligned<short>(p) );
+  r7.deallocate(p, 1, alignof(short));
+  p = r7.allocate(1, alignof(long));
+  VERIFY( aligned<long>(p) );
+  r7.deallocate(p, 1, alignof(long));
+  p = r7.allocate(1, big_al);
+  VERIFY( aligned<big_al>(p) );
+  r7.deallocate(p, 1, big_al);
+  // Test extended alignments
+  p = r7.allocate(1024, al6);
+  VERIFY( aligned<al6>(p) );
+  r7.deallocate(p, 1024, al6);
+  p = r7.allocate(1024, al12);
+  VERIFY( aligned<al12>(p) );
+  r7.deallocate(p, 1024, al12);
+  p = r7.allocate(1024, al18);
+  VERIFY( aligned<al18>(p) );
+  r7.deallocate(p, 1024, al18);
+
+  __gnu_cxx::malloc_allocator<short> a9, a10;
+  resource_adaptor<decltype(a9)> r9(a9), r10(a10);
+  VERIFY( r9 == r9 );
+  VERIFY( r9 == r10 );
+  VERIFY( r9 != r1 );
+  VERIFY( r9 != r3 );
+  VERIFY( r9 != r5 );
+  VERIFY( r9 != r7 );
+  p = r9.allocate(1);
+  VERIFY( aligned<max_align_t>(p) );
+  r9.deallocate(p, 1);
+  p = r9.allocate(1, alignof(short));
+  VERIFY( aligned<short>(p) );
+  r9.deallocate(p, 1, alignof(short));
+  p = r9.allocate(1, alignof(long));
+  VERIFY( aligned<long>(p) );
+  r9.deallocate(p, 1, alignof(long));
+  p = r9.allocate(1, big_al);
+  VERIFY( aligned<big_al>(p) );
+  r9.deallocate(p, 1, big_al);
+  // Test extended alignments
+  p = r9.allocate(1024, al6);
+  VERIFY( aligned<al6>(p) );
+  r9.deallocate(p, 1024, al6);
+  p = r9.allocate(1024, al12);
+  VERIFY( aligned<al12>(p) );
+  r9.deallocate(p, 1024, al12);
+  p = r9.allocate(1024, al18);
+  VERIFY( aligned<al18>(p) );
+  r9.deallocate(p, 1024, al18);
+
+  std::allocator<short> a11, a12;
+  resource_adaptor<decltype(a11)> r11(a11), r12(a12);
+  VERIFY( r11 == r11 );
+  VERIFY( r11 == r12 );
+  VERIFY( r11 != r1 );
+  VERIFY( r11 != r3 );
+  VERIFY( r11 != r5 );
+  VERIFY( r11 != r7 );
+  VERIFY( r11 != r9 );
+  p = r11.allocate(1);
+  VERIFY( aligned<max_align_t>(p) );
+  r11.deallocate(p, 1);
+  p = r11.allocate(1, alignof(short));
+  VERIFY( aligned<short>(p) );
+  r11.deallocate(p, 1, alignof(short));
+  p = r11.allocate(1, alignof(long));
+  VERIFY( aligned<long>(p) );
+  r11.deallocate(p, 1, alignof(long));
+  p = r11.allocate(1, big_al);
+  VERIFY( aligned<big_al>(p) );
+  r11.deallocate(p, 1, big_al);
+  // Test extended alignments
+  p = r11.allocate(1024, al6);
+  VERIFY( aligned<al6>(p) );
+  r11.deallocate(p, 1024, al6);
+  p = r11.allocate(1024, al12);
+  VERIFY( aligned<al12>(p) );
+  r11.deallocate(p, 1024, al12);
+  p = r11.allocate(1024, al18);
+  VERIFY( aligned<al18>(p) );
+  r11.deallocate(p, 1024, al18);
 }
 
 int main()
