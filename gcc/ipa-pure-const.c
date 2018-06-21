@@ -1803,7 +1803,7 @@ propagate_nothrow (void)
       w = node;
       while (w)
 	{
-	  funct_state w_l = funct_state_summaries->get_create (w);
+	  funct_state w_l = funct_state_summaries->get (w);
 	  if (!can_throw && !TREE_NOTHROW (w->decl))
 	    {
 	      /* Inline clones share declaration with their offline copies;
@@ -1841,9 +1841,10 @@ dump_malloc_lattice (FILE *dump_file, const char *s)
   cgraph_node *node;
   FOR_EACH_FUNCTION (node)
     {
-      funct_state fs = funct_state_summaries->get_create (node);
-      malloc_state_e state = fs->malloc_state;
-      fprintf (dump_file, "%s: %s\n", node->name (), malloc_state_names[state]);
+      funct_state fs = funct_state_summaries->get (node);
+      if (fs)
+	fprintf (dump_file, "%s: %s\n", node->name (),
+		 malloc_state_names[fs->malloc_state]);
     }
 }
 
@@ -1881,7 +1882,7 @@ propagate_malloc (void)
 	      || !funct_state_summaries->exists (node))
 	    continue;
 
-	  funct_state l = funct_state_summaries->get_create (node);
+	  funct_state l = funct_state_summaries->get (node);
 
 	  /* FIXME: add support for indirect-calls.  */
 	  if (node->indirect_calls)
@@ -1932,7 +1933,7 @@ propagate_malloc (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     if (funct_state_summaries->exists (node))
       {
-	funct_state l = funct_state_summaries->get_create (node);
+	funct_state l = funct_state_summaries->get (node);
 	if (!node->alias
 	    && l->malloc_state == STATE_MALLOC
 	    && !node->global.inlined_to)
