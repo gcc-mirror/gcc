@@ -5,6 +5,9 @@
 	IEEE 128-bit long double.
 	(neg<mode>2_internal): Use the correct mode to check whether the
 	mode is IBM extended.
+	* config/rs6000/rs6000.c (init_float128_ieee): Prevent complex
+	multiply and divide external functions from being created more
+	than once.
 
 2018-06-21  Eric Botcazou  <ebotcazou@adacore.com>
 
