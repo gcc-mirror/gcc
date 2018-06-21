@@ -6,37 +6,51 @@
 
 /* PR 67808: LRA ICEs on simple double to long double conversion test case */
 
+#if defined(__LONG_DOUBLE_IEEE128__)
+/* If long double is IEEE 128-bit, we need to use the __ibm128 type instead of
+   long double.  We can't use __ibm128 on systems that don't support IEEE
+   128-bit floating point, because the type is not enabled on those
+   systems.  */
+#define LDOUBLE __ibm128
+
+#elif defined(__LONG_DOUBLE_IBM128__)
+#define LDOUBLE long double
+
+#else
+#error "long double must be either IBM 128-bit or IEEE 128-bit"
+#endif
+
 void
-dfoo (long double *ldb1, double *db1)
+dfoo (LDOUBLE *ldb1, double *db1)
 {
   *ldb1 = *db1;
 }
 
-long double
+LDOUBLE
 dfoo2 (double *db1)
 {
   return *db1;
 }
 
-long double
+LDOUBLE
 dfoo3 (double x)
 {
   return x;
 }
 
 void
-ffoo (long double *ldb1, float *db1)
+ffoo (LDOUBLE *ldb1, float *db1)
 {
   *ldb1 = *db1;
 }
 
-long double
+LDOUBLE
 ffoo2 (float *db1)
 {
   return *db1;
 }
 
-long double
+LDOUBLE
 ffoo3 (float x)
 {
   return x;
