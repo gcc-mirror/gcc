@@ -1,5 +1,10 @@
 2018-06-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86280
+	* include/experimental/memory_resource
+	(__resource_adaptor_common::_AlignMgr::_M_token_size): Use type large
+	enough for result of left shift.
+
 	PR libstdc++/86138
 	* include/bits/basic_string.tcc:
 	[__cplusplus > 201402 && !_GLIBCXX_USE_CXX11_ABI]

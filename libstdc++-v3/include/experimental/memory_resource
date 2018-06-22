@@ -326,7 +326,7 @@ namespace pmr {
 	  return 1;
 	if (_M_align <= (1ul << (sizeof(short) * __CHAR_BIT__)))
 	  return sizeof(short);
-	if (_M_align <= (1ul << (sizeof(int) * __CHAR_BIT__)))
+	if (_M_align <= (1ull << (sizeof(int) * __CHAR_BIT__)))
 	  return sizeof(int);
 	return sizeof(char*);
       }
