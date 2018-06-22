@@ -1,6 +1,11 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85430
+	* config/i386/i386.md (*ashlqi3_1_slp): Use alu1 type instead of alu.
+
 	2018-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85300
