@@ -5796,8 +5796,18 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	    return error_mark_node;
 
 	  if (TREE_CODE (d->cur->index) == FIELD_DECL)
-	    /* We already reshaped this.  */
-	    gcc_assert (d->cur->index == field);
+	    {
+	      /* We already reshaped this.  */
+	      if (field != d->cur->index)
+		{
+		  tree id = DECL_NAME (d->cur->index);
+		  gcc_assert (id);
+		  gcc_checking_assert (lookup_field_1 (type, id,
+						       /*want_type=*/false)
+				       == d->cur->index);
+		  field = d->cur->index;
+		}
+	    }
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
 	    field = lookup_field_1 (type, d->cur->index, /*want_type=*/false);
 	  else

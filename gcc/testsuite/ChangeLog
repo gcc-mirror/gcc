@@ -1,6 +1,11 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84874
+	* g++.dg/cpp1z/desig7.C: New test.
+
 	2018-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79085
