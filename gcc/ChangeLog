@@ -1,3 +1,9 @@
+2018-06-22  Olivier Hainque  <hainque@adacore.com>
+
+	* gimplify.c (gimplify_function_tree): Prevent creation
+	of a trampoline for the address of the current function
+	passed to entry/exit instrumentation hooks.
+
 2018-06-22  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	PR target/86222
