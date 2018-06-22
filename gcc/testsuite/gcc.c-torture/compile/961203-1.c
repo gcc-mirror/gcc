@@ -1,6 +1,7 @@
 /* The structure is too large for the xstormy16 - won't fit in 16
    bits.  */
 /* { dg-do assemble } */
+/* { dg-skip-if "Array too big" { "pdp11-*-*" } { "-mint32" } } */
 
 #if __INT_MAX__ >= 2147483647L
 struct s {

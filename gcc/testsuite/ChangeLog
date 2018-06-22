@@ -1,3 +1,18 @@
+2018-06-22  Paul Koning  <ni1d@arrl.net>
+
+	* gcc.c-torture/execute/builtins/lib/chk.c: Use smaller alignment
+	if pdp11.
+	* gcc.c-torture/compile/20010518-2.c: Skip if pdp11 -mint32.
+	* gcc.c-torture/compile/20040101-1.c: Ditto.
+	* gcc.c-torture/compile/20050622-1.c: Ditto.
+	* gcc.c-torture/compile/20080625-1.c: Ditto.
+	* gcc.c-torture/compile/20090107-1.c: Ditto.
+	* gcc.c-torture/compile/920501-12.c: Ditto.
+	* gcc.c-torture/compile/920501-4.c: Ditto.
+	* gcc.c-torture/compile/961203-1.c: Ditto.
+	* gcc.c-torture/compile/limits-externdecl.c: Ditto.
+	* gcc.c-torture/compile/pr25310.c: Ditto.
+
 2018-06-22  Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
