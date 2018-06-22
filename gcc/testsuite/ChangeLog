@@ -3,6 +3,11 @@
 	Backported from mainline
 	2018-03-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84222
+	* g++.dg/warn/deprecated.C (T::member3): Change dg-warning to dg-bogus.
+	* g++.dg/warn/deprecated-6.C (T::member3): Likewise.
+	* g++.dg/warn/deprecated-13.C: New test.
+
 	PR target/84860
 	* gcc.c-torture/compile/pr84860.c: New test.
 
