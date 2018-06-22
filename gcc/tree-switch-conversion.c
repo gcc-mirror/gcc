@@ -1094,6 +1094,9 @@ jump_table_cluster::emit (tree index_expr, tree,
 vec<cluster *>
 jump_table_cluster::find_jump_tables (vec<cluster *> &clusters)
 {
+  if (!is_enabled ())
+    return clusters.copy ();
+
   unsigned l = clusters.length ();
   auto_vec<min_cluster_item> min;
   min.reserve (l + 1);
