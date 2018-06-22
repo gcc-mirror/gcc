@@ -3076,6 +3076,23 @@ cxx_eval_vec_init (const constexpr_ctx *ctx, tree t,
     return r;
 }
 
+/* Like same_type_ignoring_top_level_qualifiers_p, but also handle the case
+   where the desired type is an array of unknown bounds because the variable
+   has had its bounds deduced since the wrapping expression was created.  */
+
+static bool
+same_type_ignoring_tlq_and_bounds_p (tree type1, tree type2)
+{
+  while (TREE_CODE (type1) == ARRAY_TYPE
+	 && TREE_CODE (type2) == ARRAY_TYPE
+	 && (!TYPE_DOMAIN (type1) || !TYPE_DOMAIN (type2)))
+    {
+      type1 = TREE_TYPE (type1);
+      type2 = TREE_TYPE (type2);
+    }
+  return same_type_ignoring_top_level_qualifiers_p (type1, type2);
+}
+
 /* A less strict version of fold_indirect_ref_1, which requires cv-quals to
    match.  We want to be less strict for simple *& folding; if we have a
    non-const temporary that we access through a const pointer, that should
@@ -3108,15 +3125,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
       if (TREE_CODE (op) == CONST_DECL)
 	return DECL_INITIAL (op);
       /* *&p => p;  make sure to handle *&"str"[cst] here.  */
-      if (same_type_ignoring_top_level_qualifiers_p (optype, type)
-	  /* Also handle the case where the desired type is an array of unknown
-	     bounds because the variable has had its bounds deduced since the
-	     ADDR_EXPR was created.  */
-	  || (TREE_CODE (type) == ARRAY_TYPE
-	      && TREE_CODE (optype) == ARRAY_TYPE
-	      && TYPE_DOMAIN (type) == NULL_TREE
-	      && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (optype),
-							    TREE_TYPE (type))))
+      if (same_type_ignoring_tlq_and_bounds_p (optype, type))
 	{
 	  tree fop = fold_read_from_constant_string (op);
 	  if (fop)
@@ -4676,7 +4685,11 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	     conversion.  */
 	  return fold (t);
 
-	if (tcode == UNARY_PLUS_EXPR)
+	/* Handle an array's bounds having been deduced after we built
+	   the wrapping expression.  */
+	if (same_type_ignoring_tlq_and_bounds_p (type, TREE_TYPE (op)))
+	  r = op;
+	else if (tcode == UNARY_PLUS_EXPR)
 	  r = fold_convert (TREE_TYPE (t), op);
 	else
 	  r = fold_build1 (tcode, type, op);

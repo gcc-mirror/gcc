@@ -1720,23 +1720,10 @@ force_paren_expr (tree expr)
     REF_PARENTHESIZED_P (expr) = true;
   else if (processing_template_decl)
     expr = build1 (PAREN_EXPR, TREE_TYPE (expr), expr);
-  else if (VAR_P (expr) && DECL_HARD_REGISTER (expr))
-    /* We can't bind a hard register variable to a reference.  */;
   else
     {
-      cp_lvalue_kind kind = lvalue_kind (expr);
-      if ((kind & ~clk_class) != clk_none)
-	{
-	  tree type = unlowered_expr_type (expr);
-	  bool rval = !!(kind & clk_rvalueref);
-	  type = cp_build_reference_type (type, rval);
-	  /* This inhibits warnings in, eg, cxx_mark_addressable
-	     (c++/60955).  */
-	  warning_sentinel s (extra_warnings);
-	  expr = build_static_cast (type, expr, tf_error);
-	  if (expr != error_mark_node)
-	    REF_PARENTHESIZED_P (expr) = true;
-	}
+      expr = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (expr), expr);
+      REF_PARENTHESIZED_P (expr) = true;
     }
 
   return expr;
@@ -1764,6 +1751,9 @@ maybe_undo_parenthesized_ref (tree t)
       t = TREE_OPERAND (t, 0);
     }
   else if (TREE_CODE (t) == PAREN_EXPR)
+    t = TREE_OPERAND (t, 0);
+  else if (TREE_CODE (t) == VIEW_CONVERT_EXPR
+	   && REF_PARENTHESIZED_P (t))
     t = TREE_OPERAND (t, 0);
 
   return t;

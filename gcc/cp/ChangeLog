@@ -1,3 +1,14 @@
+2018-06-22  Jason Merrill  <jason@redhat.com>
+
+	Avoid taking the address of something just because it's in parens.
+	* constexpr.c (same_type_ignoring_tlq_and_bounds_p): New.
+	(cxx_fold_indirect_ref): Use it.
+	(cxx_eval_constant_expression) [VIEW_CONVERT_EXPR]: Use it.
+	* cp-tree.h (REF_PARENTHESIZED_P): Allow VIEW_CONVERT_EXPR.
+	* semantics.c (force_paren_expr): Use VIEW_CONVERT_EXPR instead of
+	static_cast to reference type.
+	(maybe_undo_parenthesized_ref): Handle VIEW_CONVERT_EXPR.
+
 2018-06-21  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst) [TEMPLATE_TYPE_PARM]: Use TEMPLATE_PARM_DESCENDANTS.
