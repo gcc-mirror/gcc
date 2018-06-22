@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-04-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/85252
+	* gcc.dg/debug/pr85252.c: New test.
+
 	PR c++/85210
 	* g++.dg/cpp1z/decomp42.C: New test.
 
