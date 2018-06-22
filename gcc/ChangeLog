@@ -1,6 +1,12 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-05-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR web/85578
+	* doc/install.texi2html: Replace _002d with - and _002a with * in
+	generated html files using sed.
+
 	2018-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/85529
