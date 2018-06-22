@@ -822,7 +822,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
   if (decl_maybe_constant_var_p (decl) || TREE_STATIC (decl))
     {
       bool const_init;
-      value = fold_non_dependent_expr (value);
+      value = fold_non_dependent_expr (value, tf_warning_or_error);
       if (DECL_DECLARED_CONSTEXPR_P (decl)
 	  || (DECL_IN_AGGR_P (decl)
 	      && DECL_INITIALIZED_IN_CLASS_P (decl)

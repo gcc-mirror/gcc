@@ -1,3 +1,9 @@
+2018-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86219 - ICE with erroneous initializer in template.
+	* constexpr.c (fold_non_dependent_expr): Add complain parm.
+	* typeck2.c (store_init_value): Pass tf_warning_or_error.
+
 2018-06-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86182 - ICE with anonymous union passed to template.
