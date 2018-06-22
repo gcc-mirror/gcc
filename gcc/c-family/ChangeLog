@@ -1,6 +1,12 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86210
+	* c-common.c (check_nonnull_arg): Use fold_for_warn.  Adjust obsolete
+	comment.
+
 	2018-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/85696
