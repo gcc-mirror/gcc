@@ -1,6 +1,25 @@
 2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
 
 	Back port from trunk
+	2018-06-21  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (extendtfif2): Add missing 128-bit
+	conversion insn that shows up when pr85657-3.c is compiled using
+	IEEE 128-bit long double.
+
+	Back port from trunk
+	2018-06-21  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (init_float128_ieee): Prevent complex
+	multiply and divide external functions from being created more
+	than once.
+
+	Back port from trunk
+	2018-06-21  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (neg<mode>2_internal): Use the correct
+	mode to check whether the mode is IBM extended.
+
 	2018-06-18  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/85358
@@ -31,8 +50,6 @@
 	ISA 2.07 to use an explicit clobber, instead of passing in a
 	temporary.
 	(copysign<mode>3_soft): Likewise.
-
-2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
 
 	Back port from trunk
 	2018-06-08  David Edelsohn  <dje.gcc@gmail.com>

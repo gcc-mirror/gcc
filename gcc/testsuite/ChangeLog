@@ -1,3 +1,20 @@
+2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	Back port from trunk
+	2018-06-21  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/pack02.c: Use __ibm128 instead of long double
+	if the long double format is IEEE 128-bit for tests that are
+	explicitly testing IBM extended double support.  Use the
+	appropriate pack and unpack built-in functions.  Change calls from
+	__builtin_isinfl to __builtin_isinf since the later supports all
+	floating point types.
+	* gcc.target/powerpc/pr57150.c: Likewise.
+	* gcc.target/powerpc/pr60203.c: Likewise.
+	* gcc.target/powerpc/pr67808.c: Likewise.
+	* gcc.target/powerpc/pr70117.c: Likewise.
+	* gcc.target/powerpc/tfmode_off.c: Likewise.
+
 2018-06-18  Michael Meissner  <meissner@linux.ibm.com>
 
 	Back port from trunk
