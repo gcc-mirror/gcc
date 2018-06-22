@@ -11871,7 +11871,7 @@ EOF
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi
@@ -25225,6 +25225,7 @@ $as_echo "#define HAVE_AS_SPARC5_VIS4 1" >>confdefs.h
 
 fi
 
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for SPARC6 instructions" >&5
 $as_echo_n "checking assembler for SPARC6 instructions... " >&6; }
 if test "${gcc_cv_as_sparc_sparc6+set}" = set; then :
@@ -25260,6 +25261,7 @@ if test $gcc_cv_as_sparc_sparc6 = yes; then
 $as_echo "#define HAVE_AS_SPARC6 1" >>confdefs.h
 
 fi
+
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for LEON instructions" >&5
 $as_echo_n "checking assembler for LEON instructions... " >&6; }
@@ -29785,8 +29787,10 @@ _ACEOF
 
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
 # of jit/jit-playback.c.
+gcc_driver_version=`eval "${get_gcc_base_ver} $srcdir/BASE-VER"`
+echo "gcc_driver_version: ${gcc_driver_version}"
 cat > gcc-driver-name.h <<EOF
-#define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_BASEVER}${exeext}"
+#define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_driver_version}${exeext}"
 EOF
 
 # Check whether --enable-default-pie was given.

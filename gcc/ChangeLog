@@ -1,6 +1,17 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure.ac (gcc-driver-name.h): Honor --with-gcc-major-version
+	by using gcc_base_ver to generate a gcc_driver_version, and use
+	it when generating GCC_DRIVER_NAME.
+	* configure: Regenerate.
+
+2018-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
 	2018-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85431
