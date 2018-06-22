@@ -1394,6 +1394,9 @@ if test $ac_cv_f_setlkw = yes; then
   [Define if F_SETLKW supported by fcntl.])
 fi
 
+# The following network-related checks could probably do with some
+# Windows and other non-linux defenses and checking.
+
 # Check for AF_UNIX networking
 AC_CACHE_CHECK(for AF_UNIX, ac_cv_af_unix, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -1470,6 +1473,31 @@ pselect (0, 0, 0, 0, 0, 0);]])],
 if test $ac_cv_pselect = yes; then
   AC_DEFINE(HAVE_PSELECT, 1,
   [Define if pselect provided.])
+fi
+
+# Check for select
+AC_CACHE_CHECK(for select, ac_cv_select, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/select.h>]],[[
+select (0, 0, 0, 0, 0);]])],
+[ac_cv_select=yes],
+[ac_cv_select=no])])
+if test $ac_cv_select = yes; then
+  AC_DEFINE(HAVE_SELECT, 1,
+  [Define if select provided.])
+fi
+
+# Check for accept4
+AC_CACHE_CHECK(for accept4, ac_cv_accept4, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#define _GNU_SOURCE
+#include <sys/socket.h>]],[[
+int err = accept4 (1, NULL, NULL, SOCK_NONBLOCK);]])],
+[ac_cv_accept4=yes],
+[ac_cv_accept4=no])])
+if test $ac_cv_accept4 = yes; then
+  AC_DEFINE(HAVE_ACCEPT4, 1,
+  [Define if accept4 provided.])
 fi
 
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.

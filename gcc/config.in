@@ -278,6 +278,12 @@
 #endif
 
 
+/* Define if accept4 provided. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_ACCEPT4
+#endif
+
+
 /* Define if AF_INET6 supported. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AF_INET6
@@ -1754,6 +1760,12 @@
 /* Define to 1 if you have the `putc_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_PUTC_UNLOCKED
+#endif
+
+
+/* Define if select provided. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_SELECT
 #endif
 
 

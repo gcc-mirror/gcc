@@ -11403,6 +11403,9 @@ $as_echo "#define HOST_HAS_F_SETLKW 1" >>confdefs.h
 
 fi
 
+# The following network-related checks could probably do with some
+# Windows and other non-linux defenses and checking.
+
 # Check for AF_UNIX networking
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for AF_UNIX" >&5
 $as_echo_n "checking for AF_UNIX... " >&6; }
@@ -11570,6 +11573,77 @@ $as_echo "$ac_cv_pselect" >&6; }
 if test $ac_cv_pselect = yes; then
 
 $as_echo "#define HAVE_PSELECT 1" >>confdefs.h
+
+fi
+
+# Check for select
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for select" >&5
+$as_echo_n "checking for select... " >&6; }
+if test "${ac_cv_select+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/select.h>
+int
+main ()
+{
+
+select (0, 0, 0, 0, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_select=yes
+else
+  ac_cv_select=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_select" >&5
+$as_echo "$ac_cv_select" >&6; }
+if test $ac_cv_select = yes; then
+
+$as_echo "#define HAVE_SELECT 1" >>confdefs.h
+
+fi
+
+# Check for accept4
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for accept4" >&5
+$as_echo_n "checking for accept4... " >&6; }
+if test "${ac_cv_accept4+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define _GNU_SOURCE
+#include <sys/socket.h>
+int
+main ()
+{
+
+int err = accept4 (1, NULL, NULL, SOCK_NONBLOCK);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_accept4=yes
+else
+  ac_cv_accept4=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_accept4" >&5
+$as_echo "$ac_cv_accept4" >&6; }
+if test $ac_cv_accept4 = yes; then
+
+$as_echo "#define HAVE_ACCEPT4 1" >>confdefs.h
 
 fi
 
@@ -18620,7 +18694,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18623 "configure"
+#line 18697 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18726,7 +18800,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18729 "configure"
+#line 18803 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
