@@ -13760,22 +13760,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	      if (VAR_P (t) && DECL_THREAD_LOCAL_P (t))
 		share_name = "threadprivate";
-	      else switch (c_omp_predetermined_sharing (t))
+	      else if (TREE_READONLY (t))
 		{
-		case OMP_CLAUSE_DEFAULT_UNSPECIFIED:
-		  break;
-		case OMP_CLAUSE_DEFAULT_SHARED:
 		  /* const vars may be specified in firstprivate clause.  */
-		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
-		      && TREE_READONLY (t))
-		    break;
-		  share_name = "shared";
-		  break;
-		case OMP_CLAUSE_DEFAULT_PRIVATE:
-		  share_name = "private";
-		  break;
-		default:
-		  gcc_unreachable ();
+		  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FIRSTPRIVATE)
+		    share_name = "shared";
 		}
 	      if (share_name)
 		{
