@@ -1,6 +1,13 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-08  Jason Merrill  <jason@redhat.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80598
+	* call.c (build_over_call): In templates set TREE_USED (first_fn) when
+	not calling mark_used for the benefit of -Wunused-function warning.
+
 	2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84662

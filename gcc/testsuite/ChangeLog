@@ -1,6 +1,12 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-08  Jason Merrill  <jason@redhat.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80598
+	* g++.dg/warn/Wunused-function4.C: New test.
+
 	2018-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84739
