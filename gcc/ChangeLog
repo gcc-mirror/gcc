@@ -3,6 +3,11 @@
 	Backported from mainline
 	2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84899
+	* postreload.c (reload_combine_recognize_pattern): Perform
+	INTVAL addition in unsigned HOST_WIDE_INT type to avoid UB and
+	truncate_int_for_mode the result for the destination's mode.
+
 	PR tree-optimization/84841
 	* tree-ssa-reassoc.c (INTEGER_CONST_TYPE): Change to 1 << 4 from
 	1 << 3.
