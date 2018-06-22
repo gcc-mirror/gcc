@@ -12799,8 +12799,15 @@ gimplify_function_tree (tree fndecl)
       gbind *new_bind;
       gimple *tf;
       gimple_seq cleanup = NULL, body = NULL;
-      tree tmp_var;
+      tree tmp_var, this_fn_addr;
       gcall *call;
+
+      /* The instrumentation hooks aren't going to call the instrumented
+	 function and the address they receive is expected to be matchable
+	 against symbol addresses.  Make sure we don't create a trampoline,
+	 in case the current function is nested.  */
+      this_fn_addr = build_fold_addr_expr (current_function_decl);
+      TREE_NO_TRAMPOLINE (this_fn_addr) = 1;
 
       x = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
       call = gimple_build_call (x, 1, integer_zero_node);
@@ -12808,9 +12815,7 @@ gimplify_function_tree (tree fndecl)
       gimple_call_set_lhs (call, tmp_var);
       gimplify_seq_add_stmt (&cleanup, call);
       x = builtin_decl_implicit (BUILT_IN_PROFILE_FUNC_EXIT);
-      call = gimple_build_call (x, 2,
-				build_fold_addr_expr (current_function_decl),
-				tmp_var);
+      call = gimple_build_call (x, 2, this_fn_addr, tmp_var);
       gimplify_seq_add_stmt (&cleanup, call);
       tf = gimple_build_try (seq, cleanup, GIMPLE_TRY_FINALLY);
 
@@ -12820,9 +12825,7 @@ gimplify_function_tree (tree fndecl)
       gimple_call_set_lhs (call, tmp_var);
       gimplify_seq_add_stmt (&body, call);
       x = builtin_decl_implicit (BUILT_IN_PROFILE_FUNC_ENTER);
-      call = gimple_build_call (x, 2,
-				build_fold_addr_expr (current_function_decl),
-				tmp_var);
+      call = gimple_build_call (x, 2, this_fn_addr, tmp_var);
       gimplify_seq_add_stmt (&body, call);
       gimplify_seq_add_stmt (&body, tf);
       new_bind = gimple_build_bind (NULL, body, NULL);
