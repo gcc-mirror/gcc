@@ -1,6 +1,40 @@
 2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
 
 	Back port from trunk
+	2018-06-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/85358
+	* config/rs6000/rs6000-modes.def (toplevel): Rework the 128-bit
+	floating point modes, so that IFmode is numerically greater than
+	TFmode, which is greater than KFmode using FRACTIONAL_FLOAT_MODE
+	to declare the ordering.  This prevents IFmode from being
+	converted to TFmode when long double is IEEE 128-bit on an ISA 3.0
+	machine.  Include rs6000-modes.h to share the fractional values
+	between genmodes* and the rest of the compiler.
+	(IFmode): Likewise.
+	(KFmode): Likewise.
+	(TFmode): Likewise.
+	* config/rs6000/rs6000-modes.h: New file.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Change the
+	meaning of rs6000_long_double_size so that 126..128 selects an
+	appropriate 128-bit floating point type.
+	(rs6000_option_override_internal): Likewise.
+	* config/rs6000/rs6000.h (toplevel): Include rs6000-modes.h.
+	(TARGET_LONG_DOUBLE_128): Change the meaning of
+	rs6000_long_double_size so that 126..128 selects an appropriate
+	128-bit floating point type.
+	(LONG_DOUBLE_TYPE_SIZE): Update comment.
+	* config/rs6000/rs6000.md (trunciftf2): Correct the modes of the
+	source and destination to match the standard usage.
+	(truncifkf2): Likewise.
+	(copysign<mode>3, IEEE iterator): Rework copysign of float128 on
+	ISA 2.07 to use an explicit clobber, instead of passing in a
+	temporary.
+	(copysign<mode>3_soft): Likewise.
+
+2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	Back port from trunk
 	2018-06-08  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_passes_ieee128): Protect with #if
