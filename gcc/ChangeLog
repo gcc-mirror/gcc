@@ -1,3 +1,12 @@
+2018-06-22  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/86263
+	* tree-switch-conversion.c (jump_table_cluster::find_jump_tables):
+        Bail out if is_enabled is false.
+	* tree-switch-conversion.h (jump_table_cluster::is_enabled):
+        New declaration.
+	(jump_table_cluster::is_enabled): New function.
+
 2018-06-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not stream

@@ -254,6 +254,9 @@ struct jump_table_cluster: public group_cluster
   /* Return the smallest number of different values for which it is best
      to use a jump-table instead of a tree of conditional branches.  */
   static inline unsigned int case_values_threshold (void);
+
+  /* Return whether jump table expansion is allowed.  */
+  static bool is_enabled (void);
 };
 
 /* A GIMPLE switch statement can be expanded to a short sequence of bit-wise
@@ -448,6 +451,23 @@ jump_table_cluster::case_values_threshold (void)
     threshold = targetm.case_values_threshold ();
 
   return threshold;
+}
+
+/* Return whether jump table expansion is allowed.  */
+bool jump_table_cluster::is_enabled (void)
+{
+  /* If neither casesi or tablejump is available, or flag_jump_tables
+     over-ruled us, we really have no choice.  */
+  if (!targetm.have_casesi () && !targetm.have_tablejump ())
+    return false;
+  if (!flag_jump_tables)
+    return false;
+#ifndef ASM_OUTPUT_ADDR_DIFF_ELT
+  if (flag_pic)
+    return false;
+#endif
+
+  return true;
 }
 
 /* A case_bit_test represents a set of case nodes that may be
