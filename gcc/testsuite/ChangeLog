@@ -1,6 +1,11 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84739
+	* gcc.dg/pr84739.c: New test.
+
 	2018-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84700
