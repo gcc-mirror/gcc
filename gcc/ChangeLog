@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-04-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/85431
+	* dse.c (record_store): Ignore zero width stores.
+
 	PR target/85430
 	* config/i386/i386.md (*ashlqi3_1_slp): Use alu1 type instead of alu.
 
