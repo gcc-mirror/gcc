@@ -1,3 +1,8 @@
+2018-06-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86281
+	* gfortran.dg/assumed_charlen_function_7.f90: Add -std=legacy.
+
 2018-06-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/builtins-3-p8.c (test_pack_float): Remove
