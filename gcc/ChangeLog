@@ -3,6 +3,10 @@
 	Backported from mainline
 	2018-03-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/85022
+	* emit-rtl.c (init_emit_regs): Indicate that VOIDmode MEMs don't have
+	known size by default.
+
 	PR inline-asm/85034
 	* function.c (match_asm_constraints_1): Don't optimize if input
 	doesn't satisfy general_operand predicate for output's mode.
