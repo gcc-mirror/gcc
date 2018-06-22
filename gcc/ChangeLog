@@ -3,6 +3,10 @@
 	Backported from mainline
 	2018-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/84941
+	* function.c (match_asm_constraints_1): Don't do the optimization
+	if input isn't a REG, SUBREG, MEM or constant.
+
 	PR sanitizer/85018
 	* dwarf2asm.c (dw2_output_indirect_constant_1): Set
 	DECL_INITIAL (decl) to decl at the end.
