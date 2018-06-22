@@ -1,6 +1,11 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84700
+	* gcc.target/powerpc/pr84700.c: New test.
+
 	2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84662
