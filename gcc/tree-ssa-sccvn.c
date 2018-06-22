@@ -1981,8 +1981,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  if (TREE_CODE (rhs) == SSA_NAME)
 	    rhs = SSA_VAL (rhs);
 	  len = native_encode_expr (gimple_assign_rhs1 (def_stmt),
-				    buffer, sizeof (buffer));
-	  if (len > 0)
+				    buffer, sizeof (buffer),
+				    (offset - offset2) / BITS_PER_UNIT);
+	  if (len > 0 && len * BITS_PER_UNIT >= ref->size)
 	    {
 	      tree type = vr->type;
 	      /* Make sure to interpret in a type that has a range
@@ -1991,10 +1992,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 		  && ref->size != TYPE_PRECISION (vr->type))
 		type = build_nonstandard_integer_type (ref->size,
 						       TYPE_UNSIGNED (type));
-	      tree val = native_interpret_expr (type,
-						buffer
-						+ ((offset - offset2)
-						   / BITS_PER_UNIT),
+	      tree val = native_interpret_expr (type, buffer,
 						ref->size / BITS_PER_UNIT);
 	      /* If we chop off bits because the types precision doesn't
 		 match the memory access size this is ok when optimizing
