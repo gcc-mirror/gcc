@@ -1,6 +1,12 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84767
+	* tree-inline.c (copy_tree_body_r): For INDIRECT_REF of a remapped
+	decl, use remap_type if we want to use the type.
+
 	2018-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84739
