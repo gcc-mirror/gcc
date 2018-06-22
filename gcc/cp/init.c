@@ -1632,6 +1632,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       if (VAR_P (exp) && DECL_DECOMPOSITION_P (exp))
 	{
 	  from_array = 1;
+	  init = mark_rvalue_use (init);
 	  if (init && DECL_P (init)
 	      && !(flags & LOOKUP_ONLYCONVERTING))
 	    {
