@@ -98,7 +98,7 @@ T *p3;				// { dg-warning "'T' is deprecated: Please avoid T" }
 
 inline void T::member1(int) {}
 
-int T::member3(T *p)		// { dg-warning "'T' is deprecated: Please avoid T" }
+int T::member3(T *p)		// { dg-bogus "'T' is deprecated: Please avoid T" }
 {
   p->member1(1);			/* { dg-warning "'void T::member1\\(int\\)' is deprecated: Please avoid member1" "" } */
   (*p).member1(2);			/* { dg-warning "'void T::member1\\(int\\)' is deprecated: Please avoid member1" "" } */
