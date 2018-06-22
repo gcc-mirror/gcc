@@ -1,5 +1,8 @@
 2018-06-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/pre/gnu.ver: Fix __cxx11::basic_string patterns for
+	different size_t mangling on 32-bit targets.
+
 	PR libstdc++/86280
 	* include/experimental/memory_resource
 	(__resource_adaptor_common::_AlignMgr::_M_token_size): Use type large
