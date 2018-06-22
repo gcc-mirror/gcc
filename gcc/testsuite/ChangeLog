@@ -1,5 +1,12 @@
 2018-06-22  Tom de Vries  <tdevries@suse.de>
 
+	* g++.dg/guality/guality.exp (guality_gdb_name): Default to
+	$rootme/../gdb/gdb, if available.
+	* gcc.dg/guality/guality.exp (guality_gdb_name): Same.
+	* gfortran.dg/guality/guality.exp (guality_gdb_name): Same.
+
+2018-06-22  Tom de Vries  <tdevries@suse.de>
+
 	* lib/gcc-gdb-test.exp (report_gdb): New proc.
 	* g++.dg/guality/guality.exp: Use report_gdb.
 	* gcc.dg/guality/guality.exp: Same.
