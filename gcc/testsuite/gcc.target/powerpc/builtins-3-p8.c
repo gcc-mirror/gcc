@@ -11,12 +11,6 @@ test_eq_long_long (vector bool long long x, vector bool long long y)
 	return vec_cmpeq (x, y);
 }
 
-vector float
-test_pack_float (vector double x, vector double y)
-{
-  return vec_pack (x, y);
-}
-
 vector unsigned char
 test_vsi_packs_vusi_vusi (vector unsigned short x,
                           vector unsigned short y)
@@ -214,7 +208,6 @@ test_neg_double (vector double x)
 /* Expected test results:
 
      test_eq_long_long                         1 vcmpequd inst
-     test_pack_float                           1 vpkudum inst
      test_vsi_packs_vsll_vsll                  1 vpksdss
      test_vui_packs_vull_vull                  1 vpkudus
      test_vui_packs_vssi_vssi                  1 vpkshss
@@ -241,7 +234,6 @@ test_neg_double (vector double x)
  */
 
 /* { dg-final { scan-assembler-times "vcmpequd" 1 } } */
-/* { dg-final { scan-assembler-times "vpkudum"  1 } } */
 /* { dg-final { scan-assembler-times "vpksdss"  1 } } */
 /* { dg-final { scan-assembler-times "vpkudus"  2 } } */  
 /* { dg-final { scan-assembler-times "vpkuhus"  2 } } */

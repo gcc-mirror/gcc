@@ -1,3 +1,9 @@
+2018-06-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Change
+	behavior of vec_pack (vector double, vector double) to match
+	behavior of vec_float2 (vector double, vector double).
+
 2018-06-22  Olivier Hainque  <hainque@adacore.com>
 
 	* gimplify.c (gimplify_function_tree): Prevent creation
