@@ -90,13 +90,19 @@ public:
      does not exist it will be created.  */
   T* get_create (cgraph_node *node)
   {
-    return get (node->get_uid (), true);
+    bool existed;
+    T **v = &m_map.get_or_insert (node->get_uid (), &existed);
+    if (!existed)
+      *v = allocate_new ();
+
+    return *v;
   }
 
   /* Getter for summary callgraph node pointer.  */
-  T* get (cgraph_node *node)
+  T* get (cgraph_node *node) ATTRIBUTE_PURE
   {
-    return get (node->get_uid (), false);
+    T **v = m_map.get (node->get_uid ());
+    return v == NULL ? NULL : *v;
   }
 
   /* Remove node from summary.  */
@@ -151,9 +157,6 @@ protected:
 
 private:
   typedef int_hash <int, 0, -1> map_hash;
-
-  /* Getter for summary callgraph ID.  */
-  T *get (int uid, bool lazy_insert);
 
   /* Indicates if insertion hook is enabled.  */
   bool m_insertion_enabled;
@@ -274,28 +277,6 @@ function_summary<T *>::symtab_duplication (cgraph_node *node,
 }
 
 template <typename T>
-T*
-function_summary<T *>::get (int uid, bool lazy_insert)
-{
-  gcc_checking_assert (uid > 0);
-
-  if (lazy_insert)
-    {
-      bool existed;
-      T **v = &m_map.get_or_insert (uid, &existed);
-      if (!existed)
-	*v = allocate_new ();
-
-      return *v;
-    }
-  else
-    {
-      T **v = m_map.get (uid);
-      return v == NULL ? NULL : *v;
-    }
-}
-
-template <typename T>
 void
 gt_ggc_mx(function_summary<T *>* const &summary)
 {
@@ -387,13 +368,19 @@ public:
      If a summary for an edge does not exist, it will be created.  */
   T* get_create (cgraph_edge *edge)
   {
-    return get (edge->get_uid (), true);
+    bool existed;
+    T **v = &m_map.get_or_insert (edge->get_uid (), &existed);
+    if (!existed)
+      *v = allocate_new ();
+
+    return *v;
   }
 
   /* Getter for summary callgraph edge pointer.  */
-  T* get (cgraph_edge *edge)
+  T* get (cgraph_edge *edge) ATTRIBUTE_PURE
   {
-    return get (edge->get_uid (), false);
+    T **v = m_map.get (edge->get_uid ());
+    return v == NULL ? NULL : *v;
   }
 
   /* Remove edge from summary.  */
@@ -437,9 +424,6 @@ protected:
 private:
   typedef int_hash <int, 0, -1> map_hash;
 
-  /* Getter for summary callgraph ID.  */
-  T *get (int uid, bool lazy_insert);
-
   /* Main summary store, where summary ID is used as key.  */
   hash_map <map_hash, T *> m_map;
   /* Internal summary removal hook pointer.  */
@@ -456,28 +440,6 @@ private:
   template <typename U> friend void gt_pch_nx (call_summary <U *> * const &,
       gt_pointer_operator, void *);
 };
-
-template <typename T>
-T*
-call_summary<T *>::get (int uid, bool lazy_insert)
-{
-  gcc_checking_assert (uid > 0);
-
-  if (lazy_insert)
-    {
-      bool existed;
-      T **v = &m_map.get_or_insert (uid, &existed);
-      if (!existed)
-	*v = allocate_new ();
-
-      return *v;
-    }
-  else
-    {
-      T **v = m_map.get (uid);
-      return v == NULL ? NULL : *v;
-    }
-}
 
 template <typename T>
 void
