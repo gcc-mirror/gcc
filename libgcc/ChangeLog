@@ -1,3 +1,12 @@
+2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	Back port from trunk
+	2018-06-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/t-float128 (FP128_CFLAGS_SW): Compile float128
+	support modules with -mno-gnu-attribute.
+	* config/rs6000/t-float128-hw (FP128_CFLAGS_HW): Likewise.
+
 2018-06-20  Than McIntosh  <thanm@google.com>
 
 	PR libgcc/86213
