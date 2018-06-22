@@ -1,6 +1,12 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85952
+	* init.c (build_aggr_init): For structured binding initialized from
+	array call mark_rvalue_use on the initializer.
+
 	2018-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/85696
