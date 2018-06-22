@@ -5134,10 +5134,7 @@ free_lang_data_in_type (tree type)
 	else
 	  *prev = DECL_CHAIN (member);
 
-      /* FIXME: C FE uses TYPE_VFIELD to record C_TYPE_INCOMPLETE_VARS
- 	 and danagle the pointer from time to time.  */
-      if (TYPE_VFIELD (type) && TREE_CODE (TYPE_VFIELD (type)) != FIELD_DECL)
-        TYPE_VFIELD (type) = NULL_TREE;
+      TYPE_VFIELD (type) = NULL_TREE;
 
       if (TYPE_BINFO (type))
 	{
