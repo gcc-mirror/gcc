@@ -1,3 +1,10 @@
+2018-06-22  Martin Liska  <mliska@suse.cz>
+
+	* symbol-summary.h (get): Make it pure and inline move
+        functionality from ::get function.
+        (get): Remove and inline into ::get and ::get_create.
+        (get_create): Move code from ::get function.
+
 2018-06-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/85994
