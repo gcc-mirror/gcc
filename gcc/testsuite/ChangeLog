@@ -1,6 +1,11 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84953
+	* gcc.dg/pr84953.c: New test.
+
 	2018-03-19  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/78651
