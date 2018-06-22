@@ -1,5 +1,15 @@
 2018-06-22  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not stream
+	BINFO_BASE_ACCESSES and BINFO_VPTR_FIELD.
+	* tree-streamer-in.c (streamer_read_tree_bitfields): Likewise.
+	(lto_input_ts_binfo_tree_pointers): Likewise.
+	* tree-streamer-out.c (streamer_write_tree_bitfields,
+	write_ts_binfo_tree_pointers): Likewise.
+	* tree.c (free_lang_data_in_binfo): Clear BINFO_VPTR_FIELD.
+
+2018-06-22  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree.c (free_lang_data_in_type): Free all TYPE_VFIELDs.
 
 2018-06-22  Martin Liska  <mliska@suse.cz>

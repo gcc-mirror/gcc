@@ -468,9 +468,6 @@ streamer_write_tree_bitfields (struct output_block *ob, tree expr)
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     cl_optimization_stream_out (&bp, TREE_OPTIMIZATION (expr));
 
-  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    bp_pack_var_len_unsigned (&bp, vec_safe_length (BINFO_BASE_ACCESSES (expr)));
-
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     bp_pack_var_len_unsigned (&bp, CONSTRUCTOR_NELTS (expr));
 
@@ -812,15 +809,9 @@ write_ts_binfo_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 
   stream_write_tree (ob, BINFO_OFFSET (expr), ref_p);
   stream_write_tree (ob, BINFO_VTABLE (expr), ref_p);
-  stream_write_tree (ob, BINFO_VPTR_FIELD (expr), ref_p);
 
-  /* The number of BINFO_BASE_ACCESSES has already been emitted in
-     EXPR's bitfield section.  */
-  FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_ACCESSES (expr), i, t)
-    stream_write_tree (ob, t, ref_p);
-
-  /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
-     and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
+  /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX,
+     BINFO_BASE_ACCESSES and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
 }
 
 
