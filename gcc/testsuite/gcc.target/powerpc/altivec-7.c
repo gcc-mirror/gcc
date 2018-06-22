@@ -73,8 +73,8 @@ int main ()
      vec_unpackl                    vupkhsh
      vec_unpackl                    vupkhpx
      vec_unpackl                    vupkhsb
-     vec_andc                       xxnor
-                                    xxland
+     vec_andc                       xxlnor (vnor AIX)
+                                    xxland (vand AIX)
      vec_vxor                       xxlxor
      vec_vmsumubm                   vmsumubm
      vec_vmulesb                    vmulosb
@@ -85,17 +85,16 @@ int main ()
 /* { dg-final { scan-assembler-times "vpkpx" 2 } } */
 /* { dg-final { scan-assembler-times "vmulesb" 1 } } */
 /* { dg-final { scan-assembler-times "vmulosb" 1 } } */
-/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M} 42 { target le } } } */
-/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M} 4 { target be } } } */
+/* { dg-final { scan-assembler-times {\mlvx\M} 0 { target { powerpc*-*-linux* } } } } */
+/* { dg-final { scan-assembler-times {\mlvx\M} 42 { target { powerpc*-*-aix* } } } } */
 /* { dg-final { scan-assembler-times "lvewx" 2 } } */
 /* { dg-final { scan-assembler-times "lvxl" 1 } } */
 /* { dg-final { scan-assembler-times "vupklsh" 2 } } */
 /* { dg-final { scan-assembler-times "vupkhsh" 2 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 4 } } */
-/* { dg-final { scan-assembler-times "xxland" 4 } } */
-/* { dg-final { scan-assembler-times "xxlxor" 5 } } */
+/* { dg-final { scan-assembler-times {\mxxlnor\M|\mvnor\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mxxland\M|\mvand\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mxxlxor\M|\mvxor\M} 5 } } */
 /* { dg-final { scan-assembler-times "xxlandc" 0 } } */
-/* { dg-final { scan-assembler-times "lvx" 1 } } */
 /* { dg-final { scan-assembler-times "vmsumubm" 1 } } */
 /* { dg-final { scan-assembler-times "vupklpx" 1 } } */
 /* { dg-final { scan-assembler-times "vupklsx" 0 } } */
