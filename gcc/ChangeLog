@@ -1,5 +1,6 @@
 2018-06-22  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
+	PR target/86222
 	* config/rs6000/rs6000-string.c (expand_strn_compare): Handle -m32
 	correctly.
 
