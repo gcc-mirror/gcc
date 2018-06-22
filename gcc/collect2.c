@@ -201,6 +201,7 @@ static enum lto_mode_d lto_mode = LTO_MODE_NONE;
 bool helpflag;			/* true if --help */
 
 static int shared_obj;			/* true if -shared */
+static int static_obj;			/* true if -static */
 
 static const char *c_file;		/* <xxx>.c for constructor/destructor list.  */
 static const char *o_file;		/* <xxx>.o for constructor/destructor list.  */
@@ -255,6 +256,7 @@ bool may_unlink_output_file = false;
 #ifdef COLLECT_EXPORT_LIST
 /* Lists to keep libraries to be scanned for global constructors/destructors.  */
 static struct head libs;                    /* list of libraries */
+static struct head static_libs;             /* list of statically linked libraries */
 static struct path_prefix cmdline_lib_dirs; /* directories specified with -L */
 static struct path_prefix libpath_lib_dirs; /* directories in LIBPATH */
 static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
@@ -320,9 +322,7 @@ static void write_c_file_glob (FILE *, const char *);
 static void scan_libraries (const char *);
 #endif
 #ifdef COLLECT_EXPORT_LIST
-#if 0
 static int is_in_list (const char *, struct id *);
-#endif
 static void write_aix_file (FILE *, struct id *);
 static char *resolve_lib_name (const char *);
 #endif
@@ -911,6 +911,9 @@ main (int argc, char **argv)
   int first_file;
   int num_c_args;
   char **old_argv;
+#ifdef COLLECT_EXPORT_LIST
+  bool is_static = false;
+#endif
   int i;
 
   for (i = 0; i < USE_LD_MAX; i++)
@@ -1241,6 +1244,8 @@ main (int argc, char **argv)
 	*c_ptr++ = xstrdup (q);
       if (strcmp (q, "-shared") == 0)
 	shared_obj = 1;
+      if (strcmp (q, "-static") == 0)
+	static_obj = 1;
       if (*q == '-' && q[1] == 'B')
 	{
 	  *c_ptr++ = xstrdup (q);
@@ -1269,6 +1274,9 @@ main (int argc, char **argv)
   /* Parse arguments.  Remember output file spec, pass the rest to ld.  */
   /* After the first file, put in the c++ rt0.  */
 
+#ifdef COLLECT_EXPORT_LIST
+  is_static = static_obj;
+#endif
   first_file = 1;
   while ((arg = *++argv) != (char *) 0)
     {
@@ -1374,6 +1382,18 @@ main (int argc, char **argv)
 #endif
               break;
 
+#ifdef COLLECT_EXPORT_LIST
+	    case 'b':
+	      if (!strcmp (arg, "-bstatic"))
+		{
+		  is_static = true;
+		}
+	      else if (!strcmp (arg, "-bdynamic") || !strcmp (arg, "-bshared"))
+		{
+		  is_static = false;
+		}
+	      break;
+#endif
 	    case 'l':
 	      if (first_file)
 		{
@@ -1390,6 +1410,8 @@ main (int argc, char **argv)
 
 		/* Saving a full library name.  */
 		add_to_list (&libs, s);
+		if (is_static)
+		    add_to_list (&static_libs, s);
 	      }
 #endif
 	      break;
@@ -1490,6 +1512,8 @@ main (int argc, char **argv)
 	    {
 	      /* Saving a full library name.  */
 	      add_to_list (&libs, arg);
+	      if (is_static)
+		add_to_list (&static_libs, arg);
 	    }
 #endif
 	}
@@ -1501,6 +1525,8 @@ main (int argc, char **argv)
     {
       fprintf (stderr, "List of libraries:\n");
       dump_list (stderr, "\t", libs.first);
+      fprintf (stderr, "List of statically linked libraries:\n");
+      dump_list (stderr, "\t", static_libs.first);
     }
 
   /* The AIX linker will discard static constructors in object files if
@@ -1525,9 +1551,11 @@ main (int argc, char **argv)
       this_filter &= ~SCAN_DWEH;
 #endif
 
+    /* Scan object files.  */
     while (export_object_lst < object)
       scan_prog_file (*export_object_lst++, PASS_OBJ, this_filter);
 
+    /* Scan libraries.  */
     for (; list; list = list->next)
       scan_prog_file (list->name, PASS_FIRST, this_filter);
 
@@ -1975,7 +2003,6 @@ write_list (FILE *stream, const char *prefix, struct id *list)
 
 #ifdef COLLECT_EXPORT_LIST
 /* This function is really used only on AIX, but may be useful.  */
-#if 0
 static int
 is_in_list (const char *prefix, struct id *list)
 {
@@ -1986,7 +2013,6 @@ is_in_list (const char *prefix, struct id *list)
     }
     return 0;
 }
-#endif
 #endif /* COLLECT_EXPORT_LIST */
 
 /* Added for debugging purpose.  */
@@ -2818,7 +2844,12 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 			case SYM_AIXI:
 			  if (! (filter & SCAN_CTOR))
 			    break;
-			  if (is_shared && !aixlazy_flag)
+			  if (is_shared && !aixlazy_flag
+#ifdef COLLECT_EXPORT_LIST
+			      && ! static_obj
+			      && ! is_in_list (prog_name, static_libs.first)
+#endif
+			      )
 			    add_to_list (&constructors, name);
 			  break;
 
