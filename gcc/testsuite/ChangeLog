@@ -6,6 +6,11 @@
 	PR c++/85662
 	* g++.dg/ext/offsetof3.C: New test.
 
+	2018-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86025
+	* c-c++-common/gomp/pr86025.c: New test.
+
 	2018-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85952
