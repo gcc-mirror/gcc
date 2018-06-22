@@ -1,3 +1,8 @@
+2018-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85662
+	* g++.dg/ext/offsetof3.C: New test.
+
 2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
 
 	Back port from trunk
@@ -372,9 +377,7 @@
 	2018-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85662
-	* cp-gimplify.c (cp_fold): Use fold_offsetof rather than
-	fold_offsetof_1, pass TREE_TYPE (x) as TYPE to it and drop the
-	fold_convert.
+	* g++.dg/ext/offsetof2.C: New test.
 
 	2018-05-08  Jakub Jelinek  <jakub@redhat.com>
 
