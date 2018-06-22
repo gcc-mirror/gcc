@@ -11,6 +11,10 @@
 
 	2018-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/84953
+	* builtins.c (fold_builtin_strpbrk): For strpbrk(x, "") use type
+	instead of TREE_TYPE (s1) for the return value.
+
 	PR target/84990
 	* dwarf2asm.c (dw2_output_indirect_constant_1): Temporarily turn off
 	flag_section_anchors.
