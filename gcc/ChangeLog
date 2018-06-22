@@ -1,3 +1,8 @@
+2018-06-22  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (expand_strn_compare): Handle -m32
+	correctly.
+
 2018-06-22  Martin Liska  <mliska@suse.cz>
 
         PR tree-optimization/86263
