@@ -1,3 +1,15 @@
+2018-06-22  Carl Love  <cel@us.ibm.com>
+
+ 	* gcc.target/powerpc/altivec-7.c: Add qualifiers for counts on AIX
+	versus Linux.  Change checks for xxlnor, xxland and xxlxor to also look
+	for the vnor, vand and vxor instructions.
+	* gcc.target/powerpc/builtins-1.c: Move vec_or tests to a new file.
+	Remove counts for xxlor. Fix match on bl __divdi3 and bl __udivdi3.
+	* gcc.target/powerpc/builtins-4.c: Fix matching for vsl instructions.
+	* gcc.target/powerpc/builtins-5.c: New test file for vec_or test cases.
+ 	* gcc.target/powerpc/vsx-vector-6.p7.c: Fix xxlnor BE expected count.
+	Add -dp to dg-options, update expected counts.
+
 2018-06-22  Paul Koning  <ni1d@arrl.net>
 
 	* gcc.c-torture/execute/builtins/lib/chk.c: Use smaller alignment
