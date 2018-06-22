@@ -18702,9 +18702,14 @@ init_float128_ieee (machine_mode mode)
 {
   if (FLOAT128_VECTOR_P (mode))
     {
-      /* Set up to call __mulkc3 and __divkc3 under -mabi=ieeelongdouble.  */
-     if (mode == TFmode && TARGET_IEEEQUAD)
+      static bool complex_muldiv_init_p = false;
+
+      /* Set up to call __mulkc3 and __divkc3 under -mabi=ieeelongdouble.  If
+	 we have clone or target attributes, this will be called a second
+	 time.  We want to create the built-in function only once.  */
+     if (mode == TFmode && TARGET_IEEEQUAD && !complex_muldiv_init_p)
        {
+	 complex_muldiv_init_p = true;
 	 built_in_function fncode_mul =
 	   (built_in_function) (BUILT_IN_COMPLEX_MUL_MIN + TCmode
 				- MIN_MODE_COMPLEX_FLOAT);
