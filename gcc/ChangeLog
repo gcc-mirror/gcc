@@ -1,3 +1,27 @@
+2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	Back port from trunk
+	2018-05-21  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/85657
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Do not
+	define __ibm128 as long double.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Create __ibm128
+	as a distinct type with IEEE 128-bit floating point is supported.
+	(init_float128_ieee): Fix up conversions between IFmode and IEEE
+	128-bit types to use the correct functions.
+	(rs6000_expand_float128_convert): Use explicit FLOAT_EXTEND to
+	convert between 128-bit floating point types that have different
+	modes but the same representation, instead of using gen_lowpart to
+	makean alias.
+	* config/rs6000/rs6000.md (IFKF): New iterator for IFmode and
+	KFmode.
+	(IFKF_reg): New attributes to give the register constraints for
+	IFmode and KFmode.
+	(extend<mode>tf2_internal): New insns to mark an explicit
+	conversion between 128-bit floating point types that have a
+	different mode but share the same representation.
+
 2018-06-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/85994
