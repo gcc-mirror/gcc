@@ -1,6 +1,15 @@
 2018-06-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
+	2018-06-05  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm_cmse.h (cmse_nsfptr_create): Change typeof to
+	__typeof__.
+	(cmse_check_pointed_object): Likewise.
+
+2018-06-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
 	2018-05-17  Jerome Lambourg  <lambourg@adacore.com>
 
 	* config/arm/arm_cmse.h (cmse_nsfptr_create, cmse_is_nsfptr): Remove
