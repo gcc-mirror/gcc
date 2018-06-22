@@ -544,7 +544,7 @@ null_ptr_cst_p (tree t)
     }
   else if (CP_INTEGRAL_TYPE_P (type))
     {
-      t = fold_non_dependent_expr (t);
+      t = fold_non_dependent_expr (t, tf_none);
       STRIP_NOPS (t);
       if (integer_zerop (t) && !TREE_OVERFLOW (t))
 	return true;
@@ -8796,6 +8796,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 
   /* Check that arguments to builtin functions match the expectations.  */
   if (fndecl
+      && !processing_template_decl
       && DECL_BUILT_IN (fndecl)
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
     {
@@ -8804,7 +8805,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       /* We need to take care that values to BUILT_IN_NORMAL
          are reduced.  */
       for (i = 0; i < nargs; i++)
-	argarray[i] = fold_non_dependent_expr (argarray[i]);
+	argarray[i] = maybe_constant_value (argarray[i]);
 
       if (!check_builtin_function_arguments (EXPR_LOCATION (fn), vNULL, fndecl,
 					     nargs, argarray))

@@ -1,5 +1,13 @@
 2018-06-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86219 - ICE with erroneous initializer in template.
+	* constexpr.c (fold_non_dependent_expr): Add complain parm.
+	* call.c, expr.c, init.c, pt.c, semantics.c, typeck.c, typeck2.c:
+	Pass it.
+	* call.c (build_cxx_call): Don't mess with builtins in a template.
+	* typeck2.c (store_init_value): If fold_non_dependent_expr didn't
+	produce a constant value, go back to the uninstantiated form.
+
 	Avoid taking the address of something just because it's in parens.
 	* constexpr.c (same_type_ignoring_tlq_and_bounds_p): New.
 	(cxx_fold_indirect_ref): Use it.

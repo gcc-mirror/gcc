@@ -822,6 +822,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
   if (decl_maybe_constant_var_p (decl) || TREE_STATIC (decl))
     {
       bool const_init;
+      tree oldval = value;
       value = fold_non_dependent_expr (value);
       if (DECL_DECLARED_CONSTEXPR_P (decl)
 	  || (DECL_IN_AGGR_P (decl)
@@ -847,6 +848,8 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       /* FIXME setting TREE_CONSTANT on refs breaks the back end.  */
       if (!TYPE_REF_P (type))
 	TREE_CONSTANT (decl) = const_init && decl_maybe_constant_var_p (decl);
+      if (!const_init)
+	value = oldval;
     }
   value = cp_fully_fold (value);
 
@@ -899,7 +902,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
       return ok;
     }
 
-  init = fold_non_dependent_expr (init);
+  init = fold_non_dependent_expr (init, complain);
 
   if (TREE_CODE (type) == INTEGER_TYPE
       && TREE_CODE (ftype) == REAL_TYPE)
@@ -1254,7 +1257,7 @@ massage_init_elt (tree type, tree init, int nested, tsubst_flags_t complain)
     init = TARGET_EXPR_INITIAL (init);
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */
-  tree t = fold_non_dependent_expr (init);
+  tree t = fold_non_dependent_expr (init, complain);
   t = maybe_constant_init (t);
   if (TREE_CONSTANT (t))
     init = t;
