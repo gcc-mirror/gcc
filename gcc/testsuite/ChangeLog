@@ -6,6 +6,11 @@
 	PR c++/85662
 	* g++.dg/ext/offsetof3.C: New test.
 
+	2018-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85945
+	* gcc.c-torture/compile/pr85945.c: New test.
+
 	2018-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86025
