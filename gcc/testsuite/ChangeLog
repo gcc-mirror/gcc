@@ -1,3 +1,26 @@
+2018-06-22  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/goacc/deviceptr-4.c: New file.
+	* c-c++-common/goacc/kernels-counter-var-redundant-load.c:
+	Likewise.
+	* c-c++-common/goacc/kernels-loop-data-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-enter-exit-2.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-enter-exit.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data-update.c: Likewise.
+	* c-c++-common/goacc/kernels-loop-data.c: Likewise.
+	* c-c++-common/goacc/kernels-parallel-loop-data-enter-exit.c:
+	Likewise.
+	* c-c++-common/goacc/parallel-reduction.c: Likewise.
+	* c-c++-common/goacc/private-reduction-1.c: Likewise.
+	* gfortran.dg/goacc/kernels-parallel-loop-data-enter-exit.f95:
+	Likewise.
+	* gfortran.dg/goacc/modules.f95: Likewise.
+	* gfortran.dg/goacc/routine-8.f90: Likewise.
+	* gfortran.dg/goacc/routine-level-of-parallelism-1.f90: Likewise.
+
 2018-06-21  Michael Meissner  <meissner@linux.ibm.com>
 
 	* gcc.target/powerpc/pack02.c: Use __ibm128 instead of long double
