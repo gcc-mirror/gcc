@@ -1,3 +1,17 @@
+2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	Back port from trunk
+	2018-05-21  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/85657
+	* gcc.target/powerpc/pr85657-1.c: New test for converting between
+	__float128, __ibm128, and long double.
+	* gcc.target/powerpc/pr85657-2.c: Likewise.
+	* gcc.target/powerpc/pr85657-3.c: Likewise.
+	* g++.dg/pr85667.C: New test to make sure __ibm128 is
+	implementated as a separate type internally, and is not just an
+	alias for long double.
+
 2018-06-20  Than McIntosh  <thanm@google.com>
 
 	PR libgcc/86213
