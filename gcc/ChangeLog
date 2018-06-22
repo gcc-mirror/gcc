@@ -1,6 +1,12 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/85167
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Don't set bb_uses and
+	bb_defs if *split_p, instead preinitialize it to NULL.
+
 	2018-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85095
