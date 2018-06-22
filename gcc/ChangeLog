@@ -1,3 +1,11 @@
+2018-06-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
+	2018-05-17  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/arm/arm_cmse.h (cmse_nsfptr_create, cmse_is_nsfptr): Remove
+	#include <stdint.h>.  Replace intptr_t with __INTPTR_TYPE__.
+
 2018-06-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
