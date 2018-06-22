@@ -1,6 +1,58 @@
 2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
 
 	Back port from trunk
+	2018-06-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_passes_ieee128): Protect with #if
+	TARGET_ELF.
+
+	Back port from trunk
+	2018-06-04  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_passes_ieee128): New boolean to
+	track if we pass or return IEEE 128-bit floating point.
+	(ieee128_mangling_gcc_8_1): New boolean to say whether to generate
+	C++ mangling that is compatible with GCC 8.1.
+	(TARGET_ASM_GLOBALIZE_DECL_NAME): Override target hook.
+	(init_cumulative_args): Note if we pass or return IEEE 128-bit
+	floating point types.
+	(rs6000_function_arg_advance_1): Likewise.
+	(rs6000_mangle_type): Optionally generate mangled names that match
+	what GCC 8.1 generated for IEEE 128-bit floating point types.
+	(rs6000_globalize_decl_name): If we have an external function that
+	passes or returns IEEE 128-bit types, generate a weak reference
+	from the mangled name used in GCC 8.1 to the current mangled
+	name.
+	(rs6000_init_builtins): Make __ibm128 use the long double type if
+	long double is IBM extended double.  Make __float128 use the long
+	double type if long double is IEEE 128-bit.
+
+	PR target/85657
+	* config/rs6000/rs6000-builtin.def (BU_IBM128_2): New helper
+	macro for __ibm128 built-in functions.
+	(PACK_IF): Add __ibm128 pack/unpack functions.
+	(UNPACK_IF): Likewise.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Do not
+	enable long double built-in functions if long double is IEEE
+	128-bit floating point.
+	(rs6000_invalid_builtin): Update long double built-in function
+	error message.
+	(rs6000_expand_builtin): For PACK_IF and UNPACK_IF built-in
+	functions, adjust the built-in function to use the long double
+	built-in function if __ibm128 and long double are the same type.
+	* doc/extend.texi (PowerPC builtins): Update documention for
+	__builtin_{,un}pack_longdouble.  Add documentation for
+	__builtin_{,un}pack_ibm128.
+
+	Back port from trunk
+	2018-06-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_mangle_type): Change the mangling of
+	the 128-bit floating point types.  Fix function comment.
+
+2018-06-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	Back port from trunk
 	2018-05-21  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/85657

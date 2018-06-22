@@ -200,6 +200,19 @@ int dot_symbols;
    of this machine mode.  */
 scalar_int_mode rs6000_pmode;
 
+#if TARGET_ELF
+/* Note whether IEEE 128-bit floating point was passed or returned, either as
+   the __float128/_Float128 explicit type, or when long double is IEEE 128-bit
+   floating point.  We changed the default C++ mangling for these types and we
+   may want to generate a weak alias of the old mangling (U10__float128) to the
+   new mangling (u9__ieee128).  */
+static bool rs6000_passes_ieee128;
+#endif
+
+/* Generate the manged name (i.e. U10__float128) used in GCC 8.1, and not the
+   name used in current releases (i.e. u9__ieee128).  */
+static bool ieee128_mangling_gcc_8_1;
+
 /* Width in bits of a pointer.  */
 unsigned rs6000_pointer_size;
 
@@ -1980,6 +1993,11 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET rs6000_starting_frame_offset
+
+#if TARGET_ELF && RS6000_WEAK
+#undef TARGET_ASM_GLOBALIZE_DECL_NAME
+#define TARGET_ASM_GLOBALIZE_DECL_NAME rs6000_globalize_decl_name
+#endif
 
 
 /* Processor table.  */
@@ -3921,7 +3939,9 @@ rs6000_builtin_mask_calculate (void)
 	  | ((TARGET_HTM)		    ? RS6000_BTM_HTM	   : 0)
 	  | ((TARGET_DFP)		    ? RS6000_BTM_DFP	   : 0)
 	  | ((TARGET_HARD_FLOAT)	    ? RS6000_BTM_HARD_FLOAT : 0)
-	  | ((TARGET_LONG_DOUBLE_128)	    ? RS6000_BTM_LDBL128   : 0)
+	  | ((TARGET_LONG_DOUBLE_128
+	      && TARGET_HARD_FLOAT
+	      && !TARGET_IEEEQUAD)	    ? RS6000_BTM_LDBL128   : 0)
 	  | ((TARGET_FLOAT128_TYPE)	    ? RS6000_BTM_FLOAT128  : 0)
 	  | ((TARGET_FLOAT128_HW)	    ? RS6000_BTM_FLOAT128_HW : 0));
 }
@@ -11392,6 +11412,12 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 			  && (TYPE_MAIN_VARIANT (return_type)
 			      == long_double_type_node))))
 		rs6000_passes_long_double = true;
+
+	      /* Note if we passed or return a IEEE 128-bit type.  We changed
+		 the mangling for these types, and we may need to make an alias
+		 with the old mangling.  */
+	      if (FLOAT128_IEEE_P (return_mode))
+		rs6000_passes_ieee128 = true;
 	    }
 	  if (ALTIVEC_OR_VSX_VECTOR_MODE (return_mode)
 	      || PAIRED_VECTOR_MODE (return_mode))
@@ -11845,6 +11871,12 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 		  || (type != NULL
 		      && TYPE_MAIN_VARIANT (type) == long_double_type_node)))
 	    rs6000_passes_long_double = true;
+
+	  /* Note if we passed or return a IEEE 128-bit type.  We changed the
+	     mangling for these types, and we may need to make an alias with
+	     the old mangling.  */
+	  if (FLOAT128_IEEE_P (mode))
+	    rs6000_passes_ieee128 = true;
 	}
       if ((named && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
 	  || (PAIRED_VECTOR_MODE (mode)
@@ -15968,10 +16000,15 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
   else if ((fnmask & RS6000_BTM_P9_MISC) == RS6000_BTM_P9_MISC)
     error ("builtin function %qs requires the %qs option", name,
 	   "-mcpu=power9");
-  else if ((fnmask & (RS6000_BTM_HARD_FLOAT | RS6000_BTM_LDBL128))
-	   == (RS6000_BTM_HARD_FLOAT | RS6000_BTM_LDBL128))
-    error ("builtin function %qs requires the %qs and %qs options",
-	   name, "-mhard-float", "-mlong-double-128");
+  else if ((fnmask & RS6000_BTM_LDBL128) == RS6000_BTM_LDBL128)
+    {
+      if (!TARGET_HARD_FLOAT)
+	error ("builtin function %qs requires the %qs option", name,
+	       "-mhard-float");
+      else
+	error ("builtin function %qs requires the %qs option", name,
+	       TARGET_IEEEQUAD ? "-mabi=ibmlongdouble" : "-mlong-double-128");
+    }
   else if ((fnmask & RS6000_BTM_HARD_FLOAT) != 0)
     error ("builtin function %qs requires the %qs option", name,
 	   "-mhard-float");
@@ -16852,6 +16889,26 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	}
       break;
 
+      /* For the pack and unpack int128 routines, fix up the builtin so it
+	 uses the correct IBM128 type.  */
+    case MISC_BUILTIN_PACK_IF:
+      if (TARGET_LONG_DOUBLE_128 && !TARGET_IEEEQUAD)
+	{
+	  icode = CODE_FOR_packtf;
+	  fcode = MISC_BUILTIN_PACK_TF;
+	  uns_fcode = (size_t)fcode;
+	}
+      break;
+
+    case MISC_BUILTIN_UNPACK_IF:
+      if (TARGET_LONG_DOUBLE_128 && !TARGET_IEEEQUAD)
+	{
+	  icode = CODE_FOR_unpacktf;
+	  fcode = MISC_BUILTIN_UNPACK_TF;
+	  uns_fcode = (size_t)fcode;
+	}
+      break;
+
     default:
       break;
     }
@@ -17035,14 +17092,21 @@ rs6000_init_builtins (void)
      __ieee128.  */
   if (TARGET_FLOAT128_TYPE)
     {
-      ibm128_float_type_node = make_node (REAL_TYPE);
-      TYPE_PRECISION (ibm128_float_type_node) = 128;
-      SET_TYPE_MODE (ibm128_float_type_node, IFmode);
-      layout_type (ibm128_float_type_node);
+      if (TARGET_IEEEQUAD || !TARGET_LONG_DOUBLE_128)
+	{
+	  ibm128_float_type_node = make_node (REAL_TYPE);
+	  TYPE_PRECISION (ibm128_float_type_node) = 128;
+	  SET_TYPE_MODE (ibm128_float_type_node, IFmode);
+	  layout_type (ibm128_float_type_node);
+	}
+      else
+	ibm128_float_type_node = long_double_type_node;
+
       lang_hooks.types.register_builtin_type (ibm128_float_type_node,
 					      "__ibm128");
 
-      ieee128_float_type_node = float128_type_node;
+      ieee128_float_type_node
+	= TARGET_IEEEQUAD ? long_double_type_node : float128_type_node;
       lang_hooks.types.register_builtin_type (ieee128_float_type_node,
 					      "__ieee128");
     }
@@ -32936,30 +33000,12 @@ rs6000_mangle_type (const_tree type)
   if (type == bool_int_type_node) return "U6__booli";
   if (type == bool_long_long_type_node) return "U6__boolx";
 
-  /* Use a unique name for __float128 rather than trying to use "e" or "g". Use
-     "g" for IBM extended double, no matter whether it is long double (using
-     -mabi=ibmlongdouble) or the distinct __ibm128 type.  */
-  if (TARGET_FLOAT128_TYPE)
-    {
-      if (type == ieee128_float_type_node)
-	return "U10__float128";
-
-      if (type == ibm128_float_type_node)
-	return "u8__ibm128";
-
-      if (TARGET_LONG_DOUBLE_128 && type == long_double_type_node)
-	return (TARGET_IEEEQUAD) ? "U10__float128" : "g";
-    }
-
-  /* Mangle IBM extended float long double as `g' (__float128) on
-     powerpc*-linux where long-double-64 previously was the default.  */
-  if (TYPE_MAIN_VARIANT (type) == long_double_type_node
-      && TARGET_ELF
-      && TARGET_LONG_DOUBLE_128
-      && !TARGET_IEEEQUAD)
+  if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IBM_P (TYPE_MODE (type)))
     return "g";
+  if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IEEE_P (TYPE_MODE (type)))
+    return ieee128_mangling_gcc_8_1 ? "U10__float128" : "u9__ieee128";
 
-  /* For all other types, use normal C++ mangling.  */
+  /* For all other types, use the default mangling.  */
   return NULL;
 }
 
@@ -39581,6 +39627,40 @@ rs6000_starting_frame_offset (void)
     return 0;
   return RS6000_STARTING_FRAME_OFFSET;
 }
+
+
+/* Create an alias for a mangled name where we have changed the mangling (in
+   GCC 8.1, we used U10__float128, and now we use u9__ieee128).  This is called
+   via the target hook TARGET_ASM_GLOBALIZE_DECL_NAME.  */
+
+#if TARGET_ELF && RS6000_WEAK
+static void
+rs6000_globalize_decl_name (FILE * stream, tree decl)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+
+  targetm.asm_out.globalize_label (stream, name);
+
+  if (rs6000_passes_ieee128 && name[0] == '_' && name[1] == 'Z')
+    {
+      tree save_asm_name = DECL_ASSEMBLER_NAME (decl);
+      const char *old_name;
+
+      ieee128_mangling_gcc_8_1 = true;
+      lang_hooks.set_decl_assembler_name (decl);
+      old_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      SET_DECL_ASSEMBLER_NAME (decl, save_asm_name);
+      ieee128_mangling_gcc_8_1 = false;
+
+      if (strcmp (name, old_name) != 0)
+	{
+	  fprintf (stream, "\t.weak %s\n", old_name);
+	  fprintf (stream, "\t.set %s,%s\n", old_name, name);
+	}
+    }
+}
+#endif
+
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
