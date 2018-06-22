@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-std=legacy" }
 !
 ! Test the fix for PR49630, comment #11.
 !

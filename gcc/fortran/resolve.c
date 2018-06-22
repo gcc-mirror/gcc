@@ -3116,6 +3116,7 @@ resolve_function (gfc_expr *expr)
   /* If this is a deferred TBP with an abstract interface, its result
      cannot be an assumed length character (F2003: C418).  */
   if (sym && sym->attr.abstract && sym->attr.function
+      && sym->result->ts.u.cl
       && sym->result->ts.u.cl->length == NULL)
     {
       gfc_error ("ABSTRACT INTERFACE %qs at %L must not have an assumed "

@@ -1,3 +1,10 @@
+2018-06-22  Paul Thomas  <pault@gcc.gnu.org>
+	    Rainer Orth  <ro@gcc.gnu.org>
+
+	PR fortran/86281
+	* resolve.c (resolve_contained_fntype): Check for the charlen
+	before testing the length.
+
 2018-06-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/49630
