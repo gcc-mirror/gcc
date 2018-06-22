@@ -532,13 +532,6 @@ streamer_read_tree_bitfields (struct lto_input_block *ib,
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     cl_optimization_stream_in (&bp, TREE_OPTIMIZATION (expr));
 
-  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    {
-      unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (&bp);
-      if (length > 0)
-	vec_safe_grow (BINFO_BASE_ACCESSES (expr), length);
-    }
-
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     {
       unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (&bp);
@@ -964,7 +957,6 @@ static void
 lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
 				  struct data_in *data_in, tree expr)
 {
-  unsigned i;
   tree t;
 
   /* Note that the number of slots in EXPR was read in
@@ -982,17 +974,10 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
 
   BINFO_OFFSET (expr) = stream_read_tree (ib, data_in);
   BINFO_VTABLE (expr) = stream_read_tree (ib, data_in);
-  BINFO_VPTR_FIELD (expr) = stream_read_tree (ib, data_in);
 
-  /* The vector of BINFO_BASE_ACCESSES is pre-allocated during
-     unpacking the bitfield section.  */
-  for (i = 0; i < vec_safe_length (BINFO_BASE_ACCESSES (expr)); i++)
-    {
-      tree a = stream_read_tree (ib, data_in);
-      (*BINFO_BASE_ACCESSES (expr))[i] = a;
-    }
-  /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
-     and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
+  /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX,
+     BINFO_BASE_ACCESSES and BINFO_VPTR_INDEX; these are used by C++ FE
+     only.  */
 }
 
 
