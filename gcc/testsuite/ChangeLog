@@ -1,5 +1,9 @@
 2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
 
+	* gcc.target/pru/clobber-sp.c: New test.
+
+2020-05-05  Dimitar Dimitrov  <dimitar@dinux.eu>
+
 	* gcc.target/pru/lra-framepointer-fragmentation-1.c: Update test to
 	take into account additional available registers.
 	* gcc.target/pru/lra-framepointer-fragmentation-2.c: Ditto.
