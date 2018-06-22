@@ -1,6 +1,12 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/85446
+	* match.pd ((intptr_t) x eq/ne CST to x eq/ne (typeof x) cst): Require
+	the integral and pointer types to have the same precision.
+
 	2018-04-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/85384
@@ -9,9 +15,6 @@
 	it when generating GCC_DRIVER_NAME.
 	* configure: Regenerate.
 
-2018-06-22  Jakub Jelinek  <jakub@redhat.com>
-
-	Backported from mainline
 	2018-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85431
