@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84874
+	* g++.dg/cpp1z/desig8.C: New test.
+
 	PR tree-optimization/84841
 	* gcc.dg/pr84841.c: New test.
 
