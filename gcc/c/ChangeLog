@@ -1,6 +1,12 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85696
+	* c-typeck.c (c_finish_omp_clauses): Don't use
+	c_omp_predetermined_sharing, instead just check TREE_READONLY.
+
 	2018-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85662
