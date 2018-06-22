@@ -29326,17 +29326,16 @@ should accept and respond to the following commands:
 
 @table @gcctabopt
 
-@item @var{query} @var{module} [@var{from}]
+@item BMI @var{module}
 A query for an import (including for a module implementation unit).
-The @var{query} may be a combination of @samp{BMI}, @samp{SEARCH} or
-@samp{PATH}, concatentated with @samp{,}.  The response should be one
-of @samp{BMI @var{bmipath}}, @samp{SEARCH @var{srcbase}} or
-@samp{PATH @var{srcpath}} respectively.  If the request is not
-fulfilable, the response is @samp{ERROR [@var{msg}]}.  Usually an
-error response will cause compilation to terminate.  When the a
-multi-part query is given, the first possible response should be
-given.  FIXME Only BMI is currently used, the others may well change
-or be removed.
+The response should be @samp{BMI @var{bmipath}}.  If the request is
+not fulfilable, the response is @samp{ERROR [@var{msg}]}.  Usually an
+error response will cause compilation to terminate.
+
+@item ASYNC @var{module}
+An asynchronous query for an import.  The immediate response will be
+@samp{OK}.  A later response to an @samp{AWAIT} query will provide
+response data.
 
 @item AWAIT
 Request for an asynchronous response.  The response is as for a
@@ -29345,11 +29344,6 @@ non-asynchronous query, except it is prefixed by @samp{OK
 is no outstanding ASYNC query, an error response of @samp{ERROR
 [@var{msg}]} should be given.  Asynchronous requests need not be
 responded to in order.
-
-@item ASYNC @var{query}
-An asynchronous query.  The @var{query} is as above, but the response
-may be either @samp{OK} or @samp{ERROR @var{msg}}.  A later response
-to an @samp{AWAIT} query will provide response data.
 
 @item DONE @var{module}
 The compilation has succesfully produced a BMI file for
@@ -29361,10 +29355,10 @@ interface unit.
 The compilation is of a module interface unit, and will generate a BMI
 for @var{module}.  The response should be @samp{BMI @var{bmipath}}.
 
-@item HELLO @var{ver} @var{flags} @var{cookie}
+@item HELLO @var{ver} @var{cookie}
 This is the first command.  It informs the server of the name of the
 source being compiled.  Response is either @samp{OK
-@var{ver} @var{flags} @var{repopath}}, or @samp{ERROR @var{msg}}.
+@var{ver} @var{repopath}}, or @samp{ERROR @var{msg}}.
 
 @item HELP [@var{cmd}]
 A help request.  The response is @samp{HELP [@var{msg}]}.
@@ -29393,16 +29387,15 @@ should be made.  That too may begin with @samp{+}.  The final request
 of the batch should begin with @samp{-}, and may be empty.  Similarly
 responses may be batched, both in response to a set of batched
 requests, or as a result of a batched @samp{AWAIT} request (including
-a batch consisting of solely an @samp{AWAIT}).  Each non-ultimate line
+a batch consisting of a single @samp{AWAIT}).  Each non-ultimate line
 of a batched response begins with a @samp{+}.  The final line should
 begin with @samp{-}, and may otherwise be empty.  Response to a
 batched request are in request order, except that a batch of
-@samp{ASYNC} requests that are deferred provides only a single
-@samp{OK} or @samp{ERROR} response.  Servers should not commence
-responses until all requests of a batch have been received.  There may
-be a fixed-capacity pipe between client and server, and sending
-responses before the client has started reading could result in
-deadlock.
+@samp{ASYNC} requests provides only a single @samp{OK}.  Servers
+should not commence responses until all requests of a batch have been
+received.  There may be a fixed-capacity pipe between client and
+server, and sending responses before the client has started reading
+could result in deadlock.
 
 The following metavariables were used:
 
@@ -29410,10 +29403,6 @@ The following metavariables were used:
 
 @item @var{bmipath}
 Pathname of a BMI file.
-
-@item @var{flags}
-A comma-separated set of words indicating capabilities.  If there are
-no flags, a placeholder of @samp{0} should be used.  FIXME:Not very baked
 
 @item @var{from}
 The source path of the file containing the import or include.
@@ -29424,12 +29413,6 @@ or @samp{""} pairs
 
 @item @var{msg}
 A human readable message.  This may contain whitespace.
-
-@item @var{query}
-A @samp{BMI}, @samp{SEARCH} or @samp{PATH} query.
-
-@item @var{srcbase}
-A basename of a source file to search for.
 
 @item @var{cookie}
 A cookie provided when invoking the compiler.  This may be helpful to

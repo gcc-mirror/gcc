@@ -1,5 +1,13 @@
 2018-06-22  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (module_mapper::send_command): Fix off-by-one.
+	(module_mapper::get_response): Cleanup batch splitting.
+	(module_mapper::handshake): Adjust.
+	* cxx-module-mapper.sh (cmd): Adjust HELLO.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Tweak mapper protocol.
+
 	gcc/
 	* configure.ac: Check select, accept4.
 	* config.in, configure: Rebuilt.

@@ -7244,7 +7244,7 @@ module_mapper::send_command (location_t loc, const char *format, ...)
 	va_start (args, format);
 	size_t available = (buffer + size) - end;
 	gcc_checking_assert (available);
-	actual = vsnprintf (end, available - 1, format, args);
+	actual = vsnprintf (end, available, format, args);
 	va_end (args);
 	if (actual < available)
 	  break;
@@ -7360,25 +7360,36 @@ module_mapper::get_response (location_t loc)
       pos = buffer;
     }
 
-  start = pos;
-  if (*pos == '+')
+  for (;; pos = end + 1)
     {
-      pos++;
-      end = strchr (pos, '\n');
-      *end = 0;
-    }
-  else
-    {
-      if (*pos == '-')
+      start = pos;
+      end = NULL;
+      if (*pos == '+')
+	{
+	  pos++;
+	  end = strchr (pos, '\n');
+	  if (end)
+	    *end = 0;
+	}
+
+      if (!end)
+	{
+	  if (*pos == '-')
+	    pos++;
+	  end = pos + strlen (pos);
+	  batching = false;
+	}
+
+      while (*pos && ISSPACE (*pos))
 	pos++;
-      end = pos + strlen (pos);
-      batching = false;
+
+      if (*pos)
+	return true;
+      if (!batching)
+	break;
     }
 
-  while (*pos != '\n' && ISSPACE (*pos))
-    pos++;
-
-  return *pos != 0;
+  return false;
 }
 
 void
@@ -7463,7 +7474,7 @@ module_mapper::response_word (location_t loc, const char *option, ...)
 
 /*  Module mapper protocol non-canonical precis:
 
-    HELLO version flags cookie
+    HELLO version cookie
     	-> HELLO/ERROR response
     INCLUDE header-name from
     	-> INCLUDE/IMPORT reponse
@@ -7487,7 +7498,7 @@ module_mapper::response_word (location_t loc, const char *option, ...)
 bool
 module_mapper::handshake (location_t loc, const char *cookie)
 {
-  send_command (loc, "HELLO %d 0 %s", MAPPER_VERSION, cookie);
+  send_command (loc, "HELLO %d BMI %s", MAPPER_VERSION, cookie);
 
   bool ok = get_response (loc) > 0;
   switch (response_word (loc, "HELLO", "ERROR", NULL))
@@ -7496,12 +7507,10 @@ module_mapper::handshake (location_t loc, const char *cookie)
       ok = false;
       break;
 
-    case 0: /* HELLO $ver $attr */
+    case 0: /* HELLO $ver $repo */
       {
 	if (char *ver = response_token (loc))
 	  dump () && dump ("Connected to mapper version %s", ver);
-	/* Read, ignore attribs.  */
-	response_token (loc);
 	char *repo = response_token (loc, true);
 	if (response_eol (loc))
 	  {
@@ -10739,7 +10748,8 @@ atom_module_preamble (location_t loc, line_maps *lmaps)
 void
 init_module_processing ()
 {
-  gcc_assert (pch_file);
+  /* PCH should not be reachable because of lang-specs.  */
+  gcc_assert (!pch_file);
 
   if (module_header_name && !module_header_name[0])
     {
@@ -10757,9 +10767,9 @@ init_module_processing ()
 	      break;
 	  }
       if (len < 2)
+	/* We didn't find a break, just use the whole path.  */
 	len = 0;
       module_header_name = main + len;
-      else
     }
 
   module_state::init ();
