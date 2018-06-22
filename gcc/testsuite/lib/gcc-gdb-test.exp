@@ -139,3 +139,13 @@ proc gdb-test { args } {
     file delete $cmd_file
     return
 }
+
+# Report the gdb path and version log the .log file
+# Argument 0 is the gdb path
+# Argument 1 is the location where gdb is used
+# 
+proc report_gdb { gdb loc } {
+    send_log "gdb used in $loc: $gdb\n"
+    set gdb_version [exec $gdb -v]
+    send_log "gdb used in $loc: version:\n---\n$gdb_version\n---\n"
+}
