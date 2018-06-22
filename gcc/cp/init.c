@@ -2931,7 +2931,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
   /* Lots of logic below depends on whether we have a constant number of
      elements, so go ahead and fold it now.  */
-  const_tree cst_outer_nelts = fold_non_dependent_expr (outer_nelts);
+  const_tree cst_outer_nelts = fold_non_dependent_expr (outer_nelts, complain);
 
   /* If our base type is an array, then make sure we know how many elements
      it has.  */
@@ -3731,7 +3731,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Try to determine the constant value only for the purposes
 	 of the diagnostic below but continue to use the original
 	 value and handle const folding later.  */
-      const_tree cst_nelts = fold_non_dependent_expr (nelts);
+      const_tree cst_nelts = fold_non_dependent_expr (nelts, complain);
 
       /* The expression in a noptr-new-declarator is erroneous if it's of
 	 non-class type and its value before converting to std::size_t is

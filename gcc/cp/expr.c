@@ -353,7 +353,13 @@ fold_for_warn (tree x)
   /* It's not generally safe to fully fold inside of a template, so
      call fold_non_dependent_expr instead.  */
   if (processing_template_decl)
-    return fold_non_dependent_expr (x);
+    {
+      tree f = fold_non_dependent_expr (x, tf_none);
+      if (f == error_mark_node)
+	return x;
+      else
+	return f;
+    }
 
   return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
 }

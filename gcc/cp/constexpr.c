@@ -5179,12 +5179,20 @@ clear_cv_and_fold_caches (void)
 /* Like maybe_constant_value but first fully instantiate the argument.
 
    Note: this is equivalent to instantiate_non_dependent_expr_sfinae
-   (t, tf_none) followed by maybe_constant_value but is more efficient,
-   because calls instantiation_dependent_expression_p and
-   potential_constant_expression at most once.  */
+   (t, complain) followed by maybe_constant_value but is more efficient,
+   because it calls instantiation_dependent_expression_p and
+   potential_constant_expression at most once.
+
+   Callers should generally pass their active complain, or if they are in a
+   non-template, diagnosing context, they can use the default of
+   tf_warning_or_error.  Callers that might be within a template context, don't
+   have a complain parameter, and aren't going to remember the result for long
+   (e.g. null_ptr_cst_p), can pass tf_none and deal with error_mark_node
+   appropriately.  */
 
 tree
-fold_non_dependent_expr (tree t)
+fold_non_dependent_expr (tree t,
+			 tsubst_flags_t complain /* = tf_warning_or_error */)
 {
   if (t == NULL_TREE)
     return NULL_TREE;
@@ -5201,7 +5209,7 @@ fold_non_dependent_expr (tree t)
       if (is_nondependent_constant_expression (t))
 	{
 	  processing_template_decl_sentinel s;
-	  t = instantiate_non_dependent_expr_internal (t, tf_none);
+	  t = instantiate_non_dependent_expr_internal (t, complain);
 
 	  if (type_unknown_p (t)
 	      || BRACE_ENCLOSED_INITIALIZER_P (t))
