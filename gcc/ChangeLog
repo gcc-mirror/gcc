@@ -1,6 +1,12 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85095
+	* config/i386/i386.md (*add<mode>3_carry_0, *addsi3_carry_zext_0,
+	*sub<mode>3_carry_0, *subsi3_carry_zext_0): New patterns.
+
 	2018-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/85022
