@@ -11301,6 +11301,13 @@ build_binary_op (location_t location, enum tree_code code,
           /* Always construct signed integer vector type.  */
           intt = c_common_type_for_size (GET_MODE_BITSIZE
 					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+	  if (!intt)
+	    {
+	      error_at (location, "could not find an integer type "
+				  "of the same size as %qT",
+			TREE_TYPE (type0));
+	      return error_mark_node;
+	    }
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;
@@ -11460,6 +11467,13 @@ build_binary_op (location_t location, enum tree_code code,
           /* Always construct signed integer vector type.  */
           intt = c_common_type_for_size (GET_MODE_BITSIZE
 					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+	  if (!intt)
+	    {
+	      error_at (location, "could not find an integer type "
+				  "of the same size as %qT",
+			TREE_TYPE (type0));
+	      return error_mark_node;
+	    }
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;
