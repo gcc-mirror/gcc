@@ -1,6 +1,13 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85659
+	* g++.dg/ext/asm14.C: New test.
+	* g++.dg/ext/asm15.C: New test.
+	* g++.dg/ext/asm16.C: New test.
+
 	2018-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/85529
