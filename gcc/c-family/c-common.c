@@ -6253,10 +6253,11 @@ c_common_to_target_charset (HOST_WIDE_INT c)
 
 /* Fold an offsetof-like expression.  EXPR is a nested sequence of component
    references with an INDIRECT_REF of a constant at the bottom; much like the
-   traditional rendering of offsetof as a macro.  Return the folded result.  */
+   traditional rendering of offsetof as a macro.  TYPE is the desired type of
+   the whole expression.  Return the folded result.  */
 
 tree
-fold_offsetof_1 (tree expr, enum tree_code ctx)
+fold_offsetof (tree expr, tree type, enum tree_code ctx)
 {
   tree base, off, t;
   tree_code code = TREE_CODE (expr);
@@ -6281,10 +6282,10 @@ fold_offsetof_1 (tree expr, enum tree_code ctx)
 	  error ("cannot apply %<offsetof%> to a non constant address");
 	  return error_mark_node;
 	}
-      return TREE_OPERAND (expr, 0);
+      return convert (type, TREE_OPERAND (expr, 0));
 
     case COMPONENT_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), code);
+      base = fold_offsetof (TREE_OPERAND (expr, 0), type, code);
       if (base == error_mark_node)
 	return base;
 
@@ -6301,7 +6302,7 @@ fold_offsetof_1 (tree expr, enum tree_code ctx)
       break;
 
     case ARRAY_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), code);
+      base = fold_offsetof (TREE_OPERAND (expr, 0), type, code);
       if (base == error_mark_node)
 	return base;
 
@@ -6358,23 +6359,16 @@ fold_offsetof_1 (tree expr, enum tree_code ctx)
       /* Handle static members of volatile structs.  */
       t = TREE_OPERAND (expr, 1);
       gcc_assert (VAR_P (t));
-      return fold_offsetof_1 (t);
+      return fold_offsetof (t, type);
 
     default:
       gcc_unreachable ();
     }
 
+  if (!POINTER_TYPE_P (type))
+    return size_binop (PLUS_EXPR, base, convert (type, off));
   return fold_build_pointer_plus (base, off);
 }
-
-/* Likewise, but convert it to the return type of offsetof.  */
-
-tree
-fold_offsetof (tree expr)
-{
-  return convert (size_type_node, fold_offsetof_1 (expr));
-}
-
 
 /* *PTYPE is an incomplete array.  Complete it with a domain based on
    INITIAL_VALUE.  If INITIAL_VALUE is not present, use 1 if DO_DEFAULT
