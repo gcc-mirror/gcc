@@ -1,6 +1,14 @@
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84463
+	* typeck.c (cp_build_addr_expr_1): Move handling of offsetof-like
+	tricks from here to ...
+	* cp-gimplify.c (cp_fold) <case ADDR_EXPR>: ... here.  Only use it
+	if INDIRECT_REF's operand is INTEGER_CST cast to pointer type.
+
 	2018-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85210
