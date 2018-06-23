@@ -1,3 +1,8 @@
+2018-06-22  Maya Rashish  <coypu@sdf.org>
+
+	* doc/invoke.texi (mno-fancy-math-387): Update for changes
+	made to OpenBSD and NetBSD through the years.
+
 2018-06-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Change
