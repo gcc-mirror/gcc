@@ -6834,7 +6834,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 
   /* We set name as soon as we know what kind of mapper this is.  */
   if (!option)
-    name = option = "|cxx-module-mapper";
+    name = option = "|cxx-mapper";
 
   dump () && dump ("Initializing mapper %s", option);
 
@@ -7279,7 +7279,6 @@ module_mapper::get_response (location_t loc)
   else
     {
       gcc_assert (pos == end);
-      end = pos = buffer;
       size_t off = 0;
       bool bol = true;
       bool last = false;
@@ -7320,6 +7319,7 @@ module_mapper::get_response (location_t loc)
 			  else
 			    last = true;
 			}
+		      bol = false;
 		      if (char *eol
 			  = (char *)memchr (buffer + off, '\n', size - off))
 			{
@@ -7328,6 +7328,12 @@ module_mapper::get_response (location_t loc)
 			  bytes -= nline - off;
 			  off = nline;
 			}
+		      else
+			{
+			  off += bytes;
+			  bytes = 0;
+			  break;
+			}
 		    }
 		  if (bol && last)
 		    break;
@@ -7335,9 +7341,7 @@ module_mapper::get_response (location_t loc)
 	      if (off + 1 == size)
 		{
 		  size *= 2;
-		  char *next = XRESIZEVEC (char, buffer, size);
-		  pos = (pos - buffer) + next;
-		  buffer = next;
+		  buffer = XRESIZEVEC (char, buffer, size);
 		}
 	    }
 
@@ -7533,9 +7537,8 @@ module_mapper::handshake (location_t loc, const char *cookie)
 void
 module_mapper::import_query (const module_state *state, bool async)
 {
-  send_command (state->from_loc, "%sBMI %s %s", async ? "ASYNC " : "",
-		IDENTIFIER_POINTER (state->name),
-		LOCATION_FILE (state->from_loc));
+  send_command (state->from_loc, "%sBMI %s", async ? "ASYNC " : "",
+		IDENTIFIER_POINTER (state->name));
 }
 
 void

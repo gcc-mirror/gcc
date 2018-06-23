@@ -1,0 +1,1602 @@
+/* -*- C++ -*- modules.  Experimental!
+   Copyright (C) 2018 Free Software Foundation, Inc.
+   Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* The C++ module mapper server.  
+
+   stdin/out
+   local socket
+   ipv6 socket
+ */
+
+#include "config.h"
+#define INCLUDE_VECTOR
+#define INCLUDE_MAP
+#include "system.h"
+#include "version.h"
+#include "intl.h"
+#include <getopt.h>
+
+#if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
+/* socket, bind, shutdown  */
+#ifdef HAVE_ACCEPT4
+#define _GNU_SOURCE
+#endif
+# define NETWORKING 1
+# include <sys/socket.h>
+# ifdef HAVE_AF_UNIX
+/* sockaddr_un  */
+#  include <sys/un.h>
+# endif
+# include <netinet/in.h>
+# ifdef HAVE_AF_INET6
+/* sockaddr_in6, getaddrinfo, freeaddrinfo, gai_sterror, ntohs, htons.  */
+#  include <netdb.h>
+# endif
+#endif
+#ifndef HAVE_AF_INET6
+# define gai_strerror(X) ""
+#endif
+
+#ifdef NETWORKING
+#ifdef HAVE_EPOLL
+/* epoll_create, epoll_ctl, epoll_pwait  */
+#include <sys/epoll.h>
+#endif
+#if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
+/* pselect or select  */
+#include <sys/select.h>
+#endif
+#endif
+
+/* MODULE_STAMP is a #define passed in from the Makefile.  When
+   present, it is used for version stamping the binary files, and
+   indicates experimentalness of the module system.  It is very
+   experimental right now.  */
+#ifndef MODULE_STAMP
+#error "Stahp! What are you doing? This is not ready yet."
+#define MODULE_STAMP 0
+#endif
+
+/* Mapper Protocol version.  Very new.  */
+#define MAPPER_VERSION 0
+
+const char *progname;
+
+/* Speak thoughts out loud.  */
+static bool flag_noisy = false;
+
+/* One and done.  */
+static bool flag_one = false;
+
+/* Serialize connections.  */
+static bool flag_sequential = false;
+
+/* Root BMI directory.  */
+static const char *flag_root = ".";
+
+/* String comparison for the mapper map.  */
+struct string_cmp
+{
+  bool operator()(const char *a, const char *b)
+  {
+    return strcmp (a, b) < 0;
+  }
+};
+typedef std::map<const char *, const char *, string_cmp> module_map_t;
+
+/* If there is a known mapping, this is it.  */
+static module_map_t *module_map;
+
+using namespace std;
+
+/* Progress messages to the user.  */
+static bool ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD
+noisy (const char *fmt, ...)
+{
+  fprintf (stderr, "%s:", progname);
+  va_list args;
+  va_start (args, fmt);
+  vfprintf (stderr, fmt, args);
+  va_end (args);
+  fprintf (stderr, "\n");
+
+  return false;
+}
+
+/* More messages to the user.  */
+
+static void ATTRIBUTE_PRINTF_2
+fnotice (FILE *file, const char *fmt, ...)
+{
+  va_list args;
+
+  va_start (args, fmt);
+  vfprintf (file, _(fmt), args);
+  va_end (args);
+}
+
+/* Strip out the source directory from FILE.  */
+
+static const char *
+trim_src_file (const char *file)
+{
+  static const char me[] = __FILE__;
+  unsigned pos = 0;
+
+  while (file[pos] == me[pos] && me[pos])
+    pos++;
+  while (pos && !IS_DIR_SEPARATOR (me[pos-1]))
+    pos--;
+
+  return file + pos;
+}
+
+/* Die screaming.  */
+
+void ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD
+internal_error (const char *fmt, ...)
+{
+  fprintf (stderr, "%s:Internal error ", progname);
+  va_list args;
+
+  va_start (args, fmt);
+  vfprintf (stderr, fmt, args);
+  va_end (args);
+  fprintf (stderr, "\n");
+
+  exit (FATAL_EXIT_CODE);
+}
+
+/* Hooked to from gcc_assert & gcc_unreachable.  */
+
+void ATTRIBUTE_NORETURN ATTRIBUTE_COLD
+fancy_abort (const char *file, int line, const char *func)
+{
+  internal_error ("in %s, at %s:%d", func, trim_src_file (file), line);
+}
+
+/* Exploded on a signal.  */
+
+static void ATTRIBUTE_NORETURN ATTRIBUTE_COLD
+crash_signal (int sig)
+{
+  signal (sig, SIG_DFL);
+  internal_error ("signal %s", strsignal (sig));
+}
+
+/* A fatal error of some kind.  */
+
+static void ATTRIBUTE_NORETURN ATTRIBUTE_COLD ATTRIBUTE_PRINTF_1
+error (const char *msg, ...)
+{
+  fprintf (stderr, "%s:error: ", progname);
+  va_list args;
+
+  va_start (args, msg);
+  vfprintf (stderr, msg, args);
+  va_end (args);
+  fprintf (stderr, "\n");
+
+  exit (1);
+}
+
+/* Figure out the BMI from a module name.  Returns NULL if we do not
+   know.  */
+
+const char *
+module2bmi (const char *module)
+{
+  const char *res;
+
+  if (module_map)
+    {
+      module_map_t::iterator iter = module_map->find (module);
+      res = iter != module_map->end () ? iter->second : NULL;
+    }
+  else
+    {
+      static char *workspace;
+      static unsigned alloc = 0;
+      unsigned l = strlen (module);
+
+      if (alloc < l + 5)
+	{
+	  alloc = l + 20;
+	  workspace = XRESIZEVEC (char, workspace, alloc);
+	}
+      memcpy (workspace, module, l + 1);
+      for (char *ptr = workspace; *ptr; ptr++)
+	if (*ptr == '.')
+	  *ptr = '-';
+      strcpy (workspace + l, ".nms");
+      res = workspace;
+    }
+  return res;
+}
+
+/* Read or write buffer from/to the compiler.  */
+
+class buffer {
+  char *buf;
+  size_t size;
+  char *pos;
+  char *end;
+  char *start;
+  int fd;
+  bool cork_p;
+  bool bol_p;
+  bool last_p;
+
+public:
+  buffer (int fd)
+    : buf (NULL), size (MODULE_STAMP ? 3 : 200),
+      pos (NULL), end (NULL), start (NULL), fd (fd)
+  {
+    buf = XNEWVEC (char, size);
+    init ();
+  }
+  ~buffer ()
+  {
+    XDELETEVEC (buf);
+  }
+
+public:
+  int get_fd () const
+  {
+    return fd;
+  }
+
+public:
+  bool corking () const
+  {
+    return cork_p;
+  }
+  void cork (bool cork)
+  {
+    cork_p = cork;
+  }
+
+public:
+  void init ()
+  {
+    end = pos = buf;
+    bol_p = true;
+    cork_p = false;
+    last_p = false;
+  }
+  int do_read (unsigned);
+  int do_write (unsigned);
+
+public:
+  void ATTRIBUTE_PRINTF_2 send_response (const char *fmt, ...);
+  bool get_request (bool first);
+  bool get_request (unsigned id, FILE *);
+
+public:
+  void request_unexpected (unsigned id);
+  const char *request_error ()
+  {
+    const char *result = pos != end ? pos : "unspecified error";
+    pos = end;
+    return result;
+  }
+  bool get_eol (unsigned id, bool ignore = false);
+  char *get_token (unsigned id, bool all = false);
+  int get_word (const char *token, const char *option, ...);
+  int get_word (unsigned id, const char *option, ...);
+
+private:
+  int get_word (const char *token, const char *option, va_list args);
+
+public:
+  void close (buffer const *other)
+  {
+    if (!other || other->fd != fd)
+      ::close (fd);
+    fd = -1;
+  }
+};
+
+/* Read from the FD.  If we complete a (batched) line, return
+   non-zero.  Also non-zero on error.  */
+
+int
+buffer::do_read (unsigned id)
+{
+  unsigned off = end - buf;
+  if (off == size)
+    {
+      size *= 2;
+      buf = XRESIZEVEC (char, buf, size);
+      end = buf + off;
+    }
+  pos = end;
+
+  int bytes = ::read (fd, buf + off, size - off);
+  if (bytes < 0)
+    {
+      noisy ("%u:read fail: %s", id, xstrerror (errno));
+      return -1;
+    }
+  else if (!bytes)
+    {
+      flag_noisy && noisy ("%u:end of file", id);
+      return -1;
+    }
+
+  while (bytes)
+    {
+      if (bol_p)
+	{
+	  if (buf[off] == '+')
+	    cork_p = true;
+	  else
+	    last_p = true;
+	}
+      if (char *eol = (char *)memchr (buf + off, '\n', size - off))
+	{
+	  bol_p = true;
+	  unsigned nline = eol + 1 - buf;
+	  bytes -= nline - off;
+	  off = nline;
+	}
+      else
+	{
+	  bol_p = false;
+	  off += bytes;
+	  bytes = 0;
+	  break;
+	}
+    }
+
+  end = buf + off + bytes;
+
+  if (bol_p && last_p)
+    {
+      *--end = 0;
+      flag_noisy && noisy ("%u:read %s: '%s'", id, cork_p ? "batch" : "line",
+			   buf);
+      start = buf;
+      return +1;
+    }
+
+  flag_noisy && noisy ("%u:read partial '%.*s'", id, int (end - pos), pos);
+  return 0;
+}
+
+/* Write (batched) line to FD.  If completed return non-zero.  Also
+   non-zero on error.  */
+
+int
+buffer::do_write (unsigned id)
+{
+  unsigned len = end - pos;
+  int bytes = ::write (fd, pos, len);
+  if (bytes < 0)
+    {
+      noisy ("%u:write fail: %s", id, xstrerror (errno));
+      return -1;
+    }
+  else if (!bytes)
+    {
+      flag_noisy && noisy ("%u:end of file", id);
+      return -1;
+    }
+  else
+    pos += bytes;
+
+  return pos == end;
+}
+
+/* Format a response into the buffer.  Pay attention to the corking
+   state.  */
+
+void
+buffer::send_response (const char *fmt, ...)
+{
+  gcc_assert (unsigned (end - buf + 2) < size);
+  if (cork_p)
+    *end++ = '+';
+  else if (end != buf)
+    *end++ = '-';
+
+  if (*fmt)
+    for (;;)
+      {
+	va_list args;
+	va_start (args, fmt);
+	size_t available = (buf + size) - end;
+	gcc_checking_assert (available);
+	unsigned actual = vsnprintf (end, available - 2, fmt, args);
+	va_end (args);
+	if (actual < available - 2)
+	  {
+	    end += actual;
+	    break;
+	  }
+
+	size = size * 2 + actual + 20;
+	char *next = XRESIZEVEC (char, buf, size);
+	end = next + (end - buf);
+	buf = pos = next;
+      }
+  *end++ = '\n';
+}
+
+/* Prepare for the next request.  Sets corking appropriately if there
+   is/isn't more.  FIRST indicates whether this is the first after
+   completing a read.  */
+
+bool
+buffer::get_request (bool first)
+{
+  if (first)
+    ;
+  else if (cork_p)
+    start = end + 1;
+  else
+    return false;
+
+ again:
+  pos = start;
+  end = NULL;
+  if (*pos == '+')
+    {
+      pos++;
+      end = strchr (pos, '\n');
+      cork_p = true;
+    }
+
+  if (!end)
+    {
+      cork_p = false;
+      if (*pos == '-')
+	pos++;
+      end = pos + strlen (pos);
+    }
+  else
+    *end = 0;
+
+  while (*pos && ISSPACE (*pos))
+    pos++;
+
+  if (*pos)
+    return true;
+  if (cork_p)
+    goto again;
+  return false;;
+}
+
+/* Get a request from a file.  */
+
+bool
+buffer::get_request (unsigned id, FILE *file)
+{
+  init ();
+  unsigned off = end - buf;
+  do
+    {
+      if (off == size)
+	{
+	  size *= 2;
+	  buf = XRESIZEVEC (char, buf, size);
+	  end = buf + off;
+	}
+
+      if (!fgets (buf + off, size - off, file))
+	{
+	  if (ferror (file))
+	    noisy ("%u:read fail: %s", id, xstrerror (errno));
+	  return false;
+	}
+
+      off += strlen (buf + off);
+    }
+  while (off && buf[off - 1] != '\n');
+  end = buf + off;
+  *--end = 0;
+
+  return true;
+}
+
+/* We didn't expect this.  */
+
+void
+buffer::request_unexpected (unsigned id)
+{
+  if (start)
+    {
+      /* Restore the whitespace we zapped tokenizing.  */
+      for (char *ptr = start; ptr != pos; ptr++)
+	if (!*ptr)
+	  *ptr = ' ';
+      noisy ("%u:mapper command malformed: %s", id, start);
+    }
+  pos = end;
+}
+
+/* Check we're at EOL.  Returns true, if that was the case.  */
+
+bool
+buffer::get_eol (unsigned id, bool ignore)
+{
+  bool at_end = pos == end;
+  if (!at_end && !ignore)
+    request_unexpected (id);
+  pos = end;
+  return at_end;
+}
+
+/* Get a space-separated token.  ALL means to EOL.  */
+
+char *
+buffer::get_token (unsigned id, bool all)
+{
+  char *ptr = pos;
+
+  if (ptr == end)
+    {
+      request_unexpected (id);
+      ptr = NULL;
+    }
+  else if (all)
+    pos = end;
+  else
+    {
+      char *eptr = ptr;
+      while (eptr != end && !ISSPACE (*eptr))
+	eptr++;
+
+      if (eptr != end)
+	{
+	  *eptr++ = 0;
+	  while (eptr != end && ISSPACE (*eptr))
+	    eptr++;
+	}
+      pos = eptr;
+    }
+
+  return ptr;
+}
+
+/* Return which OPTION TOKEN matches.  -1 if none.  */
+
+int
+buffer::get_word (const char *token, const char *option, va_list args)
+{
+  int count = 0;
+
+  do
+    {
+      if (!strcmp (option, token))
+	return count;
+      count++;
+      option = va_arg (args, const char *);
+    }
+  while (option);
+
+  return -1;
+}
+
+/* Return which OPTION... TOKEN matches.  */
+
+int
+buffer::get_word (const char *token, const char *option, ...)
+{
+  va_list args;
+
+  va_start (args, option);
+  int res = get_word (token, option, args);
+  va_end (args);
+
+  return res;
+}
+
+/* Tokenize the request and return which it matched.  */
+
+int
+buffer::get_word (unsigned id, const char *option, ...)
+{
+  if (const char *token = get_token (id))
+    {
+      va_list args;
+
+      va_start (args, option);
+      int res = get_word (token, option, args);
+      va_end (args);
+      if (res < 0)
+	request_unexpected (id);
+      return res;
+    }
+  return -1;
+}
+
+/* Read the mapping file STREAM and populate the module_map from it.  */
+
+void
+read_mapping_file (FILE *stream, const char *cookie)
+{
+  bool starting = true;
+  buffer buf (-1);
+  size_t root_len = 0;
+
+  module_map = new module_map_t ();
+
+  while (buf.get_request (0, stream))
+    {
+      char *mod = buf.get_token (0);
+      bool ignore = false;
+      char *file = NULL;
+
+      /* Ignore non-cookie lines.  */
+      if (cookie && 0 != strcmp (mod, cookie + 1))
+	ignore = true;
+      else
+	{
+	  if (cookie)
+	    mod = buf.get_token (0);
+	  if (mod)
+	    file = buf.get_token (0, true);
+	}
+
+      if (!buf.get_eol (0, ignore))
+	continue;
+
+      if (!file)
+	continue;
+
+      if (starting && 0 == strcmp (mod, "$root"))
+	{
+	  root_len = strlen (file);
+	  char *root = XNEWVEC (char, root_len + 1);
+	  flag_root = root;
+	  memcpy (root, file, root_len + 1);
+	  continue;
+	}
+
+      starting = false;
+      if (flag_root && 0 == strncmp (file, flag_root, root_len)
+	  && IS_DIR_SEPARATOR (file[root_len]))
+	file += root_len + 1;
+
+      std::pair<module_map_t::iterator, bool> inserted
+	= module_map->insert (module_map_t::value_type (mod, 0));
+      if (inserted.second)
+	inserted.first->second = xstrdup (file);
+    }
+}
+
+/* A remote client.  */
+
+class client {
+public:
+  enum state {
+    HANDSHAKE, /* Expecting handshake.  */
+    TALKING,   /* Regular state.  */
+  };
+
+private:
+  vector<char *> async;
+  buffer read;
+  buffer write;
+  const char *cookie;
+  unsigned id;
+
+public:
+  unsigned ix;
+
+private:
+  int dir;   /* -1->write, +1->read, 0->waiting */
+  enum state state;
+  static unsigned id_ctr;
+
+public:
+  client (unsigned, int, int, const char *);
+  ~client ();
+
+public:
+#if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
+  unsigned set_fd (fd_set *readers, fd_set *writers, unsigned limit)
+  {
+    unsigned fd = -1;
+    fd_set *set = NULL;
+
+    if (dir > 0)
+      {
+	set = readers;
+	fd = read.get_fd ();
+      }
+    else if (dir < 0)
+      {
+	set = writers;
+	fd = write.get_fd ();
+      }
+
+    if (set)
+      {
+	FD_SET (fd, set);
+	if (limit <= fd)
+	  limit = fd + 1;
+      }
+
+    return limit;
+  }
+  bool test_fd (fd_set *readers, fd_set *writers)
+  {
+    unsigned fd = -1;
+    fd_set *set = NULL;
+
+    if (dir > 0)
+      {
+	set = readers;
+	fd = read.get_fd ();
+      }
+    else if (dir < 0)
+      {
+	set = writers;
+	fd = write.get_fd ();
+      }
+    gcc_assert (set);
+    return FD_ISSET (fd, set);
+  }
+#endif
+
+public:
+  bool process (int = -1);
+  int action ();
+  unsigned close (int = -1);
+};
+
+unsigned client::id_ctr = 0;
+
+client::client (unsigned ix, int from, int to, const char *cookie)
+  : read (from), write (to), cookie (cookie),
+    id ((id_ctr += (from == to))), ix (ix), dir (+1), state (HANDSHAKE)
+{
+  flag_noisy && noisy ("%u:created", id);
+}
+
+client::~client ()
+{
+  flag_noisy && noisy ("%u:destroyed", id);
+  gcc_assert (read.get_fd () < 0 && write.get_fd () < 0);
+}
+
+/* Manipulate the EPOLL state, or do nothing, if there is epoll.  */
+
+#ifdef HAVE_EPOLL
+static inline void
+do_epoll_ctl (int epoll_fd, int code, int event, int fd, client *client)
+{
+  epoll_event ev;
+  ev.events = event;
+  ev.data.ptr = client;
+  if (epoll_ctl (epoll_fd, code, fd, &ev))
+    {
+      noisy ("epoll_ctl error:%s", xstrerror (errno));
+      gcc_unreachable ();
+    }
+}
+#define my_epoll_ctl(EFD,C,EV,FD,CL) \
+  ((EFD) >= 0 ? do_epoll_ctl (EFD,C,EV,FD,CL) : (void)0)
+#else
+#define  my_epoll_ctl(EFD,C,EV,FD,CL) ((void)(EFD), (void)(FD), (void)CL)
+#endif
+
+unsigned
+client::close (int epoll_fd)
+{
+  if (epoll_fd >= 0)
+    {
+      gcc_assert (read.get_fd () == write.get_fd ());
+      my_epoll_ctl (epoll_fd, EPOLL_CTL_DEL, EPOLLIN, read.get_fd (), NULL);
+    }
+  write.close (&read);
+  read.close (NULL);
+  return ix;
+}
+
+/* We can do something.  Do it.  */
+
+bool
+client::process (int epoll_fd)
+{
+  int new_dir = dir;
+  switch (dir)
+    {
+    case +1:
+      if (int e = read.do_read (id))
+	{
+	  if (e < 0)
+	    /* We're boned.  */
+	    return true;
+
+	  new_dir = action ();
+	}
+      break;
+
+    case -1:
+      if (int e = write.do_write (id))
+	{
+	  if (e < 0)
+	    /* It is done.  */
+	    return true;
+	  new_dir = +1;
+	}
+      break;
+
+    case 0:
+      /* Do whatever we were waiting on.  */
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (new_dir != dir)
+    {
+      /* We've changed dir.  */
+      if (epoll_fd >= 0)
+	{
+#ifdef HAVE_EPOLL
+	  int code = (!new_dir ? EPOLL_CTL_DEL
+		      : !dir ? EPOLL_CTL_ADD
+		      : EPOLL_CTL_MOD);
+#endif
+	  gcc_assert (read.get_fd () == write.get_fd ());
+	  my_epoll_ctl (epoll_fd, code, new_dir >= 0 ? EPOLLIN : EPOLLOUT,
+			read.get_fd (), this);
+	}
+      dir = new_dir;
+      if (dir > 0)
+	{
+	  write.init ();
+	  read.init ();
+	}
+    }
+
+  return false;
+}
+
+/* We completed a read.  Do whatever processing we should.  */
+
+int
+client::action ()
+{
+  flag_noisy && noisy ("Actioning client %u", id);
+  bool any = false;
+  int new_dir = -1;
+  bool prev_async = false;
+  bool batched = false;
+
+  for (bool first = true; read.get_request (first); first = false)
+    {
+      any = true;
+      if (read.corking ())
+	{
+	  if (!batched)
+	    {
+	      batched = true;
+	      write.cork (true);
+	    }
+	}
+      else if (batched)
+	write.cork (false);
+
+      switch (state)
+	{
+	case HANDSHAKE:
+	  /* HELLO $version $flags $cookie  */
+	  switch (read.get_word (id, "HELLO", NULL))
+	    {
+	    case 0:
+	      {
+		char *ver_str = read.get_token (id);
+		char *eptr;
+		int ver = strtol (ver_str, &eptr, 0);
+		const char *err = NULL;
+		if (*eptr || ver != MAPPER_VERSION)
+		  err = "ERROR Expected version %d";
+
+		int queries = read.get_word (id, "BMI", "SOURCE", NULL);
+		if (queries < 0)
+		  {
+		    if (!err)
+		      err = "ERROR Unknown query type";
+		  }
+		else if (queries != 0)
+		  {
+		    if (!err)
+		      err = "ERROR Only BMI queries supported";
+		  }
+
+		char *ckie = read.get_token (id, true);
+		if (cookie && 0 != strcmp (cookie, ckie))
+		  {
+		    if (!err)
+		      err = "ERROR Cookie mismatch";
+		  }
+		gcc_assert (read.get_eol (id));
+		write.send_response (err ? err : "HELLO %d %s",
+					 MAPPER_VERSION, flag_root);
+		if (!err)
+		  state = TALKING;
+		break;
+	      }
+	      break;
+
+	    default:
+	      read.get_eol (id);
+	      write.send_response ("ERROR Expecting HELLO");
+	      break;
+	    }
+	  break;
+
+	case TALKING:
+	  {
+	    int word = read.get_word (id, "BMI", "EXPORT", "DONE", "ASYNC",
+				      "AWAIT", "HELP", "RESET", NULL);
+	    switch (word)
+	      {
+	      case 0: /* BMI */
+	      case 1: /* EXPORT */
+	      case 2: /* DONE */
+	      case 3: /* ASYNC */
+		{
+		  char *module = read.get_token (id);
+		  if (word != 3)
+		    read.get_eol (id);
+		  switch (word)
+		    {
+		    case 0:
+		    case 1:
+		      {
+			if (const char *bmi = module2bmi (module))
+			  write.send_response ("BMI %s", bmi);
+			else
+			  write.send_response ("ERROR");
+		      }
+		      break;
+		    case 3:
+		      {
+			// FIXME: assume BMI next
+			module = read.get_token (id);
+			read.get_eol (id);
+			size_t l = strlen (module);
+			char *pend = XNEWVEC (char, l + 1);
+			memcpy (pend, module, l + 1);
+			async.push_back (pend);
+		      }
+		      if (prev_async)
+			break;
+		      /* FALLTHROUGH */
+		    case 2:
+		      write.send_response ("OK");
+		      break;
+
+		    default: gcc_unreachable ();
+		    }
+		  
+		}
+		break;
+
+	      case 4: /* AWAIT */
+		{
+		  if (async.size ())
+		    {
+		      if (batched && !write.corking ())
+			write.cork (true);
+		      do
+			{
+			  char *pend = async.back ();
+			  async.pop_back ();
+			  if (const char *bmi = module2bmi (pend))
+			    write.send_response ("OK %s BMI %s", pend, bmi);
+			  else
+			    write.send_response ("OK %s ERROR", pend);
+			  XDELETEVEC (pend);
+			}
+		      while (batched && async.size ());
+		    }
+		  else
+		    write.send_response ("ERROR No pending async");
+		}
+		break;
+
+	      case 5: /* HELP */
+		read.get_eol (id, true);
+		write.send_response ("RTFM");
+		break;
+
+	      case 6: /* RESET */
+		new_dir = dir;
+		break;
+
+	      default:
+		read.get_eol (id, true);
+		write.send_response ("ERROR Unknown request");
+		break;
+	      }
+	    prev_async = word == 3;
+	  }
+	break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  if (any && write.corking ())
+    {
+      write.cork (false);
+      /* We need to send a blank response to finish the batched
+	 responses.  The compiler complains about a zero-size printf
+	 format, so hide it inside a zero-length string.  */
+      write.send_response ("%s", "");
+    }
+
+  return new_dir;
+}
+
+/* A single client communicating over FROM & TO.  */
+
+static void
+singleton (int from, int to, const char *cookie)
+{
+  client me (0, from, to, cookie);
+
+  while (!me.process ())
+    continue;
+
+  me.close ();
+}
+
+#ifdef NETWORKING
+/* We increment this to tell the server to shut down.  */
+static volatile int term = false;
+#if !defined (HAVE_PSELECT) && defined (HAVE_SELECT)
+static int term_pipe[2] = {-1, -1};
+#else
+#define term_pipe ((int *)NULL)
+#endif
+
+static void
+term_signal (int sig)
+{
+  signal (sig, term_signal);
+  term = term + 1;
+  if (term_pipe && term_pipe[1] >= 0)
+    write (term_pipe[1], &term_pipe[1], 1);
+}
+
+/* A server listening on bound socket SOCK_FD.  */
+
+static void
+server (int sock_fd, const char *cookie)
+{
+  /* I don't know what a good listen queue length might be.  */
+  if (listen (sock_fd, flag_one ? 1 : 5))
+    error ("cannot listen: %s", xstrerror (errno));
+
+  int epoll_fd = -1;
+  unsigned live = 0;
+  vector<client *> clients (20);
+  unsigned reuse = 0;
+
+  signal (SIGTERM, term_signal);
+#ifdef HAVE_EPOLL
+  epoll_fd = epoll_create (1);
+#endif
+  if (epoll_fd >= 0)
+    my_epoll_ctl (epoll_fd, EPOLL_CTL_ADD, EPOLLIN, sock_fd, NULL);
+
+#if defined (HAVE_EPOLL) || defined (HAVE_PSELECT) || defined (HAVE_SELECT)
+  sigset_t mask;
+  {
+    sigset_t block;
+    sigemptyset (&block);
+    sigaddset (&block, SIGTERM);
+    sigprocmask (SIG_BLOCK, &block, &mask);
+  }
+#endif
+
+#ifdef HAVE_EPOLL
+  const unsigned max_events = 20;
+  epoll_event events[max_events];
+#endif
+#if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
+  fd_set readers, writers;
+  unsigned select_ix = 0;
+#endif
+  int event_count = 0;
+  if (term_pipe)
+    pipe (term_pipe);
+
+  for (client *actionable = NULL; live || sock_fd >= 0;)
+    {
+      /* Wait for an event.  */
+      bool eintr = false;
+      if (!event_count)
+	{
+	  if (epoll_fd >= 0)
+#ifdef HAVE_EPOLL
+	    event_count = epoll_pwait (epoll_fd, events, max_events, -1, &mask);
+#endif
+	  if (epoll_fd < 0)
+	    {
+#if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
+	      FD_ZERO (&readers);
+	      FD_ZERO (&writers);
+
+	      unsigned limit = 0;
+	      if (sock_fd >= 0
+		  && !(term || (live && (flag_one || flag_sequential))))
+		{
+		  FD_SET (sock_fd, &readers);
+		  limit = sock_fd + 1;
+		}
+	      if (term_pipe && term_pipe[0] >= 0)
+		{
+		  FD_SET (term_pipe[0], &readers);
+		  if (unsigned (term_pipe[0]) >= limit)
+		    limit = term_pipe[0] + 1;
+		}
+	      select_ix = clients.size ();
+	      for (unsigned ix = select_ix; ix--;)
+		if (client *c = clients[ix])
+		  limit = c->set_fd (&readers, &writers, limit);
+#ifdef HAVE_PSELECT
+	      event_count = pselect (limit, &readers, &writers, NULL,
+				     NULL, &mask);
+#else
+	      event_count = select (limit, &readers, &writers, NULL, NULL);
+#endif
+	      if (term_pipe && FD_ISSET (term_pipe[0], &readers))
+		{
+		  /* Fake up an interrupted system call.  */
+		  event_count = -1;
+		  errno = EINTR;
+		}
+#endif
+	    }
+
+	  if (event_count < 0)
+	    {
+	      actionable = NULL;
+	      if (errno == EINTR)
+		eintr = true;
+	      else
+		error ("cannot %s: %s", epoll_fd >= 0 ? "epoll_wait"
+#ifdef HAVE_PSELECT
+		       : "pselect",
+#else
+		       : "select",
+#endif
+		       xstrerror (errno));
+	      event_count = 0;
+	    }
+
+	  if (event_count > 0)
+	    {
+#ifdef HAVE_EPOLL
+	      if (epoll_fd >= 0)
+		actionable
+		  = static_cast <client *> (events[--event_count].data.ptr);
+#endif
+#if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
+	      if (epoll_fd < 0)
+		{
+		  actionable = NULL;
+		  while (select_ix && !actionable)
+		    {
+		      if (client *c = clients[--select_ix])
+			if (c->test_fd (&readers, &writers))
+			  actionable = c;
+		    }
+		  gcc_assert (actionable || term
+			      || FD_ISSET (sock_fd, &readers));
+		  event_count--;
+		}
+#endif
+	      gcc_assert (!actionable
+			  || (actionable->ix < clients.size ()
+			      && clients[actionable->ix] == actionable));
+	    }
+	}
+
+      if (eintr)
+	flag_noisy && noisy ("Interrupted wait");
+      if (!actionable && !eintr && sock_fd >= 0)
+	{
+	  /* A new client.  */
+#ifdef HAVE_ACCEPT4
+	  int client_fd = accept4 (sock_fd, NULL, NULL, SOCK_NONBLOCK);
+#else
+	  int client_fd = accept (sock_fd, NULL, NULL);
+#endif
+	  if (client_fd < 0)
+	    {
+	      error ("cannot accept: %s", xstrerror (errno));
+	      flag_one = true;
+	    }
+
+#if !defined (HAVE_ACCEPT4) \
+  && (defined (HAVE_EPOLL) || defined (HAVE_PSELECT) || defined (HAVE_SELECT))
+	  unsigned flags = fcntl (client_fd, F_GETFL, 0);
+	  fcntl (client_fd, F_SETFL, flags | O_NONBLOCK);
+#endif
+	  for (; reuse != clients.size (); reuse++)
+	    if (!clients[reuse])
+	      break;
+	  if (reuse == clients.size ())
+	    clients.push_back (NULL);
+
+	  actionable = new client (reuse, client_fd, client_fd, cookie);
+	  clients[reuse] = actionable;
+	  my_epoll_ctl (epoll_fd, EPOLL_CTL_ADD, EPOLLIN,
+			client_fd, clients[reuse]);
+	  live++;
+#if defined (HAVE_SELECTP) || defined (HAVE_EPOLL)
+	  actionable = NULL;
+#endif
+	}
+
+      if (sock_fd >= 0 && (term || flag_one || flag_sequential))
+	{
+	  /* Stop paying attention to sock_fd.  */
+	  my_epoll_ctl (epoll_fd, EPOLL_CTL_DEL, EPOLLIN, sock_fd, NULL);
+	  if (flag_one || term)
+	    {
+	      close (sock_fd);
+	      sock_fd = -1;
+	    }
+	}
+
+      if (actionable && actionable->process (epoll_fd))
+	{
+	  unsigned ix = actionable->close (epoll_fd);
+	  if (ix < reuse)
+	    reuse = ix;
+	  clients[ix] = NULL;
+	  delete actionable;
+	  actionable = NULL;
+	  live--;
+	  if (flag_sequential)
+	    my_epoll_ctl (epoll_fd, EPOLL_CTL_ADD, EPOLLIN, sock_fd, NULL);
+	}
+    }
+
+#if defined (HAVE_EPOLL) || defined (HAVE_PSELECT) || defined (HAVE_SELECT)
+  /* Restore the signal mask.  */
+  sigprocmask (SIG_SETMASK, &mask, NULL);
+#endif
+
+  gcc_assert (sock_fd < 0);
+  if (epoll_fd >= 0)
+    close (epoll_fd);
+
+  if (term_pipe && term_pipe[0] >= 0)
+    {
+      close (term_pipe[0]);
+      close (term_pipe[1]);
+    }
+}
+#endif
+
+/* Print a usage message and exit.  If ERROR_P is nonzero, this is an error,
+   otherwise the output of --help.  */
+
+static void ATTRIBUTE_NORETURN
+print_usage (int error_p)
+{
+  FILE *file = error_p ? stderr : stdout;
+  int status = error_p ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;
+
+  fnotice (file, "Usage: cxx-mapper [OPTION...] CONNECTION \n\n");
+  fnotice (file, "C++ Module Mapper.\n\n");
+  fnotice (file, "  -h, --help       Print this help, then exit\n");
+  fnotice (file, "  -n, --noisy      Print progress messages\n");
+  fnotice (file, "  -1, --one        One connection and then exit\n");
+  fnotice (file, "  -r, --root DIR   Root BMI directory\n");
+  fnotice (file, "  -s, --sequential Process connections sequentially\n");
+  fnotice (file, "  -v, --version    Print version number, then exit\n");
+  fnotice (file, "Send SIGTERM(%d) to terminate\n", SIGTERM);
+  fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
+	   bug_report_url);
+  exit (status);
+}
+
+/* Print version information and exit.  */
+
+static void ATTRIBUTE_NORETURN
+print_version (void)
+{
+  fnotice (stdout, "cxx-mapper %s%s\n", pkgversion_string, version_string);
+  fprintf (stdout, "Copyright %s 2018 Free Software Foundation, Inc.\n",
+	   _("(C)"));
+  fnotice (stdout,
+	   _("This is free software; see the source for copying conditions.\n"
+	     "There is NO warranty; not even for MERCHANTABILITY or \n"
+	     "FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
+  exit (SUCCESS_EXIT_CODE);
+}
+
+static const struct option options[] =
+{
+  { "help",	no_argument,	NULL, 'h' },
+  { "noisy",	no_argument,	NULL, 'n' },
+  { "one",	no_argument,	NULL, '1' },
+  { "root",	required_argument, NULL, 'r' },
+  { "sequential",no_argument,	NULL, 's' },
+  { "version",	no_argument,	NULL, 'v' },
+  { 0, 0, 0, 0 }
+};
+
+/* Process args, return index to first non-arg.  */
+
+static int
+process_args (int argc, char **argv)
+{
+  int opt;
+
+  const char *opts = "hn1sv";
+  while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
+    {
+      switch (opt)
+	{
+	case 'h':
+	  print_usage (false);
+	  /* print_usage will exit.  */
+	case 'n':
+	  flag_noisy = true;
+	  break;
+	case '1':
+	  flag_one = true;
+	  break;
+	case 'r':
+	  flag_root = optarg;
+	  break;
+	case 's':
+	  flag_sequential = true;
+	  break;
+	case 'v':
+	  print_version ();
+	  /* print_version will exit.  */
+	default:
+	  print_usage (true);
+	  /* print_usage will exit.  */
+	}
+    }
+
+  return optind;
+}
+
+int
+main (int argc, char *argv[])
+{
+  const char *p = argv[0] + strlen (argv[0]);
+  while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
+    --p;
+  progname = p;
+
+  xmalloc_set_program_name (progname);
+
+#ifdef SIGSEGV
+  signal (SIGSEGV, crash_signal);
+#endif
+#ifdef SIGILL
+  signal (SIGILL, crash_signal);
+#endif
+#ifdef SIGBUS
+  signal (SIGBUS, crash_signal);
+#endif
+#ifdef SIGABRT
+  signal (SIGABRT, crash_signal);
+#endif
+#ifdef SIGFPE
+  signal (SIGFPE, crash_signal);
+#endif
+#ifdef SIGPIPE
+  /* Ignore sigpipe, so read/write get an error.  */
+  signal (SIGPIPE, SIG_IGN);
+#endif
+
+  int argno = process_args (argc, argv);
+  const char *name = NULL;  /* Name of this mapper.  */
+  char *cookie = NULL;  /* Cookie to require.  */
+  int sock_fd = -1; /* Socket fd, otherwise stdin/stdout.  */
+  int err = 0;
+  const char *errmsg = NULL;
+
+  if (argno == argc)
+    {
+      /* Use stdin/stdout.  */
+      name = "stdin/out";
+    }
+  else if (argno + 1 != argc)
+    print_usage (true);
+  else
+    {
+      /* A file of mappings, local or ipv6 address.  */
+      const char *option = argv[argno];
+      unsigned len = strlen (option);
+      char *writable = XNEWVEC (char, len + 1);
+      memcpy (writable, option, len + 1);
+      cookie = strchr (writable, '?');
+      if (cookie)
+	{
+	  len = cookie - writable;
+	  *cookie++ = 0;
+	}
+
+      {
+	/* Does it look like a socket?  */
+#ifdef NETWORKING
+#ifdef HAVE_AF_UNIX
+      sockaddr_un un;
+      size_t un_len = 0;
+#endif
+#ifdef HAVE_AF_INET6
+      struct addrinfo *addrs = NULL;
+      int port = 0;
+#endif
+#endif
+      if (writable[0] == '=')
+	{
+	  /* A local socket.  */
+#ifdef HAVE_AF_UNIX
+	  if (len < sizeof (un.sun_path))
+	    {
+	      memset (&un, 0, sizeof (un));
+	      un.sun_family = AF_UNIX;
+	      memcpy (un.sun_path, writable + 1, len);
+	    }
+	  un_len = offsetof (struct sockaddr_un, sun_path) + len + 1;
+#else
+	  errmsg = "unix protocol unsupported";
+#endif
+	  name = writable;
+	}
+      else if (char *colon = (char *)memrchr (writable, ':', len))
+	{
+	  /* Try a hostname:port address.  */
+	  char *endp;
+	  port = strtoul (colon + 1, &endp, 10);
+	  if (port && endp != colon + 1 && !*endp)
+	    {
+	      /* Ends in ':number', treat as ipv6 domain socket.  */
+#ifdef HAVE_AF_INET6
+	      addrinfo hints;
+
+	      hints.ai_flags = AI_NUMERICSERV;
+	      hints.ai_family = AF_INET6;
+	      hints.ai_socktype = SOCK_STREAM;
+	      hints.ai_protocol = 0;
+	      hints.ai_addrlen = 0;
+	      hints.ai_addr = NULL;
+	      hints.ai_canonname = NULL;
+	      hints.ai_next = NULL;
+
+	      *colon = 0;
+	      /* getaddrinfo requires a port number, but is quite
+		 happy to accept invalid ones.  So don't rely on it.  */
+	      if (int e = getaddrinfo (colon == writable ? NULL : writable,
+				       "0", &hints, &addrs))
+		{
+		  err = e;
+		  errmsg = "resolving address";
+		}
+	      *colon = ':';
+#else
+	      errmsg = "ipv6 protocol unsupported";
+#endif
+	      name = writable;
+	    }
+	}
+
+      if (name)
+	{
+#ifdef HAVE_AF_UNIX
+	  if (un_len)
+	    {
+	      sock_fd = socket (un.sun_family, SOCK_STREAM, 0);
+	      if (sock_fd < 0 || bind (sock_fd, (sockaddr *)&un, un_len) < 0)
+		if (sock_fd >= 0)
+		  {
+		    close (sock_fd);
+		    sock_fd = -1;
+		  }
+	    }
+#endif
+#ifdef HAVE_AF_INET6
+	  sock_fd = socket (AF_INET6, SOCK_STREAM, 0);
+	  if (sock_fd >= 0)
+	    {
+	      struct addrinfo *next;
+	      for (next = addrs; next; next = next->ai_next)
+		if (next->ai_family == AF_INET6
+		    && next->ai_socktype == SOCK_STREAM)
+		  {
+		    sockaddr_in6 *in6 = (sockaddr_in6 *)next->ai_addr;
+		    in6->sin6_port = htons (port);
+		    if (ntohs (in6->sin6_port) != port)
+		      errno = EINVAL;
+		    else if (!bind (sock_fd, next->ai_addr, next->ai_addrlen))
+		      break;
+		  }
+	      if (!next)
+		{
+		  close (sock_fd);
+		  sock_fd = -1;
+		}
+	    }
+	  freeaddrinfo (addrs);
+#endif
+	  if (sock_fd < 0 && !errmsg)
+	    {
+	      err = errno;
+	      errmsg = "binding socket";
+	    }
+	}
+      }
+
+      if (!name)
+	{
+	  /* Read a mapping file, use stdin/stdout.  */
+	  if (FILE *file = fopen (writable, "r"))
+	    {
+	      read_mapping_file (file, cookie);
+	      fclose (file);
+	    }
+	  else
+	    {
+	      err = errno;
+	      errmsg = "reading mappings";
+	    }
+	  name = writable;
+	}
+
+      if (errmsg)
+	{
+	  errno = err;
+	  error ("failed %s of mapper `%s': %s", errmsg, name ? name : option,
+		 err < 0 ? gai_strerror (err) : err > 0 ? xstrerror (err)
+		 : "Facility not provided");
+	}
+    }
+
+  gcc_assert (name);
+
+#ifdef NETWORKING
+  if (sock_fd >= 0)
+    {
+      server (sock_fd, cookie);
+      if (name[0] == '=')
+	unlink (&name[1]);
+    }
+  else
+#endif
+    {
+      gcc_assert (sock_fd < 0);
+      singleton (0, 1, cookie);
+    }
+
+  return 0;
+}

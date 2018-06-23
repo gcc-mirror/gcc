@@ -1,3 +1,13 @@
+2018-06-23  Nathan Sidwell  <nathan@acm.org>
+
+	A proper server
+	gcc/cp/
+	* cxx-module-mapper.sh: Delete.
+	* cxx-mapper.cc: New.
+	* Make-lang.in: Adjust.
+	* module.c (module_mapper:get_response): Fixup errors.
+	(module_mapper::import_query): Drop filename.
+
 2018-06-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
