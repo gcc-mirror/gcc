@@ -49,5 +49,5 @@ int main ()
 // { dg-final { scan-lang-dump {Lazily binding '::bar::Plain_Const_Three'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {Lazily binding '::bar::Scoped_Const_Three'@'bar' section} module } }
 
-// { dg-final { scan-lang-dump {Mapper request:[^\n]*BMI bar} module } }
-// { dg-final { scan-lang-dump-not {Mapper request:BMI foo} module } }
+// { dg-final { scan-lang-dump {Mapper request:[^\n]*IMPORT bar} module } }
+// { dg-final { scan-lang-dump-not {Mapper request:IMPORT foo} module } }

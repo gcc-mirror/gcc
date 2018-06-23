@@ -29326,30 +29326,28 @@ should accept and respond to the following commands:
 
 @table @gcctabopt
 
-@item BMI @var{module}
+@item IMPORT @var{module}
 A query for an import (including for a module implementation unit).
-The response should be @samp{BMI @var{bmipath}}.  If the request is
+The response should be @samp{OK @var{bmipath}}.  If the request is
 not fulfilable, the response is @samp{ERROR [@var{msg}]}.  Usually an
 error response will cause compilation to terminate.
 
-@item ASYNC @var{module}
-An asynchronous query for an import.  The immediate response will be
-@samp{OK}.  A later response to an @samp{AWAIT} query will provide
-response data.
+@item BYIMPORT @var{module}
+An asynchronous query for an import.  There is no immediate response.
+A later response to a @samp{BEWAIT} query will provide response data.
 
-@item AWAIT
+@item BEWAIT
 Request for an asynchronous response.  The response is as for a
-non-asynchronous query, except it is prefixed by @samp{OK
-@var{module}}, so it may be linked to the orignal request.   If there
-is no outstanding ASYNC query, an error response of @samp{ERROR
+non-asynchronous query, except it is prefixed by @samp{@var{module}},
+so it may be linked to the orignal request.  If there is no
+outstanding asynchronous query, an error response of @samp{- ERROR
 [@var{msg}]} should be given.  Asynchronous requests need not be
 responded to in order.
 
 @item DONE @var{module}
-The compilation has succesfully produced a BMI file for
-@var{module}.  The response should be @samp{OK}.  Note that the
-compilation may not have completed the object-file generation of the
-interface unit.
+The compilation has succesfully produced a BMI file for @var{module}.
+There is no response.  Note that the compilation may not have
+completed the object-file generation of the interface unit.
 
 @item EXPORT @var{module}
 The compilation is of a module interface unit, and will generate a BMI
@@ -29360,10 +29358,7 @@ This is the first command.  It informs the server of the name of the
 source being compiled.  Response is either @samp{OK
 @var{ver} @var{repopath}}, or @samp{ERROR @var{msg}}.
 
-@item HELP [@var{cmd}]
-A help request.  The response is @samp{HELP [@var{msg}]}.
-
-@item INCLUDE @var{header} @var{from}
+@item INCLUDE @var{header}
 A @code{#include} directive for @var{header} is about to be processed
 while preprocessing @var{from}, in legacy header mode.  The response
 informs the compiler how to treat the inclusion.  A response of
@@ -29373,7 +29368,7 @@ causes importation.  (A subsequent import query will be forthcoming.)
 
 @item RESET
 This command resets the server.  There is no response.  It may be
-needed when a preamble rescan happens.  Any unresponded @samp{ASYNC}
+needed when a preamble rescan happens.  Any unresponded @samp{BEIMPORT}
 requests are dropped.
 
 @end table

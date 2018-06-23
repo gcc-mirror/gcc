@@ -1,5 +1,17 @@
 2018-06-23  Nathan Sidwell  <nathan@acm.org>
 
+	Simplify protocol.
+	gcc/cp/
+	* cxx-mapper.c (buffer::empty): New.
+	(buffer::send_response): Fixup buffer management.
+	(client::imex_response): New.
+	(client::action): Reimplement.
+	* module.c (module_mapper): Update.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Update protocol.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-1_c.C: Tweak scan.
+
 	A proper server
 	gcc/cp/
 	* cxx-module-mapper.sh: Delete.

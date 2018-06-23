@@ -2948,20 +2948,18 @@ public:
   }
 
 public:
-  void import_query (const module_state *, bool async);
-  void export_query (const module_state *);
-  char *bmi_response (const module_state *state)
+  void imex_query (const module_state *, int dir);
+  char *imex_response (const module_state *state)
   {
-    return get_response (state->from_loc) > 0 ? bmi_resp (state) : NULL;
+    return get_response (state->from_loc) > 0 ? bmi_response (state) : NULL;
   }
-  void await_cmd (location_t loc)
+  void bewait_cmd (location_t loc)
   {
-    send_command (loc, "AWAIT");
+    send_command (loc, "BEWAIT");
   }
-  bool async_response (location_t);
-  module_state *await_response (location_t);
+  module_state *bewait_response (location_t);
 
-  /* After a response that may be corked, eat balnk lines until it is
+  /* After a response that may be corked, eat blank lines until it is
      uncorked.  */
   void maybe_uncork (location_t loc)
   {
@@ -2984,7 +2982,7 @@ private:
   }
   void response_unexpected (location_t);
   bool response_eol (location_t, bool ignore = false);
-  char *bmi_resp (const module_state *);
+  char *bmi_response (const module_state *);
 
 private:
   static module_mapper *mapper;
@@ -7478,21 +7476,19 @@ module_mapper::response_word (location_t loc, const char *option, ...)
 
 /*  Module mapper protocol non-canonical precis:
 
-    HELLO version cookie
+    HELLO version kind cookie
     	-> HELLO/ERROR response
-    INCLUDE header-name from
-    	-> INCLUDE/IMPORT reponse
-    [ASYNC] BMI|SEARCH|PATH module-name
-    	-> BMI bmipath
-	-> SEARCH srcbase
-	-> PATH srcpath
+    IMPORT module-name
+    	-> OK bmipath
 	-> ERROR
-    AWAIT
-	-> OK module-name deferred-response
+    BYIMPORT module-name
+    	No response
+    BEWAIT
+	-> module-name OK bmipath
     EXPORT module-name
-    	-> BMI bmipath
+    	-> OK bmipath
     DONE module-name
-    	-> OK
+    	No response
     RESET
         No response
  */
@@ -7534,30 +7530,29 @@ module_mapper::handshake (location_t loc, const char *cookie)
   return ok;
 }
 
+/* BYIMPORT, IMPORT or EXPORT query.  */
+
 void
-module_mapper::import_query (const module_state *state, bool async)
+module_mapper::imex_query (const module_state *state, int importing)
 {
-  send_command (state->from_loc, "%sBMI %s", async ? "ASYNC " : "",
+  send_command (state->from_loc, "%sPORT %s",
+		!importing ? "EX" : "BYIM" + importing + 1,
 		IDENTIFIER_POINTER (state->name));
 }
 
-void
-module_mapper::export_query (const module_state *state)
-{
-  send_command (state->from_loc, "EXPORT %s", IDENTIFIER_POINTER (state->name));
-}
+/* Response to import/export query.  */
 
 char *
-module_mapper::bmi_resp (const module_state *state)
+module_mapper::bmi_response (const module_state *state)
 {
   char *filename = NULL;
 
-  switch (response_word (state->from_loc, "BMI", "ERROR", NULL))
+  switch (response_word (state->from_loc, "OK", "ERROR", NULL))
     {
     default:
       break;
 
-    case 0: /* BMI $bmifile  */
+    case 0: /* OK $bmifile  */
       filename = response_token (state->from_loc, true);
       filename = maybe_strip_bmi_prefix (filename);
       response_eol (state->from_loc);
@@ -7572,49 +7567,33 @@ module_mapper::bmi_resp (const module_state *state)
   return filename;
 }
 
-bool
-module_mapper::async_response (location_t loc)
-{
-  get_response (loc);
-  switch (response_word (loc, "OK", "ERROR", NULL))
-    {
-    default:
-      break;
-
-    case 0: /* OK  */
-      response_eol (loc);
-      return true;
-      break;
-
-    case 1: /* ERROR $msg */
-      error_at (loc, "mapper asynchronous failure: %s", response_error ());
-      break;
-    }
-  return false;
-}
+/* A response to a bewait request.  */
 
 module_state *
-module_mapper::await_response (location_t loc)
+module_mapper::bewait_response (location_t loc)
 {
   if (get_response (loc) <= 0)
-    return NULL;
-
-  if (response_word (loc, "OK", NULL))
     return NULL;
 
   char *name_str = response_token (loc);
   if (!name_str)
     return NULL;
 
-  tree mod_name = get_identifier (name_str);
-  module_state *state = module_state::get_module (mod_name);
-  char *fname = state ? bmi_resp (state) : NULL;
+  module_state *state = NULL;
+  if (strcmp (name_str, "-"))
+    {
+      tree mod_name = get_identifier (name_str);
+      state = module_state::get_module (mod_name);
+      char *fname = bmi_response (state);
 
-  if (!state || !state->direct || state->filename)
-    error_at (loc, "unexpected reponse from mapper %qs for module %qE",
-	      name, mod_name);
-  else if (fname)
-    state->filename = xstrdup (fname);
+      if (!state || !state->direct || state->filename)
+	error_at (loc, "unexpected reponse from mapper %qs for module %qE",
+		  name, mod_name);
+      else if (fname)
+	state->filename = xstrdup (fname);
+    }
+  else if (!response_word (loc, "ERROR", NULL))
+    error_at (loc, "mapper bewait failure: %s", response_error ());
 
   return state;
 }
@@ -7628,11 +7607,8 @@ module_mapper::import_export (const module_state *state, bool export_p)
   
   if (mapper->is_server ())
     {
-      if (export_p)
-	mapper->export_query (state);
-      else
-	mapper->import_query (state, false);
-      return mapper->bmi_response (state);
+      mapper->imex_query (state, export_p ? 0 : +1);
+      return mapper->imex_response (state);
     }
 
   return NULL;
@@ -7651,8 +7627,6 @@ module_mapper::export_done (const module_state *state)
       dump () && dump ("Completed mapper");
       mapper->send_command (state->from_loc,
 			    "DONE %s", IDENTIFIER_POINTER (state->name));
-      mapper->get_response (state->from_loc);
-      ok = mapper->response_word (state->from_loc, "OK", NULL) == 0;
     }
   else
     ok = mapper->is_live ();
@@ -10650,29 +10624,33 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
       if (directs.length ())
 	mapper->cork ();
       if (interface)
-	mapper->export_query (interface);
+	mapper->imex_query (interface, 0);
       if (directs.length ())
 	{
 	  /* Put in reverse source order, for consistency.  */
 	  (directs.qsort) (module_from_cmp);
 	  for (unsigned ix = directs.length (); ix--;)
-	    mapper->import_query (directs[ix], true);
+	    mapper->imex_query (directs[ix], -1);
 	  mapper->uncork ();
-	  mapper->await_cmd (loc);
+	  mapper->bewait_cmd (loc);
 	}
 
       /* Read the mapper's responses.  */
       if (interface)
-	if (char *fname = mapper->bmi_response (interface))
+	if (char *fname = mapper->imex_response (interface))
 	  interface->filename = xstrdup (fname);
       if (directs.length ())
 	{
-	  mapper->async_response (loc);
+	  bool bewait = true;
 	  for (unsigned ix = directs.length (); ix--;)
 	    {
 	      if (!mapper->corked ())
-		mapper->await_cmd (loc);
-	      if (module_state *imp = mapper->await_response (loc))
+		{
+		  if (!bewait)
+		    mapper->bewait_cmd (loc);
+		  bewait = !bewait;
+		}
+	      if (module_state *imp = mapper->bewait_response (loc))
 		dump () && dump ("Received BMI name for %M", imp);
 	      else
 		break;

@@ -272,6 +272,10 @@ public:
   {
     cork_p = cork;
   }
+  bool empty () const
+  {
+    return end == buf;
+  }
 
 public:
   void init ()
@@ -285,8 +289,8 @@ public:
   int do_write (unsigned);
 
 public:
-  void ATTRIBUTE_PRINTF_2 send_response (const char *fmt, ...);
-  bool get_request (bool first);
+  void ATTRIBUTE_PRINTF_3 send_response (unsigned, const char *fmt, ...);
+  bool get_request (unsigned id, bool first);
   bool get_request (unsigned id, FILE *);
 
 public:
@@ -409,34 +413,34 @@ buffer::do_write (unsigned id)
    state.  */
 
 void
-buffer::send_response (const char *fmt, ...)
+buffer::send_response (unsigned id, const char *fmt, ...)
 {
-  gcc_assert (unsigned (end - buf + 2) < size);
+  gcc_assert (unsigned (end - buf + 2) <= size);
   if (cork_p)
     *end++ = '+';
   else if (end != buf)
     *end++ = '-';
 
-  if (*fmt)
-    for (;;)
-      {
-	va_list args;
-	va_start (args, fmt);
-	size_t available = (buf + size) - end;
-	gcc_checking_assert (available);
-	unsigned actual = vsnprintf (end, available - 2, fmt, args);
-	va_end (args);
-	if (actual < available - 2)
-	  {
-	    end += actual;
-	    break;
-	  }
+  for (;;)
+    {
+      va_list args;
+      va_start (args, fmt);
+      size_t available = (buf + size) - end;
+      gcc_checking_assert (available);
+      unsigned actual = vsnprintf (end, available, fmt, args);
+      va_end (args);
+      if (actual + 2 < available)
+	{
+	  flag_noisy && noisy ("%u:response '%s'", id, end - (end != buf));
+	  end += actual;
+	  break;
+	}
 
-	size = size * 2 + actual + 20;
-	char *next = XRESIZEVEC (char, buf, size);
-	end = next + (end - buf);
-	buf = pos = next;
-      }
+      size = size * 2 + actual + 20;
+      char *next = XRESIZEVEC (char, buf, size);
+      end = next + (end - buf);
+      buf = pos = next;
+    }
   *end++ = '\n';
 }
 
@@ -445,7 +449,7 @@ buffer::send_response (const char *fmt, ...)
    completing a read.  */
 
 bool
-buffer::get_request (bool first)
+buffer::get_request (unsigned id, bool first)
 {
   if (first)
     ;
@@ -477,6 +481,7 @@ buffer::get_request (bool first)
   while (*pos && ISSPACE (*pos))
     pos++;
 
+  flag_noisy && noisy ("%u:request '%s%s'", id, cork_p ? "+" : "", pos);
   if (*pos)
     return true;
   if (cork_p)
@@ -693,7 +698,7 @@ public:
   };
 
 private:
-  vector<char *> async;
+  vector<char *> bewait;
   buffer read;
   buffer write;
   const char *cookie;
@@ -758,6 +763,10 @@ public:
   }
 #endif
 
+private:
+  void forget ();
+  void imex_response (unsigned id, const char *module, bool deferred);
+
 public:
   bool process (int = -1);
   int action ();
@@ -777,6 +786,14 @@ client::~client ()
 {
   flag_noisy && noisy ("%u:destroyed", id);
   gcc_assert (read.get_fd () < 0 && write.get_fd () < 0);
+  forget ();
+}
+
+void
+client::forget ()
+{
+  for (; bewait.size (); bewait.pop_back ())
+    XDELETEVEC (bewait.back ());
 }
 
 /* Manipulate the EPOLL state, or do nothing, if there is epoll.  */
@@ -818,55 +835,35 @@ client::close (int epoll_fd)
 bool
 client::process (int epoll_fd)
 {
-  int new_dir = dir;
-  switch (dir)
+  gcc_assert (dir);
+
+  int e = dir < 0 ? write.do_write (id) : read.do_read (id);
+  if (e < 0)
+    /* We're boned.  */
+    return true;
+
+  if (e)
     {
-    case +1:
-      if (int e = read.do_read (id))
+      int new_dir = dir > 0 ? action () : +1;
+      if (dir != new_dir)
 	{
-	  if (e < 0)
-	    /* We're boned.  */
-	    return true;
-
-	  new_dir = action ();
-	}
-      break;
-
-    case -1:
-      if (int e = write.do_write (id))
-	{
-	  if (e < 0)
-	    /* It is done.  */
-	    return true;
-	  new_dir = +1;
-	}
-      break;
-
-    case 0:
-      /* Do whatever we were waiting on.  */
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  if (new_dir != dir)
-    {
-      /* We've changed dir.  */
-      if (epoll_fd >= 0)
-	{
+	  /* We've changed dir.  */
+	  if (epoll_fd >= 0)
+	    {
 #ifdef HAVE_EPOLL
-	  int code = (!new_dir ? EPOLL_CTL_DEL
-		      : !dir ? EPOLL_CTL_ADD
-		      : EPOLL_CTL_MOD);
+	      int code = (!new_dir ? EPOLL_CTL_DEL
+			  : !dir ? EPOLL_CTL_ADD
+			  : EPOLL_CTL_MOD);
 #endif
-	  gcc_assert (read.get_fd () == write.get_fd ());
-	  my_epoll_ctl (epoll_fd, code, new_dir >= 0 ? EPOLLIN : EPOLLOUT,
-			read.get_fd (), this);
+	      gcc_assert (read.get_fd () == write.get_fd ());
+	      my_epoll_ctl (epoll_fd, code, new_dir >= 0 ? EPOLLIN : EPOLLOUT,
+			    read.get_fd (), this);
+	    }
+	  dir = new_dir;
 	}
-      dir = new_dir;
       if (dir > 0)
 	{
+	  /* Initialize for new request.  */
 	  write.init ();
 	  read.init ();
 	}
@@ -875,20 +872,26 @@ client::process (int epoll_fd)
   return false;
 }
 
+void
+client::imex_response (unsigned id, const char *name, bool deferred)
+{
+  const char *pfx = deferred ? name : "";
+  if (const char *bmi = module2bmi (name))
+    write.send_response (id, "%s OK %s", pfx, bmi);
+  else
+    write.send_response (id, "%s ERROR Unknown module", pfx);
+}
+
 /* We completed a read.  Do whatever processing we should.  */
 
 int
 client::action ()
 {
   flag_noisy && noisy ("Actioning client %u", id);
-  bool any = false;
-  int new_dir = -1;
-  bool prev_async = false;
   bool batched = false;
 
-  for (bool first = true; read.get_request (first); first = false)
+  for (bool first = true; read.get_request (id, first); first = false)
     {
-      any = true;
       if (read.corking ())
 	{
 	  if (!batched)
@@ -934,7 +937,7 @@ client::action ()
 		      err = "ERROR Cookie mismatch";
 		  }
 		gcc_assert (read.get_eol (id));
-		write.send_response (err ? err : "HELLO %d %s",
+		write.send_response (id, err ? err : "HELLO %d %s",
 					 MAPPER_VERSION, flag_root);
 		if (!err)
 		  state = TALKING;
@@ -944,51 +947,40 @@ client::action ()
 
 	    default:
 	      read.get_eol (id);
-	      write.send_response ("ERROR Expecting HELLO");
+	      write.send_response (id, "ERROR Expecting HELLO");
 	      break;
 	    }
 	  break;
 
 	case TALKING:
 	  {
-	    int word = read.get_word (id, "BMI", "EXPORT", "DONE", "ASYNC",
-				      "AWAIT", "HELP", "RESET", NULL);
+	    int word = read.get_word (id, "IMPORT", "EXPORT", "DONE", "BYIMPORT",
+				      "BEWAIT", "RESET", NULL);
 	    switch (word)
 	      {
-	      case 0: /* BMI */
+	      case 0: /* IMPORT */
 	      case 1: /* EXPORT */
 	      case 2: /* DONE */
-	      case 3: /* ASYNC */
+	      case 3: /* BYIMPORT */
 		{
 		  char *module = read.get_token (id);
-		  if (word != 3)
-		    read.get_eol (id);
+		  read.get_eol (id);
 		  switch (word)
 		    {
 		    case 0:
 		    case 1:
-		      {
-			if (const char *bmi = module2bmi (module))
-			  write.send_response ("BMI %s", bmi);
-			else
-			  write.send_response ("ERROR");
-		      }
+		      imex_response (id, module, false);
 		      break;
 		    case 3:
 		      {
-			// FIXME: assume BMI next
-			module = read.get_token (id);
-			read.get_eol (id);
 			size_t l = strlen (module);
 			char *pend = XNEWVEC (char, l + 1);
 			memcpy (pend, module, l + 1);
-			async.push_back (pend);
+			bewait.push_back (pend);
 		      }
-		      if (prev_async)
-			break;
 		      /* FALLTHROUGH */
 		    case 2:
-		      write.send_response ("OK");
+		      /* No response.  */
 		      break;
 
 		    default: gcc_unreachable ();
@@ -997,44 +989,33 @@ client::action ()
 		}
 		break;
 
-	      case 4: /* AWAIT */
-		{
-		  if (async.size ())
-		    {
-		      if (batched && !write.corking ())
-			write.cork (true);
-		      do
-			{
-			  char *pend = async.back ();
-			  async.pop_back ();
-			  if (const char *bmi = module2bmi (pend))
-			    write.send_response ("OK %s BMI %s", pend, bmi);
-			  else
-			    write.send_response ("OK %s ERROR", pend);
-			  XDELETEVEC (pend);
-			}
-		      while (batched && async.size ());
-		    }
-		  else
-		    write.send_response ("ERROR No pending async");
-		}
-		break;
-
-	      case 5: /* HELP */
-		read.get_eol (id, true);
-		write.send_response ("RTFM");
+	      case 4: /* BEWAIT */
+		if (bewait.size ())
+		  {
+		    if (batched && !write.corking ())
+		      write.cork (true);
+		    do
+		      {
+			char *pend = bewait.back ();
+			bewait.pop_back ();
+			imex_response (id, pend, true);
+			XDELETEVEC (pend);
+		      }
+		    while (batched && bewait.size ());
+		  }
+		else
+		  write.send_response (id, "- ERROR No pending byimport");
 		break;
 
 	      case 6: /* RESET */
-		new_dir = dir;
+		forget ();
 		break;
 
 	      default:
 		read.get_eol (id, true);
-		write.send_response ("ERROR Unknown request");
+		write.send_response (id, "ERROR Unknown request");
 		break;
 	      }
-	    prev_async = word == 3;
 	  }
 	break;
 
@@ -1043,16 +1024,16 @@ client::action ()
 	}
     }
 
-  if (any && write.corking ())
+  if (write.corking ())
     {
       write.cork (false);
       /* We need to send a blank response to finish the batched
 	 responses.  The compiler complains about a zero-size printf
 	 format, so hide it inside a zero-length string.  */
-      write.send_response ("%s", "");
+      write.send_response (id, "%s", "");
     }
 
-  return new_dir;
+  return write.empty () ? +1 : -1;
 }
 
 /* A single client communicating over FROM & TO.  */
