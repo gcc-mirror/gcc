@@ -46,7 +46,7 @@ if ![info exists ::env(GUALITY_GDB_NAME)] {
     }
     setenv GUALITY_GDB_NAME "$guality_gdb_name"
 }
-report_gdb [exec which $::env(GUALITY_GDB_NAME)] [info script]
+report_gdb $::env(GUALITY_GDB_NAME) [info script]
 
 if {[check_guality "
   #include \"$srcdir/$subdir/guality.h\"
