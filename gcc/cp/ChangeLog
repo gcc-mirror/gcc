@@ -1,3 +1,15 @@
+2018-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (bad_specifiers): Add const location_t* parameter and
+	use locations in error messages about 'inline' and 'virtual'.
+	(mark_inline_variable): Add location_t parameter and use it in
+	error_at and pedwarn messages.
+	(grokdeclarator): Use declspecs->locations[ds_constexpr],
+	declspecs->locations[ds_concept], declspecs->locations[ds_virtual],
+	declspecs->locations[ds_inline] in many error messages; adjust
+	bad_specifiers and mark_inline_variable calls.
+	(grokvardecl): Use declspecs->locations[ds_concept] in error message.
+
 2018-06-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86219 - ICE with erroneous initializer in template.
