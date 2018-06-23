@@ -8406,40 +8406,48 @@ bad_specifiers (tree object,
 		int quals,
 		int inlinep,
 		int friendp,
-		int raises)
+		int raises,
+		const location_t* locations)
 {
   switch (type)
     {
       case BSP_VAR:
 	if (virtualp)
-	  error ("%qD declared as a %<virtual%> variable", object);
+	  error_at (locations[ds_virtual],
+		    "%qD declared as a %<virtual%> variable", object);
 	if (quals)
 	  error ("%<const%> and %<volatile%> function specifiers on "
 	         "%qD invalid in variable declaration", object);
 	break;
       case BSP_PARM:
 	if (virtualp)
-	  error ("%qD declared as a %<virtual%> parameter", object);
+	  error_at (locations[ds_virtual],
+		    "%qD declared as a %<virtual%> parameter", object);
 	if (inlinep)
-	  error ("%qD declared as an %<inline%> parameter", object);
+	  error_at (locations[ds_inline],
+		    "%qD declared as an %<inline%> parameter", object);
 	if (quals)
 	  error ("%<const%> and %<volatile%> function specifiers on "
 	  	 "%qD invalid in parameter declaration", object);
 	break;
       case BSP_TYPE:
 	if (virtualp)
-	  error ("%qD declared as a %<virtual%> type", object);
+	  error_at (locations[ds_virtual],
+		    "%qD declared as a %<virtual%> type", object);
 	if (inlinep)
-	  error ("%qD declared as an %<inline%> type", object);
+	  error_at (locations[ds_inline],
+		    "%qD declared as an %<inline%> type", object);
 	if (quals)
 	  error ("%<const%> and %<volatile%> function specifiers on "
 	  	 "%qD invalid in type declaration", object);
 	break;
       case BSP_FIELD:
 	if (virtualp)
-	  error ("%qD declared as a %<virtual%> field", object);
+	  error_at (locations[ds_virtual],
+		    "%qD declared as a %<virtual%> field", object);
 	if (inlinep)
-	  error ("%qD declared as an %<inline%> field", object);
+	  error_at (locations[ds_inline],
+		    "%qD declared as an %<inline%> field", object);
 	if (quals)
 	  error ("%<const%> and %<volatile%> function specifiers on "
 	  	 "%qD invalid in field declaration", object);
@@ -9254,7 +9262,8 @@ grokvardecl (tree type,
     {
       if (!processing_template_decl)
         {
-          error ("a non-template variable cannot be %<concept%>");
+          error_at (declspecs->locations[ds_concept],
+		    "a non-template variable cannot be %<concept%>");
           return NULL_TREE;
         }
       else
@@ -9920,18 +9929,17 @@ check_var_type (tree identifier, tree type)
 /* Handle declaring DECL as an inline variable.  */
 
 static void
-mark_inline_variable (tree decl)
+mark_inline_variable (tree decl, location_t loc)
 {
   bool inlinep = true;
   if (! toplevel_bindings_p ())
     {
-      error ("%<inline%> specifier invalid for variable "
-	     "%qD declared at block scope", decl);
+      error_at (loc, "%<inline%> specifier invalid for variable "
+		"%qD declared at block scope", decl);
       inlinep = false;
     }
   else if (cxx_dialect < cxx17)
-    pedwarn (DECL_SOURCE_LOCATION (decl), 0,
-	     "inline variables are only available "
+    pedwarn (loc, 0, "inline variables are only available "
 	     "with -std=c++17 or -std=gnu++17");
   if (inlinep)
     {
@@ -10375,13 +10383,15 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (concept_p && typedef_p)
     {
-      error ("%<concept%> cannot appear in a typedef declaration");
+      error_at (declspecs->locations[ds_concept],
+		"%<concept%> cannot appear in a typedef declaration");
       return error_mark_node;
     }
 
   if (constexpr_p && typedef_p)
     {
-      error ("%<constexpr%> cannot appear in a typedef declaration");
+      error_at (declspecs->locations[ds_constexpr],
+		"%<constexpr%> cannot appear in a typedef declaration");
       return error_mark_node;
     }
 
@@ -10485,7 +10495,7 @@ grokdeclarator (const cp_declarator *declarator,
 		 "ISO C++ forbids declaration of %qs with no type", name);
       else
 	warning (OPT_Wreturn_type,
-                 "ISO C++ forbids declaration of %qs with no type", name);
+		 "ISO C++ forbids declaration of %qs with no type", name);
 
       if (type_was_error_mark_node && template_parm_flag)
 	/* FIXME we should be able to propagate the error_mark_node as is
@@ -10731,12 +10741,14 @@ grokdeclarator (const cp_declarator *declarator,
 
       /* Function parameters cannot be concept. */
       if (concept_p)
-          error ("a parameter cannot be declared %<concept%>");
+	error_at (declspecs->locations[ds_concept],
+		  "a parameter cannot be declared %<concept%>");
       /* Function parameters cannot be constexpr.  If we saw one, moan
          and pretend it wasn't there.  */
       else if (constexpr_p)
         {
-          error ("a parameter cannot be declared %<constexpr%>");
+          error_at (declspecs->locations[ds_constexpr],
+		    "a parameter cannot be declared %<constexpr%>");
           constexpr_p = 0;
         }
     }
@@ -11210,7 +11222,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      explicitp = 2;
 		    if (virtualp)
 		      {
-			permerror (input_location,
+			permerror (declspecs->locations[ds_virtual],
 				   "constructors cannot be declared %<virtual%>");
 			virtualp = 0;
 		      }
@@ -11768,7 +11780,8 @@ grokdeclarator (const cp_declarator *declarator,
 
       bad_specifiers (decl, BSP_TYPE, virtualp,
 		      memfn_quals != TYPE_UNQUALIFIED,
-		      inlinep, friendp, raises != NULL_TREE);
+		      inlinep, friendp, raises != NULL_TREE,
+		      declspecs->locations);
 
       if (decl_spec_seq_has_spec_p (declspecs, ds_alias))
 	/* Acknowledge that this was written:
@@ -11974,7 +11987,8 @@ grokdeclarator (const cp_declarator *declarator,
 
 	bad_specifiers (decl, BSP_PARM, virtualp,
 			memfn_quals != TYPE_UNQUALIFIED,
-			inlinep, friendp, raises != NULL_TREE);
+			inlinep, friendp, raises != NULL_TREE,
+			declspecs->locations);
       }
     else if (decl_context == FIELD)
       {
@@ -12061,8 +12075,9 @@ grokdeclarator (const cp_declarator *declarator,
 		   ARM 9.5 */
 		if (virtualp && TREE_CODE (ctype) == UNION_TYPE)
 		  {
-		    error ("function %qD declared %<virtual%> inside a union",
-			   unqualified_id);
+		    error_at (declspecs->locations[ds_virtual],
+			      "function %qD declared %<virtual%> inside a union",
+			      unqualified_id);
 		    return error_mark_node;
 		  }
 
@@ -12070,8 +12085,9 @@ grokdeclarator (const cp_declarator *declarator,
 		    && identifier_p (unqualified_id)
 		    && IDENTIFIER_NEWDEL_OP_P (unqualified_id))
 		  {
-		    error ("%qD cannot be declared %<virtual%>, since it "
-			   "is always static", unqualified_id);
+		    error_at (declspecs->locations[ds_virtual],
+			      "%qD cannot be declared %<virtual%>, since it "
+			      "is always static", unqualified_id);
 		    virtualp = 0;
 		  }
 	      }
@@ -12097,12 +12113,14 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
                 if (concept_p)
                   {
-                    error ("a destructor cannot be %<concept%>");
+                    error_at (declspecs->locations[ds_concept],
+			      "a destructor cannot be %<concept%>");
                     return error_mark_node;
                   }
                 if (constexpr_p)
                   {
-                    error ("a destructor cannot be %<constexpr%>");
+                    error_at (declspecs->locations[ds_constexpr],
+			      "a destructor cannot be %<constexpr%>");
                     return error_mark_node;
                   }
 	      }
@@ -12116,12 +12134,14 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (sfk == sfk_constructor)
 	      if (concept_p)
 		{
-		  error ("a constructor cannot be %<concept%>");
+		  error_at (declspecs->locations[ds_concept],
+			    "a constructor cannot be %<concept%>");
 		  return error_mark_node;
 		}
 	    if (concept_p)
 	      {
-		error ("a concept cannot be a member function");
+		error_at (declspecs->locations[ds_concept],
+			  "a concept cannot be a member function");
 		concept_p = false;
 	      }
 
@@ -12248,8 +12268,9 @@ grokdeclarator (const cp_declarator *declarator,
 					    VAR_DECL, unqualified_id, type);
 		set_linkage_for_static_data_member (decl);
 		if (concept_p)
-		    error ("static data member %qE declared %<concept%>",
-			   unqualified_id);
+		  error_at (declspecs->locations[ds_concept],
+			    "static data member %qE declared %<concept%>",
+			    unqualified_id);
 		else if (constexpr_p && !initialized)
 		  {
 		    error ("%<constexpr%> static data member %qD must have an "
@@ -12258,7 +12279,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 
 		if (inlinep)
-		  mark_inline_variable (decl);
+		  mark_inline_variable (decl, declspecs->locations[ds_inline]);
 
 		if (!DECL_VAR_DECLARED_INLINE_P (decl)
 		    && !(cxx_dialect >= cxx17 && constexpr_p))
@@ -12280,12 +12301,14 @@ grokdeclarator (const cp_declarator *declarator,
 	    else
 	      {
 		if (concept_p)
-		  error ("non-static data member %qE declared %<concept%>",
-			 unqualified_id);
+		  error_at (declspecs->locations[ds_concept],
+			    "non-static data member %qE declared %<concept%>",
+			    unqualified_id);
                 else if (constexpr_p)
 		  {
-		    error ("non-static data member %qE declared %<constexpr%>",
-			   unqualified_id);
+		    error_at (declspecs->locations[ds_constexpr],
+			      "non-static data member %qE declared %<constexpr%>",
+			      unqualified_id);
 		    constexpr_p = false;
 		  }
 		decl = build_decl (input_location,
@@ -12320,7 +12343,8 @@ grokdeclarator (const cp_declarator *declarator,
 	    bad_specifiers (decl, BSP_FIELD, virtualp,
 			    memfn_quals != TYPE_UNQUALIFIED,
 			    staticp ? false : inlinep, friendp,
-			    raises != NULL_TREE);
+			    raises != NULL_TREE,
+			    declspecs->locations);
 	  }
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE
@@ -12363,11 +12387,11 @@ grokdeclarator (const cp_declarator *declarator,
 	    && pedantic)
 	  {
 	    if (storage_class == sc_static)
-	      pedwarn (input_location, OPT_Wpedantic, 
+	      pedwarn (declspecs->locations[ds_storage_class], OPT_Wpedantic, 
 		       "%<static%> specifier invalid for function %qs "
 		       "declared out of global scope", name);
 	    else
-	      pedwarn (input_location, OPT_Wpedantic, 
+	      pedwarn (declspecs->locations[ds_inline], OPT_Wpedantic, 
 		       "%<inline%> specifier invalid for function %qs "
 		       "declared out of global scope", name);
 	  }
@@ -12456,7 +12480,8 @@ grokdeclarator (const cp_declarator *declarator,
 
 	bad_specifiers (decl, BSP_VAR, virtualp,
 			memfn_quals != TYPE_UNQUALIFIED,
-			inlinep, friendp, raises != NULL_TREE);
+			inlinep, friendp, raises != NULL_TREE,
+			declspecs->locations);
 
 	if (ctype)
 	  {
@@ -12489,7 +12514,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  }
 
 	if (inlinep)
-	  mark_inline_variable (decl);
+	  mark_inline_variable (decl, declspecs->locations[ds_inline]);
 	if (innermost_code == cdk_decomp)
 	  {
 	    gcc_assert (declarator && declarator->kind == cdk_decomp);
