@@ -1,3 +1,8 @@
+2018-06-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/85989
+	* gcc.dg/torture/pr85989.c: New test.
+
 2018-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85662
