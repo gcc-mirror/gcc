@@ -29345,15 +29345,15 @@ outstanding asynchronous query, an error response of @samp{- ERROR
 responded to in order.
 
 @item DONE @var{module}
-The compilation has succesfully produced a BMI file for @var{module}.
+The compilation has completed the interface of @var{module}.
 There is no response.  Note that the compilation may not have
 completed the object-file generation of the interface unit.
 
 @item EXPORT @var{module}
 The compilation is of a module interface unit, and will generate a BMI
-for @var{module}.  The response should be @samp{BMI @var{bmipath}}.
+for @var{module}.  The response should be @samp{OK @var{bmipath}}.
 
-@item HELLO @var{ver} @var{cookie}
+@item HELLO @var{ver} @var{kind} @var{cookie}
 This is the first command.  It informs the server of the name of the
 source being compiled.  Response is either @samp{OK
 @var{ver} @var{repopath}}, or @samp{ERROR @var{msg}}.

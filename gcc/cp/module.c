@@ -7498,7 +7498,7 @@ module_mapper::response_word (location_t loc, const char *option, ...)
 bool
 module_mapper::handshake (location_t loc, const char *cookie)
 {
-  send_command (loc, "HELLO %d BMI %s", MAPPER_VERSION, cookie);
+  send_command (loc, "HELLO %d GCC %s", MAPPER_VERSION, cookie);
 
   bool ok = get_response (loc) > 0;
   switch (response_word (loc, "HELLO", "ERROR", NULL))

@@ -89,7 +89,7 @@ static bool flag_one = false;
 /* Serialize connections.  */
 static bool flag_sequential = false;
 
-/* Root BMI directory.  */
+/* Root binary directory.  */
 static const char *flag_root = ".";
 
 /* String comparison for the mapper map.  */
@@ -970,7 +970,7 @@ client::action ()
 		if (*eptr || ver != MAPPER_VERSION)
 		  err = "ERROR Expected version %d";
 
-		int queries = read.get_word (id, "BMI", "SOURCE", NULL);
+		int queries = read.get_word (id, "GCC", "SOURCE", NULL);
 		if (queries < 0)
 		  {
 		    if (!err)
@@ -979,7 +979,7 @@ client::action ()
 		else if (queries != 0)
 		  {
 		    if (!err)
-		      err = "ERROR Only BMI queries supported";
+		      err = "ERROR Only GCC queries supported";
 		  }
 
 		char *ckie = read.get_token (id, true);
@@ -1368,7 +1368,7 @@ print_usage (int error_p)
   fnotice (file, "  -h, --help       Print this help, then exit\n");
   fnotice (file, "  -n, --noisy      Print progress messages\n");
   fnotice (file, "  -1, --one        One connection and then exit\n");
-  fnotice (file, "  -r, --root DIR   Root BMI directory\n");
+  fnotice (file, "  -r, --root DIR   Root binary directory\n");
   fnotice (file, "  -s, --sequential Process connections sequentially\n");
   fnotice (file, "  -v, --version    Print version number, then exit\n");
   fnotice (file, "Send SIGTERM(%d) to terminate\n", SIGTERM);

@@ -1,3 +1,11 @@
+2018-06-24  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cxx-mapper.cc: BMI->GCC
+	* module.c: Likewise.
+	gcc/
+	* doc/invoke.texi: Likewise.
+
 2018-06-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
