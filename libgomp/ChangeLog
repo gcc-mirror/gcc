@@ -1,3 +1,63 @@
+2018-06-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* libgomp.texi (Top): Move www.openmp.org to https.
+	(Enabling OpenMP): Ditto.
+	(omp_get_active_level): Ditto.
+	(omp_get_ancestor_thread_num): Ditto.
+	(omp_get_cancellation): Ditto.
+	(omp_get_default_device): Ditto.
+	(omp_get_dynamic): Ditto.
+	(omp_get_level): Ditto.
+	(omp_get_max_active_levels): Ditto.
+	(omp_get_max_task_priority): Ditto.
+	(omp_get_max_threads): Ditto.
+	(omp_get_nested): Ditto.
+	(omp_get_num_devices): Ditto.
+	(omp_get_num_procs): Ditto.
+	(omp_get_num_teams): Ditto.
+	(omp_get_num_threads): Ditto.
+	(omp_get_proc_bind): Ditto.
+	(omp_get_schedule): Ditto.
+	(omp_get_team_num): Ditto.
+	(omp_get_team_size): Ditto.
+	(omp_get_thread_limit): Ditto.
+	(omp_get_thread_num): Ditto.
+	(omp_in_parallel): Ditto.
+	(omp_in_final): Ditto.
+	(omp_is_initial_device): Ditto.
+	(omp_set_default_device): Ditto.
+	(omp_set_dynamic): Ditto.
+	(omp_set_max_active_levels): Ditto.
+	(omp_set_nested): Ditto.
+	(omp_set_num_threads): Ditto.
+	(omp_set_schedule): Ditto.
+	(omp_init_lock): Ditto.
+	(omp_set_lock): Ditto.
+	(omp_test_lock): Ditto.
+	(omp_unset_lock): Ditto.
+	(omp_destroy_lock): Ditto.
+	(omp_init_nest_lock): Ditto.
+	(omp_set_nest_lock): Ditto.
+	(omp_test_nest_lock): Ditto.
+	(omp_unset_nest_lock): Ditto.
+	(omp_destroy_nest_lock): Ditto.
+	(omp_get_wtick): Ditto.
+	(omp_get_wtime): Ditto.
+	(OMP_CANCELLATION): Ditto.
+	(OMP_DISPLAY_ENV): Ditto.
+	(OMP_DEFAULT_DEVICE): Ditto.
+	(OMP_DYNAMIC): Ditto.
+	(OMP_MAX_ACTIVE_LEVELS): Ditto.
+	(OMP_MAX_TASK_PRIORITY): Ditto.
+	(OMP_NESTED): Ditto.
+	(OMP_NUM_THREADS): Ditto.
+	(OMP_PROC_BIND): Ditto.
+	(OMP_PLACES): Ditto.
+	(OMP_STACKSIZE): Ditto.
+	(OMP_SCHEDULE): Ditto.
+	(OMP_THREAD_LIMIT): Ditto.
+	(OMP_WAIT_POLICY): Ditto.
+
 2018-06-22  Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
