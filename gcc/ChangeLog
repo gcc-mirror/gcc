@@ -1,3 +1,8 @@
+2018-06-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (tree_is_indexable): Make LABEL_DECL nonindexable
+	unless it is forced or nonlocal; assert that we stream no IMPORTED_DECL.
+
 2018-06-22  Maya Rashish  <coypu@sdf.org>
 
 	* doc/invoke.texi (mno-fancy-math-387): Update for changes
