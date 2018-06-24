@@ -4763,7 +4763,6 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
 	return;
 
       gcc_assert (tb_io_proc->is_generic);
-      gcc_assert (tb_io_proc->u.generic->next == NULL);
 
       specific_proc = tb_io_proc->u.generic->specific;
       if (specific_proc == NULL || specific_proc->is_generic)

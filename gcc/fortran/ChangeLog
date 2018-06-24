@@ -1,3 +1,8 @@
+2018-06-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/85983
+	* interface.c (check_dtio_interface1): Delete assert.
+
 2018-06-22  Paul Thomas  <pault@gcc.gnu.org>
 	    Rainer Orth  <ro@gcc.gnu.org>
 
