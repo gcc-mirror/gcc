@@ -1,5 +1,11 @@
 2018-06-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cxx-mapper.cc (struct netmask): New.
+	(server): Validate connection addresses.
+	(accept_from): New.
+	(process_args): Add -a arg.
+
 	Simplify protocol.
 	gcc/cp/
 	* cxx-mapper.c (buffer::empty): New.

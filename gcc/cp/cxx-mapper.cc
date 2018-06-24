@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #define INCLUDE_VECTOR
 #define INCLUDE_MAP
+#define INCLUDE_SET
 #include "system.h"
 #include "version.h"
 #include "intl.h"
@@ -92,17 +93,68 @@ static bool flag_sequential = false;
 static const char *flag_root = ".";
 
 /* String comparison for the mapper map.  */
-struct string_cmp
-{
-  bool operator()(const char *a, const char *b)
+struct string_cmp {
+  bool operator() (const char *a, const char *b) const
   {
     return strcmp (a, b) < 0;
   }
 };
 typedef std::map<const char *, const char *, string_cmp> module_map_t;
 
+struct netmask {
+  in6_addr addr;
+  unsigned bits;
+
+  netmask (const in6_addr &a, unsigned b)
+  {
+    if (b > sizeof (in6_addr) * 8)
+      b = sizeof (in6_addr) * 8;
+    bits = b;
+    unsigned byte = (b + 7) / 8;
+    unsigned ix = 0;
+    for (ix = 0; ix < byte; ix++)
+      addr.s6_addr[ix] = a.s6_addr[ix];
+    for (; ix != sizeof (in6_addr); ix++)
+      addr.s6_addr[ix] = 0;
+    if (b & 3)
+      addr.s6_addr[b/7] &= (255 << 8) >> (b & 3);
+  }
+
+  bool includes (const in6_addr &a) const
+  {
+    unsigned byte = bits / 8;
+    for (unsigned ix = 0; ix != byte; ix++)
+      if (addr.s6_addr[ix] != a.s6_addr[ix])
+	return false;
+    if (bits & 3)
+      if ((addr.s6_addr[byte] ^ a.s6_addr[byte]) >> (8 - (bits & 3)))
+	return false;
+    return true;
+  }
+};
+
+/* Netmask comparison.  */
+struct netmask_cmp {
+  bool operator() (const netmask &a, const netmask &b) const
+  {
+    if (a.bits != b.bits)
+      return a.bits < b.bits;
+    for (unsigned ix = 0; ix != sizeof (in6_addr); ix++)
+      if (a.addr.s6_addr[ix] != b.addr.s6_addr[ix])
+	return a.addr.s6_addr[ix] < b.addr.s6_addr[ix];
+    return false;
+  }
+};
+
+typedef std::set<netmask, netmask_cmp> netmask_set_t;
+typedef std::vector<netmask> netmask_vec_t;
+
 /* If there is a known mapping, this is it.  */
 static module_map_t *module_map;
+
+static netmask_set_t netmask_set;
+
+static netmask_vec_t accept_addrs;
 
 using namespace std;
 
@@ -1070,7 +1122,7 @@ term_signal (int sig)
 /* A server listening on bound socket SOCK_FD.  */
 
 static void
-server (int sock_fd, const char *cookie)
+server (bool ip6, int sock_fd, const char *cookie)
 {
   /* I don't know what a good listen queue length might be.  */
   if (listen (sock_fd, flag_one ? 1 : 5))
@@ -1207,15 +1259,35 @@ server (int sock_fd, const char *cookie)
       if (!actionable && !eintr && sock_fd >= 0)
 	{
 	  /* A new client.  */
+	  sockaddr_in6 addr;
+	  socklen_t addr_len = sizeof (addr);
+	  bool check = ip6 && !accept_addrs.empty ();
+
 #ifdef HAVE_ACCEPT4
-	  int client_fd = accept4 (sock_fd, NULL, NULL, SOCK_NONBLOCK);
+	  int client_fd = accept4 (sock_fd, check ? (sockaddr *)&addr : NULL,
+				   &addr_len, SOCK_NONBLOCK);
 #else
-	  int client_fd = accept (sock_fd, NULL, NULL);
+	  int client_fd = accept (sock_fd, check ? (sockaddr *)&addr : NULL,
+				  &addr_len);
 #endif
 	  if (client_fd < 0)
 	    {
 	      error ("cannot accept: %s", xstrerror (errno));
 	      flag_one = true;
+	    }
+
+	  if (check)
+	    {
+	      netmask_vec_t::iterator e = accept_addrs.end ();
+	      for (netmask_vec_t::iterator i = accept_addrs.begin ();
+		   i != e; ++i)
+		if (i->includes (addr.sin6_addr))
+		  goto present;
+	      noisy ("Rejecting connection from disallowed source");
+	      close (client_fd);
+	      client_fd = -1;
+	      continue;
+	    present:;
 	    }
 
 #if !defined (HAVE_ACCEPT4) \
@@ -1292,6 +1364,7 @@ print_usage (int error_p)
 
   fnotice (file, "Usage: cxx-mapper [OPTION...] CONNECTION \n\n");
   fnotice (file, "C++ Module Mapper.\n\n");
+  fnotice (file, "  -a, --accept     Netmask to accept from\n");
   fnotice (file, "  -h, --help       Print this help, then exit\n");
   fnotice (file, "  -n, --noisy      Print progress messages\n");
   fnotice (file, "  -1, --one        One connection and then exit\n");
@@ -1319,29 +1392,82 @@ print_version (void)
   exit (SUCCESS_EXIT_CODE);
 }
 
-static const struct option options[] =
+/* ARG is a netmask to accept from.  Add it to the table.  Return
+   false if we fail to resolve it.  */
+
+static bool
+accept_from (char *arg)
 {
-  { "help",	no_argument,	NULL, 'h' },
-  { "noisy",	no_argument,	NULL, 'n' },
-  { "one",	no_argument,	NULL, '1' },
-  { "root",	required_argument, NULL, 'r' },
-  { "sequential",no_argument,	NULL, 's' },
-  { "version",	no_argument,	NULL, 'v' },
-  { 0, 0, 0, 0 }
-};
+#if HAVE_AF_INET6
+  unsigned bits = sizeof (in6_addr) * 8;
+  char *slash = strrchr (arg, '/');
+  if (slash)
+    {
+      *slash = 0;
+      if (slash[1])
+	{
+	  char *endp;
+	  bits = strtoul (slash + 1, &endp, 0);
+	}
+    }
+
+  addrinfo hints;
+
+  hints.ai_flags = AI_NUMERICSERV;
+  hints.ai_family = AF_INET6;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_protocol = 0;
+  hints.ai_addrlen = 0;
+  hints.ai_addr = NULL;
+  hints.ai_canonname = NULL;
+  hints.ai_next = NULL;
+
+  bool ok = true;
+  struct addrinfo *addrs = NULL;
+  if (int e = getaddrinfo (slash == arg ? NULL : arg, "0", &hints, &addrs))
+    {
+      noisy ("cannot resolve '%s': %s", arg, gai_strerror (e));
+      ok = false;
+    }
+  else
+    for (addrinfo *next = addrs; next; next = next->ai_next)
+      if (next->ai_family == AF_INET6)
+	{
+	  netmask mask (((const sockaddr_in6 *)next->ai_addr)->sin6_addr, bits);
+	  netmask_set.insert (mask);
+	}
+  freeaddrinfo (addrs);
+#endif
+  return ok;
+}
 
 /* Process args, return index to first non-arg.  */
 
 static int
 process_args (int argc, char **argv)
 {
+  static const struct option options[] =
+    {
+     { "accept",	required_argument, NULL, 'a' },
+     { "help",	no_argument,	NULL, 'h' },
+     { "noisy",	no_argument,	NULL, 'n' },
+     { "one",	no_argument,	NULL, '1' },
+     { "root",	required_argument, NULL, 'r' },
+     { "sequential",no_argument,	NULL, 's' },
+     { "version",	no_argument,	NULL, 'v' },
+     { 0, 0, 0, 0 }
+    };
   int opt;
-
-  const char *opts = "hn1sv";
+  bool bad_accept = false;
+  const char *opts = "a:hn1r:sv";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
 	{
+	case 'a':
+	  if (!accept_from (optarg))
+	    bad_accept = true;
+	  break;
 	case 'h':
 	  print_usage (false);
 	  /* print_usage will exit.  */
@@ -1365,6 +1491,9 @@ process_args (int argc, char **argv)
 	  /* print_usage will exit.  */
 	}
     }
+
+  if (bad_accept)
+    error ("failed to resolve all accept addresses");
 
   return optind;
 }
@@ -1405,6 +1534,9 @@ main (int argc, char *argv[])
   int sock_fd = -1; /* Socket fd, otherwise stdin/stdout.  */
   int err = 0;
   const char *errmsg = NULL;
+#ifdef NETWORKING
+  bool ip6 = false;
+#endif
 
   if (argno == argc)
     {
@@ -1527,6 +1659,8 @@ main (int argc, char *argv[])
 		  close (sock_fd);
 		  sock_fd = -1;
 		}
+	      else
+		ip6 = true;
 	    }
 	  freeaddrinfo (addrs);
 #endif
@@ -1565,10 +1699,24 @@ main (int argc, char *argv[])
 
   gcc_assert (name);
 
+#ifdef HAVE_AF_INET6
+  netmask_set_t::iterator end = netmask_set.end ();
+  for (netmask_set_t::iterator iter = netmask_set.begin ();
+       iter != end; ++iter)
+    {
+      netmask_vec_t::iterator e = accept_addrs.end ();
+      for (netmask_vec_t::iterator i = accept_addrs.begin (); i != e; ++i)
+	if (i->includes (iter->addr))
+	  goto present;
+      accept_addrs.push_back (*iter);
+    present:;
+    }
+#endif
+
 #ifdef NETWORKING
   if (sock_fd >= 0)
     {
-      server (sock_fd, cookie);
+      server (ip6, sock_fd, cookie);
       if (name[0] == '=')
 	unlink (&name[1]);
     }
