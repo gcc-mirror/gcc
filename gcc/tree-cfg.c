@@ -8752,7 +8752,6 @@ pass_warn_function_return::execute (function *fun)
      without returning a value.  */
   else if (warn_return_type
 	   && !TREE_NO_WARNING (fun->decl)
-	   && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) > 0
 	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fun->decl))))
     {
       FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (fun)->preds)
@@ -8766,11 +8765,40 @@ pass_warn_function_return::execute (function *fun)
 	      location = gimple_location (last);
 	      if (location == UNKNOWN_LOCATION)
 		location = fun->function_end_locus;
-	      warning_at (location, OPT_Wreturn_type, "control reaches end of non-void function");
+	      warning_at (location, OPT_Wreturn_type,
+			  "control reaches end of non-void function");
 	      TREE_NO_WARNING (fun->decl) = 1;
 	      break;
 	    }
 	}
+      /* -fsanitize=return turns fallthrough from the end of non-void function
+	 into __builtin___ubsan_handle_missing_return () call.
+	 Recognize those too.  */
+      basic_block bb;
+      if (!TREE_NO_WARNING (fun->decl) && (flag_sanitize & SANITIZE_RETURN))
+	FOR_EACH_BB_FN (bb, fun)
+	  if (EDGE_COUNT (bb->succs) == 0)
+	    {
+	      gimple *last = last_stmt (bb);
+	      const enum built_in_function ubsan_missing_ret
+		= BUILT_IN_UBSAN_HANDLE_MISSING_RETURN;
+	      if (last && gimple_call_builtin_p (last, ubsan_missing_ret))
+		{
+		  gimple_stmt_iterator gsi = gsi_for_stmt (last);
+		  gsi_prev_nondebug (&gsi);
+		  gimple *prev = gsi_stmt (gsi);
+		  if (prev == NULL)
+		    location = UNKNOWN_LOCATION;
+		  else
+		    location = gimple_location (prev);
+		  if (LOCATION_LOCUS (location) == UNKNOWN_LOCATION)
+		    location = fun->function_end_locus;
+		  warning_at (location, OPT_Wreturn_type,
+			      "control reaches end of non-void function");
+		  TREE_NO_WARNING (fun->decl) = 1;
+		  break;
+		}
+	    }
     }
   return 0;
 }
