@@ -1,5 +1,9 @@
 2018-06-25  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cxx-module.cc (kill_signal): New.
+	(server): Fixup inet_ntop use.
+
 	gcc/
 	* configure.ac: Check for inet_ntop.
 	* configure, config.in: Rebuilt.

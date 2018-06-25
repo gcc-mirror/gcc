@@ -1107,11 +1107,14 @@ singleton (int from, int to, const char *cookie)
 #ifdef NETWORKING
 /* We increment this to tell the server to shut down.  */
 static volatile int term = false;
+static volatile int kill_sock_fd = -1;
 #if !defined (HAVE_PSELECT) && defined (HAVE_SELECT)
 static int term_pipe[2] = {-1, -1};
 #else
 #define term_pipe ((int *)NULL)
 #endif
+
+/* A terminate signal.  Shutdown gracefully.  */
 
 static void
 term_signal (int sig)
@@ -1120,6 +1123,18 @@ term_signal (int sig)
   term = term + 1;
   if (term_pipe && term_pipe[1] >= 0)
     write (term_pipe[1], &term_pipe[1], 1);
+}
+
+/* A kill signal.  Shutdown immediately.  */
+
+static void
+kill_signal (int sig)
+{
+  signal (sig, SIG_DFL);
+  int sock_fd = kill_sock_fd;
+  if (sock_fd >= 0)
+    close (sock_fd);
+  exit (2);
 }
 
 /* A server listening on bound socket SOCK_FD.  */
@@ -1283,7 +1298,8 @@ server (bool ip6, int sock_fd, const char *cookie)
 	      char name[INET6_ADDRSTRLEN];
 	      const char *str = NULL;
 #if HAVE_INET_NTOP
-	      str = inet_ntop (addr.sin6_family, &addr, name, sizeof (name));
+	      str = inet_ntop (addr.sin6_family, &addr.sin6_addr,
+			       name, sizeof (name));
 #endif
 	      if (!accept_addrs.empty ())
 		{
@@ -1540,6 +1556,9 @@ main (int argc, char *argv[])
   /* Ignore sigpipe, so read/write get an error.  */
   signal (SIGPIPE, SIG_IGN);
 #endif
+#ifdef SIGINT
+  signal (SIGINT, kill_signal);
+#endif
 
   int argno = process_args (argc, argv);
   const char *name = NULL;  /* Name of this mapper.  */
@@ -1643,6 +1662,7 @@ main (int argc, char *argv[])
 	  if (un_len)
 	    {
 	      sock_fd = socket (un.sun_family, SOCK_STREAM, 0);
+	      kill_sock_fd = sock_fd;
 	      if (sock_fd < 0 || bind (sock_fd, (sockaddr *)&un, un_len) < 0)
 		if (sock_fd >= 0)
 		  {
@@ -1653,6 +1673,7 @@ main (int argc, char *argv[])
 #endif
 #ifdef HAVE_AF_INET6
 	  sock_fd = socket (AF_INET6, SOCK_STREAM, 0);
+	  kill_sock_fd = sock_fd;
 	  if (sock_fd >= 0)
 	    {
 	      struct addrinfo *next;
@@ -1677,6 +1698,7 @@ main (int argc, char *argv[])
 	    }
 	  freeaddrinfo (addrs);
 #endif
+	  kill_sock_fd = sock_fd;
 	  if (sock_fd < 0 && !errmsg)
 	    {
 	      err = errno;
