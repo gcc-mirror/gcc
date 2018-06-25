@@ -1,3 +1,8 @@
+2018-06-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gnat.dg/sso9.adb: New testcase.
+	* gnat.dg/sso9_pkg.ads: Likewise.
+
 2018-06-25  Tom de Vries  <tdevries@suse.de>
 
 	PR debug/86257
