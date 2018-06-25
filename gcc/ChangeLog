@@ -1,3 +1,12 @@
+2018-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82159
+	* gimplify.c (gimplify_modify_expr): Don't optimize away zero sized
+	lhs from calls if the lhs has addressable type.
+
 2018-06-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85989
