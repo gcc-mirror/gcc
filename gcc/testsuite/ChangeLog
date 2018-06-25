@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-03-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/84875
+	* gcc.dg/pr84875.c: New test.
+
 	PR c/84953
 	* gcc.dg/pr84953.c: New test.
 

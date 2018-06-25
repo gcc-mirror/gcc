@@ -558,9 +558,19 @@ delete_unmarked_insns (void)
     FOR_BB_INSNS_REVERSE_SAFE (bb, insn, next)
       if (NONDEBUG_INSN_P (insn))
 	{
+	  rtx turn_into_use = NULL_RTX;
+
 	  /* Always delete no-op moves.  */
 	  if (noop_move_p (insn))
-	    ;
+	    {
+	      if (RTX_FRAME_RELATED_P (insn))
+		turn_into_use
+		  = find_reg_note (insn, REG_CFA_RESTORE, NULL);
+	      if (turn_into_use && REG_P (XEXP (turn_into_use, 0)))
+		turn_into_use = XEXP (turn_into_use, 0);
+	      else
+		turn_into_use = NULL_RTX;
+	    }
 
 	  /* Otherwise rely only on the DCE algorithm.  */
 	  else if (marked_insn_p (insn))
@@ -600,8 +610,19 @@ delete_unmarked_insns (void)
 	  if (CALL_P (insn))
 	    must_clean = true;
 
-	  /* Now delete the insn.  */
-	  delete_insn_and_edges (insn);
+	  if (turn_into_use)
+	    {
+	      /* Don't remove frame related noop moves if they cary
+		 REG_CFA_RESTORE note, while we don't need to emit any code,
+		 we need it to emit the CFI restore note.  */
+	      PATTERN (insn)
+		= gen_rtx_USE (GET_MODE (turn_into_use), turn_into_use);
+	      INSN_CODE (insn) = -1;
+	      df_insn_rescan (insn);
+	    }
+	  else
+	    /* Now delete the insn.  */
+	    delete_insn_and_edges (insn);
 	}
 
   /* Deleted a pure or const call.  */
