@@ -1,3 +1,9 @@
+2018-06-25  Jeff Law  <law@redhat.com>
+
+	* config/v850/v850.md (divmodhi4): Make sure to sign extend the
+	dividend to 32 bits.  Adjust length.
+	(udivmodhi4): Cleanup output template.  Fix length.
+
 2018-06-25  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/vsx.md: Change word selector to prefered location.
