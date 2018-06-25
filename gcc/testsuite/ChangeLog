@@ -1,4 +1,9 @@
-gcc/testsuite/ChangeLog:
+2018-06-25  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/82972
+	PR fortran/83088
+	PR fortran/85851
+	* gfortran.dg/init_flag_17.f90: New testcase.
 
 2018-06-25  Carl Love  <cel@us.ibm.com>
 
