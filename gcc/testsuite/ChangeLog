@@ -1,6 +1,11 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84772
+	* gcc.dg/pr84772.c: New test.
+
 	2018-03-09  Jason Merrill  <jason@redhat.com>
 		    Jakub Jelinek  <jakub@redhat.com>
 
