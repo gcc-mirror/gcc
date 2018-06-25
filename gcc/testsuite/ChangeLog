@@ -1,5 +1,8 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84786
+	* gcc.target/i386/avx512f-pr84786-3.c: New test.
+
 	Backported from mainline
 	2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 

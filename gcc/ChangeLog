@@ -1,5 +1,11 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84786
+	* config/i386/sse.md (vshift_count): New mode attr.
+	(<shift_insn><mode>3<mask_name>): Use <vshift_count>N instead of vN
+	as last operand's constraint for VI2_AVX2_AVX512BW shifts.  Use YvN
+	instead of vN as last operand's constraint for VI48_AVX2 shifts.
+
 	Backported from mainline
 	2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
