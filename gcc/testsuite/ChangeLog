@@ -1,3 +1,9 @@
+2018-06-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83118
+	Back port from trunk
+	* gfortran.dg/unlimited_polymorphic_30.f03: New test.
+
 2018-06-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85989
