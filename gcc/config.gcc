@@ -4566,16 +4566,6 @@ case "${target}" in
 		elif test x$with_long_double_format = xibm; then
 		    tm_defines="${tm_defines} TARGET_IEEEQUAD_DEFAULT=0"
 		fi
-
-		case "${target}:${enable_multilib}:${with_long_double_format}" in
-		    powerpc64le*:yes:ieee | powerpc64le*:yes:ibm)
-			tm_defines="${tm_defines} TARGET_IEEEQUAD_MULTILIB=1"
-			tmake_file="${tmake_file} rs6000/t-ldouble-linux64le-${with_long_double_format}"
-			;;
-		    *)
-			:
-			;;
-		esac
 		;;
 
 	s390*-*-*)
