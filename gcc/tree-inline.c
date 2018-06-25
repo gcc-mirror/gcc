@@ -1165,6 +1165,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	      *tp = gimple_fold_indirect_ref (ptr);
 	      if (! *tp)
 	        {
+		  type = remap_type (type, id);
 		  if (TREE_CODE (ptr) == ADDR_EXPR)
 		    {
 		      *tp
