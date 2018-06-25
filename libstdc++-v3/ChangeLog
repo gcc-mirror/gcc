@@ -1,5 +1,9 @@
 2018-06-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86112
+	* python/libstdcxx/v6/printers.py (add_one_template_type_printer):
+	Replace dict comprehension.
+
 	PR libstdc++/81092
 	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
 
