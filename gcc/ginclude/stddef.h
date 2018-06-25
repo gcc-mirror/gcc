@@ -49,8 +49,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined(__NetBSD__)
 #include <machine/ansi.h>
 #endif
-/* On FreeBSD 5, machine/ansi.h does not exist anymore... */
-#if defined (__FreeBSD__) && (__FreeBSD__ >= 5)
+
+#if defined (__FreeBSD__)
 #include <sys/_types.h>
 #endif
 
@@ -194,7 +194,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #define ___int_size_t_h
 #define _GCC_SIZE_T
 #define _SIZET_
-#if (defined (__FreeBSD__) && (__FreeBSD__ >= 5)) \
+#if defined (__FreeBSD__) \
   || defined(__DragonFly__) \
   || defined(__FreeBSD_kernel__) \
   || defined(__VMS__)
