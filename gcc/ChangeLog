@@ -1,5 +1,12 @@
 2018-06-25  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Modify
+	DR for SIMD lane accesses here and mark DR with (void *)-1 aux.
+	(vect_analyze_data_refs): Remove similar code from here and
+	simplify accordingly.
+
+2018-06-25  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-data-refs.c (vect_check_gather_scatter): Fail
 	for reverse storage order accesses rather than asserting
 	they cannot happen here.

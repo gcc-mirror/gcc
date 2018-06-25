@@ -4032,6 +4032,70 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
       return false;
     }
 
+  /* Check whether this may be a SIMD lane access and adjust the
+     DR to make it easier for us to handle it.  */
+  if (loop
+      && loop->simduid
+      && (!DR_BASE_ADDRESS (dr)
+	  || !DR_OFFSET (dr)
+	  || !DR_INIT (dr)
+	  || !DR_STEP (dr)))
+    {
+      struct data_reference *newdr
+	= create_data_ref (NULL, loop_containing_stmt (stmt), DR_REF (dr), stmt,
+			   DR_IS_READ (dr), DR_IS_CONDITIONAL_IN_STMT (dr));
+      if (DR_BASE_ADDRESS (newdr)
+	  && DR_OFFSET (newdr)
+	  && DR_INIT (newdr)
+	  && DR_STEP (newdr)
+	  && integer_zerop (DR_STEP (newdr)))
+	{
+	  tree off = DR_OFFSET (newdr);
+	  STRIP_NOPS (off);
+	  if (TREE_CODE (DR_INIT (newdr)) == INTEGER_CST
+	      && TREE_CODE (off) == MULT_EXPR
+	      && tree_fits_uhwi_p (TREE_OPERAND (off, 1)))
+	    {
+	      tree step = TREE_OPERAND (off, 1);
+	      off = TREE_OPERAND (off, 0);
+	      STRIP_NOPS (off);
+	      if (CONVERT_EXPR_P (off)
+		  && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (off, 0)))
+		      < TYPE_PRECISION (TREE_TYPE (off))))
+		off = TREE_OPERAND (off, 0);
+	      if (TREE_CODE (off) == SSA_NAME)
+		{
+		  gimple *def = SSA_NAME_DEF_STMT (off);
+		  tree reft = TREE_TYPE (DR_REF (newdr));
+		  if (is_gimple_call (def)
+		      && gimple_call_internal_p (def)
+		      && (gimple_call_internal_fn (def) == IFN_GOMP_SIMD_LANE))
+		    {
+		      tree arg = gimple_call_arg (def, 0);
+		      gcc_assert (TREE_CODE (arg) == SSA_NAME);
+		      arg = SSA_NAME_VAR (arg);
+		      if (arg == loop->simduid
+			  /* For now.  */
+			  && tree_int_cst_equal (TYPE_SIZE_UNIT (reft), step))
+			{
+			  DR_OFFSET (newdr) = ssize_int (0);
+			  DR_STEP (newdr) = step;
+			  DR_OFFSET_ALIGNMENT (newdr) = BIGGEST_ALIGNMENT;
+			  DR_STEP_ALIGNMENT (newdr)
+			    = highest_pow2_factor (step);
+			  /* Mark as simd-lane access.  */
+			  newdr->aux = (void *)-1;
+			  free_data_ref (dr);
+			  datarefs->safe_push (newdr);
+			  return true;
+			}
+		    }
+		}
+	    }
+	}
+      free_data_ref (newdr);
+    }
+
   datarefs->safe_push (dr);
   return true;
 }
@@ -4073,7 +4137,6 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
       gimple *stmt;
       stmt_vec_info stmt_info;
       enum { SG_NONE, GATHER, SCATTER } gatherscatter = SG_NONE;
-      bool simd_lane_access = false;
       poly_uint64 vf;
 
       gcc_assert (DR_REF (dr));
@@ -4094,76 +4157,13 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	      && !TREE_THIS_VOLATILE (DR_REF (dr))
 	      && (targetm.vectorize.builtin_scatter != NULL
 		  || supports_vec_scatter_store_p ());
-	  bool maybe_simd_lane_access
-	    = is_a <loop_vec_info> (vinfo) && loop->simduid;
 
-	  /* If target supports vector gather loads or scatter stores, or if
-	     this might be a SIMD lane access, see if they can't be used.  */
+	  /* If target supports vector gather loads or scatter stores,
+	     see if they can't be used.  */
 	  if (is_a <loop_vec_info> (vinfo)
 	      && !nested_in_vect_loop_p (loop, stmt))
 	    {
-	      if (maybe_simd_lane_access)
-		{
-		  struct data_reference *newdr
-		    = create_data_ref (NULL, loop_containing_stmt (stmt),
-				       DR_REF (dr), stmt, !maybe_scatter,
-				       DR_IS_CONDITIONAL_IN_STMT (dr));
-		  gcc_assert (newdr != NULL && DR_REF (newdr));
-		  if (DR_BASE_ADDRESS (newdr)
-		      && DR_OFFSET (newdr)
-		      && DR_INIT (newdr)
-		      && DR_STEP (newdr)
-		      && integer_zerop (DR_STEP (newdr)))
-		    {
-		      tree off = DR_OFFSET (newdr);
-		      STRIP_NOPS (off);
-		      if (TREE_CODE (DR_INIT (newdr)) == INTEGER_CST
-			  && TREE_CODE (off) == MULT_EXPR
-			  && tree_fits_uhwi_p (TREE_OPERAND (off, 1)))
-			{
-			  tree step = TREE_OPERAND (off, 1);
-			  off = TREE_OPERAND (off, 0);
-			  STRIP_NOPS (off);
-			  if (CONVERT_EXPR_P (off)
-			      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (off,
-									  0)))
-			      < TYPE_PRECISION (TREE_TYPE (off)))
-			    off = TREE_OPERAND (off, 0);
-			  if (TREE_CODE (off) == SSA_NAME)
-			    {
-			      gimple *def = SSA_NAME_DEF_STMT (off);
-			      tree reft = TREE_TYPE (DR_REF (newdr));
-			      if (is_gimple_call (def)
-				  && gimple_call_internal_p (def)
-				  && (gimple_call_internal_fn (def)
-				      == IFN_GOMP_SIMD_LANE))
-				{
-				  tree arg = gimple_call_arg (def, 0);
-				  gcc_assert (TREE_CODE (arg) == SSA_NAME);
-				  arg = SSA_NAME_VAR (arg);
-				  if (arg == loop->simduid
-				      /* For now.  */
-				      && tree_int_cst_equal
-				      (TYPE_SIZE_UNIT (reft),
-				       step))
-				    {
-				      DR_OFFSET (newdr) = ssize_int (0);
-				      DR_STEP (newdr) = step;
-				      DR_OFFSET_ALIGNMENT (newdr)
-					  = BIGGEST_ALIGNMENT;
-				      DR_STEP_ALIGNMENT (newdr)
-					  = highest_pow2_factor (step);
-				      dr = newdr;
-				      simd_lane_access = true;
-				    }
-				}
-			    }
-			}
-		    }
-		  if (!simd_lane_access)
-		    free_data_ref (newdr);
-		}
-	      if (!simd_lane_access && (maybe_gather || maybe_scatter))
+	      if (maybe_gather || maybe_scatter)
 		{
 		  if (maybe_gather)
 		    gatherscatter = GATHER;
@@ -4172,7 +4172,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 		}
 	    }
 
-	  if (gatherscatter == SG_NONE && !simd_lane_access)
+	  if (gatherscatter == SG_NONE)
 	    {
 	      if (dump_enabled_p ())
 		{
@@ -4191,6 +4191,23 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	      return false;
 	    }
         }
+
+      /* See if this was detected as SIMD lane access.  */
+      if (dr->aux == (void *)-1)
+	{
+	  if (nested_in_vect_loop_p (loop, stmt))
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "not vectorized: data ref analysis "
+				   "failed ");
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+		}
+	      return false;
+	    }
+	  STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) = true;
+	}
 
       tree base = get_base_address (DR_REF (dr));
       if (base && VAR_P (base) && DECL_NONALIASED (base))
@@ -4294,12 +4311,6 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 
       gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
       STMT_VINFO_DATA_REF (stmt_info) = dr;
-      if (simd_lane_access)
-	{
-	  STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) = true;
-	  free_data_ref (datarefs[i]);
-	  datarefs[i] = dr;
-	}
 
       /* Set vectype for STMT.  */
       scalar_type = TREE_TYPE (DR_REF (dr));
@@ -4324,12 +4335,6 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	         in dependence analysis, we just can't vectorize it.  */
 	      STMT_VINFO_VECTORIZABLE (stmt_info) = false;
 	      continue;
-	    }
-
-	  if (simd_lane_access)
-	    {
-	      STMT_VINFO_DATA_REF (stmt_info) = NULL;
-	      free_data_ref (dr);
 	    }
 	  return false;
         }
