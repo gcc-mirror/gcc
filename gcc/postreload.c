@@ -1166,11 +1166,13 @@ reload_combine_recognize_pattern (rtx_insn *insn)
 	     value in PREV, the constant loading instruction.  */
 	  validate_change (prev, &SET_DEST (prev_set), index_reg, 1);
 	  if (reg_state[regno].offset != const0_rtx)
-	    validate_change (prev,
-			     &SET_SRC (prev_set),
-			     GEN_INT (INTVAL (SET_SRC (prev_set))
-				      + INTVAL (reg_state[regno].offset)),
-			     1);
+	    {
+	      HOST_WIDE_INT c
+		= trunc_int_for_mode (UINTVAL (SET_SRC (prev_set))
+				      + UINTVAL (reg_state[regno].offset),
+				      GET_MODE (index_reg));
+	      validate_change (prev, &SET_SRC (prev_set), GEN_INT (c), 1);
+	    }
 
 	  /* Now for every use of REG that we have recorded, replace REG
 	     with REG_SUM.  */
