@@ -1,3 +1,13 @@
+2018-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-11-23  Dirk Broemmel  <d.broemmel@fz-juelich.de>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/81841
+	* parse.c (parse_spec): Allow ST_OMP_THREADPRIVATE inside of
+	BLOCK DATA.
+
 2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/85138
