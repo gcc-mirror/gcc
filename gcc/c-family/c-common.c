@@ -9249,7 +9249,7 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
   if (TREE_CODE (TREE_TYPE (param)) != POINTER_TYPE)
     return;
 
-  if (integer_zerop (param))
+  if (integer_zerop (fold_for_warn (param)))
     warning_at (*ploc, OPT_Wnonnull, "null argument where non-null required "
 		"(argument %lu)", (unsigned long) param_num);
 }

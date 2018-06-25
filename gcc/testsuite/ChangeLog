@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/86210
+	* g++.dg/warn/Wnonnull4.C: New test.
+
 	PR tree-optimization/86231
 	* gcc.dg/tree-ssa/vrp119.c: New test.
 	* gcc.c-torture/execute/pr86231.c: New test.
