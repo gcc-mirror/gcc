@@ -4959,7 +4959,10 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      && bitpos == 0
 	      && bitsize == mode_bitsize)
 	    result = store_expr (from, to_rtx, false, nontemporal, reversep);
-	  else if (bitsize == mode_bitsize / 2
+	  else if (COMPLEX_MODE_P (GET_MODE (to_rtx))
+		   && (TYPE_MODE (TREE_TYPE (from))
+		       == GET_MODE_INNER (GET_MODE (to_rtx)))
+		   && bitsize == mode_bitsize / 2
 		   && (bitpos == 0 || bitpos == mode_bitsize / 2))
 	    result = store_expr (from, XEXP (to_rtx, bitpos != 0), false,
 				 nontemporal, reversep);

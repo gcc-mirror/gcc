@@ -1,6 +1,12 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85878
+	* expr.c (expand_assignment): Only call store_expr for halves if the
+	mode is the same.
+
 	2018-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85945
