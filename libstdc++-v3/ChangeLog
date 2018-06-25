@@ -1,5 +1,7 @@
 2018-06-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Document N4531 status.
+
 	* include/experimental/algorithm (sample, shuffle): Add new overloads
 	using per-thread random number engine.
 	* testsuite/experimental/algorithm/sample.cc: Simpify and reduce
