@@ -1,6 +1,15 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84662
+	* pt.c (tsubst_copy_and_build) <case TEMPLATE_ID_EXPR>: Use
+	RETURN instead of return.
+	<case POINTER_PLUS_EXPR>: Likewise.
+	<case CONVERT_EXPR>: If op0 is error_mark_node, just return
+	it instead of wrapping it into CONVERT_EXPR.
+
 	2018-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84558
