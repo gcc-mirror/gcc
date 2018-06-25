@@ -1,3 +1,7 @@
+2018-06-25  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/vsx.md: Change word selector to prefered location.
+
 2018-06-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86304

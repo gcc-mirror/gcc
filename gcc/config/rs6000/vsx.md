@@ -3934,7 +3934,7 @@
 
   operands[5] = gen_rtx_REG (V4SFmode, tmp_regno);
   operands[6] = gen_rtx_REG (V4SImode, tmp_regno);
-  operands[7] = GEN_INT (BYTES_BIG_ENDIAN ? 1 : 2);
+  operands[7] = GEN_INT (BYTES_BIG_ENDIAN ? 0 : 3);
   operands[8] = gen_rtx_REG (V4SImode, reg_or_subregno (operands[0]));
 }
   [(set_attr "type" "vecperm")
