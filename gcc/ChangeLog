@@ -7,6 +7,13 @@
 	* gimplify.c (gimplify_modify_expr): Don't optimize away zero sized
 	lhs from calls if the lhs has addressable type.
 
+	2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82192
+	* combine.c (make_extraction): Don't look through non-paradoxical
+	SUBREGs or TRUNCATE if pos + len is or might be bigger than
+	inner's mode.
+
 2018-06-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85989

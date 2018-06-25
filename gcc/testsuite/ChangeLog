@@ -11,6 +11,11 @@
 	PR c++/82159
 	* g++.dg/opt/pr82159.C: New test.
 
+	2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82192
+	* gcc.c-torture/execute/pr82192.c: New test.
+
 2018-06-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/85989
