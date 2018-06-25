@@ -1,6 +1,11 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/84941
+	* gcc.dg/pr84941.c: New test.
+
 	2018-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/84875
