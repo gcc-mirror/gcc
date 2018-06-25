@@ -1,3 +1,7 @@
+2018-06-25  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (Zero-length arrays): Update and clarify.
+
 2018-06-25  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config.gcc (powerpc64le*): Revert January 16th, 2018 patch that
