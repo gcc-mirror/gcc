@@ -35,6 +35,7 @@
 
 #include <algorithm>
 #include <experimental/bits/lfts_config.h>
+#include <experimental/random>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -42,7 +43,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace experimental
 {
-inline namespace fundamentals_v1
+inline namespace fundamentals_v2
 {
   template<typename _ForwardIterator, typename _Searcher>
     inline _ForwardIterator
@@ -79,7 +80,23 @@ inline namespace fundamentals_v1
 			   __d,
 			   std::forward<_UniformRandomNumberGenerator>(__g));
     }
-} // namespace fundamentals_v1
+
+  template<typename _PopulationIterator, typename _SampleIterator,
+           typename _Distance>
+    inline _SampleIterator
+    sample(_PopulationIterator __first, _PopulationIterator __last,
+	   _SampleIterator __out, _Distance __n)
+    {
+      return experimental::sample(__first, __last, __out, __n,
+				  _S_randint_engine());
+    }
+
+  template<typename _RandomAccessIterator>
+    inline void
+    shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    { return std::shuffle(__first, __last, _S_randint_engine()); }
+
+} // namespace fundamentals_v2
 } // namespace experimental
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -1,3 +1,12 @@
+2018-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/algorithm (sample, shuffle): Add new overloads
+	using per-thread random number engine.
+	* testsuite/experimental/algorithm/sample.cc: Simpify and reduce
+	dependencies by using __gnu_test::test_container.
+	* testsuite/experimental/algorithm/sample-2.cc: New.
+	* testsuite/experimental/algorithm/shuffle.cc: New.
+
 2018-06-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver: Fix __cxx11::basic_string patterns for
