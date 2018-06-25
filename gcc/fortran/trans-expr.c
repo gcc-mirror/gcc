@@ -10434,6 +10434,10 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	return tmp;
     }
 
+  if (UNLIMITED_POLY (expr1) && expr1->rank
+      && expr2->ts.type != BT_CLASS)
+    use_vptr_copy = true;
+
   /* Fallback to the scalarizer to generate explicit loops.  */
   return gfc_trans_assignment_1 (expr1, expr2, init_flag, dealloc,
 				 use_vptr_copy, may_alias);

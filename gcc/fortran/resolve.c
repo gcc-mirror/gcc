@@ -10378,6 +10378,11 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       && rhs->expr_type != EXPR_ARRAY)
     gfc_add_data_component (rhs);
 
+  /* Make sure there is a vtable and, in particular, a _copy for the
+     rhs type.  */
+  if (UNLIMITED_POLY (lhs) && lhs->rank && rhs->ts.type != BT_CLASS)
+    gfc_find_vtab (&rhs->ts);
+
   bool caf_convert_to_send = flag_coarray == GFC_FCOARRAY_LIB
       && (lhs_coindexed
 	  || (code->expr2->expr_type == EXPR_FUNCTION
