@@ -450,10 +450,10 @@ shrink_simd_arrays
 /* Initialize the vec_info with kind KIND_IN and target cost data
    TARGET_COST_DATA_IN.  */
 
-vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in)
+vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in,
+		    vec_info_shared *shared_)
   : kind (kind_in),
-    datarefs (vNULL),
-    ddrs (vNULL),
+    shared (shared_),
     target_cost_data (target_cost_data_in)
 {
   stmt_vec_infos.create (50);
@@ -463,23 +463,48 @@ vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in)
 vec_info::~vec_info ()
 {
   slp_instance instance;
-  struct data_reference *dr;
   unsigned int i;
-
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
-    if (dr->aux)
-      {
-        free (dr->aux);
-        dr->aux = NULL;
-      }
 
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     vect_free_slp_instance (instance);
 
-  free_data_refs (datarefs);
-  free_dependence_relations (ddrs);
   destroy_cost_data (target_cost_data);
   free_stmt_vec_infos (&stmt_vec_infos);
+}
+
+vec_info_shared::vec_info_shared ()
+  : datarefs (vNULL),
+    datarefs_copy (vNULL),
+    ddrs (vNULL)
+{
+}
+
+vec_info_shared::~vec_info_shared ()
+{
+  free_data_refs (datarefs);
+  free_dependence_relations (ddrs);
+  datarefs_copy.release ();
+}
+
+void
+vec_info_shared::save_datarefs ()
+{
+  if (!flag_checking)
+    return;
+  datarefs_copy.reserve_exact (datarefs.length ());
+  for (unsigned i = 0; i < datarefs.length (); ++i)
+    datarefs_copy.quick_push (*datarefs[i]);
+}
+
+void
+vec_info_shared::check_datarefs ()
+{
+  if (!flag_checking)
+    return;
+  gcc_assert (datarefs.length () == datarefs_copy.length ());
+  for (unsigned i = 0; i < datarefs.length (); ++i)
+    if (memcmp (&datarefs_copy[i], datarefs[i], sizeof (data_reference)) != 0)
+      gcc_unreachable ();
 }
 
 /* A helper function to free scev and LOOP niter information, as well as
@@ -669,6 +694,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 		      gimple *loop_dist_alias_call)
 {
   unsigned ret = 0;
+  vec_info_shared shared;
   vect_location = find_loop_location (loop);
   if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
       && dump_enabled_p ())
@@ -676,7 +702,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 		 LOCATION_FILE (vect_location),
 		 LOCATION_LINE (vect_location));
 
-  loop_vec_info loop_vinfo = vect_analyze_loop (loop, orig_loop_vinfo);
+  loop_vec_info loop_vinfo = vect_analyze_loop (loop, orig_loop_vinfo, &shared);
   loop->aux = loop_vinfo;
 
   if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))

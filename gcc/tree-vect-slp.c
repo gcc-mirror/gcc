@@ -2440,8 +2440,9 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
    REGION_BEGIN_IN (inclusive) and REGION_END_IN (exclusive).  */
 
 _bb_vec_info::_bb_vec_info (gimple_stmt_iterator region_begin_in,
-			    gimple_stmt_iterator region_end_in)
-  : vec_info (vec_info::bb, init_cost (NULL)),
+			    gimple_stmt_iterator region_end_in,
+			    vec_info_shared *shared)
+  : vec_info (vec_info::bb, init_cost (NULL), shared),
     bb (gsi_bb (region_begin_in)),
     region_begin (region_begin_in),
     region_end (region_end_in)
@@ -2803,7 +2804,7 @@ static bb_vec_info
 vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 		       gimple_stmt_iterator region_end,
 		       vec<data_reference_p> datarefs, int n_stmts,
-		       bool &fatal)
+		       bool &fatal, vec_info_shared *shared)
 {
   bb_vec_info bb_vinfo;
   slp_instance instance;
@@ -2823,11 +2824,12 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
       return NULL;
     }
 
-  bb_vinfo = new _bb_vec_info (region_begin, region_end);
+  bb_vinfo = new _bb_vec_info (region_begin, region_end, shared);
   if (!bb_vinfo)
     return NULL;
 
   BB_VINFO_DATAREFS (bb_vinfo) = datarefs;
+  bb_vinfo->shared->save_datarefs ();
 
   /* Analyze the data references.  */
 
@@ -3018,14 +3020,16 @@ vect_slp_bb (basic_block bb)
 
       bool vectorized = false;
       bool fatal = false;
+      vec_info_shared shared;
       bb_vinfo = vect_slp_analyze_bb_1 (region_begin, region_end,
-					datarefs, insns, fatal);
+					datarefs, insns, fatal, &shared);
       if (bb_vinfo
 	  && dbg_cnt (vect_slp))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location, "SLPing BB part\n");
 
+	  bb_vinfo->shared->check_datarefs ();
 	  vect_schedule_slp (bb_vinfo);
 
 	  unsigned HOST_WIDE_INT bytes;

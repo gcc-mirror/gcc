@@ -6123,7 +6123,7 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 static void
 ensure_base_align (struct data_reference *dr)
 {
-  if (!dr->aux)
+  if (DR_VECT_AUX (dr)->misalignment == DR_MISALIGNMENT_UNINITIALIZED)
     return;
 
   if (DR_VECT_AUX (dr)->base_misaligned)
@@ -9830,6 +9830,9 @@ new_stmt_vec_info (gimple *stmt, vec_info *vinfo)
   res->store_count = 0; /* GROUP_STORE_COUNT */
   res->gap = 0; /* GROUP_GAP */
   res->same_dr_stmt = NULL; /* GROUP_SAME_DR_STMT */
+
+  /* This is really "uninitialized" until vect_compute_data_ref_alignment.  */
+  res->dr_aux.misalignment = DR_MISALIGNMENT_UNINITIALIZED;
 
   return res;
 }

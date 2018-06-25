@@ -568,15 +568,20 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
 
   DUMP_VECT_SCOPE ("vect_analyze_data_ref_dependences");
 
-  LOOP_VINFO_DDRS (loop_vinfo)
-    .create (LOOP_VINFO_DATAREFS (loop_vinfo).length ()
-	     * LOOP_VINFO_DATAREFS (loop_vinfo).length ());
+  if (!LOOP_VINFO_DDRS (loop_vinfo).exists ())
+    {
+      LOOP_VINFO_DDRS (loop_vinfo)
+	.create (LOOP_VINFO_DATAREFS (loop_vinfo).length ()
+		 * LOOP_VINFO_DATAREFS (loop_vinfo).length ());
+      /* We need read-read dependences to compute
+	 STMT_VINFO_SAME_ALIGN_REFS.  */
+      if (!compute_all_dependences (LOOP_VINFO_DATAREFS (loop_vinfo),
+				    &LOOP_VINFO_DDRS (loop_vinfo),
+				    LOOP_VINFO_LOOP_NEST (loop_vinfo), true))
+	return false;
+    }
+
   LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = true;
-  /* We need read-read dependences to compute STMT_VINFO_SAME_ALIGN_REFS.  */
-  if (!compute_all_dependences (LOOP_VINFO_DATAREFS (loop_vinfo),
-				&LOOP_VINFO_DDRS (loop_vinfo),
-				LOOP_VINFO_LOOP_NEST (loop_vinfo), true))
-    return false;
 
   /* For epilogues we either have no aliases or alias versioning
      was applied to original loop.  Therefore we may just get max_vf
@@ -833,7 +838,7 @@ vect_record_base_alignments (vec_info *vinfo)
   struct loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
   data_reference *dr;
   unsigned int i;
-  FOR_EACH_VEC_ELT (vinfo->datarefs, i, dr)
+  FOR_EACH_VEC_ELT (vinfo->shared->datarefs, i, dr)
     {
       gimple *stmt = vect_dr_stmt (dr);
       stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -1155,7 +1160,7 @@ verify_data_ref_alignment (data_reference_p dr)
 bool
 vect_verify_datarefs_alignment (loop_vec_info vinfo)
 {
-  vec<data_reference_p> datarefs = vinfo->datarefs;
+  vec<data_reference_p> datarefs = vinfo->shared->datarefs;
   struct data_reference *dr;
   unsigned int i;
 
@@ -2353,14 +2358,14 @@ vect_analyze_data_refs_alignment (loop_vec_info vinfo)
 
   /* Mark groups of data references with same alignment using
      data dependence information.  */
-  vec<ddr_p> ddrs = vinfo->ddrs;
+  vec<ddr_p> ddrs = vinfo->shared->ddrs;
   struct data_dependence_relation *ddr;
   unsigned int i;
 
   FOR_EACH_VEC_ELT (ddrs, i, ddr)
     vect_find_same_alignment_drs (ddr);
 
-  vec<data_reference_p> datarefs = vinfo->datarefs;
+  vec<data_reference_p> datarefs = vinfo->shared->datarefs;
   struct data_reference *dr;
 
   vect_record_base_alignments (vinfo);
@@ -2914,7 +2919,7 @@ bool
 vect_analyze_data_ref_accesses (vec_info *vinfo)
 {
   unsigned int i;
-  vec<data_reference_p> datarefs = vinfo->datarefs;
+  vec<data_reference_p> datarefs = vinfo->shared->datarefs;
   struct data_reference *dr;
 
   DUMP_VECT_SCOPE ("vect_analyze_data_ref_accesses");
@@ -4131,7 +4136,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
   /* Go through the data-refs, check that the analysis succeeded.  Update
      pointer from stmt_vec_info struct to DR and vectype.  */
 
-  vec<data_reference_p> datarefs = vinfo->datarefs;
+  vec<data_reference_p> datarefs = vinfo->shared->datarefs;
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       gimple *stmt;
