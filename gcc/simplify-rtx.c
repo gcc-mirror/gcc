@@ -3233,7 +3233,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       if (CONST_INT_P (trueop1)
 	  && exact_log2 (UINTVAL (trueop1)) > 0)
 	return simplify_gen_binary (AND, mode, op0,
-				    gen_int_mode (INTVAL (op1) - 1, mode));
+				    gen_int_mode (UINTVAL (trueop1) - 1,
+						  mode));
       break;
 
     case MOD:
