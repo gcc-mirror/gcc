@@ -1,3 +1,9 @@
+2018-06-25  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86257
+	* config/i386/i386.md (define_insn "*tls_global_dynamic_64_<mode>"):
+	Use data16 instead of .byte for insn prefix.
+
 2018-06-25  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR C++/86082

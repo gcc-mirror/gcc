@@ -1,3 +1,8 @@
+2018-06-25  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86257
+	* gcc.target/i386/pr86257.c: New test.
+
 2018-06-25  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR C++/86082
