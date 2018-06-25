@@ -1,3 +1,13 @@
+gcc/testsuite/ChangeLog:
+
+2018-06-25  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/p9-extract-1.c: Make second argument of
+ 	vec_extract a signed int. Add vec_extract tests for bool char
+	and bool int.
+	* gcc.target/powerpc/p9-extract-4.c:  New test file for long long
+	vec_extract tests.
+
 2018-06-25  Tom de Vries  <tdevries@suse.de>
 
 	* lib/gcc-gdb-test.exp (report_gdb): Handle gdb -v failure.
