@@ -3030,8 +3030,12 @@ is_widening_mult_p (gimple *stmt,
 {
   tree type = TREE_TYPE (gimple_assign_lhs (stmt));
 
-  if (TREE_CODE (type) != INTEGER_TYPE
-      && TREE_CODE (type) != FIXED_POINT_TYPE)
+  if (TREE_CODE (type) == INTEGER_TYPE)
+    {
+      if (TYPE_OVERFLOW_TRAPS (type))
+	return false;
+    }
+  else if (TREE_CODE (type) != FIXED_POINT_TYPE)
     return false;
 
   if (!is_widening_mult_rhs_p (type, gimple_assign_rhs1 (stmt), type1_out,
@@ -3399,7 +3403,8 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2)
   /* We don't want to do bitfield reduction ops.  */
   if (INTEGRAL_TYPE_P (type)
       && (TYPE_PRECISION (type)
-	  != GET_MODE_PRECISION (TYPE_MODE (type))))
+	  != GET_MODE_PRECISION (TYPE_MODE (type))
+	  || TYPE_OVERFLOW_TRAPS (type)))
     return false;
 
   /* If the target doesn't support it, don't generate it.  We assume that
