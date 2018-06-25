@@ -1,3 +1,16 @@
+2018-06-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83118
+	Back port from trunk
+	* resolve.c (resolve_ordinary_assign): Force the creation of a
+	vtable for assignment of non-polymorphic expressions to an
+	unlimited polymorphic object.
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Use the
+	size of the rhs type for such assignments. Set the dtype, _len
+	and vptrs appropriately.
+	* trans-expr.c (gfc_trans_assignment): Force the use of the
+	_copy function for these assignments.
+
 2018-06-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	Backport from mainline
@@ -28,7 +41,7 @@
 2018-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/86110
-	* array.c (gfc_resolve_character_array_constructor): Avoid NULL 
+	* array.c (gfc_resolve_character_array_constructor): Avoid NULL
 	pointer dereference.
 
 2018-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>

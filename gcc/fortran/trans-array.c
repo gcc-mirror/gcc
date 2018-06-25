@@ -9948,6 +9948,8 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 			     gfc_array_index_type, tmp,
 			     expr1->ts.u.cl->backend_decl);
     }
+  else if (UNLIMITED_POLY (expr1) && expr2->ts.type != BT_CLASS)
+    tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&expr2->ts));
   else
     tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&expr1->ts));
   tmp = fold_convert (gfc_array_index_type, tmp);
@@ -9973,6 +9975,28 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 
       gfc_add_modify (&fblock, tmp,
 		      gfc_get_dtype_rank_type (expr1->rank,type));
+    }
+  else if (UNLIMITED_POLY (expr1) && expr2->ts.type != BT_CLASS)
+    {
+      tree type;
+      tmp = gfc_conv_descriptor_dtype (desc);
+      type = gfc_typenode_for_spec (&expr2->ts);
+      gfc_add_modify (&fblock, tmp,
+		      gfc_get_dtype_rank_type (expr2->rank,type));
+      /* Set the _len field as well...  */
+      tmp = gfc_class_len_get (TREE_OPERAND (desc, 0));
+      if (expr2->ts.type == BT_CHARACTER)
+	gfc_add_modify (&fblock, tmp,
+			fold_convert (TREE_TYPE (tmp),
+				      TYPE_SIZE_UNIT (type)));
+      else
+	gfc_add_modify (&fblock, tmp,
+			build_int_cst (TREE_TYPE (tmp), 0));
+      /* ...and the vptr.  */
+      tmp = gfc_class_vptr_get (TREE_OPERAND (desc, 0));
+      tmp2 = gfc_get_symbol_decl (gfc_find_vtab (&expr2->ts));
+      tmp2 = gfc_build_addr_expr (TREE_TYPE (tmp), tmp2);
+      gfc_add_modify (&fblock, tmp, tmp2);
     }
   else if (coarray && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
     {
@@ -10079,10 +10103,11 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 
 
   /* We already set the dtype in the case of deferred character
-     length arrays.  */
+     length arrays and unlimited polymorphic arrays.  */
   if (!(GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc))
 	&& ((expr1->ts.type == BT_CHARACTER && expr1->ts.deferred)
-	    || coarray)))
+	    || coarray))
+      && !UNLIMITED_POLY (expr1))
     {
       tmp = gfc_conv_descriptor_dtype (desc);
       gfc_add_modify (&alloc_block, tmp, gfc_get_dtype (TREE_TYPE (desc)));
