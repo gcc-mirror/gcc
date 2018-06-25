@@ -1,5 +1,8 @@
 2018-06-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81092
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+
 	PR libstdc++/86292
 	* include/bits/stl_vector.h (vector::_M_range_initialize<InputIter>):
 	Add try-catch block.
