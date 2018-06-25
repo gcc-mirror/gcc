@@ -1,3 +1,8 @@
+2018-06-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/85700
+	* gcc.dg/Wstringop-truncation-4.c: New test.
+
 2018-06-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/82972
