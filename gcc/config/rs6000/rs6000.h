@@ -551,12 +551,6 @@ extern int rs6000_vector_align[];
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 #define TARGET_LDBRX (TARGET_POPCNTD || rs6000_cpu == PROCESSOR_CELL)
 
-/* Define as 1 if we support multilibs for switching long double between IEEE
-   128-bit floating point and IBM extended double.  */
-#ifndef TARGET_IEEEQUAD_MULTILIB
-#define TARGET_IEEEQUAD_MULTILIB 0
-#endif
-
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
    Enable 32-bit fcfid's on any of the switches for newer ISA machines.  */
 #define TARGET_FCFID	(TARGET_POWERPC64				\

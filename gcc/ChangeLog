@@ -1,3 +1,16 @@
+2018-06-25  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config.gcc (powerpc64le*): Revert January 16th, 2018 patch that
+	added IEEE/IBM long double multilib support on PowerPC little
+	endian Linux systems.
+	* config/rs6000/linux64.h (MULTILIB_DEFAULTS_IEEE): Likewise.
+	(MULTILIB_DEFAULTS): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Likewise.
+	* config/rs6000/rs6000.h (TARGET_IEEEQUAD_MULTILIB): Likewise.
+	* config/rs6000/t-ldouble-linux64le-ibm: Delete, no longer used.
+	* config/rs6000/t-ldouble-linux64le-ieee: Delete, no longer used.
+
 2018-06-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR middle-end/86311
