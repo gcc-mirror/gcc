@@ -98,8 +98,7 @@ void
 mips_register_frame_header_opt (void)
 {
   opt_pass *p = make_pass_ipa_frame_header_opt (g);
-  static struct register_pass_info f =
-    {p, "comdats", 1, PASS_POS_INSERT_AFTER };
+  struct register_pass_info f = { p, "comdats", 1, PASS_POS_INSERT_AFTER };
   register_pass (&f);
 }
 
