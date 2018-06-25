@@ -1,3 +1,11 @@
+2018-06-25  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* configure.ac: Check for inet_ntop.
+	* configure, config.in: Rebuilt.
+	gcc/cp/
+	* cxx-mapper.cc (server): Use inet_ntop when available.
+
 2018-06-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

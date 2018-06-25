@@ -1452,6 +1452,12 @@
 #endif
 
 
+/* Define if inet_ntop provided. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_INET_NTOP
+#endif
+
+
 /* Define 0/1 if .init_array/.fini_array sections are available and working.
    */
 #ifndef USED_FOR_TARGET

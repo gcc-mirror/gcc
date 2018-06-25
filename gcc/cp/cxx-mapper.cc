@@ -50,6 +50,9 @@ along with GCC; see the file COPYING3.  If not see
 /* sockaddr_in6, getaddrinfo, freeaddrinfo, gai_sterror, ntohs, htons.  */
 #  include <netdb.h>
 # endif
+#ifdef HAVE_INET_NTOP
+#include <arpa/inet.h>
+#endif
 #endif
 #ifndef HAVE_AF_INET6
 # define gai_strerror(X) ""
@@ -1261,13 +1264,12 @@ server (bool ip6, int sock_fd, const char *cookie)
 	  /* A new client.  */
 	  sockaddr_in6 addr;
 	  socklen_t addr_len = sizeof (addr);
-	  bool check = ip6 && !accept_addrs.empty ();
 
 #ifdef HAVE_ACCEPT4
-	  int client_fd = accept4 (sock_fd, check ? (sockaddr *)&addr : NULL,
+	  int client_fd = accept4 (sock_fd, ip6 ? (sockaddr *)&addr : NULL,
 				   &addr_len, SOCK_NONBLOCK);
 #else
-	  int client_fd = accept (sock_fd, check ? (sockaddr *)&addr : NULL,
+	  int client_fd = accept (sock_fd, ip6 ? (sockaddr *)&addr : NULL,
 				  &addr_len);
 #endif
 	  if (client_fd < 0)
@@ -1276,18 +1278,29 @@ server (bool ip6, int sock_fd, const char *cookie)
 	      flag_one = true;
 	    }
 
-	  if (check)
+	  if (ip6)
 	    {
-	      netmask_vec_t::iterator e = accept_addrs.end ();
-	      for (netmask_vec_t::iterator i = accept_addrs.begin ();
-		   i != e; ++i)
-		if (i->includes (addr.sin6_addr))
-		  goto present;
-	      noisy ("Rejecting connection from disallowed source");
-	      close (client_fd);
-	      client_fd = -1;
-	      continue;
-	    present:;
+	      char name[INET6_ADDRSTRLEN];
+	      const char *str = NULL;
+#if HAVE_INET_NTOP
+	      str = inet_ntop (addr.sin6_family, &addr, name, sizeof (name));
+#endif
+	      if (!accept_addrs.empty ())
+		{
+		  netmask_vec_t::iterator e = accept_addrs.end ();
+		  for (netmask_vec_t::iterator i = accept_addrs.begin ();
+		       i != e; ++i)
+		    if (i->includes (addr.sin6_addr))
+		      goto present;
+		  close (client_fd);
+		  client_fd = -1;
+		  noisy ("Rejecting connection from disallowed source '%s'",
+			 str ? str : "");
+		  continue;
+		present:;
+		}
+	      flag_noisy && noisy ("Accepting connection from '%s'",
+				   str ? str : "");
 	    }
 
 #if !defined (HAVE_ACCEPT4) \

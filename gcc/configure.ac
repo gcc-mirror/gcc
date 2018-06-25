@@ -1394,9 +1394,12 @@ if test $ac_cv_f_setlkw = yes; then
   [Define if F_SETLKW supported by fcntl.])
 fi
 
+# C++ Modules would like some networking features to provide the mapping
+# server.  You can still use modules without them though.
 # The following network-related checks could probably do with some
 # Windows and other non-linux defenses and checking.
 
+# Local socket connectivity wants AF_UNIX networking
 # Check for AF_UNIX networking
 AC_CACHE_CHECK(for AF_UNIX, ac_cv_af_unix, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -1415,6 +1418,7 @@ if test $ac_cv_af_unix = yes; then
   [Define if AF_UNIX supported.])
 fi
 
+# Remote socket connectivity wants AF_INET6 networking
 # Check for AF_INET6 networking
 AC_CACHE_CHECK(for AF_INET6, ac_cv_af_inet6, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -1433,7 +1437,6 @@ hints.ai_protocol = 0;
 hints.ai_canonname = NULL;
 hints.ai_addr = NULL;
 hints.ai_next = NULL;
-
 int e = getaddrinfo ("localhost", NULL, &hints, &addrs);
 const char *str = gai_strerror (e);
 freeaddrinfo (addrs);
@@ -1446,6 +1449,7 @@ if test $ac_cv_af_inet6 = yes; then
   [Define if AF_INET6 supported.])
 fi
 
+# Efficient server response wants epoll
 # Check for epoll_create, epoll_ctl, epoll_pwait
 AC_CACHE_CHECK(for epoll, ac_cv_epoll, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -1463,6 +1467,7 @@ if test $ac_cv_epoll = yes; then
   [Define if epoll_create, epoll_ctl, epoll_pwait provided.])
 fi
 
+# If we can't use epoll, try pselect.
 # Check for pselect
 AC_CACHE_CHECK(for pselect, ac_cv_pselect, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -1475,6 +1480,8 @@ if test $ac_cv_pselect = yes; then
   [Define if pselect provided.])
 fi
 
+# And failing that, use good old select.
+# If we can't even use this, the server is serialized.
 # Check for select
 AC_CACHE_CHECK(for select, ac_cv_select, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -1487,6 +1494,7 @@ if test $ac_cv_select = yes; then
   [Define if select provided.])
 fi
 
+# Avoid some fnctl calls by using accept4, when available.
 # Check for accept4
 AC_CACHE_CHECK(for accept4, ac_cv_accept4, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -1498,6 +1506,22 @@ int err = accept4 (1, NULL, NULL, SOCK_NONBLOCK);]])],
 if test $ac_cv_accept4 = yes; then
   AC_DEFINE(HAVE_ACCEPT4, 1,
   [Define if accept4 provided.])
+fi
+
+# For better server messages, look for a way to stringize network addresses
+# Check for inet_ntop
+AC_CACHE_CHECK(for inet_ntop, ac_cv_inet_ntop, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <arpa/inet.h>
+#include <netinet/in.h>]],[[
+sockaddr_in6 in6;
+char buf[INET6_ADDRSTRLEN];
+const char *str = inet_ntop (AF_INET6, &in6, buf, sizeof (buf));]])],
+[ac_cv_inet_ntop=yes],
+[ac_cv_inet_ntop=no])])
+if test $ac_cv_inet_ntop = yes; then
+  AC_DEFINE(HAVE_INET_NTOP, 1,
+  [Define if inet_ntop provided.])
 fi
 
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
