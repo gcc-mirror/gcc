@@ -1,3 +1,8 @@
+2018-06-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR C++/86082
+	* g++.dg/pr86082.C: New test.
+
 2018-06-24  Tom de Vries  <tdevries@suse.de>
 
 	* g++.dg/guality/guality.exp: Don't use which on gdb arg to report_gdb.

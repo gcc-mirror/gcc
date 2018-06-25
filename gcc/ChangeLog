@@ -1,3 +1,11 @@
+2018-06-25  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR C++/86082
+	* parser.c (make_char_string_pack): Pass this literal chars
+	through cpp_interpret_string.
+	(cp_parser_userdef_numeric_literal): Check the result of
+	make_char_string_pack.
+
 2018-06-24  Maya Rashish  <coypu@sdf.org>
 
 	* ginclude/stddef.h: Simplify conditions around avoiding
