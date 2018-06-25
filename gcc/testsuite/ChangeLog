@@ -1,6 +1,11 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/83987
+	* g++.dg/ubsan/pr83987.C: New test.
+
 	2018-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83930
