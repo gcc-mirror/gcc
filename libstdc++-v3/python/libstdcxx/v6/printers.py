@@ -1438,7 +1438,8 @@ def add_one_template_type_printer(obj, name, defargs):
     if _versioned_namespace:
         # Add second type printer for same type in versioned namespace:
         ns = 'std::' + _versioned_namespace
-        defargs = { n: d.replace('std::', ns) for n,d in defargs.items() }
+        # PR 86112 Cannot use dict comprehension here:
+        defargs = dict((n, d.replace('std::', ns)) for (n,d) in defargs.items())
         printer = TemplateTypePrinter(ns+name, defargs)
         gdb.types.register_type_printer(obj, printer)
 
