@@ -1,3 +1,10 @@
+2018-06-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2018-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (abs<mode>2): Handle IFmode.
+
 2018-05-02  Jan Hubicka  <jh@suse.cz>
 
 	Backport from mainline
