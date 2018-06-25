@@ -929,7 +929,7 @@ vectorize_loops (void)
   /*  ----------- Finalize. -----------  */
 
   if (any_ifcvt_loops)
-    for (i = 1; i < vect_loops_num; i++)
+    for (i = 1; i < number_of_loops (cfun); i++)
       {
 	loop = get_loop (cfun, i);
 	if (loop && loop->dont_vectorize)
