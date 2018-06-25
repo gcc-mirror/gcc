@@ -1,3 +1,8 @@
+2018-06-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* ginclude/stddef.h: Remove an obsolete comment on FreeBSD 5.
+	Simplify logic for FreeBSD (twice).
+
 2018-06-25  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86204
