@@ -1,3 +1,9 @@
+2018-06-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR middle-end/86311
+	* sort.cc (REORDER_23): Avoid memcpy with same destination and source.
+	(REORDER_45): Likewise.
+
 2018-06-25  Jeff Law  <law@redhat.com>
 
 	* config/v850/v850.md (divmodhi4): Make sure to sign extend the
