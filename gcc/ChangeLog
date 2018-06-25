@@ -1,6 +1,13 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/84625
+	* config/i386/i386.c (ix86_print_operand): Use conditional
+	output_operand_lossage instead of gcc_assert if CONST_VECTOR is not
+	zero vector.
+
 	2018-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/84425
