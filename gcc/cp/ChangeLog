@@ -1,6 +1,13 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_declare): Change return type to bool from
+	void, return true for declare simd.
+	(cp_parser_pragma): Return cp_parser_omp_declare returned value
+	rather than always false.
+
 	2017-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82781
