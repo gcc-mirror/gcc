@@ -5563,7 +5563,11 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
       return false;
     }
   else if (processing_template_decl)
-    return false;
+    {
+      if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == error_mark_node)
+	return true;
+      return false;
+    }
 
   tree id = OMP_CLAUSE_REDUCTION_PLACEHOLDER (c);
 
