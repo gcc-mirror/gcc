@@ -1,5 +1,10 @@
 2018-06-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86292
+	* include/bits/stl_vector.h (vector::_M_range_initialize<InputIter>):
+	Add try-catch block.
+	* testsuite/23_containers/vector/cons/86292.cc: New.
+
 	* doc/xml/manual/status_cxx2017.xml: Document N4531 status.
 
 	* include/experimental/algorithm (sample, shuffle): Add new overloads
