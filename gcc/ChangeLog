@@ -1,5 +1,11 @@
 2018-06-25  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/86204
+	* tree-ssa-strlen.c (handle_builtin_strlen): Avoid storing
+	a strnlen result if it's less than the length of the string.
+
+2018-06-25  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/85700
 	* gimple-fold.c (gimple_fold_builtin_strncat): Adjust comment.
 	* tree-ssa-strlen.c (is_strlen_related_p): Handle integer subtraction.

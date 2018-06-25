@@ -1,5 +1,10 @@
 2018-06-25  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/86204
+	* gcc.dg/strlenopt-46.c: New test.
+
+2018-06-25  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/85700
 	* gcc.dg/Wstringop-truncation-4.c: New test.
 
