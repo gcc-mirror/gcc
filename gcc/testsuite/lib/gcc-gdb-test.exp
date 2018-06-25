@@ -151,6 +151,12 @@ proc report_gdb { gdb loc } {
     }
     set gdb [exec which $gdb]
     send_log "gdb used in $loc: $gdb\n"
-    set gdb_version [exec $gdb -v]
-    send_log "gdb used in $loc: version:\n---\n$gdb_version\n---\n"
+
+    send_log "gdb used in $loc: "
+    if { [catch { exec $gdb -v } gdb_version] } {
+	send_log "getting version failed:\n"
+    } else {
+	send_log "version:\n"
+    }
+    send_log -- "---\n$gdb_version\n---\n"
 }
