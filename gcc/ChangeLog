@@ -1,3 +1,16 @@
+2018-06-25  Jeff Law  <law@redhat.com>
+
+	* config/v850/predicates.md (const_float_1_operand): Fix match_code
+	test.
+	(const_float_0_operand): Remove unused predicate.
+	* config/v850/v850.md (define_constants): Remove UNSPEC_LOOP.
+	(define_c_enum unspec): Add LOOP, RCP and RSQRT constants.
+	(recipsf2): New expander.  Original pattern now called
+	(recipsf2_insn).
+	(recipdf2, recipdf2_insn): Similarly.
+	(rsqrtsf2, rsqrtsf2_insn): Similarly
+	(rsqrtdf2, rsqrtdf2_insn): Similarly
+
 2018-06-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* ginclude/stddef.h: Remove an obsolete comment on FreeBSD 5.
