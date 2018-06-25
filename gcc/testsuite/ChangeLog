@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-03-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/85076
+	* g++.dg/cpp1y/pr85076.C: New test.
+
 	PR c++/85068
 	* g++.dg/inherit/covariant22.C: New test.
 

@@ -962,6 +962,10 @@ tree
 cp_build_reference_type (tree to_type, bool rval)
 {
   tree lvalue_ref, t;
+
+  if (to_type == error_mark_node)
+    return error_mark_node;
+
   lvalue_ref = build_reference_type (to_type);
   if (!rval)
     return lvalue_ref;
