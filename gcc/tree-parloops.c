@@ -2597,7 +2597,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   stmt_vec_infos.create (50);
   set_stmt_vec_info_vec (&stmt_vec_infos);
 
-  simple_loop_info = vect_analyze_loop_form (loop);
+  vec_info_shared shared;
+  simple_loop_info = vect_analyze_loop_form (loop, &shared);
   if (simple_loop_info == NULL)
     goto gather_done;
 
@@ -2636,7 +2637,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
   if (!double_reduc_phis.is_empty ())
     {
-      simple_loop_info = vect_analyze_loop_form (loop->inner);
+      vec_info_shared shared;
+      simple_loop_info = vect_analyze_loop_form (loop->inner, &shared);
       if (simple_loop_info)
 	{
 	  gphi *phi;

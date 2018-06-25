@@ -1,5 +1,60 @@
 2018-06-25  Richard Biener  <rguenther@suse.de>
 
+	* tree-vectorizer.h (struct vec_info_shared): New structure
+	with parts split out from struct vec_info and loop_nest from
+	struct _loop_vec_info.
+	(struct vec_info): Adjust accordingly.
+	(struct _loop_vec_info): Likewise.
+	(LOOP_VINFO_LOOP_NEST): Adjust.
+	(LOOP_VINFO_DATAREFS): Likewise.
+	(LOOP_VINFO_DDRS): Likewise.
+	(struct _bb_vec_info): Likewise.
+	(BB_VINFO_DATAREFS): Likewise.
+	(BB_VINFO_DDRS): Likewise.
+	(struct _stmt_vec_info): Add dr_aux member.
+	(DR_VECT_AUX): Adjust to refer to member of DR_STMTs vinfo.
+	(DR_MISALIGNMENT_UNINITIALIZED): New.
+	(set_dr_misalignment): Adjust.
+	(dr_misalignment): Assert misalign isn't DR_MISALIGNMENT_UNINITIALIZED.
+	(vect_analyze_loop): Adjust prototype.
+	(vect_analyze_loop_form): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences):
+	Compute dependences lazily.
+	(vect_record_base_alignments): Use shared datarefs/ddrs.
+	(vect_verify_datarefs_alignment): Likewise.
+	(vect_analyze_data_refs_alignment): Likewise.
+	(vect_analyze_data_ref_accesses): Likewise.
+	(vect_analyze_data_refs): Likewise.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Add
+	constructor parameter for shared part.
+	(vect_analyze_loop_form): Pass in shared part and adjust.
+	(vect_analyze_loop_2): Pass in storage for the number of
+	stmts.  Move loop nest finding to the caller.  Compute
+	datarefs lazily.
+	(vect_analyze_loop): Pass in shared part.
+	(vect_transform_loop): Verify shared datarefs are unchanged.
+	* tree-vect-slp.c (_bb_vec_info::_bb_vec_info): Add
+	constructor parameter for shared part.
+	(vect_slp_analyze_bb_1): Pass in shared part and adjust.
+	(vect_slp_bb): Verify shared datarefs are unchanged before
+	transform.
+	* tree-vect-stmts.c (ensure_base_align): Adjust for DR_AUX
+	change.
+	(new_stmt_vec_info): Initialize DR_AUX misalignment to
+	DR_MISALIGNMENT_UNINITIALIZED.
+	* tree-vectorizer.c (vec_info::vec_info): Add constructor
+	parameter for shared part.
+	(vec_info::~vec_info): Adjust.
+	(vec_info_shared::vec_info_shared): New.
+	(vec_info_shared::~vec_info_shared): Likewise.
+	(vec_info_shared::save_datarefs): Likewise.
+	(vec_info_shared::check_datarefs): Likewise.
+	(try_vectorize_loop_1): Construct shared part live for analyses
+	of a single loop for multiple vector sizes.
+	* tree-parloops.c (gather_scalar_reductions): Adjust.
+
+2018-06-25  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Modify
 	DR for SIMD lane accesses here and mark DR with (void *)-1 aux.
 	(vect_analyze_data_refs): Remove similar code from here and
