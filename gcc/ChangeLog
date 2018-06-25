@@ -1,6 +1,14 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78643
+	PR target/80583
+	* expr.c (get_inner_reference): If DECL_MODE of a non-bitfield
+	is BLKmode for vector field with vector raw mode, use TYPE_MODE
+	instead of DECL_MODE.
+
 	2017-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80819
