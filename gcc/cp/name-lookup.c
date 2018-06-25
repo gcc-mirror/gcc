@@ -3633,6 +3633,9 @@ handle_namespace_attrs (tree ns, tree attributes)
   tree d;
   bool saw_vis = false;
 
+  if (attributes == error_mark_node)
+    return false;
+
   for (d = attributes; d; d = TREE_CHAIN (d))
     {
       tree name = get_attribute_name (d);
