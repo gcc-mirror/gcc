@@ -154,7 +154,7 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
 			   struct dead_debug_local *debug)
 {
   rtx set, src, dest;
-  bitmap live_out, live_in, bb_uses, bb_defs;
+  bitmap live_out, live_in, bb_uses = NULL, bb_defs = NULL;
   unsigned int i, dregno, end_dregno;
   unsigned int sregno = FIRST_PSEUDO_REGISTER;
   unsigned int end_sregno = FIRST_PSEUDO_REGISTER;
@@ -327,8 +327,11 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
       /* Check whether BB uses DEST or clobbers DEST.  We need to add
 	 INSN to BB if so.  Either way, DEST is no longer live on entry,
 	 except for any part that overlaps SRC (next loop).  */
-      bb_uses = &DF_LR_BB_INFO (bb)->use;
-      bb_defs = &DF_LR_BB_INFO (bb)->def;
+      if (!*split_p)
+	{
+	  bb_uses = &DF_LR_BB_INFO (bb)->use;
+	  bb_defs = &DF_LR_BB_INFO (bb)->def;
+	}
       if (df_live)
 	{
 	  for (i = dregno; i < end_dregno; i++)
