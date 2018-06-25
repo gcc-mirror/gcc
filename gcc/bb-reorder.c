@@ -2402,7 +2402,10 @@ reorder_basic_blocks_simple (void)
 
   basic_block last_tail = (basic_block) ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux;
 
-  int current_partition = BB_PARTITION (last_tail);
+  int current_partition
+    = BB_PARTITION (last_tail == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+		    ? EDGE_SUCC (ENTRY_BLOCK_PTR_FOR_FN (cfun), 0)->dest
+		    : last_tail);
   bool need_another_pass = true;
 
   for (int pass = 0; pass < 2 && need_another_pass; pass++)
@@ -2443,7 +2446,6 @@ reorder_basic_blocks_simple (void)
     {
       force_nonfallthru (e);
       e->src->aux = ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux;
-      BB_COPY_PARTITION (e->src, e->dest);
     }
 }
 
