@@ -1519,6 +1519,31 @@ place_field (record_layout_info rli, tree field)
 	= size_binop (PLUS_EXPR, rli->offset, DECL_SIZE_UNIT (field));
       rli->bitpos = bitsize_zero_node;
       rli->offset_align = MIN (rli->offset_align, desired_align);
+
+      if (!multiple_of_p (bitsizetype, DECL_SIZE (field),
+			  bitsize_int (rli->offset_align)))
+	{
+	  tree type = strip_array_types (TREE_TYPE (field));
+	  /* The above adjusts offset_align just based on the start of the
+	     field.  The field might not have a size that is a multiple of
+	     that offset_align though.  If the field is an array of fixed
+	     sized elements, assume there can be any multiple of those
+	     sizes.  If it is a variable length aggregate or array of
+	     variable length aggregates, assume worst that the end is
+	     just BITS_PER_UNIT aligned.  */
+	  if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
+	    {
+	      if (TREE_INT_CST_LOW (TYPE_SIZE (type)))
+		{
+		  unsigned HOST_WIDE_INT sz
+		    = TREE_INT_CST_LOW (TYPE_SIZE (type));
+		  sz = sz & -sz;
+		  rli->offset_align = MIN (rli->offset_align, sz);
+		}
+	    }
+	  else
+	    rli->offset_align = MIN (rli->offset_align, BITS_PER_UNIT);
+	}
     }
   else if (targetm.ms_bitfield_layout_p (rli->t))
     {
