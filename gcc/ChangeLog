@@ -1,6 +1,16 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/82801
+	PR ipa/83346
+	* ipa-inline.c (flatten_remove_node_hook): New function.
+	(ipa_inline): Keep only nodes with flatten attribute at the end of
+	the array in the order from ipa_reverse_postorder, only walk that
+	portion of array for flattening, if there is more than one such
+	node, temporarily register a removal hook and ignore removed nodes.
+
 	2017-12-08  Joseph Myers  <joseph@codesourcery.com>
 		    Alexander Monakov  <amonakov@ispras.ru>
 		    Jakub Jelinek  <jakub@redhat.com>
