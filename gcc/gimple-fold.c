@@ -2051,10 +2051,12 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
   if (!nowarn && cmpsrc == 0)
     {
       tree fndecl = gimple_call_fndecl (stmt);
-
-      /* To avoid certain truncation the specified bound should also
-	 not be equal to (or less than) the length of the source.  */
       location_t loc = gimple_location (stmt);
+
+      /* To avoid possible overflow the specified bound should also
+	 not be equal to the length of the source, even when the size
+	 of the destination is unknown (it's not an uncommon mistake
+	 to specify as the bound to strncpy the length of the source).  */
       if (warning_at (loc, OPT_Wstringop_overflow_,
 		      "%G%qD specified bound %E equals source length",
 		      stmt, fndecl, len))

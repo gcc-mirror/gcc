@@ -1,5 +1,12 @@
 2018-06-25  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/85700
+	* gimple-fold.c (gimple_fold_builtin_strncat): Adjust comment.
+	* tree-ssa-strlen.c (is_strlen_related_p): Handle integer subtraction.
+	(maybe_diag_stxncpy_trunc): Distinguish strncat from strncpy.
+
+2018-06-25  Martin Sebor  <msebor@redhat.com>
+
 	* doc/extend.texi (Zero-length arrays): Update and clarify.
 
 2018-06-25  Michael Meissner  <meissner@linux.ibm.com>

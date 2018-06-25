@@ -2014,6 +2014,12 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 
       gcall *call = as_a <gcall *> (stmt);
 
+      /* Set to true for strncat whose bound is derived from the length
+	 of the destination (the expected usage pattern).  */
+      bool cat_dstlen_bounded = false;
+      if (DECL_FUNCTION_CODE (func) == BUILT_IN_STRNCAT)
+	cat_dstlen_bounded = is_strlen_related_p (dst, cnt);
+
       if (lenrange[0] == cntrange[1] && cntrange[0] == cntrange[1])
 	return warning_n (callloc, OPT_Wstringop_truncation,
 			  cntrange[0].to_uhwi (),
@@ -2024,46 +2030,50 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 			  "copying %E bytes from a string of the same "
 			  "length",
 			  call, func, cnt);
-      else if (wi::geu_p (lenrange[0], cntrange[1]))
+      else if (!cat_dstlen_bounded)
 	{
-	  /* The shortest string is longer than the upper bound of
-	     the count so the truncation is certain.  */
-	  if (cntrange[0] == cntrange[1])
-	    return warning_n (callloc, OPT_Wstringop_truncation,
-			      cntrange[0].to_uhwi (),
-			      "%G%qD output truncated copying %E byte "
-			      "from a string of length %wu",
-			      "%G%qD output truncated copying %E bytes "
-			      "from a string of length %wu",
-			      call, func, cnt, lenrange[0].to_uhwi ());
+	  if (wi::geu_p (lenrange[0], cntrange[1]))
+	    {
+	      /* The shortest string is longer than the upper bound of
+		 the count so the truncation is certain.  */
+	      if (cntrange[0] == cntrange[1])
+		return warning_n (callloc, OPT_Wstringop_truncation,
+				  cntrange[0].to_uhwi (),
+				  "%G%qD output truncated copying %E byte "
+				  "from a string of length %wu",
+				  "%G%qD output truncated copying %E bytes "
+				  "from a string of length %wu",
+				  call, func, cnt, lenrange[0].to_uhwi ());
 
-	  return warning_at (callloc, OPT_Wstringop_truncation,
-			     "%G%qD output truncated copying between %wu "
-			     "and %wu bytes from a string of length %wu",
-			     call, func, cntrange[0].to_uhwi (),
-			     cntrange[1].to_uhwi (), lenrange[0].to_uhwi ());
+	      return warning_at (callloc, OPT_Wstringop_truncation,
+				 "%G%qD output truncated copying between %wu "
+				 "and %wu bytes from a string of length %wu",
+				 call, func, cntrange[0].to_uhwi (),
+				 cntrange[1].to_uhwi (), lenrange[0].to_uhwi ());
+	    }
+	  else if (wi::geu_p (lenrange[1], cntrange[1]))
+	    {
+	      /* The longest string is longer than the upper bound of
+		 the count so the truncation is possible.  */
+	      if (cntrange[0] == cntrange[1])
+		return warning_n (callloc, OPT_Wstringop_truncation,
+				  cntrange[0].to_uhwi (),
+				  "%G%qD output may be truncated copying %E "
+				  "byte from a string of length %wu",
+				  "%G%qD output may be truncated copying %E "
+				  "bytes from a string of length %wu",
+				  call, func, cnt, lenrange[1].to_uhwi ());
+
+	      return warning_at (callloc, OPT_Wstringop_truncation,
+				 "%G%qD output may be truncated copying between "
+				 "%wu and %wu bytes from a string of length %wu",
+				 call, func, cntrange[0].to_uhwi (),
+				 cntrange[1].to_uhwi (), lenrange[1].to_uhwi ());
+	    }
 	}
-      else if (wi::geu_p (lenrange[1], cntrange[1]))
-	{
-	  /* The longest string is longer than the upper bound of
-	     the count so the truncation is possible.  */
-	  if (cntrange[0] == cntrange[1])
-	    return warning_n (callloc, OPT_Wstringop_truncation,
-			      cntrange[0].to_uhwi (),
-			      "%G%qD output may be truncated copying %E "
-			      "byte from a string of length %wu",
-			      "%G%qD output may be truncated copying %E "
-			      "bytes from a string of length %wu",
-			      call, func, cnt, lenrange[1].to_uhwi ());
 
-	  return warning_at (callloc, OPT_Wstringop_truncation,
-			     "%G%qD output may be truncated copying between %wu "
-			     "and %wu bytes from a string of length %wu",
-			     call, func, cntrange[0].to_uhwi (),
-			     cntrange[1].to_uhwi (), lenrange[1].to_uhwi ());
-	}
-
-      if (cntrange[0] != cntrange[1]
+      if (!cat_dstlen_bounded
+	  && cntrange[0] != cntrange[1]
 	  && wi::leu_p (cntrange[0], lenrange[0])
 	  && wi::leu_p (cntrange[1], lenrange[0] + 1))
 	{
