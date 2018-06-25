@@ -469,7 +469,6 @@ pass_through_call (const gcall *call)
       case BUILT_IN_MEMSET_CHK:
       case BUILT_IN_STRCPY_CHK:
       case BUILT_IN_STRNCPY_CHK:
-      case BUILT_IN_STPNCPY_CHK:
       case BUILT_IN_STRCAT_CHK:
       case BUILT_IN_STRNCAT_CHK:
       case BUILT_IN_ASSUME_ALIGNED:

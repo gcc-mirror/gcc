@@ -1,6 +1,11 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-object-size.c (pass_through_call): Do not handle
+	BUILT_IN_STPNCPY_CHK which is not a pass through call.
+
 	2017-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/82253
