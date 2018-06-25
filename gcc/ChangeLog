@@ -1,3 +1,9 @@
+2018-06-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_check_gather_scatter): Fail
+	for reverse storage order accesses rather than asserting
+	they cannot happen here.
+
 2018-06-25  Tom de Vries  <tdevries@suse.de>
 
 	PR debug/86257

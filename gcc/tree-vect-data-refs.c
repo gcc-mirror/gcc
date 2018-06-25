@@ -3730,7 +3730,9 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
      that can be gimplified before the loop.  */
   base = get_inner_reference (base, &pbitsize, &pbitpos, &off, &pmode,
 			      &punsignedp, &reversep, &pvolatilep);
-  gcc_assert (base && !reversep);
+  if (reversep)
+    return false;
+
   poly_int64 pbytepos = exact_div (pbitpos, BITS_PER_UNIT);
 
   if (TREE_CODE (base) == MEM_REF)
