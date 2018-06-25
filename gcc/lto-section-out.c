@@ -68,8 +68,14 @@ lto_begin_section (const char *name, bool compress)
   lang_hooks.lto.begin_section (name);
 
   if (streamer_dump_file)
-    fprintf (streamer_dump_file, "Creating %ssection %s\n",
-	     compress ? "compressed " : "", name);
+    {
+      if (flag_dump_unnumbered || flag_dump_noaddr)
+	  fprintf (streamer_dump_file, "Creating %ssection\n",
+		   compress ? "compressed " : "");
+	else
+	  fprintf (streamer_dump_file, "Creating %ssection %s\n",
+		   compress ? "compressed " : "", name);
+    }
   gcc_assert (compression_stream == NULL);
   if (compress)
     compression_stream = lto_start_compression (lto_append_data, NULL);
