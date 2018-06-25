@@ -1,6 +1,11 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/84425
+	* gcc.c-torture/compile/pr84425.c: New test.
+
 	2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/82210
