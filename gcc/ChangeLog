@@ -1,6 +1,12 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80819
+	* config/i386/sse.md (vec_concatv2di): Remove * from (=Yr,0,*rm)
+	alternative.
+
 	2017-11-24  Jakub Jelinek  <jakub@redhat.com>
  
 	PR sanitizer/83014
