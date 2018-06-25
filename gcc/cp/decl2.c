@@ -963,9 +963,18 @@ grokfield (const cp_declarator *declarator,
 	{
 	  if (init == ridpointers[(int)RID_DELETE])
 	    {
-	      DECL_DELETED_FN (value) = 1;
-	      DECL_DECLARED_INLINE_P (value) = 1;
-	      DECL_INITIAL (value) = error_mark_node;
+	      if (friendp && decl_defined_p (value))
+		{
+		  error ("redefinition of %q#D", value);
+		  inform (DECL_SOURCE_LOCATION (value),
+			  "%q#D previously defined here", value);
+		}
+	      else
+		{
+		  DECL_DELETED_FN (value) = 1;
+		  DECL_DECLARED_INLINE_P (value) = 1;
+		  DECL_INITIAL (value) = error_mark_node;
+		}
 	    }
 	  else if (init == ridpointers[(int)RID_DEFAULT])
 	    {

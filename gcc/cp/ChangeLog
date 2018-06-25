@@ -1,6 +1,11 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80259
+	* decl2.c (grokfield): Diagnose = delete redefinition of a friend.
+
 	2017-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_declare): Change return type to bool from
