@@ -1,6 +1,13 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-12-08  Joseph Myers  <joseph@codesourcery.com>
+		    Alexander Monakov  <amonakov@ispras.ru>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81906
+	* gcc.target/i386/pr81906.c: New test.
+
 	2017-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80259
