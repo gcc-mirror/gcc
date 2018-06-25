@@ -1584,6 +1584,7 @@ gfc_trans_omp_array_reduction_or_udr (tree c, gfc_omp_namelist *n, locus where)
       intrinsic_sym.attr.referenced = 1;
       intrinsic_sym.attr.intrinsic = 1;
       intrinsic_sym.attr.function = 1;
+      intrinsic_sym.attr.implicit_type = 1;
       intrinsic_sym.result = &intrinsic_sym;
       intrinsic_sym.declared_at = where;
 
