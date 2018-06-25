@@ -1342,6 +1342,9 @@ record_store (rtx body, bb_info_t bb_info)
   else
     width = GET_MODE_SIZE (GET_MODE (mem));
 
+  if (width == 0)
+    return 0;
+
   if (group_id >= 0)
     {
       /* In the restrictive case where the base is a constant or the
