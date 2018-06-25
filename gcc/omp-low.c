@@ -4079,6 +4079,43 @@ build_omp_barrier (tree lhs)
   return g;
 }
 
+/* Remove omp_member_access_dummy_var variables from gimple_bind_vars
+   of BIND if in a method.  */
+
+static void
+maybe_remove_omp_member_access_dummy_vars (gbind *bind)
+{
+  if (DECL_ARGUMENTS (current_function_decl)
+      && DECL_ARTIFICIAL (DECL_ARGUMENTS (current_function_decl))
+      && (TREE_CODE (TREE_TYPE (DECL_ARGUMENTS (current_function_decl)))
+	  == POINTER_TYPE))
+    {
+      tree vars = gimple_bind_vars (bind);
+      for (tree *pvar = &vars; *pvar; )
+	if (omp_member_access_dummy_var (*pvar))
+	  *pvar = DECL_CHAIN (*pvar);
+	else
+	  pvar = &DECL_CHAIN (*pvar);
+      gimple_bind_set_vars (bind, vars);
+    }
+}
+
+/* Remove omp_member_access_dummy_var variables from BLOCK_VARS of
+   block and its subblocks.  */
+
+static void
+remove_member_access_dummy_vars (tree block)
+{
+  for (tree *pvar = &BLOCK_VARS (block); *pvar; )
+    if (omp_member_access_dummy_var (*pvar))
+      *pvar = DECL_CHAIN (*pvar);
+    else
+      pvar = &DECL_CHAIN (*pvar);
+
+  for (block = BLOCK_SUBBLOCKS (block); block; block = BLOCK_CHAIN (block))
+    remove_member_access_dummy_vars (block);
+}
+
 /* If a context was created for STMT when it was scanned, return it.  */
 
 static omp_context *
@@ -15254,6 +15291,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   pop_gimplify_context (new_stmt);
 
   gimple_bind_append_vars (new_stmt, ctx->block_vars);
+  maybe_remove_omp_member_access_dummy_vars (new_stmt);
   BLOCK_VARS (block) = gimple_bind_vars (new_stmt);
   if (BLOCK_VARS (block))
     TREE_USED (block) = 1;
@@ -15704,6 +15742,7 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   /* Declare all the variables created by mapping and the variables
      declared in the scope of the parallel body.  */
   record_vars_into (ctx->block_vars, child_fn);
+  maybe_remove_omp_member_access_dummy_vars (par_bind);
   record_vars_into (gimple_bind_vars (par_bind), child_fn);
 
   if (ctx->record_type)
@@ -16072,6 +16111,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       /* Declare all the variables created by mapping and the variables
 	 declared in the scope of the target body.  */
       record_vars_into (ctx->block_vars, child_fn);
+      maybe_remove_omp_member_access_dummy_vars (tgt_bind);
       record_vars_into (gimple_bind_vars (tgt_bind), child_fn);
     }
 
@@ -17060,6 +17100,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       break;
     case GIMPLE_BIND:
       lower_omp (gimple_bind_body_ptr (as_a <gbind *> (stmt)), ctx);
+      maybe_remove_omp_member_access_dummy_vars (as_a <gbind *> (stmt));
       break;
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
@@ -17957,6 +17998,16 @@ execute_lower_omp (void)
       all_contexts = NULL;
     }
   BITMAP_FREE (task_shared_vars);
+
+  /* If current function is a method, remove artificial dummy VAR_DECL created
+     for non-static data member privatization, they aren't needed for
+     debuginfo nor anything else, have been already replaced everywhere in the
+     IL and cause problems with LTO.  */
+  if (DECL_ARGUMENTS (current_function_decl)
+      && DECL_ARTIFICIAL (DECL_ARGUMENTS (current_function_decl))
+      && (TREE_CODE (TREE_TYPE (DECL_ARGUMENTS (current_function_decl)))
+	  == POINTER_TYPE))
+    remove_member_access_dummy_vars (DECL_INITIAL (current_function_decl));
   return 0;
 }
 
