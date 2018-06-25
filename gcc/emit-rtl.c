@@ -5829,7 +5829,7 @@ init_emit_regs (void)
       attrs = ggc_cleared_alloc<mem_attrs> ();
       attrs->align = BITS_PER_UNIT;
       attrs->addrspace = ADDR_SPACE_GENERIC;
-      if (mode != BLKmode)
+      if (mode != BLKmode && mode != VOIDmode)
 	{
 	  attrs->size_known_p = true;
 	  attrs->size = GET_MODE_SIZE (mode);
