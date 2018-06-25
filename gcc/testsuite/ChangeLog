@@ -1,6 +1,11 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/85252
+	* gcc.dg/debug/pr85252.c: New test.
+
 	2018-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/85167
