@@ -1,3 +1,12 @@
+2018-06-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from trunk
+	2018-04-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/85424
+	* config/rs6000/rs6000.md (pack<mode>): Do not try handle a pack
+	where the inputs overlap with the output.
+
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84786
