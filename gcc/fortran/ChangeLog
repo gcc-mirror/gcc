@@ -1,3 +1,14 @@
+2018-06-25  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/82972
+	PR fortran/83088
+	PR fortran/85851
+	Backport from trunk.
+	* expr.c (component_initializer): Assign init expr to c->initializer.
+	(generate_isocbinding_initializer): New.
+	(gfc_generate_initializer): Call generate_isocbinding_initializer to
+	generate initializers for c_ptr and c_funptr with -finit-derived.
+
 2018-06-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83118
