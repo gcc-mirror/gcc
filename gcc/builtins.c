@@ -8794,7 +8794,7 @@ fold_builtin_strpbrk (location_t loc, tree s1, tree s2, tree type)
       if (p2[0] == '\0')
 	/* strpbrk(x, "") == NULL.
 	   Evaluate and ignore s1 in case it had side-effects.  */
-	return omit_one_operand_loc (loc, TREE_TYPE (s1), integer_zero_node, s1);
+	return omit_one_operand_loc (loc, type, integer_zero_node, s1);
 
       if (p2[1] != '\0')
 	return NULL_TREE;  /* Really call strpbrk.  */

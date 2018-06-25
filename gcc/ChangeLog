@@ -1,6 +1,12 @@
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84953
+	* builtins.c (fold_builtin_strpbrk): For strpbrk(x, "") use type
+	instead of TREE_TYPE (s1) for the return value.
+
 	2018-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84899
