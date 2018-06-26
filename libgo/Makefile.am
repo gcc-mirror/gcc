@@ -1989,17 +1989,6 @@ else
 syscall_lsf_file =
 endif
 
-# GNU/Linux specific ustat support.
-if LIBGO_IS_LINUX
-if LIBGO_IS_ARM64
-syscall_ustat_file =
-else
-syscall_ustat_file = go/syscall/libcall_linux_ustat.go
-endif
-else
-syscall_ustat_file =
-endif
-
 # GNU/Linux specific utimesnano support.
 if LIBGO_IS_LINUX
 syscall_utimesnano_file = go/syscall/libcall_linux_utimesnano.go

@@ -2080,11 +2080,6 @@ go_unicode_utf8_files = \
 
 # GNU/Linux specific socket filters.
 @LIBGO_IS_LINUX_TRUE@syscall_lsf_file = go/syscall/lsf_linux.go
-@LIBGO_IS_ARM64_FALSE@@LIBGO_IS_LINUX_TRUE@syscall_ustat_file = go/syscall/libcall_linux_ustat.go
-
-# GNU/Linux specific ustat support.
-@LIBGO_IS_ARM64_TRUE@@LIBGO_IS_LINUX_TRUE@syscall_ustat_file = 
-@LIBGO_IS_LINUX_FALSE@syscall_ustat_file = 
 @LIBGO_IS_LINUX_FALSE@syscall_utimesnano_file = go/syscall/libcall_posix_utimesnano.go
 
 # GNU/Linux specific utimesnano support.
