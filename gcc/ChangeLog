@@ -1,3 +1,10 @@
+2018-06-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/82625
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Do not set
+	ieee128_float_type_node to long_double_type_node unless
+	TARGET_LONG_DOUBLE_128 is set.
+
 2018-06-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* cfgloop.c (get_loop_location): Convert return type from
