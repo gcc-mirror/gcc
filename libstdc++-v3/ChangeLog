@@ -1,3 +1,8 @@
+2018-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.tcc (regex_iterator::operator==): Add missing
+	noexcept.
+
 2018-06-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86112
