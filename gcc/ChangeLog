@@ -1,3 +1,10 @@
+2018-06-26  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/86064
+	* dwarf2out.c (loc_list_has_views): Adjust comments.
+	(dw_loc_list): Split single cross-partition range with
+	nonzero locview.
+
 2018-06-25  Jeff Law  <law@redhat.com>
 
 	* config/v850/predicates.md (const_float_1_operand): Fix match_code
