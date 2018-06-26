@@ -16,6 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++14 } }
+// { dg-require-effective-target tls_runtime }
+// { dg-add-options tls }
 
 #include <experimental/algorithm>
 #include <algorithm>
