@@ -1,6 +1,14 @@
 2018-06-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	Backport from trunk
+	2018-06-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (expand_block_clear): Don't use
+	unaligned vsx for 16B memset.
+
+2018-06-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backport from trunk
 	2018-06-22  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	PR target/86222
