@@ -1,3 +1,12 @@
+2018-06-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2018-05-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/85645
+	*  regcprop.c (copyprop_hardreg_forward_1): Don't propagate into an
+	insn that has a REG_CFA_REGISTER note.
+
 2018-06-26  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* config/s390/s390.h (enum processor_flags): Do not use
