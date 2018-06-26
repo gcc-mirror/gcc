@@ -1,3 +1,8 @@
+2018-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86271
+	* gcc.dg/pr86271.c: New testcase.
+
 2018-06-26  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/86064
