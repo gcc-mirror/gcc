@@ -2315,7 +2315,7 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
       return NULL;
     }
 
-  unsigned n_stmts;
+  unsigned n_stmts = 0;
   poly_uint64 autodetected_vector_size = 0;
   while (1)
     {
@@ -8342,8 +8342,9 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, gimple *stmt,
 
   /* SLP.  Schedule all the SLP instances when the first SLP stmt is
      reached.  */
-  if (STMT_SLP_TYPE (stmt_info))
+  if (slp_vect_type slptype = STMT_SLP_TYPE (stmt_info))
     {
+
       if (!*slp_scheduled)
 	{
 	  *slp_scheduled = true;
@@ -8354,7 +8355,7 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, gimple *stmt,
 	}
 
       /* Hybrid SLP stmts must be vectorized in addition to SLP.  */
-      if (PURE_SLP_STMT (stmt_info))
+      if (slptype == pure_slp)
 	return;
     }
 
