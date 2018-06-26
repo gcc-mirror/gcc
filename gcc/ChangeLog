@@ -1,5 +1,12 @@
 2018-06-26  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/86287
+	PR bootstrap/86316
+	* tree-vect-loop.c (vect_transform_loop_stmt): Fix read-after-free.
+	(vect_analyze_loop): Initialize n_stmts.
+
+2018-06-26  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/86271
 	* fold-const.c (fold_convertible_p): Pointer extension
 	isn't valid.
