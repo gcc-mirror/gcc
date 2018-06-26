@@ -1428,16 +1428,16 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <netdb.h>]],[[
 sockaddr_in6 in6;
 in6.sin6_family = AF_UNSPEC;
-struct addrinfo *addrs = NULL;
+struct addrinfo *addrs = 0;
 struct addrinfo hints;
 hints.ai_flags = 0;
 hints.ai_family = AF_INET6;
 hints.ai_socktype = SOCK_STREAM;
 hints.ai_protocol = 0;
-hints.ai_canonname = NULL;
-hints.ai_addr = NULL;
-hints.ai_next = NULL;
-int e = getaddrinfo ("localhost", NULL, &hints, &addrs);
+hints.ai_canonname = 0;
+hints.ai_addr = 0;
+hints.ai_next = 0;
+int e = getaddrinfo ("localhost", 0, &hints, &addrs);
 const char *str = gai_strerror (e);
 freeaddrinfo (addrs);
 int fd = socket (AF_INET6, SOCK_STREAM, 0);
@@ -1498,9 +1498,8 @@ fi
 # Check for accept4
 AC_CACHE_CHECK(for accept4, ac_cv_accept4, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#define _GNU_SOURCE
 #include <sys/socket.h>]],[[
-int err = accept4 (1, NULL, NULL, SOCK_NONBLOCK);]])],
+int err = accept4 (1, 0, 0, SOCK_NONBLOCK);]])],
 [ac_cv_accept4=yes],
 [ac_cv_accept4=no])])
 if test $ac_cv_accept4 = yes; then

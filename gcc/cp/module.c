@@ -94,7 +94,9 @@ along with GCC; see the file COPYING3.  If not see
    * Global module entity.  We must merge global decls across
    modules.  FIXME: Not implemented
 
-   * Voldemort types.  FIXME: Not implemented
+   * Voldemort types.  These are unspellable types -- a local class
+   from a function for instance.  We generate a table of these and
+   refer to them by index.  FIXME: indirect cases not implemented.
 
 Classes used:
 
@@ -119,15 +121,17 @@ Classes used:
 
    module_state - module object
 
-   loading_data - data needed during loading
-   storing_data : loading_data - data needed for interface
+   slurping - data needed during loading
+   spewing : slurping - data needed during interface writing
 
    module_mapper - mapper object
 
-   The ELROND objects use FILE * handling.  It may be worth
-   investigating using mmap, when available, which I guess would
-   reduce copying.  It would restrict the ability to freeze files
-   actively being read when a dependency needs to be opened.
+   The ELROND objects use mmap, for both reading and writing.  If mmap
+   is unavailable, fileno IO is used to read and write blocks of data.
+
+   The mapper object uses fileno IO to communicate with the server or
+   program.  We batch requests in ATOM mode to reduce the number of
+   round trips.
 
    I have a confession: tri-valued bools are not the worst thing in
    this file.  */
@@ -182,11 +186,11 @@ Classes used:
 #endif
 
 #if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
-/* Use mmap to load module files.
-   Presumes, mmap, munmap.  */
+/* mmap, munmap.  */
 #define MAPPED_READING 1
 #if HAVE_SYSCONF && defined (_SC_PAGE_SIZE)
-/* Presumes msync, sysconf (_SC_PAGE_SIZE), ftruncate  */
+/* msync, sysconf (_SC_PAGE_SIZE), ftruncate  */
+/* posix_fallocate used if available.  */
 #define MAPPED_WRITING 1
 #endif
 #endif
@@ -197,7 +201,7 @@ int module_dump_id;
 /* We have a few more special module owners.  */
 #define MODULE_UNKNOWN (~0U)    /* Not yet known.  */
 
-/* Prefix for section names. (Not system-defined, so no leading dot.)  */
+/* Prefix for section names.  (Not system-defined, so no leading dot.)  */
 #define MOD_SNAME_PFX "gnu.c++"
 
 /* Get the version of this compiler.  This is negative, when it is a
@@ -282,8 +286,7 @@ typedef hash_map<void *,signed,ptr_int_traits> ptr_int_hash_map;
 
 class data {
 public:
-  class allocator 
-  {
+  class allocator {
   public:
     /* Tools tend to moan if the dtor's not virtual.  */
     virtual ~allocator () {}
@@ -6951,9 +6954,9 @@ module_mapper::module_mapper (location_t loc, const char *option)
       sockaddr_un un;
       size_t un_len = 0;
 #endif
+      int port = 0;
 #ifdef HAVE_AF_INET6
       struct addrinfo *addrs = NULL;
-      int port = 0;
 #endif
 #endif
       if (writable[0] == '=')
@@ -7783,18 +7786,9 @@ module_state::write_imports (bytes_out &sec, bool direct)
 unsigned
 module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 {
-  struct tuple
-  {
-    module_state *imp;
-    unsigned ix;
-    bool exported;
-
-    tuple (module_state *imp, unsigned ix, bool exported)
-      : imp (imp), ix (ix), exported (exported)
-    {
-    }
-  };
   unsigned count = sec.u ();
+  typedef std::pair<unsigned, bool> ix_bool_t;
+  typedef std::pair<module_state *, ix_bool_t> tuple;
   auto_vec<tuple> imports (count);
   unsigned loaded = 0;
 
@@ -7853,33 +7847,33 @@ module_state::read_imports (bytes_in &sec, line_maps *lmaps)
 	    error_at (loc, "indirect import %qE is not already loaded", name);
 	}
       if (imp)
-	imports.quick_push (tuple (imp, ix, exported));
+	imports.quick_push (tuple (imp, ix_bool_t (ix, exported)));
     }
 
   /* Now process the imports.  */
   for (unsigned ix = 0; ix != imports.length (); ix++)
     {
-      tuple &imp = imports[ix];
-      if (!imp.imp->is_imported ())
+      tuple &tup = imports[ix];
+      if (!tup.first->is_imported ())
 	{
 	  char *fname = NULL;
-	  unsigned n = dump.push (imp.imp);
-	  if (!imp.imp->filename)
-	    fname = module_mapper::import_export (imp.imp, false);
-	  if (!imp.imp->do_import (fname, lmaps, true))
-	    imp.imp = NULL;
+	  unsigned n = dump.push (tup.first);
+	  if (!tup.first->filename)
+	    fname = module_mapper::import_export (tup.first, false);
+	  if (!tup.first->do_import (fname, lmaps, true))
+	    tup.first = NULL;
 	  dump.pop (n);
 	}
 
-      if (imp.imp)
+      if (tup.first)
 	{
-	  (*slurp->remap)[imp.ix] = imp.imp->mod;
+	  (*slurp->remap)[tup.second.first] = tup.first->mod;
 	  if (lmaps)
-	    set_import (imp.imp, imp.exported);
+	    set_import (tup.first, tup.second.second);
 	  dump () && dump ("Found %simport:%u %I->%u",
-			   !lmaps ? "indirect " : imp.imp->exported
-			   ? "exported " : "", imp.ix, imp.imp->name,
-			   imp.imp->mod);
+			   !lmaps ? "indirect " : tup.first->exported
+			   ? "exported " : "", tup.second.first, tup.first->name,
+			   tup.first->mod);
 	  loaded++;
 	}
     }

@@ -1,3 +1,15 @@
+2018-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* configure.ac: Fix AF_INET6 & accept4 tests.
+	* configure, config.in: Rebuilt.
+	gcc/cp/
+	* module.c: Update some comments.
+	(module_mapper::module_mapper): Fix up conditional code.
+	(module_state::read_imports): Replace local class with std::pair,
+	because C++98.
+	* cxx-mapper.cc (accept_from): Fixup conditional code.
+
 2018-06-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

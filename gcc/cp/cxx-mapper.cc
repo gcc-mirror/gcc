@@ -35,10 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <getopt.h>
 
 #if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
-/* socket, bind, shutdown  */
-#ifdef HAVE_ACCEPT4
-#define _GNU_SOURCE
-#endif
+/* socket, bind, listen, accept{4}  */
 # define NETWORKING 1
 # include <sys/socket.h>
 # ifdef HAVE_AF_UNIX
@@ -51,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #  include <netdb.h>
 # endif
 #ifdef HAVE_INET_NTOP
+/* inet_ntop.  */
 #include <arpa/inet.h>
 #endif
 #endif
@@ -1427,6 +1425,7 @@ print_version (void)
 static bool
 accept_from (char *arg)
 {
+  bool ok = true;
 #if HAVE_AF_INET6
   unsigned bits = sizeof (in6_addr) * 8;
   char *slash = strrchr (arg, '/');
@@ -1451,7 +1450,6 @@ accept_from (char *arg)
   hints.ai_canonname = NULL;
   hints.ai_next = NULL;
 
-  bool ok = true;
   struct addrinfo *addrs = NULL;
   if (int e = getaddrinfo (slash == arg ? NULL : arg, "0", &hints, &addrs))
     {
@@ -1598,9 +1596,9 @@ main (int argc, char *argv[])
       sockaddr_un un;
       size_t un_len = 0;
 #endif
+      int port = 0;
 #ifdef HAVE_AF_INET6
       struct addrinfo *addrs = NULL;
-      int port = 0;
 #endif
 #endif
       if (writable[0] == '=')
