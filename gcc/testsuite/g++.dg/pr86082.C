@@ -1,4 +1,5 @@
 /* { dg-do link } */
+/* { dg-require-iconv "IBM1047" } */
 /* { dg-options "-fexec-charset=IBM1047 -std=c++11" } */
 
 /* When turning 123_test into an operator invocation the literal 123

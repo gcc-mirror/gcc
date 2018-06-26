@@ -1,3 +1,7 @@
+2018-06-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/pr86082.C: Require IBM1047 support.
+
 2018-06-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/86271
