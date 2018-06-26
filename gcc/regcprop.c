@@ -848,6 +848,12 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		  && reg_overlap_mentioned_p (XEXP (link, 0), SET_SRC (set)))
 		set = NULL;
 	    }
+
+	  /* We need to keep CFI info correct, and the same on all paths,
+	     so we cannot normally replace the registers REG_CFA_REGISTER
+	     refers to.  Bail.  */
+	  if (REG_NOTE_KIND (link) == REG_CFA_REGISTER)
+	    goto did_replacement;
 	}
 
       /* Special-case plain move instructions, since we may well
