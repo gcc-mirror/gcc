@@ -1,3 +1,10 @@
+2018-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/86314
+	* config/i386/i386.md (setcc + movzbl to xor + setcc peephole2s):
+	Check reg_overlap_mentioned_p in addition to reg_set_p with the same
+	operands.
+
 2018-06-25  Michael Meissner  <meissner@linux.ibm.com>
 
 	Back port from trunk
