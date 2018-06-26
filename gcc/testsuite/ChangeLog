@@ -1,3 +1,10 @@
+2018-06-26  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-neg-int.p8.c: Specify powerpc_p8vector_ok
+	requirement for this test.
+	* gcc.target/powerpc/fold-vec-neg-int.c: Specify powerpc_p8vector_ok
+	requirement, and -mpower8-vector compile option.
+
 2018-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/86314
