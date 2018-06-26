@@ -1,3 +1,10 @@
+2018-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.c (remap_location): New function extracted from...
+	(copy_edges_for_bb): Add ID parameter.  Remap goto_locus.
+	(copy_phis_for_bb): ...here.  Call remap_location.
+	(copy_cfg_body): Adjust call to copy_edges_for_bb.
+
 2018-06-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000-string.c (expand_block_clear): Don't use
