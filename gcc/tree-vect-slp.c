@@ -1510,7 +1510,8 @@ fail:
 /* Dump a slp tree NODE using flags specified in DUMP_KIND.  */
 
 static void
-vect_print_slp_tree (dump_flags_t dump_kind, location_t loc, slp_tree node)
+vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
+		     slp_tree node)
 {
   int i;
   gimple *stmt;
@@ -3003,7 +3004,7 @@ vect_slp_bb (basic_block bb)
 	  insns++;
 
 	  if (gimple_location (stmt) != UNKNOWN_LOCATION)
-	    vect_location = gimple_location (stmt);
+	    vect_location = stmt;
 
 	  if (!vect_find_stmt_data_reference (NULL, stmt, &datarefs))
 	    break;

@@ -188,6 +188,7 @@ extern void attribute_c_tests ();
 extern void bitmap_c_tests ();
 extern void diagnostic_c_tests ();
 extern void diagnostic_show_locus_c_tests ();
+extern void dumpfile_c_tests ();
 extern void edit_context_c_tests ();
 extern void et_forest_c_tests ();
 extern void fibonacci_heap_c_tests ();

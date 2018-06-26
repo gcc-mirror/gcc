@@ -342,12 +342,16 @@ get_coverage_counts (unsigned counter, unsigned expected,
       static int warned = 0;
 
       if (!warned++ && dump_enabled_p ())
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
-                         (flag_guess_branch_prob
-                          ? "file %s not found, execution counts estimated\n"
-                          : "file %s not found, execution counts assumed to "
-                            "be zero\n"),
-                         da_file_name);
+	{
+	  dump_user_location_t loc
+	    = dump_user_location_t::from_location_t (input_location);
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			   (flag_guess_branch_prob
+			    ? "file %s not found, execution counts estimated\n"
+			    : "file %s not found, execution counts assumed to "
+			    "be zero\n"),
+			   da_file_name);
+	}
       return NULL;
     }
   if (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID))
@@ -378,7 +382,9 @@ get_coverage_counts (unsigned counter, unsigned expected,
 		    "its profile data (counter %qs)", id, ctr_names[counter]);
       if (warning_printed && dump_enabled_p ())
 	{
-          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+	  dump_user_location_t loc
+	    = dump_user_location_t::from_location_t (input_location);
+          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
                            "use -Wno-error=coverage-mismatch to tolerate "
                            "the mismatch but performance may drop if the "
                            "function is hot\n");
@@ -386,7 +392,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	  if (!seen_error ()
 	      && !warned++)
 	    {
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
                                "coverage mismatch ignored\n");
 	      dump_printf (MSG_OPTIMIZED_LOCATIONS,
                            flag_guess_branch_prob

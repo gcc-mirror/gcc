@@ -347,8 +347,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 		  {
 		    if (dump_enabled_p ())
 		      {
-			location_t loc = gimple_location_safe (stmt);
-			dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
 					 "resolving virtual function address "
 					 "reference to function %s\n",
 					 targets.length () == 1
@@ -4063,8 +4062,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	      tree lhs = gimple_call_lhs (stmt);
 	      if (dump_enabled_p ())
 		{
-		  location_t loc = gimple_location_safe (stmt);
-		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
 				   "folding virtual function call to %s\n",
 		 		   targets.length () == 1
 		  		   ? targets[0]->name ()

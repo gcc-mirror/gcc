@@ -3286,7 +3286,6 @@ parallelize_loops (bool oacc_kernels_p)
   struct tree_niter_desc niter_desc;
   struct obstack parloop_obstack;
   HOST_WIDE_INT estimated;
-  source_location loop_loc;
 
   /* Do not parallelize loops in the functions created by parallelization.  */
   if (!oacc_kernels_p
@@ -3411,7 +3410,7 @@ parallelize_loops (bool oacc_kernels_p)
       changed = true;
       skip_loop = loop->inner;
 
-      loop_loc = find_loop_location (loop);
+      dump_user_location_t loop_loc = find_loop_location (loop);
       if (loop->inner)
 	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
 			 "parallelizing outer loop %d\n", loop->num);

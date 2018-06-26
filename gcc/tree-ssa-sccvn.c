@@ -5866,8 +5866,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		    fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
 		  if (dump_enabled_p ())
 		    {
-		      location_t loc = gimple_location (stmt);
-		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
 				       "converting indirect call to "
 				       "function %s\n",
 				       lang_hooks.decl_printable_name (fn, 2));
