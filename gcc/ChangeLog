@@ -180,6 +180,9 @@
 
 2018-06-25  Jeff Law  <law@redhat.com>
 
+	* common/config/v850/v850-common.c (TARGET_DEFAULT_TARGET_FLAGS): Turn
+	on -mbig-switch by default.
+
 	* config/v850/predicates.md (const_float_1_operand): Fix match_code
 	test.
 	(const_float_0_operand): Remove unused predicate.
