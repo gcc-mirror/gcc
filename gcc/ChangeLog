@@ -1,3 +1,12 @@
+2018-06-26  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backported from mainline
+	2018-06-20  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Change
+	behavior of vec_packsu (vector unsigned long long, vector unsigned
+	long long) to match behavior of vec_packs with same signature.
+
 2018-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84786

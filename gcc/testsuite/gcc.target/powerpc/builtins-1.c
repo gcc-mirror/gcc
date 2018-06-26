@@ -165,3 +165,6 @@ int main ()
 
   return 0;
 }
+
+/* Translation of vec_packsu (unsigned long long, unsigned long long) */
+/* { dg-final { scan-assembler-times {\mvpkudus\M} 1 } } */
