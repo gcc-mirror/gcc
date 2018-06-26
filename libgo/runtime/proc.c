@@ -716,7 +716,7 @@ runtime_malg(bool allocatestack, bool signalstack, byte** ret_stack, uintptr* re
 	G *newg;
 	byte* unused_stack;
 	uintptr unused_stacksize;
-#if USING_SPLIT_STACK
+#ifdef USING_SPLIT_STACK
 	int dont_block_signals = 0;
 	size_t ss_stacksize;
 #endif
@@ -738,7 +738,7 @@ runtime_malg(bool allocatestack, bool signalstack, byte** ret_stack, uintptr* re
 #endif
 		}
 
-#if USING_SPLIT_STACK
+#ifdef USING_SPLIT_STACK
 		*ret_stack = __splitstack_makecontext(stacksize,
 						      (void*)(&newg->stackcontext[0]),
 						      &ss_stacksize);
@@ -777,7 +777,7 @@ void stackfree(G*)
 void
 stackfree(G* gp)
 {
-#if USING_SPLIT_STACK
+#ifdef USING_SPLIT_STACK
   __splitstack_releasecontext((void*)(&gp->stackcontext[0]));
 #else
   // If gcstacksize is 0, the stack is allocated by libc and will be

@@ -165,16 +165,6 @@ enum built_in_class {
 #define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) ENUM,
 enum built_in_function {
 #include "builtins.def"
-
-  BEGIN_CHKP_BUILTINS,
-
-#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND)
-#define DEF_BUILTIN_CHKP(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
-  ENUM##_CHKP = ENUM + BEGIN_CHKP_BUILTINS + 1,
-#include "builtins.def"
-
-  END_CHKP_BUILTINS = BEGIN_CHKP_BUILTINS * 2 + 1,
-
   /* Complex division routines in libgcc.  These are done via builtins
      because emit_library_call_value can't handle complex values.  */
   BUILT_IN_COMPLEX_MUL_MIN,
@@ -210,10 +200,6 @@ enum combined_fn {
   CFN_##ENUM = int (ENUM),
 #include "builtins.def"
 
-#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND)
-#define DEF_BUILTIN_CHKP(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
-  CFN_##ENUM##_CHKP = int (ENUM##_CHKP),
-#include "builtins.def"
 
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
   CFN_##CODE = int (END_BUILTINS) + int (IFN_##CODE),
@@ -468,7 +454,13 @@ enum omp_clause_code {
 
   /* OpenMP internal-only clause to specify grid dimensions of a gridified
      kernel.  */
-  OMP_CLAUSE__GRIDDIM_
+  OMP_CLAUSE__GRIDDIM_,
+
+  /* OpenACC clause: if_present.  */
+  OMP_CLAUSE_IF_PRESENT,
+
+  /* OpenACC clause: finalize.  */
+  OMP_CLAUSE_FINALIZE
 };
 
 #undef DEFTREESTRUCT

@@ -205,6 +205,34 @@
   [(set_attr "type" "neon_stp")]
 )
 
+(define_insn "load_pair<VQ:mode><VQ2:mode>"
+  [(set (match_operand:VQ 0 "register_operand" "=w")
+	(match_operand:VQ 1 "aarch64_mem_pair_operand" "Ump"))
+   (set (match_operand:VQ2 2 "register_operand" "=w")
+	(match_operand:VQ2 3 "memory_operand" "m"))]
+  "TARGET_SIMD
+    && rtx_equal_p (XEXP (operands[3], 0),
+		    plus_constant (Pmode,
+			       XEXP (operands[1], 0),
+			       GET_MODE_SIZE (<VQ:MODE>mode)))"
+  "ldp\\t%q0, %q2, %1"
+  [(set_attr "type" "neon_ldp_q")]
+)
+
+(define_insn "vec_store_pair<VQ:mode><VQ2:mode>"
+  [(set (match_operand:VQ 0 "aarch64_mem_pair_operand" "=Ump")
+	(match_operand:VQ 1 "register_operand" "w"))
+   (set (match_operand:VQ2 2 "memory_operand" "=m")
+	(match_operand:VQ2 3 "register_operand" "w"))]
+  "TARGET_SIMD && rtx_equal_p (XEXP (operands[2], 0),
+		plus_constant (Pmode,
+			       XEXP (operands[0], 0),
+			       GET_MODE_SIZE (<VQ:MODE>mode)))"
+  "stp\\t%q1, %q3, %0"
+  [(set_attr "type" "neon_stp_q")]
+)
+
+
 (define_split
   [(set (match_operand:VQ 0 "register_operand" "")
       (match_operand:VQ 1 "register_operand" ""))]
@@ -1492,7 +1520,7 @@
 			       (match_operand:VQW 2 "vect_par_cnst_lo_half" "")
 			    )))]
   "TARGET_SIMD"
-  "<su>shll\t%0.<Vwtype>, %1.<Vhalftype>, 0"
+  "<su>xtl\t%0.<Vwtype>, %1.<Vhalftype>"
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
@@ -1503,7 +1531,7 @@
 			       (match_operand:VQW 2 "vect_par_cnst_hi_half" "")
 			    )))]
   "TARGET_SIMD"
-  "<su>shll2\t%0.<Vwtype>, %1.<Vtype>, 0"
+  "<su>xtl2\t%0.<Vwtype>, %1.<Vtype>"
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
@@ -5850,9 +5878,32 @@
 
 (define_insn "aarch64_crypto_aes<aes_op>v16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=w")
-        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "0")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "%0")
 		       (match_operand:V16QI 2 "register_operand" "w")]
          CRYPTO_AES))]
+  "TARGET_SIMD && TARGET_AES"
+  "aes<aes_op>\\t%0.16b, %2.16b"
+  [(set_attr "type" "crypto_aese")]
+)
+
+(define_insn "*aarch64_crypto_aes<aes_op>v16qi_xor_combine"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(xor:V16QI
+			(match_operand:V16QI 1 "register_operand" "%0")
+			(match_operand:V16QI 2 "register_operand" "w"))
+		       (match_operand:V16QI 3 "aarch64_simd_imm_zero" "")]
+		       CRYPTO_AES))]
+  "TARGET_SIMD && TARGET_AES"
+  "aes<aes_op>\\t%0.16b, %2.16b"
+  [(set_attr "type" "crypto_aese")]
+)
+
+(define_insn "*aarch64_crypto_aes<aes_op>v16qi_xor_combine"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(match_operand:V16QI 3 "aarch64_simd_imm_zero" "")
+	(xor:V16QI (match_operand:V16QI 1 "register_operand" "%0")
+		   (match_operand:V16QI 2 "register_operand" "w"))]
+	CRYPTO_AES))]
   "TARGET_SIMD && TARGET_AES"
   "aes<aes_op>\\t%0.16b, %2.16b"
   [(set_attr "type" "crypto_aese")]

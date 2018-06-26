@@ -3,7 +3,7 @@
 /* { dg-options "-g" } */
 
 extern void abort (void);
-int a[1024];
+int a[1024] __attribute__((used));
 volatile short int v;
 
 __attribute__((noinline,noclone,used)) int

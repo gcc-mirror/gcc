@@ -41,6 +41,7 @@
 #include "langhooks.h"
 #include "gimple-low.h"
 #include "gomp-constants.h"
+#include "diagnostic.h"
 
 
 /* The object of this pass is to lower the representation of a set of nested
@@ -222,8 +223,15 @@ get_frame_type (struct nesting_info *info)
       free (name);
 
       info->frame_type = type;
-      info->frame_decl = create_tmp_var_for (info, type, "FRAME");
+
+      /* Do not put info->frame_decl on info->new_local_var_chain,
+	 so that we can declare it in the lexical blocks, which
+	 makes sure virtual regs that end up appearing in its RTL
+	 expression get substituted in instantiate_virtual_regs.  */
+      info->frame_decl = create_tmp_var_raw (type, "FRAME");
+      DECL_CONTEXT (info->frame_decl) = info->context;
       DECL_NONLOCAL_FRAME (info->frame_decl) = 1;
+      DECL_SEEN_IN_BIND_EXPR_P (info->frame_decl) = 1;
 
       /* ??? Always make it addressable for now, since it is meant to
 	 be pointed to by the static chain pointer.  This pessimizes
@@ -233,26 +241,29 @@ get_frame_type (struct nesting_info *info)
 	 local frame structure in the first place.  */
       TREE_ADDRESSABLE (info->frame_decl) = 1;
     }
+
   return type;
 }
 
-/* Return true if DECL should be referenced by pointer in the non-local
-   frame structure.  */
+/* Return true if DECL should be referenced by pointer in the non-local frame
+   structure.  */
 
 static bool
 use_pointer_in_frame (tree decl)
 {
   if (TREE_CODE (decl) == PARM_DECL)
     {
-      /* It's illegal to copy TREE_ADDRESSABLE, impossible to copy variable
-         sized decls, and inefficient to copy large aggregates.  Don't bother
-         moving anything but scalar variables.  */
+      /* It's illegal to copy TREE_ADDRESSABLE, impossible to copy variable-
+	 sized DECLs, and inefficient to copy large aggregates.  Don't bother
+	 moving anything but scalar parameters.  */
       return AGGREGATE_TYPE_P (TREE_TYPE (decl));
     }
   else
     {
-      /* Variable sized types make things "interesting" in the frame.  */
-      return DECL_SIZE (decl) == NULL || !TREE_CONSTANT (DECL_SIZE (decl));
+      /* Variable-sized DECLs can only come from OMP clauses at this point
+	 since the gimplifier has already turned the regular variables into
+	 pointers.  Do the same as the gimplifier.  */
+      return !DECL_SIZE (decl) || TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST;
     }
 }
 
@@ -263,6 +274,8 @@ static tree
 lookup_field_for_decl (struct nesting_info *info, tree decl,
 		       enum insert_option insert)
 {
+  gcc_checking_assert (decl_function_context (decl) == info->context);
+
   if (insert == NO_INSERT)
     {
       tree *slot = info->field_map->get (decl);
@@ -272,6 +285,7 @@ lookup_field_for_decl (struct nesting_info *info, tree decl,
   tree *slot = &info->field_map->get_or_insert (decl);
   if (!*slot)
     {
+      tree type = get_frame_type (info);
       tree field = make_node (FIELD_DECL);
       DECL_NAME (field) = DECL_NAME (decl);
 
@@ -290,9 +304,35 @@ lookup_field_for_decl (struct nesting_info *info, tree decl,
           TREE_ADDRESSABLE (field) = TREE_ADDRESSABLE (decl);
           DECL_NONADDRESSABLE_P (field) = !TREE_ADDRESSABLE (decl);
           TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (decl);
+
+	  /* Declare the transformation and adjust the original DECL.  For a
+	     variable or for a parameter when not optimizing, we make it point
+	     to the field in the frame directly.  For a parameter, we don't do
+	     it when optimizing because the variable tracking pass will already
+	     do the job,  */
+	  if (VAR_P (decl) || !optimize)
+	    {
+	      tree x
+		= build3 (COMPONENT_REF, TREE_TYPE (field), info->frame_decl,
+			  field, NULL_TREE);
+
+	      /* If the next declaration is a PARM_DECL pointing to the DECL,
+		 we need to adjust its VALUE_EXPR directly, since chains of
+		 VALUE_EXPRs run afoul of garbage collection.  This occurs
+		 in Ada for Out parameters that aren't copied in.  */
+	      tree next = DECL_CHAIN (decl);
+	      if (next
+		  && TREE_CODE (next) == PARM_DECL
+		  && DECL_HAS_VALUE_EXPR_P (next)
+		  && DECL_VALUE_EXPR (next) == decl)
+		SET_DECL_VALUE_EXPR (next, x);
+
+	      SET_DECL_VALUE_EXPR (decl, x);
+	      DECL_HAS_VALUE_EXPR_P (decl) = 1;
+	    }
 	}
 
-      insert_field_into_struct (get_frame_type (info), field);
+      insert_field_into_struct (type, field);
       *slot = field;
 
       if (TREE_CODE (decl) == PARM_DECL)
@@ -990,37 +1030,48 @@ convert_nonlocal_reference_op (tree *tp, int *walk_subtrees, void *data)
       /* FALLTHRU */
 
     case PARM_DECL:
-      if (decl_function_context (t) != info->context)
-	{
-	  tree x;
-	  wi->changed = true;
+      {
+	tree x, target_context = decl_function_context (t);
 
+	if (info->context == target_context)
+	  break;
+
+	wi->changed = true;
+
+	if (bitmap_bit_p (info->suppress_expansion, DECL_UID (t)))
 	  x = get_nonlocal_debug_decl (info, t);
-	  if (!bitmap_bit_p (info->suppress_expansion, DECL_UID (t)))
-	    {
-	      tree target_context = decl_function_context (t);
-	      struct nesting_info *i;
-	      for (i = info->outer; i->context != target_context; i = i->outer)
-		continue;
-	      x = lookup_field_for_decl (i, t, INSERT);
-	      x = get_frame_field (info, target_context, x, &wi->gsi);
-	      if (use_pointer_in_frame (t))
-		{
-		  x = init_tmp_var (info, x, &wi->gsi);
-		  x = build_simple_mem_ref (x);
-		}
-	    }
+	else
+	  {
+	    struct nesting_info *i = info;
+	    while (i && i->context != target_context)
+	      i = i->outer;
+	    /* If none of the outer contexts is the target context, this means
+	       that the VAR or PARM_DECL is referenced in a wrong context.  */
+	    if (!i)
+	      internal_error ("%s from %s referenced in %s",
+			      IDENTIFIER_POINTER (DECL_NAME (t)),
+			      IDENTIFIER_POINTER (DECL_NAME (target_context)),
+			      IDENTIFIER_POINTER (DECL_NAME (info->context)));
 
-	  if (wi->val_only)
-	    {
-	      if (wi->is_lhs)
-		x = save_tmp_var (info, x, &wi->gsi);
-	      else
+	    x = lookup_field_for_decl (i, t, INSERT);
+	    x = get_frame_field (info, target_context, x, &wi->gsi);
+	    if (use_pointer_in_frame (t))
+	      {
 		x = init_tmp_var (info, x, &wi->gsi);
-	    }
+		x = build_simple_mem_ref (x);
+	      }
+	  }
 
-	  *tp = x;
-	}
+	if (wi->val_only)
+	  {
+	    if (wi->is_lhs)
+	      x = save_tmp_var (info, x, &wi->gsi);
+	    else
+	      x = init_tmp_var (info, x, &wi->gsi);
+	  }
+
+	*tp = x;
+      }
       break;
 
     case LABEL_DECL:
@@ -1290,6 +1341,8 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:
+	case OMP_CLAUSE_IF_PRESENT:
+	case OMP_CLAUSE_FINALIZE:
 	  break;
 
 	  /* The following clause belongs to the OpenACC cache directive, which
@@ -1404,22 +1457,6 @@ note_nonlocal_vla_type (struct nesting_info *info, tree type)
 	    get_nonlocal_debug_decl (info, t);
 	}
     }
-}
-
-/* Create nonlocal debug decls for nonlocal VLA array bounds for VLAs
-   in BLOCK.  */
-
-static void
-note_nonlocal_block_vlas (struct nesting_info *info, tree block)
-{
-  tree var;
-
-  for (var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
-    if (VAR_P (var)
-	&& variably_modified_type_p (TREE_TYPE (var), NULL)
-	&& DECL_HAS_VALUE_EXPR_P (var)
-	&& decl_function_context (var) != info->context)
-      note_nonlocal_vla_type (info, TREE_TYPE (var));
 }
 
 /* Callback for walk_gimple_stmt.  Rewrite all references to VAR and
@@ -1566,8 +1603,6 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_BIND:
       {
       gbind *bind_stmt = as_a <gbind *> (stmt);
-      if (!optimize && gimple_bind_block (bind_stmt))
-	note_nonlocal_block_vlas (info, gimple_bind_block (bind_stmt));
 
       for (tree var = gimple_bind_vars (bind_stmt); var; var = DECL_CHAIN (var))
 	if (TREE_CODE (var) == NAMELIST_DECL)
@@ -1683,7 +1718,7 @@ convert_local_reference_op (tree *tp, int *walk_subtrees, void *data)
       /* FALLTHRU */
 
     case PARM_DECL:
-      if (decl_function_context (t) == info->context)
+      if (t != info->frame_decl && decl_function_context (t) == info->context)
 	{
 	  /* If we copied a pointer to the frame, then the original decl
 	     is used unchanged in the parent function.  */
@@ -1697,8 +1732,9 @@ convert_local_reference_op (tree *tp, int *walk_subtrees, void *data)
 	    break;
 	  wi->changed = true;
 
-	  x = get_local_debug_decl (info, t, field);
-	  if (!bitmap_bit_p (info->suppress_expansion, DECL_UID (t)))
+	  if (bitmap_bit_p (info->suppress_expansion, DECL_UID (t)))
+	    x = get_local_debug_decl (info, t, field);
+	  else
 	    x = get_frame_field (info, info->context, field, &wi->gsi);
 
 	  if (wi->val_only)
@@ -1996,6 +2032,8 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:
+	case OMP_CLAUSE_IF_PRESENT:
+	case OMP_CLAUSE_FINALIZE:
 	  break;
 
 	  /* The following clause belongs to the OpenACC cache directive, which
@@ -2620,6 +2658,17 @@ convert_gimple_call (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       target_context = decl_function_context (decl);
       if (target_context && DECL_STATIC_CHAIN (decl))
 	{
+	  struct nesting_info *i = info;
+	  while (i && i->context != target_context)
+	    i = i->outer;
+	  /* If none of the outer contexts is the target context, this means
+	     that the function is called in a wrong context.  */
+	  if (!i)
+	    internal_error ("%s from %s called in %s",
+			    IDENTIFIER_POINTER (DECL_NAME (decl)),
+			    IDENTIFIER_POINTER (DECL_NAME (target_context)),
+			    IDENTIFIER_POINTER (DECL_NAME (info->context)));
+
 	  gimple_call_set_chain (as_a <gcall *> (stmt),
 				 get_static_chain (info, target_context,
 						   &wi->gsi));
@@ -2941,6 +2990,33 @@ remap_vla_decls (tree block, struct nesting_info *root)
   delete id.cb.decl_map;
 }
 
+/* Fixup VLA decls in BLOCK and subblocks if remapped variables are
+   involved.  */
+
+static void
+fixup_vla_decls (tree block)
+{
+  for (tree var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
+    if (VAR_P (var) && DECL_HAS_VALUE_EXPR_P (var))
+      {
+	tree val = DECL_VALUE_EXPR (var);
+
+	if (!(TREE_CODE (val) == INDIRECT_REF
+	      && VAR_P (TREE_OPERAND (val, 0))
+	      && DECL_HAS_VALUE_EXPR_P (TREE_OPERAND (val, 0))))
+	  continue;
+
+	/* Fully expand value expressions.  This avoids having debug variables
+	   only referenced from them and that can be swept during GC.  */
+	val = build1 (INDIRECT_REF, TREE_TYPE (val),
+		      DECL_VALUE_EXPR (TREE_OPERAND (val, 0)));
+	SET_DECL_VALUE_EXPR (var, val);
+      }
+
+  for (tree sub = BLOCK_SUBBLOCKS (block); sub; sub = BLOCK_CHAIN (sub))
+    fixup_vla_decls (sub);
+}
+
 /* Fold the MEM_REF *E.  */
 bool
 fold_mem_refs (tree *const &e, void *data ATTRIBUTE_UNUSED)
@@ -3049,25 +3125,12 @@ finalize_nesting_tree_1 (struct nesting_info *root)
       gimple_seq_add_stmt (&stmt_list,
 			   gimple_build_assign (fb_ref, fb_tmp));
 
-      /* Remove root->frame_decl from root->new_local_var_chain, so
-	 that we can declare it also in the lexical blocks, which
-	 helps ensure virtual regs that end up appearing in its RTL
-	 expression get substituted in instantiate_virtual_regs().  */
-      tree *adjust;
-      for (adjust = &root->new_local_var_chain;
-	   *adjust != root->frame_decl;
-	   adjust = &DECL_CHAIN (*adjust))
-	gcc_assert (DECL_CHAIN (*adjust));
-      *adjust = DECL_CHAIN (*adjust);
-
-      DECL_CHAIN (root->frame_decl) = NULL_TREE;
       declare_vars (root->frame_decl,
 		    gimple_seq_first_stmt (gimple_body (context)), true);
     }
 
-  /* If any parameters were referenced non-locally, then we need to
-     insert a copy.  Likewise, if any variables were referenced by
-     pointer, we need to initialize the address.  */
+  /* If any parameters were referenced non-locally, then we need to insert
+     a copy or a pointer.  */
   if (root->any_parm_remapped)
     {
       tree p;
@@ -3243,6 +3306,8 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	  = chainon (BLOCK_VARS (DECL_INITIAL (root->context)),
 		     root->debug_var_chain);
     }
+  else
+    fixup_vla_decls (DECL_INITIAL (root->context));
 
   /* Fold the rewritten MEM_REF trees.  */
   root->mem_refs->traverse<void *, fold_mem_refs> (NULL);

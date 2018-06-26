@@ -2224,6 +2224,13 @@ package Sem_Util is
    --  set to False, but if Consider_IS is set to True, then the cases above
    --  mentioning Normalize_Scalars also apply for Initialize_Scalars mode.
 
+   function Needs_Variable_Reference_Marker
+     (N        : Node_Id;
+      Calls_OK : Boolean) return Boolean;
+   --  Determine whether arbitrary node N denotes a reference to a variable
+   --  which is suitable for SPARK elaboration checks. Flag Calls_OK should
+   --  be set when the reference is allowed to appear within calls.
+
    function New_Copy_List_Tree (List : List_Id) return List_Id;
    --  Copy recursively an analyzed list of nodes. Uses New_Copy_Tree defined
    --  below. As for New_Copy_Tree, it is illegal to attempt to copy extended

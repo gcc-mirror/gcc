@@ -985,6 +985,16 @@ contains_abnormal_ssa_name_p (tree expr)
   code = TREE_CODE (expr);
   codeclass = TREE_CODE_CLASS (code);
 
+  if (code == CALL_EXPR)
+    {
+      tree arg;
+      call_expr_arg_iterator iter;
+      FOR_EACH_CALL_EXPR_ARG (arg, iter, expr)
+	if (contains_abnormal_ssa_name_p (arg))
+	  return true;
+      return false;
+    }
+
   if (code == SSA_NAME)
     return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (expr) != 0;
 

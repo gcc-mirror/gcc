@@ -412,6 +412,14 @@ mxpa
 Target Report Var(TARGET_XPA)
 Use eXtended Physical Address (XPA) instructions.
 
+mcrc
+Target Report Var(TARGET_CRC)
+Use Cyclic Redundancy Check (CRC) instructions.
+
+mginv
+Target Report Var(TARGET_GINV)
+Use Global INValidate (GINV) instructions.
+
 mvr4130-align
 Target Report Mask(VR4130_ALIGN)
 Perform VR4130-specific alignment optimizations.

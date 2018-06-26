@@ -1560,7 +1560,7 @@ static tree
 get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
 {
   struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-  gimple *dr_stmt = DR_STMT (dr);
+  gimple *dr_stmt = vect_dr_stmt (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
@@ -1631,7 +1631,7 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
   tree niters_type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
   gimple_seq stmts = NULL, new_stmts = NULL;
   tree iters, iters_name;
-  gimple *dr_stmt = DR_STMT (dr);
+  gimple *dr_stmt = vect_dr_stmt (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   unsigned int target_align = DR_TARGET_ALIGNMENT (dr);
@@ -1733,9 +1733,7 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters,
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_update_inits_of_dr ===\n");
+  DUMP_VECT_SCOPE ("vect_update_inits_of_dr");
 
   /* Adjust niters to sizetype and insert stmts on loop preheader edge.  */
   if (!types_compatible_p (sizetype, TREE_TYPE (niters)))
@@ -1754,7 +1752,11 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters,
     }
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
-    vect_update_init_of_dr (dr, niters, code);
+    {
+      gimple *stmt = DR_STMT (dr);
+      if (!STMT_VINFO_GATHER_SCATTER_P (vinfo_for_stmt (stmt)))
+	vect_update_init_of_dr (dr, niters, code);
+    }
 }
 
 /* For the information recorded in LOOP_VINFO prepare the loop for peeling

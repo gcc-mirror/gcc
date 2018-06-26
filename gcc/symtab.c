@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "builtins.h"
 
-static const char *ipa_ref_use_name[] = {"read","write","addr","alias","chkp"};
+static const char *ipa_ref_use_name[] = {"read","write","addr","alias"};
 
 const char * const ld_plugin_symbol_resolution_names[]=
 {

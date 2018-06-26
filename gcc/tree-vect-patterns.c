@@ -47,65 +47,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-simd-clone.h"
 #include "predict.h"
 
-/* Pattern recognition functions  */
-static gimple *vect_recog_widen_sum_pattern (vec<gimple *> *, tree *,
-					    tree *);
-static gimple *vect_recog_widen_mult_pattern (vec<gimple *> *, tree *,
-					     tree *);
-static gimple *vect_recog_dot_prod_pattern (vec<gimple *> *, tree *,
-					   tree *);
-static gimple *vect_recog_sad_pattern (vec<gimple *> *, tree *,
-				      tree *);
-static gimple *vect_recog_pow_pattern (vec<gimple *> *, tree *, tree *);
-static gimple *vect_recog_over_widening_pattern (vec<gimple *> *, tree *,
-                                                 tree *);
-static gimple *vect_recog_widen_shift_pattern (vec<gimple *> *,
-	                                tree *, tree *);
-static gimple *vect_recog_rotate_pattern (vec<gimple *> *, tree *, tree *);
-static gimple *vect_recog_vector_vector_shift_pattern (vec<gimple *> *,
-						      tree *, tree *);
-static gimple *vect_recog_divmod_pattern (vec<gimple *> *,
-					 tree *, tree *);
+/* Report that we've found an instance of pattern PATTERN in
+   statement STMT.  */
 
-static gimple *vect_recog_mult_pattern (vec<gimple *> *,
-				       tree *, tree *);
-
-static gimple *vect_recog_mixed_size_cond_pattern (vec<gimple *> *,
-						  tree *, tree *);
-static gimple *vect_recog_bool_pattern (vec<gimple *> *, tree *, tree *);
-static gimple *vect_recog_mask_conversion_pattern (vec<gimple *> *, tree *, tree *);
-static gimple *vect_recog_gather_scatter_pattern (vec<gimple *> *, tree *,
-						  tree *);
-
-struct vect_recog_func
+static void
+vect_pattern_detected (const char *name, gimple *stmt)
 {
-  vect_recog_func_ptr fn;
-  const char *name;
-};
-
-/* Note that ordering matters - the first pattern matching on a stmt
-   is taken which means usually the more complex one needs to preceed
-   the less comples onex (widen_sum only after dot_prod or sad for example).  */
-static vect_recog_func vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
-      { vect_recog_widen_mult_pattern, "widen_mult" },
-      { vect_recog_dot_prod_pattern, "dot_prod" },
-      { vect_recog_sad_pattern, "sad" },
-      { vect_recog_widen_sum_pattern, "widen_sum" },
-      { vect_recog_pow_pattern, "pow" },
-      { vect_recog_widen_shift_pattern, "widen_shift" },
-      { vect_recog_over_widening_pattern, "over_widening" },
-      { vect_recog_rotate_pattern, "rotate" },
-      { vect_recog_vector_vector_shift_pattern, "vector_vector_shift" },
-      {	vect_recog_divmod_pattern, "divmod" },
-      {	vect_recog_mult_pattern, "mult" },
-      {	vect_recog_mixed_size_cond_pattern, "mixed_size_cond" },
-      {	vect_recog_bool_pattern, "bool" },
-      /* This must come before mask conversion, and includes the parts
-	 of mask conversion that are needed for gather and scatter
-	 internal functions.  */
-      { vect_recog_gather_scatter_pattern, "gather_scatter" },
-      {	vect_recog_mask_conversion_pattern, "mask_conversion" }
-};
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "%s: detected: ", name);
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+    }
+}
 
 static inline void
 append_pattern_def_seq (stmt_vec_info stmt_info, gimple *stmt)
@@ -119,6 +72,49 @@ new_pattern_def_seq (stmt_vec_info stmt_info, gimple *stmt)
 {
   STMT_VINFO_PATTERN_DEF_SEQ (stmt_info) = NULL;
   append_pattern_def_seq (stmt_info, stmt);
+}
+
+/* Return true if the target supports a vector version of CODE,
+   where CODE is known to map to a direct optab.  ITYPE specifies
+   the type of (some of) the scalar inputs and OTYPE specifies the
+   type of the scalar result.
+
+   If CODE allows the inputs and outputs to have different type
+   (such as for WIDEN_SUM_EXPR), it is the input mode rather
+   than the output mode that determines the appropriate target pattern.
+   Operand 0 of the target pattern then specifies the mode that the output
+   must have.
+
+   When returning true, set *VECOTYPE_OUT to the vector version of OTYPE.
+   Also set *VECITYPE_OUT to the vector version of ITYPE if VECITYPE_OUT
+   is nonnull.  */
+
+static bool
+vect_supportable_direct_optab_p (tree otype, tree_code code,
+				 tree itype, tree *vecotype_out,
+				 tree *vecitype_out = NULL)
+{
+  tree vecitype = get_vectype_for_scalar_type (itype);
+  if (!vecitype)
+    return false;
+
+  tree vecotype = get_vectype_for_scalar_type (otype);
+  if (!vecotype)
+    return false;
+
+  optab optab = optab_for_tree_code (code, vecitype, optab_default);
+  if (!optab)
+    return false;
+
+  insn_code icode = optab_handler (optab, TYPE_MODE (vecitype));
+  if (icode == CODE_FOR_nothing
+      || insn_data[icode].operand[0].mode != TYPE_MODE (vecotype))
+    return false;
+
+  *vecotype_out = vecotype;
+  if (vecitype_out)
+    *vecitype_out = vecitype;
+  return true;
 }
 
 /* Check whether STMT2 is in the same loop or basic block as STMT1.
@@ -153,6 +149,22 @@ vect_single_imm_use (gimple *def_stmt)
     return NULL;
 
   return use_stmt;
+}
+
+/* If OP is defined by a statement that's being considered for vectorization,
+   return information about that statement, otherwise return NULL.  */
+
+static stmt_vec_info
+vect_get_internal_def (vec_info *vinfo, tree op)
+{
+  vect_def_type dt;
+  gimple *def_stmt;
+  if (TREE_CODE (op) != SSA_NAME
+      || !vect_is_simple_use (op, vinfo, &def_stmt, &dt)
+      || dt != vect_internal_def)
+    return NULL;
+
+  return vinfo_for_stmt (def_stmt);
 }
 
 /* Check whether NAME, an ssa-name used in USE_STMT,
@@ -264,8 +276,6 @@ vect_reassociating_reduction_p (stmt_vec_info stmt_vinfo)
 
    Output:
 
-   * TYPE_IN: The type of the input arguments to the pattern.
-
    * TYPE_OUT: The type of the output  of this pattern.
 
    * Return value: A new stmt that will be used to replace the sequence of
@@ -281,13 +291,13 @@ vect_reassociating_reduction_p (stmt_vec_info stmt_vinfo)
          inner-loop nested in an outer-loop that us being vectorized).  */
 
 static gimple *
-vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
-			     tree *type_out)
+vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *stmt, *last_stmt = (*stmts)[0];
   tree oprnd0, oprnd1;
   tree oprnd00, oprnd01;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
+  vec_info *vinfo = stmt_vinfo->vinfo;
   tree type, half_type;
   gimple *pattern_stmt;
   tree prod_type;
@@ -339,40 +349,25 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
     return NULL;
 
   if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-    {
-      /* Has been detected as widening-summation?  */
+    return NULL;
 
-      stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-      type = gimple_expr_type (stmt);
-      if (gimple_assign_rhs_code (stmt) != WIDEN_SUM_EXPR)
-        return NULL;
+  if (!vect_reassociating_reduction_p (stmt_vinfo))
+    return NULL;
+
+  oprnd0 = gimple_assign_rhs1 (last_stmt);
+  oprnd1 = gimple_assign_rhs2 (last_stmt);
+  stmt = last_stmt;
+
+  gimple *def_stmt;
+  if (type_conversion_p (oprnd0, stmt, true, &half_type, &def_stmt,
+			 &promotion)
+      && promotion)
+    {
+      stmt = def_stmt;
       oprnd0 = gimple_assign_rhs1 (stmt);
-      oprnd1 = gimple_assign_rhs2 (stmt);
-      half_type = TREE_TYPE (oprnd0);
     }
   else
-    {
-      gimple *def_stmt;
-
-      if (!vect_reassociating_reduction_p (stmt_vinfo))
-	return NULL;
-      oprnd0 = gimple_assign_rhs1 (last_stmt);
-      oprnd1 = gimple_assign_rhs2 (last_stmt);
-      if (!types_compatible_p (TREE_TYPE (oprnd0), type)
-	  || !types_compatible_p (TREE_TYPE (oprnd1), type))
-        return NULL;
-      stmt = last_stmt;
-
-      if (type_conversion_p (oprnd0, stmt, true, &half_type, &def_stmt,
-			     &promotion)
-	  && promotion)
-        {
-          stmt = def_stmt;
-          oprnd0 = gimple_assign_rhs1 (stmt);
-        }
-      else
-        half_type = type;
-    }
+    half_type = type;
 
   /* So far so good.  Since last_stmt was detected as a (summation) reduction,
      we know that oprnd1 is the reduction variable (defined by a loop-header
@@ -382,36 +377,29 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
     return NULL;
 
   prod_type = half_type;
-  stmt = SSA_NAME_DEF_STMT (oprnd0);
-
-  /* It could not be the dot_prod pattern if the stmt is outside the loop.  */
-  if (!gimple_bb (stmt) || !flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
+  stmt_vec_info mult_vinfo = vect_get_internal_def (vinfo, oprnd0);
+  if (!mult_vinfo)
     return NULL;
 
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
-  if (!is_gimple_assign (stmt))
+  gassign *mult = dyn_cast <gassign *> (mult_vinfo->stmt);
+  if (!mult || gimple_assign_rhs_code (mult) != MULT_EXPR)
     return NULL;
-  stmt_vinfo = vinfo_for_stmt (stmt);
-  gcc_assert (stmt_vinfo);
-  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_internal_def)
-    return NULL;
-  if (gimple_assign_rhs_code (stmt) != MULT_EXPR)
-    return NULL;
-  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
+  if (STMT_VINFO_IN_PATTERN_P (mult_vinfo))
     {
       /* Has been detected as a widening multiplication?  */
 
-      stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-      if (gimple_assign_rhs_code (stmt) != WIDEN_MULT_EXPR)
+      mult = dyn_cast <gassign *> (STMT_VINFO_RELATED_STMT (mult_vinfo));
+      if (!mult || gimple_assign_rhs_code (mult) != WIDEN_MULT_EXPR)
         return NULL;
-      stmt_vinfo = vinfo_for_stmt (stmt);
-      gcc_assert (stmt_vinfo);
-      gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_internal_def);
-      oprnd00 = gimple_assign_rhs1 (stmt);
-      oprnd01 = gimple_assign_rhs2 (stmt);
-      STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (last_stmt))
-	  = STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo);
+      STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo)
+	= STMT_VINFO_PATTERN_DEF_SEQ (mult_vinfo);
+      mult_vinfo = vinfo_for_stmt (mult);
+      gcc_assert (mult_vinfo);
+      gcc_assert (STMT_VINFO_DEF_TYPE (mult_vinfo) == vect_internal_def);
+      oprnd00 = gimple_assign_rhs1 (mult);
+      oprnd01 = gimple_assign_rhs2 (mult);
     }
   else
     {
@@ -419,17 +407,14 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
       gimple *def_stmt;
       tree oprnd0, oprnd1;
 
-      oprnd0 = gimple_assign_rhs1 (stmt);
-      oprnd1 = gimple_assign_rhs2 (stmt);
-      if (!types_compatible_p (TREE_TYPE (oprnd0), prod_type)
-          || !types_compatible_p (TREE_TYPE (oprnd1), prod_type))
-        return NULL;
-      if (!type_conversion_p (oprnd0, stmt, true, &half_type0, &def_stmt,
+      oprnd0 = gimple_assign_rhs1 (mult);
+      oprnd1 = gimple_assign_rhs2 (mult);
+      if (!type_conversion_p (oprnd0, mult, true, &half_type0, &def_stmt,
 			      &promotion)
 	  || !promotion)
         return NULL;
       oprnd00 = gimple_assign_rhs1 (def_stmt);
-      if (!type_conversion_p (oprnd1, stmt, true, &half_type1, &def_stmt,
+      if (!type_conversion_p (oprnd1, mult, true, &half_type1, &def_stmt,
 			      &promotion)
 	  || !promotion)
         return NULL;
@@ -440,21 +425,16 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
 	return NULL;
     }
 
-  half_type = TREE_TYPE (oprnd00);
-  *type_in = half_type;
-  *type_out = type;
+  vect_pattern_detected ("vect_recog_dot_prod_pattern", last_stmt);
 
-  /* Pattern detected. Create a stmt to be used to replace the pattern: */
+  half_type = TREE_TYPE (oprnd00);
+  if (!vect_supportable_direct_optab_p (type, DOT_PROD_EXPR, half_type,
+					type_out))
+    return NULL;
+
   var = vect_recog_temp_ssa_var (type, NULL);
   pattern_stmt = gimple_build_assign (var, DOT_PROD_EXPR,
 				      oprnd00, oprnd01, oprnd1);
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "vect_recog_dot_prod_pattern: detected: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-    }
 
   return pattern_stmt;
 }
@@ -490,8 +470,6 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
 
    Output:
 
-   * TYPE_IN: The type of the input arguments to the pattern.
-
    * TYPE_OUT: The type of the output of this pattern.
 
    * Return value: A new stmt that will be used to replace the sequence of
@@ -500,12 +478,12 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
   */
 
 static gimple *
-vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
-			     tree *type_out)
+vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = (*stmts)[0];
   tree sad_oprnd0, sad_oprnd1;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
+  vec_info *vinfo = stmt_vinfo->vinfo;
   tree half_type;
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop;
@@ -559,37 +537,22 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
   tree plus_oprnd0, plus_oprnd1;
 
   if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-    {
-      /* Has been detected as widening-summation?  */
+    return NULL;
 
-      gimple *stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-      sum_type = gimple_expr_type (stmt);
-      if (gimple_assign_rhs_code (stmt) != WIDEN_SUM_EXPR)
-        return NULL;
-      plus_oprnd0 = gimple_assign_rhs1 (stmt);
-      plus_oprnd1 = gimple_assign_rhs2 (stmt);
-      half_type = TREE_TYPE (plus_oprnd0);
-    }
+  if (!vect_reassociating_reduction_p (stmt_vinfo))
+    return NULL;
+
+  plus_oprnd0 = gimple_assign_rhs1 (last_stmt);
+  plus_oprnd1 = gimple_assign_rhs2 (last_stmt);
+
+  /* The type conversion could be promotion, demotion,
+     or just signed -> unsigned.  */
+  gimple *def_stmt;
+  if (type_conversion_p (plus_oprnd0, last_stmt, false,
+			 &half_type, &def_stmt, &promotion))
+    plus_oprnd0 = gimple_assign_rhs1 (def_stmt);
   else
-    {
-      gimple *def_stmt;
-
-      if (!vect_reassociating_reduction_p (stmt_vinfo))
-	return NULL;
-      plus_oprnd0 = gimple_assign_rhs1 (last_stmt);
-      plus_oprnd1 = gimple_assign_rhs2 (last_stmt);
-      if (!types_compatible_p (TREE_TYPE (plus_oprnd0), sum_type)
-	  || !types_compatible_p (TREE_TYPE (plus_oprnd1), sum_type))
-        return NULL;
-
-      /* The type conversion could be promotion, demotion,
-         or just signed -> unsigned.  */
-      if (type_conversion_p (plus_oprnd0, last_stmt, false,
-                             &half_type, &def_stmt, &promotion))
-        plus_oprnd0 = gimple_assign_rhs1 (def_stmt);
-      else
-        half_type = sum_type;
-    }
+    half_type = sum_type;
 
   /* So far so good.  Since last_stmt was detected as a (summation) reduction,
      we know that plus_oprnd1 is the reduction variable (defined by a loop-header
@@ -600,27 +563,19 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
     return NULL;
 
   tree abs_type = half_type;
-  gimple *abs_stmt = SSA_NAME_DEF_STMT (plus_oprnd0);
-
-  /* It could not be the sad pattern if the abs_stmt is outside the loop.  */
-  if (!gimple_bb (abs_stmt) || !flow_bb_inside_loop_p (loop, gimple_bb (abs_stmt)))
+  stmt_vec_info abs_stmt_vinfo = vect_get_internal_def (vinfo, plus_oprnd0);
+  if (!abs_stmt_vinfo)
     return NULL;
 
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
-  if (!is_gimple_assign (abs_stmt))
-    return NULL;
-
-  stmt_vec_info abs_stmt_vinfo = vinfo_for_stmt (abs_stmt);
-  gcc_assert (abs_stmt_vinfo);
-  if (STMT_VINFO_DEF_TYPE (abs_stmt_vinfo) != vect_internal_def)
-    return NULL;
-  if (gimple_assign_rhs_code (abs_stmt) != ABS_EXPR)
+  gassign *abs_stmt = dyn_cast <gassign *> (abs_stmt_vinfo->stmt);
+  if (!abs_stmt
+      || (gimple_assign_rhs_code (abs_stmt) != ABS_EXPR
+	  && gimple_assign_rhs_code (abs_stmt) != ABSU_EXPR))
     return NULL;
 
   tree abs_oprnd = gimple_assign_rhs1 (abs_stmt);
-  if (!types_compatible_p (TREE_TYPE (abs_oprnd), abs_type))
-    return NULL;
   if (TYPE_UNSIGNED (abs_type))
     return NULL;
 
@@ -629,34 +584,21 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
   if (TREE_CODE (abs_oprnd) != SSA_NAME)
     return NULL;
 
-  gimple *diff_stmt = SSA_NAME_DEF_STMT (abs_oprnd);
-
-  /* It could not be the sad pattern if the diff_stmt is outside the loop.  */
-  if (!gimple_bb (diff_stmt)
-      || !flow_bb_inside_loop_p (loop, gimple_bb (diff_stmt)))
+  stmt_vec_info diff_stmt_vinfo = vect_get_internal_def (vinfo, abs_oprnd);
+  if (!diff_stmt_vinfo)
     return NULL;
 
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
-  if (!is_gimple_assign (diff_stmt))
-    return NULL;
-
-  stmt_vec_info diff_stmt_vinfo = vinfo_for_stmt (diff_stmt);
-  gcc_assert (diff_stmt_vinfo);
-  if (STMT_VINFO_DEF_TYPE (diff_stmt_vinfo) != vect_internal_def)
-    return NULL;
-  if (gimple_assign_rhs_code (diff_stmt) != MINUS_EXPR)
+  gassign *diff_stmt = dyn_cast <gassign *> (diff_stmt_vinfo->stmt);
+  if (!diff_stmt || gimple_assign_rhs_code (diff_stmt) != MINUS_EXPR)
     return NULL;
 
   tree half_type0, half_type1;
-  gimple *def_stmt;
 
   tree minus_oprnd0 = gimple_assign_rhs1 (diff_stmt);
   tree minus_oprnd1 = gimple_assign_rhs2 (diff_stmt);
 
-  if (!types_compatible_p (TREE_TYPE (minus_oprnd0), abs_type)
-      || !types_compatible_p (TREE_TYPE (minus_oprnd1), abs_type))
-    return NULL;
   if (!type_conversion_p (minus_oprnd0, diff_stmt, false,
                           &half_type0, &def_stmt, &promotion)
       || !promotion)
@@ -675,20 +617,15 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
       || TYPE_PRECISION (sum_type) < TYPE_PRECISION (half_type0) * 2)
     return NULL;
 
-  *type_in = TREE_TYPE (sad_oprnd0);
-  *type_out = sum_type;
+  vect_pattern_detected ("vect_recog_sad_pattern", last_stmt);
 
-  /* Pattern detected. Create a stmt to be used to replace the pattern: */
+  if (!vect_supportable_direct_optab_p (sum_type, SAD_EXPR,
+					TREE_TYPE (sad_oprnd0), type_out))
+    return NULL;
+
   tree var = vect_recog_temp_ssa_var (sum_type, NULL);
   gimple *pattern_stmt = gimple_build_assign (var, SAD_EXPR, sad_oprnd0,
 					      sad_oprnd1, plus_oprnd1);
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "vect_recog_sad_pattern: detected: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-    }
 
   return pattern_stmt;
 }
@@ -820,8 +757,6 @@ vect_handle_widen_op_by_const (gimple *stmt, enum tree_code code,
 
    Output:
 
-   * TYPE_IN: The type of the input arguments to the pattern.
-
    * TYPE_OUT: The type of the output of this pattern.
 
    * Return value: A new stmt that will be used to replace the sequence of
@@ -832,8 +767,7 @@ vect_handle_widen_op_by_const (gimple *stmt, enum tree_code code,
 */
 
 static gimple *
-vect_recog_widen_mult_pattern (vec<gimple *> *stmts,
-                               tree *type_in, tree *type_out)
+vect_recog_widen_mult_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = stmts->pop ();
   gimple *def_stmt0, *def_stmt1;
@@ -861,9 +795,6 @@ vect_recog_widen_mult_pattern (vec<gimple *> *stmts,
 
   oprnd0 = gimple_assign_rhs1 (last_stmt);
   oprnd1 = gimple_assign_rhs2 (last_stmt);
-  if (!types_compatible_p (TREE_TYPE (oprnd0), type)
-      || !types_compatible_p (TREE_TYPE (oprnd1), type))
-    return NULL;
 
   /* Check argument 0.  */
   if (!type_conversion_p (oprnd0, last_stmt, false, &half_type0, &def_stmt0,
@@ -965,9 +896,7 @@ vect_recog_widen_mult_pattern (vec<gimple *> *stmts,
 	       TYPE_UNSIGNED (type));
 
   /* Pattern detected.  */
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "vect_recog_widen_mult_pattern: detected:\n");
+  vect_pattern_detected ("vect_recog_widen_mult_pattern", last_stmt);
 
   /* Check target support  */
   vectype = get_vectype_for_scalar_type (half_type0);
@@ -980,8 +909,9 @@ vect_recog_widen_mult_pattern (vec<gimple *> *stmts,
 					  &dummy_int, &dummy_vec))
     return NULL;
 
-  *type_in = vectype;
   *type_out = get_vectype_for_scalar_type (type);
+  if (!*type_out)
+    return NULL;
 
   /* Pattern supported. Create a stmt to be used to replace the pattern: */
   var = vect_recog_temp_ssa_var (itype, NULL);
@@ -1016,9 +946,6 @@ vect_recog_widen_mult_pattern (vec<gimple *> *stmts,
 					  gimple_assign_lhs (pattern_stmt));
     }
 
-  if (dump_enabled_p ())
-    dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);
-
   stmts->safe_push (last_stmt);
   return pattern_stmt;
 }
@@ -1039,8 +966,6 @@ vect_recog_widen_mult_pattern (vec<gimple *> *stmts,
 
    Output:
 
-   * TYPE_IN: The type of the input arguments to the pattern.
-
    * TYPE_OUT: The type of the output of this pattern.
 
    * Return value: A new stmt that will be used to replace the sequence of
@@ -1051,8 +976,7 @@ vect_recog_widen_mult_pattern (vec<gimple *> *stmts,
 */
 
 static gimple *
-vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
-			tree *type_out)
+vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = (*stmts)[0];
   tree base, exp;
@@ -1122,12 +1046,13 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
 		  if (node->simd_clones == NULL)
 		    return NULL;
 		}
+	      *type_out = get_vectype_for_scalar_type (TREE_TYPE (base));
+	      if (!*type_out)
+		return NULL;
 	      stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
 	      tree def = vect_recog_temp_ssa_var (TREE_TYPE (base), NULL);
 	      gimple *g = gimple_build_assign (def, MULT_EXPR, exp, logc);
 	      new_pattern_def_seq (stmt_vinfo, g);
-	      *type_in = TREE_TYPE (base);
-	      *type_out = NULL_TREE;
 	      tree res = vect_recog_temp_ssa_var (TREE_TYPE (base), NULL);
 	      g = gimple_build_call (exp_decl, 1, def);
 	      gimple_call_set_lhs (g, res);
@@ -1141,15 +1066,15 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
   /* We now have a pow or powi builtin function call with a constant
      exponent.  */
 
-  *type_out = NULL_TREE;
-
   /* Catch squaring.  */
   if ((tree_fits_shwi_p (exp)
        && tree_to_shwi (exp) == 2)
       || (TREE_CODE (exp) == REAL_CST
           && real_equal (&TREE_REAL_CST (exp), &dconst2)))
     {
-      *type_in = TREE_TYPE (base);
+      if (!vect_supportable_direct_optab_p (TREE_TYPE (base), MULT_EXPR,
+					    TREE_TYPE (base), type_out))
+	return NULL;
 
       var = vect_recog_temp_ssa_var (TREE_TYPE (base), NULL);
       stmt = gimple_build_assign (var, MULT_EXPR, base, base);
@@ -1160,9 +1085,9 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
   if (TREE_CODE (exp) == REAL_CST
       && real_equal (&TREE_REAL_CST (exp), &dconsthalf))
     {
-      *type_in = get_vectype_for_scalar_type (TREE_TYPE (base));
-      if (*type_in
-	  && direct_internal_fn_supported_p (IFN_SQRT, *type_in,
+      *type_out = get_vectype_for_scalar_type (TREE_TYPE (base));
+      if (*type_out
+	  && direct_internal_fn_supported_p (IFN_SQRT, *type_out,
 					     OPTIMIZE_FOR_SPEED))
 	{
 	  gcall *stmt = gimple_build_call_internal (IFN_SQRT, 1, base);
@@ -1200,8 +1125,6 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
 
    Output:
 
-   * TYPE_IN: The type of the input arguments to the pattern.
-
    * TYPE_OUT: The type of the output of this pattern.
 
    * Return value: A new stmt that will be used to replace the sequence of
@@ -1217,8 +1140,7 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
 	 inner-loop nested in an outer-loop that us being vectorized).  */
 
 static gimple *
-vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_in,
-			      tree *type_out)
+vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *stmt, *last_stmt = (*stmts)[0];
   tree oprnd0, oprnd1;
@@ -1263,9 +1185,6 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_in,
 
   oprnd0 = gimple_assign_rhs1 (last_stmt);
   oprnd1 = gimple_assign_rhs2 (last_stmt);
-  if (!types_compatible_p (TREE_TYPE (oprnd0), type)
-      || !types_compatible_p (TREE_TYPE (oprnd1), type))
-    return NULL;
 
   /* So far so good.  Since last_stmt was detected as a (summation) reduction,
      we know that oprnd1 is the reduction variable (defined by a loop-header
@@ -1276,22 +1195,18 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_in,
   if (!type_conversion_p (oprnd0, last_stmt, true, &half_type, &stmt,
                           &promotion)
       || !promotion)
-     return NULL;
+    return NULL;
 
   oprnd0 = gimple_assign_rhs1 (stmt);
-  *type_in = half_type;
-  *type_out = type;
 
-  /* Pattern detected. Create a stmt to be used to replace the pattern: */
+  vect_pattern_detected ("vect_recog_widen_sum_pattern", last_stmt);
+
+  if (!vect_supportable_direct_optab_p (type, WIDEN_SUM_EXPR, half_type,
+					type_out))
+    return NULL;
+
   var = vect_recog_temp_ssa_var (type, NULL);
   pattern_stmt = gimple_build_assign (var, WIDEN_SUM_EXPR, oprnd0, oprnd1);
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "vect_recog_widen_sum_pattern: detected: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-    }
 
   return pattern_stmt;
 }
@@ -1531,8 +1446,7 @@ vect_operation_fits_smaller_type (gimple *stmt, tree def, tree *new_type,
    demotion operation.  We also check that S3 and S4 have only one use.  */
 
 static gimple *
-vect_recog_over_widening_pattern (vec<gimple *> *stmts,
-                                  tree *type_in, tree *type_out)
+vect_recog_over_widening_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *stmt = stmts->pop ();
   gimple *pattern_stmt = NULL, *new_def_stmt, *prev_stmt = NULL,
@@ -1620,13 +1534,14 @@ vect_recog_over_widening_pattern (vec<gimple *> *stmts,
       if (TYPE_UNSIGNED (new_type) != TYPE_UNSIGNED (use_type)
           || TYPE_PRECISION (new_type) != TYPE_PRECISION (use_type))
         {
+	  *type_out = get_vectype_for_scalar_type (use_type);
+	  if (!*type_out)
+	    return NULL;
+
           /* Create NEW_TYPE->USE_TYPE conversion.  */
 	  new_oprnd = make_ssa_name (use_type);
 	  pattern_stmt = gimple_build_assign (new_oprnd, NOP_EXPR, var);
           STMT_VINFO_RELATED_STMT (vinfo_for_stmt (use_stmt)) = pattern_stmt;
-
-          *type_in = get_vectype_for_scalar_type (new_type);
-          *type_out = get_vectype_for_scalar_type (use_type);
 
           /* We created a pattern statement for the last statement in the
              sequence, so we don't need to associate it with the pattern
@@ -1641,8 +1556,7 @@ vect_recog_over_widening_pattern (vec<gimple *> *stmts,
 	    STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (use_stmt))
 	       = STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (prev_stmt));
 
-          *type_in = vectype;
-          *type_out = NULL_TREE;
+	  *type_out = vectype;
         }
 
       stmts->safe_push (use_stmt);
@@ -1652,12 +1566,7 @@ vect_recog_over_widening_pattern (vec<gimple *> *stmts,
     return NULL;
 
   /* Pattern detected.  */
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "vect_recog_over_widening_pattern: detected: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-    }
+  vect_pattern_detected ("vect_recog_over_widening_pattern", stmts->last ());
 
   return pattern_stmt;
 }
@@ -1711,8 +1620,6 @@ vect_recog_over_widening_pattern (vec<gimple *> *stmts,
 
   Output:
 
-  * TYPE_IN: The type of the input arguments to the pattern.
-
   * TYPE_OUT: The type of the output of this pattern.
 
   * Return value: A new stmt that will be used to replace the sequence of
@@ -1720,8 +1627,7 @@ vect_recog_over_widening_pattern (vec<gimple *> *stmts,
     WIDEN_LSHIFT_EXPR <a_t, CONST>.  */
 
 static gimple *
-vect_recog_widen_shift_pattern (vec<gimple *> *stmts,
-				tree *type_in, tree *type_out)
+vect_recog_widen_shift_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = stmts->pop ();
   gimple *def_stmt0;
@@ -1789,9 +1695,7 @@ vect_recog_widen_shift_pattern (vec<gimple *> *stmts,
     return NULL;
 
   /* Pattern detected.  */
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "vect_recog_widen_shift_pattern: detected:\n");
+  vect_pattern_detected ("vect_recog_widen_shift_pattern", last_stmt);
 
   /* Check target support.  */
   vectype = get_vectype_for_scalar_type (half_type0);
@@ -1805,7 +1709,6 @@ vect_recog_widen_shift_pattern (vec<gimple *> *stmts,
 					  &dummy_int, &dummy_vec))
     return NULL;
 
-  *type_in = vectype;
   *type_out = vectype_out;
 
   /* Pattern supported.  Create a stmt to be used to replace the pattern.  */
@@ -1821,9 +1724,6 @@ vect_recog_widen_shift_pattern (vec<gimple *> *stmts,
       set_vinfo_for_stmt (wstmt, new_stmt_info);
       STMT_VINFO_VECTYPE (new_stmt_info) = vectype;
     }
-
-  if (dump_enabled_p ())
-    dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);
 
   stmts->safe_push (last_stmt);
   return pattern_stmt;
@@ -1851,15 +1751,13 @@ vect_recog_widen_shift_pattern (vec<gimple *> *stmts,
 
   Output:
 
-  * TYPE_IN: The type of the input arguments to the pattern.
-
   * TYPE_OUT: The type of the output of this pattern.
 
   * Return value: A new stmt that will be used to replace the rotate
     S0 stmt.  */
 
 static gimple *
-vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_in, tree *type_out)
+vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = stmts->pop ();
   tree oprnd0, oprnd1, lhs, var, var1, var2, vectype, type, stype, def, def2;
@@ -1944,10 +1842,7 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_in, tree *type_out)
 	return NULL;
     }
 
-  *type_in = vectype;
   *type_out = vectype;
-  if (*type_in == NULL_TREE)
-    return NULL;
 
   if (dt == vect_external_def
       && TREE_CODE (oprnd1) == SSA_NAME
@@ -2059,16 +1954,11 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_in, tree *type_out)
   append_pattern_def_seq (stmt_vinfo, def_stmt);
 
   /* Pattern detected.  */
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "vect_recog_rotate_pattern: detected:\n");
+  vect_pattern_detected ("vect_recog_rotate_pattern", last_stmt);
 
   /* Pattern supported.  Create a stmt to be used to replace the pattern.  */
   var = vect_recog_temp_ssa_var (type, NULL);
   pattern_stmt = gimple_build_assign (var, BIT_IOR_EXPR, var1, var2);
-
-  if (dump_enabled_p ())
-    dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);
 
   stmts->safe_push (last_stmt);
   return pattern_stmt;
@@ -2107,24 +1997,20 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_in, tree *type_out)
 
   Output:
 
-  * TYPE_IN: The type of the input arguments to the pattern.
-
   * TYPE_OUT: The type of the output of this pattern.
 
   * Return value: A new stmt that will be used to replace the shift/rotate
     S3 stmt.  */
 
 static gimple *
-vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
-					tree *type_in, tree *type_out)
+vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = stmts->pop ();
   tree oprnd0, oprnd1, lhs, var;
-  gimple *pattern_stmt, *def_stmt;
+  gimple *pattern_stmt;
   enum tree_code rhs_code;
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
   vec_info *vinfo = stmt_vinfo->vinfo;
-  enum vect_def_type dt;
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -2155,20 +2041,19 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
 	 != TYPE_PRECISION (TREE_TYPE (oprnd0)))
     return NULL;
 
-  if (!vect_is_simple_use (oprnd1, vinfo, &def_stmt, &dt))
+  stmt_vec_info def_vinfo = vect_get_internal_def (vinfo, oprnd1);
+  if (!def_vinfo)
     return NULL;
 
-  if (dt != vect_internal_def)
-    return NULL;
-
-  *type_in = get_vectype_for_scalar_type (TREE_TYPE (oprnd0));
-  *type_out = *type_in;
-  if (*type_in == NULL_TREE)
+  *type_out = get_vectype_for_scalar_type (TREE_TYPE (oprnd0));
+  if (*type_out == NULL_TREE)
     return NULL;
 
   tree def = NULL_TREE;
-  stmt_vec_info def_vinfo = vinfo_for_stmt (def_stmt);
-  if (!STMT_VINFO_IN_PATTERN_P (def_vinfo) && gimple_assign_cast_p (def_stmt))
+  gassign *def_stmt = dyn_cast <gassign *> (def_vinfo->stmt);
+  if (!STMT_VINFO_IN_PATTERN_P (def_vinfo)
+      && def_stmt
+      && gimple_assign_cast_p (def_stmt))
     {
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
       if (TYPE_MODE (TREE_TYPE (rhs1)) == TYPE_MODE (TREE_TYPE (oprnd0))
@@ -2185,6 +2070,11 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
 				       TYPE_PRECISION (TREE_TYPE (oprnd1)));
 	      def = vect_recog_temp_ssa_var (TREE_TYPE (rhs1), NULL);
 	      def_stmt = gimple_build_assign (def, BIT_AND_EXPR, rhs1, mask);
+	      stmt_vec_info new_stmt_info
+		= new_stmt_vec_info (def_stmt, vinfo);
+	      set_vinfo_for_stmt (def_stmt, new_stmt_info);
+	      STMT_VINFO_VECTYPE (new_stmt_info)
+		= get_vectype_for_scalar_type (TREE_TYPE (rhs1));
 	      new_pattern_def_seq (stmt_vinfo, def_stmt);
 	    }
 	}
@@ -2198,16 +2088,11 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
     }
 
   /* Pattern detected.  */
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "vect_recog_vector_vector_shift_pattern: detected:\n");
+  vect_pattern_detected ("vect_recog_vector_vector_shift_pattern", last_stmt);
 
   /* Pattern supported.  Create a stmt to be used to replace the pattern.  */
   var = vect_recog_temp_ssa_var (TREE_TYPE (oprnd0), NULL);
   pattern_stmt = gimple_build_assign (var, rhs_code, oprnd0, def);
-
-  if (dump_enabled_p ())
-    dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);
 
   stmts->safe_push (last_stmt);
   return pattern_stmt;
@@ -2523,16 +2408,13 @@ vect_synth_mult_by_constant (tree op, tree val,
 
  Output:
 
-  * TYPE_IN: The type of the input arguments to the pattern.
-
   * TYPE_OUT: The type of the output of this pattern.
 
   * Return value: A new stmt that will be used to replace
     the multiplication.  */
 
 static gimple *
-vect_recog_mult_pattern (vec<gimple *> *stmts,
-			 tree *type_in, tree *type_out)
+vect_recog_mult_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = stmts->pop ();
   tree oprnd0, oprnd1, vectype, itype;
@@ -2575,16 +2457,9 @@ vect_recog_mult_pattern (vec<gimple *> *stmts,
     return NULL;
 
   /* Pattern detected.  */
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "vect_recog_mult_pattern: detected:\n");
-
-  if (dump_enabled_p ())
-    dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM,
-			  pattern_stmt,0);
+  vect_pattern_detected ("vect_recog_mult_pattern", last_stmt);
 
   stmts->safe_push (last_stmt);
-  *type_in = vectype;
   *type_out = vectype;
 
   return pattern_stmt;
@@ -2623,16 +2498,13 @@ vect_recog_mult_pattern (vec<gimple *> *stmts,
 
   Output:
 
-  * TYPE_IN: The type of the input arguments to the pattern.
-
   * TYPE_OUT: The type of the output of this pattern.
 
   * Return value: A new stmt that will be used to replace the division
     S1 or modulo S4 stmt.  */
 
 static gimple *
-vect_recog_divmod_pattern (vec<gimple *> *stmts,
-			   tree *type_in, tree *type_out)
+vect_recog_divmod_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = stmts->pop ();
   tree oprnd0, oprnd1, vectype, itype, cond;
@@ -2697,9 +2569,7 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
 	return NULL;
 
       /* Pattern detected.  */
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "vect_recog_divmod_pattern: detected:\n");
+      vect_pattern_detected ("vect_recog_divmod_pattern", last_stmt);
 
       cond = build2 (LT_EXPR, boolean_type_node, oprnd0,
 		     build_int_cst (itype, 0));
@@ -2783,13 +2653,8 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
 				   signmask);
 	}
 
-      if (dump_enabled_p ())
-	dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt,
-                              0);
-
       stmts->safe_push (last_stmt);
 
-      *type_in = vectype;
       *type_out = vectype;
       return pattern_stmt;
     }
@@ -3037,16 +2902,10 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
     }
 
   /* Pattern detected.  */
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "vect_recog_divmod_pattern: detected: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-    }
+  vect_pattern_detected ("vect_recog_divmod_pattern", last_stmt);
 
   stmts->safe_push (last_stmt);
 
-  *type_in = vectype;
   *type_out = vectype;
   return pattern_stmt;
 }
@@ -3071,8 +2930,6 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
 
    Output:
 
-   * TYPE_IN: The type of the input arguments to the pattern.
-
    * TYPE_OUT: The type of the output of this pattern.
 
    * Return value: A new stmt that will be used to replace the pattern.
@@ -3082,8 +2939,7 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
 	a_T = (TYPE) a_it;  */
 
 static gimple *
-vect_recog_mixed_size_cond_pattern (vec<gimple *> *stmts, tree *type_in,
-				    tree *type_out)
+vect_recog_mixed_size_cond_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = (*stmts)[0];
   tree cond_expr, then_clause, else_clause;
@@ -3199,12 +3055,9 @@ vect_recog_mixed_size_cond_pattern (vec<gimple *> *stmts, tree *type_in,
   def_stmt_info = new_stmt_vec_info (def_stmt, vinfo);
   set_vinfo_for_stmt (def_stmt, def_stmt_info);
   STMT_VINFO_VECTYPE (def_stmt_info) = vecitype;
-  *type_in = vecitype;
   *type_out = vectype;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "vect_recog_mixed_size_cond_pattern: detected:\n");
+  vect_pattern_detected ("vect_recog_mixed_size_cond_pattern", last_stmt);
 
   return pattern_stmt;
 }
@@ -3219,18 +3072,15 @@ vect_recog_mixed_size_cond_pattern (vec<gimple *> *stmts, tree *type_in,
 static bool
 check_bool_pattern (tree var, vec_info *vinfo, hash_set<gimple *> &stmts)
 {
-  gimple *def_stmt;
-  enum vect_def_type dt;
   tree rhs1;
   enum tree_code rhs_code;
 
-  if (!vect_is_simple_use (var, vinfo, &def_stmt, &dt))
+  stmt_vec_info def_stmt_info = vect_get_internal_def (vinfo, var);
+  if (!def_stmt_info)
     return false;
 
-  if (dt != vect_internal_def)
-    return false;
-
-  if (!is_gimple_assign (def_stmt))
+  gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt);
+  if (!def_stmt)
     return false;
 
   if (stmts.contains (def_stmt))
@@ -3551,25 +3401,19 @@ static tree
 search_type_for_mask_1 (tree var, vec_info *vinfo,
 			hash_map<gimple *, tree> &cache)
 {
-  gimple *def_stmt;
-  enum vect_def_type dt;
   tree rhs1;
   enum tree_code rhs_code;
   tree res = NULL_TREE, res2;
 
-  if (TREE_CODE (var) != SSA_NAME)
-    return NULL_TREE;
-
   if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (var)))
     return NULL_TREE;
 
-  if (!vect_is_simple_use (var, vinfo, &def_stmt, &dt))
+  stmt_vec_info def_stmt_info = vect_get_internal_def (vinfo, var);
+  if (!def_stmt_info)
     return NULL_TREE;
 
-  if (dt != vect_internal_def)
-    return NULL_TREE;
-
-  if (!is_gimple_assign (def_stmt))
+  gassign *def_stmt = dyn_cast <gassign *> (def_stmt_info->stmt);
+  if (!def_stmt)
     return NULL_TREE;
 
   tree *c = cache.get (def_stmt);
@@ -3683,8 +3527,6 @@ search_type_for_mask (tree var, vec_info *vinfo)
 
    Output:
 
-   * TYPE_IN: The type of the input arguments to the pattern.
-
    * TYPE_OUT: The type of the output of this pattern.
 
    * Return value: A new stmt that will be used to replace the pattern.
@@ -3704,8 +3546,7 @@ search_type_for_mask (tree var, vec_info *vinfo)
 	but the above is more efficient.  */
 
 static gimple *
-vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
-			 tree *type_out)
+vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = stmts->pop ();
   enum tree_code rhs_code;
@@ -3781,11 +3622,8 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
 	}
 
       *type_out = vectype;
-      *type_in = vectype;
       stmts->safe_push (last_stmt);
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-                         "vect_recog_bool_pattern: detected:\n");
+      vect_pattern_detected ("vect_recog_bool_pattern", last_stmt);
 
       return pattern_stmt;
     }
@@ -3822,11 +3660,8 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
 				 gimple_assign_rhs2 (last_stmt),
 				 gimple_assign_rhs3 (last_stmt));
       *type_out = vectype;
-      *type_in = vectype;
       stmts->safe_push (last_stmt);
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-                         "vect_recog_bool_pattern: detected:\n");
+      vect_pattern_detected ("vect_recog_bool_pattern", last_stmt);
 
       return pattern_stmt;
     }
@@ -3880,13 +3715,10 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
 	= STMT_VINFO_DATA_REF (stmt_vinfo);
       STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
 	= STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
-      DR_STMT (STMT_VINFO_DATA_REF (stmt_vinfo)) = pattern_stmt;
       *type_out = vectype;
-      *type_in = vectype;
       stmts->safe_push (last_stmt);
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-                         "vect_recog_bool_pattern: detected:\n");
+      vect_pattern_detected ("vect_recog_bool_pattern", last_stmt);
+
       return pattern_stmt;
     }
   else
@@ -3947,8 +3779,7 @@ build_mask_conversion (tree mask, tree vectype, stmt_vec_info stmt_vinfo,
    S4'  c_1' = m_3'' ? c_2 : c_3;  */
 
 static gimple *
-vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
-				    tree *type_out)
+vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = stmts->pop ();
   enum tree_code rhs_code;
@@ -4017,14 +3848,12 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
 	= STMT_VINFO_DATA_REF (stmt_vinfo);
       STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
 	= STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
-      DR_STMT (STMT_VINFO_DATA_REF (stmt_vinfo)) = pattern_stmt;
+      STMT_VINFO_GATHER_SCATTER_P (pattern_stmt_info)
+	= STMT_VINFO_GATHER_SCATTER_P (stmt_vinfo);
 
       *type_out = vectype1;
-      *type_in = vectype1;
       stmts->safe_push (last_stmt);
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-                         "vect_recog_mask_conversion_pattern: detected:\n");
+      vect_pattern_detected ("vect_recog_mask_conversion_pattern", last_stmt);
 
       return pattern_stmt;
     }
@@ -4146,11 +3975,8 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
 					  gimple_assign_rhs3 (last_stmt));
 
       *type_out = vectype1;
-      *type_in = vectype1;
       stmts->safe_push (last_stmt);
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-                         "vect_recog_mask_conversion_pattern: detected:\n");
+      vect_pattern_detected ("vect_recog_mask_conversion_pattern", last_stmt);
 
       return pattern_stmt;
     }
@@ -4194,11 +4020,8 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
   pattern_stmt = gimple_build_assign (lhs, rhs_code, rhs1, rhs2);
 
   *type_out = vectype1;
-  *type_in = vectype1;
   stmts->safe_push (last_stmt);
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "vect_recog_mask_conversion_pattern: detected:\n");
+  vect_pattern_detected ("vect_recog_mask_conversion_pattern", last_stmt);
 
   return pattern_stmt;
 }
@@ -4295,14 +4118,14 @@ vect_add_conversion_to_patterm (tree type, tree value,
 
 /* Try to convert STMT into a call to a gather load or scatter store
    internal function.  Return the final statement on success and set
-   *TYPE_IN and *TYPE_OUT to the vector type being loaded or stored.
+   *TYPE_OUT to the vector type being loaded or stored.
 
    This function only handles gathers and scatters that were recognized
    as such from the outset (indicated by STMT_VINFO_GATHER_SCATTER_P).  */
 
 static gimple *
 vect_try_gather_scatter_pattern (gimple *stmt, stmt_vec_info last_stmt_info,
-				 tree *type_in, tree *type_out)
+				 tree *type_out)
 {
   /* Currently we only support this for loop vectorization.  */
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -4376,15 +4199,10 @@ vect_try_gather_scatter_pattern (gimple *stmt, stmt_vec_info last_stmt_info,
     = STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
   STMT_VINFO_GATHER_SCATTER_P (pattern_stmt_info)
     = STMT_VINFO_GATHER_SCATTER_P (stmt_info);
-  DR_STMT (dr) = pattern_stmt;
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   *type_out = vectype;
-  *type_in = vectype;
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "gather/scatter pattern detected:\n");
+  vect_pattern_detected ("gather/scatter pattern", stmt);
 
   return pattern_stmt;
 }
@@ -4392,18 +4210,51 @@ vect_try_gather_scatter_pattern (gimple *stmt, stmt_vec_info last_stmt_info,
 /* Pattern wrapper around vect_try_gather_scatter_pattern.  */
 
 static gimple *
-vect_recog_gather_scatter_pattern (vec<gimple *> *stmts, tree *type_in,
-				   tree *type_out)
+vect_recog_gather_scatter_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   gimple *last_stmt = stmts->pop ();
   stmt_vec_info last_stmt_info = vinfo_for_stmt (last_stmt);
   gimple *pattern_stmt = vect_try_gather_scatter_pattern (last_stmt,
 							  last_stmt_info,
-							  type_in, type_out);
+							  type_out);
   if (pattern_stmt)
     stmts->safe_push (last_stmt);
   return pattern_stmt;
 }
+
+typedef gimple *(*vect_recog_func_ptr) (vec<gimple *> *, tree *);
+
+struct vect_recog_func
+{
+  vect_recog_func_ptr fn;
+  const char *name;
+};
+
+/* Note that ordering matters - the first pattern matching on a stmt is
+   taken which means usually the more complex one needs to preceed the
+   less comples onex (widen_sum only after dot_prod or sad for example).  */
+static vect_recog_func vect_vect_recog_func_ptrs[] = {
+  { vect_recog_widen_mult_pattern, "widen_mult" },
+  { vect_recog_dot_prod_pattern, "dot_prod" },
+  { vect_recog_sad_pattern, "sad" },
+  { vect_recog_widen_sum_pattern, "widen_sum" },
+  { vect_recog_pow_pattern, "pow" },
+  { vect_recog_widen_shift_pattern, "widen_shift" },
+  { vect_recog_over_widening_pattern, "over_widening" },
+  { vect_recog_rotate_pattern, "rotate" },
+  { vect_recog_vector_vector_shift_pattern, "vector_vector_shift" },
+  { vect_recog_divmod_pattern, "divmod" },
+  { vect_recog_mult_pattern, "mult" },
+  { vect_recog_mixed_size_cond_pattern, "mixed_size_cond" },
+  { vect_recog_bool_pattern, "bool" },
+  /* This must come before mask conversion, and includes the parts
+     of mask conversion that are needed for gather and scatter
+     internal functions.  */
+  { vect_recog_gather_scatter_pattern, "gather_scatter" },
+  { vect_recog_mask_conversion_pattern, "mask_conversion" }
+};
+
+const unsigned int NUM_PATTERNS = ARRAY_SIZE (vect_vect_recog_func_ptrs);
 
 /* Mark statements that are involved in a pattern.  */
 
@@ -4430,28 +4281,23 @@ vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
   STMT_VINFO_VECTYPE (pattern_stmt_info) = pattern_vectype;
   STMT_VINFO_IN_PATTERN_P (orig_stmt_info) = true;
   STMT_VINFO_RELATED_STMT (orig_stmt_info) = pattern_stmt;
-  STMT_VINFO_PATTERN_DEF_SEQ (pattern_stmt_info)
-    = STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_info);
-  if (STMT_VINFO_PATTERN_DEF_SEQ (pattern_stmt_info))
-    {
-      gimple_stmt_iterator si;
-      for (si = gsi_start (STMT_VINFO_PATTERN_DEF_SEQ (pattern_stmt_info));
-	   !gsi_end_p (si); gsi_next (&si))
-	{
-	  def_stmt = gsi_stmt (si);
-	  def_stmt_info = vinfo_for_stmt (def_stmt);
-	  if (def_stmt_info == NULL)
-	    {
-	      def_stmt_info = new_stmt_vec_info (def_stmt, vinfo);
-	      set_vinfo_for_stmt (def_stmt, def_stmt_info);
-	    }
-	  gimple_set_bb (def_stmt, gimple_bb (orig_stmt));
-	  STMT_VINFO_RELATED_STMT (def_stmt_info) = orig_stmt;
-	  STMT_VINFO_DEF_TYPE (def_stmt_info) = vect_internal_def;
-	  if (STMT_VINFO_VECTYPE (def_stmt_info) == NULL_TREE)
-	    STMT_VINFO_VECTYPE (def_stmt_info) = pattern_vectype;
-	}
-    }
+  if (gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_info))
+    for (gimple_stmt_iterator si = gsi_start (def_seq);
+	 !gsi_end_p (si); gsi_next (&si))
+      {
+	def_stmt = gsi_stmt (si);
+	def_stmt_info = vinfo_for_stmt (def_stmt);
+	if (def_stmt_info == NULL)
+	  {
+	    def_stmt_info = new_stmt_vec_info (def_stmt, vinfo);
+	    set_vinfo_for_stmt (def_stmt, def_stmt_info);
+	  }
+	gimple_set_bb (def_stmt, gimple_bb (orig_stmt));
+	STMT_VINFO_RELATED_STMT (def_stmt_info) = orig_stmt;
+	STMT_VINFO_DEF_TYPE (def_stmt_info) = vect_internal_def;
+	if (STMT_VINFO_VECTYPE (def_stmt_info) == NULL_TREE)
+	  STMT_VINFO_VECTYPE (def_stmt_info) = pattern_vectype;
+      }
 }
 
 /* Function vect_pattern_recog_1
@@ -4461,17 +4307,13 @@ vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
         computation pattern.
    STMT: A stmt from which the pattern search should start.
 
-   If PATTERN_RECOG_FUNC successfully detected the pattern, it creates an
-   expression that computes the same functionality and can be used to
-   replace the sequence of stmts that are involved in the pattern.
-
-   Output:
-   This function checks if the expression returned by PATTERN_RECOG_FUNC is
-   supported in vector form by the target.  We use 'TYPE_IN' to obtain the
-   relevant vector type. If 'TYPE_IN' is already a vector type, then this
-   indicates that target support had already been checked by PATTERN_RECOG_FUNC.
-   If 'TYPE_OUT' is also returned by PATTERN_RECOG_FUNC, we check that it fits
-   to the available target pattern.
+   If PATTERN_RECOG_FUNC successfully detected the pattern, it creates
+   a sequence of statements that has the same functionality and can be
+   used to replace STMT.  It returns the last statement in the sequence
+   and adds any earlier statements to STMT's STMT_VINFO_PATTERN_DEF_SEQ.
+   PATTERN_RECOG_FUNC also sets *TYPE_OUT to the vector type of the final
+   statement, having first checked that the target supports the new operation
+   in that type.
 
    This function also does some bookkeeping, as explained in the documentation
    for vect_recog_pattern.  */
@@ -4485,56 +4327,30 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
   stmt_vec_info stmt_info;
   loop_vec_info loop_vinfo;
   tree pattern_vectype;
-  tree type_in, type_out;
-  enum tree_code code;
   int i;
 
   stmts_to_replace->truncate (0);
   stmts_to_replace->quick_push (stmt);
-  pattern_stmt = recog_func->fn (stmts_to_replace, &type_in, &type_out);
+  pattern_stmt = recog_func->fn (stmts_to_replace, &pattern_vectype);
   if (!pattern_stmt)
-    return false;
+    {
+      /* Clear related stmt info that analysis might have noted for
+         to be replaced stmts.  */
+      for (i = 0; stmts_to_replace->iterate (i, &stmt)
+	   && (unsigned) i < stmts_to_replace->length ();
+	   i++)
+	{
+	  stmt_info = vinfo_for_stmt (stmt);
+	  STMT_VINFO_RELATED_STMT (stmt_info) = NULL;
+	}
+      return false;
+    }
 
   stmt = stmts_to_replace->last ();
   stmt_info = vinfo_for_stmt (stmt);
   loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  gcc_assert (pattern_vectype);
  
-  if (VECTOR_BOOLEAN_TYPE_P (type_in)
-      || VECTOR_TYPE_P (type_in))
-    {
-      /* No need to check target support (already checked by the pattern
-         recognition function).  */
-      pattern_vectype = type_out ? type_out : type_in;
-    }
-  else
-    {
-      /* Check target support  */
-      type_in = get_vectype_for_scalar_type (type_in);
-      if (!type_in)
-	return false;
-      if (type_out)
-	type_out = get_vectype_for_scalar_type (type_out);
-      else
-	type_out = type_in;
-      if (!type_out)
-	return false;
-      pattern_vectype = type_out;
-
-      if (is_gimple_assign (pattern_stmt))
-	{
-	  enum insn_code icode;
-	  code = gimple_assign_rhs_code (pattern_stmt);
-	  optab optab = optab_for_tree_code (code, type_in, optab_default);
-	  machine_mode vec_mode = TYPE_MODE (type_in);
-	  if (!optab
-	      || (icode = optab_handler (optab, vec_mode)) == CODE_FOR_nothing
-	      || (insn_data[icode].operand[0].mode != TYPE_MODE (type_out)))
-	    return false;
-	}
-      else
-	gcc_assert (is_gimple_call (pattern_stmt));
-    }
-
   /* Found a vectorizable pattern.  */
   if (dump_enabled_p ())
     {
@@ -4665,11 +4481,8 @@ vect_pattern_recog (vec_info *vinfo)
   gimple_stmt_iterator si;
   unsigned int i, j;
   auto_vec<gimple *, 1> stmts_to_replace;
-  gimple *stmt;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_pattern_recog ===\n");
+  DUMP_VECT_SCOPE ("vect_pattern_recog");
 
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     {
@@ -4684,6 +4497,10 @@ vect_pattern_recog (vec_info *vinfo)
 	  basic_block bb = bbs[i];
 	  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	    {
+	      gimple *stmt = gsi_stmt (si);
+	      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	      if (stmt_info && STMT_VINFO_IN_PATTERN_P (stmt_info))
+		continue;
 	      /* Scan over all generic vect_recog_xxx_pattern functions.  */
 	      for (j = 0; j < NUM_PATTERNS; j++)
 		if (vect_pattern_recog_1 (&vect_vect_recog_func_ptrs[j], si,
@@ -4698,9 +4515,11 @@ vect_pattern_recog (vec_info *vinfo)
       for (si = bb_vinfo->region_begin;
 	   gsi_stmt (si) != gsi_stmt (bb_vinfo->region_end); gsi_next (&si))
 	{
-	  if ((stmt = gsi_stmt (si))
-	      && vinfo_for_stmt (stmt)
-	      && !STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)))
+	  gimple *stmt = gsi_stmt (si);
+	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  if (stmt_info
+	      && (!STMT_VINFO_VECTORIZABLE (stmt_info)
+		  || STMT_VINFO_IN_PATTERN_P (stmt_info)))
 	    continue;
 
 	  /* Scan over all generic vect_recog_xxx_pattern functions.  */

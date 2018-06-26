@@ -8653,8 +8653,12 @@ package body Exp_Ch9 is
             when N_Implicit_Label_Declaration =>
                null;
 
-            when N_Itype_Reference =>
-               Insert_After (Current_Node, New_Copy (Op_Body));
+            when N_Call_Marker
+               | N_Itype_Reference
+            =>
+               New_Op_Body := New_Copy (Op_Body);
+               Insert_After (Current_Node, New_Op_Body);
+               Current_Node := New_Op_Body;
 
             when N_Freeze_Entity =>
                New_Op_Body := New_Copy (Op_Body);

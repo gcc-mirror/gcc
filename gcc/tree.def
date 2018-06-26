@@ -31,11 +31,7 @@ along with GCC; see the file COPYING3.  If not see
    These tree codes have been sorted so that the macros in tree.h that
    check for various tree codes are optimized into range checks.  This
    gives a measurable performance improvement.  When adding a new
-   code, consider its placement in relation to the other codes.
-
-   When adding a new tree code which might appear as GIMPLE_ASSIGN RHS
-   code, proper handler in chkp_compute_bounds_for_assignment may
-   be required.  */
+   code, consider its placement in relation to the other codes.  */
 
 /* Any erroneous construct is parsed into a node of this type.
    This type of node is accepted without complaint in all contexts
@@ -236,11 +232,6 @@ DEFTREECODE (QUAL_UNION_TYPE, "qual_union_type", tcc_type, 0)
 
 /* The void type in C */
 DEFTREECODE (VOID_TYPE, "void_type", tcc_type, 0)
-
-/* Type to hold bounds for a pointer.
-   Has TYPE_PRECISION component to specify number of bits used
-   by this type.  */
-DEFTREECODE (POINTER_BOUNDS_TYPE, "pointer_bounds_type", tcc_type, 0)
 
 /* Type of functions.  Special fields:
    TREE_TYPE		    type of value returned.
@@ -760,6 +751,11 @@ DEFTREECODE (MAX_EXPR, "max_expr", tcc_binary, 2)
    An ABS_EXPR must have either an INTEGER_TYPE or a REAL_TYPE.  The
    operand of the ABS_EXPR must have the same type.  */
 DEFTREECODE (ABS_EXPR, "abs_expr", tcc_unary, 1)
+
+/* Represents the unsigned absolute value of the operand.
+   An ABSU_EXPR must have unsigned INTEGER_TYPE.  The operand of the ABSU_EXPR
+   must have the corresponding signed type.  */
+DEFTREECODE (ABSU_EXPR, "absu_expr", tcc_unary, 1)
 
 /* Shift operations for shift and rotate.
    Shift means logical shift if done on an

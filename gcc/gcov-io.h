@@ -140,9 +140,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 		int32:lineno_checksum int32:cfg_checksum
 	present: header int32:present
 	counts: header int64:count*
-	summary: int32:checksum {count-summary}GCOV_COUNTERS_SUMMABLE
-	count-summary:	int32:num int32:runs int64:sum
-			int64:max int64:sum_max histogram
+	summary: int32:checksum int32:num int32:runs int64:sum
+		 int64:max int64:sum_max histogram
         histogram: {int32:bitvector}8 histogram-buckets*
         histogram-buckets: int32:num int64:min int64:sum
 
@@ -243,8 +242,7 @@ typedef uint64_t gcov_type_unsigned;
 #define GCOV_TAG_COUNTER_NUM(LENGTH) ((LENGTH) / 2)
 #define GCOV_TAG_OBJECT_SUMMARY  ((gcov_unsigned_t)0xa1000000) /* Obsolete */
 #define GCOV_TAG_PROGRAM_SUMMARY ((gcov_unsigned_t)0xa3000000)
-#define GCOV_TAG_SUMMARY_LENGTH(NUM)  \
-        (1 + GCOV_COUNTERS_SUMMABLE * (10 + 3 * 2) + (NUM) * 5)
+#define GCOV_TAG_SUMMARY_LENGTH(NUM) (1 + (10 + 3 * 2) + (NUM) * 5)
 #define GCOV_TAG_AFDO_FILE_NAMES ((gcov_unsigned_t)0xaa000000)
 #define GCOV_TAG_AFDO_FUNCTION ((gcov_unsigned_t)0xac000000)
 #define GCOV_TAG_AFDO_WORKING_SET ((gcov_unsigned_t)0xaf000000)
@@ -259,13 +257,10 @@ GCOV_COUNTERS
 };
 #undef DEF_GCOV_COUNTER
 
-/* Counters which can be summaried.  */
-#define GCOV_COUNTERS_SUMMABLE	(GCOV_COUNTER_ARCS + 1)
-
 /* The first of counters used for value profiling.  They must form a
    consecutive interval and their order must match the order of
    HIST_TYPEs in value-prof.h.  */
-#define GCOV_FIRST_VALUE_COUNTER GCOV_COUNTERS_SUMMABLE
+#define GCOV_FIRST_VALUE_COUNTER GCOV_COUNTER_V_INTERVAL
 
 /* The last of counters used for value profiling.  */
 #define GCOV_LAST_VALUE_COUNTER (GCOV_COUNTERS - 1)
@@ -337,23 +332,18 @@ typedef struct
    This is essentially a ceiling divide by 32 bits.  */
 #define GCOV_HISTOGRAM_BITVECTOR_SIZE (GCOV_HISTOGRAM_SIZE + 31) / 32
 
-/* Cumulative counter data.  */
-struct gcov_ctr_summary
-{
-  gcov_unsigned_t num;		/* number of counters.  */
-  gcov_unsigned_t runs;		/* number of program runs */
-  gcov_type sum_all;		/* sum of all counters accumulated.  */
-  gcov_type run_max;		/* maximum value on a single run.  */
-  gcov_type sum_max;    	/* sum of individual run max values.  */
-  gcov_bucket_type histogram[GCOV_HISTOGRAM_SIZE]; /* histogram of
-                                                      counter values.  */
-};
-
 /* Object & program summary record.  */
+
 struct gcov_summary
 {
-  gcov_unsigned_t checksum;	/* checksum of program */
-  struct gcov_ctr_summary ctrs[GCOV_COUNTERS_SUMMABLE];
+  gcov_unsigned_t checksum;	/* Checksum of program.  */
+  gcov_unsigned_t num;		/* Number of counters.  */
+  gcov_unsigned_t runs;		/* Number of program runs.  */
+  gcov_type sum_all;		/* Sum of all counters accumulated.  */
+  gcov_type run_max;		/* Maximum value on a single run.  */
+  gcov_type sum_max;    	/* Sum of individual run max values.  */
+  gcov_bucket_type histogram[GCOV_HISTOGRAM_SIZE]; /* Histogram of
+						      counter values.  */
 };
 
 #if !defined(inhibit_libc)
@@ -414,7 +404,7 @@ typedef struct gcov_working_set_info
   gcov_type min_counter;
 } gcov_working_set_t;
 
-GCOV_LINKAGE void compute_working_sets (const struct gcov_ctr_summary *summary,
+GCOV_LINKAGE void compute_working_sets (const gcov_summary *summary,
                                         gcov_working_set_t *gcov_working_sets);
 #endif
 

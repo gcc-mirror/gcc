@@ -10029,7 +10029,15 @@ new_loc_list (dw_loc_descr_ref expr, const char *begin, var_loc_view vbegin,
   return retlist;
 }
 
-/* Return true iff there's any nonzero view number in the loc list.  */
+/* Return true iff there's any nonzero view number in the loc list.
+
+   ??? When views are not enabled, we'll often extend a single range
+   to the entire function, so that we emit a single location
+   expression rather than a location list.  With views, even with a
+   single range, we'll output a list if start or end have a nonzero
+   view.  If we change this, we may want to stop splitting a single
+   range in dw_loc_list just because of a nonzero view, even if it
+   straddles across hot/cold partitions.  */
 
 static bool
 loc_list_has_views (dw_loc_list_ref list)
@@ -12918,7 +12926,6 @@ is_base_type (tree type)
     case FIXED_POINT_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
-    case POINTER_BOUNDS_TYPE:
       return 1;
 
     case VOID_TYPE:
@@ -17140,7 +17147,13 @@ dw_loc_list (var_loc_list *loc_list, tree decl, int want_address)
 		 of first partition and second one starting at the
 		 beginning of second partition.  */
 	      if (node == loc_list->last_before_switch
-		  && (node != loc_list->first || loc_list->first->next)
+		  && (node != loc_list->first || loc_list->first->next
+		      /* If we are to emit a view number, we will emit
+			 a loclist rather than a single location
+			 expression for the entire function (see
+			 loc_list_has_views), so we have to split the
+			 range that straddles across partitions.  */
+		      || !ZERO_VIEW_P (node->view))
 		  && current_function_decl)
 		{
 		  endname = cfun->fde->dw_fde_end;
@@ -22295,21 +22308,18 @@ gen_formal_types_die (tree function_or_method_type, dw_die_ref context_die)
 	break;
 
       /* Output a (nameless) DIE to represent the formal parameter itself.  */
-      if (!POINTER_BOUNDS_TYPE_P (formal_type))
+      parm_die = gen_formal_parameter_die (formal_type, NULL,
+					   true /* Emit name attribute.  */,
+					   context_die);
+      if (TREE_CODE (function_or_method_type) == METHOD_TYPE
+	  && link == first_parm_type)
 	{
-	  parm_die = gen_formal_parameter_die (formal_type, NULL,
-					       true /* Emit name attribute.  */,
-					       context_die);
-	  if (TREE_CODE (function_or_method_type) == METHOD_TYPE
-	      && link == first_parm_type)
-	    {
-	      add_AT_flag (parm_die, DW_AT_artificial, 1);
-	      if (dwarf_version >= 3 || !dwarf_strict)
-		add_AT_die_ref (context_die, DW_AT_object_pointer, parm_die);
-	    }
-	  else if (arg && DECL_ARTIFICIAL (arg))
-	    add_AT_flag (parm_die, DW_AT_artificial, 1);
+	  add_AT_flag (parm_die, DW_AT_artificial, 1);
+	  if (dwarf_version >= 3 || !dwarf_strict)
+	    add_AT_die_ref (context_die, DW_AT_object_pointer, parm_die);
 	}
+      else if (arg && DECL_ARTIFICIAL (arg))
+	add_AT_flag (parm_die, DW_AT_artificial, 1);
 
       link = TREE_CHAIN (link);
       if (arg)
@@ -23176,7 +23186,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    gen_formal_parameter_pack_die (generic_decl_parm,
 					   parm, subr_die,
 					   &parm);
-	  else if (parm && !POINTER_BOUNDS_P (parm))
+	  else if (parm)
 	    {
 	      dw_die_ref parm_die = gen_decl_die (parm, NULL, NULL, subr_die);
 
@@ -24464,6 +24474,9 @@ gen_compile_unit_die (const char *filename)
   /* Use a degraded Fortran setting in strict DWARF2 so is_fortran works.  */
   else if (strncmp (language_string, "GNU Fortran", 11) == 0)
     language = DW_LANG_Fortran90;
+  /* Likewise for Ada.  */
+  else if (strcmp (language_string, "GNU Ada") == 0)
+    language = DW_LANG_Ada83;
 
   add_AT_unsigned (die, DW_AT_language, language);
 
@@ -25561,7 +25574,6 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
     case FIXED_POINT_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
-    case POINTER_BOUNDS_TYPE:
       /* No DIEs needed for fundamental types.  */
       break;
 
@@ -26141,12 +26153,6 @@ gen_decl_die (tree decl, tree origin, struct vlr_context *ctx,
   if (DECL_P (decl_or_origin) && DECL_IGNORED_P (decl_or_origin))
     return NULL;
 
-  /* Ignore pointer bounds decls.  */
-  if (DECL_P (decl_or_origin)
-      && TREE_TYPE (decl_or_origin)
-      && POINTER_BOUNDS_P (decl_or_origin))
-    return NULL;
-
   switch (TREE_CODE (decl_or_origin))
     {
     case ERROR_MARK:
@@ -26480,7 +26486,7 @@ dwarf2out_late_global_decl (tree decl)
 {
   /* Fill-in any location information we were unable to determine
      on the first pass.  */
-  if (VAR_P (decl) && !POINTER_BOUNDS_P (decl))
+  if (VAR_P (decl))
     {
       dw_die_ref die = lookup_decl_die (decl);
 
@@ -31297,9 +31303,15 @@ dwarf2out_finish (const char *)
     {
       if (have_location_lists)
 	{
-	  if (dwarf_version >= 5)
-	    add_AT_loclistsptr (comp_unit_die (), DW_AT_loclists_base,
-				loc_section_label);
+	  /* Since we generate the loclists in the split DWARF .dwo
+	     file itself, we don't need to generate a loclists_base
+	     attribute for the split compile unit DIE.  That attribute
+	     (and using relocatable sec_offset FORMs) isn't allowed
+	     for a split compile unit.  Only if the .debug_loclists
+	     section was in the main file, would we need to generate a
+	     loclists_base attribute here (for the full or skeleton
+	     unit DIE).  */
+
 	  /* optimize_location_lists calculates the size of the lists,
 	     so index them first, and assign indices to the entries.
 	     Although optimize_location_lists will remove entries from

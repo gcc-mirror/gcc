@@ -956,11 +956,19 @@ func splitPkgConfigOutput(out []byte) []string {
 
 // Calls pkg-config if needed and returns the cflags/ldflags needed to build the package.
 func (b *Builder) getPkgConfigFlags(p *load.Package) (cflags, ldflags []string, err error) {
-	if pkgs := p.CgoPkgConfig; len(pkgs) > 0 {
+	if pcargs := p.CgoPkgConfig; len(pcargs) > 0 {
+		// pkg-config permits arguments to appear anywhere in
+		// the command line. Move them all to the front, before --.
 		var pcflags []string
-		for len(pkgs) > 0 && strings.HasPrefix(pkgs[0], "--") {
-			pcflags = append(pcflags, pkgs[0])
-			pkgs = pkgs[1:]
+		var pkgs []string
+		for _, pcarg := range pcargs {
+			if pcarg == "--" {
+				// We're going to add our own "--" argument.
+			} else if strings.HasPrefix(pcarg, "--") {
+				pcflags = append(pcflags, pcarg)
+			} else {
+				pkgs = append(pkgs, pcarg)
+			}
 		}
 		for _, pkg := range pkgs {
 			if !load.SafeArg(pkg) {
@@ -1107,7 +1115,7 @@ func BuildInstallFunc(b *Builder, a *Action) (err error) {
 		// We want to hide that awful detail as much as possible, so don't
 		// advertise it by touching the mtimes (usually the libraries are up
 		// to date).
-		if !a.buggyInstall {
+		if !a.buggyInstall && !b.ComputeStaleOnly {
 			now := time.Now()
 			os.Chtimes(a.Target, now, now)
 		}

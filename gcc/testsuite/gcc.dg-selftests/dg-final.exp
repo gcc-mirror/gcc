@@ -1,0 +1,106 @@
+#   Copyright (C) 2018 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Tests that test dejagnu extensions used in gcc testing
+
+load_lib "scantree.exp"
+load_lib "scanrtl.exp"
+load_lib "scanipa.exp"
+load_lib "scanlang.exp"
+load_lib "lto.exp"
+load_lib "scanasm.exp"
+load_lib "scanwpaipa.exp"
+load_lib "scanltranstree.exp"
+load_lib "scanoffloadtree.exp"
+
+proc dg_final_directive_check_num_args {} {
+    proc verify_call { args } {
+	set call_name [lindex $args 0]
+	set call_args [lindex $args 1]
+	set expected_error [lindex $args 2]
+
+	set errMsg ""
+	catch {
+	    eval $call_name $call_args
+	} errMsg
+
+	if { "$errMsg" != "$call_name: $expected_error" } {
+	    send_log "For call $call_name $call_args\n"
+	    send_log "expected: $call_name: $expected_error\n"
+	    send_log "but got: $errMsg\n"
+	    fail "$call_name: $expected_error"
+	    return
+	} else {
+	    pass "$call_name: $expected_error"	
+	}
+    }
+
+    proc verify_args { args } {
+	set proc_name [lindex $args 0]
+	set min [lindex $args 1]
+	set max [lindex $args 2]
+	set too_many [list]
+	set too_few [list]
+	for {set i 0} {$i < $min - 1}  {incr i} {
+	    lappend too_few $i
+	}
+	for {set i 0} {$i < $max + 1}  {incr i} {
+	    lappend too_many $i
+	}
+	verify_call $proc_name $too_many "too many arguments"
+	verify_call $proc_name $too_few "too few arguments"
+    }
+
+    foreach kind [list "tree" "rtl" "ipa" "ltrans-tree" "wpa-ipa" "offload-tree"] {
+	verify_args scan-$kind-dump 2 3
+	verify_args scan-$kind-dump-times 3 4
+	verify_args scan-$kind-dump-not 2 3
+	verify_args scan-$kind-dump-dem 2 3
+	verify_args scan-$kind-dump-dem-not 2 3
+    }
+
+    verify_args scan-lang-dump 2 3
+
+    verify_args object-readelf 2 3
+
+    verify_args scan-assembler-times 2 3
+    verify_args scan-assembler-dem 1 2
+    verify_args scan-assembler-dem-not 1 2
+
+    verify_args object-size 3 4
+
+    global testname_with_flags
+    set testname_with_flags "test.c"
+    verify_args scan-assembler 1 2
+    verify_args scan-assembler-not 1 2
+    verify_args scan-hidden 1 2
+    verify_args scan-not-hidden 1 2
+    verify_args scan-file 2 3
+    verify_args scan-file-not 2 3
+    verify_args scan-stack-usage 1 2
+    verify_args scan-stack-usage-not 1 2
+    verify_args scan-ada-spec 1 2
+    verify_args scan-ada-spec-not 1 2
+    verify_args scan-lto-assembler 1 2
+    unset testname_with_flags
+}
+
+if ![gcc_parallel_test_run_p dg-final] {
+    return
+}
+gcc_parallel_test_enable 0
+dg_final_directive_check_num_args
+gcc_parallel_test_enable 1

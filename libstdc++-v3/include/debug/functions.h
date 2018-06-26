@@ -40,9 +40,6 @@
 
 namespace __gnu_debug
 {
-  template<typename _Iterator, typename _Sequence>
-    class _Safe_iterator;
-
   template<typename _Sequence>
     struct _Insert_range_from_self_is_safe
     { enum { __value = 0 }; };

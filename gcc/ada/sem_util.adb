@@ -8334,13 +8334,18 @@ package body Sem_Util is
       --  Search for the equality primitive; return Empty if the primitive is
       --  not found.
 
+      ------------------
+      -- Find_Eq_Prim --
+      ------------------
+
       function Find_Eq_Prim (Prims_List : Elist_Id) return Entity_Id is
-         Prim_E : Elmt_Id := First_Elmt (Prims_List);
-         Prim   : Entity_Id;
+         Prim      : Entity_Id;
+         Prim_Elmt : Elmt_Id;
 
       begin
-         while Present (Prim_E) loop
-            Prim := Node (Prim_E);
+         Prim_Elmt := First_Elmt (Prims_List);
+         while Present (Prim_Elmt) loop
+            Prim := Node (Prim_Elmt);
 
             --  Locate primitive equality with the right signature
 
@@ -8352,7 +8357,7 @@ package body Sem_Util is
                return Prim;
             end if;
 
-            Next_Elmt (Prim_E);
+            Next_Elmt (Prim_Elmt);
          end loop;
 
          return Empty;
@@ -8360,8 +8365,8 @@ package body Sem_Util is
 
       --  Local Variables
 
-      Full_Type : Entity_Id;
       Eq_Prim   : Entity_Id;
+      Full_Type : Entity_Id;
 
    --  Start of processing for Find_Primitive_Eq
 
@@ -16448,7 +16453,9 @@ package body Sem_Util is
       while Present (Par)
         and then Nkind (Par) /= N_Pragma_Argument_Association
       loop
-         if Nkind (Original_Node (Par)) = N_And_Then then
+         if Is_Rewrite_Substitution (Par)
+           and then Nkind (Original_Node (Par)) = N_And_Then
+         then
             return True;
          end if;
 
@@ -18467,6 +18474,7 @@ package body Sem_Util is
       begin
          if Nkind (N) = N_Allocator then
             if Is_Dynamic then
+               Set_Is_Static_Coextension (N, False);
                Set_Is_Dynamic_Coextension (N);
 
             --  If the allocator expression is potentially dynamic, it may
@@ -18477,8 +18485,10 @@ package body Sem_Util is
             elsif Nkind (Expression (N)) = N_Qualified_Expression
               and then Nkind (Expression (Expression (N))) = N_Op_Concat
             then
+               Set_Is_Static_Coextension (N, False);
                Set_Is_Dynamic_Coextension (N);
             else
+               Set_Is_Dynamic_Coextension (N, False);
                Set_Is_Static_Coextension (N);
             end if;
          end if;
@@ -19246,6 +19256,144 @@ package body Sem_Util is
          return False;
       end if;
    end Needs_Simple_Initialization;
+
+   -------------------------------------
+   -- Needs_Variable_Reference_Marker --
+   -------------------------------------
+
+   function Needs_Variable_Reference_Marker
+     (N        : Node_Id;
+      Calls_OK : Boolean) return Boolean
+   is
+      function Within_Suitable_Context (Ref : Node_Id) return Boolean;
+      --  Deteremine whether variable reference Ref appears within a suitable
+      --  context that allows the creation of a marker.
+
+      -----------------------------
+      -- Within_Suitable_Context --
+      -----------------------------
+
+      function Within_Suitable_Context (Ref : Node_Id) return Boolean is
+         Par : Node_Id;
+
+      begin
+         Par := Ref;
+         while Present (Par) loop
+
+            --  The context is not suitable when the reference appears within
+            --  the formal part of an instantiation which acts as compilation
+            --  unit because there is no proper list for the insertion of the
+            --  marker.
+
+            if Nkind (Par) = N_Generic_Association
+              and then Nkind (Parent (Par)) in N_Generic_Instantiation
+              and then Nkind (Parent (Parent (Par))) = N_Compilation_Unit
+            then
+               return False;
+
+            --  The context is not suitable when the reference appears within
+            --  a pragma. If the pragma has run-time semantics, the reference
+            --  will be reconsidered once the pragma is expanded.
+
+            elsif Nkind (Par) = N_Pragma then
+               return False;
+
+            --  The context is not suitable when the reference appears within a
+            --  subprogram call, and the caller requests this behavior.
+
+            elsif not Calls_OK
+              and then Nkind_In (Par, N_Entry_Call_Statement,
+                                      N_Function_Call,
+                                      N_Procedure_Call_Statement)
+            then
+               return False;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return True;
+      end Within_Suitable_Context;
+
+      --  Local variables
+
+      Prag   : Node_Id;
+      Var_Id : Entity_Id;
+
+   --  Start of processing for Needs_Variable_Reference_Marker
+
+   begin
+      --  No marker needs to be created when switch -gnatH (legacy elaboration
+      --  checking mode enabled) is in effect because the legacy ABE mechanism
+      --  does not use markers.
+
+      if Legacy_Elaboration_Checks then
+         return False;
+
+      --  No marker needs to be created for ASIS because ABE diagnostics and
+      --  checks are not performed in this mode.
+
+      elsif ASIS_Mode then
+         return False;
+
+      --  No marker needs to be created when the reference is preanalyzed
+      --  because the marker will be inserted in the wrong place.
+
+      elsif Preanalysis_Active then
+         return False;
+
+      --  Only references warrant a marker
+
+      elsif not Nkind_In (N, N_Expanded_Name, N_Identifier) then
+         return False;
+
+      --  Only source references warrant a marker
+
+      elsif not Comes_From_Source (N) then
+         return False;
+
+      --  No marker needs to be created when the reference is erroneous, left
+      --  in a bad state, or does not denote a variable.
+
+      elsif not (Present (Entity (N))
+                  and then Ekind (Entity (N)) = E_Variable
+                  and then Entity (N) /= Any_Id)
+      then
+         return False;
+      end if;
+
+      Var_Id := Entity (N);
+      Prag   := SPARK_Pragma (Var_Id);
+
+      --  Both the variable and reference must appear in SPARK_Mode On regions
+      --  because this elaboration scenario falls under the SPARK rules.
+
+      if not (Comes_From_Source (Var_Id)
+               and then Present (Prag)
+               and then Get_SPARK_Mode_From_Annotation (Prag) = On
+               and then Is_SPARK_Mode_On_Node (N))
+      then
+         return False;
+
+      --  No marker needs to be created when the reference does not appear
+      --  within a suitable context (see body for details).
+
+      --  Performance note: parent traversal
+
+      elsif not Within_Suitable_Context (N) then
+         return False;
+      end if;
+
+      --  At this point it is known that the variable reference will play a
+      --  role in ABE diagnostics and requires a marker.
+
+      return True;
+   end Needs_Variable_Reference_Marker;
 
    ------------------------
    -- New_Copy_List_Tree --
@@ -23045,19 +23193,19 @@ package body Sem_Util is
          if Has_Inheritable_Invariants (From_Typ)
            and then not Has_Inheritable_Invariants (Typ)
          then
-            Set_Has_Inheritable_Invariants (Typ, True);
+            Set_Has_Inheritable_Invariants (Typ);
          end if;
 
          if Has_Inherited_Invariants (From_Typ)
            and then not Has_Inherited_Invariants (Typ)
          then
-            Set_Has_Inherited_Invariants (Typ, True);
+            Set_Has_Inherited_Invariants (Typ);
          end if;
 
          if Has_Own_Invariants (From_Typ)
            and then not Has_Own_Invariants (Typ)
          then
-            Set_Has_Own_Invariants (Typ, True);
+            Set_Has_Own_Invariants (Typ);
          end if;
 
          if Present (Full_IP) and then No (Invariant_Procedure (Typ)) then

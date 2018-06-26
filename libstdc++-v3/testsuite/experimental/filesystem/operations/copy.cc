@@ -114,7 +114,7 @@ test03()
   auto to = __gnu_test::nonexistent_path();
 
   // test empty file
-  std::ofstream{from.native()};
+  std::ofstream{from.c_str()};
   VERIFY( fs::exists(from) );
   VERIFY( fs::file_size(from) == 0 );
   fs::copy(from, to);
@@ -123,7 +123,7 @@ test03()
 
   remove(to);
   VERIFY( !fs::exists(to) );
-  std::ofstream{from.native()} << "Hello, filesystem!";
+  std::ofstream{from.c_str()} << "Hello, filesystem!";
   VERIFY( fs::file_size(from) != 0 );
   fs::copy(from, to);
   VERIFY( fs::exists(to) );
@@ -150,9 +150,9 @@ test04()
   }
 
   __gnu_test::scoped_file f1(from/"a/f1");
-  std::ofstream{f1.path} << "file one";
+  std::ofstream{f1.path.c_str()} << "file one";
   __gnu_test::scoped_file f2(from/"a/b/f2");
-  std::ofstream{f2.path} << "file two";
+  std::ofstream{f2.path.c_str()} << "file two";
 
   copy(from, to, ec);
   VERIFY( !ec );

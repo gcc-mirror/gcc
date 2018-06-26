@@ -582,7 +582,7 @@ struct GTY(()) lto_file_decl_data
   vec<res_pair>  GTY((skip)) respairs;
   unsigned max_index;
 
-  struct gcov_ctr_summary GTY((skip)) profile_info;
+  gcov_summary GTY((skip)) profile_info;
 
   /* Map assigning declarations their resolutions.  */
   hash_map<tree, ld_plugin_symbol_resolution> * GTY((skip)) resolution_map;
@@ -1221,5 +1221,6 @@ struct dref_entry {
 
 extern vec<dref_entry> dref_queue;
 
+extern FILE *streamer_dump_file;
 
 #endif /* GCC_LTO_STREAMER_H  */

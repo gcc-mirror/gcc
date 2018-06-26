@@ -3568,6 +3568,12 @@ add_subroutines (void)
       make_alias ("kmvbits", GFC_STD_GNU);
     }
 
+  add_sym_2s ("random_init", GFC_ISYM_RANDOM_INIT, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
+	      gfc_check_random_init, NULL, gfc_resolve_random_init,
+	      "repeatable",     BT_LOGICAL, dl, REQUIRED, INTENT_IN,
+	      "image_distinct", BT_LOGICAL, dl, REQUIRED, INTENT_IN);
+
   add_sym_1s ("random_number", GFC_ISYM_RANDOM_NUMBER, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F95,
 	      gfc_check_random_number, NULL, gfc_resolve_random_number,

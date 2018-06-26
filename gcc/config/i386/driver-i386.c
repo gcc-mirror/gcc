@@ -872,7 +872,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		cpu = "sandybridge";
 	      else if (has_sse4_2)
 		{
-		  if (has_sgx)
+		  if (has_gfni)
+		    /* Assume Tremont.  */
+		    cpu = "tremont";
+		  else if (has_sgx)
 		    /* Assume Goldmont Plus.  */
 		    cpu = "goldmont-plus";
 		  else if (has_xsave)

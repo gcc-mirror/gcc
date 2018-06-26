@@ -479,8 +479,8 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
 	return error_mark_node;
     }
   t = build4 (TARGET_EXPR, type, decl, value, t, NULL_TREE);
-  if (EXPR_HAS_LOCATION (value))
-    SET_EXPR_LOCATION (t, EXPR_LOCATION (value));
+  if (location_t eloc = cp_expr_location (value))
+    SET_EXPR_LOCATION (t, eloc);
   /* We always set TREE_SIDE_EFFECTS so that expand_expr does not
      ignore the TARGET_EXPR.  If there really turn out to be no
      side-effects, then the optimizer should be able to get rid of
@@ -2144,33 +2144,12 @@ make_module_vec (tree name, unsigned clusters MEM_STAT_DECL)
   return vec;
 }
 
-/* Cache of free ovl nodes.  Uses OVL_FUNCTION for chaining.  */
-static GTY((deletable)) tree ovl_cache;
-
-static tree
-alloc_ovl ()
-{
-  tree result = ovl_cache;
-
-  if (result)
-    {
-      ovl_cache = OVL_FUNCTION (result);
-      /* Zap the flags.  */
-      memset (result, 0, sizeof (tree_base));
-      TREE_SET_CODE (result, OVERLOAD);
-    }
-  else
-    result = make_node (OVERLOAD);
-
-  return result;
-}
-
 /* Make a raw overload node containing FN.  */
 
 tree
 ovl_make (tree fn, tree next)
 {
-  tree result = alloc_ovl ();
+  tree result = make_node (OVERLOAD);
 
   if (TREE_CODE (fn) == OVERLOAD)
     OVL_NESTED_P (result) = true;
@@ -2187,7 +2166,7 @@ ovl_make (tree fn, tree next)
 static tree
 ovl_copy (tree ovl)
 {
-  tree result = alloc_ovl ();
+  tree result = make_node (OVERLOAD);
 
   gcc_checking_assert (!OVL_NESTED_P (ovl) && OVL_USED_P (ovl));
   TREE_TYPE (result) = TREE_TYPE (ovl);
@@ -2463,44 +2442,22 @@ ovl_used (tree ovl)
     }
 }
 
-/* If KEEP is true, preserve the contents of a lookup so that it is
-   available for a later instantiation.  Otherwise release the LOOKUP
-   nodes for reuse.  */
+/* Preserve the contents of a lookup so that it is available for a
+   later instantiation.  */
 
 void
-lookup_keep (tree lookup, bool keep)
+lookup_keep (tree lookup)
 {
   for (;
        lookup && TREE_CODE (lookup) == OVERLOAD
 	 && OVL_LOOKUP_P (lookup) && !OVL_USED_P (lookup);
        lookup = OVL_CHAIN (lookup))
-    if (keep)
-      {
-	OVL_USED_P (lookup) = true;
-	ovl_used (OVL_FUNCTION (lookup));
-      }
-    else
-      {
-	OVL_FUNCTION (lookup) = ovl_cache;
-	ovl_cache = lookup;
-      }
-
-  if (keep)
-    ovl_used (lookup);
-}
-
-/* LIST is a TREE_LIST whose TREE_VALUEs may be OVERLOADS that need
-   keeping, or may be ignored.  */
-
-void
-lookup_list_keep (tree list, bool keep)
-{
-  for (; list; list = TREE_CHAIN (list))
     {
-      tree v = TREE_VALUE (list);
-      if (TREE_CODE (v) == OVERLOAD)
-	lookup_keep (v, keep);
+      OVL_USED_P (lookup) = true;
+      ovl_used (OVL_FUNCTION (lookup));
     }
+
+  ovl_used (lookup);
 }
 
 /* Returns nonzero if X is an expression for a (possibly overloaded)
@@ -2555,10 +2512,11 @@ really_overloaded_fn (tree x)
   return is_overloaded_fn (x) == 2;
 }
 
-/* Get the overload set FROM refers to.  */
+/* Get the overload set FROM refers to.  Returns NULL if it's not an
+   overload set.  */
 
 tree
-get_fns (tree from)
+maybe_get_fns (tree from)
 {
   /* A baselink is also considered an overloaded function.  */
   if (TREE_CODE (from) == OFFSET_REF
@@ -2568,9 +2526,23 @@ get_fns (tree from)
     from = BASELINK_FUNCTIONS (from);
   if (TREE_CODE (from) == TEMPLATE_ID_EXPR)
     from = TREE_OPERAND (from, 0);
-  gcc_assert (TREE_CODE (from) == OVERLOAD
-	      || TREE_CODE (from) == FUNCTION_DECL);
-  return from;
+
+  if (TREE_CODE (from) == OVERLOAD
+      || TREE_CODE (from) == FUNCTION_DECL)
+    return from;
+
+  return NULL;
+}
+
+/* FROM refers to an overload set.  Return that set (or die).  */
+
+tree
+get_fns (tree from)
+{
+  tree res = maybe_get_fns (from);
+
+  gcc_assert (res);
+  return res;
 }
 
 /* Return the first function of the overload set FROM refers to.  */
@@ -3356,12 +3328,7 @@ build_min_nt_loc (location_t loc, enum tree_code code, ...)
   length = TREE_CODE_LENGTH (code);
 
   for (i = 0; i < length; i++)
-    {
-      tree x = va_arg (p, tree);
-      TREE_OPERAND (t, i) = x;
-      if (x && TREE_CODE (x) == OVERLOAD)
-	lookup_keep (x, true);
-    }
+    TREE_OPERAND (t, i) = va_arg (p, tree);
 
   va_end (p);
   return t;
@@ -3389,20 +3356,11 @@ build_min (enum tree_code code, tree tt, ...)
     {
       tree x = va_arg (p, tree);
       TREE_OPERAND (t, i) = x;
-      if (x)
-	{
-	  if (!TYPE_P (x) && TREE_SIDE_EFFECTS (x))
-	    TREE_SIDE_EFFECTS (t) = 1;
-	  if (TREE_CODE (x) == OVERLOAD)
-	    lookup_keep (x, true);
-	}
+      if (x && !TYPE_P (x) && TREE_SIDE_EFFECTS (x))
+	TREE_SIDE_EFFECTS (t) = 1;
     }
 
   va_end (p);
-
-  if (code == CAST_EXPR)
-    /* The single operand is a TREE_LIST, which we have to check.  */
-    lookup_list_keep (TREE_OPERAND (t, 0), true);
 
   return t;
 }
@@ -3432,12 +3390,7 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
 
   for (i = 0; i < length; i++)
-    {
-      tree x = va_arg (p, tree);
-      TREE_OPERAND (t, i) = x;
-      if (x && TREE_CODE (x) == OVERLOAD)
-	lookup_keep (x, true);
-    }
+    TREE_OPERAND (t, i) = va_arg (p, tree);
 
   if (code == COMPOUND_EXPR && TREE_CODE (non_dep) != COMPOUND_EXPR)
     /* This should not be considered a COMPOUND_EXPR, because it
@@ -3460,11 +3413,8 @@ build_min_nt_call_vec (tree fn, vec<tree, va_gc> *args)
   CALL_EXPR_FN (ret) = fn;
   CALL_EXPR_STATIC_CHAIN (ret) = NULL_TREE;
   FOR_EACH_VEC_SAFE_ELT (args, ix, t)
-    {
-      CALL_EXPR_ARG (ret, ix) = t;
-      if (TREE_CODE (t) == OVERLOAD)
-	lookup_keep (t, true);
-    }
+    CALL_EXPR_ARG (ret, ix) = t;
+
   return ret;
 }
 
@@ -3928,6 +3878,14 @@ cp_tree_equal (tree t1, tree t2)
 				     DEFERRED_NOEXCEPT_ARGS (t2)));
       break;
 
+    case USING_DECL:
+      if (DECL_DEPENDENT_P (t1) && DECL_DEPENDENT_P (t2))
+	return (cp_tree_equal (USING_DECL_SCOPE (t1),
+			       USING_DECL_SCOPE (t2))
+		&& cp_tree_equal (DECL_NAME (t1),
+				  DECL_NAME (t2)));
+      return false;
+
     default:
       break;
     }
@@ -4113,15 +4071,26 @@ maybe_warn_parm_abi (tree t, location_t loc)
       || !deleted_copy_types->contains (t))
     return;
 
-  warning_at (loc, OPT_Wabi, "the calling convention for %qT changes in "
-	      "-fabi-version=12 (GCC 8)", t);
-  static bool explained = false;
-  if (!explained)
+  if ((flag_abi_version == 12 || warn_abi_version == 12)
+      && classtype_has_non_deleted_move_ctor (t))
     {
-      inform (loc, " because all of its copy and move constructors "
-	      "are deleted");
-      explained = true;
+      bool w;
+      if (flag_abi_version > 12)
+	w = warning_at (loc, OPT_Wabi, "-fabi-version=13 (GCC 8.2) fixes the "
+			"calling convention for %qT, which was accidentally "
+			"changed in 8.1", t);
+      else
+	w = warning_at (loc, OPT_Wabi, "-fabi-version=12 (GCC 8.1) accident"
+			"ally changes the calling convention for %qT", t);
+      if (w)
+	inform (location_of (t), " declared here");
+      return;
     }
+
+  if (warning_at (loc, OPT_Wabi, "the calling convention for %qT changes in "
+		  "-fabi-version=13 (GCC 8.2)", t))
+    inform (location_of (t), " because all of its copy and move "
+	    "constructors are deleted");
 }
 
 /* Returns true iff copying an object of type T (including via move
@@ -4156,6 +4125,7 @@ type_has_nontrivial_copy_init (const_tree type)
 
       bool saw_copy = false;
       bool saw_non_deleted = false;
+      bool saw_non_deleted_move = false;
 
       if (CLASSTYPE_LAZY_MOVE_CTOR (t))
 	saw_copy = saw_non_deleted = true;
@@ -4187,19 +4157,27 @@ type_has_nontrivial_copy_init (const_tree type)
 		    break;
 		  }
 	      }
+	    else if (move_fn_p (fn))
+	      if (!DECL_DELETED_FN (fn))
+		saw_non_deleted_move = true;
 	  }
 
       gcc_assert (saw_copy);
 
-      if (saw_copy && !saw_non_deleted)
-	{
-	  if (warn_abi && abi_version_crosses (12))
-	    remember_deleted_copy (t);
-	  if (abi_version_at_least (12))
-	    return true;
-	}
+      /* ABI v12 buggily ignored move constructors.  */
+      bool v11nontriv = false;
+      bool v12nontriv = !saw_non_deleted;
+      bool v13nontriv = !saw_non_deleted && !saw_non_deleted_move;
+      bool nontriv = (abi_version_at_least (13) ? v13nontriv
+		      : flag_abi_version == 12 ? v12nontriv
+		      : v11nontriv);
+      bool warn_nontriv = (warn_abi_version >= 13 ? v13nontriv
+			   : warn_abi_version == 12 ? v12nontriv
+			   : v11nontriv);
+      if (nontriv != warn_nontriv)
+	remember_deleted_copy (t);
 
-      return false;
+      return nontriv;
     }
   else
     return 0;
@@ -5473,6 +5451,26 @@ cp_tree_code_length (enum tree_code code)
 
     default:
       return TREE_CODE_LENGTH (code);
+    }
+}
+
+/* Like EXPR_LOCATION, but also handle some tcc_exceptional that have
+   locations.  */
+
+location_t
+cp_expr_location (const_tree t_)
+{
+  tree t = CONST_CAST_TREE (t_);
+  if (t == NULL_TREE)
+    return UNKNOWN_LOCATION;
+  switch (TREE_CODE (t))
+    {
+    case LAMBDA_EXPR:
+      return LAMBDA_EXPR_LOCATION (t);
+    case STATIC_ASSERT:
+      return STATIC_ASSERT_SOURCE_LOCATION (t);
+    default:
+      return EXPR_LOCATION (t);
     }
 }
 

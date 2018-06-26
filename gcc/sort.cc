@@ -69,7 +69,7 @@ do {                                                     \
   memcpy (&t1, e1 + OFFSET, sizeof (TYPE));              \
   char *out = c->out + OFFSET;                           \
   if (likely (c->n == 3))                                \
-    memcpy (out + 2*STRIDE, e2 + OFFSET, sizeof (TYPE)); \
+    memmove (out + 2*STRIDE, e2 + OFFSET, sizeof (TYPE));\
   memcpy (out, &t0, sizeof (TYPE)); out += STRIDE;       \
   memcpy (out, &t1, sizeof (TYPE));                      \
 } while (0)
@@ -101,7 +101,7 @@ do {                                                     \
   memcpy (&t3, e3 + OFFSET, sizeof (TYPE));              \
   char *out = c->out + OFFSET;                           \
   if (likely (c->n == 5))                                \
-    memcpy (out + 4*STRIDE, e4 + OFFSET, sizeof (TYPE)); \
+    memmove (out + 4*STRIDE, e4 + OFFSET, sizeof (TYPE));\
   memcpy (out, &t0, sizeof (TYPE)); out += STRIDE;       \
   memcpy (out, &t1, sizeof (TYPE)); out += STRIDE;       \
   memcpy (out, &t2, sizeof (TYPE)); out += STRIDE;       \

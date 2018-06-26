@@ -1,5 +1,7 @@
 2018-06-26  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r262148.
+
 	gcc/
 	* configure.ac: Fix AF_INET6 & accept4 tests.
 	* configure, config.in: Rebuilt.
@@ -13,7 +15,7 @@
 2018-06-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
-	* cxx-module.cc (kill_signal): New.
+	* cxx-mapper.cc (kill_signal): New.
 	(server): Fixup inet_ntop use.
 
 	gcc/

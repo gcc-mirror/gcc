@@ -51,9 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 
 /* Cached node/edge growths.  */
-vec<edge_growth_cache_entry> edge_growth_cache;
-static struct cgraph_edge_hook_list *edge_removal_hook_holder;
-
+call_summary<edge_growth_cache_entry *> *edge_growth_cache = NULL;
 
 /* Give initial reasons why inlining would fail on EDGE.  This gets either
    nullified or usually overwritten by more precise reasons later.  */
@@ -80,40 +78,13 @@ initialize_inline_failed (struct cgraph_edge *e)
 }
 
 
-/* Keep edge cache consistent across edge removal.  */
-
-static void
-inline_edge_removal_hook (struct cgraph_edge *edge,
-			  void *data ATTRIBUTE_UNUSED)
-{
-  reset_edge_growth_cache (edge);
-}
-
-
-/* Initialize growth caches.  */
-
-void
-initialize_growth_caches (void)
-{
-  if (!edge_removal_hook_holder)
-    edge_removal_hook_holder =
-      symtab->add_edge_removal_hook (&inline_edge_removal_hook, NULL);
-  if (symtab->edges_max_uid)
-    edge_growth_cache.safe_grow_cleared (symtab->edges_max_uid);
-}
-
-
 /* Free growth caches.  */
 
 void
 free_growth_caches (void)
 {
-  if (edge_removal_hook_holder)
-    {
-      symtab->remove_edge_removal_hook (edge_removal_hook_holder);
-      edge_removal_hook_holder = NULL;
-    }
-  edge_growth_cache.release ();
+  delete edge_growth_cache;
+  edge_growth_cache = NULL;
 }
 
 /* Return hints derrived from EDGE.   */
@@ -125,10 +96,10 @@ simple_edge_hints (struct cgraph_edge *edge)
   struct cgraph_node *to = (edge->caller->global.inlined_to
 			    ? edge->caller->global.inlined_to : edge->caller);
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
-  if (ipa_fn_summaries->get (to)->scc_no
-      && ipa_fn_summaries->get (to)->scc_no
-	 == ipa_fn_summaries->get (callee)->scc_no
-      && !edge->recursive_p ())
+  int to_scc_no = ipa_fn_summaries->get (to)->scc_no;
+  int callee_scc_no = ipa_fn_summaries->get (callee)->scc_no;
+
+  if (to_scc_no && to_scc_no  == callee_scc_no && !edge->recursive_p ())
     hints |= INLINE_HINT_same_scc;
 
   if (callee->lto_file_data && edge->caller->lto_file_data
@@ -188,17 +159,17 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   gcc_checking_assert (time >= 0);
 
   /* When caching, update the cache entry.  */
-  if (edge_growth_cache.exists ())
+  if (edge_growth_cache != NULL)
     {
-      ipa_fn_summaries->get (edge->callee)->min_size = min_size;
-      if ((int) edge_growth_cache.length () <= edge->uid)
-	edge_growth_cache.safe_grow_cleared (symtab->edges_max_uid);
-      edge_growth_cache[edge->uid].time = time;
-      edge_growth_cache[edge->uid].nonspec_time = nonspec_time;
+      ipa_fn_summaries->get_create (edge->callee)->min_size = min_size;
+      edge_growth_cache_entry *entry
+	= edge_growth_cache->get_create (edge);
+      entry->time = time;
+      entry->nonspec_time = nonspec_time;
 
-      edge_growth_cache[edge->uid].size = size + (size >= 0);
+      entry->size = size + (size >= 0);
       hints |= simple_edge_hints (edge);
-      edge_growth_cache[edge->uid].hints = hints + 1;
+      entry->hints = hints + 1;
     }
   return time;
 }
@@ -219,10 +190,10 @@ do_estimate_edge_size (struct cgraph_edge *edge)
 
   /* When we do caching, use do_estimate_edge_time to populate the entry.  */
 
-  if (edge_growth_cache.exists ())
+  if (edge_growth_cache != NULL)
     {
       do_estimate_edge_time (edge);
-      size = edge_growth_cache[edge->uid].size;
+      size = edge_growth_cache->get (edge)->size;
       gcc_checking_assert (size);
       return size - (size > 0);
     }
@@ -260,10 +231,10 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
 
   /* When we do caching, use do_estimate_edge_time to populate the entry.  */
 
-  if (edge_growth_cache.exists ())
+  if (edge_growth_cache != NULL)
     {
       do_estimate_edge_time (edge);
-      hints = edge_growth_cache[edge->uid].hints;
+      hints = edge_growth_cache->get (edge)->hints;
       gcc_checking_assert (hints);
       return hints - 1;
     }
@@ -294,13 +265,14 @@ estimate_size_after_inlining (struct cgraph_node *node,
 			      struct cgraph_edge *edge)
 {
   struct ipa_call_summary *es = ipa_call_summaries->get (edge);
+  ipa_fn_summary *s = ipa_fn_summaries->get (node);
   if (!es->predicate || *es->predicate != false)
     {
-      int size = ipa_fn_summaries->get (node)->size + estimate_edge_growth (edge);
+      int size = s->size + estimate_edge_growth (edge);
       gcc_assert (size >= 0);
       return size;
     }
-  return ipa_fn_summaries->get (node)->size;
+  return s->size;
 }
 
 

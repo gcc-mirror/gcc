@@ -1726,7 +1726,8 @@ const_unop (enum tree_code code, tree type, tree arg0)
       && HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
       && REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg0))
       && code != NEGATE_EXPR
-      && code != ABS_EXPR)
+      && code != ABS_EXPR
+      && code != ABSU_EXPR)
     return NULL_TREE;
 
   switch (code)
@@ -1761,6 +1762,7 @@ const_unop (enum tree_code code, tree type, tree arg0)
       }
 
     case ABS_EXPR:
+    case ABSU_EXPR:
       if (TREE_CODE (arg0) == INTEGER_CST || TREE_CODE (arg0) == REAL_CST)
 	return fold_abs_const (arg0, type);
       break;
@@ -2356,7 +2358,9 @@ fold_convertible_p (const_tree type, const_tree arg)
     case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
     case POINTER_TYPE: case REFERENCE_TYPE:
     case OFFSET_TYPE:
-      return (INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig)
+      return (INTEGRAL_TYPE_P (orig)
+	      || (POINTER_TYPE_P (orig)
+		  && TYPE_PRECISION (type) <= TYPE_PRECISION (orig))
 	      || TREE_CODE (orig) == OFFSET_TYPE);
 
     case REAL_TYPE:
@@ -3358,6 +3362,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 	case CLEANUP_POINT_EXPR:
 	case EXPR_STMT:
+	case SAVE_EXPR:
 	  if (flags & OEP_LEXICOGRAPHIC)
 	    return OP_SAME (0);
 	  return 0;
@@ -5082,6 +5087,29 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
       temp = in0_p, in0_p = in1_p, in1_p = temp;
       tem = low0, low0 = low1, low1 = tem;
       tem = high0, high0 = high1, high1 = tem;
+    }
+
+  /* If the second range is != high1 where high1 is the type maximum of
+     the type, try first merging with < high1 range.  */
+  if (low1
+      && high1
+      && TREE_CODE (low1) == INTEGER_CST
+      && (TREE_CODE (TREE_TYPE (low1)) == INTEGER_TYPE
+	  || (TREE_CODE (TREE_TYPE (low1)) == ENUMERAL_TYPE
+	      && known_eq (TYPE_PRECISION (TREE_TYPE (low1)),
+			   GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (low1))))))
+      && operand_equal_p (low1, high1, 0))
+    {
+      if (tree_int_cst_equal (low1, TYPE_MAX_VALUE (TREE_TYPE (low1)))
+	  && merge_ranges (pin_p, plow, phigh, in0_p, low0, high0,
+			   !in1_p, NULL_TREE, range_predecessor (low1)))
+	return true;
+      /* Similarly for the second range != low1 where low1 is the type minimum
+	 of the type, try first merging with > low1 range.  */
+      if (tree_int_cst_equal (low1, TYPE_MIN_VALUE (TREE_TYPE (low1)))
+	  && merge_ranges (pin_p, plow, phigh, in0_p, low0, high0,
+			   !in1_p, range_successor (low1), NULL_TREE))
+	return true;
     }
 
   /* Now flag two cases, whether the ranges are disjoint or whether the
@@ -13843,20 +13871,21 @@ fold_abs_const (tree arg0, tree type)
       {
         /* If the value is unsigned or non-negative, then the absolute value
 	   is the same as the ordinary value.  */
-	if (!wi::neg_p (wi::to_wide (arg0), TYPE_SIGN (type)))
-	  t = arg0;
+	wide_int val = wi::to_wide (arg0);
+	bool overflow = false;
+	if (!wi::neg_p (val, TYPE_SIGN (TREE_TYPE (arg0))))
+	  ;
 
 	/* If the value is negative, then the absolute value is
 	   its negation.  */
 	else
-	  {
-	    bool overflow;
-	    wide_int val = wi::neg (wi::to_wide (arg0), &overflow);
-	    t = force_fit_type (type, val, -1,
-				overflow | TREE_OVERFLOW (arg0));
-	  }
+	  val = wi::neg (val, &overflow);
+
+	/* Force to the destination type, set TREE_OVERFLOW for signed
+	   TYPE only.  */
+	t = force_fit_type (type, val, 1, overflow | TREE_OVERFLOW (arg0));
       }
-      break;
+    break;
 
     case REAL_CST:
       if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg0)))

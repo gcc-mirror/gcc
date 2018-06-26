@@ -8061,9 +8061,13 @@ Builtin_call_expression::do_is_constant() const
 	  arg_type = arg_type->points_to();
 
 	if (arg_type->array_type() != NULL
-	    && arg_type->array_type()->length() != NULL
-	    && Builtin_call_expression::array_len_is_constant(arg))
-	  return true;
+	    && arg_type->array_type()->length() != NULL)
+          {
+	    this->seen_ = true;
+	    bool ret = Builtin_call_expression::array_len_is_constant(arg);
+	    this->seen_ = false;
+	    return ret;
+          }
 
 	if (this->code_ == BUILTIN_LEN && arg_type->is_string_type())
 	  {

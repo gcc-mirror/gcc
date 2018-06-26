@@ -3635,6 +3635,52 @@ conv_intrinsic_free (gfc_code *code)
 }
 
 
+/* Call the RANDOM_INIT library subroutine with a hidden argument for
+   handling seeding on coarray images.  */
+
+static tree
+conv_intrinsic_random_init (gfc_code *code)
+{
+  stmtblock_t block;
+  gfc_se se;
+  tree arg1, arg2, arg3, tmp;
+  tree logical4_type_node = gfc_get_logical_type (4);
+
+  /* Make the function call.  */
+  gfc_init_block (&block);
+  gfc_init_se (&se, NULL);
+
+  /* Convert REPEATABLE to a LOGICAL(4) entity.  */
+  gfc_conv_expr (&se, code->ext.actual->expr);
+  gfc_add_block_to_block (&block, &se.pre);
+  arg1 = fold_convert (logical4_type_node, gfc_evaluate_now (se.expr, &block));
+  gfc_add_block_to_block (&block, &se.post);
+
+  /* Convert IMAGE_DISTINCT to a LOGICAL(4) entity.  */
+  gfc_conv_expr (&se, code->ext.actual->next->expr);
+  gfc_add_block_to_block (&block, &se.pre);
+  arg2 = fold_convert (logical4_type_node, gfc_evaluate_now (se.expr, &block));
+  gfc_add_block_to_block (&block, &se.post);
+
+  /* Create the hidden argument.  For non-coarray codes and -fcoarray=single,
+     simply set this to 0.  For -fcoarray=lib, generate a call to 
+     THIS_IMAGE() without arguments.  */ 
+  arg3 = build_int_cst (gfc_get_int_type (4), 0);
+  if (flag_coarray == GFC_FCOARRAY_LIB)
+    {
+      arg3 = build_call_expr_loc (input_location, gfor_fndecl_caf_this_image,
+				  1, arg3);
+      se.expr = fold_convert (gfc_get_int_type (4), arg3);
+    }
+
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_random_init, 3,
+			     arg1, arg2, arg3);
+  gfc_add_expr_to_block (&block, tmp);
+ 
+  return gfc_finish_block (&block);
+}
+
+
 /* Call the SYSTEM_CLOCK library functions, handling the type and kind
    conversions.  */
 
@@ -11062,6 +11108,10 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
 
     case GFC_ISYM_FREE:
       res = conv_intrinsic_free (code);
+      break;
+
+    case GFC_ISYM_RANDOM_INIT:
+      res = conv_intrinsic_random_init (code);
       break;
 
     case GFC_ISYM_KILL:

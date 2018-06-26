@@ -880,7 +880,7 @@ static const struct tune_params xgene1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -1077,13 +1077,22 @@ aarch64_gen_far_branch (rtx * operands, int pos_label, const char * dest,
 }
 
 void
-aarch64_err_no_fpadvsimd (machine_mode mode, const char *msg)
+aarch64_err_no_fpadvsimd (machine_mode mode)
 {
-  const char *mc = FLOAT_MODE_P (mode) ? "floating-point" : "vector";
   if (TARGET_GENERAL_REGS_ONLY)
-    error ("%qs is incompatible with %s %s", "-mgeneral-regs-only", mc, msg);
+    if (FLOAT_MODE_P (mode))
+      error ("%qs is incompatible with the use of floating-point types",
+	     "-mgeneral-regs-only");
+    else
+      error ("%qs is incompatible with the use of vector types",
+	     "-mgeneral-regs-only");
   else
-    error ("%qs feature modifier is incompatible with %s %s", "+nofp", mc, msg);
+    if (FLOAT_MODE_P (mode))
+      error ("%qs feature modifier is incompatible with the use of"
+	     " floating-point types", "+nofp");
+    else
+      error ("%qs feature modifier is incompatible with the use of"
+	     " vector types", "+nofp");
 }
 
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.
@@ -1108,12 +1117,12 @@ aarch64_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
 {
   machine_mode mode;
 
-  if (reg_class_subset_p (allocno_class, GENERAL_REGS)
-      || reg_class_subset_p (allocno_class, FP_REGS))
+  if (!reg_class_subset_p (GENERAL_REGS, allocno_class)
+      || !reg_class_subset_p (FP_REGS, allocno_class))
     return allocno_class;
 
-  if (reg_class_subset_p (best_class, GENERAL_REGS)
-      || reg_class_subset_p (best_class, FP_REGS))
+  if (!reg_class_subset_p (GENERAL_REGS, best_class)
+      || !reg_class_subset_p (FP_REGS, best_class))
     return best_class;
 
   mode = PSEUDO_REGNO_MODE (regno);
@@ -3519,7 +3528,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
   if (allocate_nvrn)
     {
       if (!TARGET_FLOAT)
-	aarch64_err_no_fpadvsimd (mode, "argument");
+	aarch64_err_no_fpadvsimd (mode);
 
       if (nvrn + nregs <= NUM_FP_ARG_REGS)
 	{
@@ -3661,7 +3670,7 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
       int nregs ATTRIBUTE_UNUSED; /* Likewise.  */
       if (aarch64_vfp_is_call_or_return_candidate (TYPE_MODE (type), type,
 						   &mode, &nregs, NULL))
-	aarch64_err_no_fpadvsimd (TYPE_MODE (type), "return type");
+	aarch64_err_no_fpadvsimd (TYPE_MODE (type));
     }
   return;
 }
@@ -5681,7 +5690,10 @@ aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
   return mode == SImode || mode == DImode
 	 || mode == SFmode || mode == DFmode
 	 || (aarch64_vector_mode_supported_p (mode)
-	     && known_eq (GET_MODE_SIZE (mode), 8));
+	     && (known_eq (GET_MODE_SIZE (mode), 8)
+		 || (known_eq (GET_MODE_SIZE (mode), 16)
+		    && (aarch64_tune_params.extra_tuning_flags
+			& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0)));
 }
 
 /* Return true if REGNO is a virtual pointer register, or an eliminable
@@ -5838,7 +5850,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
 	  if (load_store_pair_p)
 	    return ((known_eq (GET_MODE_SIZE (mode), 4)
-		     || known_eq (GET_MODE_SIZE (mode), 8))
+		     || known_eq (GET_MODE_SIZE (mode), 8)
+		     || known_eq (GET_MODE_SIZE (mode), 16))
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
 	    return (offset_9bit_signed_unscaled_p (mode, offset)
@@ -5898,7 +5911,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
 	  if (load_store_pair_p)
 	    return ((known_eq (GET_MODE_SIZE (mode), 4)
-		     || known_eq (GET_MODE_SIZE (mode), 8))
+		     || known_eq (GET_MODE_SIZE (mode), 8)
+		     || known_eq (GET_MODE_SIZE (mode), 16))
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
 	    return offset_9bit_signed_unscaled_p (mode, offset);
@@ -12254,7 +12268,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
       /* TYPE passed in fp/simd registers.  */
       if (!TARGET_FLOAT)
-	aarch64_err_no_fpadvsimd (mode, "varargs");
+	aarch64_err_no_fpadvsimd (mode);
 
       f_top = build3 (COMPONENT_REF, TREE_TYPE (f_vrtop),
 		      unshare_expr (valist), f_vrtop, NULL_TREE);

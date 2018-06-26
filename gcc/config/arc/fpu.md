@@ -64,6 +64,9 @@
    tmp = gen_rtx_REG (SFmode, ACCL_REGNO);
    emit_move_insn (tmp, operands[3]);
    operands[3] = tmp;
+   if (!register_operand (operands[1], SFmode)
+        && !register_operand (operands[2], SFmode))
+     operands[2] = force_reg (SFmode, operands[2]);
    }")
 
 (define_expand "fnmasf4"
@@ -77,6 +80,9 @@
    tmp = gen_rtx_REG (SFmode, ACCL_REGNO);
    emit_move_insn (tmp, operands[3]);
    operands[3] = tmp;
+   if (!register_operand (operands[1], SFmode)
+        && !register_operand (operands[2], SFmode))
+     operands[2] = force_reg (SFmode, operands[2]);
 }")
 
 (define_insn "fmasf4_fpu"

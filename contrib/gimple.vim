@@ -89,6 +89,14 @@ if s:unknown_tree_is_error
     syn match   gimpleUnknownTree   "\vUnknown tree: \w+"
 end
 
+" Ignore probability of edges and basic blocks
+"  <bb 2> [70.00%]:
+syn match   gimpleFrequency     " \[\d*\.\d*%\]"
+
+" Ignore basic block with a count
+"  <bb 10> [local count: 118111601]:
+syn match   gimpleBBCount       "\v\[(local )?count: \d+\]"
+
 " Numbers
 syn match   gimpleNumber        "\v([^.a-zA-Z0-9_])\zs-?\d+B?"
 syn match   gimpleFloat         "\v\W\zs-?\d*\.\d+(e\+\d+)?"
@@ -108,6 +116,13 @@ syn match   gimpleGotoLabel     "\v<bb \d+\>[^:]"
 
 " Line numbers, generated with -fdump-tree-*-lineno
 syn match   gimpleLineNo        "\v\[[^\]]+:\d+:\d+\]"
+
+" DEBUG statements
+syn match   gimpleDebug         "\v# DEBUG.*"
+
+" GIMPLE predict statement
+syn match   gimplePrediction    "\v\/\/ predicted.*"
+
 
 " Misc C/C++-like keywords
 syn keyword gimpleStructure     struct union enum typedef class
@@ -134,6 +149,10 @@ hi def link gimpleAnnotationOp  Debug
 hi def link gimpleAnnotationMark Debug
 hi def link gimpleString        String
 hi def link gimpleUnknownTree   Error
+hi def link gimpleDebug         Debug
+hi def link gimplePrediction    Debug
+hi def link gimpleFrequency     Debug
+hi def link gimpleBBCount       Debug
 
 let b:current_syntax = "gimple"
 

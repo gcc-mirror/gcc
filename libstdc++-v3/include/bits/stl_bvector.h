@@ -79,6 +79,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     _Bit_reference() _GLIBCXX_NOEXCEPT : _M_p(0), _M_mask(0) { }
 
+#if __cplusplus >= 201103L
+    _Bit_reference(const _Bit_reference&) = default;
+#endif
+
     operator bool() const _GLIBCXX_NOEXCEPT
     { return !!(*_M_p & _M_mask); }
 

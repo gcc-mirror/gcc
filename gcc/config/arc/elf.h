@@ -73,3 +73,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END arc_file_end
+
+/* If no specs file is enforced, default to nosys libarary.  */
+#undef LINK_GCC_C_SEQUENCE_SPEC
+#define LINK_GCC_C_SEQUENCE_SPEC				\
+  "--start-group %G %{!specs=*:-lc -lnosys} --end-group"

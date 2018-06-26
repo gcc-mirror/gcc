@@ -118,3 +118,40 @@ test04()
   std::basic_string s4((char32_t)1, U'a', std::allocator<char32_t>());
   check_type<std::u32string>(s4);
 }
+
+void
+test05()
+{
+  // LWG 3075 basic_string needs deduction guides from basic_string_view
+  std::string_view sv{"A View to a Kill"};
+  const std::allocator<char> a;
+
+  std::basic_string s1(sv);
+  check_type<std::string>(s1);
+
+  std::basic_string s2(sv, a);
+  check_type<std::string>(s2);
+
+  std::basic_string s3(sv, 2u, 6u);
+  check_type<std::string>(s3);
+
+  std::basic_string s4(sv, 2u, 6u, a);
+  check_type<std::string>(s4);
+}
+
+void
+test06()
+{
+  // LWG 3076 basic_string CTAD ambiguity
+  using namespace std;
+  string s0;
+
+  basic_string s1(s0, 1, 1);
+  check_type<std::string>(s1);
+
+  basic_string s2("cat"sv, 1, 1);
+  check_type<std::string>(s2);
+
+  basic_string s3("cat", 1);
+  check_type<std::string>(s3);
+}

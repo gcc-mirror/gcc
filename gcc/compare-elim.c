@@ -690,6 +690,13 @@ try_merge_compare (struct comparison *cmp)
     return false;
 
   rtx src = SET_SRC (set);
+
+  /* If the source uses addressing modes with side effects, we can't
+     do the merge because we'd end up with a PARALLEL that has two
+     instances of that side effect in it.  */
+  if (side_effects_p (src))
+    return false;
+
   rtx flags = maybe_select_cc_mode (cmp, src, CONST0_RTX (GET_MODE (src)));
   if (!flags)
     {
@@ -807,6 +814,12 @@ try_eliminate_compare (struct comparison *cmp)
     cmp_src = in_a;
 
   else
+    return false;
+
+  /* If the source uses addressing modes with side effects, we can't
+     do the merge because we'd end up with a PARALLEL that has two
+     instances of that side effect in it.  */
+  if (side_effects_p (cmp_src))
     return false;
 
   /* Determine if we ought to use a different CC_MODE here.  */

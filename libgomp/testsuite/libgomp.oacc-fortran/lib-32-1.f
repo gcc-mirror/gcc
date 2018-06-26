@@ -90,7 +90,7 @@
          H(I) = I + 10
       END DO
 
-      CALL ACC_COPYOUT (H, INT (SIZEOF (H), 4))
+      CALL ACC_COPYOUT_FINALIZE (H, INT (SIZEOF (H), 4))
       IF (.NOT. SHARED_MEM) THEN
          IF (ACC_IS_PRESENT (H, INT (SIZEOF (H), 8))) STOP 11
       ENDIF
@@ -163,7 +163,7 @@
          IF (H(I) .NE. I + MERGE (18, 17, SHARED_MEM)) STOP 23
       END DO
 
-      CALL ACC_DELETE (H)
+      CALL ACC_DELETE_FINALIZE (H)
       IF (.NOT. SHARED_MEM) THEN
          IF (ACC_IS_PRESENT (H, INT (SIZEOF (H), 4))) STOP 24
       ENDIF

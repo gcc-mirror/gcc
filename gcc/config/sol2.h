@@ -113,6 +113,7 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("_XOPEN_SOURCE=600");		\
 	builtin_define ("_LARGEFILE_SOURCE=1");		\
 	builtin_define ("_LARGEFILE64_SOURCE=1");	\
+	builtin_define ("_FILE_OFFSET_BITS=64");	\
 	builtin_define ("__EXTENSIONS__");		\
       }							\
     TARGET_SUB_OS_CPP_BUILTINS();			\

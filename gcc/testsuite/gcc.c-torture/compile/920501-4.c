@@ -1,5 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-skip-if "ptxas times out" { nvptx-*-* } { "-O1" } { "" } } */
+/* { dg-skip-if "Array too big" { "pdp11-*-*" } { "-mint32" } } */
 
 foo ()
 {

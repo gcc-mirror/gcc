@@ -245,10 +245,6 @@ cgraph_externally_visible_p (struct cgraph_node *node,
   if (MAIN_NAME_P (DECL_NAME (node->decl)))
     return true;
 
-  if (node->instrumentation_clone
-      && MAIN_NAME_P (DECL_NAME (node->orig_decl)))
-    return true;
-
   return false;
 }
 

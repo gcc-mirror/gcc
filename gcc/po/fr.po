@@ -132,10 +132,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 8.1-b20180401\n"
+"Project-Id-Version: gcc 8.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-05-01 20:30+0000\n"
-"PO-Revision-Date: 2018-04-11 06:30+0200\n"
+"PO-Revision-Date: 2018-06-03 11:52+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -1670,7 +1670,7 @@ msgid "internal compiler error: "
 msgstr "erreur interne du compilateur: "
 
 # Ce message ne DOIT PAS être traduit pour l'instant car les IDE l'utilisent pour détecter une erreur de compilation
-# Voir bug #79423
+# Voir bug #79423 (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79423)
 #. This one is just for counting DK_WARNING promoted to DK_ERROR
 #. due to -Werror and -Werror=warning.
 #: diagnostic.def:35 diagnostic.def:47
@@ -1683,7 +1683,7 @@ msgid "sorry, unimplemented: "
 msgstr "désolé, pas implémenté: "
 
 # Ce message ne DOIT PAS être traduit pour l'instant car les IDE l'utilisent pour détecter un avertissement à la compilation
-# Voir bug #79423
+# Voir bug #79423 (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79423)
 #: diagnostic.def:37
 #, fuzzy
 msgid "warning: "
@@ -9859,10 +9859,8 @@ msgid "Attempt to avoid generating instruction sequences containing ret bytes."
 msgstr "Essayer d'éviter de générer des séquences d'instructions contenant des octets « ret »."
 
 #: config/i386/i386.opt:1011
-#, fuzzy
-#| msgid "Specifically enables an shadow stack support feature from Control-flow Enforcement Technology (CET)."
 msgid "Enable shadow stack built-in functions from Control-flow Enforcement Technology (CET)."
-msgstr "Activer spécifiquement une fonctionnalité supportant la pile masquée de CET (Control-flow Enforcement Technology)."
+msgstr "Activer les fonctions internes de la pile masquée de CET (Control-flow Enforcement Technology)."
 
 #: config/i386/i386.opt:1016
 msgid "Turn on CET instrumentation for switch statements that use a jump table and an indirect jump."
@@ -9889,16 +9887,12 @@ msgid "Force indirect call and jump via register."
 msgstr "Forcer les appels indirects et les sauts via un registre."
 
 #: config/i386/i386.opt:1053
-#, fuzzy
-#| msgid "Support BMI built-in functions and code generation."
 msgid "Support MOVDIRI built-in functions and code generation."
-msgstr "Supporter les fonctions internes BMI et la génération de code."
+msgstr "Supporter les fonctions internes MOVDIRI et la génération de code."
 
 #: config/i386/i386.opt:1057
-#, fuzzy
-#| msgid "Support BMI built-in functions and code generation."
 msgid "Support MOVDIR64B built-in functions and code generation."
-msgstr "Supporter les fonctions internes BMI et la génération de code."
+msgstr "Supporter les fonctions internes MOVDIR64B et la génération de code."
 
 #: config/pa/pa64-hpux.opt:23
 msgid "Assume code will be linked by GNU ld."
@@ -11450,28 +11444,20 @@ msgid "%<-mvrsave=yes%> is deprecated; use %<-mvrsave%> instead"
 msgstr "%<-mvrsave=yes%> est dépréciée. Utilisez plutôt %<-mvrsave%>"
 
 #: config/rs6000/rs6000.opt:334
-#, fuzzy
-#| msgid "Max. count of debug markers to expand or inline."
 msgid "Max number of bytes to move inline."
-msgstr "Nombre max de marqueurs de débogage à étendre ou mettre en ligne."
+msgstr "Nombre max d'octets à déplacer en ligne."
 
 #: config/rs6000/rs6000.opt:338
-#, fuzzy
-#| msgid "The maximum number of insns of an unswitched loop."
 msgid "Max number of bytes to compare without loops."
-msgstr "Le nombre maximum d'insns d'une boucle qui est déplacée à l'intérieur de ses branchements."
+msgstr "Nombre max d'octets à comparer sans boucles."
 
 #: config/rs6000/rs6000.opt:342
-#, fuzzy
-#| msgid "The maximum number of insns of an unswitched loop."
 msgid "Max number of bytes to compare with loops."
-msgstr "Le nombre maximum d'insns d'une boucle qui est déplacée à l'intérieur de ses branchements."
+msgstr "Nombre max d'octets à comparer dans des boucles."
 
 #: config/rs6000/rs6000.opt:346
-#, fuzzy
-#| msgid "The maximum number of peelings of a single loop."
 msgid "Max number of pairs of load insns for compare."
-msgstr "Le nombre maximum de dépliages pour aplatir une boucle."
+msgstr "Nombre max de paires de chargement d'insns pour une comparaison."
 
 #: config/rs6000/rs6000.opt:353
 msgid "%<-misel=no%> is deprecated; use %<-mno-isel%> instead"
@@ -11482,16 +11468,12 @@ msgid "%<-misel=yes%> is deprecated; use %<-misel%> instead"
 msgstr "%<-misel=yes%> est déprécié; utilisez plutôt %<-misel%>"
 
 #: config/rs6000/rs6000.opt:410
-#, fuzzy
-#| msgid "-mtraceback=\tSelect full, part, or no traceback table."
 msgid "-mtraceback=[full,part,no]\tSelect type of traceback table."
-msgstr "-mtraceback=\tSélectionner « full » (complète), « part » (partielle) ou « no » (aucune) pour la table de retraçage."
+msgstr "-mtraceback=[full,part,no]\tSélectionner le type de table de retraçage."
 
 #: config/rs6000/rs6000.opt:438
-#, fuzzy
-#| msgid "-mlong-double-<n>\tSpecify size of long double (64 or 128 bits)."
 msgid "-mlong-double-[64,128]\tSpecify size of long double."
-msgstr "-mlong-double-<n>\tSpécifier la taille des long double (64 ou 128 bits)."
+msgstr "-mlong-double-[64,128]\tSpécifier la taille des long double."
 
 #: config/rs6000/rs6000.opt:537 config/arc/arc.opt:173 config/arc/arc.opt:339
 #: config/arc/arc.opt:346 config/arc/arc.opt:350 config/arc/arc.opt:354
@@ -11502,26 +11484,20 @@ msgid "%qs is deprecated"
 msgstr "%qs est obsolète"
 
 #: config/rs6000/sysv4.opt:24
-#, fuzzy
-#| msgid "Select ABI calling convention."
 msgid "-mcall-ABI\tSelect ABI calling convention."
-msgstr "Sélectionner la convention d'appel de l'ABI."
+msgstr "-mcall-ABI\tSélectionner la convention d'appel de l'ABI."
 
 #: config/rs6000/sysv4.opt:28
-#, fuzzy
-#| msgid "Select method for sdata handling."
 msgid "-msdata=[none,data,sysv,eabi]\tSelect method for sdata handling."
-msgstr "Sélectionner la méthode de traitement de sdata."
+msgstr "-msdata=[none,data,sysv,eabi]\tSélectionner la méthode de traitement de sdata."
 
 #: config/rs6000/sysv4.opt:32
 msgid "Allow readonly data in sdata."
 msgstr "Autoriser des données en lecture seule dans sdata."
 
 #: config/rs6000/sysv4.opt:36
-#, fuzzy
-#| msgid "Specify bit size of immediate TLS offsets."
 msgid "-mtls-size=[16,32]\tSpecify bit size of immediate TLS offsets."
-msgstr "Spécifier la taille en bits des décalages TLS immédiats."
+msgstr "-mtls-size=[16,32]\tSpécifier la taille en bits des décalages TLS immédiats."
 
 #: config/alpha/alpha.opt:27
 msgid "Use fp registers."
@@ -12627,15 +12603,15 @@ msgstr "Générer du code en mode petit-boutiste."
 
 #: config/nds32/nds32.opt:40
 msgid "Specify which ABI type to generate code for: 2, 2fp+."
-msgstr ""
+msgstr "Spécifier le type d'ABI pour lequel générer du code: 2, 2fp+."
 
 #: config/nds32/nds32.opt:54
 msgid "Specify use soft floating point ABI which mean alias to -mabi=2."
-msgstr ""
+msgstr "Spécifier l'utilisation de l'ABI en virgule flottante logicielle ce qui est synonyme de -mabi=2."
 
 #: config/nds32/nds32.opt:58
 msgid "Specify use soft floating point ABI which mean alias to -mabi=2fp+."
-msgstr ""
+msgstr "Spécifier l'utilisation de l'ABI en virgule flottante logicielle ce qui est synonyme de -mabi=2fp+."
 
 #: config/nds32/nds32.opt:64
 msgid "Use reduced-set registers for register allocation."
@@ -12647,13 +12623,11 @@ msgstr "Utiliser des registres complets pour l'allocation de registres."
 
 #: config/nds32/nds32.opt:74
 msgid "Always align function entry, jump target and return address."
-msgstr ""
+msgstr "Toujours aligner l'entrée de la fonction, la cible du saut et l'adresse de retour."
 
 #: config/nds32/nds32.opt:78
-#, fuzzy
-#| msgid "Patchable function entry > size"
 msgid "Align function entry to 4 byte."
-msgstr "Entrée de fonction patchable > taille"
+msgstr "Aligner l'entrée d'une fonction sur 4 octets."
 
 #: config/nds32/nds32.opt:91
 msgid "Generate conditional move instructions."
@@ -12681,7 +12655,7 @@ msgstr "Générer des instructions 16 bits."
 
 #: config/nds32/nds32.opt:115
 msgid "Insert relax hint for linker to do relaxation."
-msgstr ""
+msgstr "Insérer des indices de relaxation pour que l'éditeur de lien fasse la relaxation."
 
 #: config/nds32/nds32.opt:119
 msgid "Enable Virtual Hosting support."
@@ -12717,21 +12691,19 @@ msgstr "Types de processeurs connus (à utiliser avec l'option -mcpu=):"
 
 #: config/nds32/nds32.opt:242
 msgid "Specify a fpu configuration value from 0 to 7; 0-3 is as FPU spec says, and 4-7 is corresponding to 0-3."
-msgstr ""
+msgstr "Spécifie une valeur de configuration fpu entre 0 et 7: 0-3 respecte la spec du FPU et 4-7 correspondent à 0-3."
 
 #: config/nds32/nds32.opt:246
-#, fuzzy
-#| msgid "Known floating-point ABIs (for use with the -mfloat-abi= option):"
 msgid "Known floating-point number of registers (for use with the -mconfig-fpu= option):"
-msgstr "ABI en virgule flottante connues (à utiliser avec l'option -mfloat-abi=):"
+msgstr "Nombre de registres en virgule flottante connus (à utiliser avec l'option -mconfig-fpu=):"
 
 #: config/nds32/nds32.opt:274
 msgid "Specify configuration of instruction mul: fast1, fast2 or slow. The default is fast1."
-msgstr ""
+msgstr "Spécifier la configuration de l'instruction mul: fast1, fast2 ou slow. fast1 est la valeur par défaut."
 
 #: config/nds32/nds32.opt:293
 msgid "Specify how many read/write ports for n9/n10 cores.  The value should be 3r2w or 2r1w."
-msgstr ""
+msgstr "Spécifier combien de port lecture/écriture pour les cœurs n9/n10.  La valeur devrait être 3r2w ou 2r1w"
 
 #: config/nds32/nds32.opt:306
 msgid "Enable constructor/destructor feature."
@@ -12742,26 +12714,20 @@ msgid "Guide linker to relax instructions."
 msgstr "Guider l'éditeur de liens pour relâcher les instructions."
 
 #: config/nds32/nds32.opt:314
-#, fuzzy
-#| msgid "Generate floating point mathematics using given instruction set."
 msgid "Generate floating-point multiply-accumulation instructions."
-msgstr "Générer les mathématiques en virgule flottante avec le jeu d'instructions donné."
+msgstr "Générer les instructions multiplie-accumule en virgule flottante."
 
 #: config/nds32/nds32.opt:318
-#, fuzzy
-#| msgid "Use paired-single floating-point instructions."
 msgid "Generate single-precision floating-point instructions."
-msgstr "Utiliser les instructions en virgule flottante simple précision appariées (paired-single)."
+msgstr "Générer des instructions en virgule flottante simple précision."
 
 #: config/nds32/nds32.opt:322
-#, fuzzy
-#| msgid "Generate code that uses 68881 floating-point instructions."
 msgid "Generate double-precision floating-point instructions."
-msgstr "Générer du code qui utilise les instructions en virgules flottantes du 68881."
+msgstr "Générer des instructions en virgule flottante double précision."
 
 #: config/nds32/nds32.opt:326
 msgid "Always save $lp in the stack."
-msgstr ""
+msgstr "Toujours sauvegarder $lp sur la pile."
 
 #: config/iq2000/iq2000.opt:31
 msgid "Specify CPU for code generation purposes."
@@ -16493,12 +16459,11 @@ msgid "%K%qD writing %E or more bytes into a region of size %E overflows the des
 msgstr "%K%qD: l'écriture de %E octets ou plus dans une région de taille %E déborde de la destination"
 
 #: builtins.c:3176
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %E byte into a region of size %E overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing %E byte into a region of size %E overflows the destination"
 msgid_plural "%K%qD writing %E bytes into a region of size %E overflows the destination"
 msgstr[0] "%K%qD: l'écriture de %E octet dans une région de taille %E déborde de la destination"
-msgstr[1] "%K%qD: l'écriture de %E octet dans une région de taille %E déborde de la destination"
+msgstr[1] "%K%qD: l'écriture de %E octets dans une région de taille %E déborde de la destination"
 
 #: builtins.c:3191
 #, gcc-internal-format
@@ -16526,12 +16491,11 @@ msgid "%K%qD specified bound between %E and %E exceeds destination size %E"
 msgstr "%K%qD: la limite spécifiée entre %E et %E excède la taille de la destination (%E)"
 
 #: builtins.c:3276
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD reading %E byte from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD reading %E byte from a region of size %E"
 msgid_plural "%K%qD reading %E bytes from a region of size %E"
 msgstr[0] "%K%qD lecture de %E octet depuis une région de taille %E"
-msgstr[1] "%K%qD lecture de %E octet depuis une région de taille %E"
+msgstr[1] "%K%qD lecture de %E octets depuis une région de taille %E"
 
 #: builtins.c:3283
 #, gcc-internal-format
@@ -19971,7 +19935,7 @@ msgstr "les champs ont un agencement différent dans une autre unité de traduct
 #: ipa-devirt.c:1586
 #, gcc-internal-format
 msgid "one field is bitfield while other is not"
-msgstr ""
+msgstr "un champ est un champ de bits alors que l'autre ne l'est pasq"
 
 #: ipa-devirt.c:1609
 #, gcc-internal-format
@@ -20302,16 +20266,14 @@ msgid "target does not support function version dispatcher"
 msgstr "la cible ne supporte pas le répartiteur de version de fonction"
 
 #: multiple_target.c:91
-#, fuzzy, gcc-internal-format
-#| msgid "default target_clones attribute was not set"
+#, gcc-internal-format
 msgid "default %<target_clones%> attribute was not set"
-msgstr "l'attribut target_clones par défaut n'a pas été défini"
+msgstr "l'attribut %<target_clones%> par défaut n'a pas été défini"
 
 #: multiple_target.c:343
-#, fuzzy, gcc-internal-format
-#| msgid "single target_clones attribute is ignored"
+#, gcc-internal-format
 msgid "single %<target_clones%> attribute is ignored"
-msgstr "l'attribut target_clones isolé est ignoré"
+msgstr "l'attribut %<target_clones%> isolé est ignoré"
 
 #: multiple_target.c:351
 #, gcc-internal-format
@@ -20329,10 +20291,9 @@ msgid "default target was not set"
 msgstr "la cible par défaut n'a pas été définie"
 
 #: multiple_target.c:379
-#, fuzzy, gcc-internal-format
-#| msgid "missing value in %<target()%> pragma or attribute"
+#, gcc-internal-format
 msgid "an empty string cannot be in %<target_clones%> attribute"
-msgstr "valeur manquante dans le pragma ou l'attribut %<target()%>"
+msgstr "une chaîne vide ne peut pas être dans l'attribut %<target_clones%>"
 
 #: omp-expand.c:2016
 #, gcc-internal-format
@@ -23518,10 +23479,9 @@ msgstr "le type est obsolète"
 #.
 #. Convenience macro for matching individual fields.
 #: tree.c:13043
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "type variant differs by "
+#, gcc-internal-format, gfc-internal-format
 msgid "type variant differs by %s"
-msgstr "la variante du type diffère sur "
+msgstr "la variante du type diffère sur %s"
 
 #: tree.c:13084
 #, gcc-internal-format
@@ -30532,34 +30492,29 @@ msgid "constant argument out of range for %s"
 msgstr "argument constant hors limite pour %s"
 
 #: config/nds32/nds32-intrinsic.c:690
-#, fuzzy, gcc-internal-format
-#| msgid "this builtin function is only available on the fr450"
+#, gcc-internal-format
 msgid "this builtin function is only available on the v3s or v3f toolchain"
-msgstr "cette fonction interne est seulement disponible sur le fr450"
+msgstr "cette fonction interne est seulement disponible sur la chaîne de compilation v3s ou v3f"
 
 #: config/nds32/nds32-intrinsic.c:702
-#, fuzzy, gcc-internal-format
-#| msgid "this builtin function is only available on the fr450"
+#, gcc-internal-format
 msgid "this builtin function is only available on the v3f toolchain"
-msgstr "cette fonction interne est seulement disponible sur le fr450"
+msgstr "cette fonction interne est seulement disponible sur la chaîne de compilation v3f"
 
 #: config/nds32/nds32-intrinsic.c:717
-#, fuzzy, gcc-internal-format
-#| msgid "this builtin is not supported for this target"
+#, gcc-internal-format
 msgid "this builtin function not support on the v3m toolchain"
-msgstr "cette fonction interne n'est pas supportée pour cette cible"
+msgstr "cette fonction interne n'est pas supportée sur la chaîne de compilation v3m"
 
 #: config/nds32/nds32-intrinsic.c:736
-#, fuzzy, gcc-internal-format
-#| msgid "don't support string extension instructions"
+#, gcc-internal-format
 msgid "don't support performance extension instructions"
-msgstr "ne pas supporter les instructions de l'extension de chaînes"
+msgstr "ne pas supporter les instructions de l'extension de performance"
 
 #: config/nds32/nds32-intrinsic.c:748
-#, fuzzy, gcc-internal-format
-#| msgid "Generate performance extension version 2 instructions."
+#, gcc-internal-format
 msgid "don't support performance extension version 2 instructions"
-msgstr "Générer des instructions de l'extension de performance version 2."
+msgstr "ne pas supporter les instructions de l'extension de performance version 2"
 
 #: config/nds32/nds32-intrinsic.c:760
 #, gcc-internal-format
@@ -30600,10 +30555,9 @@ msgstr "l'index du registre intrinsèque est hors limite"
 #: config/nds32/nds32.c:3041 config/nds32/nds32.c:3048
 #: config/nds32/nds32.c:3055 config/nds32/nds32.c:3062
 #: config/nds32/nds32.c:3069
-#, fuzzy, gcc-internal-format
-#| msgid "intrinsic register index is out of range"
+#, gcc-internal-format
 msgid "CCTL intrinsic function subtype out of range!"
-msgstr "l'index du registre intrinsèque est hors limite"
+msgstr "le sous-type de fonction intrinsèque CCTL est hors limite !"
 
 #: config/nds32/nds32.c:3508
 #, gcc-internal-format
@@ -30628,12 +30582,12 @@ msgstr "fonction « warm » invalide pour l'attribut de réinitialisation"
 #: config/nds32/nds32.c:3638
 #, gcc-internal-format
 msgid "Disable FPU ISA, the ABI option must be enable '-mfloat-abi=soft'"
-msgstr ""
+msgstr "Désactiver l'ISA FPU, l'option ABI doit activer « -mfloat-abi=soft »"
 
 #: config/nds32/nds32.c:3641
 #, gcc-internal-format
 msgid "'-mabi=2fp+' option only support when FPU available, must be enable '-mext-fpu-sp' or '-mext-fpu-dp'"
-msgstr ""
+msgstr "L'option « -mabi=2fp+ » est supportée si un FPU est disponible, doit activer « -mext-fpu-sp » ou « -mext-fpu-dp »"
 
 #: config/nds32/nds32.c:3647
 #, gcc-internal-format
@@ -32213,10 +32167,9 @@ msgid "builtin %qs only accepts 1 argument"
 msgstr "la fonction interne %qs n'accepte qu'un argument"
 
 #: config/rs6000/rs6000-c.c:7054
-#, fuzzy, gcc-internal-format
-#| msgid "builtin function %qs requires the %qs option"
+#, gcc-internal-format
 msgid "builtin %qs requires builtin %qs"
-msgstr "la fonction interne %qs requiert l'option %qs"
+msgstr "l'interne %qs requiert l'interne %qs"
 
 #: config/rs6000/rs6000-c.c:7058
 #, gcc-internal-format
@@ -40957,10 +40910,9 @@ msgid "cannot decompose class type %qT because it has an anonymous union member"
 msgstr "impossible de décomposer le type de la classe %qT car il a une union anonyme comme membre"
 
 #: cp/decl.c:7339
-#, fuzzy, gcc-internal-format
-#| msgid "cannot decompose non-public member %qD of %qT"
+#, gcc-internal-format
 msgid "cannot decompose inaccessible member %qD of %qT"
-msgstr "impossible de décomposer le membre non publique %qD de %qT"
+msgstr "impossible de décomposer le membre inaccessible %qD de %qT"
 
 #: cp/decl.c:7365
 #, gcc-internal-format
@@ -41039,10 +40991,9 @@ msgid "cannot decompose lambda closure type %qT"
 msgstr "impossible de décomposer le type de fermeture lambda %qT"
 
 #: cp/decl.c:7765
-#, fuzzy, gcc-internal-format
-#| msgid "structured binding refers to incomplete type %qT"
+#, gcc-internal-format
 msgid "structured binding refers to incomplete class type %qT"
-msgstr "la liaison structurée fait référence au type incomplet %qT"
+msgstr "la liaison structurée fait référence au type de classe incomplet %qT"
 
 #: cp/decl.c:7774
 #, gcc-internal-format
@@ -41866,10 +41817,9 @@ msgid "%qs function with trailing return type has %qT as its type rather than pl
 msgstr "la fonction %qs avec un type de retour à la fin a %qT comme étant son type au lieu d'un simple %<auto%>"
 
 #: cp/decl.c:11147
-#, fuzzy, gcc-internal-format
-#| msgid "deduced class type %qT in function return type"
+#, gcc-internal-format
 msgid "deduced class type %qD in function return type"
-msgstr "type de classe %qT déduit dans le type de retour de la fonction"
+msgstr "type de classe %qD déduit dans le type de retour de la fonction"
 
 #: cp/decl.c:11156
 #, gcc-internal-format
@@ -43743,10 +43693,9 @@ msgid "array of runtime bound cannot be captured by copy, only by reference"
 msgstr "le tableau avec une limite déterminée à l'exécution ne peut pas être capturée par copie, uniquement par référence"
 
 #: cp/lambda.c:557
-#, fuzzy, gcc-internal-format
-#| msgid "capture of variable-size type %qT that is not an N3639 array of runtime bound"
+#, gcc-internal-format
 msgid "capture of variably-modified type %qT that is not an N3639 array of runtime bound"
-msgstr "capture du type de taille variable %qT qui n'est pas un tableau N3639 avec une limite déterminée à l'exécution"
+msgstr "capture du type modifié par une variable %qT qui n'est pas un tableau N3639 avec une limite déterminée à l'exécution"
 
 #: cp/lambda.c:561
 #, gcc-internal-format
@@ -44238,10 +44187,9 @@ msgid "%<std::%s%> is defined in header %qs; did you forget to %<#include %s%>?"
 msgstr "%<std::%s%> est défini dans l'en-tête %qs ; avez-vous oublié %<#include %s%> ?"
 
 #: cp/name-lookup.c:5711
-#, fuzzy, gcc-internal-format
-#| msgid "%s is not available for %s architecture"
+#, gcc-internal-format
 msgid "%<std::%s%> is only available from %s onwards"
-msgstr "%s n'est pas disponible pour l'architecture %s"
+msgstr "%<std::%s%> est uniquement disponible à partir de %s"
 
 #: cp/name-lookup.c:5929
 #, gcc-internal-format
@@ -44254,10 +44202,9 @@ msgid "it was later defined here"
 msgstr "elle a été définie ici plus tard"
 
 #: cp/name-lookup.c:6687
-#, fuzzy, gcc-internal-format
-#| msgid "declaration of std::initializer_list does not match #include <initializer_list>, isn't a template"
+#, gcc-internal-format
 msgid "declaration of %<std::initializer_list%> does not match %<#include <initializer_list>%>, isn't a template"
-msgstr "la déclaration de std::initializer_list ne correspond pas à #include <initializer_list> et n'est pas un patron"
+msgstr "la déclaration de %<std::initializer_list%> ne correspond pas à %<#include <initializer_list>%> et n'est pas un patron"
 
 #: cp/name-lookup.c:7059
 #, gcc-internal-format
@@ -44889,10 +44836,9 @@ msgid "ISO C++ does not allow ?: with omitted middle operand"
 msgstr "le C++ ISO ne permet pas d'omettre l'opérande du milieu de ?:"
 
 #: cp/parser.c:9832
-#, fuzzy, gcc-internal-format
-#| msgid "types may not be defined in conditions"
+#, gcc-internal-format
 msgid "types may not be defined within __builtin_offsetof"
-msgstr "des types ne peuvent pas être définis dans des conditions"
+msgstr "des types ne peuvent pas être définis dans __builtin_offsetof"
 
 #: cp/parser.c:10119
 #, gcc-internal-format
@@ -47336,10 +47282,9 @@ msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth=
 msgstr "la profondeur d'instanciation du patron excède le maximum qui est %d (utilisez -ftemplate-depth= pour augmenter le maximum)"
 
 #: cp/pt.c:11202
-#, fuzzy, gcc-internal-format
-#| msgid "flexible array member in union"
+#, gcc-internal-format
 msgid "flexible array member %qD in union"
-msgstr "tableau flexible comme membre de l'union"
+msgstr "membre tableau flexible %qD dans l'union"
 
 #: cp/pt.c:11691
 #, gcc-internal-format
@@ -47756,10 +47701,9 @@ msgid "deduced expression type does not satisfy placeholder constraints"
 msgstr "le type déduit pour l'expression ne satisfait pas les indications de contraintes"
 
 #: cp/pt.c:26912
-#, fuzzy, gcc-internal-format
-#| msgid "invalid use of %<auto%> in template argument"
+#, gcc-internal-format
 msgid "invalid use of %qT in template argument"
-msgstr "utilisation invalide de %<auto%> dans un argument de patron"
+msgstr "utilisation invalide de %qT dans un argument de patron"
 
 #: cp/repo.c:113
 #, gcc-internal-format
@@ -48101,10 +48045,9 @@ msgid "cannot apply %<offsetof%> to member function %qD"
 msgstr "impossible d'appliquer %<offsetof%> à la fonction membre %qD"
 
 #: cp/semantics.c:4056
-#, fuzzy, gcc-internal-format
-#| msgid "cannot apply %<offsetof%> to member function %qD"
+#, gcc-internal-format
 msgid "cannot apply %<offsetof%> to member function"
-msgstr "impossible d'appliquer %<offsetof%> à la fonction membre %qD"
+msgstr "impossible d'appliquer %<offsetof%> à la fonction membre"
 
 #: cp/semantics.c:4061
 #, gcc-internal-format
@@ -48112,10 +48055,9 @@ msgid "cannot apply %<offsetof%> to an enumerator %qD"
 msgstr "impossible d'appliquer %<offsetof%> à un énumérateur %qD"
 
 #: cp/semantics.c:4072
-#, fuzzy, gcc-internal-format
-#| msgid "offsetof within non-standard-layout type %qT is undefined"
+#, gcc-internal-format
 msgid "offsetof within non-standard-layout type %qT is conditionally-supported"
-msgstr "l'utilisation de offsetof à l'intérieur du type %qT (qui ne respecte pas l'agencement standard) est indéfini"
+msgstr "l'utilisation de offsetof à l'intérieur du type %qT (qui ne respecte pas l'agencement standard) est supporté conditionnellement"
 
 #: cp/semantics.c:4583 cp/semantics.c:6069 cp/semantics.c:6140
 #: cp/semantics.c:6183 cp/semantics.c:6533 cp/semantics.c:6632

@@ -1738,7 +1738,8 @@ package Sinfo is
    --    Present in allocator nodes, to indicate that this is an allocator
    --    for an access discriminant of a dynamically allocated object. The
    --    coextension must be deallocated and finalized at the same time as
-   --    the enclosing object.
+   --    the enclosing object. The partner flag Is_Static_Coextension must
+   --    be cleared before setting this flag to True.
 
    --  Is_Effective_Use_Clause (Flag1-Sem)
    --    Present in both N_Use_Type_Clause and N_Use_Package_Clause to indicate
@@ -1949,7 +1950,9 @@ package Sinfo is
 
    --  Is_Static_Coextension (Flag14-Sem)
    --    Present in N_Allocator nodes. Set if the allocator is a coextension
-   --    of an object allocated on the stack rather than the heap.
+   --    of an object allocated on the stack rather than the heap. The partner
+   --    flag Is_Dynamic_Coextension must be cleared before setting this flag
+   --    to True.
 
    --  Is_Static_Expression (Flag6-Sem)
    --    Indicates that an expression is a static expression according to the
@@ -2371,7 +2374,7 @@ package Sinfo is
 
    --  Split_PPC (Flag17)
    --    When a Pre or Post aspect specification is processed, it is broken
-   --    into AND THEN sections. The left most section has Split_PPC set to
+   --    into AND THEN sections. The leftmost section has Split_PPC set to
    --    False, indicating that it is the original specification (e.g. for
    --    posting errors). For other sections, Split_PPC is set to True.
    --    This flag is set in both the N_Aspect_Specification node itself,

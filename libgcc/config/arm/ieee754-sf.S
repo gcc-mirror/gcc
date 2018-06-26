@@ -175,7 +175,7 @@ LSYM(Lad_a):
 	@ No rounding necessary since r1 will always be 0 at this point.
 LSYM(Lad_l):
 
-#if __ARM_ARCH__ < 5
+#if !defined (__ARM_FEATURE_CLZ)
 
 	movs	ip, r0, lsr #12
 	moveq	r0, r0, lsl #12
@@ -370,7 +370,7 @@ ARM_FUNC_ALIAS aeabi_l2f floatdisf
 	subeq	r3, r3, #(32 << 23)
 2:	sub	r3, r3, #(1 << 23)
 
-#if __ARM_ARCH__ < 5
+#if !defined (__ARM_FEATURE_CLZ)
 
 	mov	r2, #23
 	cmp	ip, #(1 << 16)
@@ -460,41 +460,12 @@ LSYM(Lml_x):
 	orr	r0, r3, r0, lsr #5
 	orr	r1, r3, r1, lsr #5
 
-#if __ARM_ARCH__ < 4
-
-	@ Put sign bit in r3, which will be restored into r0 later.
-	and	r3, ip, #0x80000000
-
-	@ Well, no way to make it shorter without the umull instruction.
-	do_push	{r3, r4, r5}       @ sp -= 12
-	.cfi_remember_state        @ Save the current CFI state
-	.cfi_adjust_cfa_offset 12  @ CFA is now sp + previousOffset + 12
-	.cfi_rel_offset r3, 0      @ Registers are saved from sp to sp + 8
-	.cfi_rel_offset r4, 4
-	.cfi_rel_offset r5, 8
-
-	mov	r4, r0, lsr #16
-	mov	r5, r1, lsr #16
-	bic	r0, r0, r4, lsl #16
-	bic	r1, r1, r5, lsl #16
-	mul	ip, r4, r5
-	mul	r3, r0, r1
-	mul	r0, r5, r0
-	mla	r0, r4, r1, r0
-	adds	r3, r3, r0, lsl #16
-	adc	r1, ip, r0, lsr #16
-	do_pop	{r0, r4, r5}       @ sp += 12
-	.cfi_restore_state         @ Restore the previous CFI state
-
-#else
-
 	@ The actual multiplication.
+	@ This code works on architecture versions > 4
 	umull	r3, r1, r0, r1
 
 	@ Put final sign in r0.
 	and	r0, ip, #0x80000000
-
-#endif
 
 	@ Adjust result upon the MSB position.
 	cmp	r1, #(1 << 23)

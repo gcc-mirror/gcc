@@ -115,6 +115,35 @@ type Func struct {
 	entry uintptr
 }
 
+// A FuncID identifies particular functions that need to be treated
+// specially by the runtime.
+// Note that in some situations involving plugins, there may be multiple
+// copies of a particular special runtime function.
+// Note: this list must match the list in cmd/internal/objabi/funcid.go.
+type funcID uint32
+
+const (
+	funcID_normal funcID = iota // not a special function
+	funcID_goexit
+	funcID_jmpdefer
+	funcID_mcall
+	funcID_morestack
+	funcID_mstart
+	funcID_rt0_go
+	funcID_asmcgocall
+	funcID_sigpanic
+	funcID_runfinq
+	funcID_bgsweep
+	funcID_forcegchelper
+	funcID_timerproc
+	funcID_gcBgMarkWorker
+	funcID_systemstack_switch
+	funcID_systemstack
+	funcID_cgocallback_gofunc
+	funcID_gogo
+	funcID_externalthreadhandler
+)
+
 // FuncForPC returns a *Func describing the function that contains the
 // given program counter address, or else nil.
 //

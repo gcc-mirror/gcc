@@ -80,7 +80,8 @@ std_headers = \
 	${std_srcdir}/utility \
 	${std_srcdir}/valarray \
 	${std_srcdir}/variant \
-	${std_srcdir}/vector
+	${std_srcdir}/vector \
+	${std_srcdir}/version
 
 bits_srcdir = ${glibcxx_srcdir}/include/bits
 bits_builddir = ./bits

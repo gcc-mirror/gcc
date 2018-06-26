@@ -98,6 +98,23 @@ package body Exp_Unst is
    --  Append a call entry to the Calls table. A check is made to see if the
    --  table already contains this entry and if so it has no effect.
 
+   ----------------------------------
+   -- Subprograms For Fat Pointers --
+   ----------------------------------
+
+   function Build_Access_Type_Decl
+     (E    : Entity_Id;
+      Scop : Entity_Id) return Node_Id;
+   --  For an uplevel reference that involves an unconstrained array type,
+   --  build an access type declaration for the corresponding activation
+   --  record component. The relevant attributes of the access type are
+   --  set here to avoid a full analysis that would require a scope stack.
+
+   function Needs_Fat_Pointer (E : Entity_Id) return Boolean;
+   --  A formal parameter of an unconstrained array type that appears in an
+   --  uplevel reference requires the construction of an access type, to be
+   --  used in the corresponding component declaration.
+
    -----------
    -- Urefs --
    -----------
@@ -152,6 +169,32 @@ package body Exp_Unst is
       Calls.Append (Call);
    end Append_Unique_Call;
 
+   -----------------------------
+   --  Build_Access_Type_Decl --
+   -----------------------------
+
+   function Build_Access_Type_Decl
+     (E    : Entity_Id;
+      Scop : Entity_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (E);
+      Typ : Entity_Id;
+
+   begin
+      Typ := Make_Temporary (Loc, 'S');
+      Set_Ekind (Typ, E_General_Access_Type);
+      Set_Etype (Typ, Typ);
+      Set_Scope (Typ, Scop);
+      Set_Directly_Designated_Type (Typ, Etype (E));
+
+      return
+        Make_Full_Type_Declaration (Loc,
+          Defining_Identifier => Typ,
+          Type_Definition     =>
+            Make_Access_To_Object_Definition (Loc,
+              Subtype_Indication => New_Occurrence_Of (Etype (E), Loc)));
+   end Build_Access_Type_Decl;
+
    ---------------
    -- Get_Level --
    ---------------
@@ -191,6 +234,17 @@ package body Exp_Unst is
 
       return False;
    end In_Synchronized_Unit;
+
+   -----------------------
+   -- Needs_Fat_Pointer --
+   -----------------------
+
+   function Needs_Fat_Pointer (E : Entity_Id) return Boolean is
+   begin
+      return Is_Formal (E)
+        and then Is_Array_Type (Etype (E))
+        and then not Is_Constrained (Etype (E));
+   end Needs_Fat_Pointer;
 
    ----------------
    -- Subp_Index --
@@ -755,6 +809,21 @@ package body Exp_Unst is
                      end if;
                   end;
 
+                  --  For an allocator with a qualified expression, check type
+                  --  of expression being qualified. The explicit type name is
+                  --  handled as an entity reference.
+
+                  if Nkind (N) = N_Allocator
+                    and then Nkind (Expression (N)) = N_Qualified_Expression
+                  then
+                     declare
+                        DT : Boolean := False;
+                     begin
+                        Check_Static_Type
+                          (Etype (Expression (Expression (N))), Empty,  DT);
+                     end;
+                  end if;
+
                --  A 'Access reference is a (potential) call. Other attributes
                --  require special handling.
 
@@ -824,6 +893,13 @@ package body Exp_Unst is
                   if No (Etype (Expression (N))) then
                      return Skip;
                   end if;
+
+               --  Generic associations are not analyzed: the actuals are
+               --  transferred to renaming and subtype declarations that
+               --  are the ones that must be examined.
+
+               when N_Generic_Association =>
+                  return Skip;
 
                --  Indexed references can be uplevel if the type isn't static
                --  and if the lower bound (or an inner bound for a multi-
@@ -937,7 +1013,8 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
-               --  Otherwise record an uplevel reference
+               --  Otherwise record an uplevel reference in a local
+               --  identifier.
 
                when others =>
                   if Nkind (N) in N_Has_Entity
@@ -996,9 +1073,24 @@ package body Exp_Unst is
                         Callee := Enclosing_Subprogram (Ent);
 
                         if Callee /= Caller
-                          and then not Is_Static_Type (Ent)
+                          and then (not Is_Static_Type (Ent)
+                                     or else Needs_Fat_Pointer (Ent))
                         then
                            Note_Uplevel_Ref (Ent, N, Caller, Callee);
+
+                        --  Check the type of a formal parameter of the current
+                        --  subprogram, whose formal type may be an uplevel
+                        --  reference.
+
+                        elsif Is_Formal (Ent)
+                          and then Scope (Ent) = Current_Subprogram
+                        then
+                           declare
+                              DT : Boolean := False;
+
+                           begin
+                              Check_Static_Type (Etype (Ent), Empty, DT);
+                           end;
                         end if;
                      end if;
                   end if;
@@ -1180,8 +1272,8 @@ package body Exp_Unst is
                Decl : Node_Id;
 
             begin
-               --  Subprograms declared in tasks and protected types
-               --  are reachable and cannot be eliminated.
+               --  Subprograms declared in tasks and protected types are
+               --  reachable and cannot be eliminated.
 
                if In_Synchronized_Unit (STJ.Ent) then
                   STJ.Reachable := True;
@@ -1466,21 +1558,22 @@ package body Exp_Unst is
                   --  Local declarations for one such subprogram
 
                   declare
-                     Loc   : constant Source_Ptr := Sloc (STJ.Bod);
+                     Loc : constant Source_Ptr := Sloc (STJ.Bod);
+
+                     Decls : constant List_Id := New_List;
+                     --  List of new declarations we create
+
                      Clist : List_Id;
                      Comp  : Entity_Id;
+
+                     Decl_Assign : Node_Id;
+                     --  Assigment to set uplink, Empty if none
 
                      Decl_ARECnT  : Node_Id;
                      Decl_ARECnPT : Node_Id;
                      Decl_ARECn   : Node_Id;
                      Decl_ARECnP  : Node_Id;
                      --  Declaration nodes for the AREC entities we build
-
-                     Decl_Assign : Node_Id;
-                     --  Assigment to set uplink, Empty if none
-
-                     Decls : List_Id;
-                     --  List of new declarations we create
 
                   begin
                      --  Build list of component declarations for ARECnT
@@ -1512,8 +1605,9 @@ package body Exp_Unst is
 
                      if Present (STJ.Uents) then
                         declare
-                           Elmt : Elmt_Id;
-                           Uent : Entity_Id;
+                           Elmt     : Elmt_Id;
+                           Ptr_Decl : Node_Id;
+                           Uent     : Entity_Id;
 
                            Indx : Nat;
                            --  1's origin of index in list of elements. This is
@@ -1533,21 +1627,42 @@ package body Exp_Unst is
                               Set_Activation_Record_Component
                                 (Uent, Comp);
 
-                              Append_To (Clist,
-                                Make_Component_Declaration (Loc,
-                                  Defining_Identifier  => Comp,
-                                  Component_Definition =>
-                                    Make_Component_Definition (Loc,
-                                      Subtype_Indication =>
-                                        New_Occurrence_Of (Addr, Loc))));
+                              if Needs_Fat_Pointer (Uent) then
 
+                                 --  Build corresponding access type
+
+                                 Ptr_Decl :=
+                                   Build_Access_Type_Decl
+                                     (Etype (Uent), STJ.Ent);
+                                 Append_To (Decls, Ptr_Decl);
+
+                                 --  And use its type in the corresponding
+                                 --  component.
+
+                                 Append_To (Clist,
+                                   Make_Component_Declaration (Loc,
+                                     Defining_Identifier  => Comp,
+                                     Component_Definition =>
+                                       Make_Component_Definition (Loc,
+                                         Subtype_Indication =>
+                                           New_Occurrence_Of
+                                             (Defining_Identifier (Ptr_Decl),
+                                              Loc))));
+                              else
+                                 Append_To (Clist,
+                                   Make_Component_Declaration (Loc,
+                                     Defining_Identifier  => Comp,
+                                     Component_Definition =>
+                                       Make_Component_Definition (Loc,
+                                         Subtype_Indication =>
+                                           New_Occurrence_Of (Addr, Loc))));
+                              end if;
                               Next_Elmt (Elmt);
                            end loop;
                         end;
                      end if;
 
                      --  Now we can insert the AREC declarations into the body
-
                      --    type ARECnT is record .. end record;
                      --    pragma Suppress_Initialization (ARECnT);
 
@@ -1562,7 +1677,7 @@ package body Exp_Unst is
                              Component_List =>
                                Make_Component_List (Loc,
                                  Component_Items => Clist)));
-                     Decls := New_List (Decl_ARECnT);
+                     Append_To (Decls, Decl_ARECnT);
 
                      --  type ARECnPT is access all ARECnT;
 
@@ -1596,7 +1711,7 @@ package body Exp_Unst is
                            New_Occurrence_Of (STJ.ARECnPT, Loc),
                          Expression          =>
                            Make_Attribute_Reference (Loc,
-                             Prefix           =>
+                             Prefix         =>
                                New_Occurrence_Of (STJ.ARECn, Loc),
                              Attribute_Name => Name_Access));
                      Append_To (Decls, Decl_ARECnP);
@@ -1671,15 +1786,17 @@ package body Exp_Unst is
                                  Loc : constant Source_Ptr := Sloc (Ent);
                                  Dec : constant Node_Id    :=
                                          Declaration_Node (Ent);
-                                 Ins : Node_Id;
-                                 Asn : Node_Id;
+
+                                 Asn  : Node_Id;
+                                 Attr : Name_Id;
+                                 Ins  : Node_Id;
 
                               begin
                                  --  For parameters, we insert the assignment
                                  --  right after the declaration of ARECnP.
                                  --  For all other entities, we insert
-                                 --  the assignment immediately after
-                                 --  the declaration of the entity.
+                                 --  the assignment immediately after the
+                                 --  declaration of the entity.
 
                                  --  Note: we don't need to mark the entity
                                  --  as being aliased, because the address
@@ -1694,6 +1811,13 @@ package body Exp_Unst is
 
                                  --  Build and insert the assignment:
                                  --    ARECn.nam := nam'Address
+                                 --  or else 'Access for unconstrained array
+
+                                 if Needs_Fat_Pointer (Ent) then
+                                    Attr := Name_Access;
+                                 else
+                                    Attr := Name_Address;
+                                 end if;
 
                                  Asn :=
                                    Make_Assignment_Statement (Loc,
@@ -1711,7 +1835,7 @@ package body Exp_Unst is
                                        Make_Attribute_Reference (Loc,
                                          Prefix         =>
                                            New_Occurrence_Of (Ent, Loc),
-                                         Attribute_Name => Name_Address));
+                                         Attribute_Name => Attr));
 
                                  Insert_After (Ins, Asn);
 
@@ -1867,17 +1991,30 @@ package body Exp_Unst is
                Comp := Activation_Record_Component (UPJ.Ent);
                pragma Assert (Present (Comp));
 
-               --  Do the replacement
+               --  Do the replacement. If the component type is an access type,
+               --  this is an uplevel reference for an entity that requires a
+               --  fat pointer, so dereference the component.
 
-               Rewrite (UPJ.Ref,
-                 Make_Attribute_Reference (Loc,
-                   Prefix         => New_Occurrence_Of (Atyp, Loc),
-                   Attribute_Name => Name_Deref,
-                   Expressions    => New_List (
-                     Make_Selected_Component (Loc,
-                       Prefix        => Pfx,
-                       Selector_Name =>
-                         New_Occurrence_Of (Comp, Loc)))));
+               if Is_Access_Type (Etype (Comp)) then
+                  Rewrite (UPJ.Ref,
+                    Make_Explicit_Dereference (Loc,
+                      Prefix =>
+                        Make_Selected_Component (Loc,
+                          Prefix        => Pfx,
+                          Selector_Name =>
+                            New_Occurrence_Of (Comp, Loc))));
+
+               else
+                  Rewrite (UPJ.Ref,
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Occurrence_Of (Atyp, Loc),
+                      Attribute_Name => Name_Deref,
+                      Expressions    => New_List (
+                        Make_Selected_Component (Loc,
+                          Prefix        => Pfx,
+                          Selector_Name =>
+                            New_Occurrence_Of (Comp, Loc)))));
+               end if;
 
                --  Analyze and resolve the new expression. We do not need to
                --  establish the relevant scope stack entries here, because we
@@ -2058,6 +2195,13 @@ package body Exp_Unst is
       --  Tree visitor that search for outer level procedures with nested
       --  subprograms and invokes Unnest_Subprogram()
 
+      ---------------
+      -- Do_Search --
+      ---------------
+
+      procedure Do_Search is new Traverse_Proc (Search_Subprograms);
+      --  Subtree visitor instantiation
+
       ------------------------
       -- Search_Subprograms --
       ------------------------
@@ -2081,15 +2225,16 @@ package body Exp_Unst is
             end;
          end if;
 
+         --  The proper body of a stub may contain nested subprograms, and
+         --  therefore must be visited explicitly. Nested stubs are examined
+         --  recursively in Visit_Node.
+
+         if Nkind (N) in N_Body_Stub then
+            Do_Search (Library_Unit (N));
+         end if;
+
          return OK;
       end Search_Subprograms;
-
-      ---------------
-      -- Do_Search --
-      ---------------
-
-      procedure Do_Search is new Traverse_Proc (Search_Subprograms);
-      --  Subtree visitor instantiation
 
    --  Start of processing for Unnest_Subprograms
 

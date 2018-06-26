@@ -213,7 +213,7 @@ class Write_barriers : public Traverse
  public:
   Write_barriers(Gogo* gogo)
     : Traverse(traverse_functions | traverse_variables | traverse_statements),
-      gogo_(gogo), function_(NULL)
+      gogo_(gogo), function_(NULL), statements_added_()
   { }
 
   int
@@ -230,6 +230,8 @@ class Write_barriers : public Traverse
   Gogo* gogo_;
   // Current function.
   Function* function_;
+  // Statements introduced.
+  Statement_inserter::Statements statements_added_;
 };
 
 // Traverse a function.  Just record it for later.
@@ -298,9 +300,10 @@ Write_barriers::variable(Named_object* no)
   Location loc = init->location();
   Expression* ref = Expression::make_var_reference(no, loc);
 
-  Statement_inserter inserter(this->gogo_, var);
+  Statement_inserter inserter(this->gogo_, var, &this->statements_added_);
   Statement* s = this->gogo_->assign_with_write_barrier(NULL, NULL, &inserter,
 							ref, init, loc);
+  this->statements_added_.insert(s);
 
   var->add_preinit_statement(this->gogo_, s);
   var->clear_init();
@@ -313,6 +316,9 @@ Write_barriers::variable(Named_object* no)
 int
 Write_barriers::statement(Block* block, size_t* pindex, Statement* s)
 {
+  if (this->statements_added_.find(s) != this->statements_added_.end())
+    return TRAVERSE_SKIP_COMPONENTS;
+
   switch (s->classification())
     {
     default:
@@ -355,7 +361,7 @@ Write_barriers::statement(Block* block, size_t* pindex, Statement* s)
 
 	Function* function = this->function_;
 	Location loc = init->location();
-	Statement_inserter inserter(block, pindex);
+	Statement_inserter inserter(block, pindex, &this->statements_added_);
 
 	// Insert the variable declaration statement with no
 	// initializer, so that the variable exists.
@@ -370,6 +376,7 @@ Write_barriers::statement(Block* block, size_t* pindex, Statement* s)
 								   &inserter,
 								   ref, init,
 								   loc);
+        this->statements_added_.insert(assign);
 
 	// Replace the old variable declaration statement with the new
 	// initialization.
@@ -391,12 +398,14 @@ Write_barriers::statement(Block* block, size_t* pindex, Statement* s)
 	// Change the assignment to use a write barrier.
 	Function* function = this->function_;
 	Location loc = as->location();
-	Statement_inserter inserter = Statement_inserter(block, pindex);
+	Statement_inserter inserter =
+            Statement_inserter(block, pindex, &this->statements_added_);
 	Statement* assign = this->gogo_->assign_with_write_barrier(function,
 								   block,
 								   &inserter,
 								   lhs, rhs,
 								   loc);
+        this->statements_added_.insert(assign);
 	block->replace_statement(*pindex, assign);
       }
       break;

@@ -1,3 +1,244 @@
+2018-06-25  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/82972
+	PR fortran/83088
+	PR fortran/85851
+	* expr.c (component_initializer): Assign init expr to c->initializer.
+	(generate_isocbinding_initializer): New.
+	(gfc_generate_initializer): Call generate_isocbinding_initializer to
+	generate initializers for c_ptr and c_funptr with -finit-derived.
+
+2018-06-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/85983
+	* interface.c (check_dtio_interface1): Delete assert.
+
+2018-06-22  Paul Thomas  <pault@gcc.gnu.org>
+	    Rainer Orth  <ro@gcc.gnu.org>
+
+	PR fortran/86281
+	* resolve.c (resolve_contained_fntype): Check for the charlen
+	before testing the length.
+
+2018-06-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/49630
+	* resolve.c (resolve_contained_fntype): Change standard ref.
+	from F95 to F2003: C418. Correct a spelling error in a comment.
+	It is an error for an abstract interface to have an assumed
+	character length result.
+	* trans-expr.c (gfc_conv_procedure_call): Likewise change the
+	standard reference.
+
+2018-06-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83118
+	* resolve.c (resolve_ordinary_assign): Force the creation of a
+	vtable for assignment of non-polymorphic expressions to an
+	unlimited polymorphic object.
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Use the
+	size of the rhs type for such assignments. Set the dtype, _len
+	and vptrs appropriately.
+	* trans-expr.c (gfc_trans_assignment): Force the use of the
+	_copy function for these assignments.
+
+2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.h (gfc_omp_clauses): Add unsigned if_present, finalize
+	bitfields.
+	* openmp.c (enum omp_mask2): Remove OMP_CLAUSE_PRESENT_OR_*. Add
+	OMP_CLAUSE_{IF_PRESENT,FINALIZE}.
+	(gfc_match_omp_clauses): Update handling of copy, copyin, copyout,
+	create, deviceptr, present_of_*. Add support for finalize and
+	if_present.
+	(OACC_PARALLEL_CLAUSES): Remove PRESENT_OR_* clauses.
+	(OACC_KERNELS_CLAUSES): Likewise.
+	(OACC_DATA_CLAUSES): Likewise.
+	(OACC_DECLARE_CLAUSES): Likewise.
+	(OACC_UPDATE_CLAUSES): Add IF_PRESENT clause.
+	(OACC_ENTER_DATA_CLAUSES): Remove PRESENT_OR_* clauses.
+	(OACC_EXIT_DATA_CLAUSES): Add FINALIZE clause.
+	(gfc_match_oacc_declare): Update to OpenACC 2.5 semantics.
+	* trans-openmp.c (gfc_trans_omp_clauses): Add support for IF_PRESENT
+	and FINALIZE.
+
+2018-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans-decl.c (gfc_get_fake_result_decl): Revert latest change.
+
+2018-06-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans-decl.c (nonlocal_dummy_decl_pset): Delete.
+	(nonlocal_dummy_decls): Likewise.
+	(gfc_nonlocal_dummy_array_decl): Likewise.
+	(gfc_get_symbol_decl): Do not call gfc_nonlocal_dummy_array_decl.
+	(gfc_get_fake_result_decl): Do not generate a new DECL if simply
+	reusing the result of a recursive call.
+	(gfc_generate_function_code): Do not create, insert and destroy
+	nonlocal_dummy_decls.
+
+2018-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/86110
+	* array.c (gfc_resolve_character_array_constructor): Avoid NULL
+	pointer dereference.
+
+2018-06-13  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/85703
+	* parse.c (decode_oacc_directive): Set gfc_matching_function
+	to false.
+	(decode_omp_directive): Likewise.
+
+2018-06-13  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/85702
+	* openmp.c (gfc_match_oacc_wait): Use %C to report error location.
+
+2018-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/69968
+	* misc.c (gfc_closest_fuzzy_match): Update for renaming of
+	levenshtein_distance to get_edit_distance.
+
+2018-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/44491
+	* expr.c (gfc_check_assign): Select non-NULL locus.
+
+2018-06-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45521
+	* interface.c (compare_ptr_alloc): New function.
+	(generic_correspondence): Call it.
+
+2018-06-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.h (gfc_expr): Add no_bounds_check field.
+	* frontend-passes.c (get_array_inq_function): Set no_bounds_check
+	on function and function argument.
+	(inline_matmul_assign): Set no_bounds_check on zero expression
+	and on lhs of zero expression.
+	Also handle A1B2 case if realloc on assigment is active.
+	* trans-array.c (gfc_conv_array_ref): Don't do range checking
+	if expr has no_bounds_check set.
+	(gfc_conv_expr_descriptor): Set no_bounds_check on ss if expr
+	has it set.
+	* trans-expr.c (gfc_trans_assignment_1): Set no_bounds_check
+	on lss and lss if the corresponding expressions have it set.
+
+2018-06-10  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR fortran/79854
+	* trans-const.c: Remove include "diagnostic-core.h".
+	(gfc_conv_constant_to_tree): Replace fatal_error with gcc_unreachable.
+
+2018-06-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85088
+	* decl.c (match_attr_spec): Synchronize the DECL_* enum values with the
+	INTENT_* values from the enum 'sym_intent'. Call 'match_intent_spec'
+	and remove a TODO note.
+	* gfortran.h: Add a comment to sym_intent.
+
+2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/38351
+	* resolve.c (resolve_operator): Provide better error message for
+	derived type entity used in an binary intrinsic numeric operator.
+
+2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85138
+	PR fortran/85996
+	PR fortran/86051
+	* decl.c (gfc_match_char_spec): Use private namespace in attempt to
+	reduce a charlen to a constant.
+
+2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78278
+	* data.c (gfc_assign_data_value): Re-arrange code to allow for
+	an error for double initialization of CHARACTER entities.
+
+2018-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/63514
+	* symbol.c (gfc_add_volatile): Enforce F2008:C1282 and F2018:C1588.
+
+2018-06-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85631
+	* trans.h (gfc_ss): Add field no_bounds_check.
+	* trans-array.c (gfc_conv_ss_startstride): If flag_realloc_lhs and
+	ss->no_bounds_check is set, do not use runtime checks.
+	* trans-expr.c (gfc_trans_assignment_1): Set lss->no_bounds_check
+	for reallocatable lhs.
+
+2018-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/86059
+	* array.c (match_array_cons_element): NULL() cannot be in an
+	array constructor.
+
+2018-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78571
+	* data.c (create_character_initializer): Return early if type is
+	incompatible with CHARACTER.
+
+2018-06-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/86045
+	* simplify.c (gfc_simplify_mod): Re-arrange code to test whether
+	'P' is zero and issue an error if it is.
+
+2018-06-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85641
+	* frontend-passes.c (is_fe_temp): Add prototype.
+	(realloc_string_callback): Early return for frontend-generated
+	temporary.
+
+2018-06-05  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/85701
+
+	* openmp.c (gfc_resolve_oacc_declare): Error on functions and
+	subroutine data clause arguments.
+
+2018-06-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/85981
+	* resolve.c (resolve_allocate_deallocate): Check errmsg is default
+	character kind.
+
+2018-06-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36497
+	* decl.c (variable_decl): Use gfc_add_type for cray pointees.
+
+2018-06-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/63570
+	* check.c (gfc_check_random_init): New function. Check arguments of
+	RANDOM_INIT.
+	* gfortran.h (GFC_ISYM_RANDOM_INIT): New enum token.
+	* intrinsic.c (add_subroutines): Add RANDOM_INIT to list of
+	subroutines.
+	(gfc_check_intrinsic_standard): Introduce Fortran 2018 check.
+	* intrinsic.h: Add prototypes for gfc_check_random_init and
+	gfc_resolve_random_init
+	* intrinsic.texi: Document new intrinsic subprogram.
+	* iresolve.c (gfc_resolve_random_init): Resolve routine name.
+	* trans-decl.c: Declare gfor_fndecl_random_init
+	* trans-intrinsic.c (conv_intrinsic_random_init): New function.
+	Translate call to RANDOM_INIT.
+	(gfc_conv_intrinsic_subroutine): Call it.
+ 	* trans.h: Declare gfor_fndecl_random_init
+
 2018-05-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* decl.c (match_data_constant):  Fortran 2018 allows pointer

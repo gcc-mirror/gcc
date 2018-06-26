@@ -5454,6 +5454,8 @@ static tree
 dr_step_indicator (struct data_reference *dr, int useful_min)
 {
   tree step = DR_STEP (dr);
+  if (!step)
+    return NULL_TREE;
   STRIP_NOPS (step);
   /* Look for cases where the step is scaled by a positive constant
      integer, which will often be the access size.  If the multiplication

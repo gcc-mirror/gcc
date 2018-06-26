@@ -75,10 +75,6 @@
 #include <bits/move.h>
 #include <initializer_list>
 
-#if __cplusplus > 201402L
-#include <exception>
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -135,8 +131,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename add_cv<__tuple_element_t<__i, _Tp>>::type type;
     };
 
-#if __cplusplus > 201103L
-#define __cpp_lib_tuple_element_t 201402
+#if __cplusplus >= 201402L
+// The standard says this macro and alias template should be in <tuple>
+// but we define them here, to be available when the partial specializations
+// of tuple_element<pair<T,U>> and tuple_element<array<T,N>> are defined.
+#define __cpp_lib_tuple_element_t 201402L
 
   template<std::size_t __i, typename _Tp>
     using tuple_element_t = typename tuple_element<__i, _Tp>::type;

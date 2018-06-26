@@ -122,6 +122,7 @@ net/http/httptest
 net/http/httptrace
 net/http/httputil
 net/http/internal
+net/http/pprof
 net/internal/socktest
 net/mail
 net/rpc

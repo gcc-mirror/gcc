@@ -1722,7 +1722,13 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
         (subreg:TI (reg:TI 180 [orig:107 __comp ] [107]) 0)) {*movti_internal_rex64}
 
      Two reload hard registers will be allocated to reg180 to save TImode data
-     in LRA_assign.  */
+     in LRA_assign.
+
+     For LRA pseudos this should normally be handled by the biggest_mode
+     mechanism.  However, it's possible for new uses of an LRA pseudo
+     to be introduced after we've allocated it, such as when undoing
+     inheritance, and the allocated register might not then be appropriate
+     for the new uses.  */
   else if (REG_P (reg)
 	   && REGNO (reg) >= FIRST_PSEUDO_REGISTER
 	   && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
@@ -1731,7 +1737,9 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	   && (regclass = lra_get_allocno_class (REGNO (reg)))
 	   && (type != OP_IN
 	       || !in_hard_reg_set_p (reg_class_contents[regclass],
-				      mode, hard_regno)))
+				      mode, hard_regno)
+	       || overlaps_hard_reg_set_p (lra_no_alloc_regs,
+					   mode, hard_regno)))
     {
       /* The class will be defined later in curr_insn_transform.  */
       enum reg_class rclass

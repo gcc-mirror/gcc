@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "optabs-query.h"
 #include "omp-general.h"
-#include "ipa-chkp.h"
 #include "tree-cfg.h"
 #include "fold-const-call.h"
 #include "stringpool.h"
@@ -632,7 +631,9 @@ var_decl_component_p (tree var)
   tree inner = var;
   while (handled_component_p (inner))
     inner = TREE_OPERAND (inner, 0);
-  return SSA_VAR_P (inner);
+  return (DECL_P (inner)
+	  || (TREE_CODE (inner) == MEM_REF
+	      && TREE_CODE (TREE_OPERAND (inner, 0)) == ADDR_EXPR));
 }
 
 /* If the SIZE argument representing the size of an object is in a range
@@ -725,18 +726,6 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
       tree srctype, desttype;
       unsigned int src_align, dest_align;
       tree off0;
-
-      /* Inlining of memcpy/memmove may cause bounds lost (if we copy
-	 pointers as wide integer) and also may result in huge function
-	 size because of inlined bounds copy.  Thus don't inline for
-	 functions we want to instrument.  */
-      if (flag_check_pointer_bounds
-	  && chkp_instrumentable_p (cfun->decl)
-	  /* Even if data may contain pointers we can inline if copy
-	     less than a pointer size.  */
-	  && (!tree_fits_uhwi_p (len)
-	      || compare_tree_int (len, POINTER_SIZE_UNITS) >= 0))
-	return false;
 
       /* Build accesses at offset zero with a ref-all character type.  */
       off0 = build_int_cst (build_pointer_type_for_mode (char_type_node,
@@ -2062,10 +2051,12 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
   if (!nowarn && cmpsrc == 0)
     {
       tree fndecl = gimple_call_fndecl (stmt);
-
-      /* To avoid certain truncation the specified bound should also
-	 not be equal to (or less than) the length of the source.  */
       location_t loc = gimple_location (stmt);
+
+      /* To avoid possible overflow the specified bound should also
+	 not be equal to the length of the source, even when the size
+	 of the destination is unknown (it's not an uncommon mistake
+	 to specify as the bound to strncpy the length of the source).  */
       if (warning_at (loc, OPT_Wstringop_overflow_,
 		      "%G%qD specified bound %E equals source length",
 		      stmt, fndecl, len))
@@ -2215,12 +2206,14 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
       switch (fcode)
 	{
 	case BUILT_IN_STRCMP:
+	case BUILT_IN_STRCMP_EQ:
 	  {
 	    r = strcmp (p1, p2);
 	    known_result = true;
 	    break;
 	  }
 	case BUILT_IN_STRNCMP:
+	case BUILT_IN_STRNCMP_EQ:
 	  {
 	    if (length == -1)
 	      break;
@@ -2254,6 +2247,7 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
 
   bool nonzero_length = length >= 1
     || fcode == BUILT_IN_STRCMP
+    || fcode == BUILT_IN_STRCMP_EQ
     || fcode == BUILT_IN_STRCASECMP;
 
   location_t loc = gimple_location (stmt);
@@ -3546,9 +3540,10 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
       return true;
     }
 
-  tree lhs = gimple_call_lhs (stmt);
-  if (lhs && TREE_CODE (lhs) == SSA_NAME)
-    set_range_info (lhs, VR_RANGE, minlen, maxlen);
+  if (tree lhs = gimple_call_lhs (stmt))
+    if (TREE_CODE (lhs) == SSA_NAME
+	&& INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+      set_range_info (lhs, VR_RANGE, minlen, maxlen);
 
   return false;
 }
@@ -3687,8 +3682,10 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_STRSTR:
       return gimple_fold_builtin_strstr (gsi);
     case BUILT_IN_STRCMP:
+    case BUILT_IN_STRCMP_EQ:
     case BUILT_IN_STRCASECMP:
     case BUILT_IN_STRNCMP:
+    case BUILT_IN_STRNCMP_EQ:
     case BUILT_IN_STRNCASECMP:
       return gimple_fold_builtin_string_compare (gsi);
     case BUILT_IN_MEMCHR:

@@ -102,6 +102,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match (nop_convert @0)
  @0) 
 
+/* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
+   ABSU_EXPR returns unsigned absolute value of the operand and the operand
+   of the ABSU_EXPR will have the corresponding signed type.  */
+(simplify (abs (convert @0))
+ (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && !TYPE_UNSIGNED (TREE_TYPE (@0))
+      && element_precision (type) > element_precision (TREE_TYPE (@0)))
+  (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+   (convert (absu:utype @0)))))
+
+
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
 
@@ -1462,14 +1473,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (op @1 { build_zero_cst (TREE_TYPE (@1)); }))))
 
 /* Transform:
- * (X / Y) == 0 -> X < Y if X, Y are unsigned.
- * (X / Y) != 0 -> X >= Y, if X, Y are unsigned.
- */
+   (X / Y) == 0 -> X < Y if X, Y are unsigned.
+   (X / Y) != 0 -> X >= Y, if X, Y are unsigned.  */
 (for cmp (eq ne)
      ocmp (lt ge)
  (simplify
   (cmp (trunc_div @0 @1) integer_zerop)
   (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       /* Complex ==/!= is allowed, but not </>=.  */
+       && TREE_CODE (TREE_TYPE (@0)) != COMPLEX_TYPE
        && (VECTOR_TYPE_P (type) || !VECTOR_TYPE_P (TREE_TYPE (@0))))
    (ocmp @0 @1))))
 
@@ -1771,10 +1783,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   (neg_inner_op @0 { wide_int_to_tree (type, wi::to_wide (cst)); })
 	   /* Last resort, use some unsigned type.  */
 	   (with { tree utype = unsigned_type_for (type); }
-	    (view_convert (inner_op
-			   (view_convert:utype @0)
-			   (view_convert:utype
-			    { drop_tree_overflow (cst); })))))))))))))
+	    (if (utype)
+	     (view_convert (inner_op
+			    (view_convert:utype @0)
+			    (view_convert:utype
+			     { drop_tree_overflow (cst); }))))))))))))))
 
   /* (CST1 - A) +- CST2 -> CST3 - A  */
   (for outer_op (plus minus)

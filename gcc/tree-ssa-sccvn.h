@@ -87,8 +87,6 @@ typedef struct vn_reference_op_struct
   /* Dependence info, used for [TARGET_]MEM_REF only.  */
   unsigned short clique;
   unsigned short base;
-  /* 1 for instrumented calls.  */
-  unsigned with_bounds : 1;
   unsigned reverse : 1;
   /* For storing TYPE_ALIGN for array ref element size computation.  */
   unsigned align : 6;

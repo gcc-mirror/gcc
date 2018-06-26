@@ -29,6 +29,7 @@ enum nds32_arch_type
 {
   ARCH_V2,
   ARCH_V3,
+  ARCH_V3J,
   ARCH_V3M,
   ARCH_V3F,
   ARCH_V3S

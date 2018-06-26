@@ -622,7 +622,7 @@ all:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libmpx)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_liboffloadmic)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_liboffloadmic)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
@@ -631,10 +631,6 @@ TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
 @if target-libsanitizer
 TARGET_LIB_PATH_libsanitizer = $$r/$(TARGET_SUBDIR)/libsanitizer/.libs:
 @endif target-libsanitizer
-
-@if target-libmpx
-TARGET_LIB_PATH_libmpx = $$r/$(TARGET_SUBDIR)/libmpx/.libs:
-@endif target-libmpx
 
 @if target-libvtv
 TARGET_LIB_PATH_libvtv = $$r/$(TARGET_SUBDIR)/libvtv/.libs:
@@ -1001,7 +997,6 @@ configure-host:  \
 configure-target:  \
     maybe-configure-target-libstdc++-v3 \
     maybe-configure-target-libsanitizer \
-    maybe-configure-target-libmpx \
     maybe-configure-target-libvtv \
     maybe-configure-target-liboffloadmic \
     maybe-configure-target-libssp \
@@ -1160,9 +1155,6 @@ all-target: maybe-all-target-libstdc++-v3
 @if target-libsanitizer-no-bootstrap
 all-target: maybe-all-target-libsanitizer
 @endif target-libsanitizer-no-bootstrap
-@if target-libmpx-no-bootstrap
-all-target: maybe-all-target-libmpx
-@endif target-libmpx-no-bootstrap
 @if target-libvtv-no-bootstrap
 all-target: maybe-all-target-libvtv
 @endif target-libvtv-no-bootstrap
@@ -1258,7 +1250,6 @@ info-host: maybe-info-gotools
 
 info-target: maybe-info-target-libstdc++-v3
 info-target: maybe-info-target-libsanitizer
-info-target: maybe-info-target-libmpx
 info-target: maybe-info-target-libvtv
 info-target: maybe-info-target-liboffloadmic
 info-target: maybe-info-target-libssp
@@ -1343,7 +1334,6 @@ dvi-host: maybe-dvi-gotools
 
 dvi-target: maybe-dvi-target-libstdc++-v3
 dvi-target: maybe-dvi-target-libsanitizer
-dvi-target: maybe-dvi-target-libmpx
 dvi-target: maybe-dvi-target-libvtv
 dvi-target: maybe-dvi-target-liboffloadmic
 dvi-target: maybe-dvi-target-libssp
@@ -1428,7 +1418,6 @@ pdf-host: maybe-pdf-gotools
 
 pdf-target: maybe-pdf-target-libstdc++-v3
 pdf-target: maybe-pdf-target-libsanitizer
-pdf-target: maybe-pdf-target-libmpx
 pdf-target: maybe-pdf-target-libvtv
 pdf-target: maybe-pdf-target-liboffloadmic
 pdf-target: maybe-pdf-target-libssp
@@ -1513,7 +1502,6 @@ html-host: maybe-html-gotools
 
 html-target: maybe-html-target-libstdc++-v3
 html-target: maybe-html-target-libsanitizer
-html-target: maybe-html-target-libmpx
 html-target: maybe-html-target-libvtv
 html-target: maybe-html-target-liboffloadmic
 html-target: maybe-html-target-libssp
@@ -1598,7 +1586,6 @@ TAGS-host: maybe-TAGS-gotools
 
 TAGS-target: maybe-TAGS-target-libstdc++-v3
 TAGS-target: maybe-TAGS-target-libsanitizer
-TAGS-target: maybe-TAGS-target-libmpx
 TAGS-target: maybe-TAGS-target-libvtv
 TAGS-target: maybe-TAGS-target-liboffloadmic
 TAGS-target: maybe-TAGS-target-libssp
@@ -1683,7 +1670,6 @@ install-info-host: maybe-install-info-gotools
 
 install-info-target: maybe-install-info-target-libstdc++-v3
 install-info-target: maybe-install-info-target-libsanitizer
-install-info-target: maybe-install-info-target-libmpx
 install-info-target: maybe-install-info-target-libvtv
 install-info-target: maybe-install-info-target-liboffloadmic
 install-info-target: maybe-install-info-target-libssp
@@ -1768,7 +1754,6 @@ install-pdf-host: maybe-install-pdf-gotools
 
 install-pdf-target: maybe-install-pdf-target-libstdc++-v3
 install-pdf-target: maybe-install-pdf-target-libsanitizer
-install-pdf-target: maybe-install-pdf-target-libmpx
 install-pdf-target: maybe-install-pdf-target-libvtv
 install-pdf-target: maybe-install-pdf-target-liboffloadmic
 install-pdf-target: maybe-install-pdf-target-libssp
@@ -1853,7 +1838,6 @@ install-html-host: maybe-install-html-gotools
 
 install-html-target: maybe-install-html-target-libstdc++-v3
 install-html-target: maybe-install-html-target-libsanitizer
-install-html-target: maybe-install-html-target-libmpx
 install-html-target: maybe-install-html-target-libvtv
 install-html-target: maybe-install-html-target-liboffloadmic
 install-html-target: maybe-install-html-target-libssp
@@ -1938,7 +1922,6 @@ installcheck-host: maybe-installcheck-gotools
 
 installcheck-target: maybe-installcheck-target-libstdc++-v3
 installcheck-target: maybe-installcheck-target-libsanitizer
-installcheck-target: maybe-installcheck-target-libmpx
 installcheck-target: maybe-installcheck-target-libvtv
 installcheck-target: maybe-installcheck-target-liboffloadmic
 installcheck-target: maybe-installcheck-target-libssp
@@ -2023,7 +2006,6 @@ mostlyclean-host: maybe-mostlyclean-gotools
 
 mostlyclean-target: maybe-mostlyclean-target-libstdc++-v3
 mostlyclean-target: maybe-mostlyclean-target-libsanitizer
-mostlyclean-target: maybe-mostlyclean-target-libmpx
 mostlyclean-target: maybe-mostlyclean-target-libvtv
 mostlyclean-target: maybe-mostlyclean-target-liboffloadmic
 mostlyclean-target: maybe-mostlyclean-target-libssp
@@ -2108,7 +2090,6 @@ clean-host: maybe-clean-gotools
 
 clean-target: maybe-clean-target-libstdc++-v3
 clean-target: maybe-clean-target-libsanitizer
-clean-target: maybe-clean-target-libmpx
 clean-target: maybe-clean-target-libvtv
 clean-target: maybe-clean-target-liboffloadmic
 clean-target: maybe-clean-target-libssp
@@ -2193,7 +2174,6 @@ distclean-host: maybe-distclean-gotools
 
 distclean-target: maybe-distclean-target-libstdc++-v3
 distclean-target: maybe-distclean-target-libsanitizer
-distclean-target: maybe-distclean-target-libmpx
 distclean-target: maybe-distclean-target-libvtv
 distclean-target: maybe-distclean-target-liboffloadmic
 distclean-target: maybe-distclean-target-libssp
@@ -2278,7 +2258,6 @@ maintainer-clean-host: maybe-maintainer-clean-gotools
 
 maintainer-clean-target: maybe-maintainer-clean-target-libstdc++-v3
 maintainer-clean-target: maybe-maintainer-clean-target-libsanitizer
-maintainer-clean-target: maybe-maintainer-clean-target-libmpx
 maintainer-clean-target: maybe-maintainer-clean-target-libvtv
 maintainer-clean-target: maybe-maintainer-clean-target-liboffloadmic
 maintainer-clean-target: maybe-maintainer-clean-target-libssp
@@ -2419,7 +2398,6 @@ check-host:  \
 check-target:  \
     maybe-check-target-libstdc++-v3 \
     maybe-check-target-libsanitizer \
-    maybe-check-target-libmpx \
     maybe-check-target-libvtv \
     maybe-check-target-liboffloadmic \
     maybe-check-target-libssp \
@@ -2600,7 +2578,6 @@ install-host:  \
 install-target:  \
     maybe-install-target-libstdc++-v3 \
     maybe-install-target-libsanitizer \
-    maybe-install-target-libmpx \
     maybe-install-target-libvtv \
     maybe-install-target-liboffloadmic \
     maybe-install-target-libssp \
@@ -2705,7 +2682,6 @@ install-strip-host:  \
 install-strip-target:  \
     maybe-install-strip-target-libstdc++-v3 \
     maybe-install-strip-target-libsanitizer \
-    maybe-install-strip-target-libmpx \
     maybe-install-strip-target-libvtv \
     maybe-install-strip-target-liboffloadmic \
     maybe-install-strip-target-libssp \
@@ -40365,1249 +40341,6 @@ maintainer-clean-target-libsanitizer:
 
 
 
-.PHONY: configure-target-libmpx maybe-configure-target-libmpx
-maybe-configure-target-libmpx:
-@if gcc-bootstrap
-configure-target-libmpx: stage_current
-@endif gcc-bootstrap
-@if target-libmpx
-maybe-configure-target-libmpx: configure-target-libmpx
-configure-target-libmpx: 
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	echo "Checking multilib configuration for libmpx..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmpx/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmpx/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmpx/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmpx/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	echo Configuring in $(TARGET_SUBDIR)/libmpx; \
-	cd "$(TARGET_SUBDIR)/libmpx" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmpx/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libmpx; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) \
-	  $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias}  \
-	  || exit 1
-@endif target-libmpx
-
-
-
-.PHONY: configure-stage1-target-libmpx maybe-configure-stage1-target-libmpx
-maybe-configure-stage1-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-configure-stage1-target-libmpx: configure-stage1-target-libmpx
-configure-stage1-target-libmpx:
-	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE1_TFLAGS)"; \
-	echo "Checking multilib configuration for libmpx..."; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmpx/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmpx/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmpx/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmpx/Makefile || exit 0; \
-	$(NORMAL_TARGET_EXPORTS) \
-	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
-	echo Configuring stage 1 in $(TARGET_SUBDIR)/libmpx; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	cd $(TARGET_SUBDIR)/libmpx || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmpx/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libmpx; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} \
-	   \
-	  $(STAGE1_CONFIGURE_FLAGS)
-@endif target-libmpx-bootstrap
-
-.PHONY: configure-stage2-target-libmpx maybe-configure-stage2-target-libmpx
-maybe-configure-stage2-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-configure-stage2-target-libmpx: configure-stage2-target-libmpx
-configure-stage2-target-libmpx:
-	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE2_TFLAGS)"; \
-	echo "Checking multilib configuration for libmpx..."; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmpx/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmpx/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmpx/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmpx/Makefile || exit 0; \
-	$(NORMAL_TARGET_EXPORTS) \
-	 \
-	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
-	echo Configuring stage 2 in $(TARGET_SUBDIR)/libmpx; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	cd $(TARGET_SUBDIR)/libmpx || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmpx/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libmpx; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE2_CONFIGURE_FLAGS)
-@endif target-libmpx-bootstrap
-
-.PHONY: configure-stage3-target-libmpx maybe-configure-stage3-target-libmpx
-maybe-configure-stage3-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-configure-stage3-target-libmpx: configure-stage3-target-libmpx
-configure-stage3-target-libmpx:
-	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE3_TFLAGS)"; \
-	echo "Checking multilib configuration for libmpx..."; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmpx/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmpx/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmpx/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmpx/Makefile || exit 0; \
-	$(NORMAL_TARGET_EXPORTS) \
-	 \
-	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
-	echo Configuring stage 3 in $(TARGET_SUBDIR)/libmpx; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	cd $(TARGET_SUBDIR)/libmpx || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmpx/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libmpx; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE3_CONFIGURE_FLAGS)
-@endif target-libmpx-bootstrap
-
-.PHONY: configure-stage4-target-libmpx maybe-configure-stage4-target-libmpx
-maybe-configure-stage4-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-configure-stage4-target-libmpx: configure-stage4-target-libmpx
-configure-stage4-target-libmpx:
-	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE4_TFLAGS)"; \
-	echo "Checking multilib configuration for libmpx..."; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmpx/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmpx/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmpx/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmpx/Makefile || exit 0; \
-	$(NORMAL_TARGET_EXPORTS) \
-	 \
-	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
-	echo Configuring stage 4 in $(TARGET_SUBDIR)/libmpx; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	cd $(TARGET_SUBDIR)/libmpx || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmpx/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libmpx; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE4_CONFIGURE_FLAGS)
-@endif target-libmpx-bootstrap
-
-.PHONY: configure-stageprofile-target-libmpx maybe-configure-stageprofile-target-libmpx
-maybe-configure-stageprofile-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-configure-stageprofile-target-libmpx: configure-stageprofile-target-libmpx
-configure-stageprofile-target-libmpx:
-	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEprofile_TFLAGS)"; \
-	echo "Checking multilib configuration for libmpx..."; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmpx/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmpx/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmpx/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmpx/Makefile || exit 0; \
-	$(NORMAL_TARGET_EXPORTS) \
-	 \
-	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
-	echo Configuring stage profile in $(TARGET_SUBDIR)/libmpx; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	cd $(TARGET_SUBDIR)/libmpx || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmpx/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libmpx; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEprofile_CONFIGURE_FLAGS)
-@endif target-libmpx-bootstrap
-
-.PHONY: configure-stagetrain-target-libmpx maybe-configure-stagetrain-target-libmpx
-maybe-configure-stagetrain-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-configure-stagetrain-target-libmpx: configure-stagetrain-target-libmpx
-configure-stagetrain-target-libmpx:
-	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEtrain_TFLAGS)"; \
-	echo "Checking multilib configuration for libmpx..."; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmpx/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmpx/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmpx/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmpx/Makefile || exit 0; \
-	$(NORMAL_TARGET_EXPORTS) \
-	 \
-	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
-	echo Configuring stage train in $(TARGET_SUBDIR)/libmpx; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	cd $(TARGET_SUBDIR)/libmpx || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmpx/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libmpx; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEtrain_CONFIGURE_FLAGS)
-@endif target-libmpx-bootstrap
-
-.PHONY: configure-stagefeedback-target-libmpx maybe-configure-stagefeedback-target-libmpx
-maybe-configure-stagefeedback-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-configure-stagefeedback-target-libmpx: configure-stagefeedback-target-libmpx
-configure-stagefeedback-target-libmpx:
-	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
-	echo "Checking multilib configuration for libmpx..."; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmpx/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmpx/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmpx/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmpx/Makefile || exit 0; \
-	$(NORMAL_TARGET_EXPORTS) \
-	 \
-	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
-	echo Configuring stage feedback in $(TARGET_SUBDIR)/libmpx; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	cd $(TARGET_SUBDIR)/libmpx || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmpx/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libmpx; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEfeedback_CONFIGURE_FLAGS)
-@endif target-libmpx-bootstrap
-
-.PHONY: configure-stageautoprofile-target-libmpx maybe-configure-stageautoprofile-target-libmpx
-maybe-configure-stageautoprofile-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-configure-stageautoprofile-target-libmpx: configure-stageautoprofile-target-libmpx
-configure-stageautoprofile-target-libmpx:
-	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
-	echo "Checking multilib configuration for libmpx..."; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmpx/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmpx/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmpx/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmpx/Makefile || exit 0; \
-	$(NORMAL_TARGET_EXPORTS) \
-	 \
-	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
-	echo Configuring stage autoprofile in $(TARGET_SUBDIR)/libmpx; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	cd $(TARGET_SUBDIR)/libmpx || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmpx/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libmpx; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEautoprofile_CONFIGURE_FLAGS)
-@endif target-libmpx-bootstrap
-
-.PHONY: configure-stageautofeedback-target-libmpx maybe-configure-stageautofeedback-target-libmpx
-maybe-configure-stageautofeedback-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-configure-stageautofeedback-target-libmpx: configure-stageautofeedback-target-libmpx
-configure-stageautofeedback-target-libmpx:
-	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
-	echo "Checking multilib configuration for libmpx..."; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libmpx/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libmpx/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libmpx/Makefile; \
-	    mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libmpx/multilib.tmp $(TARGET_SUBDIR)/libmpx/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libmpx/Makefile || exit 0; \
-	$(NORMAL_TARGET_EXPORTS) \
-	 \
-	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
-	echo Configuring stage autofeedback in $(TARGET_SUBDIR)/libmpx; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libmpx; \
-	cd $(TARGET_SUBDIR)/libmpx || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libmpx/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libmpx; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEautofeedback_CONFIGURE_FLAGS)
-@endif target-libmpx-bootstrap
-
-
-
-
-
-.PHONY: all-target-libmpx maybe-all-target-libmpx
-maybe-all-target-libmpx:
-@if gcc-bootstrap
-all-target-libmpx: stage_current
-@endif gcc-bootstrap
-@if target-libmpx
-TARGET-target-libmpx=all
-maybe-all-target-libmpx: all-target-libmpx
-all-target-libmpx: configure-target-libmpx
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
-		$(TARGET-target-libmpx))
-@endif target-libmpx
-
-
-
-.PHONY: all-stage1-target-libmpx maybe-all-stage1-target-libmpx
-.PHONY: clean-stage1-target-libmpx maybe-clean-stage1-target-libmpx
-maybe-all-stage1-target-libmpx:
-maybe-clean-stage1-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-all-stage1-target-libmpx: all-stage1-target-libmpx
-all-stage1: all-stage1-target-libmpx
-TARGET-stage1-target-libmpx = $(TARGET-target-libmpx)
-all-stage1-target-libmpx: configure-stage1-target-libmpx
-	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE1_TFLAGS)"; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)  \
-		  \
-		TFLAGS="$(STAGE1_TFLAGS)"  \
-		$(TARGET-stage1-target-libmpx)
-
-maybe-clean-stage1-target-libmpx: clean-stage1-target-libmpx
-clean-stage1: clean-stage1-target-libmpx
-clean-stage1-target-libmpx:
-	@if [ $(current_stage) = stage1 ]; then \
-	  [ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	else \
-	  [ -f $(TARGET_SUBDIR)/stage1-libmpx/Makefile ] || exit 0; \
-	  $(MAKE) stage1-start; \
-	fi; \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-	  clean
-@endif target-libmpx-bootstrap
-
-
-.PHONY: all-stage2-target-libmpx maybe-all-stage2-target-libmpx
-.PHONY: clean-stage2-target-libmpx maybe-clean-stage2-target-libmpx
-maybe-all-stage2-target-libmpx:
-maybe-clean-stage2-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-all-stage2-target-libmpx: all-stage2-target-libmpx
-all-stage2: all-stage2-target-libmpx
-TARGET-stage2-target-libmpx = $(TARGET-target-libmpx)
-all-stage2-target-libmpx: configure-stage2-target-libmpx
-	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE2_TFLAGS)"; \
-	$(NORMAL_TARGET_EXPORTS) \
-	  \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)   \
-		TFLAGS="$(STAGE2_TFLAGS)"  \
-		$(TARGET-stage2-target-libmpx)
-
-maybe-clean-stage2-target-libmpx: clean-stage2-target-libmpx
-clean-stage2: clean-stage2-target-libmpx
-clean-stage2-target-libmpx:
-	@if [ $(current_stage) = stage2 ]; then \
-	  [ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	else \
-	  [ -f $(TARGET_SUBDIR)/stage2-libmpx/Makefile ] || exit 0; \
-	  $(MAKE) stage2-start; \
-	fi; \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
-@endif target-libmpx-bootstrap
-
-
-.PHONY: all-stage3-target-libmpx maybe-all-stage3-target-libmpx
-.PHONY: clean-stage3-target-libmpx maybe-clean-stage3-target-libmpx
-maybe-all-stage3-target-libmpx:
-maybe-clean-stage3-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-all-stage3-target-libmpx: all-stage3-target-libmpx
-all-stage3: all-stage3-target-libmpx
-TARGET-stage3-target-libmpx = $(TARGET-target-libmpx)
-all-stage3-target-libmpx: configure-stage3-target-libmpx
-	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE3_TFLAGS)"; \
-	$(NORMAL_TARGET_EXPORTS) \
-	  \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)   \
-		TFLAGS="$(STAGE3_TFLAGS)"  \
-		$(TARGET-stage3-target-libmpx)
-
-maybe-clean-stage3-target-libmpx: clean-stage3-target-libmpx
-clean-stage3: clean-stage3-target-libmpx
-clean-stage3-target-libmpx:
-	@if [ $(current_stage) = stage3 ]; then \
-	  [ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	else \
-	  [ -f $(TARGET_SUBDIR)/stage3-libmpx/Makefile ] || exit 0; \
-	  $(MAKE) stage3-start; \
-	fi; \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
-@endif target-libmpx-bootstrap
-
-
-.PHONY: all-stage4-target-libmpx maybe-all-stage4-target-libmpx
-.PHONY: clean-stage4-target-libmpx maybe-clean-stage4-target-libmpx
-maybe-all-stage4-target-libmpx:
-maybe-clean-stage4-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-all-stage4-target-libmpx: all-stage4-target-libmpx
-all-stage4: all-stage4-target-libmpx
-TARGET-stage4-target-libmpx = $(TARGET-target-libmpx)
-all-stage4-target-libmpx: configure-stage4-target-libmpx
-	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE4_TFLAGS)"; \
-	$(NORMAL_TARGET_EXPORTS) \
-	  \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)   \
-		TFLAGS="$(STAGE4_TFLAGS)"  \
-		$(TARGET-stage4-target-libmpx)
-
-maybe-clean-stage4-target-libmpx: clean-stage4-target-libmpx
-clean-stage4: clean-stage4-target-libmpx
-clean-stage4-target-libmpx:
-	@if [ $(current_stage) = stage4 ]; then \
-	  [ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	else \
-	  [ -f $(TARGET_SUBDIR)/stage4-libmpx/Makefile ] || exit 0; \
-	  $(MAKE) stage4-start; \
-	fi; \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
-@endif target-libmpx-bootstrap
-
-
-.PHONY: all-stageprofile-target-libmpx maybe-all-stageprofile-target-libmpx
-.PHONY: clean-stageprofile-target-libmpx maybe-clean-stageprofile-target-libmpx
-maybe-all-stageprofile-target-libmpx:
-maybe-clean-stageprofile-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-all-stageprofile-target-libmpx: all-stageprofile-target-libmpx
-all-stageprofile: all-stageprofile-target-libmpx
-TARGET-stageprofile-target-libmpx = $(TARGET-target-libmpx)
-all-stageprofile-target-libmpx: configure-stageprofile-target-libmpx
-	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEprofile_TFLAGS)"; \
-	$(NORMAL_TARGET_EXPORTS) \
-	  \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)   \
-		TFLAGS="$(STAGEprofile_TFLAGS)"  \
-		$(TARGET-stageprofile-target-libmpx)
-
-maybe-clean-stageprofile-target-libmpx: clean-stageprofile-target-libmpx
-clean-stageprofile: clean-stageprofile-target-libmpx
-clean-stageprofile-target-libmpx:
-	@if [ $(current_stage) = stageprofile ]; then \
-	  [ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	else \
-	  [ -f $(TARGET_SUBDIR)/stageprofile-libmpx/Makefile ] || exit 0; \
-	  $(MAKE) stageprofile-start; \
-	fi; \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
-@endif target-libmpx-bootstrap
-
-
-.PHONY: all-stagetrain-target-libmpx maybe-all-stagetrain-target-libmpx
-.PHONY: clean-stagetrain-target-libmpx maybe-clean-stagetrain-target-libmpx
-maybe-all-stagetrain-target-libmpx:
-maybe-clean-stagetrain-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-all-stagetrain-target-libmpx: all-stagetrain-target-libmpx
-all-stagetrain: all-stagetrain-target-libmpx
-TARGET-stagetrain-target-libmpx = $(TARGET-target-libmpx)
-all-stagetrain-target-libmpx: configure-stagetrain-target-libmpx
-	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEtrain_TFLAGS)"; \
-	$(NORMAL_TARGET_EXPORTS) \
-	  \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)   \
-		TFLAGS="$(STAGEtrain_TFLAGS)"  \
-		$(TARGET-stagetrain-target-libmpx)
-
-maybe-clean-stagetrain-target-libmpx: clean-stagetrain-target-libmpx
-clean-stagetrain: clean-stagetrain-target-libmpx
-clean-stagetrain-target-libmpx:
-	@if [ $(current_stage) = stagetrain ]; then \
-	  [ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	else \
-	  [ -f $(TARGET_SUBDIR)/stagetrain-libmpx/Makefile ] || exit 0; \
-	  $(MAKE) stagetrain-start; \
-	fi; \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
-@endif target-libmpx-bootstrap
-
-
-.PHONY: all-stagefeedback-target-libmpx maybe-all-stagefeedback-target-libmpx
-.PHONY: clean-stagefeedback-target-libmpx maybe-clean-stagefeedback-target-libmpx
-maybe-all-stagefeedback-target-libmpx:
-maybe-clean-stagefeedback-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-all-stagefeedback-target-libmpx: all-stagefeedback-target-libmpx
-all-stagefeedback: all-stagefeedback-target-libmpx
-TARGET-stagefeedback-target-libmpx = $(TARGET-target-libmpx)
-all-stagefeedback-target-libmpx: configure-stagefeedback-target-libmpx
-	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
-	$(NORMAL_TARGET_EXPORTS) \
-	  \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)   \
-		TFLAGS="$(STAGEfeedback_TFLAGS)"  \
-		$(TARGET-stagefeedback-target-libmpx)
-
-maybe-clean-stagefeedback-target-libmpx: clean-stagefeedback-target-libmpx
-clean-stagefeedback: clean-stagefeedback-target-libmpx
-clean-stagefeedback-target-libmpx:
-	@if [ $(current_stage) = stagefeedback ]; then \
-	  [ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	else \
-	  [ -f $(TARGET_SUBDIR)/stagefeedback-libmpx/Makefile ] || exit 0; \
-	  $(MAKE) stagefeedback-start; \
-	fi; \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
-@endif target-libmpx-bootstrap
-
-
-.PHONY: all-stageautoprofile-target-libmpx maybe-all-stageautoprofile-target-libmpx
-.PHONY: clean-stageautoprofile-target-libmpx maybe-clean-stageautoprofile-target-libmpx
-maybe-all-stageautoprofile-target-libmpx:
-maybe-clean-stageautoprofile-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-all-stageautoprofile-target-libmpx: all-stageautoprofile-target-libmpx
-all-stageautoprofile: all-stageautoprofile-target-libmpx
-TARGET-stageautoprofile-target-libmpx = $(TARGET-target-libmpx)
-all-stageautoprofile-target-libmpx: configure-stageautoprofile-target-libmpx
-	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
-	$(NORMAL_TARGET_EXPORTS) \
-	  \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)   \
-		TFLAGS="$(STAGEautoprofile_TFLAGS)"  \
-		$(TARGET-stageautoprofile-target-libmpx)
-
-maybe-clean-stageautoprofile-target-libmpx: clean-stageautoprofile-target-libmpx
-clean-stageautoprofile: clean-stageautoprofile-target-libmpx
-clean-stageautoprofile-target-libmpx:
-	@if [ $(current_stage) = stageautoprofile ]; then \
-	  [ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	else \
-	  [ -f $(TARGET_SUBDIR)/stageautoprofile-libmpx/Makefile ] || exit 0; \
-	  $(MAKE) stageautoprofile-start; \
-	fi; \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
-@endif target-libmpx-bootstrap
-
-
-.PHONY: all-stageautofeedback-target-libmpx maybe-all-stageautofeedback-target-libmpx
-.PHONY: clean-stageautofeedback-target-libmpx maybe-clean-stageautofeedback-target-libmpx
-maybe-all-stageautofeedback-target-libmpx:
-maybe-clean-stageautofeedback-target-libmpx:
-@if target-libmpx-bootstrap
-maybe-all-stageautofeedback-target-libmpx: all-stageautofeedback-target-libmpx
-all-stageautofeedback: all-stageautofeedback-target-libmpx
-TARGET-stageautofeedback-target-libmpx = $(TARGET-target-libmpx)
-all-stageautofeedback-target-libmpx: configure-stageautofeedback-target-libmpx
-	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
-	$(NORMAL_TARGET_EXPORTS) \
-	  \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)   \
-		TFLAGS="$(STAGEautofeedback_TFLAGS)" PERF_DATA=perf.data \
-		$(TARGET-stageautofeedback-target-libmpx)
-
-maybe-clean-stageautofeedback-target-libmpx: clean-stageautofeedback-target-libmpx
-clean-stageautofeedback: clean-stageautofeedback-target-libmpx
-clean-stageautofeedback-target-libmpx:
-	@if [ $(current_stage) = stageautofeedback ]; then \
-	  [ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	else \
-	  [ -f $(TARGET_SUBDIR)/stageautofeedback-libmpx/Makefile ] || exit 0; \
-	  $(MAKE) stageautofeedback-start; \
-	fi; \
-	cd $(TARGET_SUBDIR)/libmpx && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
-@endif target-libmpx-bootstrap
-
-
-
-
-
-
-.PHONY: check-target-libmpx maybe-check-target-libmpx
-maybe-check-target-libmpx:
-@if target-libmpx
-maybe-check-target-libmpx: check-target-libmpx
-
-check-target-libmpx:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
-
-@endif target-libmpx
-
-.PHONY: install-target-libmpx maybe-install-target-libmpx
-maybe-install-target-libmpx:
-@if target-libmpx
-maybe-install-target-libmpx: install-target-libmpx
-
-install-target-libmpx: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
-
-@endif target-libmpx
-
-.PHONY: install-strip-target-libmpx maybe-install-strip-target-libmpx
-maybe-install-strip-target-libmpx:
-@if target-libmpx
-maybe-install-strip-target-libmpx: install-strip-target-libmpx
-
-install-strip-target-libmpx: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
-
-@endif target-libmpx
-
-# Other targets (info, dvi, pdf, etc.)
-
-.PHONY: maybe-info-target-libmpx info-target-libmpx
-maybe-info-target-libmpx:
-@if target-libmpx
-maybe-info-target-libmpx: info-target-libmpx
-
-info-target-libmpx: \
-    configure-target-libmpx 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           info) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-dvi-target-libmpx dvi-target-libmpx
-maybe-dvi-target-libmpx:
-@if target-libmpx
-maybe-dvi-target-libmpx: dvi-target-libmpx
-
-dvi-target-libmpx: \
-    configure-target-libmpx 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           dvi) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-pdf-target-libmpx pdf-target-libmpx
-maybe-pdf-target-libmpx:
-@if target-libmpx
-maybe-pdf-target-libmpx: pdf-target-libmpx
-
-pdf-target-libmpx: \
-    configure-target-libmpx 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing pdf in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           pdf) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-html-target-libmpx html-target-libmpx
-maybe-html-target-libmpx:
-@if target-libmpx
-maybe-html-target-libmpx: html-target-libmpx
-
-html-target-libmpx: \
-    configure-target-libmpx 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           html) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-TAGS-target-libmpx TAGS-target-libmpx
-maybe-TAGS-target-libmpx:
-@if target-libmpx
-maybe-TAGS-target-libmpx: TAGS-target-libmpx
-
-TAGS-target-libmpx: \
-    configure-target-libmpx 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           TAGS) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-install-info-target-libmpx install-info-target-libmpx
-maybe-install-info-target-libmpx:
-@if target-libmpx
-maybe-install-info-target-libmpx: install-info-target-libmpx
-
-install-info-target-libmpx: \
-    configure-target-libmpx \
-    info-target-libmpx 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-info) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-install-pdf-target-libmpx install-pdf-target-libmpx
-maybe-install-pdf-target-libmpx:
-@if target-libmpx
-maybe-install-pdf-target-libmpx: install-pdf-target-libmpx
-
-install-pdf-target-libmpx: \
-    configure-target-libmpx \
-    pdf-target-libmpx 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-pdf in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-pdf) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-install-html-target-libmpx install-html-target-libmpx
-maybe-install-html-target-libmpx:
-@if target-libmpx
-maybe-install-html-target-libmpx: install-html-target-libmpx
-
-install-html-target-libmpx: \
-    configure-target-libmpx \
-    html-target-libmpx 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-html in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-html) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-installcheck-target-libmpx installcheck-target-libmpx
-maybe-installcheck-target-libmpx:
-@if target-libmpx
-maybe-installcheck-target-libmpx: installcheck-target-libmpx
-
-installcheck-target-libmpx: \
-    configure-target-libmpx 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           installcheck) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-mostlyclean-target-libmpx mostlyclean-target-libmpx
-maybe-mostlyclean-target-libmpx:
-@if target-libmpx
-maybe-mostlyclean-target-libmpx: mostlyclean-target-libmpx
-
-mostlyclean-target-libmpx: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           mostlyclean) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-clean-target-libmpx clean-target-libmpx
-maybe-clean-target-libmpx:
-@if target-libmpx
-maybe-clean-target-libmpx: clean-target-libmpx
-
-clean-target-libmpx: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           clean) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-distclean-target-libmpx distclean-target-libmpx
-maybe-distclean-target-libmpx:
-@if target-libmpx
-maybe-distclean-target-libmpx: distclean-target-libmpx
-
-distclean-target-libmpx: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           distclean) \
-	  || exit 1
-
-@endif target-libmpx
-
-.PHONY: maybe-maintainer-clean-target-libmpx maintainer-clean-target-libmpx
-maybe-maintainer-clean-target-libmpx:
-@if target-libmpx
-maybe-maintainer-clean-target-libmpx: maintainer-clean-target-libmpx
-
-maintainer-clean-target-libmpx: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libmpx/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libmpx"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libmpx && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           maintainer-clean) \
-	  || exit 1
-
-@endif target-libmpx
-
-
-
-
-
 .PHONY: configure-target-libvtv maybe-configure-target-libvtv
 maybe-configure-target-libvtv:
 @if gcc-bootstrap
@@ -53499,6 +52232,10 @@ maintainer-clean-target-libatomic:
 check-target-libgomp-c++:
 	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) c++.exp" check-target-libgomp
 
+.PHONY: check-target-libgomp-fortran
+check-target-libgomp-fortran:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) fortran.exp" check-target-libgomp
+
 @endif target-libgomp
 
 @if target-libitm
@@ -53550,7 +52287,7 @@ check-gcc-fortran:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-fortran);
-check-fortran: check-gcc-fortran check-target-libquadmath check-target-libgfortran
+check-fortran: check-gcc-fortran check-target-libquadmath check-target-libgfortran check-target-libgomp-fortran
 
 .PHONY: check-gcc-ada check-ada
 check-gcc-ada:
@@ -56757,15 +55494,6 @@ configure-stagetrain-target-libsanitizer: maybe-all-stagetrain-gcc
 configure-stagefeedback-target-libsanitizer: maybe-all-stagefeedback-gcc
 configure-stageautoprofile-target-libsanitizer: maybe-all-stageautoprofile-gcc
 configure-stageautofeedback-target-libsanitizer: maybe-all-stageautofeedback-gcc
-configure-stage1-target-libmpx: maybe-all-stage1-gcc
-configure-stage2-target-libmpx: maybe-all-stage2-gcc
-configure-stage3-target-libmpx: maybe-all-stage3-gcc
-configure-stage4-target-libmpx: maybe-all-stage4-gcc
-configure-stageprofile-target-libmpx: maybe-all-stageprofile-gcc
-configure-stagetrain-target-libmpx: maybe-all-stagetrain-gcc
-configure-stagefeedback-target-libmpx: maybe-all-stagefeedback-gcc
-configure-stageautoprofile-target-libmpx: maybe-all-stageautoprofile-gcc
-configure-stageautofeedback-target-libmpx: maybe-all-stageautofeedback-gcc
 configure-stage1-target-libvtv: maybe-all-stage1-gcc
 configure-stage2-target-libvtv: maybe-all-stage2-gcc
 configure-stage3-target-libvtv: maybe-all-stage3-gcc
@@ -56816,7 +55544,6 @@ configure-target-libatomic: stage_last
 @if gcc-no-bootstrap
 configure-target-libstdc++-v3: maybe-all-gcc
 configure-target-libsanitizer: maybe-all-gcc
-configure-target-libmpx: maybe-all-gcc
 configure-target-libvtv: maybe-all-gcc
 configure-target-liboffloadmic: maybe-all-gcc
 configure-target-libssp: maybe-all-gcc
@@ -58034,15 +56761,6 @@ configure-stagetrain-target-libsanitizer: maybe-all-stagetrain-target-libgcc
 configure-stagefeedback-target-libsanitizer: maybe-all-stagefeedback-target-libgcc
 configure-stageautoprofile-target-libsanitizer: maybe-all-stageautoprofile-target-libgcc
 configure-stageautofeedback-target-libsanitizer: maybe-all-stageautofeedback-target-libgcc
-configure-stage1-target-libmpx: maybe-all-stage1-target-libgcc
-configure-stage2-target-libmpx: maybe-all-stage2-target-libgcc
-configure-stage3-target-libmpx: maybe-all-stage3-target-libgcc
-configure-stage4-target-libmpx: maybe-all-stage4-target-libgcc
-configure-stageprofile-target-libmpx: maybe-all-stageprofile-target-libgcc
-configure-stagetrain-target-libmpx: maybe-all-stagetrain-target-libgcc
-configure-stagefeedback-target-libmpx: maybe-all-stagefeedback-target-libgcc
-configure-stageautoprofile-target-libmpx: maybe-all-stageautoprofile-target-libgcc
-configure-stageautofeedback-target-libmpx: maybe-all-stageautofeedback-target-libgcc
 configure-stage1-target-libvtv: maybe-all-stage1-target-libgcc
 configure-stage2-target-libvtv: maybe-all-stage2-target-libgcc
 configure-stage3-target-libvtv: maybe-all-stage3-target-libgcc
@@ -58066,7 +56784,6 @@ configure-stageautofeedback-target-libgomp: maybe-all-stageautofeedback-target-l
 @if gcc-no-bootstrap
 configure-target-libstdc++-v3: maybe-all-target-libgcc
 configure-target-libsanitizer: maybe-all-target-libgcc
-configure-target-libmpx: maybe-all-target-libgcc
 configure-target-libvtv: maybe-all-target-libgcc
 configure-target-liboffloadmic: maybe-all-target-libgcc
 configure-target-libssp: maybe-all-target-libgcc
@@ -58093,8 +56810,6 @@ configure-target-libatomic: maybe-all-target-libgcc
 configure-target-libstdc++-v3: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libsanitizer: maybe-all-target-newlib maybe-all-target-libgloss
-
-configure-target-libmpx: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libvtv: maybe-all-target-newlib maybe-all-target-libgloss
 

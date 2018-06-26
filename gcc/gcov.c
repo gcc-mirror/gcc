@@ -1801,7 +1801,7 @@ read_count_file (void)
 	{
 	  struct gcov_summary summary;
 	  gcov_read_summary (&summary);
-	  object_runs += summary.ctrs[GCOV_COUNTER_ARCS].runs;
+	  object_runs += summary.runs;
 	  program_count++;
 	}
       else if (tag == GCOV_TAG_FUNCTION && !length)
@@ -2945,8 +2945,6 @@ output_lines (FILE *gcov_file, const source_info *src)
   const char *retval;
 
   fprintf (gcov_file, DEFAULT_LINE_START "Source:%s\n", src->coverage.name);
-  fprintf (gcov_file, DEFAULT_LINE_START "Working directory:%s\n",
-	   bbg_cwd);
   if (!multiple_files)
     {
       fprintf (gcov_file, DEFAULT_LINE_START "Graph:%s\n", bbg_file_name);

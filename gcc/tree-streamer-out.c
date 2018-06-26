@@ -468,9 +468,6 @@ streamer_write_tree_bitfields (struct output_block *ob, tree expr)
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     cl_optimization_stream_out (&bp, TREE_OPTIMIZATION (expr));
 
-  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    bp_pack_var_len_unsigned (&bp, vec_safe_length (BINFO_BASE_ACCESSES (expr)));
-
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     bp_pack_var_len_unsigned (&bp, CONSTRUCTOR_NELTS (expr));
 
@@ -779,20 +776,8 @@ write_ts_block_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
   streamer_write_chain (ob, BLOCK_VARS (expr), ref_p);
 
   stream_write_tree (ob, BLOCK_SUPERCONTEXT (expr), ref_p);
+  stream_write_tree (ob, BLOCK_ABSTRACT_ORIGIN (expr), ref_p);
 
-  /* Stream BLOCK_ABSTRACT_ORIGIN for the limited cases we can handle - those
-     that represent inlined function scopes.
-     For the rest them on the floor instead of ICEing in dwarf2out.c, but
-     keep the notion of whether the block is an inlined block by refering
-     to itself for the sake of tree_nonartificial_location.  */
-  if (inlined_function_outer_scope_p (expr))
-    {
-      tree ultimate_origin = block_ultimate_origin (expr);
-      stream_write_tree (ob, ultimate_origin, ref_p);
-    }
-  else
-    stream_write_tree (ob, (BLOCK_ABSTRACT_ORIGIN (expr)
-			    ? expr : NULL_TREE), ref_p);
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
@@ -824,15 +809,9 @@ write_ts_binfo_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 
   stream_write_tree (ob, BINFO_OFFSET (expr), ref_p);
   stream_write_tree (ob, BINFO_VTABLE (expr), ref_p);
-  stream_write_tree (ob, BINFO_VPTR_FIELD (expr), ref_p);
 
-  /* The number of BINFO_BASE_ACCESSES has already been emitted in
-     EXPR's bitfield section.  */
-  FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_ACCESSES (expr), i, t)
-    stream_write_tree (ob, t, ref_p);
-
-  /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
-     and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
+  /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX,
+     BINFO_BASE_ACCESSES and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
 }
 
 

@@ -3316,6 +3316,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 
     case NEGATE_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
     case FLOAT_EXPR:
     case EXCESS_PRECISION_EXPR:
       /* These don't change whether an object is nonzero or zero.  */
@@ -5407,10 +5408,8 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
   if (TREE_CODE (TREE_TYPE (param)) != POINTER_TYPE)
     return;
 
-  /* When not optimizing diagnose the simple cases of null arguments.
-     When optimization is enabled defer the checking until expansion
-     when more cases can be detected.  */
-  if (integer_zerop (param))
+  /* Diagnose the simple cases of null arguments.  */
+  if (integer_zerop (fold_for_warn (param)))
     {
       warning_at (pctx->loc, OPT_Wnonnull, "null argument where non-null "
 		  "required (argument %lu)", (unsigned long) param_num);

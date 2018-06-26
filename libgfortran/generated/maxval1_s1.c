@@ -114,7 +114,7 @@ maxval1_s1 (gfc_array_s1 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1]
       		 * string_len;
@@ -310,7 +310,7 @@ mmaxval1_s1 (gfc_array_s1 * const restrict retarray,
       		 * string_len;
 
       retarray->offset = 0;
-      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
+      retarray->dtype.rank = rank;
 
       if (alloc_size == 0)
 	{
@@ -485,7 +485,7 @@ smaxval1_s1 (gfc_array_s1 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
+      retarray->dtype.rank = rank;
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1]
       		 * string_len;

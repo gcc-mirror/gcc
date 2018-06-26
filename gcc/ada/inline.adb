@@ -879,6 +879,10 @@ package body Inline is
       Body_To_Analyze : Node_Id;
       Max_Size        : constant := 10;
 
+      function Has_Extended_Return return Boolean;
+      --  This function returns True if the subprogram has an extended return
+      --  statement.
+
       function Has_Pending_Instantiation return Boolean;
       --  If some enclosing body contains instantiations that appear before
       --  the corresponding generic body, the enclosing body has a freeze node
@@ -896,8 +900,51 @@ package body Inline is
 
       function Uses_Secondary_Stack (Bod : Node_Id) return Boolean;
       --  If the body of the subprogram includes a call that returns an
-      --  unconstrained type, the secondary stack is involved, and it
-      --  is not worth inlining.
+      --  unconstrained type, the secondary stack is involved, and it is
+      --  not worth inlining.
+
+      -------------------------
+      -- Has_Extended_Return --
+      -------------------------
+
+      function Has_Extended_Return return Boolean is
+         Body_To_Inline : constant Node_Id := N;
+
+         function Check_Return (N : Node_Id) return Traverse_Result;
+         --  Returns OK on node N if this is not an extended return statement
+
+         ------------------
+         -- Check_Return --
+         ------------------
+
+         function Check_Return (N : Node_Id) return Traverse_Result is
+         begin
+            case Nkind (N) is
+               when N_Extended_Return_Statement =>
+                  return Abandon;
+
+               --  Skip locally declared subprogram bodies inside the body to
+               --  inline, as the return statements inside those do not count.
+
+               when N_Subprogram_Body =>
+                  if N = Body_To_Inline then
+                     return OK;
+                  else
+                     return Skip;
+                  end if;
+
+               when others =>
+                  return OK;
+            end case;
+         end Check_Return;
+
+         function Check_All_Returns is new Traverse_Func (Check_Return);
+
+      --  Start of processing for Has_Extended_Return
+
+      begin
+         return Check_All_Returns (N) /= OK;
+      end Has_Extended_Return;
 
       -------------------------------
       -- Has_Pending_Instantiation --
@@ -1048,7 +1095,16 @@ package body Inline is
         and then not Is_Access_Type (Etype (Spec_Id))
         and then not Is_Constrained (Etype (Spec_Id))
       then
-         if not Has_Single_Return (N) then
+         if not Has_Single_Return (N)
+
+           --  Skip inlining if the function returns an unconstrained type
+           --  using an extended return statement, since this part of the
+           --  new inlining model is not yet supported by the current
+           --  implementation. ???
+
+           or else (Returns_Unconstrained_Type (Spec_Id)
+                     and then Has_Extended_Return)
+         then
             Cannot_Inline
               ("cannot inline & (unconstrained return type)?", N, Spec_Id);
             return;
@@ -2269,23 +2325,39 @@ package body Inline is
      Subp      : Entity_Id;
      Orig_Subp : Entity_Id)
    is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Is_Predef : constant Boolean :=
+      Decls     : constant List_Id    := New_List;
+      Is_Predef : constant Boolean    :=
                     Is_Predefined_Unit (Get_Source_Unit (Subp));
-      Orig_Bod  : constant Node_Id :=
+      Loc       : constant Source_Ptr := Sloc (N);
+      Orig_Bod  : constant Node_Id    :=
                     Body_To_Inline (Unit_Declaration_Node (Subp));
+
+      Uses_Back_End : constant Boolean :=
+                        Back_End_Inlining and then Optimization_Level > 0;
+      --  The back-end expansion is used if the target supports back-end
+      --  inlining and some level of optimixation is required; otherwise
+      --  the inlining takes place fully as a tree expansion.
 
       Blk      : Node_Id;
       Decl     : Node_Id;
-      Decls    : constant List_Id := New_List;
-      Exit_Lab : Entity_Id        := Empty;
+      Exit_Lab : Entity_Id := Empty;
       F        : Entity_Id;
       A        : Node_Id;
-      Lab_Decl : Node_Id          := Empty;
+      Lab_Decl : Node_Id   := Empty;
       Lab_Id   : Node_Id;
       New_A    : Node_Id;
-      Num_Ret  : Nat              := 0;
+      Num_Ret  : Nat       := 0;
       Ret_Type : Entity_Id;
+      Temp     : Entity_Id;
+      Temp_Typ : Entity_Id;
+
+      Is_Unc      : Boolean;
+      Is_Unc_Decl : Boolean;
+      --  If the type returned by the function is unconstrained and the call
+      --  can be inlined, special processing is required.
+
+      Return_Object : Entity_Id := Empty;
+      --  Entity in declaration in an extended_return_statement
 
       Targ : Node_Id := Empty;
       --  The target of the call. If context is an assignment statement then
@@ -2294,17 +2366,6 @@ package body Inline is
 
       Targ1 : Node_Id := Empty;
       --  A separate target used when the return type is unconstrained
-
-      Temp     : Entity_Id;
-      Temp_Typ : Entity_Id;
-
-      Return_Object : Entity_Id := Empty;
-      --  Entity in declaration in an extended_return_statement
-
-      Is_Unc      : Boolean;
-      Is_Unc_Decl : Boolean;
-      --  If the type returned by the function is unconstrained and the call
-      --  can be inlined, special processing is required.
 
       procedure Declare_Postconditions_Result;
       --  When generating C code, declare _Result, which may be used in the
@@ -2840,7 +2901,7 @@ package body Inline is
    begin
       --  Initializations for old/new semantics
 
-      if not Back_End_Inlining then
+      if not Uses_Back_End then
          Is_Unc      := Is_Array_Type (Etype (Subp))
                           and then not Is_Constrained (Etype (Subp));
          Is_Unc_Decl := False;
@@ -2867,18 +2928,6 @@ package body Inline is
       --  true inlining, Orig_Bod has code rather than being an entity.
 
       elsif Nkind (Orig_Bod) in N_Entity then
-         return;
-
-      --  Skip inlining if the function returns an unconstrained type using
-      --  an extended return statement since this part of the new inlining
-      --  model which is not yet supported by the current implementation. ???
-
-      elsif Is_Unc
-        and then
-          Nkind (First (Statements (Handled_Statement_Sequence (Orig_Bod)))) =
-            N_Extended_Return_Statement
-        and then not Back_End_Inlining
-      then
          return;
       end if;
 
@@ -2914,7 +2963,7 @@ package body Inline is
 
       --  Old semantics
 
-      if not Back_End_Inlining then
+      if not Uses_Back_End then
          declare
             Bod : Node_Id;
 
@@ -2957,6 +3006,20 @@ package body Inline is
 
                begin
                   First_Decl := First (Declarations (Blk));
+
+                  --  If the body is a single extended return statement,the
+                  --  resulting block is a nested block.
+
+                  if No (First_Decl) then
+                     First_Decl :=
+                       First (Statements (Handled_Statement_Sequence (Blk)));
+
+                     if Nkind (First_Decl) = N_Block_Statement then
+                        First_Decl := First (Declarations (First_Decl));
+                     end if;
+                  end if;
+
+                  --  No front-end inlining possible
 
                   if Nkind (First_Decl) /= N_Object_Declaration then
                      return;
@@ -3288,7 +3351,7 @@ package body Inline is
          --  of the result of a call to an inlined function that returns
          --  an unconstrained type
 
-         elsif Back_End_Inlining
+         elsif Uses_Back_End
            and then Nkind (Parent (N)) = N_Object_Declaration
            and then Is_Unc
          then

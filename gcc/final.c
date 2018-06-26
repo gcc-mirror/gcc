@@ -2128,7 +2128,7 @@ final (rtx_insn *first, FILE *file, int optimize_p)
 }
 
 const char *
-get_insn_template (int code, rtx insn)
+get_insn_template (int code, rtx_insn *insn)
 {
   switch (insn_data[code].output_format)
     {
@@ -2138,8 +2138,7 @@ get_insn_template (int code, rtx insn)
       return insn_data[code].output.multi[which_alternative];
     case INSN_OUTPUT_FORMAT_FUNCTION:
       gcc_assert (insn);
-      return (*insn_data[code].output.function) (recog_data.operand,
-						 as_a <rtx_insn *> (insn));
+      return (*insn_data[code].output.function) (recog_data.operand, insn);
 
     default:
       gcc_unreachable ();

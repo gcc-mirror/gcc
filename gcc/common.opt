@@ -646,8 +646,8 @@ Common Var(warn_null_dereference) Warning
 Warn if dereferencing a NULL pointer may lead to erroneous or undefined behavior.
 
 Wunsafe-loop-optimizations
-Common Var(warn_unsafe_loop_optimizations) Warning
-Warn if the loop cannot be optimized due to nontrivial assumptions.
+Common Ignore Warning
+Does nothing. Preserved for backward compatibility.
 
 Wmissing-noreturn
 Common Warning Alias(Wsuggest-attribute=noreturn)
@@ -938,7 +938,11 @@ Driver Undocumented
 ;
 ; 12: Corrects the calling convention for classes with only deleted copy/move
 ;     constructors and changes passing/returning of empty records.
-;     Default in G++ 8.
+;     Default in G++ 8.1.
+;
+; 13: Fixes the accidental change in 12 to the calling convention for classes
+;     with deleted copy constructor and trivial move constructor.
+;     Default in G++ 8.2.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.

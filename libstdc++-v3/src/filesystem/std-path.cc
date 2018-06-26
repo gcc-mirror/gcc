@@ -38,6 +38,66 @@ fs::filesystem_error::~filesystem_error() = default;
 
 constexpr path::value_type path::preferred_separator;
 
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+path&
+path::operator/=(const path& __p)
+{
+  if (__p.is_absolute()
+      || (__p.has_root_name() && __p.root_name() != root_name()))
+    return operator=(__p);
+
+  basic_string_view<value_type> __lhs = _M_pathname;
+  bool __add_sep = false;
+
+  if (__p.has_root_directory())
+    {
+      // Remove any root directory and relative path
+      if (_M_type != _Type::_Root_name)
+	{
+	  if (!_M_cmpts.empty()
+	      && _M_cmpts.front()._M_type == _Type::_Root_name)
+	    __lhs = _M_cmpts.front()._M_pathname;
+	  else
+	    __lhs = {};
+	}
+    }
+  else if (has_filename() || (!has_root_directory() && is_absolute()))
+    __add_sep = true;
+
+  basic_string_view<value_type> __rhs = __p._M_pathname;
+  // Omit any root-name from the generic format pathname:
+  if (__p._M_type == _Type::_Root_name)
+    __rhs = {};
+  else if (!__p._M_cmpts.empty()
+      && __p._M_cmpts.front()._M_type == _Type::_Root_name)
+    __rhs.remove_prefix(__p._M_cmpts.front()._M_pathname.size());
+
+  const size_t __len = __lhs.size() + (int)__add_sep + __rhs.size();
+  const size_t __maxcmpts = _M_cmpts.size() + __p._M_cmpts.size();
+  if (_M_pathname.capacity() < __len || _M_cmpts.capacity() < __maxcmpts)
+    {
+      // Construct new path and swap (strong exception-safety guarantee).
+      string_type __tmp;
+      __tmp.reserve(__len);
+      __tmp = __lhs;
+      if (__add_sep)
+	__tmp += preferred_separator;
+      __tmp += __rhs;
+      path __newp = std::move(__tmp);
+      swap(__newp);
+    }
+  else
+    {
+      _M_pathname = __lhs;
+      if (__add_sep)
+	_M_pathname += preferred_separator;
+      _M_pathname += __rhs;
+      _M_split_cmpts();
+    }
+  return *this;
+}
+#endif
+
 path&
 path::remove_filename()
 {
@@ -74,6 +134,12 @@ path::replace_filename(const path& replacement)
   return *this;
 }
 
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+const fs::path::value_type dot = L'.';
+#else
+const fs::path::value_type dot = '.';
+#endif
+
 path&
 path::replace_extension(const path& replacement)
 {
@@ -94,8 +160,8 @@ path::replace_extension(const path& replacement)
     }
    // If replacement is not empty and does not begin with a dot character,
    // a dot character is appended
-  if (!replacement.empty() && replacement.native()[0] != '.')
-    _M_pathname += '.';
+  if (!replacement.empty() && replacement.native()[0] != dot)
+    _M_pathname += dot;
   operator+=(replacement);
   return *this;
 }
@@ -332,11 +398,7 @@ path::has_filename() const
 
 namespace
 {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  inline bool is_dot(wchar_t c) { return c == L'.'; }
-#else
-  inline bool is_dot(char c) { return c == '.'; }
-#endif
+  inline bool is_dot(fs::path::value_type c) { return c == dot; }
 
   inline bool is_dot(const fs::path& path)
   {
@@ -376,7 +438,7 @@ path::lexically_normal() const
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
       // Replace each slash character in the root-name
-      if (p.is_root_name())
+      if (p._M_type == _Type::_Root_name)
 	{
 	  string_type s = p.native();
 	  std::replace(s.begin(), s.end(), L'/', L'\\');
@@ -485,7 +547,7 @@ path::lexically_proximate(const path& base) const
 std::pair<const path::string_type*, std::size_t>
 path::_M_find_extension() const
 {
-  const std::string* s = nullptr;
+  const string_type* s = nullptr;
 
   if (_M_type == _Type::_Filename)
     s = &_M_pathname;
@@ -500,9 +562,9 @@ path::_M_find_extension() const
     {
       if (auto sz = s->size())
 	{
-	  if (sz <= 2 && (*s)[0] == '.')
+	  if (sz <= 2 && (*s)[0] == dot)
 	    return { s, string_type::npos };
-	  const auto pos = s->rfind('.');
+	  const auto pos = s->rfind(dot);
 	  return { s, pos ? pos : string_type::npos };
 	}
     }
@@ -703,8 +765,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   std::string filesystem_error::_M_gen_what()
   {
-    return fs_err_concat(system_error::what(), _M_path1.native(),
-			 _M_path2.native());
+    return fs_err_concat(system_error::what(), _M_path1.u8string(),
+			 _M_path2.u8string());
   }
 
 _GLIBCXX_END_NAMESPACE_CXX11

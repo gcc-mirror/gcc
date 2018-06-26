@@ -377,9 +377,10 @@ namespace __gnu_debug
   _M_detach()
   {
     if (_M_sequence)
-      _M_sequence->_M_detach(this);
-
-    _M_reset();
+      {
+	_M_sequence->_M_detach(this);
+	_M_reset();
+      }
   }
 
   void
@@ -387,9 +388,10 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      _M_sequence->_M_detach_single(this);
-
-    _M_reset();
+      {
+	_M_sequence->_M_detach_single(this);
+	_M_reset();
+      }
   }
 
   void
@@ -460,9 +462,10 @@ namespace __gnu_debug
   _M_detach()
   {
     if (_M_sequence)
-      _M_get_container()->_M_detach_local(this);
-
-    _M_reset();
+      {
+	_M_get_container()->_M_detach_local(this);
+	_M_reset();
+      }
   }
 
   void
@@ -470,9 +473,10 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      _M_get_container()->_M_detach_local_single(this);
-
-    _M_reset();
+      {
+	_M_get_container()->_M_detach_local_single(this);
+	_M_reset();
+      }
   }
 
   void
