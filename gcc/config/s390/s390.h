@@ -205,7 +205,7 @@ enum processor_flags
 #define OPTION_DEFAULT_SPECS 					\
   { "mode", "%{!mesa:%{!mzarch:-m%(VALUE)}}" },			\
   { "arch", "%{!march=*:-march=%(VALUE)}" },			\
-  { "tune", "%{!mtune=*:-mtune=%(VALUE)}" }
+  { "tune", "%{!mtune=*:%{!march=*:-mtune=%(VALUE)}}" }
 
 #ifdef __s390__
 extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
