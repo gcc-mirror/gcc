@@ -2358,7 +2358,9 @@ fold_convertible_p (const_tree type, const_tree arg)
     case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
     case POINTER_TYPE: case REFERENCE_TYPE:
     case OFFSET_TYPE:
-      return (INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig)
+      return (INTEGRAL_TYPE_P (orig)
+	      || (POINTER_TYPE_P (orig)
+		  && TYPE_PRECISION (type) <= TYPE_PRECISION (orig))
 	      || TREE_CODE (orig) == OFFSET_TYPE);
 
     case REAL_TYPE:
