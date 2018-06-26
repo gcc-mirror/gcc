@@ -90,7 +90,9 @@ expand_block_clear (rtx operands[])
       machine_mode mode = BLKmode;
       rtx dest;
 
-      if (bytes >= 16 && TARGET_ALTIVEC && (align >= 128 || TARGET_EFFICIENT_UNALIGNED_VSX))
+      if (TARGET_ALTIVEC
+	  && ((bytes >= 16 && align >= 128)
+	      || (bytes >= 32 && TARGET_EFFICIENT_UNALIGNED_VSX)))
 	{
 	  clear_bytes = 16;
 	  mode = V4SImode;
