@@ -1822,20 +1822,15 @@ expand_strn_compare (rtx operands[], int no_length)
 	  /* -m32 -mpowerpc64 results in word_mode being DImode even
 	     though otherwise it is 32-bit. The length arg to strncmp
 	     is a size_t which will be the same size as pointers.  */
-	  rtx len_rtx;
-	  if (TARGET_64BIT)
-	    len_rtx = gen_reg_rtx (DImode);
-	  else
-	    len_rtx = gen_reg_rtx (SImode);
-
-	  emit_move_insn (len_rtx, bytes_rtx);
+	  rtx len_rtx = gen_reg_rtx (Pmode);
+	  emit_move_insn (len_rtx, gen_int_mode (bytes, Pmode));
 
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
 				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
-				   len_rtx, GET_MODE (len_rtx));
+				   len_rtx, Pmode);
 	}
 
       rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
@@ -2085,19 +2080,14 @@ expand_strn_compare (rtx operands[], int no_length)
 	}
       else
 	{
-	  rtx len_rtx;
-	  if (TARGET_64BIT)
-	    len_rtx = gen_reg_rtx (DImode);
-	  else
-	    len_rtx = gen_reg_rtx (SImode);
-
-	  emit_move_insn (len_rtx, GEN_INT (bytes - compare_length));
+	  rtx len_rtx = gen_reg_rtx (Pmode);
+	  emit_move_insn (len_rtx, gen_int_mode (bytes - compare_length, Pmode));
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
 				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
-				   len_rtx, GET_MODE (len_rtx));
+				   len_rtx, Pmode);
 	}
 
       rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
