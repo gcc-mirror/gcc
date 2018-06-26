@@ -718,6 +718,7 @@ remap_block (tree *block, copy_body_data *id)
 }
 
 /* Copy the whole block tree and root it in id->block.  */
+
 static tree
 remap_blocks (tree block, copy_body_data *id)
 {
@@ -738,6 +739,7 @@ remap_blocks (tree block, copy_body_data *id)
 }
 
 /* Remap the block tree rooted at BLOCK to nothing.  */
+
 static void
 remap_blocks_to_null (tree block, copy_body_data *id)
 {
@@ -745,6 +747,27 @@ remap_blocks_to_null (tree block, copy_body_data *id)
   insert_decl_map (id, block, NULL_TREE);
   for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
     remap_blocks_to_null (t, id);
+}
+
+/* Remap the location info pointed to by LOCUS.  */
+
+static location_t
+remap_location (location_t locus, copy_body_data *id)
+{
+  if (LOCATION_BLOCK (locus))
+    {
+      tree *n = id->decl_map->get (LOCATION_BLOCK (locus));
+      gcc_assert (n);
+      if (*n)
+	return set_block (locus, *n);
+    }
+
+  locus = LOCATION_LOCUS (locus);
+
+  if (locus != UNKNOWN_LOCATION && id->block)
+    return set_block (locus, id->block);
+
+  return locus;
 }
 
 static void
@@ -2145,7 +2168,8 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
 
 static bool
 copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
-		   basic_block ret_bb, basic_block abnormal_goto_dest)
+		   basic_block ret_bb, basic_block abnormal_goto_dest,
+		   copy_body_data *id)
 {
   basic_block new_bb = (basic_block) bb->aux;
   edge_iterator ei;
@@ -2160,6 +2184,7 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
       {
 	edge new_edge;
 	int flags = old_edge->flags;
+	location_t locus = old_edge->goto_locus;
 
 	/* Return edges do get a FALLTHRU flag when they get inlined.  */
 	if (old_edge->dest->index == EXIT_BLOCK
@@ -2167,8 +2192,10 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	    && old_edge->dest->aux != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  flags |= EDGE_FALLTHRU;
 
-	new_edge = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
+	new_edge
+	  = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
 	new_edge->probability = old_edge->probability;
+	new_edge->goto_locus = remap_location (locus, id);
       }
 
   if (bb->index == ENTRY_BLOCK || bb->index == EXIT_BLOCK)
@@ -2365,16 +2392,7 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 		      inserted = true;
 		    }
 		  locus = gimple_phi_arg_location_from_edge (phi, old_edge);
-		  if (LOCATION_BLOCK (locus))
-		    {
-		      tree *n;
-		      n = id->decl_map->get (LOCATION_BLOCK (locus));
-		      gcc_assert (n);
-		      locus = set_block (locus, *n);
-		    }
-		  else
-		    locus = LOCATION_LOCUS (locus);
-
+		  locus = remap_location (locus, id);
 		  add_phi_arg (new_phi, new_arg, new_edge, locus);
 		}
 	    }
@@ -2705,7 +2723,7 @@ copy_cfg_body (copy_body_data * id,
     if (!id->blocks_to_copy
 	|| (bb->index > 0 && bitmap_bit_p (id->blocks_to_copy, bb->index)))
       need_debug_cleanup |= copy_edges_for_bb (bb, num, den, exit_block_map,
-					       abnormal_goto_dest);
+					       abnormal_goto_dest, id);
 
   if (new_entry)
     {
