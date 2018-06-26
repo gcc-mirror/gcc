@@ -1,3 +1,7 @@
+2018-06-26  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/builtins-1.c: Correct a comment.
+
 2018-06-26  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-neg-int.p8.c: Specify powerpc_p8vector_ok

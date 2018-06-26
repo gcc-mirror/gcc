@@ -288,7 +288,7 @@ int main ()
    vec_mul             mulld | mullw, mulhwu
    vec_nor             xxlnor
    vec_or              xxlor
-   vec_packsu          vpkudus (matches twice due to -dp option)
+   vec_packsu          vpkudus
    vec_                perm vperm
    vec_                round xvrdpi
    vec_sel             xxsel
