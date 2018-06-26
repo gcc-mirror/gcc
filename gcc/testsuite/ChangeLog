@@ -1,3 +1,8 @@
+2018-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/86257
+	* gcc.target/i386/pr86257.c: Add -mtls-dialect=gnu to dg-options.
+
 2018-06-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/pr86257.c: Require 64-bit.
