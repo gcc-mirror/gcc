@@ -1,3 +1,9 @@
+2018-06-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/experimental/algorithm/sample-2.cc: Add TLS DejaGNU
+	directives.
+	* testsuite/experimental/algorithm/shuffle.cc: Likewise.
+
 2018-06-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.tcc (regex_iterator::operator==): Add missing
