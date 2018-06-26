@@ -2842,8 +2842,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 	    {
 	      if (dump_enabled_p ())
 		{
-		  location_t loc = gimple_location_safe (ie->call_stmt);
-		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, ie->call_stmt,
 				   "discovered direct call non-invariant %s\n",
 				   ie->caller->dump_name ());
 		}
@@ -2853,8 +2852,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 
           if (dump_enabled_p ())
 	    {
-	      location_t loc = gimple_location_safe (ie->call_stmt);
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, ie->call_stmt,
 			       "discovered direct call to non-function in %s, "
 			       "making it __builtin_unreachable\n",
 			       ie->caller->dump_name ());
@@ -2942,9 +2940,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
      }
   if (dump_enabled_p ())
     {
-      location_t loc = gimple_location_safe (ie->call_stmt);
-
-      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, ie->call_stmt,
 		       "converting indirect call in %s to direct call to %s\n",
 		       ie->caller->name (), callee->name ());
     }

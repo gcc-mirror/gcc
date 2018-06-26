@@ -81,8 +81,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 
 
-/* Loop or bb location.  */
-source_location vect_location;
+/* Loop or bb location, with hotness information.  */
+dump_user_location_t vect_location;
 
 /* Vector mapping GIMPLE stmt to stmt_vec_info. */
 vec<stmt_vec_info> *stmt_vec_info_vec;
@@ -696,11 +696,11 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
   unsigned ret = 0;
   vec_info_shared shared;
   vect_location = find_loop_location (loop);
-  if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
+  if (LOCATION_LOCUS (vect_location.get_location_t ()) != UNKNOWN_LOCATION
       && dump_enabled_p ())
     dump_printf (MSG_NOTE, "\nAnalyzing loop at %s:%d\n",
-		 LOCATION_FILE (vect_location),
-		 LOCATION_LINE (vect_location));
+		 LOCATION_FILE (vect_location.get_location_t ()),
+		 LOCATION_LINE (vect_location.get_location_t ()));
 
   loop_vec_info loop_vinfo = vect_analyze_loop (loop, orig_loop_vinfo, &shared);
   loop->aux = loop_vinfo;
@@ -917,7 +917,7 @@ vectorize_loops (void)
       ret |= try_vectorize_loop (simduid_to_vf_htab, &num_vectorized_loops,
 				 loop);
 
-  vect_location = UNKNOWN_LOCATION;
+  vect_location = dump_user_location_t ();
 
   statistics_counter_event (cfun, "Vectorized loops", num_vectorized_loops);
   if (dump_enabled_p ()
@@ -1249,7 +1249,7 @@ increase_alignment (void)
 {
   varpool_node *vnode;
 
-  vect_location = UNKNOWN_LOCATION;
+  vect_location = dump_user_location_t ();
   type_align_map = new hash_map<tree, unsigned>;
 
   /* Increase the alignment of all global arrays for vectorization.  */

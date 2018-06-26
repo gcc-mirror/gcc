@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DUMPFILE_H
 #define GCC_DUMPFILE_H 1
 
+#include "profile-count.h"
 
 /* Different tree dump places.  When you add new tree dump places,
    extend the DUMP_FILES array in dumpfile.c.  */
@@ -268,20 +269,165 @@ struct dump_file_info
   bool graph_dump_initialized;
 };
 
+/* A class for describing where in the user's source that a dump message
+   relates to, with various constructors for convenience.
+   In particular, this lets us associate dump messages
+   with hotness information (e.g. from PGO), allowing them to
+   be prioritized by code hotness.  */
+
+class dump_user_location_t
+{
+ public:
+  /* Default constructor, analogous to UNKNOWN_LOCATION.  */
+  dump_user_location_t () : m_count (), m_loc (UNKNOWN_LOCATION) {}
+
+  /* Construct from a gimple statement (using its location and hotness).  */
+  dump_user_location_t (gimple *stmt);
+
+  /* Construct from an RTL instruction (using its location and hotness).  */
+  dump_user_location_t (rtx_insn *insn);
+
+  /* Construct from a location_t.  This one is deprecated (since it doesn't
+     capture hotness information); it thus needs to be spelled out.  */
+  static dump_user_location_t
+  from_location_t (location_t loc)
+  {
+    return dump_user_location_t (profile_count (), loc);
+  }
+
+  /* Construct from a function declaration.  This one requires spelling out
+     to avoid accidentally constructing from other kinds of tree.  */
+  static dump_user_location_t
+  from_function_decl (tree fndecl);
+
+  profile_count get_count () const { return m_count; }
+  location_t get_location_t () const { return m_loc; }
+
+ private:
+  /* Private ctor from count and location, for use by from_location_t.  */
+  dump_user_location_t (profile_count count, location_t loc)
+    : m_count (count), m_loc (loc)
+  {}
+
+  profile_count m_count;
+  location_t m_loc;
+};
+
+/* A class for identifying where in the compiler's own source
+   (or a plugin) that a dump message is being emitted from.  */
+
+struct dump_impl_location_t
+{
+  dump_impl_location_t (
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+			const char *file = __builtin_FILE (),
+			int line = __builtin_LINE (),
+			const char *function = __builtin_FUNCTION ()
+#else
+			const char *file = __FILE__,
+			int line = __LINE__,
+			const char *function = NULL
+#endif
+  )
+  : m_file (file), m_line (line), m_function (function)
+  {}
+
+  const char *m_file;
+  int m_line;
+  const char *m_function;
+};
+
+/* A bundle of information for describing the location of a dump message:
+   (a) the source location and hotness within the user's code, together with
+   (b) the source location within the compiler/plugin.
+
+   The constructors use default parameters so that (b) gets sets up
+   automatically.
+
+   The upshot is that you can pass in e.g. a gimple * to dump_printf_loc,
+   and the dump call will automatically record where in GCC's source
+   code the dump was emitted from.  */
+
+class dump_location_t
+{
+ public:
+  /* Default constructor, analogous to UNKNOWN_LOCATION.  */
+  dump_location_t (const dump_impl_location_t &impl_location
+		     = dump_impl_location_t ())
+  : m_user_location (dump_user_location_t ()),
+    m_impl_location (impl_location)
+  {
+  }
+
+  /* Construct from a gimple statement (using its location and hotness).  */
+  dump_location_t (gimple *stmt,
+		   const dump_impl_location_t &impl_location
+		     = dump_impl_location_t ())
+  : m_user_location (dump_user_location_t (stmt)),
+    m_impl_location (impl_location)
+  {
+  }
+
+  /* Construct from an RTL instruction (using its location and hotness).  */
+  dump_location_t (rtx_insn *insn,
+		   const dump_impl_location_t &impl_location
+		   = dump_impl_location_t ())
+  : m_user_location (dump_user_location_t (insn)),
+    m_impl_location (impl_location)
+  {
+  }
+
+  /* Construct from a dump_user_location_t.  */
+  dump_location_t (const dump_user_location_t &user_location,
+		   const dump_impl_location_t &impl_location
+		     = dump_impl_location_t ())
+  : m_user_location (user_location),
+    m_impl_location (impl_location)
+  {
+  }
+
+  /* Construct from a location_t.  This one is deprecated (since it doesn't
+     capture hotness information), and thus requires spelling out.  */
+  static dump_location_t
+  from_location_t (location_t loc,
+		   const dump_impl_location_t &impl_location
+		     = dump_impl_location_t ())
+  {
+    return dump_location_t (dump_user_location_t::from_location_t (loc),
+			    impl_location);
+  }
+
+  const dump_user_location_t &
+  get_user_location () const { return m_user_location; }
+
+  const dump_impl_location_t &
+  get_impl_location () const { return m_impl_location; }
+
+  location_t get_location_t () const
+  {
+    return m_user_location.get_location_t ();
+  }
+
+  profile_count get_count () const { return m_user_location.get_count (); }
+
+ private:
+  dump_user_location_t m_user_location;
+  dump_impl_location_t m_impl_location;
+};
+
 /* In dumpfile.c */
 extern FILE *dump_begin (int, dump_flags_t *);
 extern void dump_end (int, FILE *);
 extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
 extern void dump_printf (dump_flags_t, const char *, ...) ATTRIBUTE_PRINTF_2;
-extern void dump_printf_loc (dump_flags_t, source_location,
-                             const char *, ...) ATTRIBUTE_PRINTF_3;
+extern void dump_printf_loc (dump_flags_t, const dump_location_t &,
+			     const char *, ...) ATTRIBUTE_PRINTF_3;
 extern void dump_function (int phase, tree fn);
 extern void dump_basic_block (dump_flags_t, basic_block, int);
-extern void dump_generic_expr_loc (dump_flags_t, source_location, dump_flags_t, tree);
 extern void dump_generic_expr (dump_flags_t, dump_flags_t, tree);
-extern void dump_gimple_stmt_loc (dump_flags_t, source_location, dump_flags_t,
-				  gimple *, int);
+extern void dump_gimple_stmt_loc (dump_flags_t, const dump_location_t &,
+				  dump_flags_t, gimple *, int);
 extern void dump_gimple_stmt (dump_flags_t, dump_flags_t, gimple *, int);
 extern void print_combine_total_stats (void);
 extern bool enable_rtl_dump_file (void);

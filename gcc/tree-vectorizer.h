@@ -1437,8 +1437,8 @@ vect_get_scalar_dr_size (struct data_reference *dr)
   return tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr))));
 }
 
-/* Source location */
-extern source_location vect_location;
+/* Source location + hotness information. */
+extern dump_user_location_t vect_location;
 
 /* If dumping is enabled, emit a MSG_NOTE at vect_location about
    entering MSG within the vectorizer.  MSG should be a string literal. */
@@ -1466,7 +1466,7 @@ extern void vect_loop_versioning (loop_vec_info, unsigned int, bool,
 extern struct loop *vect_do_peeling (loop_vec_info, tree, tree,
 				     tree *, tree *, tree *, int, bool, bool);
 extern void vect_prepare_for_masked_peels (loop_vec_info);
-extern source_location find_loop_location (struct loop *);
+extern dump_user_location_t find_loop_location (struct loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 
 /* In tree-vect-stmts.c.  */
@@ -1582,7 +1582,7 @@ extern tree vect_create_addr_base_for_vector_ref (gimple *, gimple_seq *,
 extern gimple *vect_force_simple_reduction (loop_vec_info, gimple *,
 					    bool *, bool);
 /* Used in gimple-loop-interchange.c.  */
-extern bool check_reduction_path (location_t, loop_p, gphi *, tree,
+extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
 /* Drive for loop analysis stage.  */
 extern loop_vec_info vect_analyze_loop (struct loop *, loop_vec_info,

@@ -2627,7 +2627,7 @@ number_of_iterations_exit (struct loop *loop, edge exit,
     return true;
 
   if (warn)
-    dump_printf_loc (MSG_MISSED_OPTIMIZATION, gimple_location_safe (stmt),
+    dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmt,
 		     "missed loop optimization: niters analysis ends up "
 		     "with assumptions.\n");
 

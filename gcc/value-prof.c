@@ -585,10 +585,11 @@ check_counter (gimple *stmt, const char * name,
   gcov_type bb_count = bb_count_d.ipa ().to_gcov_type ();
   if (*all != bb_count || *count > *all)
     {
-      location_t locus;
-      locus = (stmt != NULL)
-              ? gimple_location (stmt)
-              : DECL_SOURCE_LOCATION (current_function_decl);
+      dump_user_location_t locus;
+      locus = ((stmt != NULL)
+	       ? dump_user_location_t (stmt)
+	       : dump_user_location_t::from_function_decl
+		   (current_function_decl));
       if (flag_profile_correction)
         {
           if (dump_enabled_p ())
@@ -603,7 +604,7 @@ check_counter (gimple *stmt, const char * name,
 	}
       else
 	{
-	  error_at (locus, "corrupted value profile: %s "
+	  error_at (locus.get_location_t (), "corrupted value profile: %s "
 		    "profile counter (%d out of %d) inconsistent with "
 		    "basic-block count (%d)",
 		    name,
@@ -1271,13 +1272,11 @@ find_func_by_profile_id (int profile_id)
 bool
 check_ic_target (gcall *call_stmt, struct cgraph_node *target)
 {
-   location_t locus;
    if (gimple_check_call_matching_types (call_stmt, target->decl, true))
      return true;
 
-   locus =  gimple_location (call_stmt);
    if (dump_enabled_p ())
-     dump_printf_loc (MSG_MISSED_OPTIMIZATION, locus,
+     dump_printf_loc (MSG_MISSED_OPTIMIZATION, call_stmt,
                       "Skipping target %s with mismatching types for icall\n",
                       target->name ());
    return false;

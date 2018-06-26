@@ -29,6 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "profile-count.h"
 #include "tree-cfg.h"
 #include "langhooks.h"
+#include "backend.h" /* for gimple.h.  */
+#include "gimple.h" /* for dump_user_location_t ctor.  */
+#include "rtl.h" /* for dump_user_location_t ctor.  */
+#include "selftest.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -358,9 +362,51 @@ dump_open_alternate_stream (struct dump_file_info *dfi)
   return stream;
 }
 
+/* Construct a dump_user_location_t from STMT (using its location and
+   hotness).  */
+
+dump_user_location_t::dump_user_location_t (gimple *stmt)
+: m_count (), m_loc (UNKNOWN_LOCATION)
+{
+  if (stmt)
+    {
+      if (stmt->bb)
+	m_count = stmt->bb->count;
+      m_loc = gimple_location (stmt);
+    }
+}
+
+/* Construct a dump_user_location_t from an RTL instruction (using its
+   location and hotness).  */
+
+dump_user_location_t::dump_user_location_t (rtx_insn *insn)
+: m_count (), m_loc (UNKNOWN_LOCATION)
+{
+  if (insn)
+    {
+      basic_block bb = BLOCK_FOR_INSN (insn);
+      if (bb)
+	m_count = bb->count;
+      m_loc = INSN_LOCATION (insn);
+    }
+}
+
+/* Construct from a function declaration.  This one requires spelling out
+   to avoid accidentally constructing from other kinds of tree.  */
+
+dump_user_location_t
+dump_user_location_t::from_function_decl (tree fndecl)
+{
+  gcc_assert (fndecl);
+
+  // FIXME: profile count for function?
+  return dump_user_location_t (profile_count (),
+			       DECL_SOURCE_LOCATION (fndecl));
+}
+
 /* Print source location on DFILE if enabled.  */
 
-void
+static void
 dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
 {
   if (dump_kind)
@@ -393,18 +439,19 @@ dump_gimple_stmt (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
 /* Similar to dump_gimple_stmt, except additionally print source location.  */
 
 void
-dump_gimple_stmt_loc (dump_flags_t dump_kind, source_location loc,
+dump_gimple_stmt_loc (dump_flags_t dump_kind, const dump_location_t &loc,
 		      dump_flags_t extra_dump_flags, gimple *gs, int spc)
 {
+  location_t srcloc = loc.get_location_t ();
   if (dump_file && (dump_kind & pflags))
     {
-      dump_loc (dump_kind, dump_file, loc);
+      dump_loc (dump_kind, dump_file, srcloc);
       print_gimple_stmt (dump_file, gs, spc, dump_flags | extra_dump_flags);
     }
 
   if (alt_dump_file && (dump_kind & alt_flags))
     {
-      dump_loc (dump_kind, alt_dump_file, loc);
+      dump_loc (dump_kind, alt_dump_file, srcloc);
       print_gimple_stmt (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
     }
 }
@@ -421,27 +468,6 @@ dump_generic_expr (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
 
   if (alt_dump_file && (dump_kind & alt_flags))
       print_generic_expr (alt_dump_file, t, dump_flags | extra_dump_flags);
-}
-
-
-/* Similar to dump_generic_expr, except additionally print the source
-   location.  */
-
-void
-dump_generic_expr_loc (dump_flags_t dump_kind, source_location loc,
-		       dump_flags_t extra_dump_flags, tree t)
-{
-  if (dump_file && (dump_kind & pflags))
-    {
-      dump_loc (dump_kind, dump_file, loc);
-      print_generic_expr (dump_file, t, dump_flags | extra_dump_flags);
-    }
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    {
-      dump_loc (dump_kind, alt_dump_file, loc);
-      print_generic_expr (alt_dump_file, t, dump_flags | extra_dump_flags);
-    }
 }
 
 /* Output a formatted message using FORMAT on appropriate dump streams.  */
@@ -469,13 +495,14 @@ dump_printf (dump_flags_t dump_kind, const char *format, ...)
 /* Similar to dump_printf, except source location is also printed.  */
 
 void
-dump_printf_loc (dump_flags_t dump_kind, source_location loc,
+dump_printf_loc (dump_flags_t dump_kind, const dump_location_t &loc,
 		 const char *format, ...)
 {
+  location_t srcloc = loc.get_location_t ();
   if (dump_file && (dump_kind & pflags))
     {
       va_list ap;
-      dump_loc (dump_kind, dump_file, loc);
+      dump_loc (dump_kind, dump_file, srcloc);
       va_start (ap, format);
       vfprintf (dump_file, format, ap);
       va_end (ap);
@@ -484,7 +511,7 @@ dump_printf_loc (dump_flags_t dump_kind, source_location loc,
   if (alt_dump_file && (dump_kind & alt_flags))
     {
       va_list ap;
-      dump_loc (dump_kind, alt_dump_file, loc);
+      dump_loc (dump_kind, alt_dump_file, srcloc);
       va_start (ap, format);
       vfprintf (alt_dump_file, format, ap);
       va_end (ap);
@@ -1059,3 +1086,53 @@ enable_rtl_dump_file (void)
 			    NULL);
   return num_enabled > 0;
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Verify that the dump_location_t constructors capture the source location
+   at which they were called (provided that the build compiler is sufficiently
+   recent).  */
+
+static void
+test_impl_location ()
+{
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+  /* Default ctor.  */
+  {
+    dump_location_t loc;
+    const int expected_line = __LINE__ - 1;
+    ASSERT_STR_CONTAINS (loc.get_impl_location ().m_file, "dumpfile.c");
+    ASSERT_EQ (loc.get_impl_location ().m_line, expected_line);
+  }
+
+  /* Constructing from a gimple.  */
+  {
+    dump_location_t loc ((gimple *)NULL);
+    const int expected_line = __LINE__ - 1;
+    ASSERT_STR_CONTAINS (loc.get_impl_location ().m_file, "dumpfile.c");
+    ASSERT_EQ (loc.get_impl_location ().m_line, expected_line);
+  }
+
+  /* Constructing from an rtx_insn.  */
+  {
+    dump_location_t loc ((rtx_insn *)NULL);
+    const int expected_line = __LINE__ - 1;
+    ASSERT_STR_CONTAINS (loc.get_impl_location ().m_file, "dumpfile.c");
+    ASSERT_EQ (loc.get_impl_location ().m_line, expected_line);
+  }
+#endif
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+dumpfile_c_tests ()
+{
+  test_impl_location ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */

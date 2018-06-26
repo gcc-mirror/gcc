@@ -447,9 +447,14 @@ read_profile_edge_counts (gcov_type *exec_counts)
 		      {
 			static bool informed = 0;
 			if (dump_enabled_p () && !informed)
-		          dump_printf_loc (MSG_NOTE, input_location,
-                                           "corrupted profile info: edge count"
-                                           " exceeds maximal count\n");
+			  {
+			    dump_location_t loc
+			      = dump_location_t::from_location_t
+			        (input_location);
+			    dump_printf_loc (MSG_NOTE, loc,
+					     "corrupted profile info: edge count"
+					     " exceeds maximal count\n");
+			  }
 			informed = 1;
 		      }
 		    else
@@ -672,7 +677,8 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
          if (dump_enabled_p () && informed == 0)
            {
              informed = 1;
-             dump_printf_loc (MSG_NOTE, input_location,
+             dump_printf_loc (MSG_NOTE,
+			      dump_location_t::from_location_t (input_location),
                               "correcting inconsistent profile data\n");
            }
          correct_negative_edge_counts ();
