@@ -1,3 +1,4 @@
+/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target fpic } */
 /* { dg-require-effective-target tls } */
 /* { dg-options "-g -fPIC" } */
