@@ -1,3 +1,8 @@
+2018-06-26  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.h (enum processor_flags): Do not use
+	default tune parameter when -march was specified.
+
 2018-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/86314
