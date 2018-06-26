@@ -1,3 +1,7 @@
+2018-06-26  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* MAINTAINERS (write after approval): Add myself.
+
 2018-06-19  Nick Clifton  <nickc@redhat.com>
 
 	* zlib/configure.ac: Restore old behaviour of only enabling
