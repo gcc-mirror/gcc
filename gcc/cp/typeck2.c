@@ -1364,6 +1364,9 @@ process_init_constructor_array (tree type, tree init, int nested,
 	    flags |= picflag_from_initializer (next);
 	    CONSTRUCTOR_APPEND_ELT (v, size_int (i), next);
 	  }
+	else
+	  /* Don't bother checking all the other elements.  */
+	  break;
       }
 
   CONSTRUCTOR_ELTS (init) = v;
