@@ -330,6 +330,10 @@ struct lang_hooks
      global diagnostic context structure.  */
   void (*initialize_diagnostics) (diagnostic_context *);
 
+  /* Beginning the main source file.  */
+  void (*preprocess_main_file) (line_maps *, const line_map_ordinary *,
+				unsigned);
+
   /* State machine for determining the early end of a preprocess.  */
   int (*preprocess_preamble) (int, cpp_reader *, unsigned, source_location);
 

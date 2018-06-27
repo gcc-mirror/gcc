@@ -12888,25 +12888,25 @@ cp_parser_module_proclamation (cp_parser *parser)
   pop_module_export (prev);
 }
 
-/* Tokenize an atom preamble.  If there is one, returns the location
-   of the final ';'.  Otherwise UNKNOWN_LOCATION.  */
+/* Tokenize an atom preamble.  Return APS_IMPORT & APS_MODULE
+   mask of preamble decls.  Otherwise zero.  */
 
-static location_t
+static atom_preamble_state
 cp_parser_get_module_preamble_tokens (cp_parser *parser)
 {
   cp_lexer *lexer = parser->lexer;
-  location_t last_semi = UNKNOWN_LOCATION;
+  atom_preamble_state res = APS_NONE;
 
-  for (bool only_import = false;;)
+  for (;;)
     {
-      unsigned state = atom_preamble_prefix_peek (true, only_import, parse_in);
+      atom_preamble_state state
+	= atom_preamble_prefix_peek (true, res != 0, parse_in);
 
-      if (!state)
+      if (state == APS_NONE)
 	break;
 
-      bool is_pragma = state & 0x8;
-      only_import = state & 0x10;
-      state &= 0xf;
+      res = atom_preamble_state (res | (state & (APS_IMPORT | APS_MODULE)));
+      state = atom_preamble_state (state & (APS_PRAGMA | APS_COUNT));
 
       for (;;)
 	{
@@ -12914,22 +12914,18 @@ cp_parser_get_module_preamble_tokens (cp_parser *parser)
 
 	  /* This will swallow comments for us.  */
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
-					   | ((state == 2)
+					   | ((state == APS_NAME)
 					      ? C_LEX_STRING_IS_HEADER : 0),
 					   &tok);
 	  state = atom_preamble_prefix_next (state, parse_in, tok.type,
 					     tok.location);
 	  vec_safe_push (lexer->buffer, tok);
 	  if (!state)
-	    {
-	      if (!is_pragma)
-		last_semi = tok.location;
-	      break;
-	    }
+	    break;
 	}
     }
 
-  return last_semi;
+  return res;
 }
 
 /* Parse an atom preamble.  This is done before tokenizing the rest
@@ -39449,7 +39445,7 @@ c_parse_file (void)
   if (!modules_p ())
     /* It's possible that parsing the first pragma will load a PCH file,
        which is a GC collection point.  So we have to do that before
-       allocating any memory.  Modules is incompatible with PCH*/
+       allocating any memory.  Modules is incompatible with PCH.  */
     cp_parser_initial_pragma (&first);
 
   the_parser = cp_parser_new ();
@@ -39459,12 +39455,15 @@ c_parse_file (void)
     {
       if (modules_atom_p ())
 	{
-	  location_t end = cp_parser_get_module_preamble_tokens (the_parser);
-	  if (end != UNKNOWN_LOCATION)
+	  atom_preamble_state preamble
+	    = cp_parser_get_module_preamble_tokens (the_parser);
+	  if (preamble & APS_MODULE
+	      || maybe_atom_legacy_module (line_table)
+	      || preamble & APS_IMPORT)
 	    {
 	      /* There is a non-empty preamble.  */
 	      location_t loc = cp_parser_parse_module_preamble (the_parser);
-	      gcc_assert (loc != UNKNOWN_LOCATION);
+	      gcc_assert ((loc == UNKNOWN_LOCATION) == !preamble);
 	      if (unsigned adjust = atom_module_preamble (loc, line_table))
 		cpp_relocate_peeked_tokens (parse_in, adjust);
 	    }

@@ -2833,6 +2833,10 @@ static const char *module_mapper_name;
 /* Legacy header mode.  */
 static const char *module_header_name;
 
+/* End of the prefix line maps.  */
+static unsigned prefix_line_maps_hwm;
+static unsigned prefix_locations_hwm;
+
 /* BMI repository path and workspace.  */
 static char *bmi_repo;
 static size_t bmi_repo_length;
@@ -9389,26 +9393,8 @@ module_state::prepare_locations (line_maps *lmaps)
 
   /* Skip over the command-line, built-in and forced header line
      maps.  We require (& check) them to be the same in all TUs.  */
-  if (unsigned hwm = spew->early_loc_map.second)
-    {
-      /* Using strcmp, because some of the main name strings are
-	 copied (which seems unfortunate).  */
-      const line_map_ordinary *map = LINEMAPS_ORDINARY_MAP_AT (lmaps, 0);
-      const char *main = ORDINARY_MAP_FILE_NAME (map);
-      if (0 == strcmp (main, main_input_filename))
-	{
-	  for (unsigned ix = 1; ix != hwm; ix++)
-	    {
-	      map = LINEMAPS_ORDINARY_MAP_AT (lmaps, ix);
-	      if (map->reason == LC_RENAME
-		  && 0 == strcmp (ORDINARY_MAP_FILE_NAME (map), main))
-		{
-		  spew->early_loc_map.first = ix;
-		  break;
-		}
-	    }
-	}
-    }
+  if (spew->early_loc_map.second)
+    spew->early_loc_map.first = prefix_line_maps_hwm;
 
   spew->late_loc_map.second = LINEMAPS_ORDINARY_USED (lmaps);
 
@@ -9444,7 +9430,10 @@ module_state::write_locations (elf_out *to, line_maps *lmaps,
 	  dump () && dump ("Source file[%u]=%s", ix, fname);
 	  sec.str (fname);
 	}
+      sec.u (prefix_line_maps_hwm);
+      sec.u (prefix_locations_hwm);
     }
+
   unsigned lwm = (early_p ? spew->early_loc_map : spew->late_loc_map).first;
   unsigned hwm = (early_p ? spew->early_loc_map : spew->late_loc_map).second;
   sec.u (hwm - lwm);
@@ -9458,8 +9447,6 @@ module_state::write_locations (elf_out *to, line_maps *lmaps,
 
   dump () && dump ("Linemaps:%u locations:[%u:%u) alignment:%u",
 		   hwm - lwm, first, last, align);
-  if (early_p)
-    sec.u (spew->early_loc_map.first);
 
   for (unsigned ix = lwm; ix != hwm; ix++)
     {
@@ -9514,11 +9501,16 @@ module_state::read_locations (line_maps *lmaps, bool early_p)
 	  const char *buf = sec.str (&l);
 	  char *fname = XNEWVEC (char, l + 1);
 	  memcpy (fname, buf, l + 1);
-	  dump () && dump ("Source fle[%u]=%s", ix, fname);
+	  dump () && dump ("Source file[%u]=%s", ix, fname);
 	  /* We leak these names into the line-map table.  But it
 	     doesn't own them.  */
 	  slurp->filenames->quick_push (fname);
 	}
+
+      unsigned pre_lwm = sec.u ();
+      unsigned pre_loc = sec.u ();
+      slurp->pre_early_ok = (pre_lwm == prefix_line_maps_hwm
+			     && pre_loc == prefix_locations_hwm);
     }
 
   unsigned num_maps = sec.u ();
@@ -9529,21 +9521,6 @@ module_state::read_locations (line_maps *lmaps, bool early_p)
   dump () && dump ("Linemaps:%u locations:[%u:%u) alignment:%u",
 		   num_maps, first_loc, last_loc, align);
 
-  if (early_p)
-    {
-      unsigned pre_lwm = sec.u ();
-      if (pre_lwm && pre_lwm < LINEMAPS_ORDINARY_USED (lmaps))
-	{
-	  /* Check pre_early is ok.  */
-	  const line_map_ordinary *map
-	    = LINEMAPS_ORDINARY_MAP_AT (lmaps, pre_lwm);
-
-	  if (0 == strcmp (main_input_filename, ORDINARY_MAP_FILE_NAME (map))
-	      && map->reason == LC_RENAME
-	      && first_loc == (MAP_START_LOCATION (map)))
-	    slurp->pre_early_ok = true;
-	}
-    }
 
   /* Map first_loc to > hwm such that align bits are preserved.  */
   int new_first = ((lmaps->highest_location + (1u << align) - 1)
@@ -10490,6 +10467,26 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
   (*module_state::modules)[mod]->lazy_load (ns, id, mslot, outer);
 }
 
+/* Return the ordinary location closest to FROM.  */
+
+static location_t
+ordinary_loc_of (line_maps *lmaps, location_t from)
+{
+  while (!IS_ORDINARY_LOC (from))
+    {
+      if (IS_ADHOC_LOC (from))
+	from = get_location_from_adhoc_loc (lmaps, from);
+      if (IS_MACRO_LOC (from))
+	{
+	  /* Find the ordinary location nearest FROM.  */
+	  const line_map *map = linemap_lookup (lmaps, from);
+	  const line_map_macro *mac_map = linemap_check_macro (map);
+	  from = MACRO_MAP_EXPANSION_POINT_LOCATION (mac_map);
+	}
+    }
+  return from;
+}
+
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
@@ -10499,7 +10496,8 @@ import_module (const cp_expr &name, bool exporting, tree, line_maps *lmaps)
     exporting = true;
 
   gcc_assert (global_namespace == current_scope ());
-  location_t from_loc = name.get_location ();
+  location_t from_loc = ordinary_loc_of (lmaps, name.get_location ());
+  
   if (module_state *imp = module_state::find_module (from_loc, *name, false))
     {
       imp->direct = true;
@@ -10530,9 +10528,21 @@ declare_module (const cp_expr &name, bool exporting_p, tree, line_maps *lmaps)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  location_t from_loc = name.get_location ();
+  location_t from_loc = ordinary_loc_of (lmaps, name.get_location ());
   if (module_state *state = module_state::find_module (from_loc, *name, true))
     {
+      // FIXME:check module is right kind
+      if (module_header_name)
+	{
+	  if (!module_header_name[0])
+	    module_header_name = IDENTIFIER_POINTER (state->name);
+	  /* The user may have named the module before the main file.  */
+	  const line_map_ordinary *map
+	    = linemap_check_ordinary (linemap_lookup (lmaps, from_loc));
+	  atom_main_file (lmaps, map,
+			  map - LINEMAPS_ORDINARY_MAPS (line_table));
+	}
+
       if (exporting_p)
 	{
 	  state->mod = MODULE_PURVIEW;
@@ -10705,28 +10715,28 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
   return ok ? int (adj) : -1;
 }
 
-/* Do processing after a (non-empty) atom preamble has been parsed.  LOC is the
-   final location of the preamble.  */
-
-unsigned
-atom_module_preamble (location_t loc, line_maps *lmaps)
-{
-  int adj = module_state::atom_preamble (loc, lmaps);
-  if (adj < 0)
-    fatal_error (loc, "returning to gate for a mechanical issue");
-
-  return unsigned (adj);
-}
-
-/* Convert the module search path.  */
+/* We've just properly entered the main source file.  I.e. after the
+   command line, builtins and forced headers.  Record the line map and
+   location of this map.  Note we may be called more than once.  The
+   first call sticks.  */
 
 void
-init_module_processing ()
+atom_main_file (line_maps *, const line_map_ordinary *map, unsigned ix)
 {
-  /* PCH should not be reachable because of lang-specs.  */
-  gcc_assert (!pch_file);
+  if (modules_atom_p () && !prefix_locations_hwm)
+    {
+      prefix_line_maps_hwm = ix;
+      prefix_locations_hwm = MAP_START_LOCATION (map);
+    }
+}
 
-  if (module_header_name && !module_header_name[0])
+bool
+maybe_atom_legacy_module (line_maps *lmaps)
+{
+  if (!module_header_name)
+    return false;
+
+  if (!module_header_name[0])
     {
       /* Set the module header name from the main_input_filename.  */
       const char *main = main_input_filename;
@@ -10747,6 +10757,44 @@ init_module_processing ()
       module_header_name = main + len;
     }
 
+  line_map *lmap = LINEMAPS_MAP_AT (lmaps, false, prefix_line_maps_hwm - 1);
+  size_t len = strlen (module_header_name);
+  char *qname = XNEWVEC (char, len + 2);
+  qname[0] = '"';
+  memcpy (qname + 1, module_header_name, len);
+  qname[len + 1] = '"';
+  cp_expr name (get_identifier_with_length (qname, len + 2),
+		MAP_START_LOCATION (lmap));
+  XDELETEVEC (qname);
+  declare_module (name, true, NULL, lmaps);
+  return true;
+}
+
+/* Do processing after a (non-empty) atom preamble has been parsed.  LOC is the
+   final location of the preamble.  */
+
+unsigned
+atom_module_preamble (location_t loc, line_maps *lmaps)
+{
+  int adj = module_state::atom_preamble (loc, lmaps);
+  if (adj < 0)
+    fatal_error (loc, "returning to gate for a mechanical issue");
+
+  if (module_header_name)
+    /* Everything is exported.  */
+    push_module_export (false, NULL);
+
+  return unsigned (adj);
+}
+
+/* Convert the module search path.  */
+
+void
+init_module_processing ()
+{
+  /* PCH should not be reachable because of lang-specs.  */
+  gcc_assert (!pch_file);
+
   module_state::init ();
 }
 
@@ -10755,6 +10803,9 @@ init_module_processing ()
 void
 finish_module (line_maps *lmaps)
 {
+  if (module_header_name)
+    pop_module_export (0);
+
   module_state::fini ();
 
   module_state *state = (*module_state::modules)[MODULE_PURVIEW];

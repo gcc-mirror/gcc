@@ -597,7 +597,7 @@ linemap_module_loc (line_maps *set, source_location from,
 		    source_location loc, const char *name)
 {
   /* Exactly one of LOC and NAME must be provided.  */
-  gcc_assert (!loc != !name);
+  gcc_assert (!loc != !name && IS_ORDINARY_LOC (from));
 
   while (!IS_ORDINARY_LOC (from))
     {
@@ -1332,12 +1332,7 @@ linemap_location_from_macro_expansion_p (const struct line_maps *set,
     location = set->location_adhoc_data_map.data[location
 						 & MAX_SOURCE_LOCATION].locus;
 
-  linemap_assert (location <= MAX_SOURCE_LOCATION
-		  && (set->highest_location
-		      < LINEMAPS_MACRO_LOWEST_LOCATION (set)));
-  if (set == NULL)
-    return false;
-  return (location > set->highest_location);
+  return IS_MACRO_LOC (location);
 }
 
 /* Given two virtual locations *LOC0 and *LOC1, return the first

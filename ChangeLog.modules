@@ -1,3 +1,36 @@
+2018-06-27  Nathan Sidwell  <nathan@acm.org>
+
+	(Beginnings of) Legacy header modules
+	libcpp/
+	* line-map.c (linemap_module_loc): Expect ordinary loc.
+	gcc/
+	* langhooks-def.h (LANG_HOOKS_PREPROCESS_MAIN_FILE): Provide
+	default.
+	* langhooks.h (lang_hooks): Add preprocess_main_file hook.
+	gcc/c-family/
+	* c-opts.c (cb_file_change): Call new hook.
+	gcc/cp/
+	* cp-tree.h (enum atom_preamble_state): Define.
+	(atom_preamble_prefix_{peek,next}): Use enum.
+	(atom_main_file, maybe_atom_legacy_module): Declare.
+	* cxx-mapper.cc (module2bmi): Munge legacy module chars.
+	* lang-specs.h (@c++-header): Fix -fmodule-header use.
+	* lex.c (atom_preamble_prefix_{peek,next}): Adjust for enum.
+	* module.c (prefix_line_maps_hwm, prefix_locations_hwm): New.
+	(module_state::{read,write,prepare}_locations): Adjust prefix checking.
+	(ordinary_loc_of): New.
+	(import_module): Use it.
+	(declare_module): Set preamble prefix if needed.
+	(atom_main_file, maybe_atom_legacy_module): New.
+	(init_module_processing): Don't default module_header_name here.
+	(atom_module_preamble, finish_module): Push & pop exporting state in
+	legacy mode.
+	* parser.c (cp_parser_get_module_preamble_tokens): Adjust for
+	preamble state.  Return indicator of preamble contents.
+	(c_parse_file): Maybe inject legacy module decl.
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_MAIN_FILE): Override hook.
+	(atom_preamble_fsm): Adjust for state enum.
+
 2018-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r262148.

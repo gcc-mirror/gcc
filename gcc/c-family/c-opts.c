@@ -1517,13 +1517,26 @@ push_command_line_include (void)
 
 /* File change callback.  Has to handle -include files.  */
 static void
-cb_file_change (cpp_reader * ARG_UNUSED (pfile),
-		const line_map_ordinary *new_map)
+cb_file_change (cpp_reader *, const line_map_ordinary *new_map)
 {
   if (flag_preprocess_only)
     pp_file_change (new_map);
   else
     fe_file_change (new_map);
+
+  if (new_map
+      && lang_hooks.preprocess_main_file && MAIN_FILE_P (new_map)
+      && new_map->reason == (cpp_opts->preprocessed
+			     ? LC_RENAME_VERBATIM : LC_RENAME)
+      && 0 == strcmp (ORDINARY_MAP_FILE_NAME (new_map),
+		      main_input_filename))
+    {
+      unsigned ix = new_map - LINEMAPS_ORDINARY_MAPS (line_table);
+
+      if (ix > cpp_opts->preprocessed ? 2 : 1)
+	/* We're starting the main file.  Inform the FE of that.  */
+	lang_hooks.preprocess_main_file (line_table, new_map, ix);
+    }
 
   if (new_map 
       && (new_map->reason == LC_ENTER || new_map->reason == LC_RENAME))

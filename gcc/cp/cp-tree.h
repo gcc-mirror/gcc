@@ -6611,9 +6611,22 @@ extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
-extern unsigned atom_preamble_prefix_peek	(bool, bool, cpp_reader *);
-extern unsigned atom_preamble_prefix_next	(unsigned, cpp_reader *,
-						 unsigned, source_location);
+/* Peeking at an atom preamble construct. */
+enum atom_preamble_state
+{
+ APS_NONE = 0,
+ APS_NAME = 2,   /* Next token is module name.  */
+ APS_COUNT = 7,  /* A mask.  */
+ APS_PRAGMA = 0x8,  /* Found a pragma.  */
+ APS_IMPORT = 0x10,  /* Found an import.  */
+ APS_MODULE = 0x20,  /* Found a module.  */
+};
+extern atom_preamble_state atom_preamble_prefix_peek
+						(bool, bool, cpp_reader *);
+extern atom_preamble_state atom_preamble_prefix_next
+						(atom_preamble_state,
+						 cpp_reader *, unsigned,
+						 source_location);
 
 /* in method.c */
 extern void init_method				(void);
@@ -6667,6 +6680,8 @@ extern void import_module (const cp_expr &, bool, tree, line_maps *);
 extern tree module_name (unsigned);
 extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
+extern void atom_main_file (line_maps *, const line_map_ordinary *, unsigned);
+extern bool maybe_atom_legacy_module (line_maps *);
 extern void maybe_repeat_preamble (location_t, int count, cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 

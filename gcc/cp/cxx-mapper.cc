@@ -276,8 +276,20 @@ module2bmi (const char *module)
 	}
       memcpy (workspace, module, l + 1);
       for (char *ptr = workspace; *ptr; ptr++)
-	if (*ptr == '.')
-	  *ptr = '-';
+	{
+	  char c = *ptr;
+	  if (c == '.')
+	    c = '-';
+	  else if (c == ':')
+	    c = '+';
+	  else if (c == '"')
+	    c = '=';
+	  else if (IS_DIR_SEPARATOR (c))
+	    c = '=';
+	  *ptr = c;
+	}
+      if (workspace[l-1] == '=')
+	l--;
       strcpy (workspace + l, ".nms");
       res = workspace;
     }

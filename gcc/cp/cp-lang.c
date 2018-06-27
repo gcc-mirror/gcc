@@ -78,6 +78,8 @@ static int atom_preamble_fsm (int, cpp_reader *, unsigned, source_location);
 #define LANG_HOOKS_EH_RUNTIME_TYPE build_eh_type_type
 #undef LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
+#undef LANG_HOOKS_PREPROCESS_MAIN_FILE
+#define LANG_HOOKS_PREPROCESS_MAIN_FILE atom_main_file
 #undef LANG_HOOKS_PREPROCESS_PREAMBLE
 #define LANG_HOOKS_PREPROCESS_PREAMBLE atom_preamble_fsm
 
@@ -236,15 +238,19 @@ atom_preamble_fsm (int state, cpp_reader *pfile,
 {
   if (state)
     {
-      unsigned new_state = atom_preamble_prefix_next (state & 0xf,
-						      pfile, ptype, ploc);
+      unsigned new_state
+	= (atom_preamble_prefix_next
+	   (atom_preamble_state (state & (APS_COUNT | APS_PRAGMA)),
+	    pfile, ptype, ploc));
       if (new_state)
-	return (state & 0x10) | new_state;
+	return (state & (APS_IMPORT | APS_MODULE)) | new_state;
     }
   else if (flag_module_preamble < 0)
     return -1;
 
-  return atom_preamble_prefix_peek (false, state & 0x10, pfile);
+  return atom_preamble_prefix_peek (false,
+				    state & (APS_IMPORT | APS_MODULE),
+				    pfile);
 }
 
 #if CHECKING_P
