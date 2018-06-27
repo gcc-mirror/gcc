@@ -26,9 +26,6 @@
 #ifndef GCC_V850_H
 #define GCC_V850_H
 
-extern GTY(()) rtx v850_compare_op0;
-extern GTY(()) rtx v850_compare_op1;
-
 #undef LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!symbolic:--start-group -lc -lgcc --end-group}}"
 
@@ -566,8 +563,6 @@ struct cum_arg { int nbytes; };
    possible, to allow for more combinations.  */
 
 #define SELECT_CC_MODE(OP, X, Y)       v850_select_cc_mode (OP, X, Y)
-
-#define NOTICE_UPDATE_CC(EXP, INSN)
 
 /* Nonzero if access to memory by bytes or half words is no faster
    than accessing full words.  */
