@@ -1,3 +1,32 @@
+2018-06-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_vector.h
+	(struct _Vector_base<>::_Vector_impl_data): New.
+	(struct _Vector_base<>::_Vector_impl): Inherit from latter.
+	(_Vector_base<>::_Vector_impl::_M_swap_data): Move...
+	(_Vector_base<>::_Vector_impl_data::_M_swap_data): ...here.
+	(_Vector_base<>::_Vector_impl()): Add noexcept qualification.
+	(_Vector_base<>::_Vector_impl(_Vector_impl&&)): New.
+	(_Vector_base<>::_Vector_impl(_Tp_alloc_type&&, _Vector_impl&&)): New.
+	(_Vector_base(const allocator_type&, _Vector_base&&)): New, use latter.
+	(_Vector_base()): Default.
+	(_Vector_base(_Vector_base&&)): Default.
+	(_Vector_base(size_t)) [_GLIBCXX_INLINE_VERSION]: Delete.
+	(_Vector_base(_Tp_alloc_type&&)) [_GLIBCXX_INLINE_VERSION]: Delete.
+	(_Vector_base::_M_create_storage(size_t)): Make protected.
+	(vector()): Default.
+	(vector(vector&&)): Default.
+	(vector(vector&&, const allocator_type&, true_type)): New.
+	(vector(vector&&, const allocator_type&, false_type)): New.
+	(vector(vector&&, const allocator_type&)): Use latters.
+	(vector(_InputIte, _InputIte, const allocator_type&)): Call
+	_M_range_initialize directly.
+	* include/debug/vector
+	(vector(vector&&, const allocator_type&)): Add noexcept qualification.
+	* testsuite/23_containers/vector/allocator/default_init.cc: New.
+	* testsuite/23_containers/vector/cons/noexcept_move_construct.cc: Add
+	static assertions.
+
 2018-06-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/cpp_type_traits.h [__cplusplus >= 201703]
