@@ -1,3 +1,8 @@
+2018-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (install_leaf): Use enable_gcov instead of
+	enable_libgcov.
+
 2018-06-27  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* configure.ac: Add --disable-gcov option.
