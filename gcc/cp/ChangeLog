@@ -1,3 +1,8 @@
+2018-06-27  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.c (do_pushtag): If we skip a class level, also skip
+	its template level.
+
 2018-06-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86320 - memory-hog with std::array of pair
