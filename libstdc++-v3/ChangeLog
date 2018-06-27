@@ -1,3 +1,9 @@
+2018-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86138
+	* include/bits/basic_string.tcc: [_GLIBCXX_EXTERN_TEMPLATE < 0]
+	Declare explicit instantiations of COW empty reps and I/O functions.
+
 2018-06-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* testsuite/experimental/algorithm/sample-2.cc: Add TLS DejaGNU
