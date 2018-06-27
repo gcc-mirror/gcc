@@ -39,9 +39,27 @@ pdp11_handle_option (struct gcc_options *opts,
   switch (code)
     {
     case OPT_m10:
-      opts->x_target_flags &= ~(MASK_40 | MASK_45);
+      opts->x_target_flags &= ~(MASK_40 | MASK_45 | MASK_FPU | MASK_AC0 | MASK_SPLIT);
       return true;
 
+    case OPT_m40:
+      opts->x_target_flags &= ~(MASK_45 | MASK_FPU | MASK_AC0 | MASK_SPLIT);
+      return true;
+
+    case OPT_mfpu:
+      opts->x_target_flags &= ~MASK_40;
+      opts->x_target_flags |= MASK_45;
+      return true;
+      
+    case OPT_msoft_float:
+      opts->x_target_flags &= ~MASK_AC0;
+      return true;
+
+    case OPT_msplit:
+      opts->x_target_flags &= ~MASK_40;
+      opts->x_target_flags |= MASK_45;
+      return true;
+      
     default:
       return true;
     }

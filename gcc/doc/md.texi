@@ -2966,11 +2966,19 @@ memory with a single instruction.
 Odd numbered general registers (R1, R3, R5).  These are used for
 16-bit multiply operations.
 
+@item D
+A memory reference that is encoded within the opcode, but not
+auto-increment or auto-decrement.
+
 @item f
 Any of the floating point registers (AC0 through AC5).
 
 @item G
 Floating point constant 0.
+
+@item h
+Floating point registers AC4 and AC5.  These cannot be loaded from/to
+memory with a single instruction.
 
 @item I
 An integer constant that fits in 16 bits.
@@ -2992,7 +3000,7 @@ The integer constant @minus{}1.
 The integer constant 0.
 
 @item O
-Integer constants @minus{}4 through @minus{}1 and 1 through 4; shifts by these
+Integer constants 0 through 3; shifts by these
 amounts are handled as multiple single-bit shifts rather than a single
 variable-length shift.
 

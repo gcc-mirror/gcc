@@ -1,3 +1,72 @@
+2018-06-27  Paul Koning  <ni1d@arrl.net>
+
+	* common/config/pdp11/pdp11-common.c (pdp11_handle_option): Handle
+	mutually exclusive options.
+	* config/pdp11/constraints.md (h): New constraint.
+	(O): Update definition to match shift code generation.
+	(D): New constraint.
+	* config/pdp11/pdp11-modes.def (CCNZ): Define mode.
+	(CCFP): Remove.
+	* config/pdp11/pdp11-protos.h (int_no_side_effect_operand): New
+	function.
+	(output_jump): Change arguments.
+	(pdp11_fixed_cc_regs): New function.
+	(pdp11_cc_mode): Ditto.
+	(pdp11_expand_shift): Ditto.
+	(pdp11_assemble_shift): Ditto.
+	(pdp11_small_shift): Ditto.
+	(pdp11_branch_cost): Remove.
+	* config/pdp11/pdp11.c (pdp11_assemble_integer): Remove comments
+	from output.
+	(pdp11_register_move_cost): Update for CC registers.
+	(pdp11_rtx_costs): Add case for LSHIFTRT.
+	(pdp11_output_jump): Add CCNZ mode conditional branches.
+	(notice_update_cc_on_set): Remove.
+	(pdp11_cc_mode): New function.
+	(simple_memory_operand): Correct pre/post decrement case.
+	(no_side_effect_operand): New function.
+	(pdp11_regno_reg_class): Add CC_REGS class.
+	(pdp11_fixed_cc_regs): New function.
+	(pdp11_small_shift): New function.
+	(pdp11_expand_shift): New function to expand shift insns.
+	(pdp11_assemble_shift): New function to output shifts.
+	(pdp11_branch_cost): Remove.
+	(pdp11_modes_tieable_p): Make QI/HI modes tieable.
+	* config/pdp11/pdp11.h (SIZE_TYPE): Ensure 16-bit type.
+	(WCHAR_TYPE): Ditto.
+	(PTRDIFF_TYPE): Ditto.
+	(ADJUST_INSN_LENGTH): New macro.
+	(FIXED_REGISTERS): Add CC registers.
+	(CALL_USED_REGISTERS): Ditto.
+	(reg_class): Ditto.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.
+	(SELECT_CC_MODE): Use new function.
+	(TARGET_FLAGS_REGNUM): New macro.
+	(TARGET_FIXED_CONDITION_CODE_REGS): Ditto.
+	(cc0_reg_rtx): Remove.
+	(CC_STATUS_MDEP): Remove.
+	(CC_STATUS_MDEFP_INIT): Remove.
+	(CC_IN_FPU): Remove.
+	(NOTICE_UPDATE_CC): Remove.
+	(REGISTER_NAMES): Add CC registers.
+	(BRANCH_COST): Change to constant 1.
+	* config/pdp11/pdp11.md: Rewrite for CCmode condition code
+	handling.
+	* config/pdp11/pdp11.opt (mbcopy): Remove.
+	(mbcopy-builtin): Remove.
+	(mbranch-cheap): Remove.
+	(mbranch-expensive): Remove.
+	* config/pdp11/predicates.md (expand_shift_operand): Update to
+	match shift code generation.
+	(ccnz_operator): New predicate.
+	* doc/invoke.texi (PDP-11 Options): Remove deleted options
+	-mbcopy, -mbcopy-builtin, -mbranch-cheap, -mbranch-expensive.
+	Remove non-existent option -mabshi, -mno-abshi.  Document mutually
+	exclusive options.
+	* doc/md.texi (PDP-11): Document new D and h constraints.  Update
+	description of O constraint.
+
 2018-06-27  Jeff Law  <law@redhat.com>
 	    Austin Law  <austinklaw@gmail.com>
 

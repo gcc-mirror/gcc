@@ -34,22 +34,6 @@ mac0
 Target Report Mask(AC0)
 Return floating-point results in ac0 (fr0 in Unix assembler syntax).
 
-mbcopy
-Target RejectNegative Report Mask(BCOPY)
-Do not use inline patterns for copying memory.
-
-mbcopy-builtin
-Target RejectNegative Report InverseMask(BCOPY, BCOPY_BUILTIN)
-Use inline patterns for copying memory.
-
-mbranch-cheap
-Target RejectNegative Report InverseMask(BRANCH_EXPENSIVE, BRANCH_CHEAP)
-Do not pretend that branches are expensive.
-
-mbranch-expensive
-Target RejectNegative Report Mask(BRANCH_EXPENSIVE)
-Pretend that branches are expensive.
-
 mdec-asm
 Target RejectNegative Report InverseMask(UNIX_ASM)
 Use the DEC assembler syntax.
