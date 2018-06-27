@@ -921,6 +921,11 @@ AC_ARG_ENABLE(shared,
 ], [enable_shared=yes])
 AC_SUBST(enable_shared)
 
+AC_ARG_ENABLE(gcov,
+[  --disable-gcov          don't provide libgcov and related host tools],
+[], [enable_gcov=yes])
+AC_SUBST(enable_gcov)
+
 AC_ARG_WITH(specs,
   [AS_HELP_STRING([--with-specs=SPECS],
                   [add SPECS to driver command-line processing])],

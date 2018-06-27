@@ -779,6 +779,7 @@ REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
 CONFIGURE_SPECS
+enable_gcov
 enable_shared
 enable_fixed_point
 enable_decimal_float
@@ -914,6 +915,7 @@ enable_vtable_verify
 enable_objc_gc
 with_dwarf2
 enable_shared
+enable_gcov
 with_specs
 with_pkgversion
 with_bugurl
@@ -1634,6 +1636,7 @@ Optional Features:
   --enable-objc-gc        enable the use of Boehm's garbage collector with the
                           GNU Objective-C runtime
   --disable-shared        don't provide a shared libgcc
+  --disable-gcov          don't provide libgcov and related host tools
   --enable-languages=LIST specify which front-ends to build
   --disable-rpath         do not hardcode runtime library paths
   --enable-sjlj-exceptions
@@ -7624,6 +7627,15 @@ if test "${enable_shared+set}" = set; then :
 
 else
   enable_shared=yes
+fi
+
+
+
+# Check whether --enable-gcov was given.
+if test "${enable_gcov+set}" = set; then :
+  enableval=$enable_gcov;
+else
+  enable_gcov=yes
 fi
 
 
@@ -18448,7 +18460,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18451 "configure"
+#line 18463 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18554,7 +18566,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18557 "configure"
+#line 18569 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
