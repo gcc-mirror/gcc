@@ -1,3 +1,10 @@
+2018-06-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80290 - memory-hog with std::pair.
+	* pt.c (type_unification_real): Skip non-dependent conversion
+	check for a nested list argument.
+	(braced_init_depth): New.
+
 2018-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86291

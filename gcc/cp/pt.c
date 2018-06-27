@@ -20136,6 +20136,24 @@ try_array_deduction (tree tparms, tree targs, tree parm)
 			  /*nondeduced*/false, array_deduction_r);
 }
 
+/* Returns how many levels of { } INIT contains.  */
+
+static int
+braced_init_depth (tree init)
+{
+  if (!init || !BRACE_ENCLOSED_INITIALIZER_P (init))
+    return 0;
+  unsigned i; tree val;
+  unsigned max = 0;
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), i, val)
+    {
+      unsigned elt_d = braced_init_depth (val);
+      if (elt_d > max)
+	max = elt_d;
+    }
+  return max + 1;
+}
+
 /* Most parms like fn_type_unification.
 
    If SUBR is 1, we're being called recursively (to unify the
@@ -20370,6 +20388,10 @@ type_unification_real (tree tparms,
 	    ++ia;
 
 	    if (uses_template_parms (parm))
+	      continue;
+	    /* Workaround for c++/80290: avoid combinatorial explosion on
+	       deeply nested braced init-lists.  */
+	    if (braced_init_depth (arg) > 2)
 	      continue;
 	    if (check_non_deducible_conversion (parm, arg, strict, flags,
 						explain_p))
