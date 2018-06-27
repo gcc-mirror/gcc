@@ -1,3 +1,8 @@
+2018-06-27 Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/85769
+	* config/aarch64/aarch64.md (*movhf_aarch64): Add dup v0.4h pattern.
+
 2018-06-27  Siddhesh Poyarekar  <siddhesh@sourceware.org>
 
 	* config/aarch64/aarch64.h (CALL_USE_REGISTERS): Fix obsolete

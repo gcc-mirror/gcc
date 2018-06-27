@@ -1,3 +1,8 @@
+2018-06-27 Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/85769
+	* gcc.target/aarch64/f16_mov_immediate_3.c: New.
+
 2018-06-26  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/builtins-1.c: Correct a comment.
