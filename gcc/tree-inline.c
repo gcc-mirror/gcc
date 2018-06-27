@@ -1382,35 +1382,24 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
       && (gimple_debug_nonbind_marker_p (stmt)
 	  ? !DECL_STRUCT_FUNCTION (id->dst_fn)->debug_nonbind_markers
 	  : !opt_for_fn (id->dst_fn, flag_var_tracking_assignments)))
-    return stmts;
+    return NULL;
 
   /* Begin by recognizing trees that we'll completely rewrite for the
      inlining context.  Our output for these trees is completely
-     different from out input (e.g. RETURN_EXPR is deleted, and morphs
+     different from our input (e.g. RETURN_EXPR is deleted and morphs
      into an edge).  Further down, we'll handle trees that get
      duplicated and/or tweaked.  */
 
-  /* When requested, GIMPLE_RETURNs should be transformed to just the
+  /* When requested, GIMPLE_RETURN should be transformed to just the
      contained GIMPLE_ASSIGN.  The branch semantics of the return will
      be handled elsewhere by manipulating the CFG rather than the
      statement.  */
   if (gimple_code (stmt) == GIMPLE_RETURN && id->transform_return_to_modify)
     {
       tree retval = gimple_return_retval (as_a <greturn *> (stmt));
-      tree retbnd = gimple_return_retbnd (stmt);
-      tree bndslot = id->retbnd;
-
-      if (retbnd && bndslot)
-	{
-	  gimple *bndcopy = gimple_build_assign (bndslot, retbnd);
-	  memset (&wi, 0, sizeof (wi));
-	  wi.info = id;
-	  walk_gimple_op (bndcopy, remap_gimple_op_r, &wi);
-	  gimple_seq_add_stmt (&stmts, bndcopy);
-	}
 
       /* If we're returning something, just turn that into an
-	 assignment into the equivalent of the original RESULT_DECL.
+	 assignment to the equivalent of the original RESULT_DECL.
 	 If RETVAL is just the result decl, the result decl has
 	 already been set (e.g. a recent "foo (&result_decl, ...)");
 	 just toss the entire GIMPLE_RETURN.  */
@@ -1427,7 +1416,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  skip_first = true;
 	}
       else
-	return stmts;
+	return NULL;
     }
   else if (gimple_has_substatements (stmt))
     {
@@ -1668,7 +1657,6 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
 	}
-      gcc_checking_assert (!is_gimple_debug (stmt));
 
       /* Create a new deep copy of the statement.  */
       copy = gimple_copy (stmt);
@@ -1754,8 +1742,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  }
     }
 
-  /* If STMT has a block defined, map it to the newly constructed
-     block.  */
+  /* If STMT has a block defined, map it to the newly constructed block.  */
   if (gimple_block (copy))
     {
       tree *n;
@@ -1764,12 +1751,8 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
       gimple_set_block (copy, *n);
     }
 
-  if (gimple_debug_bind_p (copy) || gimple_debug_source_bind_p (copy)
-      || gimple_debug_nonbind_marker_p (copy))
-    {
-      gimple_seq_add_stmt (&stmts, copy);
-      return stmts;
-    }
+  /* Debug statements ought to be rebuilt and not copied.  */
+  gcc_checking_assert (!is_gimple_debug (copy));
 
   /* Remap all the operands in COPY.  */
   memset (&wi, 0, sizeof (wi));
@@ -4274,7 +4257,7 @@ reset_debug_binding (copy_body_data *id, tree srcvar, gimple_seq *bindings)
   if (!VAR_P (*remappedvarp))
     return;
 
-  if (*remappedvarp == id->retvar || *remappedvarp == id->retbnd)
+  if (*remappedvarp == id->retvar)
     return;
 
   tree tvar = target_for_debug_bind (*remappedvarp);
@@ -4834,7 +4817,6 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 
   id->block = NULL_TREE;
   id->retvar = NULL_TREE;
-  id->retbnd = NULL_TREE;
   successfully_inlined = true;
 
  egress:
