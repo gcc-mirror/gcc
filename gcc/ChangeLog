@@ -1,3 +1,11 @@
+2018-06-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-a76): New entry.
+	(cortex-a76.cortex-a55): Likewise.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document cortex-a76 and
+	cortex-a76.cortex-a55.
+
 2018-06-27  Jeff Law  <law@redhat.com>
 
 	* config/v850/t-v850 (MULTILIB_OPTIONS): Remove 8byte-align.
