@@ -1,6 +1,55 @@
 2018-06-27  Jeff Law  <law@redhat.com>
 	    Austin Law  <austinklaw@gmail.com>
 
+	* config/v850/v850-protos.h (notice_update_cc): Remove.
+	* config/v850/v850.c (v850_compare_op0, v850_compare_op1): Remove.
+	(v850_print_operand): Handle 'D' and "d".
+	(v850_select_cc_mode): Remove ATTRIBUTE_UNUSED for last argument.
+	Add handling of arithmetic/logical operations compared against zero.
+	(v850_gen_float_compare): Remove ATTRIBUTE_UNUSED for last argument.
+	Do not look at v850_compare_op, instead get mode from last argument.
+	(v850_gen_compare): Remove
+	(increment_stack): Use addsi3_clobber_flags to avoid splitting failure
+	after reload for prologue insns.
+	(expand_prologue): Account for CLOBBER of CC_REGNUM in various
+	patterns.
+	(construct_save_jarl): Likewise.
+	(TARGET_FLAGS_REGNUM): Define.
+	* config/v850/v850.h (v850_compare_op0, v850_compare_op1): Remove.
+	(NOTICE_UPDATE_CC): Remove.
+	* config/v850/v850.md (v850_tst1): Use (reg:CCZ CC_REGNUM) rather
+	than cc0.  Conditionalize on reload_completed.
+	(cmpsi_insn, setfcc_insn): Likewise.
+	(tst1 splitter): Turn into define_and_split which sets the flags
+	after reload.
+	(cstoresi4, cbranchsf4, cbranchdf4, cbranchsi4_insn): Likewise.
+	(cbranchsi4, branch_normal, branch_invert): Do not expose cc0 here.
+	(cstoresf4, cstoredf4): Clobber the flags.
+	(cmpsi, cmpsf, cmpdf): Remove expanders.
+	(setf_insn): Remove pattern.
+	(addsi3): Turn into define_and_split which clobbers the flags after
+	reload and a suitable pattern (addsi3_clobber_flags) for use after
+	reload.
+	(subsi3, negsi2, andsi3, iorsi3, xorsi3, one_cmplsi2) Likewise.
+	(ashlsi3, ashlsi3_v850e2, lshrsi3, lsh4si3_v850e2): Likewise.
+	(ashrsi3, ashrsi3_v850e2): Likewise.
+	(bins): Clobber the flags.
+	(movsicc_normal_cc, movsicc_normal, movsicc_tst1): Likewise.
+	(movsicc_tst1_revesed, sasf, swap and rotate patterns): Likewise.
+	(fix_loop_counter, call_internal_short, call_internal_long): Likewise.
+	(call_value_internal_short, call_value_internal_long): Likewise.
+	(callt_save_interrupt, callt_return_interrupt): Likewise.
+	(save_interrupt, return_interrupt): Likewise.
+	(callt_save_all_interrupt, save_all_interrupt): Likewise.
+	(_save_all_interrupt, callt_restore_all_interrupt): Likewise.
+	(restore_all_interrupt, _restore_all_interrupt): Likewise.
+	(All FP comparisons): Only allow after reload has completed.
+	(trfsr): Likewise.
+	(divh, divhu): Tweak output template.
+	(branch_z_normal, branch_z_invert): Remove
+	(branch_nz_normal, branch_nz_invert): Likewise.
+	(extendhisi_insn, extendqisi_insn): Do not clobber flags.
+
 	* config/v850/v850-modes.def (CCZ, CCNZ): Add new modes.
 	* config/v850/v850.c (notice_update_cc): Remove.
 	* config/v850/v850.h  (CC_OVERFLOW_UNUSABLE): Remove
