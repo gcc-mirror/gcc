@@ -1,3 +1,15 @@
+2018-06-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80290 - memory-hog with std::pair.
+	* pt.c (fn_type_unification): Add convs parameter.
+	(check_non_deducible_conversion): Remember conversion.
+	(check_non_deducible_conversions): New.  Do checks here.
+	(type_unification_real): Not here.  Remove flags parm.
+	* call.c (add_function_candidate): Make convs a parameter.
+	Don't recalculate the conversion if it's already set.
+	(add_template_candidate_real): Allocate convs here.
+	(good_conversion, conv_flags): New.
+
 2018-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86291
