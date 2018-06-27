@@ -1,6 +1,15 @@
 2018-06-27  Jeff Law  <law@redhat.com>
 	    Austin Law  <austinklaw@gmail.com>
 
+	* config/v850/v850.md (addsi3_set_flags): New pattern.
+	(subsi3_set_flags, negsi2_set_flags, andsi3_set_flags): Likewise.
+	(iorsi3_set_flags, xorsi3_set_flags, one_cmplsi2_set_flags): Likewise.
+	(zero_extendhisi2_v850_set_flags): Likewise.
+	(zero_extendqisi2_v850_set_flags): Likewise.
+	(ashlsi3_set_flags, ashlsi3_v850e2_set_flags): Likewise.
+	(lshrsi3_set_flags, lshrsi3_v850e2_set_flags): Likewise.
+	(ashrsi3_set_flags, ashrsi3_v850e2_set_flags): Likewise.
+
 	* config/v850/v850-protos.h (notice_update_cc): Remove.
 	* config/v850/v850.c (v850_compare_op0, v850_compare_op1): Remove.
 	(v850_print_operand): Handle 'D' and "d".
