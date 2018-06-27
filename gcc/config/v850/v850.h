@@ -567,19 +567,7 @@ struct cum_arg { int nbytes; };
 
 #define SELECT_CC_MODE(OP, X, Y)       v850_select_cc_mode (OP, X, Y)
 
-/* Tell final.c how to eliminate redundant test instructions.  */
-
-/* Here we define machine-dependent flags and fields in cc_status
-   (see `conditions.h').  No extra ones are needed for the VAX.  */
-
-/* Store in cc_status the expressions
-   that the condition codes will describe
-   after execution of an instruction whose pattern is EXP.
-   Do not alter them if the instruction would not alter the cc's.  */
-
-#define CC_OVERFLOW_UNUSABLE 0x200
-#define CC_NO_CARRY CC_NO_OVERFLOW
-#define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
+#define NOTICE_UPDATE_CC(EXP, INSN)
 
 /* Nonzero if access to memory by bytes or half words is no faster
    than accessing full words.  */
