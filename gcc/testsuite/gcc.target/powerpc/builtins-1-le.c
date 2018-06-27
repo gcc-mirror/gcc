@@ -29,7 +29,7 @@
    vec_mul mulld
    vec_nor xxlnor
    vec_or xxlor
-   vec_packsu vpksdus
+   vec_packsu vpkudus
    vec_perm vperm
    vec_round xvrdpi
    vec_sel xxsel
@@ -61,7 +61,7 @@
 /* { dg-final { scan-assembler-times {\mmulld\M} 4 } } */
 /* { dg-final { scan-assembler-times {(?n)\mxxlnor\M.*\mboolccv4si3_internal1\M} 6 } } */
 /* { dg-final { scan-assembler-times {(?n)\mxxlor\M.*\mboolv4si3_internal\M} 6 } } */
-/* { dg-final { scan-assembler-times {\mvpksdus\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mvpkudus\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvperm\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mxvrdpi\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mxxsel\M} 6 } } */

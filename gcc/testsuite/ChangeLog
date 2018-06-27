@@ -1,3 +1,15 @@
+2018-06-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/builtins-1-be.c: Adjust dg directives to scan
+	for vpkudus in place of vpksdus.
+	* gcc.target/powerpc/builtins-1-le.c: Likewise.
+
+	Backport from mainline
+	2018-06-20  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/builtins-3-p8.c: Adjust dg directives to scan
+	for vpkudus in place of vpksdus.
+
 2018-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/86314
