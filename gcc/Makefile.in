@@ -137,8 +137,10 @@ SUBDIRS =@subdirs@ build
 
 # Selection of languages to be made.
 CONFIG_LANGUAGES = @all_selected_languages@
-LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) gcov-tool$(exeext) \
-            $(CONFIG_LANGUAGES)
+LANGUAGES = c $(CONFIG_LANGUAGES)
+ifeq (@enable_gcov@,yes)
+LANGUAGES += gcov$(exeext) gcov-dump$(exeext) gcov-tool$(exeext)
+endif
 
 # Default values for variables overridden in Makefile fragments.
 # CFLAGS is for the user to override to, e.g., do a cross build with -O2.

@@ -620,6 +620,7 @@ build_cpu
 build
 with_aix_soname
 enable_vtable_verify
+enable_gcov
 enable_shared
 libgcc_topdir
 target_alias
@@ -667,6 +668,7 @@ with_target_subdir
 with_cross_host
 with_ld
 enable_shared
+enable_gcov
 enable_vtable_verify
 with_aix_soname
 enable_version_specific_runtime_libs
@@ -1306,6 +1308,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-shared        don't provide a shared libgcc
+  --disable-gcov          don't provide libgcov and related host tools
   --enable-vtable-verify    Enable vtable verification feature
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
   --enable-maintainer-mode
@@ -2195,6 +2198,15 @@ if test "${enable_shared+set}" = set; then :
 
 else
   enable_shared=yes
+fi
+
+
+
+# Check whether --enable-gcov was given.
+if test "${enable_gcov+set}" = set; then :
+  enableval=$enable_gcov;
+else
+  enable_gcov=yes
 fi
 
 
