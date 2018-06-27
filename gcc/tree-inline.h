@@ -63,9 +63,6 @@ struct copy_body_data
   /* The VAR_DECL for the return value.  */
   tree retvar;
 
-  /* The VAR_DECL for the return bounds.  */
-  tree retbnd;
-
   /* Assign statements that need bounds copy.  */
   vec<gimple *> assign_stmts;
 

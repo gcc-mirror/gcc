@@ -1,3 +1,18 @@
+2018-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple.h (gimple_return_retbnd): Delete.
+	(gimple_return_set_retbnd): Likewise.
+	* cgraphunit.c (cgraph_node::expand_thunk): Remove call to
+	gimple_return_set_retbnd.
+	* gimple-pretty-print.c (dump_gimple_return): Remove call to
+	gimple_return_retbnd and adjust.
+	* tree-inline.h (struct copy_body_data): Remove retbnd field.
+	* tree-inline.c (remap_gimple_stmt): Remove handling of retbnd.
+	Explicitly return NULL in a couple more cases.  Move assertion
+	on debug statements and remove unreachable code.
+	(reset_debug_binding): Do not test id->retbnd.
+	(expand_call_inline): Do not set it.
+
 2018-06-27  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* configure.ac: Add --disable-gcov option.

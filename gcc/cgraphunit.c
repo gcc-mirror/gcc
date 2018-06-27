@@ -1803,7 +1803,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       int i;
       tree resdecl;
       tree restmp = NULL;
-      tree resbnd = NULL;
 
       gcall *call;
       greturn *ret;
@@ -1994,7 +1993,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	    ret = gimple_build_return (restmp);
 	  else
 	    ret = gimple_build_return (resdecl);
-	  gimple_return_set_retbnd (ret, resbnd);
 
 	  gsi_insert_after (&bsi, ret, GSI_NEW_STMT);
 	}
