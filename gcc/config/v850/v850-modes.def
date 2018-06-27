@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+CC_MODE (CCZ);
+CC_MODE (CCNZ);
 CC_MODE (CC_FPU_LT);
 CC_MODE (CC_FPU_LE);
 CC_MODE (CC_FPU_GT);

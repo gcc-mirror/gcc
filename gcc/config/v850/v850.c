@@ -1985,55 +1985,6 @@ expand_epilogue (void)
   v850_interrupt_p = FALSE;
 }
 
-/* Update the condition code from the insn.  */
-void
-notice_update_cc (rtx body, rtx_insn *insn)
-{
-  switch (get_attr_cc (insn))
-    {
-    case CC_NONE:
-      /* Insn does not affect CC at all.  */
-      break;
-
-    case CC_NONE_0HIT:
-      /* Insn does not change CC, but the 0'th operand has been changed.  */
-      if (cc_status.value1 != 0
-	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value1))
-	cc_status.value1 = 0;
-      break;
-
-    case CC_SET_ZN:
-      /* Insn sets the Z,N flags of CC to recog_data.operand[0].
-	 V,C is in an unusable state.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_OVERFLOW_UNUSABLE | CC_NO_CARRY;
-      cc_status.value1 = recog_data.operand[0];
-      break;
-
-    case CC_SET_ZNV:
-      /* Insn sets the Z,N,V flags of CC to recog_data.operand[0].
-  	 C is in an unusable state.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_NO_CARRY;
-      cc_status.value1 = recog_data.operand[0];
-      break;
-
-    case CC_COMPARE:
-      /* The insn is a compare instruction.  */
-      CC_STATUS_INIT;
-      cc_status.value1 = SET_SRC (body);
-      break;
-
-    case CC_CLOBBER:
-      /* Insn doesn't leave CC in a usable state.  */
-      CC_STATUS_INIT;
-      break;
-
-    default:
-      break;
-    }
-}
-
 /* Retrieve the data area that has been chosen for the given decl.  */
 
 v850_data_area

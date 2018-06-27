@@ -1,3 +1,15 @@
+2018-06-27  Jeff Law  <law@redhat.com>
+	    Austin Law  <austinklaw@gmail.com>
+
+	* config/v850/v850-modes.def (CCZ, CCNZ): Add new modes.
+	* config/v850/v850.c (notice_update_cc): Remove.
+	* config/v850/v850.h  (CC_OVERFLOW_UNUSABLE): Remove
+	(CC_NO_CARRY): Likewise.
+	(NOTICE_UPDATE_CC): Define to nothing.
+	* config/v850/v850.md: Remove block comment on cc0 handling
+	Remove "cc" attribute from all patterns.  Remove cc_status handling
+	from all patterns.  Minor formatting fixes.
+
 2018-06-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-cores.def (cortex-a76): New entry.
