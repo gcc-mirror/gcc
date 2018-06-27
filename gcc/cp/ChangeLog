@@ -1,5 +1,9 @@
 2018-06-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86320 - memory-hog with std::array of pair
+	* typeck2.c (process_init_constructor_array): If zero-initialization
+	is fine for one element, we're done.
+
 	PR c++/80290 - memory-hog with std::pair.
 	* pt.c (type_unification_real): Skip non-dependent conversion
 	check for a nested list argument.
