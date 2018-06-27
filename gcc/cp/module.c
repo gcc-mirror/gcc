@@ -2627,6 +2627,7 @@ class GTY(()) module_state {
   bool direct : 1;	/* A direct import.  */
   bool exported : 1;	/* We are exported.  */
   bool imported : 1;	/* Import has been done.  */
+  bool legacy : 1;	/* A legacy module.  */
 
  public:
   module_state (tree name = NULL_TREE);
@@ -2644,6 +2645,20 @@ class GTY(()) module_state {
   bool is_imported () const
   {
     return imported;
+  }
+  bool is_legacy () const
+  {
+    return legacy;
+  }
+
+ private:
+  void set_name (tree n)
+  {
+    gcc_checking_assert (!name && IDENTIFIER_POINTER (n)[0] != '<');
+    if (IDENTIFIER_POINTER (n)[0] == '"')
+      legacy = true;
+
+    name = n;
   }
 
  public:
@@ -2798,13 +2813,15 @@ class GTY(()) module_state {
   static int lazy_open;      /* Remaining limit for unfrozen loaders.   */
 };
 
-module_state::module_state (tree name)
+module_state::module_state (tree n)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (name), vec_name (NULL_TREE), slurp (NULL),
+    name (NULL), vec_name (NULL_TREE), slurp (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     mod (MODULE_UNKNOWN), crc (0), depth (65535)
 {
-  direct = exported = imported = false;
+  direct = exported = imported = legacy = false;
+  if (n)
+    set_name (n);
 }
 
 module_state::~module_state ()
@@ -6623,11 +6640,29 @@ depset::tarjan::connect (depset *v)
     }
 }
 
+/* Create a legacy name from STR and LEN.  */
+
+static tree
+make_legacy_name (const char *str, size_t len)
+{
+  char *buf = new char[len + 2];
+  memcpy (buf + 1, str, len);
+  buf[0] = buf[len+1] = '"';
+  tree name = get_identifier_with_length (buf, len + 2);
+  delete buf;
+  return name;
+}
+
 /* Find or create module NAME in the hash table.  */
 
 module_state *
 module_state::get_module (tree name, module_state *dflt, bool insert)
 {
+  if (IDENTIFIER_POINTER (name)[0] == '<')
+    /* The alternative would be to have aliases in the module table.  */
+    name = make_legacy_name (IDENTIFIER_POINTER (name) + 1,
+			    IDENTIFIER_LENGTH (name) - 2);
+
   module_state **slot
     = hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name),
 				 insert ? INSERT : NO_INSERT);
@@ -6654,7 +6689,7 @@ module_state::get_module (tree name, module_state *dflt, bool insert)
 	  state->filename = NULL;
 	  delete state;
 	}
-      dflt->name = name;
+      dflt->set_name (name);
       state = dflt;
     }
   else if (!state)
@@ -7667,6 +7702,8 @@ module_state::get_option_string  ()
       if (opt->opt_index == OPT_fmodule_lazy
 	  || opt->opt_index == OPT_fmodule_preamble_
 	  || opt->opt_index == OPT_fmodule_mapper_
+	  || opt->opt_index == OPT_fmodule_header
+	  || opt->opt_index == OPT_fmodule_header_
 	  || opt->opt_index == OPT_fmodules_atom
 	  || opt->opt_index == OPT_fmodules_ts)
 	continue;
@@ -7717,7 +7754,9 @@ module_state::write_readme (elf_out *to, const char *options)
 
   readme.begin (false);
 
-  readme.printf ("GNU C++ Module (%s)", modules_atom_p () ? "ATOM" : "TS");
+  readme.printf ("GNU C++ Module (%s%s)",
+		 is_legacy () ? "Legacy " : "",
+		 modules_atom_p () ? "ATOM" : "TS");
   /* Compiler's version.  */
   readme.printf ("compiler:%s", version_string);
 
@@ -10531,7 +10570,11 @@ declare_module (const cp_expr &name, bool exporting_p, tree, line_maps *lmaps)
   location_t from_loc = ordinary_loc_of (lmaps, name.get_location ());
   if (module_state *state = module_state::find_module (from_loc, *name, true))
     {
-      // FIXME:check module is right kind
+      if (state->is_legacy () != bool (module_header_name))
+	error_at (from_loc,
+		  state->is_legacy ()
+		  ? "legacy module only permitted with %<-fmodule-header%>"
+		  : "legacy module expected with %<-fmodule-header%>");
       if (module_header_name)
 	{
 	  if (!module_header_name[0])
@@ -10757,15 +10800,11 @@ maybe_atom_legacy_module (line_maps *lmaps)
       module_header_name = main + len;
     }
 
-  line_map *lmap = LINEMAPS_MAP_AT (lmaps, false, prefix_line_maps_hwm - 1);
-  size_t len = strlen (module_header_name);
-  char *qname = XNEWVEC (char, len + 2);
-  qname[0] = '"';
-  memcpy (qname + 1, module_header_name, len);
-  qname[len + 1] = '"';
-  cp_expr name (get_identifier_with_length (qname, len + 2),
-		MAP_START_LOCATION (lmap));
-  XDELETEVEC (qname);
+  cp_expr name (make_legacy_name (module_header_name,
+				  strlen (module_header_name)),
+		MAP_START_LOCATION (LINEMAPS_MAP_AT (lmaps, false,
+						     prefix_line_maps_hwm - 1)));
+
   declare_module (name, true, NULL, lmaps);
   return true;
 }

@@ -12683,7 +12683,7 @@ cp_parser_module_name (cp_parser *parser)
   cp_token *first_tok = cp_lexer_peek_token (parser->lexer);
 
   if (atom_p && first_tok->type == CPP_HEADER_NAME)
-    cp_lexer_consume_token (parser->lexer)->u.value;
+    name = cp_lexer_consume_token (parser->lexer)->u.value;
   else if (first_tok->type == CPP_NAME)
     {
       name = cp_lexer_consume_token (parser->lexer)->u.value;
@@ -12786,19 +12786,7 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT));
 
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  cp_expr name;
-  if (modules_atom_p ())
-    {
-      cp_token *tok = cp_lexer_peek_token (parser->lexer);
-      if (tok->type == CPP_HEADER_NAME)
-	{
-	  name = cp_expr (tok->u.value, tok->location);
-	  cp_lexer_consume_token (parser->lexer);
-	}
-    }
-
-  if (!name)
-    name = cp_parser_module_name (parser);
+  cp_expr name = cp_parser_module_name (parser);
 
   tree attrs = cp_parser_attributes_opt (parser);
   cp_parser_consume_semicolon_at_end_of_statement (parser);
@@ -12813,10 +12801,6 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
     }
   else if (!check_module_outermost (token, "module-import"))
     gcc_assert (!modules_atom_p ());
-  else if (identifier_p (*name)
-	   && (IDENTIFIER_POINTER (*name)[0] == '"'
-	       || IDENTIFIER_POINTER (*name)[0] == '<'))
-    ; // FIXME:Ignore legacy headers for now.
   else
     import_module (name, exporting, attrs, line_table);
 }

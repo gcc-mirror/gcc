@@ -1,5 +1,23 @@
 2018-06-27  Nathan Sidwell  <nathan@acm.org>
 
+	(Beginnings of) Legacy importing
+	gcc/cp/
+	* cxx-mapper.cc (module2bmi): Map legacy header names.
+	* module.c (module_state::legacy): New field.
+	(module_state::{is_legacy,set_name}): New.
+	(make_legacy_name): New.
+	(module_state::get_module): Canonicalize legacy name.
+	(module_state::get_option_string): Strip -fmodule-header.
+	(declare_module): Check correct kind.
+	(maybe_atom_legacy_module): Use make_legacy_name.
+	* parser.c (cp_parser_module_name): Parse legacy names.
+	(cp_parser_import_declaration): Don't special case legacy names
+	here.
+	gcc/testsuite/
+	* g++.dg/modules/atom-inc-1.C: Add expected errors.
+	* g++.dg/modules/legacy-1_[abc].[CH]: New.
+	* g++.dg/modules/modules.exp: Support legacy header compilation.
+
 	(Beginnings of) Legacy header modules
 	libcpp/
 	* line-map.c (linemap_module_loc): Expect ordinary loc.

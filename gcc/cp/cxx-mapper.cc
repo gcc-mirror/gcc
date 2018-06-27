@@ -274,6 +274,9 @@ module2bmi (const char *module)
 	  alloc = l + 20;
 	  workspace = XRESIZEVEC (char, workspace, alloc);
 	}
+      bool legacy = module[0] == '"';
+      if (legacy)
+	module += 1, l -= 2;
       memcpy (workspace, module, l + 1);
       for (char *ptr = workspace; *ptr; ptr++)
 	{
@@ -282,15 +285,12 @@ module2bmi (const char *module)
 	    c = '-';
 	  else if (c == ':')
 	    c = '+';
-	  else if (c == '"')
-	    c = '=';
 	  else if (IS_DIR_SEPARATOR (c))
 	    c = '=';
 	  *ptr = c;
 	}
-      if (workspace[l-1] == '=')
-	l--;
-      strcpy (workspace + l, ".nms");
+      /* New Module System or Replacement Module Form.  */
+      strcpy (workspace + l, legacy ? ".rmf" : ".nms");
       res = workspace;
     }
   return res;
