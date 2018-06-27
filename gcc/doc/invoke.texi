@@ -969,11 +969,9 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
--mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
--mint16  -mno-int32  -mfloat32  -mno-float64 @gol
--mfloat64  -mno-float32  -mabshi  -mno-abshi @gol
--mbranch-expensive  -mbranch-cheap @gol
--munix-asm  -mdec-asm}
+-mint32  -mno-int16 -mint16  -mno-int32 @gol
+-mfloat32  -mno-float64 -mfloat64  -mno-float32 @gol
+-msplit -munix-asm  -mdec-asm}
 
 @emph{picoChip Options}
 @gccoptlist{-mae=@var{ae_type}  -mvliw-lookahead=@var{N} @gol
@@ -22018,7 +22016,7 @@ These options are defined for the PDP-11:
 @item -mfpu
 @opindex mfpu
 Use hardware FPP floating point.  This is the default.  (FIS floating
-point on the PDP-11/40 is not supported.)
+point on the PDP-11/40 is not supported.)  Implies -m45.
 
 @item -msoft-float
 @opindex msoft-float
@@ -22034,7 +22032,7 @@ Return floating-point results in memory.  This is the default.
 
 @item -m40
 @opindex m40
-Generate code for a PDP-11/40.
+Generate code for a PDP-11/40.  Implies -msoft-float -mno-split.
 
 @item -m45
 @opindex m45
@@ -22042,16 +22040,7 @@ Generate code for a PDP-11/45.  This is the default.
 
 @item -m10
 @opindex m10
-Generate code for a PDP-11/10.
-
-@item -mbcopy-builtin
-@opindex mbcopy-builtin
-Use inline @code{movmemhi} patterns for copying memory.  This is the
-default.
-
-@item -mbcopy
-@opindex mbcopy
-Do not use inline @code{movmemhi} patterns for copying memory.
+Generate code for a PDP-11/10.  Implies -msoft-float -mno-split.
 
 @item -mint16
 @itemx -mno-int32
@@ -22077,32 +22066,17 @@ Use 64-bit @code{float}.  This is the default.
 @opindex mno-float64
 Use 32-bit @code{float}.
 
-@item -mabshi
-@opindex mabshi
-Use @code{abshi2} pattern.  This is the default.
-
-@item -mno-abshi
-@opindex mno-abshi
-Do not use @code{abshi2} pattern.
-
-@item -mbranch-expensive
-@opindex mbranch-expensive
-Pretend that branches are expensive.  This is for experimenting with
-code generation only.
-
-@item -mbranch-cheap
-@opindex mbranch-cheap
-Do not pretend that branches are expensive.  This is the default.
+@item -msplit
+@opindex msplit
+Target has split instruction and data space.  Implies -m45.
 
 @item -munix-asm
 @opindex munix-asm
-Use Unix assembler syntax.  This is the default when configured for
-@samp{pdp11-*-bsd}.
+Use Unix assembler syntax.
 
 @item -mdec-asm
 @opindex mdec-asm
-Use DEC assembler syntax.  This is the default when configured for any
-PDP-11 target other than @samp{pdp11-*-bsd}.
+Use DEC assembler syntax.  This is the default.
 @end table
 
 @node picoChip Options

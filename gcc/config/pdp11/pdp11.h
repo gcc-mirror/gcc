@@ -65,11 +65,11 @@ along with GCC; see the file COPYING3.  If not see
 #define LONG_DOUBLE_TYPE_SIZE	64
 
 /* machine types from ansi */
-#define SIZE_TYPE "unsigned int" 	/* definition of size_t */
-#define WCHAR_TYPE "int" 		/* or long int???? */
+#define SIZE_TYPE "short unsigned int" 	/* definition of size_t */
+#define WCHAR_TYPE "short int" 		/* or long int???? */
 #define WCHAR_TYPE_SIZE 16
 
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE "short int"
 
 /* target machine storage layout */
 
@@ -99,8 +99,7 @@ along with GCC; see the file COPYING3.  If not see
 extern const struct real_format pdp11_f_format;
 extern const struct real_format pdp11_d_format;
 
-/* Maximum sized of reasonable data type 
-   DImode or Dfmode ...*/
+/* Maximum sized of reasonable data type -- DImode ...*/
 #define MAX_FIXED_MODE_SIZE 64	
 
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
@@ -124,6 +123,22 @@ extern const struct real_format pdp11_d_format;
 /* Define this if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
+
+/* Adjust the length of shifts by small constant amounts.  The base
+   value (in "length" on input) is the length of a shift by one, not
+   including the CLC in logical shifts.  */
+#define ADJUST_INSN_LENGTH(insn, length) \
+  if ((GET_CODE (insn) == ASHIFT ||	 \
+       GET_CODE (insn) == ASHIFTRT || \
+       GET_CODE (insn) == LSHIFTRT) && \
+      GET_CODE (XEXP (insn, 2)) == CONST_INT && \
+      pdp11_small_shift (XINT (insn, 2))) \
+    {					  \
+      if (GET_CODE (insn) == LSHIFTRT)	  \
+	length = (length * XINT (insn, 2)) + 2;	\
+      else \
+	length *= XINT (insn, 2); \
+    }
 
 /* Standard register usage.  */
 
@@ -147,7 +162,8 @@ extern const struct real_format pdp11_d_format;
 
 #define FIXED_REGISTERS  \
 {0, 0, 0, 0, 0, 0, 1, 1, \
- 0, 0, 0, 0, 0, 0, 1, 1 }
+ 0, 0, 0, 0, 0, 0, 1, 1, \
+ 1, 1 }
 
 
 
@@ -161,7 +177,8 @@ extern const struct real_format pdp11_d_format;
 /* don't know about fp */
 #define CALL_USED_REGISTERS  \
 {1, 1, 0, 0, 0, 0, 1, 1, \
- 0, 0, 0, 0, 0, 0, 1, 1 }
+ 0, 0, 0, 0, 0, 0, 1, 1, \
+ 1, 1 }
 
 
 /* Specify the registers used for certain standard purposes.
@@ -203,27 +220,47 @@ NO_LOAD_FPU_REGS is ac4 and ac5, currently - difficult to load them
 FPU_REGS is all fpu regs 
 */
 
-enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REGS, FPU_REGS, ALL_REGS, LIM_REG_CLASSES };
+enum reg_class
+  { NO_REGS,
+    MUL_REGS,
+    GENERAL_REGS,
+    LOAD_FPU_REGS,
+    NO_LOAD_FPU_REGS,
+    FPU_REGS,
+    CC_REGS,
+    ALL_REGS,
+    LIM_REG_CLASSES };
 
-#define N_REG_CLASSES (int) LIM_REG_CLASSES
+#define N_REG_CLASSES ((int) LIM_REG_CLASSES)
 
 /* have to allow this till cmpsi/tstsi are fixed in a better way !! */
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
-/* Since GENERAL_REGS is the same class as ALL_REGS,
-   don't give it a different class number; just make it an alias.  */
-
-/* #define GENERAL_REGS ALL_REGS */
-
 /* Give names of register classes as strings for dump file.  */
 
-#define REG_CLASS_NAMES {"NO_REGS", "MUL_REGS", "GENERAL_REGS", "LOAD_FPU_REGS", "NO_LOAD_FPU_REGS", "FPU_REGS", "ALL_REGS" }
+#define REG_CLASS_NAMES  \
+  { "NO_REGS",		 \
+    "MUL_REGS", 	 \
+    "GENERAL_REGS",	 \
+    "LOAD_FPU_REGS",	 \
+    "NO_LOAD_FPU_REGS",	 \
+    "FPU_REGS",		 \
+    "CC_REGS",		 \
+    "ALL_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {{0}, {0x00aa}, {0xc0ff}, {0x0f00}, {0x3000}, {0x3f00}, {0xffff}}
+#define REG_CLASS_CONTENTS \
+  { {0x00000},	/* NO_REGS */		\
+    {0x000aa},	/* MUL_REGS */		\
+    {0x0c0ff},	/* GENERAL_REGS */	\
+    {0x00f00},	/* LOAD_FPU_REGS */	\
+    {0x03000},	/* NO_LOAD_FPU_REGS */ 	\
+    {0x03f00},	/* FPU_REGS */		\
+    {0x30000},	/* CC_REGS */		\
+    {0x3ffff}}	/* ALL_REGS */
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -331,7 +368,7 @@ extern int may_call_alloca;
 {{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
  { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
- { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}	\
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   ((OFFSET) = pdp11_initial_elimination_offset ((FROM), (TO)))
@@ -424,11 +461,18 @@ extern int may_call_alloca;
 #define DBX_CONTIN_LENGTH 0
 
 /* Give a comparison code (EQ, NE etc) and the first operand of a COMPARE,
-   return the mode to be used for the comparison.  For floating-point, CCFPmode
-   should be used.  */
+   return the mode to be used for the comparison.  */
 
-#define SELECT_CC_MODE(OP,X,Y)	\
-(GET_MODE_CLASS(GET_MODE(X)) == MODE_FLOAT? CCFPmode : CCmode)
+#define SELECT_CC_MODE(OP,X,Y) pdp11_cc_mode (OP, X, Y)
+
+/* Enable compare elimination pass.
+   FIXME: how can this be enabled for two registers?  */
+#undef TARGET_FLAGS_REGNUM
+#define TARGET_FLAGS_REGNUM CC_REGNUM
+
+/* Specify the CC registers.  TODO: is this for "type 1" CC handling only?  */
+#undef TARGET_FIXED_CONDITION_CODE_REGS
+#define TARGET_FIXED_CONDITION_CODE_REGS pdp11_fixed_cc_regs
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
@@ -446,54 +490,6 @@ extern int may_call_alloca;
    but a CALL with constant address is cheap.  */
 /* #define NO_FUNCTION_CSE */
 
-
-/* Tell emit-rtl.c how to initialize special values on a per-function base.  */
-extern rtx cc0_reg_rtx;
-
-#define CC_STATUS_MDEP rtx
-
-#define CC_STATUS_MDEP_INIT (cc_status.mdep = 0)
-
-/* Tell final.c how to eliminate redundant test instructions.  */
-
-/* Here we define machine-dependent flags and fields in cc_status
-   (see `conditions.h').  */
-
-#define CC_IN_FPU 04000 
-
-/* Do UPDATE_CC if EXP is a set, used in
-   NOTICE_UPDATE_CC 
-
-   floats only do compare correctly, else nullify ...
-
-   get cc0 out soon ...
-*/
-
-/* Store in cc_status the expressions
-   that the condition codes will describe
-   after execution of an instruction whose pattern is EXP.
-   Do not alter them if the instruction would not alter the cc's.  */
-
-#define NOTICE_UPDATE_CC(EXP, INSN) \
-{ if (GET_CODE (EXP) == SET)					\
-    {								\
-      notice_update_cc_on_set(EXP, INSN);			\
-    }								\
-  else if (GET_CODE (EXP) == PARALLEL				\
-	   && GET_CODE (XVECEXP (EXP, 0, 0)) == SET)		\
-    {								\
-      notice_update_cc_on_set(XVECEXP (EXP, 0, 0), INSN);	\
-    }								\
-  else if (GET_CODE (EXP) == CALL)				\
-    { /* all bets are off */ CC_STATUS_INIT; }			\
-  if (cc_status.value1 && GET_CODE (cc_status.value1) == REG	\
-      && cc_status.value2					\
-      && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2)) \
-    { 								\
-      printf ("here!\n");					\
-      cc_status.value2 = 0;					\
-    }								\
-}
 
 /* Control the assembler format that we output.  */
 
@@ -520,7 +516,8 @@ extern rtx cc0_reg_rtx;
 
 #define REGISTER_NAMES \
 {"r0", "r1", "r2", "r3", "r4", "r5", "sp", "pc",     \
- "ac0", "ac1", "ac2", "ac3", "ac4", "ac5", "fp", "ap" }
+ "ac0", "ac1", "ac2", "ac3", "ac4", "ac5", "fp", "ap", \
+ "cc", "fcc" }
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "
@@ -603,10 +600,7 @@ extern rtx cc0_reg_rtx;
 #define TRAMPOLINE_SIZE 8
 #define TRAMPOLINE_ALIGNMENT 16
 
-/* there is no point in avoiding branches on a pdp, 
-   since branches are really cheap - I just want to find out
-   how much difference the BRANCH_COST macro makes in code */
-#define BRANCH_COST(speed_p, predictable_p) pdp11_branch_cost ()
+#define BRANCH_COST(speed_p, predictable_p) 1
 
 #define COMPARE_FLAG_MODE HImode
 
