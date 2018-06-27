@@ -1,3 +1,8 @@
+2018-06-27  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* tests/base/ioLib.h [VXWORKS_IOLIB_INCLUDE_UNISTD_CHECK]: Add
+	missing hunk.
+
 2018-06-12    Rasmus Villemoes <rasmus.villemoes@prevas.dk>
 
 	* genfixes: exit 1 when autogen not found.

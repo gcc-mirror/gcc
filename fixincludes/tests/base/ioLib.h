@@ -17,3 +17,8 @@ extern int ioctl ( int asdf1234, int jkl , int qwerty ) ;
 #if defined( VXWORKS_WRITE_CONST_CHECK )
 extern int  write (int, const char*, size_t);
 #endif  /* VXWORKS_WRITE_CONST_CHECK */
+
+
+#if defined( VXWORKS_IOLIB_INCLUDE_UNISTD_CHECK )
+#include <unistd.h>
+#endif  /* VXWORKS_IOLIB_INCLUDE_UNISTD_CHECK */
