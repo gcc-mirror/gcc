@@ -1,3 +1,9 @@
+2018-06-27  Siddhesh Poyarekar  <siddhesh@sourceware.org>
+
+	* config/aarch64/aarch64.h (CALL_USE_REGISTERS): Fix obsolete
+	comment.
+	(EPILOGUE_USES): Likewise.
+
 2018-06-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-inline.c (remap_location): New function extracted from...
