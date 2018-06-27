@@ -1,3 +1,9 @@
+2018-06-27  Carl Love  <cel@us.ibm.com>
+
+Add test case that was supposed to be added in commit 255556 on 2017-12-11.
+
+	* gcc.target/vsx-vector-abss.c: New file to test vec_abss.
+
 2018-06-27 Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/85769
