@@ -1,3 +1,13 @@
+2018-06-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-cpus.in (cortex-a76): New entry.
+	(cortex-a76.cortex-a55): Likewise.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* config/arm/driver-arm.c (arm_cpu_table): Add Cortex-A76 entry.
+	* doc/invoke.texi (ARM Options): Document cortex-a76 and
+	cortex-a76.cortex-a55.
+
 2018-06-27 Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/85769
