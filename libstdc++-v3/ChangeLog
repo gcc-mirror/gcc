@@ -1,5 +1,8 @@
 2018-06-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/cpp_type_traits.h [__cplusplus >= 201703]
+	(__is_byte<byte>): Define specialization for std::byte.
+
 	PR libstdc++/86138
 	* include/bits/basic_string.tcc: [_GLIBCXX_EXTERN_TEMPLATE < 0]
 	Declare explicit instantiations of COW empty reps and I/O functions.
