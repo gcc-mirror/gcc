@@ -1630,6 +1630,8 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	    = gimple_build_debug_bind (gimple_debug_bind_get_var (stmt),
 				       gimple_debug_bind_get_value (stmt),
 				       stmt);
+	  if (id->reset_location)
+	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
@@ -1640,6 +1642,8 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	                   (gimple_debug_source_bind_get_var (stmt),
 			    gimple_debug_source_bind_get_value (stmt),
 			    stmt);
+	  if (id->reset_location)
+	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
@@ -1653,6 +1657,8 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	    return stmts;
 
 	  gdebug *copy = as_a <gdebug *> (gimple_copy (stmt));
+	  if (id->reset_location)
+	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
@@ -1750,6 +1756,9 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
       gcc_assert (n);
       gimple_set_block (copy, *n);
     }
+
+  if (id->reset_location)
+    gimple_set_location (copy, input_location);
 
   /* Debug statements ought to be rebuilt and not copied.  */
   gcc_checking_assert (!is_gimple_debug (copy));
@@ -2178,7 +2187,8 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	new_edge
 	  = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
 	new_edge->probability = old_edge->probability;
-	new_edge->goto_locus = remap_location (locus, id);
+	if (!id->reset_location)
+	  new_edge->goto_locus = remap_location (locus, id);
       }
 
   if (bb->index == ENTRY_BLOCK || bb->index == EXIT_BLOCK)
@@ -2375,7 +2385,10 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 		      inserted = true;
 		    }
 		  locus = gimple_phi_arg_location_from_edge (phi, old_edge);
-		  locus = remap_location (locus, id);
+		  if (id->reset_location)
+		    locus = input_location;
+		  else
+		    locus = remap_location (locus, id);
 		  add_phi_arg (new_phi, new_arg, new_edge, locus);
 		}
 	    }
@@ -4499,8 +4512,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
       prepend_lexical_block (gimple_block (stmt), id->block);
     }
 
-  /* Local declarations will be replaced by their equivalents in this
-     map.  */
+  /* Local declarations will be replaced by their equivalents in this map.  */
   st = id->decl_map;
   id->decl_map = new hash_map<tree, tree>;
   dst = id->debug_map;
@@ -4509,6 +4521,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   /* Record the function we are about to inline.  */
   id->src_fn = fn;
   id->src_cfun = DECL_STRUCT_FUNCTION (fn);
+  id->reset_location = DECL_IGNORED_P (fn);
   id->call_stmt = call_stmt;
 
   /* When inlining into an OpenMP SIMD-on-SIMT loop, arrange for new automatic
