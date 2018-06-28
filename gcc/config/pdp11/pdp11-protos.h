@@ -41,6 +41,7 @@ extern machine_mode pdp11_cc_mode (enum rtx_code, rtx, rtx);
 extern bool pdp11_expand_shift (rtx *, rtx (*) (rtx, rtx, rtx),
 				rtx (*) (rtx, rtx, rtx));
 extern const char * pdp11_assemble_shift (rtx *, machine_mode, int);
+extern int pdp11_shift_length (rtx *, machine_mode, int, bool);
 extern bool pdp11_small_shift (int);
 
 #endif /* RTX_CODE */

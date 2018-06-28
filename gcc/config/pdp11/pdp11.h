@@ -123,22 +123,6 @@ extern const struct real_format pdp11_d_format;
 /* Define this if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
-
-/* Adjust the length of shifts by small constant amounts.  The base
-   value (in "length" on input) is the length of a shift by one, not
-   including the CLC in logical shifts.  */
-#define ADJUST_INSN_LENGTH(insn, length) \
-  if ((GET_CODE (insn) == ASHIFT ||	 \
-       GET_CODE (insn) == ASHIFTRT || \
-       GET_CODE (insn) == LSHIFTRT) && \
-      GET_CODE (XEXP (insn, 2)) == CONST_INT && \
-      pdp11_small_shift (XINT (insn, 2))) \
-    {					  \
-      if (GET_CODE (insn) == LSHIFTRT)	  \
-	length = (length * XINT (insn, 2)) + 2;	\
-      else \
-	length *= XINT (insn, 2); \
-    }
 
 /* Standard register usage.  */
 

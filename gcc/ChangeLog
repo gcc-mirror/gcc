@@ -1,3 +1,11 @@
+2018-06-28  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11-protos.h (pdp11_shift_length): New function.
+	* config/pdp11/pdp11.c (pdp11_shift_length): New function.
+	* config/pdp11/pdp11.h (ADJUST_INSN_LENGTH): Remove.
+	* config/pdp11/pdp11.md: Correct "length" attribute calculation
+	for shift insn patterns.
+
 2018-06-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* cgraph.c (cgraph_node::get_body): Replace assignments to
