@@ -354,6 +354,7 @@ Objective-C and Objective-C++ Dialects}.
 -ginternal-reset-location-views  -gno-internal-reset-location-views @gol
 -ginline-points  -gno-inline-points @gol
 -gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
+-gsplit-dwarf @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -fno-eliminate-unused-debug-types @gol
 -femit-struct-debug-baseonly  -femit-struct-debug-reduced @gol

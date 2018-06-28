@@ -1,3 +1,7 @@
+2018-06-27  Stephan Bergmann  <sbergman@redhat.com>
+
+	* doc/invoke.texi (Debugging Options): Add -gsplit-dwarf.
+
 2018-06-27  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* lra-eliminations.c (update_reg_eliminate): Mark all spanning hard
