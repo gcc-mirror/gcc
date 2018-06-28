@@ -1,3 +1,7 @@
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
+	* cppspec.c: Include opt-suggestions.h.
+
 2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
