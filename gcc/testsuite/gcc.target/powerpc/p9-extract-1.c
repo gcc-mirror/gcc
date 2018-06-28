@@ -122,6 +122,14 @@ extract_bool_int_0 (vector bool int a)
   return b;
 }
 
+unsigned short int
+extract_bool_short_int_0 (vector bool short int a)
+{
+  int c = 0;
+  unsigned short int b = vec_extract (a, c);
+  return b;
+}
+
 /* { dg-final { scan-assembler     "vextub\[lr\]x " } } */
 /* { dg-final { scan-assembler     "vextuh\[lr\]x " } } */
 /* { dg-final { scan-assembler     "vextuw\[lr\]x " } } */
