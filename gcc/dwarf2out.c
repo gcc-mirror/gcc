@@ -22780,26 +22780,25 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 apply; we just use the old DIE.  */
       expanded_location s = expand_location (DECL_SOURCE_LOCATION (decl));
       struct dwarf_file_data * file_index = lookup_filename (s.file);
-      if ((is_cu_die (old_die->die_parent)
-	   /* This condition fixes the inconsistency/ICE with the
-	      following Fortran test (or some derivative thereof) while
-	      building libgfortran:
+      if (((is_cu_die (old_die->die_parent)
+	    /* This condition fixes the inconsistency/ICE with the
+	       following Fortran test (or some derivative thereof) while
+	       building libgfortran:
 
-		 module some_m
-		 contains
-		    logical function funky (FLAG)
-		      funky = .true.
-		   end function
-		 end module
-	   */
-	   || (old_die->die_parent
-	       && old_die->die_parent->die_tag == DW_TAG_module)
-	   || context_die == NULL)
+		  module some_m
+		  contains
+		     logical function funky (FLAG)
+		       funky = .true.
+		    end function
+		  end module
+	     */
+	    || (old_die->die_parent
+		&& old_die->die_parent->die_tag == DW_TAG_module)
+	    || context_die == NULL)
 	   && (DECL_ARTIFICIAL (decl)
 	       /* The location attributes may be in the abstract origin
 		  which in the case of LTO might be not available to
 		  look at.  */
-	       || get_AT (old_die, DW_AT_abstract_origin)
 	       || (get_AT_file (old_die, DW_AT_decl_file) == file_index
 		   && (get_AT_unsigned (old_die, DW_AT_decl_line)
 		       == (unsigned) s.line)
@@ -22807,6 +22806,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		       || s.column == 0
 		       || (get_AT_unsigned (old_die, DW_AT_decl_column)
 			   == (unsigned) s.column)))))
+	  /* With LTO if there's an abstract instance for
+	     the old DIE, this is a concrete instance and
+	     thus re-use the DIE.  */
+	  || get_AT (old_die, DW_AT_abstract_origin))
 	{
 	  subr_die = old_die;
 
