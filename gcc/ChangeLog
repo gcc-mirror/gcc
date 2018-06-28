@@ -1,5 +1,16 @@
 2018-06-28  Richard Biener  <rguenther@suse.de>
 
+	* dwarf2out.c (decl_scope_table): Remove.
+	(push_decl_scope): Likewise.
+	(pop_decl_scope): Likewise.
+	(gen_type_die_for_member): Do not call push/pop_decl_scope.
+	(gen_struct_or_union_type_die): Likewise.
+	(gen_tagged_type_die): Likewise.
+	(dwarf2out_init): Do not initialize decl_scope_table.
+	(dwarf2out_c_finalize): Do not free it.
+
+2018-06-28  Richard Biener  <rguenther@suse.de>
+
 	* dwarf2out.c (gen_subprogram_die): Use is_unit_die when
 	deciding whether to not re-use a DIE.
 
