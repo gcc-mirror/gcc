@@ -1,3 +1,9 @@
+2018-06-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86342 - -Wdeprecated-copy and system headers.
+	* decl2.c (cp_warn_deprecated_use): Don't warn about declarations
+	in system headers.
+
 2018-06-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/86329

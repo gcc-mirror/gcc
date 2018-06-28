@@ -5208,8 +5208,10 @@ cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
       && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && copy_fn_p (decl))
     {
-      warned = warning (OPT_Wdeprecated_copy,
-			"implicitly-declared %qD is deprecated", decl);
+      /* Don't warn about system library classes (c++/86342).  */
+      if (!DECL_IN_SYSTEM_HEADER (decl))
+	warned = warning (OPT_Wdeprecated_copy,
+			  "implicitly-declared %qD is deprecated", decl);
       if (warned)
 	{
 	  tree ctx = DECL_CONTEXT (decl);
