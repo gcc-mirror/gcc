@@ -1,3 +1,9 @@
+2018-06-28  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/82865
+	Backport from trunk.
+	* gfortran.dg/dec_type_print_2.f03: New testcase.
+
 2018-06-27  Carl Love  <cel@us.ibm.com>
 
 Add test case that was supposed to be added in commit 255556 on 2017-12-11.
