@@ -1,3 +1,10 @@
+2018-06-27  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* lra-eliminations.c (update_reg_eliminate): Mark all spanning hard
+	registers for Pmode.
+	* lra-lives.c (check_pseudos_live_through_calls): Mark all spanning
+	hard registers for the clobbered pseudo.
+
 2018-06-27  Paul Koning  <ni1d@arrl.net>
 
 	* common/config/pdp11/pdp11-common.c (pdp11_handle_option): Handle
