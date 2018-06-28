@@ -13715,7 +13715,7 @@
   "#"
   [(set_attr "isa" "x64,*,avx512f")
    (set (attr "preferred_for_speed")
-     (cond [(eq_attr "alternative" "1")
+     (cond [(eq_attr "alternative" "0")
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
 	   ]
 	   (symbol_ref "true")))])

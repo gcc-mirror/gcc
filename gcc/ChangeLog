@@ -1,3 +1,9 @@
+2018-06-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/86348
+	* config/i386/sse.md (*vec_extractv4si_0_zext_sse4): Use
+	alternative 0 in preferred_for_speed attribute.
+
 2018-06-28  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11-protos.h (pdp11_shift_length): New function.

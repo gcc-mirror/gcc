@@ -1,3 +1,8 @@
+2018-06-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/86348
+	* gcc.target/i386/pr86348.c: New test.
+
 2018-06-28  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/f16_mov_immediate_3.c: Fix testcase.
