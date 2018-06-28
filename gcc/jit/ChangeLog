@@ -1,5 +1,9 @@
 2018-06-28  Martin Liska  <mliska@suse.cz>
 
+	* jit-playback.c: Include opt-suggestions.h.
+
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
 	* jit-playback.c (class auto_argvec): Moved to vec.h.
 	(auto_argvec::~auto_argvec): Likewise.
 	(compile): Use the renamed name.

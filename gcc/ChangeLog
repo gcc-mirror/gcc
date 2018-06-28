@@ -1,5 +1,18 @@
 2018-06-28  Martin Liska  <mliska@suse.cz>
 
+	* Makefile.in: Add opt-suggestions.o.
+	* gcc-main.c: Include opt-suggestions.h.
+	* gcc.c (driver::driver): Likewise.
+	(driver::~driver): Remove m_option_suggestions.
+	(driver::build_option_suggestions): Moved to option_proposer.
+	(driver::suggest_option): Likewise.
+	(driver::handle_unrecognized_options): Use option_proposer.
+	* gcc.h (class driver): Add new memver m_option_proposer.
+	* opt-suggestions.c: New file.
+	* opt-suggestions.h: New file.
+
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
 	* vec.h (class auto_string_vec): New (moved from auto_argvec).
 	(auto_string_vec::~auto_string_vec): Likewise.
 

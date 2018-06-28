@@ -1615,7 +1615,7 @@ OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 # compiler and containing target-dependent code.
 OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
 	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
-	hash-table.o file-find.o spellcheck.o selftest.o
+	hash-table.o file-find.o spellcheck.o selftest.o opt-suggestions.o
 
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))

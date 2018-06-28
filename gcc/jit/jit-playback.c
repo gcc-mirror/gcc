@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "context.h"
 #include "fold-const.h"
+#include "opt-suggestions.h"
 #include "gcc.h"
 #include "diagnostic.h"
 

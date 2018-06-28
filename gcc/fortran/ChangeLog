@@ -1,3 +1,7 @@
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
+	* gfortranspec.c: Include opt-suggestions.h.
+
 2018-06-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/82972
