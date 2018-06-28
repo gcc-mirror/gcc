@@ -1,3 +1,8 @@
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
+	* vec.h (class auto_string_vec): New (moved from auto_argvec).
+	(auto_string_vec::~auto_string_vec): Likewise.
+
 2018-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-inline.c (remap_gimple_stmt): Force input_location on the new
