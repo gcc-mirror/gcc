@@ -1,3 +1,10 @@
+2018-06-28  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline
+	2017-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/sourcebuild.texi (Endianness): New subsubsection.
+
 2018-06-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline
