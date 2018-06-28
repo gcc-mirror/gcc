@@ -9803,9 +9803,9 @@ gfc_match_structure_decl (void)
 
 
 /* This function does some work to determine which matcher should be used to
- * match a statement beginning with "TYPE". This is used to disambiguate TYPE
+ * match a statement beginning with "TYPE".  This is used to disambiguate TYPE
  * as an alias for PRINT from derived type declarations, TYPE IS statements,
- * and derived type data declarations.  */
+ * and [parameterized] derived type declarations.  */
 
 match
 gfc_match_type (gfc_statement *st)
@@ -9832,11 +9832,7 @@ gfc_match_type (gfc_statement *st)
   /* If we see an attribute list before anything else it's definitely a derived
    * type declaration.  */
   if (gfc_match (" ,") == MATCH_YES || gfc_match (" ::") == MATCH_YES)
-    {
-      gfc_current_locus = old_loc;
-      *st = ST_DERIVED_DECL;
-      return gfc_match_derived_decl ();
-    }
+    goto derived;
 
   /* By now "TYPE" has already been matched. If we do not see a name, this may
    * be something like "TYPE *" or "TYPE <fmt>".  */
@@ -9851,29 +9847,11 @@ gfc_match_type (gfc_statement *st)
 	  *st = ST_WRITE;
 	  return MATCH_YES;
 	}
-      gfc_current_locus = old_loc;
-      *st = ST_DERIVED_DECL;
-      return gfc_match_derived_decl ();
+      goto derived;
     }
 
-  /* A derived type declaration requires an EOS. Without it, assume print.  */
-  m = gfc_match_eos ();
-  if (m == MATCH_NO)
-    {
-      /* Check manually for TYPE IS (... - this is invalid print syntax.  */
-      if (strncmp ("is", name, 3) == 0
-	  && gfc_match (" (", name) == MATCH_YES)
-	{
-	  gfc_current_locus = old_loc;
-	  gcc_assert (gfc_match (" is") == MATCH_YES);
-	  *st = ST_TYPE_IS;
-	  return gfc_match_type_is ();
-	}
-      gfc_current_locus = old_loc;
-      *st = ST_WRITE;
-      return gfc_match_print ();
-    }
-  else
+  /* Check for EOS.  */
+  if (gfc_match_eos () == MATCH_YES)
     {
       /* By now we have "TYPE <name> <EOS>". Check first if the name is an
        * intrinsic typename - if so let gfc_match_derived_decl dump an error.
@@ -9886,12 +9864,36 @@ gfc_match_type (gfc_statement *st)
 	  *st = ST_DERIVED_DECL;
 	  return m;
 	}
-      gfc_current_locus = old_loc;
-      *st = ST_WRITE;
-      return gfc_match_print ();
+    }
+  else
+    {
+      /* Here we have "TYPE <name>". Check for <TYPE IS (> or a PDT declaration
+	 like <type name(parameter)>.  */
+      gfc_gobble_whitespace ();
+      bool paren = gfc_peek_ascii_char () == '(';
+      if (paren)
+	{
+	  if (strcmp ("is", name) == 0)
+	    goto typeis;
+	  else
+	    goto derived;
+	}
     }
 
-  return MATCH_NO;
+  /* Treat TYPE... like PRINT...  */
+  gfc_current_locus = old_loc;
+  *st = ST_WRITE;
+  return gfc_match_print ();
+
+derived:
+  gfc_current_locus = old_loc;
+  *st = ST_DERIVED_DECL;
+  return gfc_match_derived_decl ();
+
+typeis:
+  gfc_current_locus = old_loc;
+  *st = ST_TYPE_IS;
+  return gfc_match_type_is ();
 }
 
 
