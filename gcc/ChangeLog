@@ -1,3 +1,8 @@
+2018-06-28  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (gen_subprogram_die): Always re-use DIEs with an
+	DW_AT_abstract_origin attribute.
+
 2018-06-28  Martin Liska  <mliska@suse.cz>
 
 	* tree-switch-conversion.c (jump_table_cluster::can_be_handled):
