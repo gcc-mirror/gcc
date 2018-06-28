@@ -1,5 +1,32 @@
 2018-06-28  Martin Liska  <mliska@suse.cz>
 
+	* common.opt: Introduce -completion option.
+	* gcc.c (driver_handle_option): Handle it.
+	(driver::main): Print completions if completion
+        is set.
+	* opt-suggestions.c (option_proposer::get_completions):
+        New function.
+	(option_proposer::suggest_completion): Likewise.
+	(option_proposer::find_param_completions): Likewise.
+	(verify_autocompletions): Likewise.
+	(test_completion_valid_options): Likewise.
+	(test_completion_valid_params): Likewise.
+	(in_completion_p): Likewise.
+	(empty_completion_p): Likewise.
+	(test_completion_partial_match): Likewise.
+	(test_completion_garbage): Likewise.
+	(opt_proposer_c_tests): Likewise.
+	* opt-suggestions.h: Declare new functions.
+	* opts.c (common_handle_option): Handle OPT__completion_.
+	* selftest-run-tests.c (selftest::run_tests): Add
+        opt_proposer_c_tests.
+	* selftest.c (assert_str_startswith): New.
+	* selftest.h (assert_str_startswith): Likewise.
+	(opt_proposer_c_tests): New.
+	(ASSERT_STR_STARTSWITH): Likewise.
+
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
 	* Makefile.in: Add opt-suggestions.o.
 	* gcc-main.c: Include opt-suggestions.h.
 	* gcc.c (driver::driver): Likewise.
