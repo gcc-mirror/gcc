@@ -1,3 +1,9 @@
+2018-06-28  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/55976
+	* gcc.dg/noncompile/pr55976-1.c: Add dg-prune-output for extraneous
+	message causing unexpected test FAIL.
+
 2018-06-28  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/switch-1.c: New test.
