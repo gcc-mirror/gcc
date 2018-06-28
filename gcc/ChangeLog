@@ -1,5 +1,12 @@
 2018-06-28  Martin Liska  <mliska@suse.cz>
 
+	* tree-switch-conversion.c (jump_table_cluster::can_be_handled):
+        Use newly introduced constants.
+	* tree-switch-conversion.h (struct jump_table_cluster):
+        Define max_ratio_for_size and max_ratio_for_speed.
+
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
 	* tree-switch-conversion.c (jump_table_cluster::find_jump_tables):
         Add new checking assert to catch invalid state.
 	(jump_table_cluster::can_be_handled): Handle single case
