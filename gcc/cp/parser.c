@@ -2862,6 +2862,20 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
       if (cp_lexer_peek_conflict_marker (parser->lexer, token->type, &loc))
 	{
 	  error_at (loc, "version control conflict marker in file");
+	  expanded_location token_exploc = expand_location (token->location);
+	  /* Consume tokens until the end of the source line.  */
+	  while (1)
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      cp_token *next = cp_lexer_peek_token (parser->lexer);
+	      if (next == NULL)
+		break;
+	      expanded_location next_exploc = expand_location (next->location);
+	      if (next_exploc.file != token_exploc.file)
+		break;
+	      if (next_exploc.line != token_exploc.line)
+		break;
+	    }
 	  return;
 	}
     }
