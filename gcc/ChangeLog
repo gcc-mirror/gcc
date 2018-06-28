@@ -1,5 +1,20 @@
 2018-06-28  Martin Liska  <mliska@suse.cz>
 
+	* tree-switch-conversion.c (jump_table_cluster::find_jump_tables):
+        Add new checking assert to catch invalid state.
+	(jump_table_cluster::can_be_handled): Handle single case
+        clusters.
+	(jump_table_cluster::is_beneficial): Bail out for such case.
+	(bit_test_cluster::find_bit_tests):
+        Add new checking assert to catch invalid state.
+	(bit_test_cluster::can_be_handled): Handle single case
+        clusters.
+	(bit_test_cluster::is_beneficial): Bail out for such case.
+	(switch_decision_tree::analyze_switch_statement):
+        Fix comment.
+
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
 	* common.opt: Introduce -completion option.
 	* gcc.c (driver_handle_option): Handle it.
 	(driver::main): Print completions if completion
