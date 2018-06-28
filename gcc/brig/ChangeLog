@@ -1,3 +1,7 @@
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
+	* brigspec.c: Add missing header file inclusion.
+
 2018-06-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* brigfrontend/brig-to-generic.cc
