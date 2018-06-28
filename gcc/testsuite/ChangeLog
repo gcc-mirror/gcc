@@ -1,3 +1,7 @@
+2018-06-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/f16_mov_immediate_3.c: Fix testcase.
+
 2018-06-28  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/82865
