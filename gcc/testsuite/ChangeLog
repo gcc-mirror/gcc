@@ -1,3 +1,8 @@
+2018-06-28  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/82865
+	* gfortran.dg/dec_type_print_2.f03: New testcase.
+
 2018-06-28  David Pagan  <dave.pagan@oracle.com>
 
 	PR c/55976
