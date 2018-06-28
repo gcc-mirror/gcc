@@ -78,6 +78,11 @@ typedef enum omp_sync_hint_t
 
 typedef omp_sync_hint_t omp_lock_hint_t;
 
+typedef struct __attribute__((__aligned__ (sizeof (void *)))) omp_depend_t
+{
+  char __omp_depend_t__[2 * sizeof (void *)];
+} omp_depend_t;
+
 #ifdef __cplusplus
 extern "C" {
 # define __GOMP_NOTHROW throw ()

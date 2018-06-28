@@ -3,10 +3,12 @@
 
 struct T { int c[3]; };
 struct S { int a; struct T *b; struct T g; };
+struct U { int a : 5; };
 struct S d[10];
 struct S *e[10];
 struct S *f;
 struct S h;
+struct U i;
 
 void
 foo (void)
@@ -28,5 +30,7 @@ foo (void)
   #pragma omp task depend(inout: f[0:1].a)	/* { dg-error "expected" } */
   ;
   #pragma omp task depend(inout: h.g.c[2:1])	/* { dg-error "expected" } */
+  ;
+  #pragma omp task depend(in: i.a)		/* { dg-error "bit-field '\[^\n\r]*' in 'depend' clause" } */
   ;
 }

@@ -1,3 +1,18 @@
+2018-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_depend_t): New typedef.
+	* task.c (gomp_task_handle_depend): Handle new depend array format
+	in addition to the old.  Handle mutexinoutset kinds the same as
+	inout for now, handle unspecified kinds.
+	(gomp_task_maybe_wait_for_dependencies): Likewise.
+	(gomp_create_target_task): Handle new depend array format count in
+	addition to the old.
+	(GOMP_task): Likewise.  Adjust function comment.
+	* testsuite/libgomp.c-c++-common/depend-iterator-2.c: New test.
+	* testsuite/libgomp.c-c++-common/depobj-1.c: New test.
+	* testsuite/libgomp.c++/depend-1.C: New test.
+	* testsuite/libgomp.c++/depobj-1.C: New test.
+
 2018-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp_g.h (GOMP_taskwait_depend): Add prototype.

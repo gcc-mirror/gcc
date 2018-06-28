@@ -1,3 +1,27 @@
+2018-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_var_list_no_open): Fix up depend clause
+	error recovery.
+	(cp_parser_omp_iterators): Return error_mark_node instead of NULL.
+	(cp_parser_omp_clause_depend): Make dependence-type optional.
+	(cp_parser_omp_depobj): New function.
+	(cp_parser_pragma): Handle PRAGMA_OMP_DEPOBJ.
+	* cp-tree.h (OMP_DEPOBJ_DEPOBJ, OMP_DEPOBJ_CLAUSES): Define.
+	(finish_omp_depobj): Declare.
+	* cp-tree.def (OMP_DEPOBJ): New tree code.
+	* semantics.c (finish_omp_clauses): Handle depend clause with
+	OMP_CLAUSE_DEPEND_UNSPECIFIED.  Diagnose bit-fields.  Require
+	omp_depend_t type for OMP_CLAUSE_DEPEND_UNSPECIFIED kinds and
+	some different type for other kinds.  Use cp_build_addr_expr
+	and cp_build_indirect_ref instead of cxx_mark_addressable.
+	(finish_omp_depobj): New function.
+	* pt.c (tsubst_expr): Handle OMP_DEPOBJ.
+	* cp-objcp-common.c (cp_common_init_ts): Likewise.
+	* constexpr.c (potential_constant_expression_1): Likewise.
+	* lex.c (cxx_init): Likewise.
+	* dump.c (cp_dump_tree): Likewise.
+	* cxx-pretty-print.c (cxx_pretty_printer::statement): Likewise.
+
 2018-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (finish_omp_flush): Add MO argument.

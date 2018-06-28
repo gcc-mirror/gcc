@@ -1416,6 +1416,7 @@ struct GTY(()) tree_constructor {
 
 enum omp_clause_depend_kind
 {
+  OMP_CLAUSE_DEPEND_UNSPECIFIED,
   OMP_CLAUSE_DEPEND_IN,
   OMP_CLAUSE_DEPEND_OUT,
   OMP_CLAUSE_DEPEND_INOUT,

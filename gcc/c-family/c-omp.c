@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-common.h"
 #include "gimple-expr.h"
 #include "c-pragma.h"
+#include "stringpool.h"
 #include "omp-general.h"
 #include "gomp-constants.h"
 #include "memmodel.h"
@@ -414,6 +415,153 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   if (pre)
     x = omit_one_operand_loc (loc, type, x, pre);
   return x;
+}
+
+
+/* Return true if TYPE is the implementation's omp_depend_t.  */
+
+bool
+c_omp_depend_t_p (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  return (TREE_CODE (type) == RECORD_TYPE
+	  && TYPE_NAME (type)
+	  && ((TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	       ? DECL_NAME (TYPE_NAME (type)) : TYPE_NAME (type))
+	      == get_identifier ("omp_depend_t"))
+	  && (!TYPE_CONTEXT (type)
+	      || TREE_CODE (TYPE_CONTEXT (type)) == TRANSLATION_UNIT_DECL)
+	  && COMPLETE_TYPE_P (type)
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	  && !compare_tree_int (TYPE_SIZE (type),
+				2 * tree_to_uhwi (TYPE_SIZE (ptr_type_node))));
+}
+
+
+/* Complete a #pragma omp depobj construct.  LOC is the location of the
+   #pragma.  */
+
+void
+c_finish_omp_depobj (location_t loc, tree depobj,
+		     enum omp_clause_depend_kind kind, tree clause)
+{
+  tree t = NULL_TREE;
+  if (!error_operand_p (depobj))
+    {
+      if (!c_omp_depend_t_p (TREE_TYPE (depobj)))
+	{
+	  error_at (EXPR_LOC_OR_LOC (depobj, loc),
+		    "type of %<depobj%> expression is not %<omp_depend_t%>");
+	  depobj = error_mark_node;
+	}
+      else if (TYPE_READONLY (TREE_TYPE (depobj)))
+	{
+	  error_at (EXPR_LOC_OR_LOC (depobj, loc),
+		    "%<const%> qualified %<depobj%> expression");
+	  depobj = error_mark_node;
+	}
+    }
+  else
+    depobj = error_mark_node;
+
+  if (clause == error_mark_node)
+    return;
+
+  if (clause)
+    {
+      gcc_assert (TREE_CODE (clause) == OMP_CLAUSE
+		  && OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_DEPEND);
+      if (OMP_CLAUSE_CHAIN (clause))
+	error_at (OMP_CLAUSE_LOCATION (clause),
+		  "more than one locator in %<depend%> clause on %<depobj%> "
+		  "construct");
+      switch (OMP_CLAUSE_DEPEND_KIND (clause))
+	{
+	case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+	  error_at (OMP_CLAUSE_LOCATION (clause),
+		    "dependence type must be specified in %<depend%> clause "
+		    "on %<depobj%> construct");
+	  return;
+	case OMP_CLAUSE_DEPEND_SOURCE:
+	case OMP_CLAUSE_DEPEND_SINK:
+	  error_at (OMP_CLAUSE_LOCATION (clause),
+		    "%<depend(%s)%> is only allowed in %<omp ordered%>",
+		    OMP_CLAUSE_DEPEND_KIND (clause) == OMP_CLAUSE_DEPEND_SOURCE
+		    ? "source" : "sink");
+	  return;
+	case OMP_CLAUSE_DEPEND_IN:
+	case OMP_CLAUSE_DEPEND_OUT:
+	case OMP_CLAUSE_DEPEND_INOUT:
+	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
+	  kind = OMP_CLAUSE_DEPEND_KIND (clause);
+	  t = OMP_CLAUSE_DECL (clause);
+	  gcc_assert (t);
+	  if (TREE_CODE (t) == TREE_LIST
+	      && TREE_PURPOSE (t)
+	      && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (clause),
+			"%<iterator%> modifier may not be specified on "
+			"%<depobj%> construct");
+	      return;
+	    }
+	  if (TREE_CODE (t) == COMPOUND_EXPR)
+	    {
+	      tree t1 = build_fold_addr_expr (TREE_OPERAND (t, 1));
+	      t = build2 (COMPOUND_EXPR, TREE_TYPE (t1), TREE_OPERAND (t, 0),
+			  t1);
+	    }
+	  else
+	    t = build_fold_addr_expr (t);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else
+    gcc_assert (kind != OMP_CLAUSE_DEPEND_UNSPECIFIED);
+
+  if (depobj == error_mark_node)
+    return;
+
+  depobj = build_fold_addr_expr_loc (EXPR_LOC_OR_LOC (depobj, loc), depobj);
+  tree dtype
+    = build_pointer_type_for_mode (ptr_type_node, TYPE_MODE (ptr_type_node),
+				   true);
+  depobj = fold_convert (dtype, depobj);
+  tree r;
+  if (clause)
+    {
+      depobj = save_expr (depobj);
+      r = build_indirect_ref (loc, depobj, RO_UNARY_STAR);
+      add_stmt (build2 (MODIFY_EXPR, void_type_node, r, t));
+    }
+  int k;
+  switch (kind)
+    {
+    case OMP_CLAUSE_DEPEND_IN:
+      k = GOMP_DEPEND_IN;
+      break;
+    case OMP_CLAUSE_DEPEND_OUT:
+      k = GOMP_DEPEND_OUT;
+      break;
+    case OMP_CLAUSE_DEPEND_INOUT:
+      k = GOMP_DEPEND_INOUT;
+      break;
+    case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
+      k = GOMP_DEPEND_MUTEXINOUTSET;
+      break;
+    case OMP_CLAUSE_DEPEND_LAST:
+      k = -1;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  t = build_int_cst (ptr_type_node, k);
+  depobj = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (depobj), depobj,
+		       TYPE_SIZE_UNIT (ptr_type_node));
+  r = build_indirect_ref (loc, depobj, RO_UNARY_STAR);
+  add_stmt (build2 (MODIFY_EXPR, void_type_node, r, t));
 }
 
 

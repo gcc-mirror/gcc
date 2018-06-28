@@ -7566,10 +7566,11 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 {
   tree c;
   gimple *g;
-  size_t n[2] = { 0, 0 };
-  tree counts[2] = { NULL_TREE, NULL_TREE };
+  size_t n[4] = { 0, 0, 0, 0 };
+  bool unused[4];
+  tree counts[4] = { NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE };
   tree last_iter = NULL_TREE, last_count = NULL_TREE;
-  size_t i;
+  size_t i, j;
   location_t first_loc = UNKNOWN_LOCATION;
 
   for (c = *list_p; c; c = OMP_CLAUSE_CHAIN (c))
@@ -7578,12 +7579,17 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	switch (OMP_CLAUSE_DEPEND_KIND (c))
 	  {
 	  case OMP_CLAUSE_DEPEND_IN:
-	    i = 0;
+	    i = 2;
 	    break;
 	  case OMP_CLAUSE_DEPEND_OUT:
 	  case OMP_CLAUSE_DEPEND_INOUT:
+	    i = 0;
+	    break;
 	  case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
 	    i = 1;
+	    break;
+	  case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+	    i = 3;
 	    break;
 	  case OMP_CLAUSE_DEPEND_SOURCE:
 	  case OMP_CLAUSE_DEPEND_SINK:
@@ -7679,10 +7685,16 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	else
 	  n[i]++;
       }
-  if (counts[0] == NULL_TREE && counts[1] == NULL_TREE)
+  for (i = 0; i < 4; i++)
+    if (counts[i])
+      break;
+  if (i == 4)
     return 0;
-  for (i = 0; i < 2; i++)
+
+  tree total = size_zero_node;
+  for (i = 0; i < 4; i++)
     {
+      unused[i] = counts[i] == NULL_TREE && n[i] == 0;
       if (counts[i] == NULL_TREE)
 	counts[i] = size_zero_node;
       if (n[i])
@@ -7690,17 +7702,19 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
       if (gimplify_expr (&counts[i], pre_p, NULL, is_gimple_val,
 			 fb_rvalue) == GS_ERROR)
 	return 2;
+      total = size_binop (PLUS_EXPR, total, counts[i]);
     }
 
-  tree total = size_binop (PLUS_EXPR, counts[0], counts[1]);
   if (gimplify_expr (&total, pre_p, NULL, is_gimple_val, fb_rvalue)
       == GS_ERROR)
     return 2;
-  tree totalp1 = size_binop (PLUS_EXPR, unshare_expr (total), size_int (1));
-  tree type = build_array_type (ptr_type_node, build_index_type (totalp1));
+  bool is_old = unused[1] && unused[3];
+  tree totalpx = size_binop (PLUS_EXPR, unshare_expr (total),
+			     size_int (is_old ? 1 : 4));
+  tree type = build_array_type (ptr_type_node, build_index_type (totalpx));
   tree array = create_tmp_var_raw (type);
   TREE_ADDRESSABLE (array) = 1;
-  if (TREE_CODE (totalp1) != INTEGER_CST)
+  if (TREE_CODE (totalpx) != INTEGER_CST)
     {
       if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (array)))
 	gimplify_type_sizes (TREE_TYPE (array), pre_p);
@@ -7721,21 +7735,52 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
     gimple_add_tmp_var (array);
   tree r = build4 (ARRAY_REF, ptr_type_node, array, size_int (0), NULL_TREE,
 		   NULL_TREE);
-  tree tem = build2 (MODIFY_EXPR, void_type_node, r,
-		     fold_convert (ptr_type_node, total));
-  gimplify_and_add (tem, pre_p);
-  r = build4 (ARRAY_REF, ptr_type_node, array, size_int (1), NULL_TREE,
-	      NULL_TREE);
-  tem = build2 (MODIFY_EXPR, void_type_node, r, counts[1]);
-  gimplify_and_add (tem, pre_p);
-
-  tree cnts[2];
-  for (i = 0; i < 2; i++)
+  tree tem;
+  if (!is_old)
     {
+      tem = build2 (MODIFY_EXPR, void_type_node, r,
+		    build_int_cst (ptr_type_node, 0));
+      gimplify_and_add (tem, pre_p);
+      r = build4 (ARRAY_REF, ptr_type_node, array, size_int (1), NULL_TREE,
+		  NULL_TREE);
+    }
+  tem = build2 (MODIFY_EXPR, void_type_node, r,
+		fold_convert (ptr_type_node, total));
+  gimplify_and_add (tem, pre_p);
+  for (i = 1; i < (is_old ? 2 : 4); i++)
+    {
+      r = build4 (ARRAY_REF, ptr_type_node, array, size_int (i + !is_old),
+		  NULL_TREE, NULL_TREE);
+      tem = build2 (MODIFY_EXPR, void_type_node, r, counts[i - 1]);
+      gimplify_and_add (tem, pre_p);
+    }
+
+  tree cnts[4];
+  for (j = 4; j; j--)
+    if (!unused[j - 1])
+      break;
+  for (i = 0; i < 4; i++)
+    {
+      if (i && (i >= j || unused[i - 1]))
+	{
+	  cnts[i] = cnts[i - 1];
+	  continue;
+	}
       cnts[i] = create_tmp_var (sizetype, NULL);
-      g = gimple_build_assign (cnts[i], i == 0 ? size_int (2)
-					: size_binop (PLUS_EXPR, counts[0],
-						      size_int (2)));
+      if (i == 0)
+	g = gimple_build_assign (cnts[i], size_int (is_old ? 2 : 5));
+      else
+	{
+	  tree t;
+	  if (is_old)
+	    t = size_binop (PLUS_EXPR, counts[0], size_int (2));
+	  else
+	    t = size_binop (PLUS_EXPR, cnts[i - 1], counts[i - 1]);
+	  if (gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue)
+	      == GS_ERROR)
+	    return 2;
+	  g = gimple_build_assign (cnts[i], t);
+	}
       gimple_seq_add_stmt (pre_p, g);
     }
 
@@ -7748,12 +7793,17 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	switch (OMP_CLAUSE_DEPEND_KIND (c))
 	  {
 	  case OMP_CLAUSE_DEPEND_IN:
-	    i = 0;
+	    i = 2;
 	    break;
 	  case OMP_CLAUSE_DEPEND_OUT:
 	  case OMP_CLAUSE_DEPEND_INOUT:
+	    i = 0;
+	    break;
 	  case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
 	    i = 1;
+	    break;
+	  case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+	    i = 3;
 	    break;
 	  case OMP_CLAUSE_DEPEND_SOURCE:
 	  case OMP_CLAUSE_DEPEND_SINK:
@@ -7897,14 +7947,34 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
       }
   if (last_bind)
     gimplify_and_add (last_bind, pre_p);
-  tree cond = build2_loc (first_loc, NE_EXPR, boolean_type_node, cnts[0],
-			  size_binop_loc (first_loc, PLUS_EXPR, counts[0],
-					  size_int (2)));
-  cond = build2_loc (first_loc, TRUTH_OR_EXPR, boolean_type_node, cond,
-		     build2_loc (first_loc, NE_EXPR, boolean_type_node,
-				 cnts[1],
-				 size_binop_loc (first_loc, PLUS_EXPR,
-						 totalp1, size_int (1))));
+  tree cond = boolean_false_node;
+  if (is_old)
+    {
+      if (!unused[0])
+	cond = build2_loc (first_loc, NE_EXPR, boolean_type_node, cnts[0],
+			   size_binop_loc (first_loc, PLUS_EXPR, counts[0],
+					   size_int (2)));
+      if (!unused[2])
+	cond = build2_loc (first_loc, TRUTH_OR_EXPR, boolean_type_node, cond,
+			   build2_loc (first_loc, NE_EXPR, boolean_type_node,
+				       cnts[2],
+				       size_binop_loc (first_loc, PLUS_EXPR,
+						       totalpx,
+						       size_int (1))));
+    }
+  else
+    {
+      tree prev = size_int (5);
+      for (i = 0; i < 4; i++)
+	{
+	  if (unused[i])
+	    continue;
+	  prev = size_binop_loc (first_loc, PLUS_EXPR, counts[i], prev);
+	  cond = build2_loc (first_loc, TRUTH_OR_EXPR, boolean_type_node, cond,
+			     build2_loc (first_loc, NE_EXPR, boolean_type_node,
+					 cnts[i], unshare_expr (prev)));
+	}
+    }
   tem = build3_loc (first_loc, COND_EXPR, void_type_node, cond,
 		    build_call_expr_loc (first_loc,
 					 builtin_decl_explicit (BUILT_IN_TRAP),

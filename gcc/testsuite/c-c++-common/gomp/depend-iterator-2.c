@@ -7,7 +7,7 @@ int *h;
 void
 f1 (void)
 {
-  #pragma omp task depend (iterator : in : a)	/* { dg-error "expected" } */
+  #pragma omp task depend (iterator : in : a)	/* { dg-error "expected|invalid depend kind" } */
   ;
   #pragma omp task depend (iterator (for = 0 : 2) : in : a)	/* { dg-error "expected" } */
   ;
@@ -25,9 +25,7 @@ f1 (void)
   ;
   #pragma omp task depend (iterator (i = 0 : 10 : 2, 3) : in : a)	/* { dg-error "expected" } */
   ;
-  #pragma omp task depend (iterator (i = 0:1), iterator (j = 0:1) : in : a)	/* { dg-error "expected ':'|invalid depend kind" } */
-  ;
-  #pragma omp task depend (iterator (i = 0:1): iterator (j = 0:1) : in : a)	/* { dg-error "invalid depend kind" } */
+  #pragma omp task depend (iterator (i = 0:1), iterator (j = 0:1) : in : a)	/* { dg-error "expected ':'|invalid depend kind|'iterator' undeclared|was not declared|expected '\\)' before ':' token" } */
   ;
   #pragma omp task depend (iterator (i = 0:32) : in : b[i*2:2])
   ;
@@ -88,4 +86,11 @@ f2 (void)
       #pragma omp ordered depend (iterator (k=0:1) : sink: i - 1, j - 1)	/* { dg-error "'iterator' modifier incompatible with 'sink'" } */
       #pragma omp ordered depend (iterator (int l = 0:2:3) : source)		/* { dg-error "'iterator' modifier incompatible with 'source'" } */
       }
+}
+
+void
+f3 (void)
+{
+  #pragma omp task depend (iterator (i = 0:1): iterator (j = 0:1) : in : a)	/* { dg-error "invalid depend kind|'iterator' undeclared|was not declared|expected '\\)' before ':' token" } */
+  ;
 }

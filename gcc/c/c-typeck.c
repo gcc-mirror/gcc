@@ -13771,6 +13771,14 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      if (handle_omp_array_sections (c, ort))
 		remove = true;
+	      else if (OMP_CLAUSE_DEPEND_KIND (c)
+		       == OMP_CLAUSE_DEPEND_UNSPECIFIED)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<depend%> clause without dependence type "
+			    "on array section");
+		  remove = true;
+		}
 	      break;
 	    }
 	  if (t == error_mark_node)
@@ -13782,8 +13790,51 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"%<depend%> clause", t);
 	      remove = true;
 	    }
-	  else if (!c_mark_addressable (t))
-	    remove = true;
+	  else if (TREE_CODE (t) == COMPONENT_REF
+		   && DECL_C_BIT_FIELD (TREE_OPERAND (t, 1)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"bit-field %qE in %qs clause", t, "depend");
+	      remove = true;
+	    }
+	  else if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_UNSPECIFIED)
+	    {
+	      if (!c_omp_depend_t_p (TREE_TYPE (t)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qE does not have %<omp_depend_t%> type in "
+			    "%<depend%> clause without dependence type", t);
+		  remove = true;
+		}
+	    }
+	  else if (c_omp_depend_t_p (TREE_TYPE (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE should not have %<omp_depend_t%> type in "
+			"%<depend%> clause with dependence type", t);
+	      remove = true;
+	    }
+	  if (!remove)
+	    {
+	      tree addr = build_unary_op (OMP_CLAUSE_LOCATION (c), ADDR_EXPR,
+					  t, false);
+	      if (addr == error_mark_node)
+		remove = true;
+	      else
+		{
+		  t = build_indirect_ref (OMP_CLAUSE_LOCATION (c), addr,
+					  RO_UNARY_STAR);
+		  if (t == error_mark_node)
+		    remove = true;
+		  else if (TREE_CODE (OMP_CLAUSE_DECL (c)) == TREE_LIST
+			   && TREE_PURPOSE (OMP_CLAUSE_DECL (c))
+			   && (TREE_CODE (TREE_PURPOSE (OMP_CLAUSE_DECL (c)))
+			       == TREE_VEC))
+		    TREE_VALUE (OMP_CLAUSE_DECL (c)) = t;
+		  else
+		    OMP_CLAUSE_DECL (c) = t;
+		}
+	    }
 	  break;
 
 	case OMP_CLAUSE_MAP:

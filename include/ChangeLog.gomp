@@ -1,0 +1,10 @@
+2018-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gomp-constants.h (GOMP_DEPEND_IN, GOMP_DEPEND_OUT,
+	GOMP_DEPEND_INOUT, GOMP_DEPEND_MUTEXINOUTSET): Define.
+
+Copyright (C) 2018 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

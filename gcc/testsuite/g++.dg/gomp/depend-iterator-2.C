@@ -8,7 +8,7 @@ template <typename U, typename V, typename W, W N>
 void
 f1 ()
 {
-  #pragma omp task depend (iterator : in : a)	// { dg-error "expected" }
+  #pragma omp task depend (iterator : in : a)	// { dg-error "expected|invalid depend kind" }
   ;
   #pragma omp task depend (iterator (for = 0 : 2) : in : a)	// { dg-error "expected" }
   ;
@@ -26,9 +26,7 @@ f1 ()
   ;
   #pragma omp task depend (iterator (i = N : 10 : 2, 3) : in : a)	// { dg-error "expected" }
   ;
-  #pragma omp task depend (iterator (i = 0:1), iterator (j = 0:1) : in : a)	// { dg-error "expected ':'|invalid depend kind" }
-  ;
-  #pragma omp task depend (iterator (i = 0:1): iterator (j = 0:1) : in : a)	// { dg-error "invalid depend kind" }
+  #pragma omp task depend (iterator (i = 0:1), iterator (j = 0:1) : in : a)	// { dg-error "expected ':'|invalid depend kind|was not declared|expected '\\)' before ':' token" }
   ;
   #pragma omp task depend (iterator (i = N:32) : in : b[i*2:2])
   ;
@@ -101,10 +99,19 @@ f3 ()
   ;
 }
 
+template <int N>
 void
 f4 ()
+{
+  #pragma omp task depend (iterator (i = 0:1): iterator (j = 0:1) : in : a)	// { dg-error "invalid depend kind|was not declared|expected '\\)' before ':' token" }
+  ;
+}
+
+void
+f5 ()
 {
   f1 <struct S, float, int, 0> ();
   f2 <int, 1> ();
   f3 <struct S, float, int, 0, const int, const long long unsigned> ();
+  f4 <0> ();
 }

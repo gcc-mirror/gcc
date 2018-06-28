@@ -166,21 +166,72 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
 			 void **depend)
 {
   size_t ndepend = (uintptr_t) depend[0];
-  size_t nout = (uintptr_t) depend[1];
   size_t i;
   hash_entry_type ent;
 
+  if (ndepend)
+    {
+      /* depend[0] is total # */
+      size_t nout = (uintptr_t) depend[1]; /* # of out: and inout: */
+      /* ndepend - nout is # of in: */
+      for (i = 0; i < ndepend; i++)
+	{
+	  task->depend[i].addr = depend[2 + i];
+	  task->depend[i].is_in = i >= nout;
+	}
+    }
+  else
+    {
+      ndepend = (uintptr_t) depend[1]; /* total # */
+      size_t nout = (uintptr_t) depend[2]; /* # of out: and inout: */
+      size_t nmutexinoutset = (uintptr_t) depend[3]; /* # of mutexinoutset: */
+      /* For now we treat mutexinoutset like out, which is compliant, but
+	 inefficient.  */
+      size_t nin = (uintptr_t) depend[4]; /* # of in: */
+      /* ndepend - nout - nmutexinoutset - nin is # of depobjs */
+      size_t normal = nout + nmutexinoutset + nin;
+      size_t n = 0;
+      for (i = normal; i < ndepend; i++)
+	{
+	  void **d = (void **) (uintptr_t) depend[5 + i];
+	  switch ((uintptr_t) d[1])
+	    {
+	    case GOMP_DEPEND_OUT:
+	    case GOMP_DEPEND_INOUT:
+	    case GOMP_DEPEND_MUTEXINOUTSET:
+	      break;
+	    case GOMP_DEPEND_IN:
+	      continue;
+	    default:
+	      gomp_fatal ("unknown omp_depend_t dependence type %d",
+			  (int) (uintptr_t) d[1]);
+	    }
+	  task->depend[n].addr = d[0];
+	  task->depend[n++].is_in = 0;
+	}
+      for (i = 0; i < normal; i++)
+	{
+	  task->depend[n].addr = depend[5 + i];
+	  task->depend[n++].is_in = i >= nout + nmutexinoutset;
+	}
+      for (i = normal; i < ndepend; i++)
+	{
+	  void **d = (void **) (uintptr_t) depend[5 + i];
+	  if ((uintptr_t) d[1] != GOMP_DEPEND_IN)
+	    continue;
+	  task->depend[n].addr = d[0];
+	  task->depend[n++].is_in = 1;
+	}
+    }
   task->depend_count = ndepend;
   task->num_dependees = 0;
   if (parent->depend_hash == NULL)
     parent->depend_hash = htab_create (2 * ndepend > 12 ? 2 * ndepend : 12);
   for (i = 0; i < ndepend; i++)
     {
-      task->depend[i].addr = depend[2 + i];
       task->depend[i].next = NULL;
       task->depend[i].prev = NULL;
       task->depend[i].task = task;
-      task->depend[i].is_in = i >= nout;
       task->depend[i].redundant = false;
       task->depend[i].redundant_out = false;
 
@@ -205,7 +256,7 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
 	      last = ent;
 
 	      /* depend(in:...) doesn't depend on earlier depend(in:...).  */
-	      if (i >= nout && ent->is_in)
+	      if (task->depend[i].is_in && ent->is_in)
 		continue;
 
 	      if (!ent->is_in)
@@ -280,9 +331,18 @@ gomp_task_handle_depend (struct gomp_task *task, struct gomp_task *parent,
    then the task may be executed by any member of the team.
 
    DEPEND is an array containing:
+     if depend[0] is non-zero, then:
 	depend[0]: number of depend elements.
-	depend[1]: number of depend elements of type "out".
-	depend[2..N+1]: address of [1..N]th depend element.  */
+	depend[1]: number of depend elements of type "out/inout".
+	depend[2..N+1]: address of [1..N]th depend element.
+     otherwise, when depend[0] is zero, then:
+	depend[1]: number of depend elements.
+	depend[2]: number of depend elements of type "out/inout".
+	depend[3]: number of depend elements of type "mutexinoutset".
+	depend[4]: number of depend elements of type "in".
+	depend[5..4+depend[2]+depend[3]+depend[4]]: address of depend elements
+	depend[5+depend[2]+depend[3]+depend[4]..4+depend[1]]: address of
+		   omp_depend_t objects.  */
 
 void
 GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
@@ -377,7 +437,7 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
       size_t depend_size = 0;
 
       if (flags & GOMP_TASK_FLAG_DEPEND)
-	depend_size = ((uintptr_t) depend[0]
+	depend_size = ((uintptr_t) (depend[0] ? depend[0] : depend[1])
 		       * sizeof (struct gomp_task_depend_entry));
       task = gomp_malloc (sizeof (*task) + depend_size
 			  + arg_size + arg_align - 1);
@@ -617,7 +677,7 @@ gomp_create_target_task (struct gomp_device_descr *devicep,
 
   if (depend != NULL)
     {
-      depend_cnt = (uintptr_t) depend[0];
+      depend_cnt = (uintptr_t) (depend[0] ? depend[0] : depend[1]);
       depend_size = depend_cnt * sizeof (struct gomp_task_depend_entry);
     }
   if (fn)
@@ -1496,21 +1556,50 @@ gomp_task_maybe_wait_for_dependencies (void **depend)
   struct gomp_team *team = thr->ts.team;
   struct gomp_task_depend_entry elem, *ent = NULL;
   struct gomp_taskwait taskwait;
-  size_t ndepend = (uintptr_t) depend[0];
+  size_t orig_ndepend = (uintptr_t) depend[0];
   size_t nout = (uintptr_t) depend[1];
+  size_t ndepend = orig_ndepend;
+  size_t normal = ndepend;
+  size_t n = 2;
   size_t i;
   size_t num_awaited = 0;
   struct gomp_task *child_task = NULL;
   struct gomp_task *to_free = NULL;
   int do_wake = 0;
 
+  if (ndepend == 0)
+    {
+      ndepend = nout;
+      nout = (uintptr_t) depend[2] + (uintptr_t) depend[3];
+      normal = nout + (uintptr_t) depend[4];
+      n = 5;
+    }
   gomp_mutex_lock (&team->task_lock);
   for (i = 0; i < ndepend; i++)
     {
-      elem.addr = depend[i + 2];
+      elem.addr = depend[i + n];
+      elem.is_in = i >= nout;
+      if (__builtin_expect (i >= normal, 0))
+	{
+	  void **d = (void **) elem.addr;
+	  switch ((uintptr_t) d[1])
+	    {
+	    case GOMP_DEPEND_IN:
+	      break;
+	    case GOMP_DEPEND_OUT:
+	    case GOMP_DEPEND_INOUT:
+	    case GOMP_DEPEND_MUTEXINOUTSET:
+	      elem.is_in = 0;
+	      break;
+	    default:
+	      gomp_fatal ("unknown omp_depend_t dependence type %d",
+			  (int) (uintptr_t) d[1]);
+	    }
+	  elem.addr = d[0];
+	}
       ent = htab_find (task->depend_hash, &elem);
       for (; ent; ent = ent->next)
-	if (i >= nout && ent->is_in)
+	if (elem.is_in && ent->is_in)
 	  continue;
 	else
 	  {

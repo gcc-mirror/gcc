@@ -1,3 +1,15 @@
+2018-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_depobj): New function.
+	(c_parser_pragma): Handle PRAGMA_OMP_DEPOBJ.
+	(c_parser_omp_iterators): Return error_mark_node instead of NULL.
+	(c_parser_omp_clause_depend): Make dependence-type optional.
+	* c-typeck.c (c_finish_omp_clauses): Handle depend clause with
+	OMP_CLAUSE_DEPEND_UNSPECIFIED.  Diagnose bit-fields.  Require
+	omp_depend_t type for OMP_CLAUSE_DEPEND_UNSPECIFIED kinds and
+	some different type for other kinds.  Use build_unary_op with
+	ADDR_EXPR and build_indirect_ref instead of c_mark_addressable.
+
 2018-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c: Include memmodel.h.

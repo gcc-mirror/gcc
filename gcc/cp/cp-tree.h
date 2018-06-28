@@ -4953,6 +4953,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define ALIGNOF_EXPR_STD_P(NODE) \
   TREE_LANG_FLAG_0 (ALIGNOF_EXPR_CHECK (NODE))
 
+/* OMP_DEPOBJ accessors. These give access to the depobj expression of the
+   #pragma omp depobj directive and the clauses, respectively.  If
+   OMP_DEPOBJ_CLAUSES is INTEGER_CST, it is instead the update clause kind
+   or OMP_CLAUSE_DEPEND_LAST for destroy clause.  */
+#define OMP_DEPOBJ_DEPOBJ(NODE)	 TREE_OPERAND (OMP_DEPOBJ_CHECK (NODE), 0)
+#define OMP_DEPOBJ_CLAUSES(NODE) TREE_OPERAND (OMP_DEPOBJ_CHECK (NODE), 1)
+
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {
   none_type = 0, /* Not a tag type.  */
@@ -6968,6 +6975,9 @@ extern void finish_omp_atomic			(enum tree_code, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 tree, enum omp_memory_order);
 extern void finish_omp_barrier			(void);
+extern void finish_omp_depobj			(location_t, tree,
+						 enum omp_clause_depend_kind,
+						 tree);
 extern void finish_omp_flush			(int);
 extern void finish_omp_taskwait			(void);
 extern void finish_omp_taskyield		(void);

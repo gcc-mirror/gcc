@@ -6837,6 +6837,14 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      if (handle_omp_array_sections (c, ort))
 		remove = true;
+	      else if (OMP_CLAUSE_DEPEND_KIND (c)
+		       == OMP_CLAUSE_DEPEND_UNSPECIFIED)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<depend%> clause without dependence type "
+			    "on array section");
+		  remove = true;
+		}
 	      break;
 	    }
 	  if (t == error_mark_node)
@@ -6862,8 +6870,55 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  "in %<depend%> clause", t);
 	      remove = true;
 	    }
-	  else if (!cxx_mark_addressable (t))
-	    remove = true;
+	  else if (TREE_CODE (t) == COMPONENT_REF
+		   && TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL
+		   && DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"bit-field %qE in %qs clause", t, "depend");
+	      remove = true;
+	    }
+	  else if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_UNSPECIFIED)
+	    {
+	      if (!c_omp_depend_t_p (TYPE_REF_P (TREE_TYPE (t))
+				     ? TREE_TYPE (TREE_TYPE (t))
+				     : TREE_TYPE (t)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qE does not have %<omp_depend_t%> type in "
+			    "%<depend%> clause without dependence type", t);
+		  remove = true;
+		}
+	    }
+	  else if (c_omp_depend_t_p (TYPE_REF_P (TREE_TYPE (t))
+				     ? TREE_TYPE (TREE_TYPE (t))
+				     : TREE_TYPE (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE should not have %<omp_depend_t%> type in "
+			"%<depend%> clause with dependence type", t);
+	      remove = true;
+	    }
+	  if (!remove)
+	    {
+	      tree addr = cp_build_addr_expr (t, tf_warning_or_error);
+	      if (addr == error_mark_node)
+		remove = true;
+	      else
+		{
+		  t = cp_build_indirect_ref (addr, RO_UNARY_STAR,
+					     tf_warning_or_error);
+		  if (t == error_mark_node)
+		    remove = true;
+		  else if (TREE_CODE (OMP_CLAUSE_DECL (c)) == TREE_LIST
+			   && TREE_PURPOSE (OMP_CLAUSE_DECL (c))
+			   && (TREE_CODE (TREE_PURPOSE (OMP_CLAUSE_DECL (c)))
+			       == TREE_VEC))
+		    TREE_VALUE (OMP_CLAUSE_DECL (c)) = t;
+		  else
+		    OMP_CLAUSE_DECL (c) = t;
+		}
+	    }
 	  break;
 
 	case OMP_CLAUSE_MAP:
@@ -8752,6 +8807,41 @@ finish_omp_barrier (void)
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
   release_tree_vector (vec);
   finish_expr_stmt (stmt);
+}
+
+void
+finish_omp_depobj (location_t loc, tree depobj,
+		   enum omp_clause_depend_kind kind, tree clause)
+{
+  if (!error_operand_p (depobj) && !type_dependent_expression_p (depobj))
+    {
+      if (!lvalue_p (depobj))
+	{
+	  error_at (EXPR_LOC_OR_LOC (depobj, loc),
+		    "%<depobj%> expression is not lvalue expression");
+	  depobj = error_mark_node;
+	}
+    }
+
+  if (processing_template_decl)
+    {
+      if (clause == NULL_TREE)
+	clause = build_int_cst (integer_type_node, kind);
+      add_stmt (build_min_nt_loc (loc, OMP_DEPOBJ, depobj, clause));
+      return;
+    }
+
+  if (!error_operand_p (depobj))
+    {
+      tree addr = cp_build_addr_expr (depobj, tf_warning_or_error);
+      if (addr == error_mark_node)
+	depobj = error_mark_node;
+      else
+	depobj = cp_build_indirect_ref (addr, RO_UNARY_STAR,
+					tf_warning_or_error);
+    }
+
+  c_finish_omp_depobj (loc, depobj, kind, clause);
 }
 
 void

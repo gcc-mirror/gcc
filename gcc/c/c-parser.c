@@ -1446,6 +1446,7 @@ static void c_parser_oacc_update (c_parser *);
 static void c_parser_omp_construct (c_parser *, bool *);
 static void c_parser_omp_threadprivate (c_parser *);
 static void c_parser_omp_barrier (c_parser *);
+static void c_parser_omp_depobj (c_parser *);
 static void c_parser_omp_flush (c_parser *);
 static tree c_parser_omp_for_loop (location_t, c_parser *, enum tree_code,
 				   tree, tree *, bool *);
@@ -10999,6 +11000,15 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       c_parser_omp_barrier (parser);
       return false;
 
+    case PRAGMA_OMP_DEPOBJ:
+      if (context != pragma_compound)
+	{
+	  construct = "omp depobj";
+	  goto in_compound;
+	}
+      c_parser_omp_depobj (parser);
+      return false;
+
     case PRAGMA_OMP_FLUSH:
       if (context != pragma_compound)
 	{
@@ -13900,7 +13910,7 @@ c_parser_omp_iterators (c_parser *parser)
   while (1);
 
   parens.skip_until_found_close (parser);
-  return ret;
+  return ret ? ret : error_mark_node;
 }
 
 /* OpenMP 4.0:
@@ -13918,7 +13928,7 @@ static tree
 c_parser_omp_clause_depend (c_parser *parser, tree list)
 {
   location_t clause_loc = c_parser_peek_token (parser)->location;
-  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_INOUT;
+  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_UNSPECIFIED;
   tree nl, c, iterators = NULL_TREE;
 
   matching_parens parens;
@@ -13928,9 +13938,31 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
   do
     {
       if (c_parser_next_token_is_not (parser, CPP_NAME))
-	goto invalid_kind;
+	break;
 
       const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      if (strcmp ("iterator", p) == 0
+	  && iterators == NULL_TREE
+	  && c_parser_peek_2nd_token (parser)->type == CPP_OPEN_PAREN)
+	{
+	  /* FIXME: if depend kind remains optional, this is ambiguous
+	     and we'd need to do tentative parsing to distinguish between
+	     valid iterator modifier and just normal expression starting
+	     with iterator ( tokens.  Not doing it right now, as I hope
+	     it will become mandatory.  */
+	  iterators = c_parser_omp_iterators (parser);
+	  c_parser_require (parser, CPP_COLON, "expected %<:%>");
+	  continue;
+	}
+      if (strcmp ("source", p) == 0
+	  && c_parser_peek_2nd_token (parser)->type == CPP_CLOSE_PAREN)
+	{
+	  /* FIXME: this is another ambiguity.  */
+	  kind = OMP_CLAUSE_DEPEND_SOURCE;
+	  break;
+	}
+      if (c_parser_peek_2nd_token (parser)->type != CPP_COLON)
+	break;
       if (strcmp ("in", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_IN;
       else if (strcmp ("inout", p) == 0)
@@ -13939,23 +13971,16 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
 	kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
       else if (strcmp ("out", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_OUT;
-      else if (strcmp ("source", p) == 0)
-	kind = OMP_CLAUSE_DEPEND_SOURCE;
       else if (strcmp ("sink", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_SINK;
-      else if (strcmp ("iterator", p) == 0 && iterators == NULL_TREE)
-	{
-	  iterators = c_parser_omp_iterators (parser);
-	  c_parser_require (parser, CPP_COLON, "expected %<:%>");
-	  continue;
-	}
       else
 	goto invalid_kind;
       break;
     }
   while (1);
 
-  c_parser_consume_token (parser);
+  if (kind != OMP_CLAUSE_DEPEND_UNSPECIFIED)
+    c_parser_consume_token (parser);
 
   if (iterators
       && (kind == OMP_CLAUSE_DEPEND_SOURCE || kind == OMP_CLAUSE_DEPEND_SINK))
@@ -13976,7 +14001,8 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
       return c;
     }
 
-  if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
+  if (kind != OMP_CLAUSE_DEPEND_UNSPECIFIED
+      && !c_parser_require (parser, CPP_COLON, "expected %<:%>"))
     goto resync_fail;
 
   if (kind == OMP_CLAUSE_DEPEND_SINK)
@@ -16105,6 +16131,115 @@ c_parser_omp_critical (location_t loc, c_parser *parser, bool *if_p)
   stmt = c_parser_omp_structured_block (parser, if_p);
   return c_finish_omp_critical (loc, stmt, name, clauses);
 }
+
+/* OpenMP 5.0:
+   # pragma omp depobj ( depobj ) depobj-clause new-line
+
+   depobj-clause:
+     depend (dependence-type : locator)
+     destroy
+     update (dependence-type)
+
+   dependence-type:
+     in
+     out
+     inout
+     mutexinout  */
+
+static void
+c_parser_omp_depobj (c_parser *parser)
+{
+  location_t loc = c_parser_peek_token (parser)->location;
+  c_parser_consume_pragma (parser);
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    {
+      c_parser_skip_to_pragma_eol (parser);
+      return;
+    }
+
+  tree depobj = c_parser_expr_no_commas (parser, NULL).value;
+  if (depobj != error_mark_node)
+    {
+      if (!lvalue_p (depobj))
+	{
+	  error_at (EXPR_LOC_OR_LOC (depobj, loc),
+		    "%<depobj%> expression is not lvalue expression");
+	  depobj = error_mark_node;
+	}
+      else
+	{
+	  tree addr = build_unary_op (EXPR_LOC_OR_LOC (depobj, loc), ADDR_EXPR,
+				      depobj, false);
+	  if (addr == error_mark_node)
+	    depobj = error_mark_node;
+	  else
+	    depobj = build_indirect_ref (EXPR_LOC_OR_LOC (depobj, loc),
+					 addr, RO_UNARY_STAR);
+	}
+    }
+
+  parens.skip_until_found_close (parser);
+  tree clause = NULL_TREE;
+  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_UNSPECIFIED;
+  location_t c_loc = c_parser_peek_token (parser)->location;
+  if (c_parser_next_token_is (parser, CPP_NAME))
+    {
+      const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+
+      c_parser_consume_token (parser);
+      if (!strcmp ("depend", p))
+	{
+	  clause = c_parser_omp_clause_depend (parser, NULL_TREE);
+	  clause = c_finish_omp_clauses (clause, C_ORT_OMP);
+	  if (!clause)
+	    clause = error_mark_node;
+	}
+      else if (!strcmp ("destroy", p))
+	kind = OMP_CLAUSE_DEPEND_LAST;
+      else if (!strcmp ("update", p))
+	{
+	  matching_parens c_parens;
+	  if (c_parens.require_open (parser))
+	    {
+	      location_t c2_loc = c_parser_peek_token (parser)->location;
+	      if (c_parser_next_token_is (parser, CPP_NAME))
+		{
+		  const char *p2
+		    = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+
+		  c_parser_consume_token (parser);
+		  if (!strcmp ("in", p2))
+		    kind = OMP_CLAUSE_DEPEND_IN;
+		  else if (!strcmp ("out", p2))
+		    kind = OMP_CLAUSE_DEPEND_OUT;
+		  else if (!strcmp ("inout", p2))
+		    kind = OMP_CLAUSE_DEPEND_INOUT;
+		  else if (!strcmp ("mutexinoutset", p2))
+		    kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
+		}
+	      if (kind == OMP_CLAUSE_DEPEND_UNSPECIFIED)
+		{
+		  clause = error_mark_node;
+		  error_at (c2_loc, "expected %<in%>, %<out%>, %<inout%> or "
+				    "%<mutexinoutset%>");
+		}
+	      c_parens.skip_until_found_close (parser);
+	    }
+	  else
+	    clause = error_mark_node;
+	}
+    }
+  if (!clause && kind == OMP_CLAUSE_DEPEND_UNSPECIFIED)
+    {
+      clause = error_mark_node;
+      error_at (c_loc, "expected %<depend%>, %<destroy%> or %<update%> clause");
+    }
+  c_parser_skip_to_pragma_eol (parser);
+
+  c_finish_omp_depobj (loc, depobj, kind, clause);
+}
+
 
 /* OpenMP 2.5:
    # pragma omp flush flush-vars[opt] new-line

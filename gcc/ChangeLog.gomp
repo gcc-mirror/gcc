@@ -1,3 +1,14 @@
+2018-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_depend_kind): Add
+	OMP_CLAUSE_DEPEND_UNSPECIFIED.
+	* gimplify.c (gimplify_omp_depend): If there are any
+	OMP_CLAUSE_DEPEND_UNSPECIFIED or OMP_CLAUSE_DEPEND_MUTEXINOUTSET
+	depend clauses, use a new array format.
+	* omp-low.c (lower_depend_clauses): Likewise.
+	* tree-pretty-print.c (dump_omp_clause): Handle
+	OMP_CLAUSE_DEPEND_UNSPECIFIED.
+
 2018-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple.h (enum gf_mask): Add GF_OMP_TASK_TASKWAIT.

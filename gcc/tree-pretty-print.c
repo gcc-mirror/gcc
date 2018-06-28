@@ -674,6 +674,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "depend(");
       switch (OMP_CLAUSE_DEPEND_KIND (clause))
 	{
+	case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+	  name = NULL;
+	  break;
 	case OMP_CLAUSE_DEPEND_IN:
 	  name = "in";
 	  break;
@@ -727,8 +730,11 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	    pp_colon (pp);
 	    t = TREE_VALUE (t);
 	  }
-	pp_string (pp, name);
-	pp_colon (pp);
+	if (name)
+	  {
+	    pp_string (pp, name);
+	    pp_colon (pp);
+	  }
 	dump_generic_node (pp, t, spc, flags, false);
 	pp_right_paren (pp);
       }

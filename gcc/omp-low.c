@@ -7351,7 +7351,7 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 {
   tree c, clauses;
   gimple *g;
-  size_t n_in = 0, n_out = 0, idx = 2, i;
+  size_t cnt[4] = { 0, 0, 0, 0 }, idx = 2, i;
 
   clauses = omp_find_clause (*pclauses, OMP_CLAUSE_DEPEND);
   gcc_assert (clauses);
@@ -7363,12 +7363,17 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 	  /* Lowering already done at gimplification.  */
 	  return;
 	case OMP_CLAUSE_DEPEND_IN:
-	  n_in++;
+	  cnt[2]++;
 	  break;
 	case OMP_CLAUSE_DEPEND_OUT:
 	case OMP_CLAUSE_DEPEND_INOUT:
+	  cnt[0]++;
+	  break;
 	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
-	  n_out++;
+	  cnt[1]++;
+	  break;
+	case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+	  cnt[3]++;
 	  break;
 	case OMP_CLAUSE_DEPEND_SOURCE:
 	case OMP_CLAUSE_DEPEND_SINK:
@@ -7376,25 +7381,61 @@ lower_depend_clauses (tree *pclauses, gimple_seq *iseq, gimple_seq *oseq)
 	default:
 	  gcc_unreachable ();
 	}
-  tree type = build_array_type_nelts (ptr_type_node, n_in + n_out + 2);
+  if (cnt[1] || cnt[3])
+    idx = 5;
+  size_t total = cnt[0] + cnt[1] + cnt[2] + cnt[3];
+  tree type = build_array_type_nelts (ptr_type_node, total + idx);
   tree array = create_tmp_var (type);
   TREE_ADDRESSABLE (array) = 1;
   tree r = build4 (ARRAY_REF, ptr_type_node, array, size_int (0), NULL_TREE,
 		   NULL_TREE);
-  g = gimple_build_assign (r, build_int_cst (ptr_type_node, n_in + n_out));
-  gimple_seq_add_stmt (iseq, g);
-  r = build4 (ARRAY_REF, ptr_type_node, array, size_int (1), NULL_TREE,
-	      NULL_TREE);
-  g = gimple_build_assign (r, build_int_cst (ptr_type_node, n_out));
-  gimple_seq_add_stmt (iseq, g);
-  for (i = 0; i < 2; i++)
+  if (idx == 5)
     {
-      if ((i ? n_in : n_out) == 0)
+      g = gimple_build_assign (r, build_int_cst (ptr_type_node, 0));
+      gimple_seq_add_stmt (iseq, g);
+      r = build4 (ARRAY_REF, ptr_type_node, array, size_int (1), NULL_TREE,
+		  NULL_TREE);
+    }
+  g = gimple_build_assign (r, build_int_cst (ptr_type_node, total));
+  gimple_seq_add_stmt (iseq, g);
+  for (i = 0; i < (idx == 5 ? 3 : 1); i++)
+    {
+      r = build4 (ARRAY_REF, ptr_type_node, array,
+		  size_int (i + 1 + (idx == 5)), NULL_TREE, NULL_TREE);
+      g = gimple_build_assign (r, build_int_cst (ptr_type_node, cnt[i]));
+      gimple_seq_add_stmt (iseq, g);
+    }
+  for (i = 0; i < 4; i++)
+    {
+      if (cnt[i] == 0)
 	continue;
       for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-	    && ((OMP_CLAUSE_DEPEND_KIND (c) != OMP_CLAUSE_DEPEND_IN) ^ i))
+	if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND)
+	  continue;
+	else
 	  {
+	    switch (OMP_CLAUSE_DEPEND_KIND (c))
+	      {
+	      case OMP_CLAUSE_DEPEND_IN:
+		if (i != 2)
+		  continue;
+		break;
+	      case OMP_CLAUSE_DEPEND_OUT:
+	      case OMP_CLAUSE_DEPEND_INOUT:
+		if (i != 0)
+		  continue;
+		break;
+	      case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
+		if (i != 1)
+		  continue;
+		break;
+	      case OMP_CLAUSE_DEPEND_UNSPECIFIED:
+		if (i != 3)
+		  continue;
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
 	    tree t = OMP_CLAUSE_DECL (c);
 	    t = fold_convert (ptr_type_node, t);
 	    gimplify_expr (&t, iseq, NULL, is_gimple_val, fb_rvalue);

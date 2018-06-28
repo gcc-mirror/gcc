@@ -1,3 +1,14 @@
+2018-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/depend-6.c: Add test for bit-field in depend
+	clause.
+	* c-c++-common/gomp/depend-iterator-2.c: Adjust for dependence-type
+	being optional.
+	* c-c++-common/gomp/depobj-1.c: New test.
+	* g++.dg/gomp/depend-iterator-2.C: Adjust for dependence-type being
+	optional.
+	* g++.dg/gomp/depobj-1.C: New test.
+
 2018-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/flush-1.c: New test.

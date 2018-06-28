@@ -251,6 +251,12 @@ enum gomp_map_kind
    at most and shifted by this many bits.  */
 #define GOMP_TARGET_ARG_VALUE_SHIFT		16
 
+/* Dependence types in omp_depend_t objects.  */
+#define GOMP_DEPEND_IN			1
+#define GOMP_DEPEND_OUT			2
+#define GOMP_DEPEND_INOUT		3
+#define GOMP_DEPEND_MUTEXINOUTSET	4
+
 /* HSA specific data structures.  */
 
 /* Identifiers of device-specific target arguments.  */

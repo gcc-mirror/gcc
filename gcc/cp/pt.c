@@ -17237,6 +17237,32 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       pop_omp_privatization_clauses (r);
       break;
 
+    case OMP_DEPOBJ:
+      r = RECUR (OMP_DEPOBJ_DEPOBJ (t));
+      if (OMP_DEPOBJ_CLAUSES (t) && OMP_DEPOBJ_CLAUSES (t) != error_mark_node)
+	{
+	  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_UNSPECIFIED;
+	  if (TREE_CODE (OMP_DEPOBJ_CLAUSES (t)) == OMP_CLAUSE)
+	    {
+	      tmp = tsubst_omp_clauses (OMP_DEPOBJ_CLAUSES (t), C_ORT_OMP,
+					args, complain, in_decl);
+	      if (tmp == NULL_TREE)
+		tmp = error_mark_node;
+	    }
+	  else
+	    {
+	      kind = (enum omp_clause_depend_kind)
+		     tree_to_uhwi (OMP_DEPOBJ_CLAUSES (t));
+	      tmp = NULL_TREE;
+	    }
+	  finish_omp_depobj (EXPR_LOCATION (t), r, kind, tmp);
+	}
+      else
+	finish_omp_depobj (EXPR_LOCATION (t), r,
+			   OMP_CLAUSE_DEPEND_UNSPECIFIED,
+			   OMP_DEPOBJ_CLAUSES (t));
+      break;
+
     case OACC_DATA:
     case OMP_TARGET_DATA:
     case OMP_TARGET:
