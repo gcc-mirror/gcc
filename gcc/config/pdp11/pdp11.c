@@ -2020,6 +2020,35 @@ pdp11_assemble_shift (rtx *operands, machine_mode m, int code)
   return "";
 }
 
+/* Figure out the length of the instructions that will be produced for
+   the given operands by pdp11_assemble_shift above.  */
+int
+pdp11_shift_length (rtx *operands, machine_mode m, int code, bool simple_operand_p)
+{
+  int shift_size;
+
+  /* Shift by 1 is 2 bytes if simple operand, 4 bytes if 2-word addressing mode.  */
+  shift_size = simple_operand_p ? 2 : 4;
+
+  /* In SImode, two shifts are needed per data item.  */
+  if (m == E_SImode)
+    shift_size *= 2;
+
+  /* If shifting by a small constant, the loop is unrolled by the
+     shift count.  Otherwise, account for the size of the decrement
+     and branch.  */
+  if (CONSTANT_P (operands[2]) && pdp11_small_shift (INTVAL (operands[2])))
+    shift_size *= INTVAL (operands[2]);
+  else
+    shift_size += 4;
+
+  /* Logical right shift takes one more instruction (CLC).  */
+  if (code == LSHIFTRT)
+    shift_size += 2;
+
+  return shift_size;
+}
+
 /* Worker function for TARGET_TRAMPOLINE_INIT.
 
    trampoline - how should i do it in separate i+d ? 

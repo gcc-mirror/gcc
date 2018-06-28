@@ -1297,18 +1297,15 @@
 ;; used to reduce the amount of very similar code.
 ;;
 ;; First the insns used for small constant shifts.
-;
-;; The "length" attribute values are modified by the ADJUST_INSN_LENGTH
-;; macro for the small constant shift case (first two alternatives).
-;; For those, the value coded in the length attribute is the cost of just
-;; the shift for a single shift.
 (define_insn "<code><mode>_sc"
   [(set (match_operand:QHSint 0 "nonimmediate_operand" "=rD,Q")
 	(SHF:QHSint (match_operand:QHSint 1 "general_operand" "0,0")
 	            (match_operand:HI 2 "expand_shift_operand" "O,O")))]
   ""
   "* return pdp11_assemble_shift (operands, <QHSint:mname>, <CODE>);"
-  [(set_attr "length" "2,4")])
+  [(set (attr "length")
+	(symbol_ref "pdp11_shift_length (operands, <QHSint:mname>, 
+                                         <CODE>, which_alternative == 0)"))])
 
 ;; Next, shifts that are done as a loop on base (11/10 class) machines.
 ;; This applies to shift counts too large to unroll, or variable shift
@@ -1320,7 +1317,9 @@
    (clobber (match_dup 2))]
   ""
   "* return pdp11_assemble_shift (operands, <QHSint:mname>, <CODE>);"
-  [(set_attr "length" "2,4")])
+  [(set (attr "length")
+	(symbol_ref "pdp11_shift_length (operands, <QHSint:mname>, 
+                                         <CODE>, which_alternative == 0)"))])
 
 ;; Next the insns that use the extended instructions ash and ashc.
 ;; Note that these are just left shifts, and HI/SI only.  (Right shifts
