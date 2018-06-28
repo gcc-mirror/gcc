@@ -1,5 +1,10 @@
 2018-06-28  Richard Biener  <rguenther@suse.de>
 
+	* dwarf2out.c (gen_subprogram_die): Use is_unit_die when
+	deciding whether to not re-use a DIE.
+
+2018-06-28  Richard Biener  <rguenther@suse.de>
+
 	* dwarf2out.c (gen_subprogram_die): Always re-use DIEs with an
 	DW_AT_abstract_origin attribute.
 
