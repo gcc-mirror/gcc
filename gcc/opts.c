@@ -1982,6 +1982,9 @@ common_handle_option (struct gcc_options *opts,
       opts->x_exit_after_options = true;
       break;
 
+    case OPT__completion_:
+      break;
+
     case OPT_fsanitize_:
       opts->x_flag_sanitize
 	= parse_sanitizer_options (arg, loc, code,

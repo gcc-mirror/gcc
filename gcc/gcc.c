@@ -221,6 +221,10 @@ static int print_help_list;
 
 static int print_version;
 
+/* Flag that stores string prefix for which we provide bash completion.  */
+
+static const char *completion = NULL;
+
 /* Flag indicating whether we should ONLY print the command and
    arguments (like verbose_flag) without executing the command.
    Displayed arguments are quoted so that the generated command
@@ -3890,6 +3894,11 @@ driver_handle_option (struct gcc_options *opts,
       add_linker_option ("--version", strlen ("--version"));
       break;
 
+    case OPT__completion_:
+      validated = true;
+      completion = decoded->arg;
+      break;
+
     case OPT__help:
       print_help_list = 1;
 
@@ -7299,6 +7308,12 @@ driver::main (int argc, char **argv)
   maybe_putenv_COLLECT_LTO_WRAPPER ();
   maybe_putenv_OFFLOAD_TARGETS ();
   handle_unrecognized_options ();
+
+  if (completion)
+    {
+      m_option_proposer.suggest_completion (completion);
+      return 0;
+    }
 
   if (!maybe_print_and_exit ())
     return 0;

@@ -78,6 +78,15 @@ extern void assert_str_contains (const location &loc,
 				 const char *val_haystack,
 				 const char *val_needle);
 
+/* Implementation detail of ASSERT_STR_STARTSWITH.  */
+
+extern void assert_str_startswith (const location &loc,
+				   const char *desc_str,
+				   const char *desc_prefix,
+				   const char *val_str,
+				   const char *val_prefix);
+
+
 /* A named temporary file for use in selftests.
    Usable for writing out files, and as the base class for
    temp_source_file.
@@ -217,6 +226,7 @@ extern void unique_ptr_tests_cc_tests ();
 extern void vec_c_tests ();
 extern void vec_perm_indices_c_tests ();
 extern void wide_int_cc_tests ();
+extern void opt_proposer_c_tests ();
 
 extern int num_passes;
 
@@ -400,6 +410,16 @@ extern int num_passes;
   SELFTEST_BEGIN_STMT							\
   ::selftest::assert_str_contains (SELFTEST_LOCATION, #HAYSTACK, #NEEDLE, \
 				   (HAYSTACK), (NEEDLE));		\
+  SELFTEST_END_STMT
+
+/* Evaluate STR and PREFIX and determine if STR starts with PREFIX.
+     ::selftest::pass if STR does start with PREFIX.
+     ::selftest::fail if does not, or either is NULL.  */
+
+#define ASSERT_STR_STARTSWITH(STR, PREFIX)				    \
+  SELFTEST_BEGIN_STMT							    \
+  ::selftest::assert_str_startswith (SELFTEST_LOCATION, #STR, #PREFIX,	    \
+				     (STR), (PREFIX));			    \
   SELFTEST_END_STMT
 
 /* Evaluate PRED1 (VAL1), calling ::selftest::pass if it is true,

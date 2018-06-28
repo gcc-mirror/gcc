@@ -125,6 +125,40 @@ assert_str_contains (const location &loc,
 	 desc_haystack, desc_needle, val_haystack, val_needle);
 }
 
+/* Implementation detail of ASSERT_STR_STARTSWITH.
+   Determine if VAL_STR starts with VAL_PREFIX.
+   ::selftest::pass if VAL_STR does start with VAL_PREFIX.
+   ::selftest::fail if it does not, or either is NULL (using
+   DESC_STR and DESC_PREFIX in the error message).  */
+
+void
+assert_str_startswith (const location &loc,
+		       const char *desc_str,
+		       const char *desc_prefix,
+		       const char *val_str,
+		       const char *val_prefix)
+{
+  /* If val_str is NULL, fail with a custom error message.  */
+  if (val_str == NULL)
+    fail_formatted (loc, "ASSERT_STR_STARTSWITH (%s, %s) str=NULL",
+		    desc_str, desc_prefix);
+
+  /* If val_prefix is NULL, fail with a custom error message.  */
+  if (val_prefix == NULL)
+    fail_formatted (loc,
+		    "ASSERT_STR_STARTSWITH (%s, %s) str=\"%s\" prefix=NULL",
+		    desc_str, desc_prefix, val_str);
+
+  const char *test = strstr (val_str, val_prefix);
+  if (test == val_str)
+    pass (loc, "ASSERT_STR_STARTSWITH");
+  else
+    fail_formatted
+	(loc, "ASSERT_STR_STARTSWITH (%s, %s) str=\"%s\" prefix=\"%s\"",
+	 desc_str, desc_prefix, val_str, val_prefix);
+}
+
+
 /* Constructor.  Generate a name for the file.  */
 
 named_temp_file::named_temp_file (const char *suffix)

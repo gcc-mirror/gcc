@@ -255,6 +255,10 @@ Driver Alias(S)
 -compile
 Driver Alias(c)
 
+-completion=
+Common Driver Joined Undocumented
+Provide bash completion for options starting with provided string.
+
 -coverage
 Driver Alias(coverage)
 
