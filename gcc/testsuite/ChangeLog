@@ -1,3 +1,11 @@
+2018-06-28  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline
+	2017-05-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/target-supports.exp (check_effective_target_be): New.
+	(check_effective_target_le): New.
+
 2018-06-28  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/82865

@@ -1313,6 +1313,16 @@ By convention, keywords ending in @code{_nocache} can also include options
 specified for the particular test in an earlier @code{dg-options} or
 @code{dg-add-options} directive.
 
+@subsubsection Endianness
+
+@table @code
+@item be
+Target uses big-endian memory order for multi-byte and multi-word data.
+
+@item le
+Target uses little-endian memory order for multi-byte and multi-word data.
+@end table
+
 @subsubsection Data type sizes
 
 @table @code
