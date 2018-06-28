@@ -1100,7 +1100,7 @@ Gcc_backend::set_placeholder_struct_type(
   if (TYPE_NAME(t) != NULL_TREE)
     {
       // Build the data structure gcc wants to see for a typedef.
-      tree copy = build_distinct_type_copy(t);
+      tree copy = build_variant_type_copy(t);
       TYPE_NAME(copy) = NULL_TREE;
       DECL_ORIGINAL_TYPE(TYPE_NAME(t)) = copy;
     }

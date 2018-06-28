@@ -1,3 +1,9 @@
+2018-06-28  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/86343
+	* go-gcc.cc (Gcc_backend::set_placeholder_struct_type): Call
+	build_variant_type_copy rather than build_distinct_type_copy.
+
 2018-06-08  Cherry Zhang  <cherryyz@google.com>
 
 	* go-gcc.cc (class Gcc_backend): Remove
