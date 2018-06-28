@@ -2536,8 +2536,11 @@ usually not needed, as that is the default.  For now.
 @opindex fmodule-lazy
 Disable module importing.
 
-@item -fmodule-mapper=@var{fd}
-@itemx -fmodule-mapper=@var{[hostname]:port}
+@item -fmodule-header
+@itemx -fmodule-header=@var{name}
+Compile as a legacy header module.
+
+@item -fmodule-mapper=@var{[hostname]:port}
 @itemx -fmodule-mapper=|@var{program}
 @itemx -fmodule-mapper==@var{socket}
 @itemx -fmodule-mapper=@var{file}
@@ -29174,16 +29177,6 @@ should accept and respond to the following commands:
 
 @table @gcctabopt
 
-@item IMPORT @var{module}
-A query for an import (including for a module implementation unit).
-The response should be @samp{OK @var{bmipath}}.  If the request is
-not fulfilable, the response is @samp{ERROR [@var{msg}]}.  Usually an
-error response will cause compilation to terminate.
-
-@item BYIMPORT @var{module}
-An asynchronous query for an import.  There is no immediate response.
-A later response to a @samp{BEWAIT} query will provide response data.
-
 @item BEWAIT
 Request for an asynchronous response.  The response is as for a
 non-asynchronous query, except it is prefixed by @samp{@var{module}},
@@ -29191,6 +29184,10 @@ so it may be linked to the orignal request.  If there is no
 outstanding asynchronous query, an error response of @samp{- ERROR
 [@var{msg}]} should be given.  Asynchronous requests need not be
 responded to in order.
+
+@item BYIMPORT @var{module}
+An asynchronous query for an import.  There is no immediate response.
+A later response to a @samp{BEWAIT} query will provide response data.
 
 @item DONE @var{module}
 The compilation has completed the interface of @var{module}.
@@ -29205,6 +29202,12 @@ for @var{module}.  The response should be @samp{OK @var{bmipath}}.
 This is the first command.  It informs the server of the name of the
 source being compiled.  Response is either @samp{OK
 @var{ver} @var{repopath}}, or @samp{ERROR @var{msg}}.
+
+@item IMPORT @var{module}
+A query for an import (including for a module implementation unit).
+The response should be @samp{OK @var{bmipath}}.  If the request is
+not fulfilable, the response is @samp{ERROR [@var{msg}]}.  Usually an
+error response will cause compilation to terminate.
 
 @item INCLUDE @var{header}
 A @code{#include} directive for @var{header} is about to be processed
@@ -29285,10 +29288,9 @@ directory structure within the repository across a parellelized build
 system.
 
 The default oracle generates BMI files in the current directory,
-mapping @samp{.} to @samp{-} and appending a @samp{.nms} suffix.  It will
-also attempt to build a BMI, if one is not available for @samp{BMI}
-requests by looking for a source file in the same directory as the
-main source file with a @samp{.cc} suffix.
+mapping @samp{.} & @samp{:} to @samp{-} & @samp{+} respectively and
+appending a @samp{.nms} suffix.  Legacy header modules additionally
+map @samp{/} to @samp{=} but append a @samp{rmf} suffix.
 
 It is expected that build systems will provide their own oracles.
 
@@ -29296,6 +29298,9 @@ The @option{-fno-module-lazy} option disables lazy module loading.
 Usually importing a module will load minimal information, defering the
 bulk of the loading to the point at which name-lookup inspects a
 particular namespace-scope name.
+
+The @option{-fmodule-header} option enables compilation of a header
+file as an Atom legacy header module.
 
 The @option{-fmodule-preamble} option may be added when preprocessing with
 @option{-E}.  This causes preprocessing to terminate once the Atom

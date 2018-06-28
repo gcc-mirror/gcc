@@ -80,6 +80,8 @@ static int atom_preamble_fsm (int, cpp_reader *, unsigned, source_location);
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
 #undef LANG_HOOKS_PREPROCESS_MAIN_FILE
 #define LANG_HOOKS_PREPROCESS_MAIN_FILE atom_main_file
+#undef LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE
+#define LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE atom_divert_include
 #undef LANG_HOOKS_PREPROCESS_PREAMBLE
 #define LANG_HOOKS_PREPROCESS_PREAMBLE atom_preamble_fsm
 

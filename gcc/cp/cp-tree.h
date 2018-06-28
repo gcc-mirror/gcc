@@ -6661,6 +6661,7 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 /* In module.c  */
 inline bool modules_p () { return flag_modules != 0; }
 inline bool modules_atom_p () { return flag_modules < 0; }
+inline bool modules_header_p () { return flag_modules < -1; }
 extern bool module_purview_p ();
 extern bool module_interface_p ();
 extern int module_exporting_level ();
@@ -6681,6 +6682,7 @@ extern tree module_name (unsigned);
 extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
 extern void atom_main_file (line_maps *, const line_map_ordinary *, unsigned);
+extern cpp_divert_include_t *atom_divert_include ();
 extern bool maybe_atom_legacy_module (line_maps *);
 extern void maybe_repeat_preamble (location_t, int count, cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);

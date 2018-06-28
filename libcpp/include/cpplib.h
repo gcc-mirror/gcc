@@ -558,6 +558,9 @@ struct cpp_options
    header is otherwise unfound.  */
 typedef const char *(*missing_header_cb)(cpp_reader *, const char *header, cpp_dir **);
 
+typedef unsigned char *cpp_divert_include_t (cpp_reader *, source_location,
+					     const char *, bool, size_t *);
+
 /* Call backs to cpplib client.  */
 struct cpp_callbacks
 {
@@ -626,6 +629,10 @@ struct cpp_callbacks
   /* Callback for filename remapping in __FILE__ and __BASE_FILE__ macro
      expansions.  */
   const char *(*remap_filename) (const char*);
+
+  /* Maybe subvert a #include into something else.  The returned
+     buffer is freed after use.  */
+  cpp_divert_include_t *divert_include;
 };
 
 #ifdef VMS

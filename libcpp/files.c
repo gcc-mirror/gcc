@@ -898,7 +898,7 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
   int sysp;
 
   if (!should_stack_file (pfile, file, import, loc))
-      return false;
+    return false;
 
   if (pfile->buffer == NULL || file->dir == NULL)
     sysp = 0;

@@ -12666,7 +12666,7 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
 
 /* In ATOM mode, record the location of the end of the preamble.
    In TS mode, record the location of the beginning of global module.  */
-static location_t module_marker_loc;
+extern location_t module_preamble_end_loc;
 
 /* Parse a module-name,
    identifier
@@ -12742,12 +12742,12 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
   bool atom_p = modules_atom_p ();
 
   if (!exporting && first_decl && !atom_p
-      && module_marker_loc == UNKNOWN_LOCATION
+      && module_preamble_end_loc == UNKNOWN_LOCATION
       && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
       /* In TS mode we record the existence of the initial module;
 	 in preamble_marker_loc.  */
-      module_marker_loc = token->location;
+      module_preamble_end_loc = token->location;
 
       cp_lexer_consume_token (parser->lexer);
       return;
@@ -12757,13 +12757,13 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
   cp_expr name = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 
-  if (!first_decl && (atom_p || !module_marker_loc))
+  if (!first_decl && (atom_p || !module_preamble_end_loc))
     {
       error_at (token->location, modules_atom_p ()
 		? "module declaration must be first declaration of preamble"
 		: "module declaration does not follow global module");
       if (atom_p)
-	inform (module_marker_loc, "module preamble ended here");
+	inform (module_preamble_end_loc, "module preamble ended here");
       name = NULL;
     }
 
@@ -12793,11 +12793,11 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
 
   if (!name)
     ;
-  else if (modules_atom_p () && module_marker_loc)
+  else if (modules_atom_p () && module_preamble_end_loc)
     {
       error_at (token->location,
 		"import declaration must be within module preamble");
-      inform (module_marker_loc, "module preamble ended here");
+      inform (module_preamble_end_loc, "module preamble ended here");
     }
   else if (!check_module_outermost (token, "module-import"))
     gcc_assert (!modules_atom_p ());
@@ -39454,7 +39454,7 @@ c_parse_file (void)
 	}
       cp_lexer_get_preprocessor_token (0, &first);
       if (modules_atom_p ())
-	module_marker_loc = first.location;
+	module_preamble_end_loc = first.location;
     }
 
   cp_parser_fill_main (the_parser, &first);

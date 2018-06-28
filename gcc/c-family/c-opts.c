@@ -1062,6 +1062,8 @@ c_common_post_options (const char **pfilename)
   cb = cpp_get_callbacks (parse_in);
   cb->file_change = cb_file_change;
   cb->dir_change = cb_dir_change;
+  if (lang_hooks.preprocess_divert_include)
+    cb->divert_include = lang_hooks.preprocess_divert_include ();
   cpp_post_options (parse_in);
   init_global_opts_from_cpp (&global_options, cpp_get_options (parse_in));
 
@@ -1533,7 +1535,7 @@ cb_file_change (cpp_reader *, const line_map_ordinary *new_map)
     {
       unsigned ix = new_map - LINEMAPS_ORDINARY_MAPS (line_table);
 
-      if (ix > cpp_opts->preprocessed ? 2 : 1)
+      if (ix > (cpp_opts->preprocessed ? 2 : 1))
 	/* We're starting the main file.  Inform the FE of that.  */
 	lang_hooks.preprocess_main_file (line_table, new_map, ix);
     }

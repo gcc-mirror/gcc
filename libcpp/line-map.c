@@ -599,19 +599,6 @@ linemap_module_loc (line_maps *set, source_location from,
   /* Exactly one of LOC and NAME must be provided.  */
   gcc_assert (!loc != !name && IS_ORDINARY_LOC (from));
 
-  while (!IS_ORDINARY_LOC (from))
-    {
-      if (IS_ADHOC_LOC (from))
-	from = get_location_from_adhoc_loc (set, from);
-      if (IS_MACRO_LOC (from))
-	{
-	  /* Find the ordinary location nearest FROM.  */
-	  const line_map *map = linemap_lookup (set, from);
-	  const line_map_macro *mac_map = linemap_check_macro (map);
-	  from = MACRO_MAP_EXPANSION_POINT_LOCATION (mac_map);
-	}
-    }
-
   const line_map_ordinary *map;
 
   if (!loc)

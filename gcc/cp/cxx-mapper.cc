@@ -90,6 +90,9 @@ static bool flag_one = false;
 /* Serialize connections.  */
 static bool flag_sequential = false;
 
+/* Fallback to default if map file is unrewarding.  */
+static bool flag_fallback = false;
+
 /* Root binary directory.  */
 static const char *flag_root = ".";
 
@@ -256,14 +259,15 @@ error (const char *msg, ...)
 const char *
 module2bmi (const char *module)
 {
-  const char *res;
+  const char *res = NULL;
 
   if (module_map)
     {
       module_map_t::iterator iter = module_map->find (module);
       res = iter != module_map->end () ? iter->second : NULL;
     }
-  else
+
+  if (!res && flag_fallback)
     {
       static char *workspace;
       static unsigned alloc = 0;
@@ -365,6 +369,10 @@ public:
     const char *result = pos != end ? pos : "unspecified error";
     pos = end;
     return result;
+  }
+  bool eol_p () const
+  {
+    return pos == end;
   }
   bool get_eol (unsigned id, bool ignore = false);
   char *get_token (unsigned id, bool all = false);
@@ -563,7 +571,7 @@ buffer::get_request (unsigned id, FILE *file)
   unsigned off = end - buf;
   do
     {
-      if (off == size)
+      if (off + 1 == size)
 	{
 	  size *= 2;
 	  buf = XRESIZEVEC (char, buf, size);
@@ -607,7 +615,7 @@ buffer::request_unexpected (unsigned id)
 bool
 buffer::get_eol (unsigned id, bool ignore)
 {
-  bool at_end = pos == end;
+  bool at_end = eol_p ();
   if (!at_end && !ignore)
     request_unexpected (id);
   pos = end;
@@ -701,35 +709,31 @@ buffer::get_word (unsigned id, const char *option, ...)
 /* Read the mapping file STREAM and populate the module_map from it.  */
 
 void
-read_mapping_file (FILE *stream, const char *cookie)
+read_mapping_file (FILE *stream, const char *cookie, bool starting)
 {
-  bool starting = true;
   buffer buf (-1);
   size_t root_len = 0;
-
-  module_map = new module_map_t ();
 
   while (buf.get_request (0, stream))
     {
       char *mod = buf.get_token (0);
-      bool ignore = false;
-      char *file = NULL;
 
       /* Ignore non-cookie lines.  */
-      if (cookie && 0 != strcmp (mod, cookie + 1))
-	ignore = true;
-      else
+      if (cookie)
 	{
-	  if (cookie)
-	    mod = buf.get_token (0);
-	  if (mod)
-	    file = buf.get_token (0, true);
+	  if (0 != strcmp (mod, cookie))
+	    {
+	      buf.get_eol (0, true);
+	      continue;
+	    }
+	  mod = buf.get_token (0);
 	}
 
-      if (!buf.get_eol (0, ignore))
-	continue;
+      char *file = NULL;
+      if (mod && !buf.eol_p ())
+	file = buf.get_token (0, true);
 
-      if (!file)
+      if (!buf.get_eol (0, false))
 	continue;
 
       if (starting && 0 == strcmp (mod, "$root"))
@@ -742,14 +746,14 @@ read_mapping_file (FILE *stream, const char *cookie)
 	}
 
       starting = false;
-      if (flag_root && 0 == strncmp (file, flag_root, root_len)
+      if (flag_root && file && 0 == strncmp (file, flag_root, root_len)
 	  && IS_DIR_SEPARATOR (file[root_len]))
 	file += root_len + 1;
 
       std::pair<module_map_t::iterator, bool> inserted
-	= module_map->insert (module_map_t::value_type (mod, 0));
-      if (inserted.second)
-	inserted.first->second = xstrdup (file);
+	= module_map->insert (module_map_t::value_type (xstrdup (mod), 0));
+      if (inserted.second || (file && !inserted.first->second))
+	inserted.first->second = file ? xstrdup (file) : file;
     }
 }
 
@@ -940,11 +944,12 @@ client::process (int epoll_fd)
 void
 client::imex_response (unsigned id, const char *name, bool deferred)
 {
-  const char *pfx = deferred ? name : "";
+  const char *sfx = &" "[!deferred];
+  const char *pfx = deferred ? name : sfx;
   if (const char *bmi = module2bmi (name))
-    write.send_response (id, "%s OK %s", pfx, bmi);
+    write.send_response (id, "%s%sOK %s", pfx, sfx, bmi);
   else
-    write.send_response (id, "%s ERROR Unknown module", pfx);
+    write.send_response (id, "%s%sERROR Unknown module", pfx, sfx);
 }
 
 /* We completed a read.  Do whatever processing we should.  */
@@ -1020,13 +1025,14 @@ client::action ()
 	case TALKING:
 	  {
 	    int word = read.get_word (id, "IMPORT", "EXPORT", "DONE", "BYIMPORT",
-				      "BEWAIT", "RESET", NULL);
+				      "INCLUDE", "BEWAIT", "RESET", NULL);
 	    switch (word)
 	      {
 	      case 0: /* IMPORT */
 	      case 1: /* EXPORT */
 	      case 2: /* DONE */
 	      case 3: /* BYIMPORT */
+	      case 4: /* INCLUDE */
 		{
 		  char *module = read.get_token (id);
 		  read.get_eol (id);
@@ -1048,13 +1054,29 @@ client::action ()
 		      /* No response.  */
 		      break;
 
+		    case 4:
+		      {
+			/* We may want to tell the compiler go look on
+			   the search path.  */
+			bool do_imp = false;
+			if (module_map)
+			  {
+			    module_map_t::iterator iter
+			      = module_map->find (module);
+			    if (iter != module_map->end ())
+			      do_imp = true;
+			  }
+			write.send_response (id, do_imp ? "IMPORT" : "INCLUDE");
+		      }
+		      break;
+
 		    default: gcc_unreachable ();
 		    }
 		  
 		}
 		break;
 
-	      case 4: /* BEWAIT */
+	      case 5: /* BEWAIT */
 		if (bewait.size ())
 		  {
 		    if (batched && !write.corking ())
@@ -1401,9 +1423,10 @@ print_usage (int error_p)
   FILE *file = error_p ? stderr : stdout;
   int status = error_p ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;
 
-  fnotice (file, "Usage: cxx-mapper [OPTION...] CONNECTION \n\n");
+  fnotice (file, "Usage: cxx-mapper [OPTION...] [CONNECTION] [MAPPINGS...] \n\n");
   fnotice (file, "C++ Module Mapper.\n\n");
   fnotice (file, "  -a, --accept     Netmask to accept from\n");
+  fnotice (file, "  -f, --fallback   Use fallback for missing mappings\n");
   fnotice (file, "  -h, --help       Print this help, then exit\n");
   fnotice (file, "  -n, --noisy      Print progress messages\n");
   fnotice (file, "  -1, --one        One connection and then exit\n");
@@ -1487,18 +1510,19 @@ process_args (int argc, char **argv)
 {
   static const struct option options[] =
     {
-     { "accept",	required_argument, NULL, 'a' },
+     { "accept", required_argument, NULL, 'a' },
+     { "fallback",no_argument,	NULL, 'f' },
      { "help",	no_argument,	NULL, 'h' },
      { "noisy",	no_argument,	NULL, 'n' },
      { "one",	no_argument,	NULL, '1' },
      { "root",	required_argument, NULL, 'r' },
-     { "sequential",no_argument,	NULL, 's' },
-     { "version",	no_argument,	NULL, 'v' },
+     { "sequential", no_argument, NULL, 's' },
+     { "version", no_argument,	NULL, 'v' },
      { 0, 0, 0, 0 }
     };
   int opt;
   bool bad_accept = false;
-  const char *opts = "a:hn1r:sv";
+  const char *opts = "a:fhn1r:sv";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -1506,6 +1530,9 @@ process_args (int argc, char **argv)
 	case 'a':
 	  if (!accept_from (optarg))
 	    bad_accept = true;
+	  break;
+	case 'f':
+	  flag_fallback = true;
 	  break;
 	case 'h':
 	  print_usage (false);
@@ -1577,17 +1604,10 @@ main (int argc, char *argv[])
   int err = 0;
   const char *errmsg = NULL;
 #ifdef NETWORKING
-  bool ip6 = false;
+  int af = AF_UNSPEC;
 #endif
 
-  if (argno == argc)
-    {
-      /* Use stdin/stdout.  */
-      name = "stdin/out";
-    }
-  else if (argno + 1 != argc)
-    print_usage (true);
-  else
+  if (argno < argc)
     {
       /* A file of mappings, local or ipv6 address.  */
       const char *option = argv[argno];
@@ -1605,108 +1625,128 @@ main (int argc, char *argv[])
 	/* Does it look like a socket?  */
 #ifdef NETWORKING
 #ifdef HAVE_AF_UNIX
-      sockaddr_un un;
-      size_t un_len = 0;
+	  sockaddr_un un;
+	  size_t un_len = 0;
 #endif
-      int port = 0;
+	  int port = 0;
 #ifdef HAVE_AF_INET6
-      struct addrinfo *addrs = NULL;
+	  struct addrinfo *addrs = NULL;
 #endif
 #endif
-      if (writable[0] == '=')
-	{
-	  /* A local socket.  */
+	  if (writable[0] == '=')
+	    {
+	      /* A local socket.  */
 #ifdef HAVE_AF_UNIX
-	  if (len < sizeof (un.sun_path))
-	    {
-	      memset (&un, 0, sizeof (un));
-	      un.sun_family = AF_UNIX;
-	      memcpy (un.sun_path, writable + 1, len);
-	    }
-	  un_len = offsetof (struct sockaddr_un, sun_path) + len + 1;
-#else
-	  errmsg = "unix protocol unsupported";
-#endif
-	  name = writable;
-	}
-      else if (char *colon = (char *)memrchr (writable, ':', len))
-	{
-	  /* Try a hostname:port address.  */
-	  char *endp;
-	  port = strtoul (colon + 1, &endp, 10);
-	  if (port && endp != colon + 1 && !*endp)
-	    {
-	      /* Ends in ':number', treat as ipv6 domain socket.  */
-#ifdef HAVE_AF_INET6
-	      addrinfo hints;
-
-	      hints.ai_flags = AI_NUMERICSERV;
-	      hints.ai_family = AF_INET6;
-	      hints.ai_socktype = SOCK_STREAM;
-	      hints.ai_protocol = 0;
-	      hints.ai_addrlen = 0;
-	      hints.ai_addr = NULL;
-	      hints.ai_canonname = NULL;
-	      hints.ai_next = NULL;
-
-	      *colon = 0;
-	      /* getaddrinfo requires a port number, but is quite
-		 happy to accept invalid ones.  So don't rely on it.  */
-	      if (int e = getaddrinfo (colon == writable ? NULL : writable,
-				       "0", &hints, &addrs))
+	      if (len < sizeof (un.sun_path))
 		{
-		  err = e;
-		  errmsg = "resolving address";
+		  memset (&un, 0, sizeof (un));
+		  un.sun_family = AF_UNIX;
+		  memcpy (un.sun_path, writable + 1, len);
 		}
-	      *colon = ':';
+	      un_len = offsetof (struct sockaddr_un, sun_path) + len + 1;
+	      af = AF_UNIX;
 #else
-	      errmsg = "ipv6 protocol unsupported";
+	      errmsg = "unix protocol unsupported";
 #endif
 	      name = writable;
+	    }
+	  else if (char *colon = (char *)memrchr (writable, ':', len))
+	    {
+	      /* Try a hostname:port address.  */
+	      char *endp;
+	      port = strtoul (colon + 1, &endp, 10);
+	      if (port && endp != colon + 1 && !*endp)
+		{
+		  /* Ends in ':number', treat as ipv6 domain socket.  */
+#ifdef HAVE_AF_INET6
+		  addrinfo hints;
+
+		  hints.ai_flags = AI_NUMERICSERV;
+		  hints.ai_family = AF_INET6;
+		  hints.ai_socktype = SOCK_STREAM;
+		  hints.ai_protocol = 0;
+		  hints.ai_addrlen = 0;
+		  hints.ai_addr = NULL;
+		  hints.ai_canonname = NULL;
+		  hints.ai_next = NULL;
+
+		  *colon = 0;
+		  /* getaddrinfo requires a port number, but is quite
+		     happy to accept invalid ones.  So don't rely on it.  */
+		  if (int e = getaddrinfo (colon == writable ? NULL : writable,
+					   "0", &hints, &addrs))
+		    {
+		      err = e;
+		      errmsg = "resolving address";
+		    }
+		  *colon = ':';
+		  af = AF_INET6;
+#else
+		  errmsg = "ipv6 protocol unsupported";
+#endif
+		  name = writable;
 	    }
 	}
 
       if (name)
 	{
-#ifdef HAVE_AF_UNIX
-	  if (un_len)
+#ifdef NETWORKING
+	  if (af != AF_UNSPEC)
 	    {
-	      sock_fd = socket (un.sun_family, SOCK_STREAM, 0);
+	      sock_fd = socket (af, SOCK_STREAM, 0);
 	      kill_sock_fd = sock_fd;
-	      if (sock_fd < 0 || bind (sock_fd, (sockaddr *)&un, un_len) < 0)
-		if (sock_fd >= 0)
-		  {
-		    close (sock_fd);
-		    sock_fd = -1;
-		  }
 	    }
 #endif
-#ifdef HAVE_AF_INET6
-	  sock_fd = socket (AF_INET6, SOCK_STREAM, 0);
-	  kill_sock_fd = sock_fd;
-	  if (sock_fd >= 0)
-	    {
-	      struct addrinfo *next;
-	      for (next = addrs; next; next = next->ai_next)
-		if (next->ai_family == AF_INET6
-		    && next->ai_socktype == SOCK_STREAM)
-		  {
-		    sockaddr_in6 *in6 = (sockaddr_in6 *)next->ai_addr;
-		    in6->sin6_port = htons (port);
-		    if (ntohs (in6->sin6_port) != port)
-		      errno = EINVAL;
-		    else if (!bind (sock_fd, next->ai_addr, next->ai_addrlen))
-		      break;
-		  }
-	      if (!next)
+#ifdef HAVE_AF_UNIX
+	  if (un_len)
+	    if (sock_fd < 0 || bind (sock_fd, (sockaddr *)&un, un_len) < 0)
+	      if (sock_fd >= 0)
 		{
 		  close (sock_fd);
 		  sock_fd = -1;
 		}
-	      else
-		ip6 = true;
+#endif
+#ifdef HAVE_AF_INET6
+	  if (addrs)
+	    {
+	      if (sock_fd >= 0)
+		{
+		  struct addrinfo *next;
+		  for (next = addrs; next; next = next->ai_next)
+		    if (next->ai_family == af
+			&& next->ai_socktype == SOCK_STREAM)
+		      {
+			sockaddr_in6 *in6 = (sockaddr_in6 *)next->ai_addr;
+			in6->sin6_port = htons (port);
+			if (ntohs (in6->sin6_port) != port)
+			  errno = EINVAL;
+			else if (!bind (sock_fd,
+					next->ai_addr, next->ai_addrlen))
+			  break;
+		      }
+		  if (!next)
+		    {
+		      close (sock_fd);
+		      sock_fd = -1;
+		    }
+		  else
+		    {
+		      if (flag_noisy)
+			{
+			  char name[INET6_ADDRSTRLEN];
+			  const char *str = NULL;
+#if HAVE_INET_NTOP
+			  sockaddr_in6 *in6 = (sockaddr_in6 *)next->ai_addr;
+			  str = inet_ntop (in6->sin6_family, &in6->sin6_addr,
+					   name, sizeof (name));
+#endif
+			  noisy ("binding socket to %s:%d",
+				 str ? str : "", port);
+			}
+		    }
+		}
+	      freeaddrinfo (addrs);
 	    }
-	  freeaddrinfo (addrs);
 #endif
 	  kill_sock_fd = sock_fd;
 	  if (sock_fd < 0 && !errmsg)
@@ -1717,22 +1757,6 @@ main (int argc, char *argv[])
 	}
       }
 
-      if (!name)
-	{
-	  /* Read a mapping file, use stdin/stdout.  */
-	  if (FILE *file = fopen (writable, "r"))
-	    {
-	      read_mapping_file (file, cookie);
-	      fclose (file);
-	    }
-	  else
-	    {
-	      err = errno;
-	      errmsg = "reading mappings";
-	    }
-	  name = writable;
-	}
-
       if (errmsg)
 	{
 	  errno = err;
@@ -1740,9 +1764,45 @@ main (int argc, char *argv[])
 		 err < 0 ? gai_strerror (err) : err > 0 ? xstrerror (err)
 		 : "Facility not provided");
 	}
+
+      if (name)
+	argno++;
+      else
+	XDELETEVEC (writable);
     }
 
-  gcc_assert (name);
+  if (!name)
+    /* Use stdin/stdout.  */
+    name = "stdin/out";
+
+  if (argno != argc)
+    {
+      module_map = new module_map_t ();
+
+      for (bool first = true; argno != argc; first = false)
+	{
+	  const char *option = argv[argno++];
+	  unsigned len = strlen (option);
+	  char *writable = XNEWVEC (char, len + 1);
+	  memcpy (writable, option, len + 1);
+	  cookie = strchr (writable, '?');
+	  if (cookie)
+	    {
+	      len = cookie - writable;
+	      *cookie++ = 0;
+	    }
+	  if (FILE *file = fopen (writable, "r"))
+	    {
+	      read_mapping_file (file, cookie, first);
+	      fclose (file);
+	    }
+	  else
+	    error ("failed reading '%s': %s", writable, xstrerror (errno));
+	  XDELETEVEC (writable);
+	}
+    }
+  else
+    flag_fallback = true;
 
 #ifdef HAVE_AF_INET6
   netmask_set_t::iterator end = netmask_set.end ();
@@ -1761,7 +1821,11 @@ main (int argc, char *argv[])
 #ifdef NETWORKING
   if (sock_fd >= 0)
     {
-      server (ip6, sock_fd, cookie);
+#ifdef HAVE_AF_INET6
+      server (af == AF_INET6, sock_fd, cookie);
+#else
+      server (false, sock_fd, cookie);
+#endif
       if (name[0] == '=')
 	unlink (&name[1]);
     }

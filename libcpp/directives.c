@@ -845,22 +845,15 @@ do_include_common (cpp_reader *pfile, enum include_type type)
 
   fname = parse_include (pfile, &angle_brackets, &buf, &location);
   if (!fname)
-    {
-      if (buf)
-	XDELETEVEC (buf);
-      return;
-    }
+    goto done;
 
   if (!*fname)
-  {
-    cpp_error_with_line (pfile, CPP_DL_ERROR, location, 0,
-			 "empty filename in #%s",
-			 pfile->directive->name);
-    XDELETEVEC (fname);
-    if (buf)
-      XDELETEVEC (buf);
-    return;
-  }
+    {
+      cpp_error_with_line (pfile, CPP_DL_ERROR, location, 0,
+			   "empty filename in #%s",
+			   pfile->directive->name);
+      goto done;
+    }
 
   /* Prevent #include recursion.  */
   if (pfile->line_table->depth >= CPP_STACK_MAX)
@@ -870,6 +863,21 @@ do_include_common (cpp_reader *pfile, enum include_type type)
       /* Get out of macro context, if we are.  */
       skip_rest_of_line (pfile);
 
+      if (type == IT_INCLUDE && pfile->cb.divert_include)
+	{
+	  size_t div_len = 0;
+	  if (unsigned char *div_buf = pfile->cb.divert_include
+	      (pfile, location, fname, angle_brackets, &div_len))
+	    {
+	      cpp_buffer *buffer
+		= cpp_push_buffer (pfile, div_buf, div_len, true);
+	      buffer->file = NULL;
+	      buffer->sysp = 0;
+	      buffer->to_free = div_buf;
+	      goto done;
+	    }
+	}
+
       if (pfile->cb.include)
 	pfile->cb.include (pfile, pfile->directive_line,
 			   pfile->directive->name, fname, angle_brackets,
@@ -878,6 +886,7 @@ do_include_common (cpp_reader *pfile, enum include_type type)
       _cpp_stack_include (pfile, fname, angle_brackets, type, location);
     }
 
+ done:
   XDELETEVEC (fname);
   if (buf)
     XDELETEVEC (buf);

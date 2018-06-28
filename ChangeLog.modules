@@ -1,3 +1,45 @@
+2018-06-28  Nathan Sidwell  <nathan@acm.org>
+
+	(Beginnings of) Include diversion.
+	gcc/c-family/
+	* c-opts.c (c_common_post_options): Set divert_include hook.
+	(cb_file_change): Fixup precedence.
+	gcc/cp/
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE): Override.
+	* cp-tree.h (modules_header_p): New.
+	(atom_divert_include): Declare.
+	* cxx-mapper.cc (flag_fallback): New flag.
+	(module2bmi): Deal with NULL names.
+	(buffer::get_request): Fix off-by-one error.
+	(read_mapping_file): Can be multiply called.  Target file name can
+	be null.
+	(client::action): Deal with INCLUDE.
+	(main): There can be may files after connection.  Fixup networking
+	errors.
+	* lex.c (atom_preamble_prefix_peek): Don't rescan legacy header
+	module.
+	* module.c (module_preamble_end_loc): Declare here.
+	(module_mapper::module_mapper): Prepend path for anything looking
+	defaulty.
+	(module_mapper::divert_include): New.
+	(do_divert_include): New.
+	(atom_divert_include): New.
+	(init_module_processing): Set header mode here.
+	* parser.c (module_preamble_end_loc): Extern.
+	gcc/
+	* doc/invoke.text (C++ Modules): Document -fmodule-header.
+	* langhooks-def.h (LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE): Provide
+	default.
+	* langhooks.h (lang_hooks): Add preprocess_divert_include.
+	libcpp/
+	* directives.c (do_include_common): Add diversion smarts.
+	* include/cpplib.h (cpp_divert_include_t): New.
+	(struct cpp_callbacks): Add divert_include.
+	* line-map.c (linemap_module_loc): Missed commit.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-2.*: New.
+	* g++.dg/modules/modules.exp: Fixup header compilation.
+
 2018-06-27  Nathan Sidwell  <nathan@acm.org>
 
 	(Beginnings of) Legacy importing

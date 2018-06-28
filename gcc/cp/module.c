@@ -2853,6 +2853,7 @@ static const char *module_header_name;
 /* End of the prefix line maps.  */
 static unsigned prefix_line_maps_hwm;
 static unsigned prefix_locations_hwm;
+location_t module_preamble_end_loc;
 
 /* BMI repository path and workspace.  */
 static char *bmi_repo;
@@ -2933,10 +2934,6 @@ public:
 	mapper = NULL;
       }
   }
-  static void assert_none ()
-  {
-    gcc_checking_assert (!mapper);
-  }
 
 public:
   bool is_live () const
@@ -2982,7 +2979,9 @@ public:
     send_command (loc, "BEWAIT");
   }
   module_state *bewait_response (location_t);
+  unsigned char *divert_include (location_t, const char *, bool, cpp_reader *, size_t *);
 
+public:
   /* After a response that may be corked, eat blank lines until it is
      uncorked.  */
   void maybe_uncork (location_t loc)
@@ -3039,6 +3038,7 @@ public:
   unsigned push (module_state *);
   void pop (unsigned);
 
+public:
   /* Change local indentation.  */
   void indent ()
   {
@@ -3054,6 +3054,7 @@ public:
       }
   }
 
+public:
   /* Is dump enabled?.  */
   bool operator () ()
   {
@@ -6870,11 +6871,13 @@ module_mapper::module_mapper (location_t loc, const char *option)
     buffer (NULL), size (MODULE_STAMP ? 3 : 200), pos (NULL), end (NULL),
     start (NULL), fd_from (-1), fd_to (-1), batching (false)
 {
+  const char *dflt = "|cxx-mapper";
   pex = NULL;
 
+  
   /* We set name as soon as we know what kind of mapper this is.  */
   if (!option)
-    name = option = "|cxx-mapper";
+    option = dflt;
 
   dump () && dump ("Initializing mapper %s", option);
 
@@ -6912,7 +6915,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 
       for (char *ptr = writable + 1; ; ptr++)
 	{
-	  argv[arg_no++] = ptr;
+	  argv[arg_no] = ptr;
 	  for (;; ptr++)
 	    {
 	      if (*ptr == ' ')
@@ -6928,6 +6931,8 @@ module_mapper::module_mapper (location_t loc, const char *option)
 		  cookie = NULL;
 		}
 	    }
+	  if (!arg_no++)
+	    len = ptr - (writable + 1);	  
 	  if (!*ptr)
 	    break;
 	  *ptr = 0;
@@ -6945,18 +6950,19 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	{
 	  int flags = PEX_SEARCH;
 
-	  if (name == option
+	  /* Use strcmp to detect default, so we may explicitly name
+	     it with additional args in tests etc.  */
+	  if ((option == dflt || 0 == strcmp (argv[0], dflt + 1))
 	      && save_decoded_options[0].opt_index == OPT_SPECIAL_program_name
 	      && save_decoded_options[0].arg != progname)
 	    {
 	      /* Prepend the invoking path.  */
 	      const char *fullname = save_decoded_options[0].arg;
 	      size_t dir_len = progname - fullname;
-
-	      gcc_checking_assert (arg_no == 1 && !strcmp (name + 1, argv[0]));
-	      argv[0] = XNEWVEC (char, dir_len + len + 1);
-	      memcpy (argv[0], fullname, dir_len);
-	      memcpy (argv[0] + dir_len, name + 1, len + 1);
+	      char *argv0 = XNEWVEC (char, dir_len + len + 1);
+	      memcpy (argv0, fullname, dir_len);
+	      memcpy (argv0 + dir_len, argv[0], len + 1);
+	      argv[0] = argv0;
 	      flags = 0;
 	    }
 	  errmsg = pex_run (pex, flags, argv[0], argv, NULL, NULL, &err);
@@ -7674,6 +7680,45 @@ module_mapper::export_done (const module_state *state)
     ok = mapper->is_live ();
 
   return ok;
+}
+
+/* Include diversion.  */
+unsigned char *module_mapper::divert_include (location_t loc, const char *file,
+					      bool angle, cpp_reader *reader,
+					      size_t *len_ptr)
+{
+  send_command (loc, "INCLUDE %c%s%c", angle ? '<' : '"', file,
+		angle ? '>' : '"');
+  if (get_response (loc) <= 0)
+    return NULL;
+
+  int action = 0;
+  // FIXME:Search response?
+  switch (response_word (loc, "IMPORT", "INCLUDE", NULL))
+    {
+    default:
+      break;
+    case 0:  /* Divert to import.  */
+      action = 1;
+      break;
+    case 1:  /* Treat as include.  */
+      break;
+    }
+  response_eol (loc);
+  if (!action)
+    return NULL;
+
+  dump () && dump ("Diverting include %s to import", file);
+
+  /* Divert.  We can use the command buffer len to know how much to
+     allocate, as we just printed the filename to it above.  */
+  size_t len = size + 60;
+  char *res = XNEWVEC (char, len);
+  size_t actual = snprintf (res, len, "export import %c%s%c;\n",
+			    angle ? '<' : '"', file, angle ? '>' : '"');
+  gcc_assert (actual < len);
+  *len_ptr = actual;
+  return reinterpret_cast <unsigned char *> (res);
 }
 
 /* Generate a string of the compilation options.  */
@@ -10758,6 +10803,32 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
   return ok ? int (adj) : -1;
 }
 
+/* Figure out whether to treat HEADER as an include or an import.  */
+
+static unsigned char *
+do_divert_include (cpp_reader *reader, location_t loc,
+		   const char *header, bool angle, size_t *len_ptr)
+{
+  if (!prefix_locations_hwm)
+    /* Before the main file, don't divert.  */
+    return NULL;
+
+  if (module_preamble_end_loc)
+    // FIXME: post-preamble warnings?
+    return NULL;
+
+  module_mapper *mapper = module_mapper::get (loc);
+  if (!mapper->is_live ())
+    return NULL;
+  return mapper->divert_include (loc, header, angle, reader, len_ptr);
+}
+
+cpp_divert_include_t *
+atom_divert_include ()
+{
+  return module_header_name ? do_divert_include : NULL;
+}
+
 /* We've just properly entered the main source file.  I.e. after the
    command line, builtins and forced headers.  Record the line map and
    location of this map.  Note we may be called more than once.  The
@@ -10831,8 +10902,15 @@ atom_module_preamble (location_t loc, line_maps *lmaps)
 void
 init_module_processing ()
 {
-  /* PCH should not be reachable because of lang-specs.  */
-  gcc_assert (!pch_file);
+  if (module_header_name)
+    /* Force atom.  */
+    flag_modules = -2;
+
+  /* PCH should not be reachable because of lang-specsm but the
+     user could have overriden that.  */
+  if (pch_file)
+    fatal_error (input_location,
+		 "C++ modules incpmatible with precompiled headers");
 
   module_state::init ();
 }
@@ -10913,11 +10991,11 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
   dump.push (NULL);
   dump () && dump ("About to reexec with prefix length %u", count);
   module_state::fini ();
-  /* The mapper should not be live, but make sure of that.  */
-  module_mapper::assert_none ();
+  module_mapper::fini (loc);
+
   /* The preprocessor does not leave files open, so we can ignore the
      pfile arg.  */
-  
+
   int argc = original_argc;
   char **argv = XNEWVEC (char *, argc + 2 + 10);
   memcpy (argv, original_argv, argc * sizeof (char *));
@@ -10966,7 +11044,6 @@ handle_module_option (unsigned code, const char *str, int num)
       /* FALLTHROUGH.  */
     case OPT_fmodule_header_:
       module_header_name = str;
-      /* Force atom.  */
       flag_modules = -1;
       return true;
 
