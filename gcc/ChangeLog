@@ -1,3 +1,8 @@
+2018-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-cfg.c (verify_gimple_in_cfg): Call verify_location on the
+	goto_locus of each outgoing edge of each basic block.
+
 2018-06-28  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (decl_scope_table): Remove.
