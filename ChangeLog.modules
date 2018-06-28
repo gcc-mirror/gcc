@@ -1,5 +1,10 @@
 2018-06-28  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: Fix execution tests. Add dg-module-literal
+	* g++.dg/modules/legacy-2_d.C: Fix expected line number.
+	* g++.dg/modules/loc-2_[def].C: Use dg-module-literal.
+
 	(Beginnings of) Include diversion.
 	gcc/c-family/
 	* c-opts.c (c_common_post_options): Set divert_include hook.

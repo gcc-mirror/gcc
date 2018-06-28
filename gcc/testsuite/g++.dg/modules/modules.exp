@@ -26,6 +26,7 @@
 
 # { dg-module-bmi "[!]module-name" } # an interface file is (not) expected
 # { dg-module-do [link|run] [xfail] [options] } # link [and run]
+# { dg-module-literal "regexp" }
 
 load_lib g++-dg.exp
 
@@ -41,6 +42,7 @@ dg-init
 
 global module_do
 global module_bmis
+global module_literals
 
 proc decode_mod_spec { spec } {
     set not 0
@@ -192,6 +194,30 @@ proc module_do_it { do_what testcase asm_list } {
     return $ok
 }
 
+proc dg-module-literal { args } {
+    if { [llength $args] > 2 } {
+	error "[lindex $args 0]: too many arguments"
+	return
+    }
+
+    set lit [lindex $args 1]
+    global module_literals
+    lappend module_literals $lit
+}
+
+# run the literal tests before pruning output
+proc g++-dg-prune { system text } {
+    global module_literals
+    foreach literal $module_literals {
+	if [regexp $literal $text] {
+	    pass "$literal"
+	} else {
+	    fail "$literal"
+	}
+    }
+    return [gcc-dg-prune $system $text]
+}
+
 # delete the specified set of module files
 proc cleanup_module_files { files } {
     foreach file $files {
@@ -214,6 +240,7 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 
 	foreach mode [mode_list $test] {
 	    set module_bmis {}
+	    set module_literals {}
 	    verbose "Testing $nshort, $mode" 1
 	    dg-test $test $mode $DEFAULT_MODFLAGS
 	    set testcase [string range $test [string length "$srcdir/"] end]
@@ -235,11 +262,12 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
 	    set asm_list {}
 	    foreach test $tests {
 		set module_bmis {}
+		set module_literals {}
 		set nshort [file tail [file dirname $test]]/[file tail $test]
 		verbose "Testing $nshort, $mode" 1
 		dg-test -keep-output $test $mode $DEFAULT_MODFLAGS
 		if { [file extension $test] == ".C" } {
-		    lappend asm_list [file rootname $test].s
+		    lappend asm_list [file rootname [file tail $test]].s
 		}
 		set testcase [string range $test [string length "$srcdir/"] end]
 		lappend mod_files [module_bmi_p $testcase $module_bmis]
