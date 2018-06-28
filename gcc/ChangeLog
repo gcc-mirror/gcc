@@ -1,3 +1,25 @@
+2018-06-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.c (cgraph_node::get_body): Replace assignments to
+	"dump_file" with calls to set_dump_file.
+	* dumpfile.c (alt_dump_file): Make static, and group with...
+	(alt_flags): ...this definition.
+	(dumps_are_enabled): New variable.
+	(refresh_dumps_are_enabled): New function.
+	(set_dump_file): New function.
+	(set_alt_dump_file): New function.
+	(gcc::dump_manager::dump_start): Replace assignments to
+	"dump_file" and "alt_dump_file" with calls to set_dump_file and
+	set_alt_dump_file.
+	(gcc::dump_manager::dump_finish): Likewise.
+	* dumpfile.h (alt_dump_file): Delete decl.
+	(dumps_are_enabled): New variable decl.
+	(set_dump_file): New function decl.
+	(dump_enabled_p): Rewrite in terms of new "dumps_are_enabled"
+	global.
+	* tree-nested.c (lower_nested_functions): Replace assignments to
+	"dump_file" with calls to set_dump_file.
+
 2018-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-cfg.c (verify_gimple_in_cfg): Call verify_location on the

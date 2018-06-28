@@ -3399,7 +3399,7 @@ lower_nested_functions (tree fndecl)
 
   gimplify_all_functions (cgn);
 
-  dump_file = dump_begin (TDI_nested, &dump_flags);
+  set_dump_file (dump_begin (TDI_nested, &dump_flags));
   if (dump_file)
     fprintf (dump_file, "\n;; Function %s\n\n",
 	     lang_hooks.decl_printable_name (fndecl, 2));
@@ -3426,7 +3426,7 @@ lower_nested_functions (tree fndecl)
   if (dump_file)
     {
       dump_end (TDI_nested, dump_file);
-      dump_file = NULL;
+      set_dump_file (NULL);
     }
 }
 

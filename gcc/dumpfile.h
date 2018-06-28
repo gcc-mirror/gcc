@@ -445,15 +445,18 @@ extern void dump_bb (FILE *, basic_block, int, dump_flags_t);
 
 /* Global variables used to communicate with passes.  */
 extern FILE *dump_file;
-extern FILE *alt_dump_file;
 extern dump_flags_t dump_flags;
 extern const char *dump_file_name;
+
+extern bool dumps_are_enabled;
+
+extern void set_dump_file (FILE *new_dump_file);
 
 /* Return true if any of the dumps is enabled, false otherwise. */
 static inline bool
 dump_enabled_p (void)
 {
-  return (dump_file || alt_dump_file);
+  return dumps_are_enabled;
 }
 
 namespace gcc {
