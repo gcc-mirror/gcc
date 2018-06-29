@@ -575,10 +575,11 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
 		 * LOOP_VINFO_DATAREFS (loop_vinfo).length ());
       /* We need read-read dependences to compute
 	 STMT_VINFO_SAME_ALIGN_REFS.  */
-      if (!compute_all_dependences (LOOP_VINFO_DATAREFS (loop_vinfo),
-				    &LOOP_VINFO_DDRS (loop_vinfo),
-				    LOOP_VINFO_LOOP_NEST (loop_vinfo), true))
-	return false;
+      bool res = compute_all_dependences (LOOP_VINFO_DATAREFS (loop_vinfo),
+					  &LOOP_VINFO_DDRS (loop_vinfo),
+					  LOOP_VINFO_LOOP_NEST (loop_vinfo),
+					  true);
+      gcc_assert (res);
     }
 
   LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = true;

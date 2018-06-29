@@ -1812,6 +1812,11 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
 	      }
 	    return false;
 	  }
+	/* If dependence analysis will give up due to the limit on the
+	   number of datarefs stop here and fail fatally.  */
+	if (datarefs->length ()
+	    > (unsigned)PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
+	  return false;
       }
   return true;
 }
