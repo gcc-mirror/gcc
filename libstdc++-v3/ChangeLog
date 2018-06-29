@@ -1,3 +1,9 @@
+2018-06-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/add_rvalue_reference/requirements/alias_decl.cc:
+	Add whitespace to dejagnu directive.
+	* testsuite/23_containers/array/element_access/at_neg.cc: Likewise.
+
 2018-06-27  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_vector.h
