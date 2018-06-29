@@ -26,7 +26,7 @@
 
 # { dg-module-bmi "[!]module-name" } # an interface file is (not) expected
 # { dg-module-do [link|run] [xfail] [options] } # link [and run]
-# { dg-module-literal "regexp" }
+# { dg-module-pre-prune "regexp" }
 
 load_lib g++-dg.exp
 
@@ -42,7 +42,7 @@ dg-init
 
 global module_do
 global module_bmis
-global module_literals
+global module_pre_prunes
 
 proc decode_mod_spec { spec } {
     set not 0
@@ -194,21 +194,21 @@ proc module_do_it { do_what testcase asm_list } {
     return $ok
 }
 
-proc dg-module-literal { args } {
+proc dg-module-pre-prune { args } {
     if { [llength $args] > 2 } {
 	error "[lindex $args 0]: too many arguments"
 	return
     }
 
     set lit [lindex $args 1]
-    global module_literals
-    lappend module_literals $lit
+    global module_pre_prunes
+    lappend module_pre_prunes $lit
 }
 
 # run the literal tests before pruning output
 proc g++-dg-prune { system text } {
-    global module_literals
-    foreach literal $module_literals {
+    global module_pre_prunes
+    foreach literal $module_pre_prunes {
 	if [regexp $literal $text] {
 	    pass "$literal"
 	} else {
@@ -240,7 +240,7 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 
 	foreach mode [mode_list $test] {
 	    set module_bmis {}
-	    set module_literals {}
+	    set module_pre_prunes {}
 	    verbose "Testing $nshort, $mode" 1
 	    dg-test $test $mode $DEFAULT_MODFLAGS
 	    set testcase [string range $test [string length "$srcdir/"] end]
@@ -262,7 +262,7 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
 	    set asm_list {}
 	    foreach test $tests {
 		set module_bmis {}
-		set module_literals {}
+		set module_pre_prunes {}
 		set nshort [file tail [file dirname $test]]/[file tail $test]
 		verbose "Testing $nshort, $mode" 1
 		dg-test -keep-output $test $mode $DEFAULT_MODFLAGS

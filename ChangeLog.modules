@@ -1,5 +1,8 @@
 2018-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp (dg-module-pre-prunes): Renamed.
+
 	libcpp/
 	* directives.c (do_include_common): Include diverter will push
 	buffer.
