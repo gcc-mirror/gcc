@@ -1,9 +1,3 @@
-2018-06-28  Fritz Reese  <fritzoreese@gmail.com>
-
-	PR fortran/82865
-	Backport from trunk.
-	* decl.c (gfc_match_type): Refactor and check for PDT declarations.
-
 2018-06-25  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/82972
