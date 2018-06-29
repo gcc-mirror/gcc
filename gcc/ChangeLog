@@ -1,3 +1,18 @@
+2018-06-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.c (dump_loc): Add indentation based on scope depth.
+	(dump_scope_depth): New variable.
+	(get_dump_scope_depth): New function.
+	(dump_begin_scope): New function.
+	(dump_end_scope): New function.
+	* dumpfile.h (get_dump_scope_depth): New declaration.
+	(dump_begin_scope): New declaration.
+	(dump_end_scope): New declaration.
+	(class auto_dump_scope): New class.
+	(AUTO_DUMP_SCOPE): New macro.
+	* tree-vectorizer.h (DUMP_VECT_SCOPE): Reimplement in terms of
+	AUTO_DUMP_SCOPE.
+
 2018-06-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences): Assert
