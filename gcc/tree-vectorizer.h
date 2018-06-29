@@ -1440,15 +1440,16 @@ vect_get_scalar_dr_size (struct data_reference *dr)
 /* Source location + hotness information. */
 extern dump_user_location_t vect_location;
 
-/* If dumping is enabled, emit a MSG_NOTE at vect_location about
-   entering MSG within the vectorizer.  MSG should be a string literal. */
+/* A macro for calling:
+     dump_begin_scope (MSG, vect_location);
+   via an RAII object, thus printing "=== MSG ===\n" to the dumpfile etc,
+   and then calling
+     dump_end_scope ();
+   once the object goes out of scope, thus capturing the nesting of
+   the scopes.  */
 
 #define DUMP_VECT_SCOPE(MSG) \
-  do {						\
-    if (dump_enabled_p ())			\
-      dump_printf_loc (MSG_NOTE, vect_location, \
-		       "=== " MSG " ===\n");	\
-  } while (0)
+  AUTO_DUMP_SCOPE (MSG, vect_location)
 
 /*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */

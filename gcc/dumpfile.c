@@ -453,6 +453,8 @@ dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
                  DECL_SOURCE_FILE (current_function_decl),
                  DECL_SOURCE_LINE (current_function_decl),
                  DECL_SOURCE_COLUMN (current_function_decl));
+      /* Indentation based on scope depth.  */
+      fprintf (dfile, "%*s", get_dump_scope_depth (), "");
     }
 }
 
@@ -572,6 +574,39 @@ template void dump_dec (dump_flags_t, const poly_int64 &);
 template void dump_dec (dump_flags_t, const poly_uint64 &);
 template void dump_dec (dump_flags_t, const poly_offset_int &);
 template void dump_dec (dump_flags_t, const poly_widest_int &);
+
+/* The current dump scope-nesting depth.  */
+
+static int dump_scope_depth;
+
+/* Get the current dump scope-nesting depth.
+   For use by dump_*_loc (for showing nesting via indentation).  */
+
+unsigned int
+get_dump_scope_depth ()
+{
+  return dump_scope_depth;
+}
+
+/* Push a nested dump scope.
+   Print "=== NAME ===\n" to the dumpfile, if any, and to the -fopt-info
+   destination, if any.
+   Increment the scope depth.  */
+
+void
+dump_begin_scope (const char *name, const dump_location_t &loc)
+{
+  dump_printf_loc (MSG_NOTE, loc, "=== %s ===\n", name);
+  dump_scope_depth++;
+}
+
+/* Pop a nested dump scope.  */
+
+void
+dump_end_scope ()
+{
+  dump_scope_depth--;
+}
 
 /* Start a dump for PHASE. Store user-supplied dump flags in
    *FLAG_PTR.  Return the number of streams opened.  Set globals
