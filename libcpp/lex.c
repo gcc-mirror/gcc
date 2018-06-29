@@ -568,7 +568,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
     {
       vc m_nl, m_cr, m_bs, m_qm;
 
-      data = *((const vc *)s);
+      data = __builtin_vec_vsx_ld (0, s);
       s += 16;
 
       m_nl = (vc) __builtin_vec_cmpeq(data, repl_nl);
