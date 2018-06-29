@@ -2979,7 +2979,7 @@ public:
     send_command (loc, "BEWAIT");
   }
   module_state *bewait_response (location_t);
-  unsigned char *divert_include (location_t, const char *, bool, cpp_reader *, size_t *);
+  int divert_include (cpp_reader *, location_t, const char *, bool);
 
 public:
   /* After a response that may be corked, eat blank lines until it is
@@ -7683,14 +7683,13 @@ module_mapper::export_done (const module_state *state)
 }
 
 /* Include diversion.  */
-unsigned char *module_mapper::divert_include (location_t loc, const char *file,
-					      bool angle, cpp_reader *reader,
-					      size_t *len_ptr)
+int module_mapper::divert_include (cpp_reader *reader, location_t loc,
+				   const char *file, bool angle)
 {
   send_command (loc, "INCLUDE %c%s%c", angle ? '<' : '"', file,
 		angle ? '>' : '"');
   if (get_response (loc) <= 0)
-    return NULL;
+    return 0;
 
   int action = 0;
   // FIXME:Search response?
@@ -7706,7 +7705,7 @@ unsigned char *module_mapper::divert_include (location_t loc, const char *file,
     }
   response_eol (loc);
   if (!action)
-    return NULL;
+    return 0;
 
   dump () && dump ("Diverting include %s to import", file);
 
@@ -7717,8 +7716,9 @@ unsigned char *module_mapper::divert_include (location_t loc, const char *file,
   size_t actual = snprintf (res, len, "export import %c%s%c;\n",
 			    angle ? '<' : '"', file, angle ? '>' : '"');
   gcc_assert (actual < len);
-  *len_ptr = actual;
-  return reinterpret_cast <unsigned char *> (res);
+  cpp_push_buffer (reader, reinterpret_cast <unsigned char *> (res),
+		   actual, true);
+  return +1;  /* cpplib will delete the buffer.  */
 }
 
 /* Generate a string of the compilation options.  */
@@ -10805,22 +10805,23 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
 
 /* Figure out whether to treat HEADER as an include or an import.  */
 
-static unsigned char *
+static int
 do_divert_include (cpp_reader *reader, location_t loc,
-		   const char *header, bool angle, size_t *len_ptr)
+		   const char *header, bool angle)
 {
   if (!prefix_locations_hwm)
     /* Before the main file, don't divert.  */
-    return NULL;
+    return 0;
 
   if (module_preamble_end_loc)
     // FIXME: post-preamble warnings?
-    return NULL;
+    return 0;
 
   module_mapper *mapper = module_mapper::get (loc);
   if (!mapper->is_live ())
-    return NULL;
-  return mapper->divert_include (loc, header, angle, reader, len_ptr);
+    return 0;
+
+  return mapper->divert_include (reader, loc, header, angle);
 }
 
 cpp_divert_include_t *

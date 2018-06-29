@@ -334,9 +334,9 @@ struct lang_hooks
   void (*preprocess_main_file) (line_maps *, const line_map_ordinary *,
 				unsigned);
 
-  /* Subvert include hook hook.  */
-  unsigned char *(*(*preprocess_divert_include) ())
-  (cpp_reader *, source_location, const char *fname, bool, size_t *);
+  /* Subvert include hook hook.  Ptr to fn returning ptr to fn.  */
+  int (*(*preprocess_divert_include) ()) (cpp_reader *, source_location,
+					  const char *fname, bool);
 
   /* State machine for determining the early end of a preprocess.  */
   int (*preprocess_preamble) (int, cpp_reader *, unsigned, source_location);

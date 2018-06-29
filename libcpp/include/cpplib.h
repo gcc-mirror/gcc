@@ -558,8 +558,8 @@ struct cpp_options
    header is otherwise unfound.  */
 typedef const char *(*missing_header_cb)(cpp_reader *, const char *header, cpp_dir **);
 
-typedef unsigned char *cpp_divert_include_t (cpp_reader *, source_location,
-					     const char *, bool, size_t *);
+typedef int cpp_divert_include_t (cpp_reader *, source_location,
+				  const char *, bool);
 
 /* Call backs to cpplib client.  */
 struct cpp_callbacks
@@ -630,8 +630,9 @@ struct cpp_callbacks
      expansions.  */
   const char *(*remap_filename) (const char*);
 
-  /* Maybe subvert a #include into something else.  The returned
-     buffer is freed after use.  */
+  /* Maybe subvert a #include into something else.  Push a cpp_buffer
+     and return non-zero if diverting.  +ve buffer will be freed, -ve,
+     caller owns buffer.   */
   cpp_divert_include_t *divert_include;
 };
 

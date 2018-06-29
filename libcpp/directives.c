@@ -864,19 +864,16 @@ do_include_common (cpp_reader *pfile, enum include_type type)
       skip_rest_of_line (pfile);
 
       if (type == IT_INCLUDE && pfile->cb.divert_include)
-	{
-	  size_t div_len = 0;
-	  if (unsigned char *div_buf = pfile->cb.divert_include
-	      (pfile, location, fname, angle_brackets, &div_len))
-	    {
-	      cpp_buffer *buffer
-		= cpp_push_buffer (pfile, div_buf, div_len, true);
-	      buffer->file = NULL;
-	      buffer->sysp = 0;
-	      buffer->to_free = div_buf;
-	      goto done;
-	    }
-	}
+	if (int div = pfile->cb.divert_include (pfile, location,
+						fname, angle_brackets))
+	  {
+	    /* We've been diverted to a pushed buffer of exactly one
+	       line of text.  */
+	    gcc_assert (CPP_BUFFER (pfile)->rlimit[-1] == '\n');
+	    if (div > 0)
+	      CPP_BUFFER (pfile)->to_free = CPP_BUFFER (pfile)->buf;
+	    goto done;
+	  }
 
       if (pfile->cb.include)
 	pfile->cb.include (pfile, pfile->directive_line,
