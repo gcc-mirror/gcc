@@ -3079,7 +3079,10 @@ v850_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
     return true;
   if (GET_CODE (x) == PLUS
       && v850_rtx_ok_for_base_p (XEXP (x, 0), strict_p)
-      && constraint_satisfied_p (XEXP (x,1), CONSTRAINT_K)
+      && (constraint_satisfied_p (XEXP (x, 1), CONSTRAINT_K)
+	  || (TARGET_V850E2V3_UP
+	      && (mode == SImode || mode == HImode || mode == QImode)
+	      && constraint_satisfied_p (XEXP (x, 1), CONSTRAINT_W)))
       && ((mode == QImode || INTVAL (XEXP (x, 1)) % 2 == 0)
 	   && CONST_OK_FOR_K (INTVAL (XEXP (x, 1))
 			      + (GET_MODE_NUNITS (mode) * UNITS_PER_WORD))))
@@ -3308,9 +3311,6 @@ v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P v850_legitimate_constant_p
-
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
 
 #undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P v850_legitimate_address_p
