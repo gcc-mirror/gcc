@@ -1,3 +1,15 @@
+2018-06-29  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* lex.c (search_line_fast): Remove illegal coercion of an
+	unaligned pointer value to vector pointer type and replace with
+	use of __builtin_vec_vsx_ld () built-in function, which operates
+	on unaligned pointer values.
+
+git-svn-id: svn+ssh://gcc.gnu.org/svn/gcc/branches/gcc-6-branch@261621 138bc75d-0d04-0410-961f-82ee72b054a4
+
 2018-06-27  David Edelsohn  <dje.gcc@gmail.com>
 
 	2018-06-19  Tony Reix  <tony.reix@atos.com>
