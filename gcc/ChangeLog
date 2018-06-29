@@ -1,3 +1,12 @@
+2018-06-29  Martin Liska  <mliska@suse.cz>
+
+	PR lto/85759
+	* coverage.c (coverage_init): Mangle full path name.
+	* doc/invoke.texi: Document the change.
+	* gcov-io.c (mangle_path): New.
+	* gcov-io.h (mangle_path): Likewise.
+	* gcov.c (mangle_name): Use mangle_path for path mangling.
+
 2018-06-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (output_move_double): Don't allow STRD instructions

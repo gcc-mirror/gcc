@@ -1220,8 +1220,24 @@ coverage_init (const char *filename)
     g->get_passes ()->get_pass_profile ()->static_pass_number;
   g->get_dumps ()->dump_start (profile_pass_num, NULL);
 
-  if (!profile_data_prefix && !IS_ABSOLUTE_PATH (filename))
-    profile_data_prefix = getpwd ();
+  if (!IS_ABSOLUTE_PATH (filename))
+    {
+      /* When a profile_data_prefix is provided, then mangle full path
+	 of filename in order to prevent file path clashing.  */
+      if (profile_data_prefix)
+	{
+#if HAVE_DOS_BASED_FILE_SYSTEM
+	  const char separator = "\\";
+#else
+	  const char *separator = "/";
+#endif
+	  filename = concat (getpwd (), separator, filename, NULL);
+	  filename = mangle_path (filename);
+	  len = strlen (filename);
+	}
+      else
+	profile_data_prefix = getpwd ();
+    }
 
   if (profile_data_prefix)
     prefix_len = strlen (profile_data_prefix);
