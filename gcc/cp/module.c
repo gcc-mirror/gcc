@@ -7713,7 +7713,7 @@ int module_mapper::divert_include (cpp_reader *reader, location_t loc,
      allocate, as we just printed the filename to it above.  */
   size_t len = size + 60;
   char *res = XNEWVEC (char, len);
-  size_t actual = snprintf (res, len, "export import %c%s%c;\n",
+  size_t actual = snprintf (res, len, "export import %c%s%c;\n\n",
 			    angle ? '<' : '"', file, angle ? '>' : '"');
   gcc_assert (actual < len);
   cpp_push_buffer (reader, reinterpret_cast <unsigned char *> (res),

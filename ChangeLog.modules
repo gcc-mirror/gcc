@@ -1,5 +1,18 @@
 2018-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	Diverted include line numbering
+	libcpp/
+	* directives.c (do_include_common): Fixup diversion line
+	numbering.
+	(_cpp_pop_buffer): Free to_free even if not a file.
+	gcc/c-family/
+	* c-ppoutput.c (print_line_1): More C++y.
+	gcc/cp/
+	* module.c (module_mapper::divert_include): Two \n's.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-4: New.
+	* g++.dg/modules/legacy-3_b.H
+
 	gcc/testsuite/
 	* g++.dg/modules/modules.exp (dg-module-pre-prunes): Renamed.
 

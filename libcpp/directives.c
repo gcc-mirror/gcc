@@ -867,11 +867,25 @@ do_include_common (cpp_reader *pfile, enum include_type type)
 	if (int div = pfile->cb.divert_include (pfile, location,
 						fname, angle_brackets))
 	  {
-	    /* We've been diverted to a pushed buffer of exactly one
-	       line of text.  */
-	    gcc_assert (CPP_BUFFER (pfile)->rlimit[-1] == '\n');
+	    /* We've been diverted to a pushed buffer ending in two
+	       \n's.  */
+	    cpp_buffer *buffer = CPP_BUFFER (pfile);
+	    gcc_assert (buffer->rlimit[-1] == '\n'
+			&& buffer->rlimit[-2] == '\n');
 	    if (div > 0)
-	      CPP_BUFFER (pfile)->to_free = CPP_BUFFER (pfile)->buf;
+	      buffer->to_free = buffer->buf;
+
+	    /* Adjust the line back one to cover the #include itself.  */
+	    line_maps *lmaps = pfile->line_table;
+	    const line_map_ordinary *map
+	      = LINEMAPS_LAST_ORDINARY_MAP (lmaps);
+	    linenum_type line = SOURCE_LINE (map, lmaps->highest_line);
+	    linemap_line_start (lmaps, line - 1, 0);
+
+	    /* The last \n in the new buffer doesn't cause a line
+	       increment, which is why we wanted 2 of them.  That's
+	       much simpler than trying to slide an obstack allocate
+	       fixed buffer under TOS.  */
 	    goto done;
 	  }
 
@@ -2715,6 +2729,8 @@ _cpp_pop_buffer (cpp_reader *pfile)
 
       _cpp_do_file_change (pfile, LC_LEAVE, 0, 0, 0);
     }
+  else if (to_free)
+    free ((void *)to_free);
 }
 
 /* Enter all recognized directives in the hash table.  */
