@@ -1,9 +1,3 @@
-2018-06-28  Fritz Reese  <fritzoreese@gmail.com>
-
-	PR fortran/82865
-	Backport from trunk.
-	* gfortran.dg/dec_type_print_2.f03: New testcase.
-
 2018-06-26  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backported from mainline
