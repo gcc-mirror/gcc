@@ -1,3 +1,8 @@
+2018-06-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86184
+	* tree.c (cp_save_expr): Don't call save_expr for TARGET_EXPRs.
+
 2018-06-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* parser.c (cp_parser_error_1): After issuing a conflict marker
