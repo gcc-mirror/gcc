@@ -1,3 +1,15 @@
+2018-06-29  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline
+	2018-06-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/builtins-3-p8.c (test_pack_float): Remove
+	this test.
+	* gcc.target/powerpc/builtins-9.c: New test.
+	* gcc.target/powerpc/fold-vec-pack-double.c: Modify dg directives
+	to expect different code generation on big-endian vs.
+	little-endian targets.
+
 2018-06-28  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline
