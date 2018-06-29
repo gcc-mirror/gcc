@@ -1,3 +1,12 @@
+2018-06-29  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline
+	2018-06-22  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Change
+	behavior of vec_pack (vector double, vector double) to match
+	behavior of vec_float2 (vector double, vector double).
+
 2018-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/t-rs6000: Append rs6000-modes.h to TM_H.
