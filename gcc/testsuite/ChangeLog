@@ -1,3 +1,8 @@
+2018-06-29  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/strlenopt-46.c: Define strnlen for targets like Solaris 10
+	that don't define the function.
+
 2018-06-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86184

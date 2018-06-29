@@ -1,6 +1,6 @@
 /* PR tree-optimization/86204 - wrong strlen result after prior strnlen
    { dg-do run }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
 
 #include "strlenopt.h"
 
@@ -129,3 +129,20 @@ int main (void)
   gx (2);
   gx (7);
 }
+
+
+/* For targets like Solaris 10 that don't define strnlen().  */
+
+NOIPA size_t
+strnlen (const char *s, size_t n)
+{
+  size_t len = 0;
+  while (*s++ && n--)
+    ++len;
+  return len;
+}
+
+/* Verify that at least some of the 11 calls to strnlen have been
+   folded (this number of folded calls may need to be adjusted up
+   if the strnlen optimization improves, but it should not go down.
+  { dg-final { scan-tree-dump-times "= strnlen" 7 "optimized" } } */
