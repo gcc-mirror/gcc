@@ -1,3 +1,11 @@
+2018-06-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* vim-gcc-dev/README: New file.
+	* vim-gcc-dev/ftdetect/gcc-dev.vim: New file.
+	* vim-gcc-dev/syntax/gcc-match.vim: New file.
+	* gimple.vim: Move under vim-gcc-dev/syntax/.
+	* gcc-rtl.vim: Likewise.
+
 2018-06-19  Martin Liska  <mliska@suse.cz>
 
 	* gcc-rtl.vim: New file.

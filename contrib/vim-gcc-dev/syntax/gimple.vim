@@ -11,17 +11,6 @@
 " intermediate representation.  Such dumps are produced by GCC when
 " it is invoked with -fdump-tree-* and/or -fdump-ipa-* switches.  Tested
 " in Vim 7.4 (but should also work with earlier versions).
-"
-" INSTALLATION:
-" 1. Copy the script into $HOME/.vim/syntax directory
-" 2. Create a file gimple.vim in $HOME/.vim/ftdetect directory with the
-"    following command in it:
-"
-" au BufRead,BufNewFile *.[0-2][0-9][0-9][ti].* set filetype=gimple
-"
-" The pattern in this autocommand corresponds to default file names
-" of debug dumps, e.g.:
-" filename.cc.123t.pass-name
 
 
 " Do not continue, if syntax is already enabled in current buffer.
@@ -155,4 +144,3 @@ hi def link gimpleFrequency     Debug
 hi def link gimpleBBCount       Debug
 
 let b:current_syntax = "gimple"
-

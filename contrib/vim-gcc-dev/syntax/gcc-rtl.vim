@@ -6,8 +6,6 @@
 " it under the terms of the GNU General Public License as published by
 " the Free Software Foundation; either version 3, or (at your option)
 " any later version
-"
-" For more instructions please see gimple.vim file in the same folder.
 
 
 " Do not continue, if syntax is already enabled in current buffer.
