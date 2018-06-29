@@ -3024,6 +3024,35 @@ GOMP_OFFLOAD_alloc_by_agent (struct agent_info *agent, size_t size)
       return NULL;
     }
 
+  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
+  bool profiling_dispatch_p
+    = __builtin_expect (thr != NULL && thr->prof_info != NULL, false);
+  if (profiling_dispatch_p)
+    {
+      acc_prof_info *prof_info = thr->prof_info;
+      acc_event_info data_event_info;
+      acc_api_info *api_info = thr->api_info;
+
+      prof_info->event_type = acc_ev_alloc;
+
+      data_event_info.data_event.event_type = prof_info->event_type;
+      data_event_info.data_event.valid_bytes
+	= _ACC_DATA_EVENT_INFO_VALID_BYTES;
+      data_event_info.data_event.parent_construct
+	= acc_construct_parallel;
+      data_event_info.data_event.implicit = 1;
+      data_event_info.data_event.tool_info = NULL;
+      data_event_info.data_event.var_name = NULL;
+      data_event_info.data_event.bytes = size;
+      data_event_info.data_event.host_ptr = NULL;
+      data_event_info.data_event.device_ptr = (void *) ptr;
+
+      api_info->device_api = acc_device_api_other;
+
+      GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
+					    api_info);
+    }
+
   return ptr;
 }
 
@@ -3044,6 +3073,35 @@ GOMP_OFFLOAD_free (int device, void *ptr)
     {
       hsa_error ("Could not free device memory", status);
       return false;
+    }
+
+  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
+  bool profiling_dispatch_p
+    = __builtin_expect (thr != NULL && thr->prof_info != NULL, false);
+  if (profiling_dispatch_p)
+    {
+      acc_prof_info *prof_info = thr->prof_info;
+      acc_event_info data_event_info;
+      acc_api_info *api_info = thr->api_info;
+
+      prof_info->event_type = acc_ev_free;
+
+      data_event_info.data_event.event_type = prof_info->event_type;
+      data_event_info.data_event.valid_bytes
+	= _ACC_DATA_EVENT_INFO_VALID_BYTES;
+      data_event_info.data_event.parent_construct
+	= acc_construct_parallel;
+      data_event_info.data_event.implicit = 1;
+      data_event_info.data_event.tool_info = NULL;
+      data_event_info.data_event.var_name = NULL;
+      data_event_info.data_event.bytes = 0;
+      data_event_info.data_event.host_ptr = NULL;
+      data_event_info.data_event.device_ptr = (void *) ptr;
+
+      api_info->device_api = acc_device_api_other;
+
+      GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
+					    api_info);
     }
 
   return true;
@@ -3276,6 +3334,35 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
      {1,       64, 16}
     };
 
+  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
+  acc_prof_info *prof_info = thr->prof_info;
+  acc_event_info enqueue_launch_event_info;
+  acc_api_info *api_info = thr->api_info;
+  bool profiling_dispatch_p = __builtin_expect (prof_info != NULL, false);
+  if (profiling_dispatch_p)
+    {
+      prof_info->event_type = acc_ev_enqueue_launch_start;
+
+      enqueue_launch_event_info.launch_event.event_type
+	= prof_info->event_type;
+      enqueue_launch_event_info.launch_event.valid_bytes
+	= _ACC_LAUNCH_EVENT_INFO_VALID_BYTES;
+      enqueue_launch_event_info.launch_event.parent_construct
+	= acc_construct_parallel;
+      enqueue_launch_event_info.launch_event.implicit = 1;
+      enqueue_launch_event_info.launch_event.tool_info = NULL;
+      enqueue_launch_event_info.launch_event.kernel_name
+	= (char *) kernel->name;
+      enqueue_launch_event_info.launch_event.num_gangs = kla.gdims[0];
+      enqueue_launch_event_info.launch_event.num_workers = kla.gdims[2];
+      enqueue_launch_event_info.launch_event.vector_length = kla.gdims[1];
+
+      api_info->device_api = acc_device_api_other;
+
+      GOMP_PLUGIN_goacc_profiling_dispatch (prof_info,
+	&enqueue_launch_event_info, api_info);
+    }
+
   if (!async)
     {
       run_kernel (kernel, ind_da, &kla, NULL, false);
@@ -3288,6 +3375,15 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
 	HSA_DEBUG ("queue_push_callback %d:%d gomp_offload_free, %p\n",
 		   aq->agent->device_id, aq->id, ind_da);
       queue_push_callback (aq, gomp_offload_free, ind_da);
+    }
+
+  if (profiling_dispatch_p)
+    {
+      prof_info->event_type = acc_ev_enqueue_launch_end;
+      enqueue_launch_event_info.launch_event.event_type = prof_info->event_type;
+      GOMP_PLUGIN_goacc_profiling_dispatch (prof_info,
+					    &enqueue_launch_event_info,
+					    api_info);
     }
 }
 

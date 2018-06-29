@@ -1,5 +1,14 @@
 2019-09-06  Julian Brown  <julian@codesourcery.com>
 
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_alloc_by_agent,
+	GOMP_OFFLOAD_free, gcn_exec): Add profiling support.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-1.c: Add GCN
+	support.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c: Likewise.
+
+2019-09-06  Julian Brown  <julian@codesourcery.com>
+
 	* config/gcn/target.c (omp_pause_resource, omp_pause_resource_all): New
 	functions, plus ialiases.
 
