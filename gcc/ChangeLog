@@ -1,3 +1,8 @@
+2018-06-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (output_move_double): Don't allow STRD instructions
+	if starting source register is not even.
+
 2018-06-29  Martin Liska  <mliska@suse.cz>
 
         PR tree-optimization/86263
