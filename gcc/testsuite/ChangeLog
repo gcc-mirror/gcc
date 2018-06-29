@@ -1,3 +1,8 @@
+2018-06-29  Martin Liska  <mliska@suse.cz>
+
+        PR tree-optimization/86263
+	* gcc.dg/tree-ssa/pr86263.c: New test.
+
 2018-06-28  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/p9-extract-1.c: Add test case.

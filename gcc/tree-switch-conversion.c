@@ -1732,8 +1732,12 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
   /* Do not do an extra work for a single cluster.  */
   if (clusters.length () == 1
       && clusters[0]->get_type () != SIMPLE_CASE)
-    clusters[0]->emit (index_expr, index_type,
-		       gimple_switch_default_label (m_switch), m_default_bb);
+    {
+      cluster *c = clusters[0];
+      c->emit (index_expr, index_type,
+	       gimple_switch_default_label (m_switch), m_default_bb);
+      redirect_edge_succ (single_succ_edge (bb), c->m_case_bb);
+    }
   else
     {
       emit (bb, index_expr, default_edge->probability, index_type);
