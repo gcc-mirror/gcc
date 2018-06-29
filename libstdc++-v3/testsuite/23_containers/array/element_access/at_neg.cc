@@ -1,4 +1,4 @@
-// { dg-do run {target c++11 xfail *-*-* } }
+// { dg-do run { target c++11 xfail *-*-* } }
 
 // Copyright (C) 2011-2018 Free Software Foundation, Inc.
 //
