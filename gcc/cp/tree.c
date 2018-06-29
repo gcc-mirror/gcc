@@ -4918,6 +4918,11 @@ cp_save_expr (tree expr)
      tree codes.  */
   if (processing_template_decl)
     return expr;
+
+  /* TARGET_EXPRs are only expanded once.  */
+  if (TREE_CODE (expr) == TARGET_EXPR)
+    return expr;
+
   return save_expr (expr);
 }
 
