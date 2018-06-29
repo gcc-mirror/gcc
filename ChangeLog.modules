@@ -1,5 +1,24 @@
 2018-06-29  Nathan Sidwell  <nathan@acm.org>
 
+	Diverted header column preservation
+	libcpp/
+	* directives.c (do_include_common): Adjust divert callback.
+	* include/cpplib.h (cpp_divert_include_t): Likewise.
+	gcc/cp/
+	* module.c (module_mapper::divert_include): Add line_maps.
+	Preserve column number.
+	(import_module): Look at attribs.
+	(do_divert_include): Adjust.
+	* parser.c (cp_parser_module_declaration): Return loc of name.
+	(cp_parser_import_declaration): Likewise.
+	(cp_parser_parse_module_preamble): Adjust.
+	gcc/
+	* langhooks.h (lang_hooks): Adjust preprocess_divert_include.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-3_b.H: Adjust.
+	* g++.dg/modules/legacy-3_c.H: Adjust.
+	* g++.dg/modules/legacy-4.H: Adjust.
+
 	Diverted include line numbering
 	libcpp/
 	* directives.c (do_include_common): Fixup diversion line

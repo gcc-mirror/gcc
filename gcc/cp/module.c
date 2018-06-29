@@ -166,6 +166,7 @@ Classes used:
 #include "params.h"
 #include "toplev.h"
 #include "opts.h"
+#include "attribs.h"
 
 #if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
 /* socket, connect, shutdown  */
@@ -2979,7 +2980,7 @@ public:
     send_command (loc, "BEWAIT");
   }
   module_state *bewait_response (location_t);
-  int divert_include (cpp_reader *, location_t, const char *, bool);
+  int divert_include (cpp_reader *, line_maps *, location_t, const char *, bool);
 
 public:
   /* After a response that may be corked, eat blank lines until it is
@@ -6861,6 +6862,26 @@ module_state::announce (const char *what) const
     }
 }
 
+/* Return the ordinary location closest to FROM.  */
+
+static location_t
+ordinary_loc_of (line_maps *lmaps, location_t from)
+{
+  while (!IS_ORDINARY_LOC (from))
+    {
+      if (IS_ADHOC_LOC (from))
+	from = get_location_from_adhoc_loc (lmaps, from);
+      if (IS_MACRO_LOC (from))
+	{
+	  /* Find the ordinary location nearest FROM.  */
+	  const line_map *map = linemap_lookup (lmaps, from);
+	  const line_map_macro *mac_map = linemap_check_macro (map);
+	  from = MACRO_MAP_EXPANSION_POINT_LOCATION (mac_map);
+	}
+    }
+  return from;
+}
+
 /* Create a mapper.  The mapper may be dead.  Yes, I'm embedding some
    client-side socket handling in the compiler.  At least it's not
    ipv4.  */
@@ -7683,8 +7704,8 @@ module_mapper::export_done (const module_state *state)
 }
 
 /* Include diversion.  */
-int module_mapper::divert_include (cpp_reader *reader, location_t loc,
-				   const char *file, bool angle)
+int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
+				   location_t loc, const char *file, bool angle)
 {
   send_command (loc, "INCLUDE %c%s%c", angle ? '<' : '"', file,
 		angle ? '>' : '"');
@@ -7709,15 +7730,26 @@ int module_mapper::divert_include (cpp_reader *reader, location_t loc,
 
   dump () && dump ("Diverting include %s to import", file);
 
+  loc = ordinary_loc_of (lmaps, loc);
+  const line_map_ordinary *map
+    = linemap_check_ordinary (linemap_lookup (lmaps, loc));
+  unsigned col = SOURCE_COLUMN (map, loc);
+  col = col > sizeof ("import") + 1 ? col - (sizeof ("import") + 1) : 0; 
+
   /* Divert.  We can use the command buffer len to know how much to
      allocate, as we just printed the filename to it above.  */
-  size_t len = size + 60;
+  size_t len = size + 60 + col;
   char *res = XNEWVEC (char, len);
-  size_t actual = snprintf (res, len, "export import %c%s%c;\n\n",
-			    angle ? '<' : '"', file, angle ? '>' : '"');
+
+  /* Indent so the filename falls at the same column as the original
+     source.  */
+  memset (res, ' ', col);
+  size_t actual = col + snprintf (res + col, len - col,
+				  "import %c%s%c [[gnu::export]];\n\n",
+				  angle ? '<' : '"', file, angle ? '>' : '"');
   gcc_assert (actual < len);
   cpp_push_buffer (reader, reinterpret_cast <unsigned char *> (res),
-		   actual, true);
+		   actual, false);
   return +1;  /* cpplib will delete the buffer.  */
 }
 
@@ -10551,32 +10583,15 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
   (*module_state::modules)[mod]->lazy_load (ns, id, mslot, outer);
 }
 
-/* Return the ordinary location closest to FROM.  */
-
-static location_t
-ordinary_loc_of (line_maps *lmaps, location_t from)
-{
-  while (!IS_ORDINARY_LOC (from))
-    {
-      if (IS_ADHOC_LOC (from))
-	from = get_location_from_adhoc_loc (lmaps, from);
-      if (IS_MACRO_LOC (from))
-	{
-	  /* Find the ordinary location nearest FROM.  */
-	  const line_map *map = linemap_lookup (lmaps, from);
-	  const line_map_macro *mac_map = linemap_check_macro (map);
-	  from = MACRO_MAP_EXPANSION_POINT_LOCATION (mac_map);
-	}
-    }
-  return from;
-}
-
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
-import_module (const cp_expr &name, bool exporting, tree, line_maps *lmaps)
+import_module (const cp_expr &name, bool exporting, tree attrs, line_maps *lmaps)
 {
   if (export_depth)
+    exporting = true;
+
+  if (lookup_attribute ("export", attrs))
     exporting = true;
 
   gcc_assert (global_namespace == current_scope ());
@@ -10806,7 +10821,7 @@ module_state::atom_preamble (location_t loc, line_maps *lmaps)
 /* Figure out whether to treat HEADER as an include or an import.  */
 
 static int
-do_divert_include (cpp_reader *reader, location_t loc,
+do_divert_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 		   const char *header, bool angle)
 {
   if (!prefix_locations_hwm)
@@ -10821,7 +10836,7 @@ do_divert_include (cpp_reader *reader, location_t loc,
   if (!mapper->is_live ())
     return 0;
 
-  return mapper->divert_include (reader, loc, header, angle);
+  return mapper->divert_include (reader, lmaps, loc, header, angle);
 }
 
 cpp_divert_include_t *

@@ -12735,7 +12735,7 @@ check_module_outermost (const cp_token *token, const char *msg)
      module module-name attr-spec-seq-opt ;
 */
 
-static void
+static location_t
 cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
@@ -12750,7 +12750,7 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
       module_preamble_end_loc = token->location;
 
       cp_lexer_consume_token (parser->lexer);
-      return;
+      return token->location;
     }
 
   /* module declaration proper.  */
@@ -12768,19 +12768,20 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
     }
 
   if (!cp_parser_consume_semicolon_at_end_of_statement (parser))
-    return;
+    return UNKNOWN_LOCATION;
   if (!*name)
-    return;
+    return UNKNOWN_LOCATION;
   if (!check_module_outermost (token, "module declaration"))
-    return;
+    return UNKNOWN_LOCATION;
 
   declare_module (name, exporting, attrs, line_table);
+  return name.get_location ();
 }
 
 /* Import-declaration
    import module-name attr-spec-seq-opt ; */
 
-static void
+static location_t
 cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
 {
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT));
@@ -12802,7 +12803,11 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
   else if (!check_module_outermost (token, "module-import"))
     gcc_assert (!modules_atom_p ());
   else
-    import_module (name, exporting, attrs, line_table);
+    {
+      import_module (name, exporting, attrs, line_table);
+      return name.get_location ();
+    }
+  return UNKNOWN_LOCATION;
 }
 
 /*  export-declaration.
@@ -12940,18 +12945,22 @@ cp_parser_parse_module_preamble (cp_parser *parser)
 	  continue;
 
 	case CPP_KEYWORD:
-	  if (first_loc == UNKNOWN_LOCATION)
-	    first_loc = tok->location;
 	  switch (tok->keyword)
 	    {
+	      location_t loc;
+
 	    case RID_MODULE:
-	      cp_parser_module_declaration (parser, first, export_p);
+	      loc = cp_parser_module_declaration (parser, first, export_p);
+	      if (first_loc == UNKNOWN_LOCATION)
+		first_loc = loc;
 	      first = false;
 	      export_p = false;
 	      continue;
 
 	    case RID_IMPORT:
-	      cp_parser_import_declaration (parser, export_p);
+	      loc = cp_parser_import_declaration (parser, export_p);
+	      if (first_loc == UNKNOWN_LOCATION)
+		first_loc = loc;
 	      first = false;
 	      export_p = false;
 	      continue;

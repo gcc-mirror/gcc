@@ -864,8 +864,8 @@ do_include_common (cpp_reader *pfile, enum include_type type)
       skip_rest_of_line (pfile);
 
       if (type == IT_INCLUDE && pfile->cb.divert_include)
-	if (int div = pfile->cb.divert_include (pfile, location,
-						fname, angle_brackets))
+	if (int div = pfile->cb.divert_include (pfile, pfile->line_table,
+						location, fname, angle_brackets))
 	  {
 	    /* We've been diverted to a pushed buffer ending in two
 	       \n's.  */

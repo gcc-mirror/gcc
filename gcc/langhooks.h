@@ -335,7 +335,8 @@ struct lang_hooks
 				unsigned);
 
   /* Subvert include hook hook.  Ptr to fn returning ptr to fn.  */
-  int (*(*preprocess_divert_include) ()) (cpp_reader *, source_location,
+  int (*(*preprocess_divert_include) ()) (cpp_reader *, line_maps *,
+					  source_location,
 					  const char *fname, bool);
 
   /* State machine for determining the early end of a preprocess.  */

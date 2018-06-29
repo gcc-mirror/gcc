@@ -10,6 +10,6 @@ int move (int X = __LINE__); // Capture __LINE__ in a non-definition
 // this should not be diverted
 #include "legacy-3.h"
 
-// { dg-final { scan-file legacy-3_c.i "\nexport import \"legacy-3_a.H\";\n" } }
+// { dg-final { scan-file legacy-3_c.i "\n *import \"legacy-3_a.H\" \\\[\\\[gnu::export]];\n" } }
 // We should have stopped.
 // { dg-final { scan-file-not legacy-3_c.i "move" } }

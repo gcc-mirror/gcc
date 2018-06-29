@@ -558,8 +558,8 @@ struct cpp_options
    header is otherwise unfound.  */
 typedef const char *(*missing_header_cb)(cpp_reader *, const char *header, cpp_dir **);
 
-typedef int cpp_divert_include_t (cpp_reader *, source_location,
-				  const char *, bool);
+typedef int cpp_divert_include_t (cpp_reader *, line_maps *,
+				  source_location, const char *, bool);
 
 /* Call backs to cpplib client.  */
 struct cpp_callbacks
