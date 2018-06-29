@@ -1,3 +1,7 @@
+2018-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/t-rs6000: Append rs6000-modes.h to TM_H.
+
 2018-06-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/86348
