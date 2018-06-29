@@ -1,3 +1,10 @@
+2018-06-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences): Assert
+	compute_all_dependences succeeds.
+	* tree-vect-loop.c (vect_get_datarefs_in_loop): Fail early if we
+	exceed --param loop-max-datarefs-for-datadeps.
+
 2018-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/t-rs6000: Append rs6000-modes.h to TM_H.
