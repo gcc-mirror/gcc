@@ -11352,6 +11352,9 @@ and used by @option{-fprofile-use} and @option{-fbranch-probabilities}
 and its related options.  Both absolute and relative paths can be used.
 By default, GCC uses the current directory as @var{path}, thus the
 profile data file appears in the same directory as the object file.
+In order to prevent filename clashing, if object file name is not an absolute
+path, we mangle absolute path of @file{@var{sourcename}.gcda} file and
+use it as file name of a @file{.gcda} file.
 
 When an executable is run in a massive parallel environment, it is recommended
 to save profile to different folders.  That can be done with variables

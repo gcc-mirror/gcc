@@ -371,6 +371,7 @@ GCOV_LINKAGE void gcov_read_summary (struct gcov_summary *) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE const char *gcov_read_string (void);
 GCOV_LINKAGE void gcov_sync (gcov_position_t /*base*/,
 			     gcov_unsigned_t /*length */);
+char *mangle_path (char const *base);
 
 #if !IN_GCOV
 /* Available outside gcov */

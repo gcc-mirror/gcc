@@ -2461,42 +2461,7 @@ mangle_name (char const *base, char *ptr)
       ptr += len;
     }
   else
-    {
-      /* Convert '/' to '#', convert '..' to '^',
-	 convert ':' to '~' on DOS based file system.  */
-      const char *probe;
-
-#if HAVE_DOS_BASED_FILE_SYSTEM
-      if (base[0] && base[1] == ':')
-	{
-	  ptr[0] = base[0];
-	  ptr[1] = '~';
-	  ptr += 2;
-	  base += 2;
-	}
-#endif
-      for (; *base; base = probe)
-	{
-	  size_t len;
-
-	  for (probe = base; *probe; probe++)
-	    if (*probe == '/')
-	      break;
-	  len = probe - base;
-	  if (len == 2 && base[0] == '.' && base[1] == '.')
-	    *ptr++ = '^';
-	  else
-	    {
-	      memcpy (ptr, base, len);
-	      ptr += len;
-	    }
-	  if (*probe)
-	    {
-	      *ptr++ = '#';
-	      probe++;
-	    }
-	}
-    }
+    ptr = mangle_path (base);
 
   return ptr;
 }
