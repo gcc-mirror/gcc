@@ -60,7 +60,8 @@ proc gdb-test { args } {
     set cmd_file "[file rootname [file tail $prog]].gdb"
 
     set fd [open $cmd_file "w"]
-    puts $fd "break [lindex $args 0]"
+    set line [get-absolute-line "" [lindex $args 0]]
+    puts $fd "break $line"
     puts $fd "run"
     puts $fd "$command $var"
     if { $command == "print" } {

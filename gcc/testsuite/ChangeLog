@@ -1,3 +1,11 @@
+2018-06-29  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/guality/pr45882.c (foo): Add line number var for breakpoint
+	line, and use it.
+	* lib/gcc-dg.exp (get-absolute-line): Factor out of ...
+	(process-message): ... here.
+	* lib/gcc-gdb-test.exp (gdb-test): Use get-absolute-line.
+
 2018-06-29  Martin Liska  <mliska@suse.cz>
 
         PR tree-optimization/86263
