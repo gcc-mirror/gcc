@@ -1,3 +1,12 @@
+2018-06-29  Jeff Law  <law@redhat.com>
+
+	* config/v850/v850.c (v850_legitimate_address_p): Handle large
+	displacements for TARGET_V850E2V3 and newer.
+	(TARGET_LRA_P): Remove.  Defaults to LRA now.
+	* config/v850/v850.md (sign23byte_load): Remove.
+	(unsign23byte_load, sign23hword_load, unsign23hword_load): Likewise.
+	(23word_load, 23byte_store, 23hword_store, 23word_store): Likewise.
+
 2018-06-29  Martin Liska  <mliska@suse.cz>
 
 	PR lto/85759
