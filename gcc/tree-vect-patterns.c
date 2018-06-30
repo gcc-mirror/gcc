@@ -123,6 +123,30 @@ new_pattern_def_seq (stmt_vec_info stmt_info, gimple *stmt)
   append_pattern_def_seq (stmt_info, stmt);
 }
 
+/* The caller wants to perform new operations on vect_external variable
+   VAR, so that the result of the operations would also be vect_external.
+   Return the edge on which the operations can be performed, if one exists.
+   Return null if the operations should instead be treated as part of
+   the pattern that needs them.  */
+
+static edge
+vect_get_external_def_edge (vec_info *vinfo, tree var)
+{
+  edge e = NULL;
+  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+    {
+      e = loop_preheader_edge (loop_vinfo->loop);
+      if (!SSA_NAME_IS_DEFAULT_DEF (var))
+	{
+	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (var));
+	  if (bb == NULL
+	      || !dominated_by_p (CDI_DOMINATORS, e->dest, bb))
+	    e = NULL;
+	}
+    }
+  return e;
+}
+
 /* Return true if the target supports a vector version of CODE,
    where CODE is known to map to a direct optab.  ITYPE specifies
    the type of (some of) the scalar inputs and OTYPE specifies the
@@ -627,6 +651,16 @@ vect_convert_input (stmt_vec_info stmt_info, tree type,
   /* We need a new conversion statement.  */
   tree new_op = vect_recog_temp_ssa_var (type, NULL);
   gassign *new_stmt = gimple_build_assign (new_op, NOP_EXPR, unprom->op);
+
+  /* If OP is an external value, see if we can insert the new statement
+     on an incoming edge.  */
+  if (unprom->dt == vect_external_def)
+    if (edge e = vect_get_external_def_edge (stmt_info->vinfo, unprom->op))
+      {
+	basic_block new_bb = gsi_insert_on_edge_immediate (e, new_stmt);
+	gcc_assert (!new_bb);
+	return new_op;
+      }
 
   /* As a (common) last resort, add the statement to the pattern itself.  */
   append_pattern_def_seq (stmt_info, new_stmt, vectype);
@@ -1821,19 +1855,8 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_out)
   *type_out = vectype;
 
   if (dt == vect_external_def
-      && TREE_CODE (oprnd1) == SSA_NAME
-      && is_a <loop_vec_info> (vinfo))
-    {
-      struct loop *loop = as_a <loop_vec_info> (vinfo)->loop;
-      ext_def = loop_preheader_edge (loop);
-      if (!SSA_NAME_IS_DEFAULT_DEF (oprnd1))
-	{
-	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (oprnd1));
-	  if (bb == NULL
-	      || !dominated_by_p (CDI_DOMINATORS, ext_def->dest, bb))
-	    ext_def = NULL;
-	}
-    }
+      && TREE_CODE (oprnd1) == SSA_NAME)
+    ext_def = vect_get_external_def_edge (vinfo, oprnd1);
 
   def = NULL_TREE;
   scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
