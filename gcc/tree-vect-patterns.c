@@ -160,7 +160,7 @@ vect_get_internal_def (vec_info *vinfo, tree op)
   vect_def_type dt;
   gimple *def_stmt;
   if (TREE_CODE (op) != SSA_NAME
-      || !vect_is_simple_use (op, vinfo, &def_stmt, &dt)
+      || !vect_is_simple_use (op, vinfo, &dt, &def_stmt)
       || dt != vect_internal_def)
     return NULL;
 
@@ -177,14 +177,13 @@ static bool
 type_conversion_p (tree name, gimple *use_stmt, bool check_sign,
 		   tree *orig_type, gimple **def_stmt, bool *promotion)
 {
-  gimple *dummy_gimple;
   stmt_vec_info stmt_vinfo;
   tree type = TREE_TYPE (name);
   tree oprnd0;
   enum vect_def_type dt;
 
   stmt_vinfo = vinfo_for_stmt (use_stmt);
-  if (!vect_is_simple_use (name, stmt_vinfo->vinfo, def_stmt, &dt))
+  if (!vect_is_simple_use (name, stmt_vinfo->vinfo, &dt, def_stmt))
     return false;
 
   if (dt != vect_internal_def
@@ -219,7 +218,7 @@ type_conversion_p (tree name, gimple *use_stmt, bool check_sign,
   else
     *promotion = false;
 
-  if (!vect_is_simple_use (oprnd0, stmt_vinfo->vinfo, &dummy_gimple, &dt))
+  if (!vect_is_simple_use (oprnd0, stmt_vinfo->vinfo, &dt))
     return false;
 
   return true;
@@ -1795,7 +1794,7 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_out)
       || !TYPE_UNSIGNED (type))
     return NULL;
 
-  if (!vect_is_simple_use (oprnd1, vinfo, &def_stmt, &dt))
+  if (!vect_is_simple_use (oprnd1, vinfo, &dt, &def_stmt))
     return NULL;
 
   if (dt != vect_internal_def
@@ -3930,13 +3929,10 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_out)
 	  && known_le (TYPE_VECTOR_SUBPARTS (vectype1),
 		       TYPE_VECTOR_SUBPARTS (vectype2)))
 	{
-	  gimple *dummy;
 	  enum vect_def_type dt;
-	  if (vect_is_simple_use (TREE_OPERAND (rhs1, 0), stmt_vinfo->vinfo,
-				  &dummy, &dt)
+	  if (vect_is_simple_use (TREE_OPERAND (rhs1, 0), vinfo, &dt)
 	      && dt == vect_external_def
-	      && vect_is_simple_use (TREE_OPERAND (rhs1, 1), stmt_vinfo->vinfo,
-				     &dummy, &dt)
+	      && vect_is_simple_use (TREE_OPERAND (rhs1, 1), vinfo, &dt)
 	      && (dt == vect_external_def
 		  || dt == vect_constant_def))
 	    {
