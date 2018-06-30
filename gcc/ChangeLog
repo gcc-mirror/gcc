@@ -1,3 +1,12 @@
+2018-06-30  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/predicates.md (p2m1_shift_operand): New.
+	(high_mask_shift_operand): New.
+	* config/riscv/riscv.md (lshrsi3_zero_extend_3+1): New combiner
+	pattern using p2m1_shift_operand.
+	(lshsi3_zero_extend_3+2): New combiner pattern using
+	high_mask_shift_operand.
+
 2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-patterns.c (vect_get_external_def_edge): New function,
