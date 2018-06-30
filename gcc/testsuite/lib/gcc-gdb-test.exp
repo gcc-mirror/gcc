@@ -26,7 +26,7 @@
 #   calling print on it in gdb. When asking for the type it is
 #   the literal string with extra whitespace removed.
 # Argument 3 handles expected failures and the like
-proc gdb-test { args } {
+proc gdb-test { useline args } {
     if { ![isnative] || [is_remote target] } { return }
 
     if { [llength $args] >= 4 } {
@@ -60,7 +60,7 @@ proc gdb-test { args } {
     set cmd_file "[file rootname [file tail $prog]].gdb"
 
     set fd [open $cmd_file "w"]
-    set line [get-absolute-line "" [lindex $args 0]]
+    set line [get-absolute-line $useline [lindex $args 0]]
     puts $fd "break $line"
     puts $fd "run"
     puts $fd "$command $var"
