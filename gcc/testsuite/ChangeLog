@@ -1,3 +1,8 @@
+2018-06-30  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/86064
+	* gcc.dg/pr86064.c: New.
+
 2018-06-29  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline
