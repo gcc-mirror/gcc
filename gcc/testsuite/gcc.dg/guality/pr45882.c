@@ -2,8 +2,10 @@
 /* { dg-do run } */
 /* { dg-options "-g" } */
 
+#include "prevent-optimization.h"
+
 extern void abort (void);
-int a[1024] __attribute__((used));
+int a[1024] ATTRIBUTE_USED;
 volatile short int v;
 
 __attribute__((noinline,noclone,used)) int

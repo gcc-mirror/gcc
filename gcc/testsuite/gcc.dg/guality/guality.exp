@@ -48,6 +48,28 @@ if ![info exists ::env(GUALITY_GDB_NAME)] {
 }
 report_gdb $::env(GUALITY_GDB_NAME) [info script]
 
+proc guality_transform_options { args } {
+    set res [list]
+    foreach opt [lindex $args 0] {
+	#
+	if { ! [regexp -- "-O0" $opt] } {
+	    set opt "$opt -DPREVENT_OPTIMIZATION"
+	}
+	lappend res $opt
+    }
+
+    return $res
+}
+
+global DG_TORTURE_OPTIONS
+set guality_dg_torture_options [guality_transform_options $DG_TORTURE_OPTIONS]
+set guality_lto_torture_options [guality_transform_options $LTO_TORTURE_OPTIONS]
+torture-init
+set-torture-options \
+    $guality_dg_torture_options \
+    [list {}] \
+    $guality_lto_torture_options
+
 if {[check_guality "
   #include \"$srcdir/$subdir/guality.h\"
   volatile long int varl = 6;
@@ -65,4 +87,5 @@ if [info exists guality_gdb_name] {
     unsetenv GUALITY_GDB_NAME
 }
 
+torture-finish
 dg-finish
