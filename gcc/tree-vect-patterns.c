@@ -239,6 +239,36 @@ vect_reassociating_reduction_p (stmt_vec_info stmt_vinfo)
 	  : REDUC_GROUP_FIRST_ELEMENT (stmt_vinfo) != NULL);
 }
 
+/* As above, but also require it to have code CODE and to be a reduction
+   in the outermost loop.  When returning true, store the operands in
+   *OP0_OUT and *OP1_OUT.  */
+
+static bool
+vect_reassociating_reduction_p (stmt_vec_info stmt_info, tree_code code,
+				tree *op0_out, tree *op1_out)
+{
+  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
+  if (!loop_info)
+    return false;
+
+  gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
+  if (!assign || gimple_assign_rhs_code (assign) != code)
+    return false;
+
+  /* We don't allow changing the order of the computation in the inner-loop
+     when doing outer-loop vectorization.  */
+  struct loop *loop = LOOP_VINFO_LOOP (loop_info);
+  if (loop && nested_in_vect_loop_p (loop, assign))
+    return false;
+
+  if (!vect_reassociating_reduction_p (stmt_info))
+    return false;
+
+  *op0_out = gimple_assign_rhs1 (assign);
+  *op1_out = gimple_assign_rhs2 (assign);
+  return true;
+}
+
 /* Function vect_recog_dot_prod_pattern
 
    Try to find the following pattern:
@@ -293,25 +323,8 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_out)
   tree type, half_type;
   gimple *pattern_stmt;
   tree prod_type;
-  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  struct loop *loop;
   tree var;
   bool promotion;
-
-  if (!loop_info)
-    return NULL;
-
-  loop = LOOP_VINFO_LOOP (loop_info);
-
-  /* We don't allow changing the order of the computation in the inner-loop
-     when doing outer-loop vectorization.  */
-  if (loop && nested_in_vect_loop_p (loop, last_stmt))
-    return NULL;
-
-  if (!is_gimple_assign (last_stmt))
-    return NULL;
-
-  type = gimple_expr_type (last_stmt);
 
   /* Look for the following pattern
           DX = (TYPE1) X;
@@ -337,17 +350,14 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_out)
   /* Starting from LAST_STMT, follow the defs of its uses in search
      of the above pattern.  */
 
-  if (gimple_assign_rhs_code (last_stmt) != PLUS_EXPR)
-    return NULL;
-
   if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
     return NULL;
 
-  if (!vect_reassociating_reduction_p (stmt_vinfo))
+  if (!vect_reassociating_reduction_p (stmt_vinfo, PLUS_EXPR,
+				       &oprnd0, &oprnd1))
     return NULL;
 
-  oprnd0 = gimple_assign_rhs1 (last_stmt);
-  oprnd1 = gimple_assign_rhs2 (last_stmt);
+  type = gimple_expr_type (last_stmt);
   stmt = last_stmt;
 
   gimple *def_stmt;
@@ -471,24 +481,7 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_out)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
   vec_info *vinfo = stmt_vinfo->vinfo;
   tree half_type;
-  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  struct loop *loop;
   bool promotion;
-
-  if (!loop_info)
-    return NULL;
-
-  loop = LOOP_VINFO_LOOP (loop_info);
-
-  /* We don't allow changing the order of the computation in the inner-loop
-     when doing outer-loop vectorization.  */
-  if (loop && nested_in_vect_loop_p (loop, last_stmt))
-    return NULL;
-
-  if (!is_gimple_assign (last_stmt))
-    return NULL;
-
-  tree sum_type = gimple_expr_type (last_stmt);
 
   /* Look for the following pattern
           DX = (TYPE1) X;
@@ -517,19 +510,15 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_out)
   /* Starting from LAST_STMT, follow the defs of its uses in search
      of the above pattern.  */
 
-  if (gimple_assign_rhs_code (last_stmt) != PLUS_EXPR)
-    return NULL;
-
-  tree plus_oprnd0, plus_oprnd1;
-
   if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
     return NULL;
 
-  if (!vect_reassociating_reduction_p (stmt_vinfo))
+  tree plus_oprnd0, plus_oprnd1;
+  if (!vect_reassociating_reduction_p (stmt_vinfo, PLUS_EXPR,
+				       &plus_oprnd0, &plus_oprnd1))
     return NULL;
 
-  plus_oprnd0 = gimple_assign_rhs1 (last_stmt);
-  plus_oprnd1 = gimple_assign_rhs2 (last_stmt);
+  tree sum_type = gimple_expr_type (last_stmt);
 
   /* The type conversion could be promotion, demotion,
      or just signed -> unsigned.  */
@@ -1133,25 +1122,11 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_out)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
   tree type, half_type;
   gimple *pattern_stmt;
-  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  struct loop *loop;
   tree var;
   bool promotion;
 
-  if (!loop_info)
+  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
     return NULL;
-
-  loop = LOOP_VINFO_LOOP (loop_info);
-
-  /* We don't allow changing the order of the computation in the inner-loop
-     when doing outer-loop vectorization.  */
-  if (loop && nested_in_vect_loop_p (loop, last_stmt))
-    return NULL;
-
-  if (!is_gimple_assign (last_stmt))
-    return NULL;
-
-  type = gimple_expr_type (last_stmt);
 
   /* Look for the following pattern
           DX = (TYPE) X;
@@ -1163,14 +1138,11 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_out)
   /* Starting from LAST_STMT, follow the defs of its uses in search
      of the above pattern.  */
 
-  if (gimple_assign_rhs_code (last_stmt) != PLUS_EXPR)
+  if (!vect_reassociating_reduction_p (stmt_vinfo, PLUS_EXPR,
+				       &oprnd0, &oprnd1))
     return NULL;
 
-  if (!vect_reassociating_reduction_p (stmt_vinfo))
-    return NULL;
-
-  oprnd0 = gimple_assign_rhs1 (last_stmt);
-  oprnd1 = gimple_assign_rhs2 (last_stmt);
+  type = gimple_expr_type (last_stmt);
 
   /* So far so good.  Since last_stmt was detected as a (summation) reduction,
      we know that oprnd1 is the reduction variable (defined by a loop-header
