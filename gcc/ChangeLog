@@ -1,3 +1,10 @@
+2018-06-30  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/86064
+	* dwarf2out.c (loc_list_has_views): Adjust comments.
+	(dw_loc_list): Split single cross-partition range with
+	nonzero locview.
+
 2018-06-29  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backport from mainline
