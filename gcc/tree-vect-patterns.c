@@ -60,6 +60,42 @@ vect_pattern_detected (const char *name, gimple *stmt)
     }
 }
 
+/* Associate pattern statement PATTERN_STMT with ORIG_STMT_INFO.
+   Set its vector type to VECTYPE if it doesn't have one already.  */
+
+static void
+vect_init_pattern_stmt (gimple *pattern_stmt, stmt_vec_info orig_stmt_info,
+			tree vectype)
+{
+  stmt_vec_info pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
+  if (pattern_stmt_info == NULL)
+    {
+      pattern_stmt_info = new_stmt_vec_info (pattern_stmt,
+					     orig_stmt_info->vinfo);
+      set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
+    }
+  gimple_set_bb (pattern_stmt, gimple_bb (orig_stmt_info->stmt));
+
+  STMT_VINFO_RELATED_STMT (pattern_stmt_info) = orig_stmt_info->stmt;
+  STMT_VINFO_DEF_TYPE (pattern_stmt_info)
+    = STMT_VINFO_DEF_TYPE (orig_stmt_info);
+  if (!STMT_VINFO_VECTYPE (pattern_stmt_info))
+    STMT_VINFO_VECTYPE (pattern_stmt_info) = vectype;
+}
+
+/* Set the pattern statement of ORIG_STMT_INFO to PATTERN_STMT.
+   Also set the vector type of PATTERN_STMT to VECTYPE, if it doesn't
+   have one already.  */
+
+static void
+vect_set_pattern_stmt (gimple *pattern_stmt, stmt_vec_info orig_stmt_info,
+		       tree vectype)
+{
+  STMT_VINFO_IN_PATTERN_P (orig_stmt_info) = true;
+  STMT_VINFO_RELATED_STMT (orig_stmt_info) = pattern_stmt;
+  vect_init_pattern_stmt (pattern_stmt, orig_stmt_info, vectype);
+}
+
 static inline void
 append_pattern_def_seq (stmt_vec_info stmt_info, gimple *stmt)
 {
@@ -350,9 +386,6 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_out)
   /* Starting from LAST_STMT, follow the defs of its uses in search
      of the above pattern.  */
 
-  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-    return NULL;
-
   if (!vect_reassociating_reduction_p (stmt_vinfo, PLUS_EXPR,
 				       &oprnd0, &oprnd1))
     return NULL;
@@ -509,9 +542,6 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_out)
 
   /* Starting from LAST_STMT, follow the defs of its uses in search
      of the above pattern.  */
-
-  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-    return NULL;
 
   tree plus_oprnd0, plus_oprnd1;
   if (!vect_reassociating_reduction_p (stmt_vinfo, PLUS_EXPR,
@@ -1125,9 +1155,6 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_out)
   tree var;
   bool promotion;
 
-  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-    return NULL;
-
   /* Look for the following pattern
           DX = (TYPE) X;
           sum_1 = DX + sum_0;
@@ -1603,9 +1630,6 @@ vect_recog_widen_shift_pattern (vec<gimple *> *stmts, tree *type_out)
   if (!is_gimple_assign (last_stmt) || !vinfo_for_stmt (last_stmt))
     return NULL;
 
-  if (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (last_stmt)))
-    return NULL;
-
   if (gimple_assign_rhs_code (last_stmt) != LSHIFT_EXPR)
     return NULL;
 
@@ -1739,9 +1763,6 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_out)
     default:
       return NULL;
     }
-
-  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-    return NULL;
 
   lhs = gimple_assign_lhs (last_stmt);
   oprnd0 = gimple_assign_rhs1 (last_stmt);
@@ -1984,9 +2005,6 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts, tree *type_out)
     default:
       return NULL;
     }
-
-  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-    return NULL;
 
   lhs = gimple_assign_lhs (last_stmt);
   oprnd0 = gimple_assign_rhs1 (last_stmt);
@@ -2485,9 +2503,6 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts, tree *type_out)
     default:
       return NULL;
     }
-
-  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-    return NULL;
 
   oprnd0 = gimple_assign_rhs1 (last_stmt);
   oprnd1 = gimple_assign_rhs2 (last_stmt);
@@ -3825,11 +3840,6 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_out)
   /* Check for cond expression requiring mask conversion.  */
   if (rhs_code == COND_EXPR)
     {
-      /* vect_recog_mixed_size_cond_pattern could apply.
-	 Do nothing then.  */
-      if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
-	return NULL;
-
       vectype1 = get_vectype_for_scalar_type (TREE_TYPE (lhs));
 
       if (TREE_CODE (rhs1) == SSA_NAME)
@@ -4215,42 +4225,59 @@ static inline void
 vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
                          tree pattern_vectype)
 {
-  stmt_vec_info pattern_stmt_info, def_stmt_info;
   stmt_vec_info orig_stmt_info = vinfo_for_stmt (orig_stmt);
-  vec_info *vinfo = orig_stmt_info->vinfo;
-  gimple *def_stmt;
+  gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_info);
 
-  pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
-  if (pattern_stmt_info == NULL)
+  bool old_pattern_p = is_pattern_stmt_p (orig_stmt_info);
+  if (old_pattern_p)
     {
-      pattern_stmt_info = new_stmt_vec_info (pattern_stmt, vinfo);
-      set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
-    }
-  gimple_set_bb (pattern_stmt, gimple_bb (orig_stmt));
+      /* We're replacing a statement in an existing pattern definition
+	 sequence.  */
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "replacing earlier pattern ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, orig_stmt, 0);
+	}
 
-  STMT_VINFO_RELATED_STMT (pattern_stmt_info) = orig_stmt;
-  STMT_VINFO_DEF_TYPE (pattern_stmt_info)
-    = STMT_VINFO_DEF_TYPE (orig_stmt_info);
-  STMT_VINFO_VECTYPE (pattern_stmt_info) = pattern_vectype;
-  STMT_VINFO_IN_PATTERN_P (orig_stmt_info) = true;
-  STMT_VINFO_RELATED_STMT (orig_stmt_info) = pattern_stmt;
-  if (gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_info))
+      /* To keep the book-keeping simple, just swap the lhs of the
+	 old and new statements, so that the old one has a valid but
+	 unused lhs.  */
+      tree old_lhs = gimple_get_lhs (orig_stmt);
+      gimple_set_lhs (orig_stmt, gimple_get_lhs (pattern_stmt));
+      gimple_set_lhs (pattern_stmt, old_lhs);
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location, "with ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
+	}
+
+      /* Switch to the statement that ORIG replaces.  */
+      orig_stmt_info
+	= vinfo_for_stmt (STMT_VINFO_RELATED_STMT (orig_stmt_info));
+
+      /* We shouldn't be replacing the main pattern statement.  */
+      gcc_assert (STMT_VINFO_RELATED_STMT (orig_stmt_info) != orig_stmt);
+    }
+
+  if (def_seq)
     for (gimple_stmt_iterator si = gsi_start (def_seq);
 	 !gsi_end_p (si); gsi_next (&si))
-      {
-	def_stmt = gsi_stmt (si);
-	def_stmt_info = vinfo_for_stmt (def_stmt);
-	if (def_stmt_info == NULL)
-	  {
-	    def_stmt_info = new_stmt_vec_info (def_stmt, vinfo);
-	    set_vinfo_for_stmt (def_stmt, def_stmt_info);
-	  }
-	gimple_set_bb (def_stmt, gimple_bb (orig_stmt));
-	STMT_VINFO_RELATED_STMT (def_stmt_info) = orig_stmt;
-	STMT_VINFO_DEF_TYPE (def_stmt_info) = vect_internal_def;
-	if (STMT_VINFO_VECTYPE (def_stmt_info) == NULL_TREE)
-	  STMT_VINFO_VECTYPE (def_stmt_info) = pattern_vectype;
-      }
+      vect_init_pattern_stmt (gsi_stmt (si), orig_stmt_info, pattern_vectype);
+
+  if (old_pattern_p)
+    {
+      vect_init_pattern_stmt (pattern_stmt, orig_stmt_info, pattern_vectype);
+
+      /* Insert all the new pattern statements before the original one.  */
+      gimple_seq *orig_def_seq = &STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_info);
+      gimple_stmt_iterator gsi = gsi_for_stmt (orig_stmt, orig_def_seq);
+      gsi_insert_seq_before_without_update (&gsi, def_seq, GSI_SAME_STMT);
+      gsi_insert_before_without_update (&gsi, pattern_stmt, GSI_SAME_STMT);
+    }
+  else
+    vect_set_pattern_stmt (pattern_stmt, orig_stmt_info, pattern_vectype);
 }
 
 /* Function vect_pattern_recog_1
@@ -4271,7 +4298,7 @@ vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
    This function also does some bookkeeping, as explained in the documentation
    for vect_recog_pattern.  */
 
-static bool
+static void
 vect_pattern_recog_1 (vect_recog_func *recog_func,
 		      gimple_stmt_iterator si,
 		      vec<gimple *> *stmts_to_replace)
@@ -4281,6 +4308,20 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
   loop_vec_info loop_vinfo;
   tree pattern_vectype;
   int i;
+
+  /* If this statement has already been replaced with pattern statements,
+     leave the original statement alone, since the first match wins.
+     Instead try to match against the definition statements that feed
+     the main pattern statement.  */
+  stmt_info = vinfo_for_stmt (stmt);
+  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start (STMT_VINFO_PATTERN_DEF_SEQ (stmt_info));
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	vect_pattern_recog_1 (recog_func, gsi, stmts_to_replace);
+      return;
+    }
 
   stmts_to_replace->truncate (0);
   stmts_to_replace->quick_push (stmt);
@@ -4294,9 +4335,10 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
 	   i++)
 	{
 	  stmt_info = vinfo_for_stmt (stmt);
-	  STMT_VINFO_RELATED_STMT (stmt_info) = NULL;
+	  if (!is_pattern_stmt_p (stmt_info))
+	    STMT_VINFO_RELATED_STMT (stmt_info) = NULL;
 	}
-      return false;
+      return;
     }
 
   stmt = stmts_to_replace->last ();
@@ -4344,7 +4386,7 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
       vect_mark_pattern_stmts (stmt, pattern_stmt, NULL_TREE);
     }
 
-  return true;
+  return;
 }
 
 
@@ -4449,17 +4491,10 @@ vect_pattern_recog (vec_info *vinfo)
 	{
 	  basic_block bb = bbs[i];
 	  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-	    {
-	      gimple *stmt = gsi_stmt (si);
-	      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-	      if (stmt_info && STMT_VINFO_IN_PATTERN_P (stmt_info))
-		continue;
-	      /* Scan over all generic vect_recog_xxx_pattern functions.  */
-	      for (j = 0; j < NUM_PATTERNS; j++)
-		if (vect_pattern_recog_1 (&vect_vect_recog_func_ptrs[j], si,
-					  &stmts_to_replace))
-		  break;
-	    }
+	    /* Scan over all generic vect_recog_xxx_pattern functions.  */
+	    for (j = 0; j < NUM_PATTERNS; j++)
+	      vect_pattern_recog_1 (&vect_vect_recog_func_ptrs[j], si,
+				    &stmts_to_replace);
 	}
     }
   else
@@ -4470,16 +4505,13 @@ vect_pattern_recog (vec_info *vinfo)
 	{
 	  gimple *stmt = gsi_stmt (si);
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-	  if (stmt_info
-	      && (!STMT_VINFO_VECTORIZABLE (stmt_info)
-		  || STMT_VINFO_IN_PATTERN_P (stmt_info)))
+	  if (stmt_info && !STMT_VINFO_VECTORIZABLE (stmt_info))
 	    continue;
 
 	  /* Scan over all generic vect_recog_xxx_pattern functions.  */
 	  for (j = 0; j < NUM_PATTERNS; j++)
-	    if (vect_pattern_recog_1 (&vect_vect_recog_func_ptrs[j], si,
-				      &stmts_to_replace))
-	      break;
+	    vect_pattern_recog_1 (&vect_vect_recog_func_ptrs[j], si,
+				  &stmts_to_replace);
 	}
     }
 }
