@@ -114,6 +114,26 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 	[concat $DG_TORTURE_OPTIONS $ADDITIONAL_TORTURE_OPTIONS]
 }
 
+proc dg-final { args } {
+    upvar dg-final-code final-code
+
+    if { [llength $args] > 2 } {
+	error "[lindex $args 0]: too many arguments"
+    }
+    set line [lindex $args 0]
+    set code [lindex $args 1]
+    set directive [lindex $code 0]
+    set withline \
+	[switch $directive {
+	    gdb-test {expr {1}}
+	    default  {expr {0}}
+	}]
+    if { $withline == 1 } {
+	set code [linsert $code 1 $line]
+    }
+    append final-code "$code\n"
+}
+
 global orig_environment_saved
 
 # Deduce generated files from tool flags, return finalcode string
