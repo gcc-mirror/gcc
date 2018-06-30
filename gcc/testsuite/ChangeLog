@@ -1,5 +1,14 @@
 2018-06-30  Tom de Vries  <tdevries@suse.de>
 
+	* gcc.dg/guality/guality.exp (guality_transform_options): New proc.
+	(toplevel): Apply guality_transform_options on DG_TORTURE_OPTIONS and
+	LTO_TORTURE_OPTIONS.
+	* gcc.dg/guality/prevent-optimization.h: New file.
+	* gcc.dg/guality/pr45882.c: Include prevent-optimization.h.
+	(a): Replace __attribute__((used)) with ATTRIBUTE_USED.
+
+2018-06-30  Tom de Vries  <tdevries@suse.de>
+
 	* gcc.dg/guality/pr45882.c (foo): Use relative line numbers.
 	* lib/gcc-dg.exp (dg-final): New proc.
 	* lib/gcc-gdb-test.exp (gdb-test): Add and handle additional line number
