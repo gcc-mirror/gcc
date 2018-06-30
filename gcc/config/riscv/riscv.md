@@ -1711,6 +1711,38 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
+;; Handle AND with 2^N-1 for N from 12 to XLEN.  This can be split into
+;; two logical shifts.  Otherwise it requires 3 instructions: lui,
+;; xor/addi/srli, and.
+(define_split
+  [(set (match_operand:GPR 0 "register_operand")
+	(and:GPR (match_operand:GPR 1 "register_operand")
+		 (match_operand:GPR 2 "p2m1_shift_operand")))]
+  ""
+ [(set (match_dup 0)
+       (ashift:GPR (match_dup 1) (match_dup 2)))
+  (set (match_dup 0)
+       (lshiftrt:GPR (match_dup 0) (match_dup 2)))]
+{
+  operands[2] = GEN_INT (BITS_PER_WORD
+			 - exact_log2 (INTVAL (operands[2]) + 1));
+})
+  
+;; Handle AND with 0xF...F0...0 where there are 32 to 63 zeros.  This can be
+;; split into two shifts.  Otherwise it requires 3 instructions: li, sll, and.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(and:DI (match_operand:DI 1 "register_operand")
+		(match_operand:DI 2 "high_mask_shift_operand")))]
+  "TARGET_64BIT"
+  [(set (match_dup 0)
+	(lshiftrt:DI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(ashift:DI (match_dup 0) (match_dup 2)))]
+{
+  operands[2] = GEN_INT (ctz_hwi (INTVAL (operands[2])));
+})
+
 ;;
 ;;  ....................
 ;;
