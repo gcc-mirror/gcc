@@ -506,8 +506,6 @@ process_use (gimple *stmt, tree use, loop_vec_info loop_vinfo,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "reduc-stmt defining reduc-phi in the same nest.\n");
-      if (STMT_VINFO_IN_PATTERN_P (dstmt_vinfo))
-	dstmt_vinfo = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (dstmt_vinfo));
       gcc_assert (STMT_VINFO_RELEVANT (dstmt_vinfo) < vect_used_by_reduction);
       gcc_assert (STMT_VINFO_LIVE_P (dstmt_vinfo)
 		  || STMT_VINFO_RELEVANT (dstmt_vinfo) > vect_unused_in_scope);
@@ -10069,8 +10067,6 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
     }
 
   gimple *def_stmt = SSA_NAME_DEF_STMT (operand);
-  if (def_stmt_out)
-    *def_stmt_out = def_stmt;
   if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_NOTE, vect_location, "def_stmt: ");
@@ -10082,8 +10078,15 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
   else
     {
       stmt_vec_info stmt_vinfo = vinfo_for_stmt (def_stmt);
+      if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
+	{
+	  def_stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
+	  stmt_vinfo = vinfo_for_stmt (def_stmt);
+	}
       *dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
     }
+  if (def_stmt_out)
+    *def_stmt_out = def_stmt;
 
   if (dump_enabled_p ())
     {
@@ -10174,12 +10177,6 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
       || *dt == vect_nested_cycle)
     {
       stmt_vec_info stmt_info = vinfo_for_stmt (def_stmt);
-
-      if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-          && !STMT_VINFO_RELEVANT (stmt_info)
-          && !STMT_VINFO_LIVE_P (stmt_info))
-	stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
-
       *vectype = STMT_VINFO_VECTYPE (stmt_info);
       gcc_assert (*vectype != NULL_TREE);
     }

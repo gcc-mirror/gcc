@@ -1,5 +1,28 @@
 2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-loop.c (vectorizable_reduction): Assert that the
+	phi is not a pattern statement and has not been replaced by
+	a pattern statement.
+	* tree-vect-patterns.c (type_conversion_p): Don't check
+	STMT_VINFO_IN_PATTERN_P.
+	(vect_recog_vector_vector_shift_pattern): Likewise.
+	(vect_recog_dot_prod_pattern): Expect vect_is_simple_use to return
+	the pattern statement rather than the original statement; check
+	directly for a WIDEN_MULT_EXPR here.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Expect
+	vect_is_simple_use to return the pattern statement rather
+	than the original statement; use is_pattern_stmt_p to check
+	for such a pattern statement.
+	* tree-vect-stmts.c (process_use): Expect vect_is_simple_use
+	to return the pattern statement rather than the original statement;
+	don't do the same transformation here.
+	(vect_is_simple_use): If the defining statement has been replaced
+	by a pattern statement, return the pattern statement instead.
+	Remove the corresponding (local) transformation from the vectype
+	overload.
+
+2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vectorizer.h (vect_is_simple_use): Move the gimple ** to the
 	end and default to null.
 	* tree-vect-loop.c (vect_create_epilog_for_reduction)

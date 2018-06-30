@@ -193,13 +193,6 @@ type_conversion_p (tree name, gimple *use_stmt, bool check_sign,
   if (!*def_stmt)
     return false;
 
-  if (dt == vect_internal_def)
-    {
-      stmt_vec_info def_vinfo = vinfo_for_stmt (*def_stmt);
-      if (STMT_VINFO_IN_PATTERN_P (def_vinfo))
-	return false;
-    }
-
   if (!is_gimple_assign (*def_stmt))
     return false;
 
@@ -383,20 +376,11 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_out)
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
   gassign *mult = dyn_cast <gassign *> (mult_vinfo->stmt);
-  if (!mult || gimple_assign_rhs_code (mult) != MULT_EXPR)
+  if (!mult)
     return NULL;
-  if (STMT_VINFO_IN_PATTERN_P (mult_vinfo))
+  if (gimple_assign_rhs_code (mult) == WIDEN_MULT_EXPR)
     {
       /* Has been detected as a widening multiplication?  */
-
-      mult = dyn_cast <gassign *> (STMT_VINFO_RELATED_STMT (mult_vinfo));
-      if (!mult || gimple_assign_rhs_code (mult) != WIDEN_MULT_EXPR)
-        return NULL;
-      STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo)
-	= STMT_VINFO_PATTERN_DEF_SEQ (mult_vinfo);
-      mult_vinfo = vinfo_for_stmt (mult);
-      gcc_assert (mult_vinfo);
-      gcc_assert (STMT_VINFO_DEF_TYPE (mult_vinfo) == vect_internal_def);
       oprnd00 = gimple_assign_rhs1 (mult);
       oprnd01 = gimple_assign_rhs2 (mult);
     }
@@ -405,6 +389,9 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_out)
       tree half_type0, half_type1;
       gimple *def_stmt;
       tree oprnd0, oprnd1;
+
+      if (gimple_assign_rhs_code (mult) != MULT_EXPR)
+	return NULL;
 
       oprnd0 = gimple_assign_rhs1 (mult);
       oprnd1 = gimple_assign_rhs2 (mult);
@@ -2050,9 +2037,7 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts, tree *type_out)
 
   tree def = NULL_TREE;
   gassign *def_stmt = dyn_cast <gassign *> (def_vinfo->stmt);
-  if (!STMT_VINFO_IN_PATTERN_P (def_vinfo)
-      && def_stmt
-      && gimple_assign_cast_p (def_stmt))
+  if (def_stmt && gimple_assign_cast_p (def_stmt))
     {
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
       if (TYPE_MODE (TREE_TYPE (rhs1)) == TYPE_MODE (TREE_TYPE (oprnd0))

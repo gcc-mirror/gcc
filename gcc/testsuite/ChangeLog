@@ -1,3 +1,8 @@
+2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-reduc-dot-u16b.c: Remove xfail and update the
+	test for vectorization along the lines described in the comment.
+
 2018-06-30  Tom de Vries  <tdevries@suse.de>
 
 	* gcc.dg/guality/guality.exp (guality_transform_options): New proc.
