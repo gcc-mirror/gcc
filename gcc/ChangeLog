@@ -1,5 +1,41 @@
 2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-patterns.c (append_pattern_def_seq): Take an optional
+	vector type.  If given, install it in the new statement's
+	STMT_VINFO_VECTYPE.
+	(vect_element_precision): New function.
+	(vect_unpromoted_value): New struct.
+	(vect_unpromoted_value::vect_unpromoted_value): New function.
+	(vect_unpromoted_value::set_op): Likewise.
+	(vect_look_through_possible_promotion): Likewise.
+	(vect_joust_widened_integer, vect_joust_widened_type): Likewise.
+	(vect_widened_op_tree, vect_convert_input): Likewise.
+	(vect_convert_inputs, vect_convert_output): Likewise.
+	(vect_recog_dot_prod_pattern): Use vect_look_through_possible_promotion
+	to handle the optional cast of the multiplication result and
+	vect_widened_op_tree to detect the widened multiplication itself.
+	Do not require the input and output of promotion casts to have
+	the same sign, but base the signedness of the operation on the
+	input rather than the result.  If the pattern includes two
+	promotions, check that those promotions have the same sign.
+	Do not restrict the MULT_EXPR handling to a double-width result;
+	handle quadruple-width results and wider.  Use vect_convert_inputs
+	to convert the inputs to the common type.
+	(vect_recog_sad_pattern):  Use vect_look_through_possible_promotion
+	to handle the optional cast of the ABS result.  Also allow a sign
+	change or a sign extension between the ABS and MINUS.
+	Use vect_widened_op_tree to detect the widened subtraction and use
+	vect_convert_inputs to convert the inputs to the common type.
+	(vect_handle_widen_op_by_const): Delete.
+	(vect_recog_widen_op_pattern): New function.
+	(vect_recog_widen_mult_pattern): Use it.
+	(vect_recog_widen_shift_pattern): Likewise.
+	(vect_recog_widen_sum_pattern): Use
+	vect_look_through_possible_promotion to handle the promoted
+	PLUS_EXPR operand.
+
+2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gimple-iterator.c (gsi_for_stmt): Add a new overload that takes
 	the containing gimple_seq *.
 	* gimple-iterator.h (gsi_for_stmt): Declare it.

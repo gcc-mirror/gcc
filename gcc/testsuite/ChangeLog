@@ -1,5 +1,37 @@
 2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/vect-widen-mult-sum.c: Remove xfail.
+	* gcc.dg/vect/no-scevccp-outer-6.c: Don't match widened multiplications
+	by 4 in the computation of a[i].
+	* gcc.dg/vect/vect-mult-const-pattern-1.c: Test specifically for the
+	main multiplication constant.
+	* gcc.dg/vect/vect-mult-const-pattern-2.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: Likewise.  Expect the
+	pattern to cast the result to int.
+	* gcc.dg/vect/vect-reduc-dot-1.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-2.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-3.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-4.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-5.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-6.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-7.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-8.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad-1.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad-2.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad-3.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad-4.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad-5.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad-6.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad-7.c: Likewise.
+	* gcc.dg/vect/vect-reduc-sad-8.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-1.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-2.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-3.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-4.c: Likewise.
+
+2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-reduc-dot-u16b.c: Remove xfail and update the
 	test for vectorization along the lines described in the comment.
 
