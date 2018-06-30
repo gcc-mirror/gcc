@@ -3038,8 +3038,9 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 	 while we need to move it above LOOP's preheader.  */
       e = loop_preheader_edge (loop);
       scalar_e = loop_preheader_edge (scalar_loop);
-      gcc_assert (empty_block_p (e->src)
-		  && single_pred_p (e->src));
+      /* The vector loop preheader might not be empty, since new
+	 invariants could have been created while analyzing the loop.  */
+      gcc_assert (single_pred_p (e->src));
       gcc_assert (empty_block_p (scalar_e->src)
 		  && single_pred_p (scalar_e->src));
       gcc_assert (single_pred_p (condition_bb));

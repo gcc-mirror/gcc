@@ -1,5 +1,9 @@
 2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/vect-widen-mult-extern-1.c: New test.
+
+2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-widen-mult-sum.c: Remove xfail.
 	* gcc.dg/vect/no-scevccp-outer-6.c: Don't match widened multiplications
 	by 4 in the computation of a[i].

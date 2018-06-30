@@ -1,5 +1,15 @@
 2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-patterns.c (vect_get_external_def_edge): New function,
+	split out from...
+	(vect_recog_rotate_pattern): ...here.
+	(vect_convert_input): Try to insert casts of invariants in the
+	preheader.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Don't require the
+	preheader to be empty.
+
+2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-patterns.c (append_pattern_def_seq): Take an optional
 	vector type.  If given, install it in the new statement's
 	STMT_VINFO_VECTYPE.
