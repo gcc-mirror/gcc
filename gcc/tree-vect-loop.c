@@ -6487,6 +6487,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     }
 
   stmt_vec_info reduc_def_info = vinfo_for_stmt (reduc_def_stmt);
+  /* PHIs should not participate in patterns.  */
+  gcc_assert (!STMT_VINFO_RELATED_STMT (reduc_def_info));
   enum vect_reduction_type v_reduc_type
     = STMT_VINFO_REDUC_TYPE (reduc_def_info);
   gimple *tmp = STMT_VINFO_REDUC_DEF (reduc_def_info);
