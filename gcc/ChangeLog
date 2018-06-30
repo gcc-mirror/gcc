@@ -1,3 +1,28 @@
+2018-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_is_simple_use): Move the gimple ** to the
+	end and default to null.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction)
+	(vectorizable_reduction): Update calls accordingly, dropping the
+	gimple ** argument if the passed-back statement isn't needed.
+	* tree-vect-patterns.c (vect_get_internal_def, type_conversion_p)
+	(vect_recog_rotate_pattern): Likewise.
+	(vect_recog_mask_conversion_pattern): Likewise.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Likewise.
+	(vect_mask_constant_operand_p): Likewise.
+	* tree-vect-stmts.c (is_simple_and_all_uses_invariant, process_use):
+	(vect_model_simple_cost, vect_get_vec_def_for_operand): Likewise.
+	(get_group_load_store_type, get_load_store_type): Likewise.
+	(vect_check_load_store_mask, vect_check_store_rhs): Likewise.
+	(vectorizable_call, vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion, vectorizable_assignment): Likewise.
+	(vectorizable_shift, vectorizable_operation): Likewise.
+	(vectorizable_store, vect_is_simple_cond): Likewise.
+	(vectorizable_condition, vectorizable_comparison): Likewise.
+	(get_same_sized_vectype, vect_get_mask_type_for_stmt): Likewise.
+	(vect_is_simple_use): Rename the def_stmt argument to def_stmt_out
+	and move it to the end.  Cope with null def_stmt_outs.
+
 2018-06-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* Makefile.in (FLAGS_TO_PASS): Add RANLIB_FOR_TARGET.

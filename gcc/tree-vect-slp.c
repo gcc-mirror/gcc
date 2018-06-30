@@ -348,7 +348,7 @@ again:
 
       oprnd_info = (*oprnds_info)[i];
 
-      if (!vect_is_simple_use (oprnd, vinfo, &def_stmt, &dt))
+      if (!vect_is_simple_use (oprnd, vinfo, &dt, &def_stmt))
 	{
 	  if (dump_enabled_p ())
 	    {
@@ -3105,7 +3105,6 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   enum tree_code code = gimple_expr_code (stmt);
   tree op, vectype;
-  gimple *def_stmt;
   enum vect_def_type dt;
 
   /* For comparison and COND_EXPR type is chosen depending
@@ -3117,8 +3116,7 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
       else
 	op = gimple_assign_rhs2 (stmt);
 
-      if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &def_stmt,
-			       &dt, &vectype))
+      if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &dt, &vectype))
 	gcc_unreachable ();
 
       return !vectype || VECTOR_BOOLEAN_TYPE_P (vectype);
@@ -3135,8 +3133,7 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
       else
 	op = TREE_OPERAND (cond, 0);
 
-      if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &def_stmt,
-			       &dt, &vectype))
+      if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &dt, &vectype))
 	gcc_unreachable ();
 
       return !vectype || VECTOR_BOOLEAN_TYPE_P (vectype);

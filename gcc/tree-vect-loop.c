@@ -4572,7 +4572,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
     {
       /* Get at the scalar def before the loop, that defines the initial value
 	 of the reduction variable.  */
-      gimple *def_stmt;
       initial_def = PHI_ARG_DEF_FROM_EDGE (reduc_def_stmt,
 					   loop_preheader_edge (loop));
       /* Optimize: if initial_def is for REDUC_MAX smaller than the base
@@ -4587,7 +4586,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	      || (induc_code == MIN_EXPR
 		  && tree_int_cst_lt (induc_val, initial_def))))
 	induc_val = initial_def;
-      vect_is_simple_use (initial_def, loop_vinfo, &def_stmt, &initial_def_dt);
+      vect_is_simple_use (initial_def, loop_vinfo, &initial_def_dt);
       vec_initial_def = get_initial_def_for_reduction (stmt, initial_def,
 						       &adjustment_def);
       vec_initial_defs.create (1);
@@ -6396,7 +6395,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
         continue;
 
       is_simple_use = vect_is_simple_use (ops[i], loop_vinfo,
-					  &def_stmt, &dts[i], &tem);
+					  &dts[i], &tem, &def_stmt);
       dt = dts[i];
       gcc_assert (is_simple_use);
       if (dt == vect_reduction_def)
@@ -6592,8 +6591,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	    = PHI_ARG_DEF_FROM_EDGE (def_stmt, loop_preheader_edge (loop));
 
 	  gcc_assert (cond_reduc_val != NULL_TREE);
-	  vect_is_simple_use (cond_initial_val, loop_vinfo,
-			      &def_stmt, &cond_initial_dt);
+	  vect_is_simple_use (cond_initial_val, loop_vinfo, &cond_initial_dt);
 	  if (cond_initial_dt == vect_constant_def
 	      && types_compatible_p (TREE_TYPE (cond_initial_val),
 				     TREE_TYPE (cond_reduc_val)))

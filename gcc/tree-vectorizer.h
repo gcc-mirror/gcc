@@ -1477,10 +1477,10 @@ extern tree get_vectype_for_scalar_type_and_size (tree, poly_uint64);
 extern tree get_mask_type_for_scalar_type (tree);
 extern tree get_same_sized_vectype (tree, tree);
 extern bool vect_get_loop_mask_type (loop_vec_info);
-extern bool vect_is_simple_use (tree, vec_info *, gimple **,
-                                enum vect_def_type *);
-extern bool vect_is_simple_use (tree, vec_info *, gimple **,
-				enum vect_def_type *, tree *);
+extern bool vect_is_simple_use (tree, vec_info *, enum vect_def_type *,
+				gimple ** = NULL);
+extern bool vect_is_simple_use (tree, vec_info *, enum vect_def_type *,
+				tree *, gimple ** = NULL);
 extern bool supportable_widening_operation (enum tree_code, gimple *, tree,
 					    tree, enum tree_code *,
 					    enum tree_code *, int *,
