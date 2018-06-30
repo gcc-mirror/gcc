@@ -1,3 +1,7 @@
+2018-06-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* Makefile.in (FLAGS_TO_PASS): Add RANLIB_FOR_TARGET.
+
 2018-06-29  Jeff Law  <law@redhat.com>
 
 	* config/v850/v850.c (v850_legitimate_address_p): Handle large
