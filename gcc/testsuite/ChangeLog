@@ -1,5 +1,10 @@
 2018-07-01  Tom de Vries  <tdevries@suse.de>
 
+	* lib/gcc-dg.exp (get-absolute-line): Handle '.'.
+	* gcc.dg/guality/vla-1.c: Use relative line numbers.
+
+2018-07-01  Tom de Vries  <tdevries@suse.de>
+
 	* gcc.dg-selftests/dg-final.exp (verify_call_1): Factor out of ...
 	(verify_call): ... here.  Move to toplevel.
 	(verify_call_np, dg_final_directive_check_utils): New proc.
