@@ -1066,6 +1066,10 @@ proc dg-line { linenr varname } {
 # Argument 1 is the relative line number or line number variable reference
 #
 proc get-absolute-line { useline line } {
+    if { "$line" == "." } {
+	return $useline
+    }
+
     if { [regsub "^\.\[+-\](\[0-9\]+)$" $line "\\1" num] && $useline != "" } {
 	# Handle relative line specification, .+1 or .-1 etc.
 	set num [expr $useline [string index $line 1] $num]
