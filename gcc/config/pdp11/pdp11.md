@@ -212,9 +212,9 @@
   "*
 {
   if (which_alternative == 0 || which_alternative == 2)
-    return \"{tstd|tstf} %0\";
+    return \"{tstd|tstf}\t%0\";
   else
-    return \"{cmpd|cmpf} %0, %1\";
+    return \"{cmpd|cmpf}\t%0,%1\";
 }"
   [(set_attr "length" "2,2,4,4")
    (set_attr "type" "fp")]) 
@@ -232,12 +232,12 @@
 		    (match_operand:PDPint 1 "general_operand" "N,rR,Qi,N,rR,Qi")))]
   ""
   "@
-   tst<PDPint:isfx> %0
-   cmp<PDPint:isfx> %0,%1
-   cmp<PDPint:isfx> %0,%1
-   tst<PDPint:isfx> %0
-   cmp<PDPint:isfx> %0,%1
-   cmp<PDPint:isfx> %0,%1"
+   tst<PDPint:isfx>\t%0
+   cmp<PDPint:isfx>\t%0,%1
+   cmp<PDPint:isfx>\t%0,%1
+   tst<PDPint:isfx>\t%0
+   cmp<PDPint:isfx>\t%0,%1
+   cmp<PDPint:isfx>\t%0,%1"
   [(set_attr "length" "2,2,4,4,4,6")])
 
 ;; sob instruction - FIXME: this doesn't do anything, need to use doloop_end.
@@ -257,13 +257,13 @@
   "*
 {
  if (get_attr_length (insn) == 2)
-    return \"sob %0, %l1\";
+    return \"sob\t%0,%l1\";
 
  /* emulate sob */
  operands[2] = gen_label_rtx ();
- output_asm_insn (\"dec %0\", operands);
- output_asm_insn (\"beq %l2\", operands);
- output_asm_insn (\"jmp %l1\", operands);
+ output_asm_insn (\"dec\t%0\", operands);
+ output_asm_insn (\"beq\t%l2\", operands);
+ output_asm_insn (\"jmp\t%l1\", operands);
  
  output_asm_label (operands[2]);
  fputs (\":\\n\", asm_out_file);
@@ -432,9 +432,9 @@
   "*
 {
   if (operands[1] == const0_rtx)
-    return \"clr<PDPint:isfx> %0\";
+    return \"clr<PDPint:isfx>\t%0\";
 
-  return \"mov<PDPint:isfx> %1, %0\";
+  return \"mov<PDPint:isfx>\t%1,%0\";
 }"
   [(set_attr "length" "2,4,4,6")])
 
@@ -462,7 +462,7 @@
   "TARGET_FPU"
   "*
   gcc_assert (which_alternative < 2);
-  return \"std %1, %0\";
+  return \"std\t%1,%0\";
   "
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
@@ -482,9 +482,9 @@
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
   "@
-  ldd %1, %0
-  ldd %1, %0
-  clrd %0"
+  ldd\t%1,%0
+  ldd\t%1,%0
+  clrd\t%0"
   [(set_attr "length" "2,4,2")])
 
 ;; SFmode is easier because that uses convert load/store, which
@@ -513,11 +513,11 @@
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
   "@
-  {ldcfd|movof} %1, %0
-  {stcdf|movfo} %1, %0
-  {ldcfd|movof} %1, %0
-  {stcdf|movfo} %1, %0
-  clrf %0"
+  {ldcfd|movof}\t%1,%0
+  {stcdf|movfo}\t%1,%0
+  {ldcfd|movof}\t%1,%0
+  {stcdf|movfo}\t%1,%0
+  clrf\t%0"
   [(set_attr "length" "2,2,4,4,2")])
 
 ;; maybe fiddle a bit with move_ratio, then 
@@ -594,7 +594,7 @@
 	(float_truncate:SF (match_operand:DF 1 "register_operand" "a,a")))
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
-   "{stcdf|movfo} %1, %0"
+   "{stcdf|movfo}\t%1,%0"
   [(set_attr "length" "2,4")])
 
 
@@ -615,7 +615,7 @@
 		   (zero_extend:HI (match_operand:QI 1 "general_operand" "0,0")))
 	      (clobber (reg:CC CC_REGNUM))])]
   "reload_completed"
-  "bic $0177400, %0"
+  "bic\t%#0177400,%0"
   [(set_attr "length" "4,6")])
 			 
 (define_expand "zero_extendhisi2"
@@ -662,7 +662,7 @@
 	(float_extend:DF (match_operand:SF 1 "float_operand" "R,Q")))
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
-  "{ldcfd|movof} %1, %0"
+  "{ldcfd|movof}\t%1,%0"
   [(set_attr "length" "2,4")])
 
 ;; movb sign extends if destination is a register
@@ -682,7 +682,7 @@
 	(sign_extend:HI (match_operand:QI 1 "general_operand" "rR,Q")))
    (clobber (reg:CC CC_REGNUM))]
   "reload_completed"
-  "movb %1, %0"
+  "movb\t%1,%0"
   [(set_attr "length" "2,4")])
 
 (define_insn_and_split "extendhisi2"
@@ -713,16 +713,16 @@
       latehalf[0] = operands[0];
       operands[0] = adjust_address(operands[0], HImode, 2);
   
-      output_asm_insn(\"mov %1, %0\", operands);
-      output_asm_insn(\"sxt %0\", latehalf);
+      output_asm_insn(\"mov\t%1,%0\", operands);
+      output_asm_insn(\"sxt\t%0\", latehalf);
 
       return \"\";
 
     case 1:
 
       /* - auto-decrement - right direction ;-) */
-      output_asm_insn(\"mov %1, %0\", operands);
-      output_asm_insn(\"sxt %0\", operands);
+      output_asm_insn(\"mov\t%1,%0\", operands);
+      output_asm_insn(\"sxt\t%0\", operands);
 
       return \"\";
 
@@ -732,8 +732,8 @@
       latehalf[0] = operands[0];
       operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
 
-      output_asm_insn(\"mov %1, %0\", operands);
-      output_asm_insn(\"sxt %0\", latehalf);
+      output_asm_insn(\"mov\t%1,%0\", operands);
+      output_asm_insn(\"sxt\t%0\", latehalf);
 
       return \"\";
 
@@ -773,16 +773,16 @@
  
        latehalf[0] = NULL; 
        latehalf[1] = gen_rtx_REG (HImode, REGNO (operands[1]) + 1);
-       output_asm_insn(\"mov %1, -(sp)\", latehalf);
-       output_asm_insn(\"mov %1, -(sp)\", operands);
+       output_asm_insn(\"mov\t%1,-(sp)\", latehalf);
+       output_asm_insn(\"mov\t%1,-(sp)\", operands);
        
        output_asm_insn(\"setl\", operands);
-       output_asm_insn(\"{ldcld|movif} (sp)+, %0\", operands);
+       output_asm_insn(\"{ldcld|movif}\t(sp)+,%0\", operands);
        output_asm_insn(\"seti\", operands);
        return \"\";
      }
      else 
-       return \"setl\;{ldcld|movif} %1, %0\;seti\";
+       return \"setl\;{ldcld|movif}\t%1,%0\;seti\";
   "
   [(set_attr "length" "10,6,8")])
 
@@ -801,7 +801,7 @@
 	(float:DF (match_operand:HI 1 "general_operand" "rR,Qi")))
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
-  "{ldcid|movif} %1, %0"
+  "{ldcid|movif}\t%1,%0"
   [(set_attr "length" "2,4")])
 	
 ;; cut float to int
@@ -831,15 +831,15 @@
   "* if (which_alternative ==0)
      {
        output_asm_insn(\"setl\", operands);
-       output_asm_insn(\"{stcdl|movfi} %1, -(sp)\", operands);
+       output_asm_insn(\"{stcdl|movfi}\t%1,-(sp)\", operands);
        output_asm_insn(\"seti\", operands);
-       output_asm_insn(\"mov (sp)+, %0\", operands);
+       output_asm_insn(\"mov\t(sp)+,%0\", operands);
        operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
-       output_asm_insn(\"mov (sp)+, %0\", operands);
+       output_asm_insn(\"mov\t(sp)+,%0\", operands);
        return \"\";
      }
      else 
-       return \"setl\;{stcdl|movfi} %1, %0\;seti\";
+       return \"setl\;{stcdl|movfi}\t%1,%0\;seti\";
   "
   [(set_attr "length" "10,6,8")])
 
@@ -861,7 +861,7 @@
    (clobber (reg:CC CC_REGNUM))
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
-  "{stcdi|movfi} %1, %0"
+  "{stcdi|movfi}\t%1,%0"
   [(set_attr "length" "2,4")])
 
 
@@ -887,7 +887,7 @@
 	      (match_operand:DF 2 "general_operand" "fR,QF")))
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
-  "{addd|addf} %2, %0"
+  "{addd|addf}\t%2,%0"
   [(set_attr "length" "2,4")])
 
 (define_insn_and_split "adddi3"
@@ -917,24 +917,24 @@
   pdp11_expand_operands (inops, exops, 2, NULL, either);
   
   if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
-    output_asm_insn (\"add %1, %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[0]);
   if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
-    output_asm_insn (\"add %1, %0\", exops[1]);
-    output_asm_insn (\"adc %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[1]);
+    output_asm_insn (\"adc\t%0\", exops[0]);
   }
   if (!CONSTANT_P (exops[2][1]) || INTVAL (exops[2][1]) != 0)
   {
-    output_asm_insn (\"add %1, %0\", exops[2]);
-    output_asm_insn (\"adc %0\", exops[1]);
-    output_asm_insn (\"adc %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[2]);
+    output_asm_insn (\"adc\t%0\", exops[1]);
+    output_asm_insn (\"adc\t%0\", exops[0]);
   }
   if (!CONSTANT_P (exops[3][1]) || INTVAL (exops[3][1]) != 0)
   {
-    output_asm_insn (\"add %1, %0\", exops[3]);
-    output_asm_insn (\"adc %0\", exops[2]);
-    output_asm_insn (\"adc %0\", exops[1]);
-    output_asm_insn (\"adc %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[3]);
+    output_asm_insn (\"adc\t%0\", exops[2]);
+    output_asm_insn (\"adc\t%0\", exops[1]);
+    output_asm_insn (\"adc\t%0\", exops[0]);
   }
 
   return \"\";
@@ -977,11 +977,11 @@
   pdp11_expand_operands (inops, exops, 2, NULL, either);
   
   if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
-    output_asm_insn (\"add %1, %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[0]);
   if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
-    output_asm_insn (\"add %1, %0\", exops[1]);
-    output_asm_insn (\"adc %0\", exops[0]);
+    output_asm_insn (\"add\t%1,%0\", exops[1]);
+    output_asm_insn (\"adc\t%0\", exops[0]);
   }
 
   return \"\";
@@ -1012,12 +1012,12 @@
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       if (INTVAL(operands[2]) == 1)
-	return \"inc %0\";
+	return \"inc\t%0\";
       else if (INTVAL(operands[2]) == -1)
-        return \"dec %0\";
+        return \"dec\t%0\";
     }
 
-  return \"add %2, %0\";
+  return \"add\t%2,%0\";
 }"
   [(set_attr "length" "2,4,4,6")])
 
@@ -1045,7 +1045,7 @@
 	          (match_operand:DF 2 "general_operand" "fR,QF")))
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
-  "{subd|subf} %2, %0"
+  "{subd|subf}\t%2,%0"
   [(set_attr "length" "2,4")])
 
 (define_insn_and_split "subdi3"
@@ -1075,24 +1075,24 @@
   pdp11_expand_operands (inops, exops, 2, NULL, either);
   
   if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
-    output_asm_insn (\"sub %1, %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[0]);
   if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
-    output_asm_insn (\"sub %1, %0\", exops[1]);
-    output_asm_insn (\"sbc %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[1]);
+    output_asm_insn (\"sbc\t%0\", exops[0]);
   }
   if (!CONSTANT_P (exops[2][1]) || INTVAL (exops[2][1]) != 0)
   {
-    output_asm_insn (\"sub %1, %0\", exops[2]);
-    output_asm_insn (\"sbc %0\", exops[1]);
-    output_asm_insn (\"sbc %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[2]);
+    output_asm_insn (\"sbc\t%0\", exops[1]);
+    output_asm_insn (\"sbc\t%0\", exops[0]);
   }
   if (!CONSTANT_P (exops[3][1]) || INTVAL (exops[3][1]) != 0)
   {
-    output_asm_insn (\"sub %1, %0\", exops[3]);
-    output_asm_insn (\"sbc %0\", exops[2]);
-    output_asm_insn (\"sbc %0\", exops[1]);
-    output_asm_insn (\"sbc %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[3]);
+    output_asm_insn (\"sbc\t%0\", exops[2]);
+    output_asm_insn (\"sbc\t%0\", exops[1]);
+    output_asm_insn (\"sbc\t%0\", exops[0]);
   }
 
   return \"\";
@@ -1126,11 +1126,11 @@
   pdp11_expand_operands (inops, exops, 2, NULL, either);
   
   if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
-    output_asm_insn (\"sub %1, %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[0]);
   if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
-    output_asm_insn (\"sub %1, %0\", exops[1]);
-    output_asm_insn (\"sbc %0\", exops[0]);
+    output_asm_insn (\"sub\t%1,%0\", exops[1]);
+    output_asm_insn (\"sbc\t%0\", exops[0]);
   }
 
   return \"\";
@@ -1164,12 +1164,12 @@
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       if (INTVAL(operands[2]) == 1)
-	return \"dec %0\";
+	return \"dec\t%0\";
       else if (INTVAL(operands[2]) == -1)
-        return \"inc %0\";
+        return \"inc\t%0\";
     }
 
-  return \"sub %2, %0\";
+  return \"sub\t%2,%0\";
 }"
   [(set_attr "length" "2,4,4,6")])
 
@@ -1222,7 +1222,7 @@
 			  (match_operand:PDPint 2 "general_operand" "0,0,0,0")))
    (clobber (reg:CC CC_REGNUM))]
   "reload_completed"
-  "bic<PDPint:isfx> %1, %0"
+  "bic<PDPint:isfx>\t%1,%0"
   [(set_attr "length" "2,4,4,6")])
 
 ;;- Bit set (inclusive or) instructions
@@ -1244,7 +1244,7 @@
 	     (match_operand:PDPint 2 "general_operand" "rR,Qi,rR,Qi")))
    (clobber (reg:CC CC_REGNUM))]
   "reload_completed"
-  "bis<PDPint:isfx> %2, %0"
+  "bis<PDPint:isfx>\t%2,%0"
   [(set_attr "length" "2,4,4,6")])
 
 ;;- xor instructions
@@ -1266,7 +1266,7 @@
 	     (match_operand:HI 2 "register_operand" "r,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_40_PLUS && reload_completed"
-  "xor %2, %0"
+  "xor\t%2,%0"
   [(set_attr "length" "2,4")])
 
 ;;- one complement instructions
@@ -1287,7 +1287,7 @@
 	(not:PDPint (match_operand:PDPint 1 "general_operand" "0,0")))
    (clobber (reg:CC CC_REGNUM))]
   "reload_completed"
-  "com<PDPint:isfx> %0"
+  "com<PDPint:isfx>\t%0"
   [(set_attr "length" "2,4")])
 
 ;;- arithmetic shift instructions
@@ -1329,7 +1329,7 @@
 	(ashift:HI (match_operand:HI 1 "general_operand" "0,0")
 	               (match_operand:HI 2 "general_operand" "rR,Q")))]
   "TARGET_40_PLUS"
-  "ash %2, %0"
+  "ash\t%2,%0"
   [(set_attr "length" "2,4")])
 
 (define_insn "aslsi_op"
@@ -1337,7 +1337,7 @@
 	(ashift:SI (match_operand:SI 1 "general_operand" "0,0")
 	           (match_operand:HI 2 "general_operand" "rR,Q")))]
   "TARGET_40_PLUS"
-  "ashc %2, %0"
+  "ashc\t%2,%0"
   [(set_attr "length" "2,4")])
 
 ;; Now the expanders that produce the insns defined above. 
@@ -1444,7 +1444,7 @@
 	(abs:DF (match_operand:DF 1 "general_operand" "0,0")))
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
-  "{absd|absf} %0"
+  "{absd|absf}\t%0"
   [(set_attr "length" "2,4")])
 
 ;; negate insns
@@ -1464,7 +1464,7 @@
 	(neg:DF (match_operand:DF 1 "general_operand" "0,0")))
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
-  "{negd|negf} %0"
+  "{negd|negf}\t%0"
   [(set_attr "length" "2,4")])
 
 (define_insn_and_split "negdi2"
@@ -1488,14 +1488,14 @@
   
   pdp11_expand_operands (operands, exops, 1, NULL, either);
 
-  output_asm_insn (\"com %0\", exops[3]);
-  output_asm_insn (\"com %0\", exops[2]);
-  output_asm_insn (\"com %0\", exops[1]);
-  output_asm_insn (\"com %0\", exops[0]);
-  output_asm_insn (\"add $1, %0\", exops[3]);
-  output_asm_insn (\"adc %0\", exops[2]);
-  output_asm_insn (\"adc %0\", exops[1]);
-  output_asm_insn (\"adc %0\", exops[0]);
+  output_asm_insn (\"com\t%0\", exops[3]);
+  output_asm_insn (\"com\t%0\", exops[2]);
+  output_asm_insn (\"com\t%0\", exops[1]);
+  output_asm_insn (\"com\t%0\", exops[0]);
+  output_asm_insn (\"add\t%#1,%0\", exops[3]);
+  output_asm_insn (\"adc\t%0\", exops[2]);
+  output_asm_insn (\"adc\t%0\", exops[1]);
+  output_asm_insn (\"adc\t%0\", exops[0]);
 
   return \"\";
 }
@@ -1522,10 +1522,10 @@
   
   pdp11_expand_operands (operands, exops, 1, NULL, either);
 
-  output_asm_insn (\"com %0\", exops[1]);
-  output_asm_insn (\"com %0\", exops[0]);
-  output_asm_insn (\"add $1, %0\", exops[1]);
-  output_asm_insn (\"adc %0\", exops[0]);
+  output_asm_insn (\"com\t%0\", exops[1]);
+  output_asm_insn (\"com\t%0\", exops[0]);
+  output_asm_insn (\"add\t%#1,%0\", exops[1]);
+  output_asm_insn (\"adc\t%0\", exops[0]);
 
   return \"\";
 }
@@ -1546,7 +1546,7 @@
 	(neg:PDPint (match_operand:PDPint 1 "general_operand" "0,0")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "neg<PDPint:isfx> %0"
+  "neg<PDPint:isfx>\t%0"
   [(set_attr "length" "2,4")])
 
 
@@ -1558,8 +1558,8 @@
   "*
 {
   if (get_attr_length (insn) == 2)
-    return \"br %l0\";
-  return \"jmp %l0\";
+    return \"br\t%l0\";
+  return \"jmp\t%l0\";
 }"
   [(set (attr "length") (if_then_else (ior (lt (minus (match_dup 0)
 						      (pc))
@@ -1575,9 +1575,9 @@
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "@
-  jmp (%0)
-  jmp %@%0
-  jmp %@%0"
+  jmp\t(%0)
+  jmp\t%@%0
+  jmp\t%@%0"
   [(set_attr "length" "2,2,4")])
 
 ;; indirect jump.  TODO: this needs a constraint that allows memory
@@ -1596,7 +1596,7 @@
 	 (match_operand:HI 1 "general_operand" "g,g"))]
   ;;- Don't use operand 1 for most machines.
   ""
-  "jsr pc, %0"
+  "jsr pc,%0"
   [(set_attr "length" "2,4")])
 
 ;;- jump to subroutine
@@ -1606,7 +1606,7 @@
 	      (match_operand:HI 2 "general_operand" "g,g")))]
   ;;- Don't use operand 2 for most machines.
   ""
-  "jsr pc, %1"
+  "jsr pc,%1"
   [(set_attr "length" "2,4")])
 
 (define_expand "untyped_call"
@@ -1661,7 +1661,7 @@
 	      (match_operand:DF 2 "float_operand" "fR,QF")))
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
-  "{muld|mulf} %2, %0"
+  "{muld|mulf}\t%2,%0"
   [(set_attr "length" "2,4")])
 
 ;; 16 bit result multiply.  This uses odd numbered registers.
@@ -1683,7 +1683,7 @@
 	      (match_operand:HI 2 "general_operand" "rR,Qi")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_40_PLUS && reload_completed"
-  "mul %2, %0"
+  "mul\t%2,%0"
   [(set_attr "length" "2,4")])
 
 ;; 32 bit result from 16 bit operands
@@ -1706,7 +1706,7 @@
 	      (sign_extend:SI (match_operand:HI 2 "general_operand" "rR,Qi"))))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_40_PLUS && reload_completed"
-  "mul %2, %0"
+  "mul\t%2,%0"
   [(set_attr "length" "2,4")])
 
 ;;- divide
@@ -1727,7 +1727,7 @@
 	     (match_operand:DF 2 "general_operand" "fR,QF")))
    (clobber (reg:CC FCC_REGNUM))]
   "TARGET_FPU && reload_completed"
-  "{divd|divf} %2, %0"
+  "{divd|divf}\t%2,%0"
   [(set_attr "length" "2,4")])
 
 (define_expand "divmodhi4"
@@ -1773,5 +1773,5 @@
 	(mod:HI (match_dup 1) (match_dup 2)))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_40_PLUS"
-   "div %2,%0"
+   "div\t%2,%0"
   [(set_attr "length" "2,4")])

@@ -59,7 +59,16 @@ pdp11_handle_option (struct gcc_options *opts,
       opts->x_target_flags &= ~MASK_40;
       opts->x_target_flags |= MASK_45;
       return true;
-      
+
+    case OPT_munix_asm:
+    case OPT_mgnu_asm:
+      targetm_common.have_named_sections = false;
+      return true;
+
+    case OPT_mdec_asm:
+      targetm_common.have_named_sections = true;
+      return true;
+
     default:
       return true;
     }

@@ -1,3 +1,43 @@
+2018-07-01  Paul Koning  <ni1d@arrl.net>
+
+	* common/config/pdp11/pdp11-common.c (pdp11_handle_option): Handle
+	-munit-asm, -mgnu-asm, -mdec-asm.
+	* config/pdp11/pdp11-protos.h (pdp11_gen_int_label): New.
+	(pdp11_output_labelref): New.
+	(pdp11_output_def): New.
+	(pdp11_output_addr_vec_elt): New.
+	* config/pdp11/pdp11.c: Use tab between opcode and operands.  Use
+	%# and %@ format codes.
+	(pdp11_option_override): New.
+	(TARGET_ASM_FILE_START_FILE_DIRECTIVE): Define.
+	(pdp11_output_ident): New.
+	(pdp11_asm_named_section): New.
+	(pdp11_asm_init_sections): New.
+	(pdp11_file_start): New.
+	(pdp11_file_end): New.
+	(output_ascii): Use .ascii/.asciz for -mdec-asm.
+	(pdp11_asm_print_operand): Update %# and %$ for -mdec-asm.  Add
+	%o, like %c but octal.
+	(pdp11_option_override): New.
+	* config/pdp11/pdp11.h (TEXT_SECTION_ASM_OP): Update for
+	-mdec-asm.
+	(DATA_SECTION_ASM_OP): Ditto.
+	(READONLY_DATA_SECTION_ASM_OP): New.
+	(IS_ASM_LOGICAL_LINE_SEPARATOR): New.
+	(ASM_GENERATE_INTERNAL_LABEL): Use new function.
+	(ASM_OUTPUT_LABELREF): Ditto.
+	(ASM_OUTPUT_DEF): Ditto.
+	(ASM_OUTPUT_EXTERNAL): New.
+	(ASM_OUTPUT_SOURCE_FILENAME): New.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Use new function.
+	(ASM_OUTPUT_SKIP): Update for -mdec-asm.
+	* config/pdp11/pdp11.md: Use tab between opcode and operands.  Use
+	%# and %@ format codes.
+	* config/pdp11/pdp11.opt (mgnu-asm): New.
+	(mdec-asm): Conflicts with -mgnu-asm and -munix-asm.
+	(munix-asm): Conflicts with -mdec-asm and -mgnu-asm.
+	* doc/invoke.txt (PDP-11 Options): Add -mgnu-asm.
+
 2018-07-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-ssa-threadupdate.c (mark_threaded_blocks): Avoid

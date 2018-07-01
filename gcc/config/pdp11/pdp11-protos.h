@@ -51,3 +51,7 @@ extern void pdp11_asm_output_var (FILE *, const char *, int, int, bool);
 extern void pdp11_expand_prologue (void);
 extern void pdp11_expand_epilogue (void);
 extern poly_int64 pdp11_push_rounding (poly_int64);
+extern void pdp11_gen_int_label (char *, const char *, int);
+extern void pdp11_output_labelref (FILE *, const char *);
+extern void pdp11_output_def (FILE *, const char *, const char *);
+extern void pdp11_output_addr_vec_elt (FILE *, int);
