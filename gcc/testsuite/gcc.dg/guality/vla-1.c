@@ -2,8 +2,6 @@
 /* { dg-do run } */
 /* { dg-options "-g" } */
 
-#include "prevent-optimization.h"
-
 void __attribute__((noinline))
 bar (short *p)
 {
@@ -14,7 +12,7 @@ bar (short *p)
 int __attribute__((noinline))
 f1 (int i)
 {
-  VOLATILE char a[i + 1];
+  char a[i + 1];
   a[0] = 5;		/* { dg-final { gdb-test .+1 "i" "5" } } */
   return a[0];		/* { dg-final { gdb-test . "sizeof (a)" "6" } } */
 }
