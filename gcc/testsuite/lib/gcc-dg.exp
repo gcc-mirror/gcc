@@ -1085,7 +1085,7 @@ proc get-absolute-line { useline line } {
     eval set var_defined [info exists $varname]
     if { ! $var_defined } {
 	if { "$useline" != "" } {
-	    error "dg-line var $org_varname used at line $uselinenr, but not defined"
+	    error "dg-line var $org_varname used at line $useline, but not defined"
 	} else {
 	    error "dg-line var $org_varname used, but not defined"
 	}
