@@ -45,6 +45,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_UNIX_ASM_DEFAULT	0
 
+/* "Dialect" just distinguishes between standard DEC mnemonics, which
+   are also used by the GNU assembler, vs. Unix mnemonics and float
+   register names.  So it is tied to the -munit-asm option, and treats
+   -mgnu-asm and -mdec-asm as equivalent (both are dialect zero).  */
 #define ASSEMBLER_DIALECT	(TARGET_UNIX_ASM ? 1 : 0)
 
 
@@ -489,11 +493,19 @@ extern int may_call_alloca;
 
 /* Output before read-only data.  */
 
-#define TEXT_SECTION_ASM_OP "\t.text\n"
+#define TEXT_SECTION_ASM_OP \
+  ((TARGET_DEC_ASM) ? "\t.psect\tcode,i,ro,con" : "\t.text")
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP "\t.data\n"
+#define DATA_SECTION_ASM_OP \
+  ((TARGET_DEC_ASM) ? "\t.psect\tdata,d,rw,con" : "\t.data")
+
+/* Output before read-only data.  Same as read-write data for non-DEC
+   assemblers because they don't know about .rodata.  */
+
+#define READONLY_DATA_SECTION_ASM_OP \
+  ((TARGET_DEC_ASM) ? "\t.psect\trodata,d,ro,con" : "\t.data")
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
@@ -504,38 +516,59 @@ extern int may_call_alloca;
  "cc", "fcc" }
 
 /* Globalizing directive for a label.  */
-#define GLOBAL_ASM_OP "\t.globl "
+#define GLOBAL_ASM_OP "\t.globl\t"
 
-/* The prefix to add to user-visible assembler symbols.  */
+/* The prefix to add to user-visible assembler symbols.  For the DEC
+   assembler case, this is not used.  */
 
 #define USER_LABEL_PREFIX "_"
+
+/* Line separators.  */
+
+#define IS_ASM_LOGICAL_LINE_SEPARATOR(C, STR) \
+  ((C) == '\n' || (!TARGET_DEC_ASM && (C) == ';'))
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
    This is suitable for output with `assemble_name'.  */
 
-#define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s_%lu", PREFIX, (unsigned long)(NUM))
+#define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM) \
+  pdp11_gen_int_label ((LABEL), (PREFIX), (NUM))
+
+/* Emit a string.  */
 
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii (FILE, P, SIZE)
 
+/* Print a label reference, with _ prefix if not DEC.  */
+
+#define ASM_OUTPUT_LABELREF(STREAM, NAME) \
+  pdp11_output_labelref ((STREAM), (NAME))
+
+/* Equate a symbol to an expression.  */
+
+#define ASM_OUTPUT_DEF(STREAM, NAME, VALUE) \
+  pdp11_output_def (STREAM, NAME, VALUE)
+
+/* Mark a reference to an external symbol.  Needed for DEC assembler.  */
+
+#define ASM_OUTPUT_EXTERNAL(STREAM, DECL, NAME) \
+  if (TARGET_DEC_ASM) \
+    fprintf ((STREAM), "\t.globl\t%s\n", (NAME))
+
+#define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME) \
+  if (TARGET_DEC_ASM) \
+    fprintf ((STREAM), ".title\t%s\n", (NAME))
+
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "\t%sL_%d\n", TARGET_UNIX_ASM ? "" : ".word ", VALUE)
-
-/* This is how to output an element of a case-vector that is relative.
-   Don't define this if it is not supported.  */
-
-/* #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) */
+  pdp11_output_addr_vec_elt (FILE, VALUE)
 
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes. 
-
-   who needs this????
 */
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
@@ -551,35 +584,34 @@ extern int may_call_alloca;
     }
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.=.+ %#ho\n", (unsigned short)(SIZE))
+  if (TARGET_DEC_ASM) \
+    fprintf (FILE, "\t.blkb\t%ho\n", (SIZE) & 0xffff);	\
+  else							\
+    fprintf (FILE, "\t.=.+ %#ho\n", (SIZE) & 0xffff);
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
 
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)  \
-    pdp11_asm_output_var (FILE, NAME, SIZE, ALIGN, true)
+  pdp11_asm_output_var (FILE, NAME, SIZE, ALIGN, true)
 
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
 
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN) \
-    pdp11_asm_output_var (FILE, NAME, SIZE, ALIGN, false)
+  pdp11_asm_output_var (FILE, NAME, SIZE, ALIGN, false)
 
 /* Print a memory address as an operand to reference that memory location.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \
- print_operand_address (FILE, ADDR)
+  print_operand_address (FILE, ADDR)
 
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)			\
-(							\
-  fprintf (FILE, "\tmov %s, -(sp)\n", reg_names[REGNO])	\
-)
+#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)	\
+  fprintf (FILE, "\tmov\t%s,-(sp)\n", reg_names[REGNO])
 
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)                 		\
-(                                                       	\
-  fprintf (FILE, "\tmov (sp)+, %s\n", reg_names[REGNO])     	\
-)
+#define ASM_OUTPUT_REG_POP(FILE,REGNO)	\
+  fprintf (FILE, "\tmov\t(sp)+,%s\n", reg_names[REGNO])
 
 #define TRAMPOLINE_SIZE 8
 #define TRAMPOLINE_ALIGNMENT 16
@@ -588,6 +620,7 @@ extern int may_call_alloca;
 
 #define COMPARE_FLAG_MODE HImode
 
+/* May be overridden by command option processing.  */
 #define TARGET_HAVE_NAMED_SECTIONS false
 
 /* pdp11-unknown-aout target has no support of C99 runtime */

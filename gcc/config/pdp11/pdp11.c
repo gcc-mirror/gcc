@@ -212,7 +212,7 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 #undef  TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
 #define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS pdp11_preferred_output_reload_class
 
-#undef TARGET_LRA_P
+#undef  TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_false
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
@@ -221,8 +221,29 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 #undef  TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE pdp11_conditional_register_usage
 
+#undef  TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE pdp11_option_override
+
+#undef  TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+
+#undef  TARGET_ASM_OUTPUT_IDENT
+#define TARGET_ASM_OUTPUT_IDENT pdp11_output_ident
+
 #undef  TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION pdp11_function_section
+
+#undef  TARGET_ASM_NAMED_SECTION
+#define	TARGET_ASM_NAMED_SECTION pdp11_asm_named_section
+
+#undef  TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS pdp11_asm_init_sections
+
+#undef  TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START pdp11_file_start
+
+#undef  TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END pdp11_file_end
 
 #undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND pdp11_asm_print_operand
@@ -238,6 +259,7 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 
 #undef  TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS pdp11_hard_regno_nregs
+
 #undef  TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK pdp11_hard_regno_mode_ok
 
@@ -477,9 +499,9 @@ static const char *
 singlemove_string (rtx *operands)
 {
   if (operands[1] != const0_rtx)
-    return "mov %1,%0";
+    return "mov\t%1,%0";
 
-  return "clr %0";
+  return "clr\t%0";
 }
 
 
@@ -664,12 +686,12 @@ output_move_multiple (rtx *operands)
   if (action[0] == dec_before)
     {
       operands[0] = XEXP (operands[0], 0);
-      output_asm_insn ("sub $4,%0", operands);
+      output_asm_insn ("sub\t%#4,%0", operands);
     }
   if (action[1] == dec_before)
     {
       operands[1] = XEXP (operands[1], 0);
-      output_asm_insn ("sub $4,%1", operands);
+      output_asm_insn ("sub\t%#4,%1", operands);
     }
 
   /* Do the words.  */
@@ -680,46 +702,86 @@ output_move_multiple (rtx *operands)
   if (action[0] == inc_after)
     {
       operands[0] = XEXP (operands[0], 0);
-      output_asm_insn ("add $4,%0", operands);
+      output_asm_insn ("add\t%#4,%0", operands);
     }
   if (action[1] == inc_after)
     {
       operands[1] = XEXP (operands[1], 0);
-      output_asm_insn ("add $4,%1", operands);
+      output_asm_insn ("add\t%#4,%1", operands);
     }
 
   return "";
 }
 
+/* Build an internal label.  */
+void
+pdp11_gen_int_label (char *label, const char *prefix, int num)
+{
+  if (TARGET_DEC_ASM)
+    /* +1 because GCC numbers labels starting at zero.  */
+    sprintf (label, "*%lu$", num + 1);
+  else
+    sprintf (label, "*%s_%lu", prefix, num);
+}
+  
 /* Output an ascii string.  */
 void
 output_ascii (FILE *file, const char *p, int size)
 {
-  int i;
-
-  /* This used to output .byte "string", which doesn't work with the UNIX
-     assembler and I think not with DEC ones either.  */
-  fprintf (file, "\t.byte ");
-
-  for (i = 0; i < size; i++)
+  int i, c;
+  const char *pseudo = "\t.ascii\t";
+  bool delim = false;
+  
+  if (TARGET_DEC_ASM)
     {
-      register int c = p[i];
-      if (c < 0)
-	c += 256;
-      fprintf (file, "%#o", c);
-      if (i < size - 1)
-	putc (',', file);
+      if (p[size - 1] == '\0')
+	{
+	  pseudo = "\t.asciz\t";
+	  size--;
+	}
+      fputs (pseudo, file);
+      for (i = 0; i < size; i++)
+	{
+	  c = *p++ & 0xff;
+	  if (c < 32 || c == '"' || c > 126)
+	    {
+	      if (delim)
+		putc ('"', file);
+	      fprintf (file, "<%o%>", c);
+	      delim = false;
+	    }
+	  else
+	    {
+	      if (!delim)
+		putc ('"', file);
+	      delim = true;
+	      putc (c, file);
+	    }
+	}
+      if (delim)
+	putc ('"', file);
+      putc ('\n', file);
     }
-  putc ('\n', file);
-}
+  else
+    {
+      fprintf (file, "\t.byte ");
 
+      for (i = 0; i < size; i++)
+	{
+	  fprintf (file, "%#o", *p++ & 0xff);
+	  if (i < size - 1)
+	    putc (',', file);
+	}
+      putc ('\n', file);
+    }
+}
 
 void
 pdp11_asm_output_var (FILE *file, const char *name, int size,
 		      int align, bool global)
 {
   if (align > 8)
-    fprintf (file, "\n\t.even\n");
+    fprintf (file, "\t.even\n");
   if (global)
     {
       fprintf (file, ".globl ");
@@ -727,16 +789,28 @@ pdp11_asm_output_var (FILE *file, const char *name, int size,
     }
   fprintf (file, "\n");
   assemble_name (file, name);
-  fprintf (file, ": .=.+ %#ho\n", (unsigned short)size);
+  fputs (":", file);
+  ASM_OUTPUT_SKIP (file, size);
 }
 
+/* Special format operators handled here:
+   # -- output the correct immediate operand marker for the assembler
+        dialect.
+   @ -- output the correct indirect marker for the assembler dialect.
+   o -- emit a constant value as a number (not an immediate operand)
+        in octal.  */
 static void
 pdp11_asm_print_operand (FILE *file, rtx x, int code)
 {
   long sval[2];
  
   if (code == '#')
-    fprintf (file, "#");
+    {
+      if (TARGET_DEC_ASM)
+	putc ('#', file);
+      else
+	putc ('$', file);
+    }
   else if (code == '@')
     {
       if (TARGET_UNIX_ASM)
@@ -751,11 +825,20 @@ pdp11_asm_print_operand (FILE *file, rtx x, int code)
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != SImode)
     {
       REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), sval);
-      fprintf (file, "$%#lo", sval[0] >> 16);
+      if (TARGET_DEC_ASM)
+	fprintf (file, "#%lo", (sval[0] >> 16) & 0xffff);
+      else
+	fprintf (file, "$%#lo", (sval[0] >> 16) & 0xffff);
     }
   else
     {
-      putc ('$', file);
+      if (code != 'o')
+	{
+	  if (TARGET_DEC_ASM)
+	    putc ('#', file);
+	  else
+	    putc ('$', file);
+	}
       output_addr_const_pdp11 (file, x);
     }
 }
@@ -851,7 +934,9 @@ print_operand_address (FILE *file, register rtx addr)
       if (!again && GET_CODE (addr) == CONST_INT)
 	{
 	  /* Absolute (integer number) address.  */
-	  if (!TARGET_UNIX_ASM)
+	  if (TARGET_DEC_ASM)
+	    fprintf (file, "@#");
+	  else if (!TARGET_UNIX_ASM)
 	    fprintf (file, "@$");
 	}
       output_addr_const_pdp11 (file, addr);
@@ -1088,13 +1173,13 @@ output_jump (rtx *operands, int ccnz, int length)
   switch (length)
     {
     case 2:
-      sprintf (buf, "%s %%l1", pos);
+      sprintf (buf, "%s\t%%l1", pos);
       return buf;
     case 6:
       tmpop[0] = gen_label_rtx ();
-      sprintf (buf, "%s %%l0", neg);
+      sprintf (buf, "%s\t%%l0", neg);
       output_asm_insn (buf, tmpop);
-      output_asm_insn ("jmp %l1", operands);
+      output_asm_insn ("jmp\t%l1", operands);
       output_asm_label (tmpop[0]);
       fputs (":\n", asm_out_file);
       return "";
@@ -1290,7 +1375,7 @@ output_block_move(rtx *operands)
 	    register int i;
 	    
 	    for (i = 1; i <= INTVAL (operands[2]); i++)
-		output_asm_insn("movb (%1)+, (%0)+", operands);
+		output_asm_insn("movb\t(%1)+,(%0)+", operands);
 
 	    return "";
 	}
@@ -1301,9 +1386,9 @@ output_block_move(rtx *operands)
 	    register int i;
 	    
 	    for (i = 1; i <= INTVAL (operands[2]) / 2; i++)
-		output_asm_insn ("mov (%1)+, (%0)+", operands);
+		output_asm_insn ("mov\t(%1)+,(%0)+", operands);
 	    if (INTVAL (operands[2]) & 1)
-	      output_asm_insn ("movb (%1), (%0)", operands);
+	      output_asm_insn ("movb\t(%1),(%0)", operands);
 	    
 	    return "";
 	}
@@ -1335,7 +1420,7 @@ output_block_move(rtx *operands)
       
       /* Loop count is byte count scaled by unroll.  */
       operands[2] = GEN_INT (INTVAL (operands[2]) >> unroll);
-      output_asm_insn ("mov %2, %4", operands);
+      output_asm_insn ("mov\t%2,%4", operands);
     }
     else
     {
@@ -1348,12 +1433,12 @@ output_block_move(rtx *operands)
 	if (TARGET_40_PLUS && INTVAL (operands[3]) > 1)
 	  {
 	    unroll = 1;
-	    output_asm_insn ("asr %4", operands);
+	    output_asm_insn ("asr\t%4", operands);
 	  }
 	else
 	  {
 	    unroll = 0;
-	    output_asm_insn ("tst %4", operands);
+	    output_asm_insn ("tst\t%4", operands);
 	  }
 	sprintf (buf, "beq movestrhi%d", count + 1);
 	output_asm_insn (buf, NULL);
@@ -1367,35 +1452,35 @@ output_block_move(rtx *operands)
     switch (unroll)
     {
       case 0:
-	output_asm_insn ("movb (%1)+, (%0)+", operands);
+	output_asm_insn ("movb\t(%1)+,(%0)+", operands);
 	break;
 	
       case 1:
-	output_asm_insn ("mov (%1)+, (%0)+", operands);
+	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
 	break;
 	
       case 2:
-	output_asm_insn ("mov (%1)+, (%0)+", operands);
-	output_asm_insn ("mov (%1)+, (%0)+", operands);
+	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
+	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
 	break;
 	
       default:
-	output_asm_insn ("mov (%1)+, (%0)+", operands);
-	output_asm_insn ("mov (%1)+, (%0)+", operands);
-	output_asm_insn ("mov (%1)+, (%0)+", operands);
-	output_asm_insn ("mov (%1)+, (%0)+", operands);
+	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
+	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
+	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
+	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
 	break;
     }
 
     /* Output the decrement and test.  */
     if (TARGET_40_PLUS)
       {
-	sprintf (buf, "sob %%4, movestrhi%d", count);
+	sprintf (buf, "sob\t%%4, movestrhi%d", count);
 	output_asm_insn (buf, operands);
       }
     else
       {
-	output_asm_insn ("dec %4", operands);
+	output_asm_insn ("dec\t%4", operands);
 	sprintf (buf, "bgt movestrhi%d", count);
 	output_asm_insn (buf, NULL);
       }
@@ -1403,7 +1488,7 @@ output_block_move(rtx *operands)
 
     /* If constant odd byte count, move the last byte.  */
     if (lastbyte)
-      output_asm_insn ("movb (%1), (%0)", operands);
+      output_asm_insn ("movb\t(%1),(%0)", operands);
     else if (!CONSTANT_P (operands[2]))
       {
 	/* Output the destination label for the zero byte count check.  */
@@ -1416,7 +1501,7 @@ output_block_move(rtx *operands)
 	  {
 	    sprintf (buf, "bcc movestrhi%d", count);
 	    output_asm_insn (buf, NULL);
-	    output_asm_insn ("movb (%1), (%0)", operands);
+	    output_asm_insn ("movb\t(%1),(%0)", operands);
 	    sprintf (buf, "\nmovestrhi%d:", count);
 	    output_asm_insn (buf, NULL);
 	    count++;
@@ -1764,12 +1849,13 @@ output_addr_const_pdp11 (FILE *file, rtx x)
 	  i = -i;
 	  fprintf (file, "-");
 	}
-      fprintf (file, "%#o", i & 0xffff);
+      if (TARGET_DEC_ASM)
+	fprintf (file, "%o", i & 0xffff);
+      else
+	fprintf (file, "%#o", i & 0xffff);
       break;
 
     case CONST:
-      /* This used to output parentheses around the expression,
-	 but that does not work on the 386 (either ATT or BSD assembler).  */
       output_addr_const_pdp11 (file, XEXP (x, 0));
       break;
 
@@ -1778,7 +1864,10 @@ output_addr_const_pdp11 (FILE *file, rtx x)
 	{
 	  /* We can use %o if the number is one word and positive.  */
 	  gcc_assert (!CONST_DOUBLE_HIGH (x));
-	  fprintf (file, "%#ho", (unsigned short) CONST_DOUBLE_LOW (x));
+	  if (TARGET_DEC_ASM)
+	    fprintf (file, "%ho", CONST_DOUBLE_LOW (x) & 0xffff);
+	  else
+	    fprintf (file, "%#ho", CONST_DOUBLE_LOW (x) & 0xffff);
 	}
       else
 	/* We can't handle floating point constants;
@@ -1888,8 +1977,8 @@ bool
 pdp11_expand_shift (rtx *operands, rtx (*shift_sc) (rtx, rtx, rtx),
 		    rtx (*shift_base) (rtx, rtx, rtx))
 {
-  rtx dest, n, r, test;
-  rtx_code_label *lb, *lb2;
+  rtx r, test;
+  rtx_code_label *lb;
   
   if (CONSTANT_P (operands[2]) && pdp11_small_shift (INTVAL (operands[2])))
     emit_insn ((*shift_sc) (operands[0], operands[1], operands[2]));
@@ -1956,14 +2045,14 @@ pdp11_assemble_shift (rtx *operands, machine_mode m, int code)
       switch (m)
 	{
 	case E_QImode:
-	  output_asm_insn ("rorb %0", operands);
+	  output_asm_insn ("rorb\t%0", operands);
 	  break;
 	case E_HImode:
-	  output_asm_insn ("ror %0", operands);
+	  output_asm_insn ("ror\t%0", operands);
 	  break;
 	case E_SImode:
-	  output_asm_insn ("ror %0", exops[0]);
-	  output_asm_insn ("ror %0", exops[1]);
+	  output_asm_insn ("ror\t%0", exops[0]);
+	  output_asm_insn ("ror\t%0", exops[1]);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1979,14 +2068,14 @@ pdp11_assemble_shift (rtx *operands, machine_mode m, int code)
 	  switch (m)
 	    {
 	    case E_QImode:
-	      output_asm_insn ("asrb %0", operands);
+	      output_asm_insn ("asrb\t%0", operands);
 	      break;
 	    case E_HImode:
-	      output_asm_insn ("asr %0", operands);
+	      output_asm_insn ("asr\t%0", operands);
 	      break;
 	    case E_SImode:
-	      output_asm_insn ("asr %0", exops[0]);
-	      output_asm_insn ("ror %0", exops[1]);
+	      output_asm_insn ("asr\t%0", exops[0]);
+	      output_asm_insn ("ror\t%0", exops[1]);
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -1996,14 +2085,14 @@ pdp11_assemble_shift (rtx *operands, machine_mode m, int code)
 	  switch (m)
 	    {
 	    case E_QImode:
-	      output_asm_insn ("aslb %0", operands);
+	      output_asm_insn ("aslb\t%0", operands);
 	      break;
 	    case E_HImode:
-	      output_asm_insn ("asl %0", operands);
+	      output_asm_insn ("asl\t%0", operands);
 	      break;
 	    case E_SImode:
-	      output_asm_insn ("asl %0", exops[1]);
-	      output_asm_insn ("rol %0", exops[0]);
+	      output_asm_insn ("asl\t%0", exops[1]);
+	      output_asm_insn ("rol\t%0", exops[0]);
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -2014,8 +2103,8 @@ pdp11_assemble_shift (rtx *operands, machine_mode m, int code)
   if (!small)
     {
       /* Loop case, emit the count-down and branch if not done.  */
-      output_asm_insn ("dec %2", operands);
-      output_asm_insn ("bne %l0", lb);
+      output_asm_insn ("dec\t%2", operands);
+      output_asm_insn ("bne\t%l0", lb);
     }
   return "";
 }
@@ -2157,6 +2246,114 @@ pdp11_function_section (tree decl ATTRIBUTE_UNUSED,
 			bool exit ATTRIBUTE_UNUSED)
 {
   return NULL;
+}
+
+/* Support #ident for DEC assembler, but don't process the
+   auto-generated ident string that names the compiler (since its
+   syntax is not correct for DEC .ident).  */
+static void pdp11_output_ident (const char *ident)
+{
+  if (TARGET_DEC_ASM)
+    {
+      if (strncmp (ident, "GCC:", 4) != 0)
+	fprintf (asm_out_file, "\t.ident\t\"%s\"\n", ident);
+    }
+  
+}
+
+/* This emits a (user) label, which gets a "_" prefix except for DEC
+   assembler output.  */
+void
+pdp11_output_labelref (FILE *file, const char *name)
+{
+  if (!TARGET_DEC_ASM)
+    fputs (USER_LABEL_PREFIX, file);
+  fputs (name, file);
+}
+
+/* This equates name with value.  */
+void
+pdp11_output_def (FILE *file, const char *label1, const char *label2)
+{
+  if (TARGET_DEC_ASM)
+    {
+      assemble_name (file, label1);
+      putc ('=', file);
+      assemble_name (file, label2);
+    }
+  else
+    {
+      fputs (".set", file);
+      assemble_name (file, label1);
+      putc (',', file);
+      assemble_name (file, label2);
+    } 
+  putc ('\n', file);
+}
+
+void
+pdp11_output_addr_vec_elt (FILE *file, int value)
+{
+  char buf[256];
+
+  pdp11_gen_int_label (buf, "L", value);
+  if (!TARGET_UNIX_ASM)
+    fprintf (file, "\t.word");
+  fprintf (file, "\t%s\n", buf + 1);
+}
+
+/* This overrides some target hooks that are initializer elements so
+   they can't be variables in the #define.  */
+static void
+pdp11_option_override (void)
+{
+  if (TARGET_DEC_ASM)
+    {
+      targetm.asm_out.open_paren  = "<";
+      targetm.asm_out.close_paren = ">";
+    }
+}
+
+static void
+pdp11_asm_named_section (const char *name, unsigned int flags,
+			 tree decl ATTRIBUTE_UNUSED)
+{
+  const char *rwro = (flags & SECTION_WRITE) ? "rw" : "ro";
+  const char *insdat = (flags & SECTION_CODE) ? "i" : "d";
+  
+  gcc_assert (TARGET_DEC_ASM);
+  fprintf (asm_out_file, "\t.psect\t%s,con,%s,%s\n", name, insdat, rwro);
+}
+
+static void
+pdp11_asm_init_sections (void)
+{
+  if (TARGET_DEC_ASM)
+    {
+      bss_section = data_section;
+    }
+  else if (TARGET_GNU_ASM)
+    {
+      bss_section = get_unnamed_section (SECTION_WRITE | SECTION_BSS,
+					 output_section_asm_op,
+					 ".bss");
+    }
+}
+  
+static void
+pdp11_file_start (void)
+{
+  default_file_start ();
+  
+  if (TARGET_DEC_ASM)
+    fprintf (asm_out_file, "\t.enabl\tlsb,reg\n\n");
+}
+
+static void
+pdp11_file_end (void)
+{
+  if (TARGET_DEC_ASM)
+    fprintf (asm_out_file, "\t.end\n");
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */

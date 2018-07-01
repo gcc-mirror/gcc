@@ -35,8 +35,12 @@ Target Report Mask(AC0)
 Return floating-point results in ac0 (fr0 in Unix assembler syntax).
 
 mdec-asm
-Target RejectNegative Report InverseMask(UNIX_ASM)
+Target RejectNegative Report Mask(DEC_ASM) Negative(mgnu-asm)
 Use the DEC assembler syntax.
+
+mgnu-asm
+Target RejectNegative Report Mask(GNU_ASM) Negative(munix-asm)
+Use the GNU assembler syntax.
 
 mfloat32
 Target Report Mask(FLOAT32)
@@ -67,5 +71,5 @@ Target Report Mask(SPLIT)
 Target has split I&D.
 
 munix-asm
-Target RejectNegative Report Mask(UNIX_ASM)
+Target RejectNegative Report Mask(UNIX_ASM) Negative(mdec-asm)
 Use UNIX assembler syntax.
