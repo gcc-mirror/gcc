@@ -1805,7 +1805,8 @@ mark_threaded_blocks (bitmap threaded_blocks)
     {
       vec<jump_thread_edge *> *path = paths[i];
 
-      if ((*path)[1]->type != EDGE_COPY_SRC_JOINER_BLOCK)
+      if (path->length () > 1
+	  && (*path)[1]->type != EDGE_COPY_SRC_JOINER_BLOCK)
 	{
 	  edge e = (*path)[0]->e;
 	  e->aux = (void *)path;
@@ -1825,7 +1826,8 @@ mark_threaded_blocks (bitmap threaded_blocks)
     {
       vec<jump_thread_edge *> *path = paths[i];
 
-      if ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+      if (path->length () > 1
+	  && (*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK)
 	{
 	  /* Attach the path to the starting edge if none is yet recorded.  */
 	  if ((*path)[0]->e->aux == NULL)
@@ -1854,7 +1856,8 @@ mark_threaded_blocks (bitmap threaded_blocks)
       vec<jump_thread_edge *> *path = paths[i];
       edge e = (*path)[0]->e;
 
-      if ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK && e->aux == path)
+      if (path->length () > 1
+	  && (*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK && e->aux == path)
 	{
 	  unsigned int j;
 	  for (j = 1; j < path->length (); j++)
@@ -2043,6 +2046,169 @@ bb_in_bbs (basic_block bb, basic_block *bbs, int n)
   return false;
 }
 
+DEBUG_FUNCTION void
+debug_path (FILE *dump_file, int pathno)
+{
+  vec<jump_thread_edge *> *p = paths[pathno];
+  fprintf (dump_file, "path: ");
+  for (unsigned i = 0; i < p->length (); ++i)
+    fprintf (dump_file, "%d -> %d, ",
+	     (*p)[i]->e->src->index, (*p)[i]->e->dest->index);
+  fprintf (dump_file, "\n");
+}
+
+DEBUG_FUNCTION void
+debug_all_paths ()
+{
+  for (unsigned i = 0; i < paths.length (); ++i)
+    debug_path (stderr, i);
+}
+
+/* Rewire a jump_thread_edge so that the source block is now a
+   threaded source block.
+
+   PATH_NUM is an index into the global path table PATHS.
+   EDGE_NUM is the jump thread edge number into said path.
+
+   Returns TRUE if we were able to successfully rewire the edge.  */
+
+static bool
+rewire_first_differing_edge (unsigned path_num, unsigned edge_num)
+{
+  vec<jump_thread_edge *> *path = paths[path_num];
+  edge &e = (*path)[edge_num]->e;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "rewiring edge candidate: %d -> %d\n",
+	     e->src->index, e->dest->index);
+  basic_block src_copy = get_bb_copy (e->src);
+  if (src_copy == NULL)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "ignoring candidate: there is no src COPY\n");
+      return false;
+    }
+  edge new_edge = find_edge (src_copy, e->dest);
+  /* If the previously threaded paths created a flow graph where we
+     can no longer figure out where to go, give up.  */
+  if (new_edge == NULL)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "ignoring candidate: we lost our way\n");
+      return false;
+    }
+  e = new_edge;
+  return true;
+}
+
+/* After an FSM path has been jump threaded, adjust the remaining FSM
+   paths that are subsets of this path, so these paths can be safely
+   threaded within the context of the new threaded path.
+
+   For example, suppose we have just threaded:
+
+   5 -> 6 -> 7 -> 8 -> 12	=>	5 -> 6' -> 7' -> 8' -> 12'
+
+   And we have an upcoming threading candidate:
+   5 -> 6 -> 7 -> 8 -> 15 -> 20
+
+   This function adjusts the upcoming path into:
+   8' -> 15 -> 20
+
+   CURR_PATH_NUM is an index into the global paths table.  It
+   specifies the path that was just threaded.  */
+
+static void
+adjust_paths_after_duplication (unsigned curr_path_num)
+{
+  vec<jump_thread_edge *> *curr_path = paths[curr_path_num];
+  gcc_assert ((*curr_path)[0]->type == EDGE_FSM_THREAD);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "just threaded: ");
+      debug_path (dump_file, curr_path_num);
+    }
+
+  /* Iterate through all the other paths and adjust them.  */
+  for (unsigned cand_path_num = 0; cand_path_num < paths.length (); )
+    {
+      if (cand_path_num == curr_path_num)
+	{
+	  ++cand_path_num;
+	  continue;
+	}
+      /* Make sure the candidate to adjust starts with the same path
+	 as the recently threaded path and is an FSM thread.  */
+      vec<jump_thread_edge *> *cand_path = paths[cand_path_num];
+      if ((*cand_path)[0]->type != EDGE_FSM_THREAD
+	  || (*cand_path)[0]->e != (*curr_path)[0]->e)
+	{
+	  ++cand_path_num;
+	  continue;
+	}
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "adjusting candidate: ");
+	  debug_path (dump_file, cand_path_num);
+	}
+
+      /* Chop off from the candidate path any prefix it shares with
+	 the recently threaded path.  */
+      unsigned minlength = MIN (curr_path->length (), cand_path->length ());
+      unsigned j;
+      for (j = 0; j < minlength; ++j)
+	{
+	  edge cand_edge = (*cand_path)[j]->e;
+	  edge curr_edge = (*curr_path)[j]->e;
+
+	  /* Once the prefix no longer matches, adjust the first
+	     non-matching edge to point from an adjusted edge to
+	     wherever it was going.  */
+	  if (cand_edge != curr_edge)
+	    {
+	      gcc_assert (cand_edge->src == curr_edge->src);
+	      if (!rewire_first_differing_edge (cand_path_num, j))
+		goto remove_candidate_from_list;
+	      break;
+	    }
+	}
+      if (j == minlength)
+	{
+	  /* If we consumed the max subgraph we could look at, and
+	     still didn't find any different edges, it's the
+	     last edge after MINLENGTH.  */
+	  if (cand_path->length () > minlength)
+	    {
+	      if (!rewire_first_differing_edge (cand_path_num, j))
+		goto remove_candidate_from_list;
+	    }
+	  else if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "adjusting first edge after MINLENGTH.\n");
+	}
+      if (j > 0)
+	{
+	  /* If we are removing everything, delete the entire candidate.  */
+	  if (j == cand_path->length ())
+	    {
+	    remove_candidate_from_list:
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "adjusted candidate: [EMPTY]\n");
+	      delete_jump_thread_path (cand_path);
+	      paths.unordered_remove (cand_path_num);
+	      continue;
+	    }
+	  /* Otherwise, just remove the redundant sub-path.  */
+	  cand_path->block_remove (0, j);
+	}
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "adjusted candidate: ");
+	  debug_path (dump_file, cand_path_num);
+	}
+      ++cand_path_num;
+    }
+}
+
 /* Duplicates a jump-thread path of N_REGION basic blocks.
    The ENTRY edge is redirected to the duplicate of the region.
 
@@ -2050,11 +2216,14 @@ bb_in_bbs (basic_block bb, basic_block *bbs, int n)
    and create a single fallthru edge pointing to the same destination as the
    EXIT edge.
 
+   CURRENT_PATH_NO is an index into the global paths[] table
+   specifying the jump-thread path.
+
    Returns false if it is unable to copy the region, true otherwise.  */
 
 static bool
 duplicate_thread_path (edge entry, edge exit, basic_block *region,
-		       unsigned n_region)
+		       unsigned n_region, unsigned current_path_no)
 {
   unsigned i;
   struct loop *loop = entry->dest->loop_father;
@@ -2064,6 +2233,12 @@ duplicate_thread_path (edge entry, edge exit, basic_block *region,
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "\nabout to thread: ");
+      debug_path (dump_file, current_path_no);
+    }
 
   /* Some sanity checking.  Note that we do not check for all possible
      missuses of the functions.  I.e. if you ask to copy something weird,
@@ -2193,6 +2368,8 @@ duplicate_thread_path (edge entry, edge exit, basic_block *region,
 
   free (region_copy);
 
+  adjust_paths_after_duplication (current_path_no);
+
   free_original_copy_tables ();
   return true;
 }
@@ -2315,7 +2492,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       for (unsigned int j = 0; j < len - 1; j++)
 	region[j] = (*path)[j]->e->dest;
 
-      if (duplicate_thread_path (entry, exit, region, len - 1))
+      if (duplicate_thread_path (entry, exit, region, len - 1, i))
 	{
 	  /* We do not update dominance info.  */
 	  free_dominance_info (CDI_DOMINATORS);

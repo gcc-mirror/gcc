@@ -1,3 +1,16 @@
+2018-07-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadupdate.c (mark_threaded_blocks): Avoid
+	dereferencing path[] beyond its length.
+	(debug_path): New.
+	(debug_all_paths): New.
+	(rewire_first_differing_edge): New.
+	(adjust_paths_after_duplication): New.
+	(duplicate_thread_path): Call adjust_paths_after_duplication.
+	Add new argument.
+	(thread_through_all_blocks): Add new argument to
+	duplicate_thread_path.
+
 2018-06-30  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/predicates.md (p2m1_shift_operand): New.
