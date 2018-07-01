@@ -1,3 +1,18 @@
+2018-07-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from mainline.
+	2018-06-19  Tony Reix  <tony.reix@atos.com>
+	    Damien Bergamini  <damien.bergamini@atos.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* collect2.c (static_obj): New variable.
+	(static_libs): New variable.
+	(is_in_list): Uncomment declaration.
+	(main): Track AIX libraries linked statically.
+	(is_in_list): Uncomment definition.
+	(scan_prog_file): Don't add AIX shared libraries initializer
+	to constructor list if linking statically.
+
 2018-06-26  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	Backported from mainline
