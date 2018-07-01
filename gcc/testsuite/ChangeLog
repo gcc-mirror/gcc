@@ -1,5 +1,12 @@
 2018-07-01  Tom de Vries  <tdevries@suse.de>
 
+	* lib/gcc-gdb-test.exp (gdb-test): Handle '@' prefix in line number
+	argument.
+	* gcc.dg/guality/const-volatile.c: Replace gdb-test line nrs 50 and 58
+	with @main.
+
+2018-07-01  Tom de Vries  <tdevries@suse.de>
+
 	* gcc.dg/guality/prevent-optimization.h (VOLATILE): Define.
 	* gcc.dg/guality/vla-1.c (f1): Mark local vla a as VOLATILE.
 
