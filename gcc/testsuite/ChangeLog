@@ -1,5 +1,10 @@
 2018-07-01  Tom de Vries  <tdevries@suse.de>
 
+	* gcc.dg/guality/prevent-optimization.h (VOLATILE): Define.
+	* gcc.dg/guality/vla-1.c (f1): Mark local vla a as VOLATILE.
+
+2018-07-01  Tom de Vries  <tdevries@suse.de>
+
 	* lib/gcc-dg.exp (get-absolute-line): Handle '.'.
 	* gcc.dg/guality/vla-1.c: Use relative line numbers.
 
