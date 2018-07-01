@@ -1,3 +1,11 @@
+2018-07-01  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg-selftests/dg-final.exp (verify_call_1): Factor out of ...
+	(verify_call): ... here.  Move to toplevel.
+	(verify_call_np, dg_final_directive_check_utils): New proc.
+	(toplevel): Call dg_final_directive_check_utils.
+	* lib/gcc-dg.exp (get-absolute-line): Fix typo in variable reference.
+
 2018-06-30  Jim Wilson  <jimw@sifive.com>
 
 	* gcc.target/riscv/shift-shift-1.c: New.
