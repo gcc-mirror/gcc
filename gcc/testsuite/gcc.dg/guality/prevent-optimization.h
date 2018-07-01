@@ -21,10 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef PREVENT_OPTIMIZATION
 #define ATTRIBUTE_USED __attribute__((used))
-#define VOLATILE volatile
 #else
 #define ATTRIBUTE_USED
-#define VOLATILE
 #endif
 
 #endif
