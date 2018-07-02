@@ -1,5 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_arm_ok } */
+/* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } {"-mfloat-abi=soft" } } */
 /* { dg-options "-O2 -marm -mfloat-abi=soft" } */
 
 /* Check that we don't try to emit STRD in ARM state with

@@ -1,3 +1,8 @@
+2018-07-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/arm-soft-strd-even.c: Skip if -mfloat-abi is
+	overriden.
+
 2018-07-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86363
