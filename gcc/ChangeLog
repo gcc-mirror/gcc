@@ -1,3 +1,8 @@
+2018-07-02  Martin Liska  <mliska@suse.cz>
+
+        PR ipa/86323
+	* ipa-inline.c (early_inliner): Revert wrongly added ::get call.
+
 2018-07-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* dumpfile.c (dump_generic_expr_loc): Undo removal of this
