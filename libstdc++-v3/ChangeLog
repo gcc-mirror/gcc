@@ -1,3 +1,26 @@
+2018-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (sub_match::operator string_type): Call str().
+	(sub_match::compare): Use _M_str() instead of str().
+	(sub_match::_M_compare): New public function.
+	(sub_match::__string_view): New helper type.
+	(sub_match::_M_str): New overloaded functions to avoid creating a
+	string_type object when not needed.
+	(operator==, operator!=, operator<, operator>, operator<=, operator>=):
+	Use sub_match::_M_compare instead of creating string_type objects.
+	Fix Doxygen comments.
+	* include/bits/regex_compiler.h (__has_contiguous_iter): Remove.
+	(__is_contiguous_normal_iter): Rename to __is_contiguous_iter and
+	simplify.
+	(__enable_if_contiguous_iter, __disable_if_contiguous_iter): Use
+	__enable_if_t.
+	* include/std/type_traits (__enable_if_t): Define for C++11.
+	* testsuite/28_regex/sub_match/compare.cc: New.
+	* testsuite/util/testsuite_iterators.h (remove_cv): Add transformation
+	trait.
+	(input_iterator_wrapper): Use remove_cv for value_type argument of
+	std::iterator base class.
+
 2018-06-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/add_rvalue_reference/requirements/alias_decl.cc:
