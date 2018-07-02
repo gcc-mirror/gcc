@@ -506,6 +506,28 @@ dump_generic_expr (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
       print_generic_expr (alt_dump_file, t, dump_flags | extra_dump_flags);
 }
 
+
+/* Similar to dump_generic_expr, except additionally print the source
+   location.  */
+
+void
+dump_generic_expr_loc (dump_flags_t dump_kind, const dump_location_t &loc,
+		       dump_flags_t extra_dump_flags, tree t)
+{
+  location_t srcloc = loc.get_location_t ();
+  if (dump_file && (dump_kind & pflags))
+    {
+      dump_loc (dump_kind, dump_file, srcloc);
+      print_generic_expr (dump_file, t, dump_flags | extra_dump_flags);
+    }
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    {
+      dump_loc (dump_kind, alt_dump_file, srcloc);
+      print_generic_expr (alt_dump_file, t, dump_flags | extra_dump_flags);
+    }
+}
+
 /* Output a formatted message using FORMAT on appropriate dump streams.  */
 
 void

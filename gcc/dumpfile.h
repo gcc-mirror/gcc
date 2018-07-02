@@ -425,6 +425,8 @@ extern void dump_printf_loc (dump_flags_t, const dump_location_t &,
 			     const char *, ...) ATTRIBUTE_PRINTF_3;
 extern void dump_function (int phase, tree fn);
 extern void dump_basic_block (dump_flags_t, basic_block, int);
+extern void dump_generic_expr_loc (dump_flags_t, const dump_location_t &,
+				   dump_flags_t, tree);
 extern void dump_generic_expr (dump_flags_t, dump_flags_t, tree);
 extern void dump_gimple_stmt_loc (dump_flags_t, const dump_location_t &,
 				  dump_flags_t, gimple *, int);
