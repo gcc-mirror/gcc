@@ -1,3 +1,7 @@
+2018-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/thread-thread_local.C: New.
+
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
         PR testsuite/86366
