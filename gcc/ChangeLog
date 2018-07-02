@@ -1,3 +1,11 @@
+2018-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.c (dump_generic_expr_loc): Undo removal of this
+	function in r262149, changing "loc" param from source_location to
+	const dump_location_t &.
+	* dumpfile.h (dump_generic_expr_loc): Undo removal of this
+	declaration, as above.
+
 2018-07-01  Paul Koning  <ni1d@arrl.net>
 
 	* common/config/pdp11/pdp11-common.c (pdp11_handle_option): Handle
