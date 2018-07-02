@@ -1,3 +1,9 @@
+2018-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86363
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Check the
+	memset argument refers to a non-variable address.
+
 2018-07-02  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (extract_range_from_binary_expr_1): Abstract a lot of the
