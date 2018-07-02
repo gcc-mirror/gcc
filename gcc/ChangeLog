@@ -1,3 +1,8 @@
+2018-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Do not overrule
+	-fno-omit-frame-pointer when not optimizing.
+
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
         PR ipa/86279
@@ -394,6 +399,8 @@
 
 2018-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree-inline.h (struct copy_body_data): Move remapping_type_depth and
+	prevent_decl_creation_for_types fields up and add reset_location field.
 	* tree-inline.c (remap_gimple_stmt): Force input_location on the new
 	statement if id->reset_location is true.
 	(copy_edges_for_bb): Do not set goto_locus on the new edges if
@@ -402,8 +409,6 @@
 	id->reset_location is true.
 	(expand_call_inline): Set id->reset_location if DECL_IGNORED_P
 	is set on the function to be inlined.
-	* tree-inline.h (struct copy_body_data): Move remapping_type_depth and
-	prevent_decl_creation_for_types fields up and add reset_location field.
 
 2018-06-27  Stephan Bergmann  <sbergman@redhat.com>
 
