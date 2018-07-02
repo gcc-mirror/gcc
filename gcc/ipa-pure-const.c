@@ -923,8 +923,7 @@ malloc_candidate_p (function *fun, bool ipa)
 	  cgraph_edge *cs = node->get_edge (call_stmt);
 	  if (cs)
 	    {
-	      ipa_call_summary *es = ipa_call_summaries->get (cs);
-	      gcc_assert (es);
+	      ipa_call_summary *es = ipa_call_summaries->get_create (cs);
 	      es->is_return_callee_uncaptured = true;
 	    }
 	}
@@ -1803,7 +1802,7 @@ propagate_nothrow (void)
       w = node;
       while (w)
 	{
-	  funct_state w_l = funct_state_summaries->get (w);
+	  funct_state w_l = funct_state_summaries->get_create (w);
 	  if (!can_throw && !TREE_NOTHROW (w->decl))
 	    {
 	      /* Inline clones share declaration with their offline copies;

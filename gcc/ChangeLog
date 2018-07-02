@@ -1,5 +1,11 @@
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
+        PR ipa/86279
+	* ipa-pure-const.c (malloc_candidate_p): Revert usage of ::get.
+	(propagate_nothrow): Likewise.
+
+2018-07-02  Martin Liska  <mliska@suse.cz>
+
         PR ipa/86323
 	* ipa-inline.c (early_inliner): Revert wrongly added ::get call.
 
