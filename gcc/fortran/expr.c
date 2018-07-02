@@ -1896,6 +1896,10 @@ simplify_parameter_variable (gfc_expr *p, int type)
   return t;
 }
 
+
+static bool
+scalarize_intrinsic_call (gfc_expr *, bool init_flag);
+
 /* Given an expression, simplify it by collapsing constant
    expressions.  Most simplification takes place when the expression
    tree is being constructed.  If an intrinsic function is simplified
@@ -1919,6 +1923,8 @@ bool
 gfc_simplify_expr (gfc_expr *p, int type)
 {
   gfc_actual_arglist *ap;
+  gfc_intrinsic_sym* isym = NULL;
+
 
   if (p == NULL)
     return true;
@@ -1937,6 +1943,14 @@ gfc_simplify_expr (gfc_expr *p, int type)
       if (p->value.function.isym != NULL
 	  && gfc_intrinsic_func_interface (p, 1) == MATCH_ERROR)
 	return false;
+
+      if (p->expr_type == EXPR_FUNCTION)
+	{
+	  if (p->symtree)
+	    isym = gfc_find_function (p->symtree->n.sym->name);
+	  if (isym && isym->elemental)
+	    scalarize_intrinsic_call (p, false);
+	}
 
       break;
 
@@ -2051,7 +2065,7 @@ et0 (gfc_expr *e)
 /* Scalarize an expression for an elemental intrinsic call.  */
 
 static bool
-scalarize_intrinsic_call (gfc_expr *e)
+scalarize_intrinsic_call (gfc_expr *e, bool init_flag)
 {
   gfc_actual_arglist *a, *b;
   gfc_constructor_base ctor;
@@ -2059,6 +2073,15 @@ scalarize_intrinsic_call (gfc_expr *e)
   gfc_constructor *ci, *new_ctor;
   gfc_expr *expr, *old;
   int n, i, rank[5], array_arg;
+  int errors = 0;
+
+  if (e == NULL)
+    return false;
+
+  a = e->value.function.actual;
+  for (; a; a = a->next)
+    if (a->expr && !gfc_is_constant_expr (a->expr))
+      return false;
 
   /* Find which, if any, arguments are arrays.  Assume that the old
      expression carries the type information and that the first arg
@@ -2093,7 +2116,7 @@ scalarize_intrinsic_call (gfc_expr *e)
   for (; a; a = a->next)
     {
       /* Check that this is OK for an initialization expression.  */
-      if (a->expr && !gfc_check_init_expr (a->expr))
+      if (a->expr && init_flag && !gfc_check_init_expr (a->expr))
 	goto cleanup;
 
       rank[n] = 0;
@@ -2118,6 +2141,7 @@ scalarize_intrinsic_call (gfc_expr *e)
       n++;
     }
 
+  gfc_get_errors (NULL, &errors);
 
   /* Using the array argument as the master, step through the array
      calling the function for each element and advancing the array
@@ -2152,7 +2176,8 @@ scalarize_intrinsic_call (gfc_expr *e)
       /* Simplify the function calls.  If the simplification fails, the
 	 error will be flagged up down-stream or the library will deal
 	 with it.  */
-      gfc_simplify_expr (new_ctor->expr, 0);
+      if (errors == 0)
+	gfc_simplify_expr (new_ctor->expr, 0);
 
       for (i = 0; i < n; i++)
 	if (args[i])
@@ -2626,7 +2651,7 @@ gfc_check_init_expr (gfc_expr *e)
 	   array argument.  */
 	isym = gfc_find_function (e->symtree->n.sym->name);
 	if (isym && isym->elemental
-	    && (t = scalarize_intrinsic_call (e)))
+	    && (t = scalarize_intrinsic_call (e, true)))
 	  break;
       }
 
@@ -5344,7 +5369,7 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
 	  s = expr->symtree->n.sym;
 	  if (s->ts.type != BT_CLASS)
 	    return false;
-	  
+
 	  rc = NULL;
 	  for (r = expr->ref; r; r = r->next)
 	    if (r->type == REF_COMPONENT)
