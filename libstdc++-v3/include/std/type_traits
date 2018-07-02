@@ -1341,13 +1341,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
     struct __is_convertible_helper
-    { typedef typename is_void<_To>::type type; };
+    {
+      typedef typename is_void<_To>::type type;
+#if __cplusplus > 201703L
+      typedef type __is_nothrow_type;
+#endif
+    };
 
   template<typename _From, typename _To>
     class __is_convertible_helper<_From, _To, false>
     {
-       template<typename _To1>
-	static void __test_aux(_To1);
+      template<typename _To1>
+	static void __test_aux(_To1) noexcept;
 
       template<typename _From1, typename _To1,
 	       typename = decltype(__test_aux<_To1>(std::declval<_From1>()))>
@@ -1358,8 +1363,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static false_type
 	__test(...);
 
+#if __cplusplus > 201703L
+      template<typename _From1, typename _To1,
+	       bool _NoEx = noexcept(__test_aux<_To1>(std::declval<_From1>()))>
+	static __bool_constant<_NoEx>
+	__test_nothrow(int);
+
+      template<typename, typename>
+	static false_type
+	__test_nothrow(...);
+#endif
+
     public:
       typedef decltype(__test<_From, _To>(0)) type;
+
+#if __cplusplus > 201703L
+      typedef decltype(__test_nothrow<_From, _To>(0)) __is_nothrow_type;
+#endif
     };
 
 
@@ -1369,6 +1389,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_convertible_helper<_From, _To>::type
     { };
 
+#if __cplusplus > 201703L
+  /// is_nothrow_convertible
+  template<typename _From, typename _To>
+    struct is_nothrow_convertible
+    : public __is_convertible_helper<_From, _To>::__is_nothrow_type
+    { };
+
+  /// is_nothrow_convertible_v
+  template<typename _From, typename _To>
+    inline constexpr bool is_nothrow_convertible_v
+      = is_nothrow_convertible<_From, _To>::value;
+#endif // C++2a
 
   // Const-volatile modifications.
 
