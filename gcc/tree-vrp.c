@@ -2374,6 +2374,85 @@ extract_range_from_binary_expr_1 (value_range *vr,
     set_value_range (vr, type, min, max, NULL);
 }
 
+/* Calculates the absolute value of a range and puts the result in VR.
+   VR0 is the input range.  TYPE is the type of the resulting
+   range.  */
+
+static void
+extract_range_from_abs_expr (value_range &vr, tree type, value_range &vr0)
+{
+  /* Pass through vr0 in the easy cases.  */
+  if (TYPE_UNSIGNED (type)
+      || value_range_nonnegative_p (&vr0))
+    {
+      copy_value_range (&vr, &vr0);
+      return;
+    }
+
+  /* For the remaining varying or symbolic ranges we can't do anything
+     useful.  */
+  if (vr0.type == VR_VARYING
+      || symbolic_range_p (&vr0))
+    {
+      set_value_range_to_varying (&vr);
+      return;
+    }
+
+  /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
+     useful range.  */
+  if (!TYPE_OVERFLOW_UNDEFINED (type)
+      && ((vr0.type == VR_RANGE
+	   && vrp_val_is_min (vr0.min))
+	  || (vr0.type == VR_ANTI_RANGE
+	      && !vrp_val_is_min (vr0.min))))
+    {
+      set_value_range_to_varying (&vr);
+      return;
+    }
+
+  /* ABS_EXPR may flip the range around, if the original range
+     included negative values.  */
+  tree min, max;
+  if (!vrp_val_is_min (vr0.min))
+    min = fold_unary_to_constant (ABS_EXPR, type, vr0.min);
+  else
+    min = TYPE_MAX_VALUE (type);
+
+  if (!vrp_val_is_min (vr0.max))
+    max = fold_unary_to_constant (ABS_EXPR, type, vr0.max);
+  else
+    max = TYPE_MAX_VALUE (type);
+
+  int cmp = compare_values (min, max);
+  gcc_assert (vr0.type != VR_ANTI_RANGE);
+
+  /* If the range contains zero then we know that the minimum value in the
+     range will be zero.  */
+  if (range_includes_zero_p (vr0.min, vr0.max) == 1)
+    {
+      if (cmp == 1)
+	max = min;
+      min = build_int_cst (type, 0);
+    }
+  else
+    {
+      /* If the range was reversed, swap MIN and MAX.  */
+      if (cmp == 1)
+	std::swap (min, max);
+    }
+
+  cmp = compare_values (min, max);
+  if (cmp == -2 || cmp == 1)
+    {
+      /* If the new range has its limits swapped around (MIN > MAX),
+	 then the operation caused one of them to wrap around, mark
+	 the new range VARYING.  */
+      set_value_range_to_varying (&vr);
+    }
+  else
+    set_value_range (&vr, vr0.type, min, max, NULL);
+}
+
 /* Extract range information from a unary operation CODE based on
    the range of its operand *VR0 with type OP0_TYPE with resulting type TYPE.
    The resulting range is stored in *VR.  */
@@ -2504,117 +2583,7 @@ extract_range_from_unary_expr (value_range *vr,
       return;
     }
   else if (code == ABS_EXPR)
-    {
-      tree min, max;
-      int cmp;
-
-      /* Pass through vr0 in the easy cases.  */
-      if (TYPE_UNSIGNED (type)
-	  || value_range_nonnegative_p (&vr0))
-	{
-	  copy_value_range (vr, &vr0);
-	  return;
-	}
-
-      /* For the remaining varying or symbolic ranges we can't do anything
-	 useful.  */
-      if (vr0.type == VR_VARYING
-	  || symbolic_range_p (&vr0))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
-         useful range.  */
-      if (!TYPE_OVERFLOW_UNDEFINED (type)
-	  && ((vr0.type == VR_RANGE
-	       && vrp_val_is_min (vr0.min))
-	      || (vr0.type == VR_ANTI_RANGE
-		  && !vrp_val_is_min (vr0.min))))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* ABS_EXPR may flip the range around, if the original range
-	 included negative values.  */
-      if (!vrp_val_is_min (vr0.min))
-	min = fold_unary_to_constant (code, type, vr0.min);
-      else
-	min = TYPE_MAX_VALUE (type);
-
-      if (!vrp_val_is_min (vr0.max))
-	max = fold_unary_to_constant (code, type, vr0.max);
-      else
-	max = TYPE_MAX_VALUE (type);
-
-      cmp = compare_values (min, max);
-
-      /* If a VR_ANTI_RANGEs contains zero, then we have
-	 ~[-INF, min(MIN, MAX)].  */
-      if (vr0.type == VR_ANTI_RANGE)
-	{
-	  if (range_includes_zero_p (vr0.min, vr0.max) == 1)
-	    {
-	      /* Take the lower of the two values.  */
-	      if (cmp != 1)
-		max = min;
-
-	      /* Create ~[-INF, min (abs(MIN), abs(MAX))]
-	         or ~[-INF + 1, min (abs(MIN), abs(MAX))] when
-		 flag_wrapv is set and the original anti-range doesn't include
-	         TYPE_MIN_VALUE, remember -TYPE_MIN_VALUE = TYPE_MIN_VALUE.  */
-	      if (TYPE_OVERFLOW_WRAPS (type))
-		{
-		  tree type_min_value = TYPE_MIN_VALUE (type);
-
-		  min = (vr0.min != type_min_value
-			 ? int_const_binop (PLUS_EXPR, type_min_value,
-					    build_int_cst (TREE_TYPE (type_min_value), 1))
-			 : type_min_value);
-		}
-	      else
-		min = TYPE_MIN_VALUE (type);
-	    }
-	  else
-	    {
-	      /* All else has failed, so create the range [0, INF], even for
-	         flag_wrapv since TYPE_MIN_VALUE is in the original
-	         anti-range.  */
-	      vr0.type = VR_RANGE;
-	      min = build_int_cst (type, 0);
-	      max = TYPE_MAX_VALUE (type);
-	    }
-	}
-
-      /* If the range contains zero then we know that the minimum value in the
-         range will be zero.  */
-      else if (range_includes_zero_p (vr0.min, vr0.max) == 1)
-	{
-	  if (cmp == 1)
-	    max = min;
-	  min = build_int_cst (type, 0);
-	}
-      else
-	{
-          /* If the range was reversed, swap MIN and MAX.  */
-	  if (cmp == 1)
-	    std::swap (min, max);
-	}
-
-      cmp = compare_values (min, max);
-      if (cmp == -2 || cmp == 1)
-	{
-	  /* If the new range has its limits swapped around (MIN > MAX),
-	     then the operation caused one of them to wrap around, mark
-	     the new range VARYING.  */
-	  set_value_range_to_varying (vr);
-	}
-      else
-	set_value_range (vr, vr0.type, min, max, NULL);
-      return;
-    }
+    return extract_range_from_abs_expr (*vr, type, vr0);
 
   /* For unhandled operations fall back to varying.  */
   set_value_range_to_varying (vr);

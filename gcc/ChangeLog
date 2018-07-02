@@ -1,3 +1,9 @@
+2018-07-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (extract_range_from_unary_expr): Abstract ABS_EXPR
+	code...
+	(extract_range_from_abs_expr): ...here.
+
 2018-07-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Do not overrule
