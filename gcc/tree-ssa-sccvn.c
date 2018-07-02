@@ -1988,6 +1988,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &maxsize2,
 					   &reverse);
 	  if (!known_size_p (maxsize2)
+	      || !known_eq (maxsize2, size2)
 	      || !operand_equal_p (base, base2, OEP_ADDRESS_OF))
 	    return (void *)-1;
 	}
