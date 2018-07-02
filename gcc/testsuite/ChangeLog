@@ -1,3 +1,10 @@
+2018-07-02  Martin Liska  <mliska@suse.cz>
+
+        PR testsuite/86366
+	* gcc.dg/profile-dir-1.c: Fix scanned pattern.
+	* gcc.dg/profile-dir-2.c: Likewise.
+	* gcc.dg/profile-dir-3.c: Likewise.
+
 2018-07-02  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/arm-soft-strd-even.c: Skip if -mfloat-abi is
