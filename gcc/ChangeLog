@@ -1,3 +1,51 @@
+2018-07-02  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64-protos.h, config/aarch64/aarch64.c
+	(aarch64_sve_prepare_conditional_op): Remove.
+	* config/aarch64/aarch64-sve.md (cond_<SVE_INT_BINARY><SVE_I>):
+	Allow aarch64_simd_reg_or_zero as select operand; remove
+	the aarch64_sve_prepare_conditional_op call.
+	(cond_<SVE_INT_BINARY_SD><SVE_SDI>): Likewise.
+	(cond_<SVE_COND_FP_BINARY><SVE_F>): Likewise.
+	(*cond_<SVE_INT_BINARY><SVE_I>_z): New pattern.
+	(*cond_<SVE_INT_BINARY_SD><SVE_SDI>_z): New pattern.
+	(*cond_<SVE_COND_FP_BINARY><SVE_F>_z): New pattern.
+	(*cond_<SVE_INT_BINARY><SVE_I>_any): New pattern.
+	(*cond_<SVE_INT_BINARY_SD><SVE_SDI>_any): New pattern.
+	(*cond_<SVE_COND_FP_BINARY><SVE_F>_any): New pattern
+	and a splitters to match all of the *_any patterns.
+	* config/aarch64/predicates.md (aarch64_sve_any_binary_operator): New.
+
+	* config/aarch64/iterators.md (SVE_INT_BINARY_REV): Remove.
+	(SVE_COND_FP_BINARY_REV): Remove.
+	(sve_int_op_rev, sve_fp_op_rev): New.
+	* config/aarch64/aarch64-sve.md (*cond_<SVE_INT_BINARY><SVE_I>_0): New.
+	(*cond_<SVE_INT_BINARY_SD><SVE_SDI>_0): New.
+	(*cond_<SVE_COND_FP_BINARY><SVE_F>_0): New.
+	(*cond_<SVE_INT_BINARY><SVE_I>_2): Rename, add movprfx alternative.
+	(*cond_<SVE_INT_BINARY_SD><SVE_SDI>_2): Similarly.
+	(*cond_<SVE_COND_FP_BINARY><SVE_F>_2): Similarly.
+	(*cond_<SVE_INT_BINARY><SVE_I>_3): Similarly; use sve_int_op_rev.
+	(*cond_<SVE_INT_BINARY_SD><SVE_SDI>_3): Similarly.
+	(*cond_<SVE_COND_FP_BINARY><SVE_F>_3): Similarly; use sve_fp_op_rev.
+
+	* config/aarch64/aarch64-sve.md (cond_<SVE_COND_FP_BINARY><SVE_F>):
+	Remove match_dup 1 from the inner unspec.
+	(*cond_<SVE_COND_FP_BINARY><SVE_F>): Likewise.
+
+	* config/aarch64/aarch64.md (movprfx): New attr.
+	(length): Default movprfx to 8.
+	* config/aarch64/aarch64-sve.md (*mul<SVE_I>3): Add movprfx alt.
+	(*madd<SVE_I>, *msub<SVE_I): Likewise.
+	(*<su>mul<SVE_I>3_highpart): Likewise.
+	(*<SVE_INT_BINARY_SD><SVE_SDI>3): Likewise.
+	(*v<ASHIFT><SVE_I>3): Likewise.
+	(*<su><MAXMIN><SVE_I>3): Likewise.
+	(*<su><MAXMIN><SVE_F>3): Likewise.
+	(*fma<SVE_F>4, *fnma<SVE_F>4): Likewise.
+	(*fms<SVE_F>4, *fnms<SVE_F>4): Likewise.
+	(*div<SVE_F>4): Likewise.
+
 2018-07-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-patterns.c (vect_recog_widen_shift_pattern): Fix typo

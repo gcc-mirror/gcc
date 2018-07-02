@@ -625,3 +625,6 @@
 ;; A special predicate that doesn't match a particular mode.
 (define_special_predicate "aarch64_any_register_operand"
   (match_code "reg"))
+
+(define_predicate "aarch64_sve_any_binary_operator"
+  (match_code "plus,minus,mult,div,udiv,smax,umax,smin,umin,and,ior,xor"))

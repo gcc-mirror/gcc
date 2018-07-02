@@ -251,9 +251,6 @@
 ;; will be disabled when !TARGET_SVE.
 (define_attr "sve" "no,yes" (const_string "no"))
 
-(define_attr "length" ""
-  (const_int 4))
-
 ;; Attribute that controls whether an alternative is enabled or not.
 ;; Currently it is only used to disable alternatives which touch fp or simd
 ;; registers when -mgeneral-regs-only is specified.
@@ -276,6 +273,14 @@
 ;; 0 :=: no
 ;; 1 :=: yes
 (define_attr "far_branch" "" (const_int 0))
+
+;; Attribute that specifies whether the alternative uses MOVPRFX.
+(define_attr "movprfx" "no,yes" (const_string "no"))
+
+(define_attr "length" ""
+  (cond [(eq_attr "movprfx" "yes")
+           (const_int 8)
+        ] (const_int 4)))
 
 ;; Strictly for compatibility with AArch32 in pipeline models, since AArch64 has
 ;; no predicated insns.
