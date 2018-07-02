@@ -1739,7 +1739,7 @@ vect_recog_widen_shift_pattern (vec<gimple *> *stmts, tree *type_out)
 {
   return vect_recog_widen_op_pattern (stmts, type_out, LSHIFT_EXPR,
 				      WIDEN_LSHIFT_EXPR, true,
-				      "vect_widen_shift_pattern");
+				      "vect_recog_widen_shift_pattern");
 }
 
 /* Detect a rotate pattern wouldn't be otherwise vectorized:
