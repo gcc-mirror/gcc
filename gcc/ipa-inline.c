@@ -2802,14 +2802,11 @@ early_inliner (function *fun)
 	  for (edge = node->callees; edge; edge = edge->next_callee)
 	    {
 	      /* We have no summary for new bound store calls yet.  */
-	      ipa_call_summary *es = ipa_call_summaries->get (edge);
-	      if (es != NULL)
-		{
-		  es->call_stmt_size
-		    = estimate_num_insns (edge->call_stmt, &eni_size_weights);
-		  es->call_stmt_time
-		    = estimate_num_insns (edge->call_stmt, &eni_time_weights);
-		}
+	      ipa_call_summary *es = ipa_call_summaries->get_create (edge);
+	      es->call_stmt_size
+		= estimate_num_insns (edge->call_stmt, &eni_size_weights);
+	      es->call_stmt_time
+		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
 
 	      if (edge->callee->decl
 		  && !gimple_check_call_matching_types (
