@@ -1,3 +1,7 @@
+2018-07-02  Martin Liska  <mliska@suse.cz>
+
+	* gnatvsn.ads: Bump Library_Version to 9.
+
 2018-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (TYPE_RETURN_BY_DIRECT_REF_P): Change from
