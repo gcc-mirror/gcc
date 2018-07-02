@@ -1,3 +1,10 @@
+2018-07-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82969
+	PR fortran/86242
+	* trans-array.c (structure_alloc_comps): Do not explicitly copy
+	procedure pointer components.
+
 2018-06-28  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/82865
