@@ -1,3 +1,9 @@
+2018-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86321
+	* trans-types.c (gfc_get_array_type_bounds): Unshare TYPE_FIELDs
+	for the distinct type copy.
+
 2018-07-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82969
