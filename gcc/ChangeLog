@@ -1,5 +1,13 @@
 2018-07-02  Aldy Hernandez  <aldyh@redhat.com>
 
+	* tree-vrp.c (extract_range_from_binary_expr_1): Abstract a lot of the
+	{PLUS,MINUS}_EXPR code to...
+	(adjust_symbolic_bound): ...here,
+	(combine_bound): ...here,
+	(set_value_range_with_overflow): ...and here.
+
+2018-07-02  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-vrp.c (extract_range_from_unary_expr): Abstract ABS_EXPR
 	code...
 	(extract_range_from_abs_expr): ...here.
