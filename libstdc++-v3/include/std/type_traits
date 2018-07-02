@@ -2996,6 +2996,13 @@ template <typename _From, typename _To>
   template<typename _Tp>
     using remove_cvref_t = __remove_cvref_t<_Tp>;
 
+  /// Identity metafunction.
+  template<typename _Tp>
+    struct type_identity { using type = _Tp; };
+
+  template<typename _Tp>
+    using type_identity_t = typename type_identity<_Tp>::type;
+
 #endif // C++2a
 
 _GLIBCXX_END_NAMESPACE_VERSION
