@@ -1,4 +1,9 @@
-2018-06-30  Alexandre Oliva <aoliva@redhat.com>
+2018-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Do not overrule
+	-fno-omit-frame-pointer when not optimizing.
+
+2018-06-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/86064
 	* dwarf2out.c (loc_list_has_views): Adjust comments.

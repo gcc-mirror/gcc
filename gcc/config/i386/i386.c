@@ -13328,7 +13328,7 @@ ix86_finalize_stack_frame_flags (void)
      is used, but in the end nothing that needed the stack alignment had
      been spilled nor stack access, clear frame_pointer_needed and say we
      don't need stack realignment.  */
-  if ((stack_realign || !flag_omit_frame_pointer)
+  if ((stack_realign || (!flag_omit_frame_pointer && optimize))
       && frame_pointer_needed
       && crtl->is_leaf
       && crtl->sp_is_unchanging
