@@ -2331,7 +2331,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __invoke_result<_Functor, _ArgTypes...>
     { };
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
   /// Alias template for aligned_storage
   template<size_t _Len, size_t _Align =
 	    __alignof__(typename __aligned_storage_msa<_Len>::__type)>
@@ -2363,11 +2363,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Alias template for result_of
   template<typename _Tp>
     using result_of_t = typename result_of<_Tp>::type;
-#endif
+#endif // C++14
 
+  // __enable_if_t (std::enable_if_t for C++11)
+  template<bool _Cond, typename _Tp = void>
+    using __enable_if_t = typename enable_if<_Cond, _Tp>::type;
+
+  // __void_t (std::void_t for C++11)
   template<typename...> using __void_t = void;
 
-#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+#if __cplusplus >= 201703L || !defined(__STRICT_ANSI__) // c++17 or gnu++11
 #define __cpp_lib_void_t 201411
   /// A metafunction that always yields void, used for detecting valid types.
   template<typename...> using void_t = void;
