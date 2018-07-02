@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "selftest.h"
+#include "intl.h"
 
 #if CHECKING_P
 
@@ -190,6 +191,25 @@ temp_source_file::temp_source_file (const location &loc,
     fail_formatted (loc, "unable to open tempfile: %s", get_filename ());
   fprintf (out, "%s", content);
   fclose (out);
+}
+
+/* Avoid introducing locale-specific differences in the results
+   by hardcoding open_quote and close_quote.  */
+
+auto_fix_quotes::auto_fix_quotes ()
+{
+  m_saved_open_quote = open_quote;
+  m_saved_close_quote = close_quote;
+  open_quote = "`";
+  close_quote = "'";
+}
+
+/* Restore old values of open_quote and close_quote.  */
+
+auto_fix_quotes::~auto_fix_quotes ()
+{
+  open_quote = m_saved_open_quote;
+  close_quote = m_saved_close_quote;
 }
 
 /* Read the contents of PATH into memory, returning a 0-terminated buffer

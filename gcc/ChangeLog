@@ -1,3 +1,12 @@
+2018-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.c (selftest::test_pp_format): Move save and restore
+	of quotes to class auto_fix_quotes, and add an instance.
+	* selftest.c: Include "intl.h".
+	(selftest::auto_fix_quotes::auto_fix_quotes): New ctor.
+	(selftest::auto_fix_quotes::~auto_fix_quotes): New dtor.
+	* selftest.h (selftest::auto_fix_quotes): New class.
+
 2018-07-02  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/aarch64/aarch64-protos.h, config/aarch64/aarch64.c
