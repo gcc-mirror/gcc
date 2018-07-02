@@ -1,5 +1,13 @@
 2018-07-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	P0887R1 The identity metafunction
+	* include/std/type_traits (type_identity, type_identity_t): Define
+	for C++2a.
+	* testsuite/20_util/type_identity/requirements/alias_decl.cc: New.
+	* testsuite/20_util/type_identity/requirements/
+	explicit_instantiation.cc:New.
+	* testsuite/20_util/type_identity/requirements/typedefs.cc: New.
+
 	* include/bits/regex.h (sub_match::operator string_type): Call str().
 	(sub_match::compare): Use _M_str() instead of str().
 	(sub_match::_M_compare): New public function.
