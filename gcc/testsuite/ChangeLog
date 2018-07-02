@@ -1,3 +1,9 @@
+2018-07-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/completion-1.c: New test.
+	* gcc.dg/completion-2.c: New test.
+	* gcc.dg/completion-3.c: New test.
+
 2018-07-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82969
