@@ -1,5 +1,10 @@
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
+        PR ipa/86279
+	* gcc.dg/ipa/pr86279.c: New test.
+
+2018-07-02  Martin Liska  <mliska@suse.cz>
+
         PR ipa/86323
 	* g++.dg/ipa/pr86323.C: New test.
 
