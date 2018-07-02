@@ -1,5 +1,12 @@
 2018-07-02  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/82969
+	PR fortran/86242
+	* trans-array.c (structure_alloc_comps): Do not explicitly copy
+	procedure pointer components.
+
+2018-07-02  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/45305
 	* expr.c : Add a prototype for scalarize_intrinsic_call.
 	(gfc_simplify_expr): Use scalarize_intrinsic_call for elemental
