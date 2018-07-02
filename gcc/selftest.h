@@ -113,6 +113,26 @@ class temp_source_file : public named_temp_file
 		    const char *content);
 };
 
+/* RAII-style class for avoiding introducing locale-specific differences
+   in strings containing localized quote marks, by temporarily overriding
+   the "open_quote" and "close_quote" globals to something hardcoded.
+
+   Specifically, the C locale's values are used:
+   - open_quote becomes "`"
+   - close_quote becomes "'"
+   for the lifetime of the object.  */
+
+class auto_fix_quotes
+{
+ public:
+  auto_fix_quotes ();
+  ~auto_fix_quotes ();
+
+ private:
+  const char *m_saved_open_quote;
+  const char *m_saved_close_quote;
+};
+
 /* Various selftests involving location-handling require constructing a
    line table and one or more line maps within it.
 
