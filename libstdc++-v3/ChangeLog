@@ -1,5 +1,20 @@
 2018-07-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	P0758R1 Implicit conversion traits
+	* include/std/type_traits [__cplusplus > 201703]
+	(__is_convertible_helper::__is_nothrow_type): Define new member.
+	(__is_convertible_helper<_From, _To, false>::__test_aux1): Add
+	noexcept.
+	(__is_convertible_helper<_From, _To, false>::__test_nothrow)
+	(__is_convertible_helper<_From, _To, false>::__is_nothrow_type): Add
+	new members.
+	(is_nothrow_convertible, is_nothrow_convertible_v): Define for C++2a.
+	* testsuite/20_util/is_nothrow_convertible/value.cc: New.
+	* testsuite/20_util/is_nothrow_convertible/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/is_nothrow_convertible/requirements/typedefs.cc:
+	New.
+
 	P0887R1 The identity metafunction
 	* include/std/type_traits (type_identity, type_identity_t): Define
 	for C++2a.
