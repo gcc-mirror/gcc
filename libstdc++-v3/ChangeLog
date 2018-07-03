@@ -1,3 +1,16 @@
+2018-07-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algobase.h (__niter_wrap): New.
+	(__copy_move_a2(_II, _II, _OI)): Use latter.
+	(__copy_move_backward_a2(_BI1, _BI1, _BI2)): Likewise.
+	(fill_n(_OI, _Size, const _Tp&)): Likewise.
+	(equal(_II1, _II1, _II2)): Use __glibcxx_requires_can_increment.
+	* include/debug/stl_iterator.h
+	(std::__niter_base(const __gnu_cxx::_Safe_iterator<
+	__gnu_cxx::__normal_iterator<>, _Sequence>&)): New declaration.
+	* include/debug/vector (__niter_base(const __gnu_cxx::_Safe_iterator<
+	__gnu_cxx::__normal_iterator<>, _Sequence>&)): New.
+
 2018-07-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	P0758R1 Implicit conversion traits

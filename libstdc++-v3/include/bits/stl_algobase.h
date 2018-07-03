@@ -277,6 +277,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __niter_base(_Iterator __it)
     { return __it; }
 
+  // Reverse the __niter_base transformation to get a
+  // __normal_iterator back again (this assumes that __normal_iterator
+  // is only used to wrap random access iterators, like pointers).
+  template<typename _From, typename _To>
+    inline _From
+    __niter_wrap(_From __from, _To __res)
+    { return __from + (__res - std::__niter_base(__from)); }
+
+  // No need to wrap, iterator already has the right type.
+  template<typename _Iterator>
+    inline _Iterator
+    __niter_wrap(_Iterator, _Iterator __res)
+    { return __res; }
+
   // All of these auxiliary structs serve two purposes.  (1) Replace
   // calls to copy with memmove whenever possible.  (Memmove, not memcpy,
   // because the input and output ranges are permitted to overlap.)
@@ -419,9 +433,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _OI
     __copy_move_a2(_II __first, _II __last, _OI __result)
     {
-      return _OI(std::__copy_move_a<_IsMove>(std::__niter_base(__first),
-					     std::__niter_base(__last),
-					     std::__niter_base(__result)));
+      return std::__niter_wrap(__result,
+		std::__copy_move_a<_IsMove>(std::__niter_base(__first),
+					    std::__niter_base(__last),
+					    std::__niter_base(__result)));
     }
 
   /**
@@ -593,7 +608,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _BI2
     __copy_move_backward_a2(_BI1 __first, _BI1 __last, _BI2 __result)
     {
-      return _BI2(std::__copy_move_backward_a<_IsMove>
+      return std::__niter_wrap(__result,
+		std::__copy_move_backward_a<_IsMove>
 		  (std::__niter_base(__first), std::__niter_base(__last),
 		   std::__niter_base(__result)));
     }
@@ -785,7 +801,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_OutputIteratorConcept<_OI, _Tp>)
       __glibcxx_requires_can_increment(__first, __n);
 
-      return _OI(std::__fill_n_a(std::__niter_base(__first), __n, __value));
+      return std::__niter_wrap(__first,
+		std::__fill_n_a(std::__niter_base(__first), __n, __value));
     }
 
   template<bool _BoolType>
@@ -1043,7 +1060,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_EqualOpConcept<
 	    typename iterator_traits<_II1>::value_type,
 	    typename iterator_traits<_II2>::value_type>)
-      __glibcxx_requires_valid_range(__first1, __last1);
+      __glibcxx_requires_can_increment_range(__first1, __last1, __first2);
 
       return std::__equal_aux(std::__niter_base(__first1),
 			      std::__niter_base(__last1),
