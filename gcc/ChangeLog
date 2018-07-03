@@ -1,5 +1,31 @@
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* poly-int.h (print_hex): New function.
+	* dumpfile.h (dump_dec, dump_hex): Declare.
+	* dumpfile.c (dump_dec, dump_hex): New poly_wide_int functions.
+	* tree-vectorizer.h (_stmt_vec_info): Add min_output_precision,
+	min_input_precision, operation_precision and operation_sign.
+	* tree-vect-patterns.c (vect_get_range_info): New function.
+	(vect_same_loop_or_bb_p, vect_single_imm_use)
+	(vect_operation_fits_smaller_type): Delete.
+	(vect_look_through_possible_promotion): Add an optional
+	single_use_p parameter.
+	(vect_recog_over_widening_pattern): Rewrite to use new
+	stmt_vec_info infomration.  Handle one operation at a time.
+	(vect_recog_cast_forwprop_pattern, vect_narrowable_type_p)
+	(vect_truncatable_operation_p, vect_set_operation_type)
+	(vect_set_min_input_precision): New functions.
+	(vect_determine_min_output_precision_1): Likewise.
+	(vect_determine_min_output_precision): Likewise.
+	(vect_determine_precisions_from_range): Likewise.
+	(vect_determine_precisions_from_users): Likewise.
+	(vect_determine_stmt_precisions, vect_determine_precisions): Likewise.
+	(vect_vect_recog_func_ptrs): Put over_widening first.
+	Add cast_forwprop.
+	(vect_pattern_recog): Call vect_determine_precisions.
+
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-patterns.c (vect_mark_pattern_stmts): Remove pattern
 	statements that have been replaced by further pattern statements.
 	(vect_pattern_recog_1): Clear STMT_VINFO_PATTERN_DEF_SEQ on failure.

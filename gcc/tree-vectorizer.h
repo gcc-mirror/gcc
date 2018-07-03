@@ -899,6 +899,21 @@ typedef struct _stmt_vec_info {
 
   /* The number of scalar stmt references from active SLP instances.  */
   unsigned int num_slp_uses;
+
+  /* If nonzero, the lhs of the statement could be truncated to this
+     many bits without affecting any users of the result.  */
+  unsigned int min_output_precision;
+
+  /* If nonzero, all non-boolean input operands have the same precision,
+     and they could each be truncated to this many bits without changing
+     the result.  */
+  unsigned int min_input_precision;
+
+  /* If OPERATION_BITS is nonzero, the statement could be performed on
+     an integer with the sign and number of bits given by OPERATION_SIGN
+     and OPERATION_BITS without changing the result.  */
+  unsigned int operation_precision;
+  signop operation_sign;
 } *stmt_vec_info;
 
 /* Information about a gather/scatter call.  */

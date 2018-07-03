@@ -1,5 +1,38 @@
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/vect-widen-mult-u8-u32.c: Check specifically for a
+	widen_mult pattern.
+	* gcc.dg/vect/vect-over-widen-1.c: Update the scan tests for new
+	over-widening messages.
+	* gcc.dg/vect/vect-over-widen-1-big-array.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-2.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-2-big-array.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-3.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-3-big-array.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-4.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-4-big-array.c: Likewise.
+	* gcc.dg/vect/bb-slp-over-widen-1.c: New test.
+	* gcc.dg/vect/bb-slp-over-widen-2.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-5.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-6.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-7.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-8.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-9.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-10.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-11.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-12.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-13.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-14.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-15.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-16.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-17.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-18.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-19.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-20.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-21.c: Likewise.
+
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-mixed-size-cond-1.c: New test.
 
 2018-07-02  Jim Wilson  <jimw@sifive.com>
