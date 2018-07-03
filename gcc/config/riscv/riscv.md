@@ -2328,17 +2328,20 @@
   "fsflags\t%0")
 
 (define_insn "riscv_mret"
-  [(unspec_volatile [(const_int 0)] UNSPECV_MRET)]
+  [(return)
+   (unspec_volatile [(const_int 0)] UNSPECV_MRET)]
   ""
   "mret")
 
 (define_insn "riscv_sret"
-  [(unspec_volatile [(const_int 0)] UNSPECV_SRET)]
+  [(return)
+   (unspec_volatile [(const_int 0)] UNSPECV_SRET)]
   ""
   "sret")
 
 (define_insn "riscv_uret"
-  [(unspec_volatile [(const_int 0)] UNSPECV_URET)]
+  [(return)
+   (unspec_volatile [(const_int 0)] UNSPECV_URET)]
   ""
   "uret")
 

@@ -3985,11 +3985,11 @@ riscv_expand_epilogue (int style)
       enum riscv_privilege_levels mode = cfun->machine->interrupt_mode;
 
       if (mode == MACHINE_MODE)
-	emit_insn (gen_riscv_mret ());
+	emit_jump_insn (gen_riscv_mret ());
       else if (mode == SUPERVISOR_MODE)
-	emit_insn (gen_riscv_sret ());
+	emit_jump_insn (gen_riscv_sret ());
       else
-	emit_insn (gen_riscv_uret ());
+	emit_jump_insn (gen_riscv_uret ());
     }
   else if (style != SIBCALL_RETURN)
     emit_jump_insn (gen_simple_return_internal (ra));
