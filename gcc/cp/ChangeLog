@@ -1,3 +1,8 @@
+2018-07-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86378 - functional cast in noexcept-specifier.
+	* tree.c (strip_typedefs_expr) [TREE_LIST]: Fix iteration.
+
 2018-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (set_and_check_decl_spec_loc): Use rich_location::add_range
