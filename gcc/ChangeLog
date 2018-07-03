@@ -1,3 +1,9 @@
+2018-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85694
+	* config/i386/sse.md (uavg<mode>3_ceil): New expander.
+	(<sse2_avx2>_uavg<mode>3<mask_name>): Simplify expander.
+
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/85694

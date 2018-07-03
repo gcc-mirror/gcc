@@ -10764,6 +10764,24 @@
   DONE;
 })
 
+(define_expand "uavg<mode>3_ceil"
+  [(set (match_operand:VI12_AVX2 0 "register_operand")
+	(truncate:VI12_AVX2
+	  (lshiftrt:<ssedoublemode>
+	    (plus:<ssedoublemode>
+	      (plus:<ssedoublemode>
+		(zero_extend:<ssedoublemode>
+		  (match_operand:VI12_AVX2 1 "vector_operand"))
+		(zero_extend:<ssedoublemode>
+		  (match_operand:VI12_AVX2 2 "vector_operand")))
+	      (match_dup 3))
+	    (const_int 1))))]
+  "TARGET_SSE2"
+{
+  operands[3] = CONST1_RTX(<MODE>mode);
+  ix86_fixup_binary_operands_no_copy (PLUS, <MODE>mode, operands);
+})
+
 (define_expand "usadv16qi"
   [(match_operand:V4SI 0 "register_operand")
    (match_operand:V16QI 1 "register_operand")
@@ -14234,17 +14252,8 @@
 	    (const_int 1))))]
   "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
 {
-  rtx tmp;
-  if (<mask_applied>)
-    tmp = operands[3];
-  operands[3] = CONST1_RTX(<MODE>mode);
+  operands[<mask_expand_op3>] = CONST1_RTX(<MODE>mode);
   ix86_fixup_binary_operands_no_copy (PLUS, <MODE>mode, operands);
-
-  if (<mask_applied>)
-    {
-      operands[5] = operands[3];
-      operands[3] = tmp;
-    }
 })
 
 (define_insn "*<sse2_avx2>_uavg<mode>3<mask_name>"

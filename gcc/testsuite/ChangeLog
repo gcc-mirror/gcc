@@ -3,6 +3,11 @@
 	PR c++/86201
 	* g++.dg/diagnostic/pr86201.C: New test.
 
+2018-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85694
+	* gcc.target/i386/pr85694.c: New test.
+
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/85694
