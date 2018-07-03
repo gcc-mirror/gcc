@@ -1,3 +1,8 @@
+2018-07-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86201
+	* typeck.c (cp_build_binary_op): Check c_inhibit_evaluation_warnings.
+
 2018-07-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86378 - functional cast in noexcept-specifier.
