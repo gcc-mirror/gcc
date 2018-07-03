@@ -1,3 +1,19 @@
+2018-07-03  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.c (h8300_insn_length_from_table): Consolidate
+	ADDB, ADDW and ADDL into a single ADD attribute which selects the
+	right table based on the size of the operand.
+	* config/h8300/h8300.md (length_table): Corresponding changes. All
+	references to "addb", "addw" and "addl" changed to "add".
+	(btst patterns): Merge two variants into a single pattern.
+	(tstqi, tsthi): Likewise.
+	(addhi3_incdec, addsi3_incdec): Likewise.
+	(subhi3_h8300hs, subsi3_h8300hs): Likewise.
+	(mulhi3, mulsi3): Likewise.
+	(udivhi3, udivsi3): Likewise.
+	(divhi3, divsi3): Likewise.
+	(andorqi3, andorhi3, andorsi3): Likewise.
+
 2018-07-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/85694
