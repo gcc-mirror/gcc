@@ -6317,7 +6317,8 @@ proc check_effective_target_vect_usad_char { } {
 # and unsigned average operations on vectors of bytes.
 
 proc check_effective_target_vect_avg_qi {} {
-    return 0
+    return [expr { [istarget aarch64*-*-*]
+		   && ![check_effective_target_aarch64_sve] }]
 }
 
 # Return 1 if the target plus current options supports a vector

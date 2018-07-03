@@ -1461,6 +1461,10 @@
 			      UNSPEC_SHSUB UNSPEC_UHSUB
 			      UNSPEC_SRHSUB UNSPEC_URHSUB])
 
+(define_int_iterator HADD [UNSPEC_SHADD UNSPEC_UHADD])
+
+(define_int_iterator RHADD [UNSPEC_SRHADD UNSPEC_URHADD])
+
 (define_int_iterator DOTPROD [UNSPEC_SDOT UNSPEC_UDOT])
 
 (define_int_iterator ADDSUBHN [UNSPEC_ADDHN UNSPEC_RADDHN
@@ -1683,8 +1687,10 @@
 
 (define_int_attr u [(UNSPEC_SQSHLU "u") (UNSPEC_SQSHL "") (UNSPEC_UQSHL "")
 		    (UNSPEC_SQSHRUN "u") (UNSPEC_SQRSHRUN "u")
-                    (UNSPEC_SQSHRN "")  (UNSPEC_UQSHRN "")
-                    (UNSPEC_SQRSHRN "") (UNSPEC_UQRSHRN "")])
+		    (UNSPEC_SQSHRN "")  (UNSPEC_UQSHRN "")
+		    (UNSPEC_SQRSHRN "") (UNSPEC_UQRSHRN "")
+		    (UNSPEC_SHADD "") (UNSPEC_UHADD "u")
+		    (UNSPEC_SRHADD "") (UNSPEC_URHADD "u")])
 
 (define_int_attr addsub [(UNSPEC_SHADD "add")
 			 (UNSPEC_UHADD "add")

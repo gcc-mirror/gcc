@@ -1,3 +1,12 @@
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/85694
+	* config/aarch64/iterators.md (HADD, RHADD): New int iterators.
+	(u): Handle UNSPEC_SHADD, UNSPEC_UHADD, UNSPEC_SRHADD and
+	UNSPEC_URHADD.
+	* config/aarch64/aarch64-simd.md (<u>avg<mode>3_floor)
+	(<u>avg<mode>3_ceil): New patterns.
+
 2018-07-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/vect/slp-perm-1.c: Remove "note: " prefix from
