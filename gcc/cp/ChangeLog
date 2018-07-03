@@ -1,3 +1,12 @@
+2018-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (min_location): New.
+	(smallest_type_quals_location): Use the latter.
+	(check_concept_fn): Use DECL_SOURCE_LOCATION.
+	(grokdeclarator): Use accurate locations in a number of error
+	messages involving ds_thread, ds_storage_class, ds_virtual,
+	ds_constexpr, ds_typedef and ds_friend; exploit min_location.
+
 2018-07-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86201
