@@ -1,3 +1,8 @@
+2018-07-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86378 - functional cast in noexcept-specifier.
+	* tree.c (strip_typedefs_expr) [TREE_LIST]: Fix iteration.
+
 2018-06-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80290 - memory-hog with std::pair.
