@@ -4,6 +4,27 @@
 	* tree-ssa-structalias.c (find_func_clobbers): Properly
 	handle indirect calls.
 
+2018-07-03  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (HSI, QHSI, QHSIF): New mode iterators.
+	(shifts): New code iterator.
+	(movqi, movhi, movsi, movsf expanders): Consolidate into a single
+	expander.  Fix HImode handling on H8/SX.
+	(addqi3, addhi3, addsi3 expanders): Consolidate into a single expander.
+	(subqi3, subhi3, subsi3 expanders): Likewise.
+	(andqi3, andhi3, andsi3 expanders): Likewise.
+	(iorqi3, iorhi3, iorsi3 expanders): Likewise.
+	(xorqi3, xorhi3, xorsi3 expanders): Likewise.
+	(negqi2, neghi2, negsi2, negsf2 expanders): Likewise.
+	(one_cmplqi2, one_cmplhi2, one_cmplsi2): Likewise.
+	(zero_extendqihi2, zero_extendqisi2): Likewise.
+	(extendqihi2, extendqisi2): Likewise.
+	(rotlqi3, rotlhi3, rotlsi3): Likewise.
+	(neghi2_h8300, negsi2_h8300): Likewise for these patterns.
+	(rotlqi3_1, rotlhi3_1): Likewise.
+	(logicalhi3_sn, logicalsi3_sn): Likewise.
+	(logicalhi3, logicalsi3): Likewise.
+
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-patterns.c (vect_recog_rotate_pattern)
