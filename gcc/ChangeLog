@@ -1,5 +1,22 @@
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-patterns.c (vect_recog_rotate_pattern)
+	(vect_recog_vector_vector_shift_pattern, vect_recog_divmod_pattern)
+	(vect_recog_mixed_size_cond_pattern, adjust_bool_pattern_cast)
+	(adjust_bool_pattern, vect_recog_bool_pattern): Pass the vector
+	type to append_pattern_def_seq instead of creating a stmt_vec_info
+	directly.
+	(build_mask_conversion): Likewise.  Remove vinfo argument.
+	(vect_add_conversion_to_patterm): Likewise, renaming to...
+	(vect_add_conversion_to_pattern): ...this.
+	(vect_recog_mask_conversion_pattern): Update call to
+	build_mask_conversion.  Pass the vector type to
+	append_pattern_def_seq here too.
+	(vect_recog_gather_scatter_pattern): Update call to
+	vect_add_conversion_to_pattern.
+
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-patterns.c (new_pattern_def_seq): Delete.
 	(vect_recog_dot_prod_pattern, vect_recog_sad_pattern)
 	(vect_recog_widen_op_pattern, vect_recog_over_widening_pattern)

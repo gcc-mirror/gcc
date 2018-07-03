@@ -2090,7 +2090,6 @@ vect_recog_rotate_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
   else
     {
       tree vecstype = get_vectype_for_scalar_type (stype);
-      stmt_vec_info def_stmt_vinfo;
 
       if (vecstype == NULL_TREE)
 	return NULL;
@@ -2103,12 +2102,7 @@ vect_recog_rotate_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	  gcc_assert (!new_bb);
 	}
       else
-	{
-	  def_stmt_vinfo = new_stmt_vec_info (def_stmt, vinfo);
-	  set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
-	  STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecstype;
-	  append_pattern_def_seq (stmt_vinfo, def_stmt);
-	}
+	append_pattern_def_seq (stmt_vinfo, def_stmt, vecstype);
 
       def2 = vect_recog_temp_ssa_var (stype, NULL);
       tree mask = build_int_cst (stype, GET_MODE_PRECISION (smode) - 1);
@@ -2121,12 +2115,7 @@ vect_recog_rotate_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	  gcc_assert (!new_bb);
 	}
       else
-	{
-	  def_stmt_vinfo = new_stmt_vec_info (def_stmt, vinfo);
-	  set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
-	  STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecstype;
-	  append_pattern_def_seq (stmt_vinfo, def_stmt);
-	}
+	append_pattern_def_seq (stmt_vinfo, def_stmt, vecstype);
     }
 
   var1 = vect_recog_temp_ssa_var (type, NULL);
@@ -2252,12 +2241,8 @@ vect_recog_vector_vector_shift_pattern (stmt_vec_info stmt_vinfo,
 				       TYPE_PRECISION (TREE_TYPE (oprnd1)));
 	      def = vect_recog_temp_ssa_var (TREE_TYPE (rhs1), NULL);
 	      def_stmt = gimple_build_assign (def, BIT_AND_EXPR, rhs1, mask);
-	      stmt_vec_info new_stmt_info
-		= new_stmt_vec_info (def_stmt, vinfo);
-	      set_vinfo_for_stmt (def_stmt, new_stmt_info);
-	      STMT_VINFO_VECTYPE (new_stmt_info)
-		= get_vectype_for_scalar_type (TREE_TYPE (rhs1));
-	      append_pattern_def_seq (stmt_vinfo, def_stmt);
+	      tree vecstype = get_vectype_for_scalar_type (TREE_TYPE (rhs1));
+	      append_pattern_def_seq (stmt_vinfo, def_stmt, vecstype);
 	    }
 	}
     }
@@ -2688,11 +2673,9 @@ vect_recog_divmod_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
   tree oprnd0, oprnd1, vectype, itype, cond;
   gimple *pattern_stmt, *def_stmt;
   enum tree_code rhs_code;
-  vec_info *vinfo = stmt_vinfo->vinfo;
   optab optab;
   tree q;
   int dummy_int, prec;
-  stmt_vec_info def_stmt_vinfo;
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -2792,18 +2775,12 @@ vect_recog_divmod_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	      def_stmt = gimple_build_assign (var, COND_EXPR, cond,
 					      build_int_cst (utype, -1),
 					      build_int_cst (utype, 0));
-	      def_stmt_vinfo = new_stmt_vec_info (def_stmt, vinfo);
-	      set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
-	      STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecutype;
-	      append_pattern_def_seq (stmt_vinfo, def_stmt);
+	      append_pattern_def_seq (stmt_vinfo, def_stmt, vecutype);
 	      var = vect_recog_temp_ssa_var (utype, NULL);
 	      def_stmt = gimple_build_assign (var, RSHIFT_EXPR,
 					      gimple_assign_lhs (def_stmt),
 					      shift);
-	      def_stmt_vinfo = new_stmt_vec_info (def_stmt, vinfo);
-	      set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
-	      STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecutype;
-	      append_pattern_def_seq (stmt_vinfo, def_stmt);
+	      append_pattern_def_seq (stmt_vinfo, def_stmt, vecutype);
 	      signmask = vect_recog_temp_ssa_var (itype, NULL);
 	      def_stmt
 		= gimple_build_assign (signmask, NOP_EXPR, var);
@@ -3110,10 +3087,8 @@ vect_recog_mixed_size_cond_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 {
   gimple *last_stmt = stmt_vinfo->stmt;
   tree cond_expr, then_clause, else_clause;
-  stmt_vec_info def_stmt_info;
   tree type, vectype, comp_vectype, itype = NULL_TREE, vecitype;
   gimple *pattern_stmt, *def_stmt;
-  vec_info *vinfo = stmt_vinfo->vinfo;
   tree orig_type0 = NULL_TREE, orig_type1 = NULL_TREE;
   gimple *def_stmt0 = NULL, *def_stmt1 = NULL;
   bool promotion;
@@ -3218,10 +3193,7 @@ vect_recog_mixed_size_cond_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
   pattern_stmt = gimple_build_assign (vect_recog_temp_ssa_var (type, NULL),
 				      NOP_EXPR, gimple_assign_lhs (def_stmt));
 
-  append_pattern_def_seq (stmt_vinfo, def_stmt);
-  def_stmt_info = new_stmt_vec_info (def_stmt, vinfo);
-  set_vinfo_for_stmt (def_stmt, def_stmt_info);
-  STMT_VINFO_VECTYPE (def_stmt_info) = vecitype;
+  append_pattern_def_seq (stmt_vinfo, def_stmt, vecitype);
   *type_out = vectype;
 
   vect_pattern_detected ("vect_recog_mixed_size_cond_pattern", last_stmt);
@@ -3337,10 +3309,8 @@ adjust_bool_pattern_cast (tree type, tree var, stmt_vec_info stmt_info)
 {
   gimple *cast_stmt = gimple_build_assign (vect_recog_temp_ssa_var (type, NULL),
 					   NOP_EXPR, var);
-  stmt_vec_info patt_vinfo = new_stmt_vec_info (cast_stmt, stmt_info->vinfo);
-  set_vinfo_for_stmt (cast_stmt, patt_vinfo);
-  STMT_VINFO_VECTYPE (patt_vinfo) = get_vectype_for_scalar_type (type);
-  append_pattern_def_seq (stmt_info, cast_stmt);
+  append_pattern_def_seq (stmt_info, cast_stmt,
+			  get_vectype_for_scalar_type (type));
   return gimple_assign_lhs (cast_stmt);
 }
 
@@ -3514,13 +3484,8 @@ adjust_bool_pattern (tree var, tree out_type,
     }
 
   gimple_set_location (pattern_stmt, loc);
-  /* ???  Why does vect_mark_pattern_stmts set the vector type on all
-     pattern def seq stmts instead of just letting auto-detection do
-     its work?  */
-  stmt_vec_info patt_vinfo = new_stmt_vec_info (pattern_stmt, stmt_info->vinfo);
-  set_vinfo_for_stmt (pattern_stmt, patt_vinfo);
-  STMT_VINFO_VECTYPE (patt_vinfo) = get_vectype_for_scalar_type (itype);
-  append_pattern_def_seq (stmt_info, pattern_stmt);
+  append_pattern_def_seq (stmt_info, pattern_stmt,
+			  get_vectype_for_scalar_type (itype));
   defs.put (var, gimple_assign_lhs (pattern_stmt));
 }
 
@@ -3718,7 +3683,6 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
   gimple *last_stmt = stmt_vinfo->stmt;
   enum tree_code rhs_code;
   tree var, lhs, rhs, vectype;
-  stmt_vec_info new_stmt_info;
   vec_info *vinfo = stmt_vinfo->vinfo;
   gimple *pattern_stmt;
 
@@ -3777,10 +3741,7 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	  if (!useless_type_conversion_p (type, TREE_TYPE (lhs)))
 	    {
 	      tree new_vectype = get_vectype_for_scalar_type (type);
-	      new_stmt_info = new_stmt_vec_info (pattern_stmt, vinfo);
-	      set_vinfo_for_stmt (pattern_stmt, new_stmt_info);
-	      STMT_VINFO_VECTYPE (new_stmt_info) = new_vectype;
-	      append_pattern_def_seq (stmt_vinfo, pattern_stmt);
+	      append_pattern_def_seq (stmt_vinfo, pattern_stmt, new_vectype);
 
 	      lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
 	      pattern_stmt = gimple_build_assign (lhs, CONVERT_EXPR, tmp);
@@ -3857,11 +3818,7 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 
 	  rhs = vect_recog_temp_ssa_var (type, NULL);
 	  pattern_stmt = gimple_build_assign (rhs, COND_EXPR, var, cst1, cst0);
-
-	  pattern_stmt_info = new_stmt_vec_info (pattern_stmt, vinfo);
-	  set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
-	  STMT_VINFO_VECTYPE (pattern_stmt_info) = new_vectype;
-	  append_pattern_def_seq (stmt_vinfo, pattern_stmt);
+	  append_pattern_def_seq (stmt_vinfo, pattern_stmt, new_vectype);
 	}
 
       lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (vectype), lhs);
@@ -3897,20 +3854,15 @@ vect_recog_bool_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
    Return converted mask.  */
 
 static tree
-build_mask_conversion (tree mask, tree vectype, stmt_vec_info stmt_vinfo,
-		       vec_info *vinfo)
+build_mask_conversion (tree mask, tree vectype, stmt_vec_info stmt_vinfo)
 {
   gimple *stmt;
   tree masktype, tmp;
-  stmt_vec_info new_stmt_info;
 
   masktype = build_same_sized_truth_vector_type (vectype);
   tmp = vect_recog_temp_ssa_var (TREE_TYPE (masktype), NULL);
   stmt = gimple_build_assign (tmp, CONVERT_EXPR, mask);
-  new_stmt_info = new_stmt_vec_info (stmt, vinfo);
-  set_vinfo_for_stmt (stmt, new_stmt_info);
-  STMT_VINFO_VECTYPE (new_stmt_info) = masktype;
-  append_pattern_def_seq (stmt_vinfo, stmt);
+  append_pattern_def_seq (stmt_vinfo, stmt, masktype);
 
   return tmp;
 }
@@ -3982,7 +3934,7 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 		       TYPE_VECTOR_SUBPARTS (vectype2)))
 	return NULL;
 
-      tmp = build_mask_conversion (rhs1, vectype1, stmt_vinfo, vinfo);
+      tmp = build_mask_conversion (rhs1, vectype1, stmt_vinfo);
 
       if (load)
 	{
@@ -4109,16 +4061,12 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 	  tmp = vect_recog_temp_ssa_var (TREE_TYPE (rhs1), NULL);
 	  pattern_stmt = gimple_build_assign (tmp, rhs1);
 	  rhs1 = tmp;
-
-	  pattern_stmt_info = new_stmt_vec_info (pattern_stmt, vinfo);
-	  set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
-	  STMT_VINFO_VECTYPE (pattern_stmt_info) = vectype2;
-	  append_pattern_def_seq (stmt_vinfo, pattern_stmt);
+	  append_pattern_def_seq (stmt_vinfo, pattern_stmt, vectype2);
 	}
 
       if (maybe_ne (TYPE_VECTOR_SUBPARTS (vectype1),
 		    TYPE_VECTOR_SUBPARTS (vectype2)))
-	tmp = build_mask_conversion (rhs1, vectype1, stmt_vinfo, vinfo);
+	tmp = build_mask_conversion (rhs1, vectype1, stmt_vinfo);
       else
 	tmp = rhs1;
 
@@ -4158,14 +4106,14 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
       vectype1 = get_mask_type_for_scalar_type (rhs1_type);
       if (!vectype1)
 	return NULL;
-      rhs2 = build_mask_conversion (rhs2, vectype1, stmt_vinfo, vinfo);
+      rhs2 = build_mask_conversion (rhs2, vectype1, stmt_vinfo);
     }
   else
     {
       vectype1 = get_mask_type_for_scalar_type (rhs2_type);
       if (!vectype1)
 	return NULL;
-      rhs1 = build_mask_conversion (rhs1, vectype1, stmt_vinfo, vinfo);
+      rhs1 = build_mask_conversion (rhs1, vectype1, stmt_vinfo);
     }
 
   lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
@@ -4237,7 +4185,7 @@ vect_convert_mask_for_vectype (tree mask, tree vectype,
       if (mask_vectype
 	  && maybe_ne (TYPE_VECTOR_SUBPARTS (vectype),
 		       TYPE_VECTOR_SUBPARTS (mask_vectype)))
-	mask = build_mask_conversion (mask, vectype, stmt_info, vinfo);
+	mask = build_mask_conversion (mask, vectype, stmt_info);
     }
   return mask;
 }
@@ -4251,19 +4199,15 @@ vect_convert_mask_for_vectype (tree mask, tree vectype,
    to STMT_INFO.  */
 
 static tree
-vect_add_conversion_to_patterm (tree type, tree value,
-				stmt_vec_info stmt_info,
-				vec_info *vinfo)
+vect_add_conversion_to_pattern (tree type, tree value, stmt_vec_info stmt_info)
 {
   if (useless_type_conversion_p (type, TREE_TYPE (value)))
     return value;
 
   tree new_value = vect_recog_temp_ssa_var (type, NULL);
   gassign *conversion = gimple_build_assign (new_value, CONVERT_EXPR, value);
-  stmt_vec_info new_stmt_info = new_stmt_vec_info (conversion, vinfo);
-  set_vinfo_for_stmt (conversion, new_stmt_info);
-  STMT_VINFO_VECTYPE (new_stmt_info) = get_vectype_for_scalar_type (type);
-  append_pattern_def_seq (stmt_info, conversion);
+  append_pattern_def_seq (stmt_info, conversion,
+			  get_vectype_for_scalar_type (type));
   return new_value;
 }
 
@@ -4309,8 +4253,8 @@ vect_recog_gather_scatter_pattern (stmt_vec_info stmt_info, tree *type_out)
      latter to the same width as the vector elements.  */
   tree base = gs_info.base;
   tree offset_type = vect_get_gather_scatter_offset_type (&gs_info);
-  tree offset = vect_add_conversion_to_patterm (offset_type, gs_info.offset,
-						stmt_info, loop_vinfo);
+  tree offset = vect_add_conversion_to_pattern (offset_type, gs_info.offset,
+						stmt_info);
 
   /* Build the new pattern statement.  */
   tree scale = size_int (gs_info.scale);
