@@ -1,3 +1,9 @@
+2018-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/86389
+	* tree-ssa-structalias.c (find_func_clobbers): Properly
+	handle indirect calls.
+
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-patterns.c (vect_recog_rotate_pattern)
