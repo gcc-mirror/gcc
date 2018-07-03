@@ -1,5 +1,11 @@
 2018-07-02  Jeff Law  <law@redhat.com>
 
+	* config/h8300/h8300.md (movqi_h8300, movqi_h8300hs): Consolidate
+	the H8/300, H8/300H and H8/S variants into a single pattern.
+	(movhi_h8300, movqi_h8300hs): Similarly.
+	(pushqi_h8300hs, pushhi_h8300hs): Consolidate into a single pattern.
+	(QHI mode iterator): New.
+
 	* config/h8300/h8300.md: Remove trailing whitespace.
 
 2018-07-02  Jim Wilson  <jimw@sifive.com>
