@@ -9,6 +9,7 @@
 
 #include "vect-over-widen-5.c"
 
+/* { dg-final { scan-tree-dump {Splitting statement} "vect" } } */
 /* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* \+ } "vect" } } */
 /* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* >> 1} "vect" } } */
 /* { dg-final { scan-tree-dump {vect_recog_cast_forwprop_pattern: detected:[^\n]* \(unsigned char\)} "vect" } } */

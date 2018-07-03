@@ -45,6 +45,7 @@ main (void)
   return 0;
 }
 
+/* { dg-final { scan-tree-dump {Splitting statement} "vect" } } */
 /* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* \+} "vect" } } */
 /* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* / 2} "vect" } } */
 /* { dg-final { scan-tree-dump-not {vect_recog_cast_forwprop_pattern: detected} "vect" } } */

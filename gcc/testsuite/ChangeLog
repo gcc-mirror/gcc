@@ -1,5 +1,22 @@
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.dg/vect/vect-over-widen-5.c: Test that the extensions
+	get split into two for use by the over-widening pattern.
+	* gcc.dg/vect/vect-over-widen-6.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-7.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-8.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-9.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-10.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-11.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-12.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-13.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-14.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-15.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-16.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-22.c: New test.
+
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-widen-mult-u8-u32.c: Check specifically for a
 	widen_mult pattern.
 	* gcc.dg/vect/vect-over-widen-1.c: Update the scan tests for new
