@@ -645,7 +645,7 @@ size_must_be_zero_p (tree size)
   if (integer_zerop (size))
     return true;
 
-  if (TREE_CODE (size) != SSA_NAME)
+  if (TREE_CODE (size) != SSA_NAME || !INTEGRAL_TYPE_P (TREE_TYPE (size)))
     return false;
 
   wide_int min, max;
