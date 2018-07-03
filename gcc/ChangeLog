@@ -1,5 +1,19 @@
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-patterns.c (new_pattern_def_seq): Delete.
+	(vect_recog_dot_prod_pattern, vect_recog_sad_pattern)
+	(vect_recog_widen_op_pattern, vect_recog_over_widening_pattern)
+	(vect_recog_rotate_pattern, vect_synth_mult_by_constant): Don't set
+	STMT_VINFO_PATTERN_DEF_SEQ to null here.
+	(vect_recog_pow_pattern, vect_recog_vector_vector_shift_pattern)
+	(vect_recog_mixed_size_cond_pattern, vect_recog_bool_pattern): Use
+	append_pattern_def_seq instead of new_pattern_def_seq.
+	(vect_recog_divmod_pattern): Do both of the above.
+	(vect_pattern_recog_1): Assert that STMT_VINO_PATTERN_DEF_SEQ
+	is null.
+
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-patterns.c (vect_recog_dot_prod_pattern):
 	(vect_recog_sad_pattern, vect_recog_widen_op_pattern)
 	(vect_recog_widen_mult_pattern, vect_recog_pow_pattern):
