@@ -1,5 +1,29 @@
 2018-07-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	P0556R3 Integral power-of-2 operations, P0553R2 Bit operations
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include new header.
+	* include/std/bit: New header.
+	(__rotl, __rotr, __countl_zero, __countl_one, __countr_zero)
+	(__countr_one, __popcount, __ispow2, __ceil2, __floor2, __log2p1):
+	Define for C++14.
+	[!__STRICT_ANSI__] (rotl, rotr, countl_zero, countl_one, countr_zero)
+	(countr_one, popcount): Define for C++2a. Also overload for std::byte.
+	(ispow2, ceil2, floor2, log2p1): Define for C++2a.
+	[!__STRICT_ANSI__] (ispow2, ceil2, floor2, log2p1): Overload for
+	std::byte.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: New.
+	* testsuite/26_numerics/bit/bit.pow.two/floor2.cc: New.
+	* testsuite/26_numerics/bit/bit.pow.two/ispow2.cc: New.
+	* testsuite/26_numerics/bit/bit.pow.two/log2p1.cc: New.
+	* testsuite/26_numerics/bit/bitops.rot/rotl.cc: New.
+	* testsuite/26_numerics/bit/bitops.rot/rotr.cc: New.
+	* testsuite/26_numerics/bit/bitops.count/countl_one.cc: New.
+	* testsuite/26_numerics/bit/bitops.count/countl_zero.cc: New.
+	* testsuite/26_numerics/bit/bitops.count/countr_one.cc: New.
+	* testsuite/26_numerics/bit/bitops.count/countr_zero.cc: New.
+
 	* include/bits/alloc_traits.h: Remove redundant preprocessor
 	condition.
 
