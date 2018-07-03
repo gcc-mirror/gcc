@@ -1,5 +1,10 @@
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-vect-patterns.c (vect_split_statement): New function.
+	(vect_convert_input): Use it to try to split an existing cast.
+
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* poly-int.h (print_hex): New function.
 	* dumpfile.h (dump_dec, dump_hex): Declare.
 	* dumpfile.c (dump_dec, dump_hex): New poly_wide_int functions.

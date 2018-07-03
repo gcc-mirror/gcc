@@ -634,6 +634,97 @@ vect_recog_temp_ssa_var (tree type, gimple *stmt)
   return make_temp_ssa_name (type, stmt, "patt");
 }
 
+/* STMT2_INFO describes a type conversion that could be split into STMT1
+   followed by a version of STMT2_INFO that takes NEW_RHS as its first
+   input.  Try to do this using pattern statements, returning true on
+   success.  */
+
+static bool
+vect_split_statement (stmt_vec_info stmt2_info, tree new_rhs,
+		      gimple *stmt1, tree vectype)
+{
+  if (is_pattern_stmt_p (stmt2_info))
+    {
+      /* STMT2_INFO is part of a pattern.  Get the statement to which
+	 the pattern is attached.  */
+      stmt_vec_info orig_stmt2_info
+	= vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt2_info));
+      vect_init_pattern_stmt (stmt1, orig_stmt2_info, vectype);
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Splitting pattern statement: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt2_info->stmt, 0);
+	}
+
+      /* Since STMT2_INFO is a pattern statement, we can change it
+	 in-situ without worrying about changing the code for the
+	 containing block.  */
+      gimple_assign_set_rhs1 (stmt2_info->stmt, new_rhs);
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location, "into: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt1, 0);
+	  dump_printf_loc (MSG_NOTE, vect_location, "and: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt2_info->stmt, 0);
+	}
+
+      gimple_seq *def_seq = &STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt2_info);
+      if (STMT_VINFO_RELATED_STMT (orig_stmt2_info) == stmt2_info->stmt)
+	/* STMT2_INFO is the actual pattern statement.  Add STMT1
+	   to the end of the definition sequence.  */
+	gimple_seq_add_stmt_without_update (def_seq, stmt1);
+      else
+	{
+	  /* STMT2_INFO belongs to the definition sequence.  Insert STMT1
+	     before it.  */
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt2_info->stmt, def_seq);
+	  gsi_insert_before_without_update (&gsi, stmt1, GSI_SAME_STMT);
+	}
+      return true;
+    }
+  else
+    {
+      /* STMT2_INFO doesn't yet have a pattern.  Try to create a
+	 two-statement pattern now.  */
+      gcc_assert (!STMT_VINFO_RELATED_STMT (stmt2_info));
+      tree lhs_type = TREE_TYPE (gimple_get_lhs (stmt2_info->stmt));
+      tree lhs_vectype = get_vectype_for_scalar_type (lhs_type);
+      if (!lhs_vectype)
+	return false;
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Splitting statement: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt2_info->stmt, 0);
+	}
+
+      /* Add STMT1 as a singleton pattern definition sequence.  */
+      gimple_seq *def_seq = &STMT_VINFO_PATTERN_DEF_SEQ (stmt2_info);
+      vect_init_pattern_stmt (stmt1, stmt2_info, vectype);
+      gimple_seq_add_stmt_without_update (def_seq, stmt1);
+
+      /* Build the second of the two pattern statements.  */
+      tree new_lhs = vect_recog_temp_ssa_var (lhs_type, NULL);
+      gassign *new_stmt2 = gimple_build_assign (new_lhs, NOP_EXPR, new_rhs);
+      vect_set_pattern_stmt (new_stmt2, stmt2_info, lhs_vectype);
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "into pattern statements: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt1, 0);
+	  dump_printf_loc (MSG_NOTE, vect_location, "and: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, new_stmt2, 0);
+	}
+
+      return true;
+    }
+}
+
 /* Convert UNPROM to TYPE and return the result, adding new statements
    to STMT_INFO's pattern definition statements if no better way is
    available.  VECTYPE is the vector form of TYPE.  */
@@ -661,6 +752,18 @@ vect_convert_input (stmt_vec_info stmt_info, tree type,
   /* We need a new conversion statement.  */
   tree new_op = vect_recog_temp_ssa_var (type, NULL);
   gassign *new_stmt = gimple_build_assign (new_op, NOP_EXPR, unprom->op);
+
+  /* If the operation is the input to a vectorizable cast, try splitting
+     that cast into two, taking the required result as a mid-way point.  */
+  if (unprom->caster)
+    {
+      tree lhs = gimple_get_lhs (unprom->caster->stmt);
+      if (TYPE_PRECISION (TREE_TYPE (lhs)) > TYPE_PRECISION (type)
+	  && TYPE_PRECISION (type) > TYPE_PRECISION (unprom->type)
+	  && (TYPE_UNSIGNED (unprom->type) || !TYPE_UNSIGNED (type))
+	  && vect_split_statement (unprom->caster, new_op, new_stmt, vectype))
+	return new_op;
+    }
 
   /* If OP is an external value, see if we can insert the new statement
      on an incoming edge.  */
