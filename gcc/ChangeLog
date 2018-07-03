@@ -1,3 +1,7 @@
+2018-07-02  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md: Remove trailing whitespace.
+
 2018-07-02  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.c (riscv_expand_epilogue): Use emit_jump_insn
