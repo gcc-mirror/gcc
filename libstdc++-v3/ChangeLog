@@ -1,3 +1,8 @@
+2018-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h: Remove redundant preprocessor
+	condition.
+
 2018-07-03  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algobase.h (__niter_wrap): New.
