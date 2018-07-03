@@ -26,10 +26,6 @@ along with this program; see the file COPYING3.  If not see
 #include "internal.h"
 #include "hashtab.h"
 
-/* Highest possible source location encoded within an ordinary or
-   macro map.  */
-const source_location LINE_MAP_MAX_SOURCE_LOCATION = 0x70000000;
-
 static void trace_include (const struct line_maps *, const line_map_ordinary *);
 static const line_map_ordinary * linemap_ordinary_map_lookup (struct line_maps *,
 							      source_location);
@@ -378,13 +374,10 @@ linemap_check_files_exited (struct line_maps *set)
    macro maps are allocated in different memory location.  */
 
 static struct line_map *
-new_linemap (struct line_maps *set,
-	     enum lc_reason reason)
+new_linemap (struct line_maps *set,  source_location start_location)
 {
-  /* Depending on this variable, a macro map would be allocated in a
-     different memory location than an ordinary map.  */
-  bool macro_map_p = (reason == LC_ENTER_MACRO);
   struct line_map *result;
+  bool macro_map_p = start_location >= LINE_MAP_MAX_LOCATION;
 
   if (LINEMAPS_USED (set, macro_map_p) == LINEMAPS_ALLOCATED (set, macro_map_p))
     {
@@ -455,9 +448,10 @@ new_linemap (struct line_maps *set,
 	result = &set->info_ordinary.maps[LINEMAPS_USED (set, macro_map_p)];
     }
 
+  result->start_location = start_location;
+
   LINEMAPS_USED (set, macro_map_p)++;
 
-  result->reason = reason;
   return result;
 }
 
@@ -492,9 +486,9 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   else
     start_location = set->highest_location + 1;
 
-  linemap_assert (!(LINEMAPS_ORDINARY_USED (set)
-		    && (start_location
-			< MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (set)))));
+  linemap_assert (!LINEMAPS_ORDINARY_USED (set)
+		  || (start_location
+		      >= MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (set))));
 
   /* When we enter the file for the first time reason cannot be
      LC_RENAME.  */
@@ -510,7 +504,9 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
     }
 
   linemap_assert (reason != LC_ENTER_MACRO);
-  line_map_ordinary *map = linemap_check_ordinary (new_linemap (set, reason));
+  line_map_ordinary *map
+    = linemap_check_ordinary (new_linemap (set, start_location));
+  map->reason = reason;
 
   if (to_file && *to_file == '\0' && reason != LC_RENAME_VERBATIM)
     to_file = "<stdin>";
@@ -545,7 +541,6 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
     }
 
   map->sysp = sysp;
-  map->start_location = start_location;
   map->to_file = to_file;
   map->to_line = to_line;
   LINEMAPS_ORDINARY_CACHE (set) = LINEMAPS_ORDINARY_USED (set) - 1;
@@ -626,14 +621,12 @@ linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
 
   start_location = LINEMAPS_MACRO_LOWEST_LOCATION (set) - num_tokens;
 
-  if (start_location <= set->highest_line
-      || start_location > LINEMAPS_MACRO_LOWEST_LOCATION (set))
+  if (start_location < LINE_MAP_MAX_LOCATION)
     /* We ran out of macro map space.   */
     return NULL;
 
-  map = linemap_check_macro (new_linemap (set, LC_ENTER_MACRO));
+  map = linemap_check_macro (new_linemap (set, start_location));
 
-  map->start_location = start_location;
   map->macro = macro_node;
   map->n_tokens = num_tokens;
   map->macro_locations
@@ -718,7 +711,7 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
       || (highest > LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES
 	  && map->m_range_bits > 0)
       || (highest > LINE_MAP_MAX_LOCATION_WITH_COLS
-	  && (set->max_column_hint || highest >= LINE_MAP_MAX_SOURCE_LOCATION)))
+	  && (set->max_column_hint || highest >= LINE_MAP_MAX_LOCATION)))
     add_map = true;
   else
     max_column_hint = set->max_column_hint;
@@ -735,7 +728,7 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 	  max_column_hint = 0;
 	  column_bits = 0;
 	  range_bits = 0;
-	  if (highest > LINE_MAP_MAX_SOURCE_LOCATION)
+	  if (highest >= LINE_MAP_MAX_LOCATION)
 	    return 0;
 	}
       else
@@ -773,7 +766,7 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 
   /* Locations of ordinary tokens are always lower than locations of
      macro tokens.  */
-  if (r >= LINEMAPS_MACRO_LOWEST_LOCATION (set))
+  if (r >= LINE_MAP_MAX_LOCATION)
     return 0;
 
   set->highest_line = r;
@@ -1049,9 +1042,7 @@ linemap_macro_map_lookup (struct line_maps *set, source_location line)
 bool
 linemap_macro_expansion_map_p (const struct line_map *map)
 {
-  if (!map)
-    return false;
-  return (map->reason == LC_ENTER_MACRO);
+  return map && !MAP_ORDINARY_P (map);
 }
 
 /* If LOCATION is the locus of a token in a replacement-list of a
@@ -1253,12 +1244,7 @@ linemap_location_from_macro_expansion_p (const struct line_maps *set,
     location = set->location_adhoc_data_map.data[location
 						 & MAX_SOURCE_LOCATION].locus;
 
-  linemap_assert (location <= MAX_SOURCE_LOCATION
-		  && (set->highest_location
-		      < LINEMAPS_MACRO_LOWEST_LOCATION (set)));
-  if (set == NULL)
-    return false;
-  return (location > set->highest_location);
+  return location >= LINE_MAP_MAX_LOCATION;
 }
 
 /* Given two virtual locations *LOC0 and *LOC1, return the first
@@ -1403,23 +1389,22 @@ linemap_macro_loc_to_spelling_point (struct line_maps *set,
 				     source_location location,
 				     const line_map_ordinary **original_map)
 {
-  struct line_map *map;
   linemap_assert (set && location >= RESERVED_LOCATION_COUNT);
 
   while (true)
     {
-      map = const_cast <line_map *> (linemap_lookup (set, location));
-      if (!linemap_macro_expansion_map_p (map))
-	break;
+      const struct line_map *map = linemap_lookup (set, location);
+      if (!map || MAP_ORDINARY_P (map))
+	{
+	  if (original_map)
+	    *original_map = (const line_map_ordinary *)map;
+	  break;
+	}
 
-      location
-	= linemap_macro_map_loc_unwind_toward_spelling
-	    (set, linemap_check_macro (map),
-	     location);
+      location = linemap_macro_map_loc_unwind_toward_spelling
+	(set, linemap_check_macro (map), location);
     }
 
-  if (original_map)
-    *original_map = linemap_check_ordinary (map);
   return location;
 }
 
@@ -1438,29 +1423,26 @@ linemap_macro_loc_to_def_point (struct line_maps *set,
 				source_location location,
 				const line_map_ordinary **original_map)
 {
-  struct line_map *map;
-
   linemap_assert (set && location >= RESERVED_LOCATION_COUNT);
 
-  while (true)
+  for (;;)
     {
-      source_location caret_loc;
-      if (IS_ADHOC_LOC (location))
-	caret_loc = get_location_from_adhoc_loc (set, location);
-      else
-	caret_loc = location;
+      source_location caret_loc = location;
+      if (IS_ADHOC_LOC (caret_loc))
+	caret_loc = get_location_from_adhoc_loc (set, caret_loc);
 
-      map = const_cast <line_map *> (linemap_lookup (set, caret_loc));
-      if (!linemap_macro_expansion_map_p (map))
-	break;
+      const line_map *map = linemap_lookup (set, caret_loc);
+      if (!map || MAP_ORDINARY_P (map))
+	{
+	  if (original_map)
+	    *original_map = (const line_map_ordinary *)map;
+	  break;
+	}
 
-      location =
-	linemap_macro_map_loc_to_def_point (linemap_check_macro (map),
-					    caret_loc);
+      location = linemap_macro_map_loc_to_def_point
+	(linemap_check_macro (map), caret_loc);
     }
 
-  if (original_map)
-    *original_map = linemap_check_ordinary (map);
   return location;
 }
 
@@ -1770,24 +1752,29 @@ linemap_expand_location (struct line_maps *set,
 void
 linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
 {
-  const char *lc_reasons_v[LC_ENTER_MACRO + 1]
+  const char *const lc_reasons_v[LC_HWM]
       = { "LC_ENTER", "LC_LEAVE", "LC_RENAME", "LC_RENAME_VERBATIM",
 	  "LC_ENTER_MACRO" };
-  const char *reason;
   const line_map *map;
+  unsigned reason;
 
   if (stream == NULL)
     stream = stderr;
 
   if (!is_macro)
-    map = LINEMAPS_ORDINARY_MAP_AT (set, ix);
+    {
+      map = LINEMAPS_ORDINARY_MAP_AT (set, ix);
+      reason = linemap_check_ordinary (map)->reason;
+    }
   else
-    map = LINEMAPS_MACRO_MAP_AT (set, ix);
-
-  reason = (map->reason <= LC_ENTER_MACRO) ? lc_reasons_v[map->reason] : "???";
+    {
+      map = LINEMAPS_MACRO_MAP_AT (set, ix);
+      reason = LC_ENTER_MACRO;
+    }
 
   fprintf (stream, "Map #%u [%p] - LOC: %u - REASON: %s - SYSP: %s\n",
-	   ix, (void *) map, map->start_location, reason,
+	   ix, (void *) map, map->start_location,
+	   reason < LC_HWM ? lc_reasons_v[reason] : "???",
 	   ((!is_macro
 	     && ORDINARY_MAP_IN_SYSTEM_HEADER_P (linemap_check_ordinary (map)))
 	    ? "yes" : "no"));
