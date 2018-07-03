@@ -1,5 +1,8 @@
 2018-07-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/86378 - functional cast in noexcept-specifier.
+	* tree.c (strip_typedefs_expr) [TREE_LIST]: Fix iteration.
+
 	* name-lookup.c (do_push_to_top_level): Don't allocate
 	current_lang_base.
 	(do_pop_from_top_level): Release current_lang_base.
