@@ -1,3 +1,7 @@
+2018-07-02  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/interrupt-debug.c: New.
+
 2018-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/thread-thread_local.C: New.

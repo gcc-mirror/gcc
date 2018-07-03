@@ -1,3 +1,10 @@
+2018-07-02  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_expand_epilogue): Use emit_jump_insn
+	instead of emit_insn for interrupt returns.
+	* config/riscv/riscv.md (riscv_met): Add (return) to rtl.
+	(riscv_sret, riscv_uret): Likewise.
+
 2018-07-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* pretty-print.c (selftest::test_pp_format): Move save and restore
