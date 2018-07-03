@@ -1,3 +1,7 @@
+2018-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* contrib/config-list.mk: Remove powerpc-linux_paired.
+
 2018-06-29  Alexandre Oliva <oliva@adacore.com>
 
 	* configure.ac: Introduce support for @unless/@endunless.
