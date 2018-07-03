@@ -1,3 +1,14 @@
+2018-07-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/vect/slp-perm-1.c: Remove "note: " prefix from
+	scan-tree-dump directive.
+	* gcc.dg/vect/slp-perm-2.c: Likewise.
+	* gcc.dg/vect/slp-perm-3.c: Likewise.
+	* gcc.dg/vect/slp-perm-5.c: Likewise.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+	* gcc.dg/vect/slp-perm-7.c: Likewise.
+	* gcc.dg/vect/slp-perm-8.c: Likewise.
+
 2018-07-03  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/86202
