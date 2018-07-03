@@ -1,3 +1,7 @@
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-mixed-size-cond-1.c: New test.
+
 2018-07-02  Jim Wilson  <jimw@sifive.com>
 
 	* gcc.target/riscv/interrupt-debug.c: New.

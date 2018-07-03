@@ -4295,6 +4295,9 @@ vect_mark_pattern_stmts (gimple *orig_stmt, gimple *pattern_stmt,
       gimple_stmt_iterator gsi = gsi_for_stmt (orig_stmt, orig_def_seq);
       gsi_insert_seq_before_without_update (&gsi, def_seq, GSI_SAME_STMT);
       gsi_insert_before_without_update (&gsi, pattern_stmt, GSI_SAME_STMT);
+
+      /* Remove the pattern statement that this new pattern replaces.  */
+      gsi_remove (&gsi, false);
     }
   else
     vect_set_pattern_stmt (pattern_stmt, orig_stmt_info, pattern_vectype);
@@ -4358,6 +4361,8 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
 	  if (!is_pattern_stmt_p (stmt_info))
 	    STMT_VINFO_RELATED_STMT (stmt_info) = NULL;
 	}
+      /* Clear any half-formed pattern definition sequence.  */
+      STMT_VINFO_PATTERN_DEF_SEQ (stmt_info) = NULL;
       return;
     }
 
