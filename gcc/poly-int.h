@@ -2420,6 +2420,25 @@ print_dec (const poly_int_pod<N, C> &value, FILE *file)
 	     poly_coeff_traits<C>::signedness ? SIGNED : UNSIGNED);
 }
 
+/* Use print_hex to print VALUE to FILE.  */
+
+template<unsigned int N, typename C>
+void
+print_hex (const poly_int_pod<N, C> &value, FILE *file)
+{
+  if (value.is_constant ())
+    print_hex (value.coeffs[0], file);
+  else
+    {
+      fprintf (file, "[");
+      for (unsigned int i = 0; i < N; ++i)
+	{
+	  print_hex (value.coeffs[i], file);
+	  fputc (i == N - 1 ? ']' : ',', file);
+	}
+    }
+}
+
 /* Helper for calculating the distance between two points P1 and P2,
    in cases where known_le (P1, P2).  T1 and T2 are the types of the
    two positions, in either order.  The coefficients of P2 - P1 have

@@ -633,6 +633,28 @@ template void dump_dec (dump_flags_t, const poly_uint64 &);
 template void dump_dec (dump_flags_t, const poly_offset_int &);
 template void dump_dec (dump_flags_t, const poly_widest_int &);
 
+void
+dump_dec (dump_flags_t dump_kind, const poly_wide_int &value, signop sgn)
+{
+  if (dump_file && (dump_kind & pflags))
+    print_dec (value, dump_file, sgn);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    print_dec (value, alt_dump_file, sgn);
+}
+
+/* Output VALUE in hexadecimal to appropriate dump streams.  */
+
+void
+dump_hex (dump_flags_t dump_kind, const poly_wide_int &value)
+{
+  if (dump_file && (dump_kind & pflags))
+    print_hex (value, dump_file);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    print_hex (value, alt_dump_file);
+}
+
 /* The current dump scope-nesting depth.  */
 
 static int dump_scope_depth;

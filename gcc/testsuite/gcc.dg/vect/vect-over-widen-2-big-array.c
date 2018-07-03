@@ -57,7 +57,12 @@ int main (void)
   return 0;
 }
 
-/* Final value stays in int, so no over-widening is detected at the moment.  */
-/* { dg-final { scan-tree-dump-times "vect_recog_over_widening_pattern: detected" 0 "vect" } } */
+/* This is an over-widening even though the final result is still an int.
+   It's better to do one vector of ops on chars and then widen than to
+   widen and then do 4 vectors of ops on ints.  */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* << 3} "vect" } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* >> 3} "vect" } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* << 8} "vect" } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* >> 5} "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 

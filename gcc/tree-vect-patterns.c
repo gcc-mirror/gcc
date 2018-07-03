@@ -47,6 +47,40 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-simd-clone.h"
 #include "predict.h"
 
+/* Return true if we have a useful VR_RANGE range for VAR, storing it
+   in *MIN_VALUE and *MAX_VALUE if so.  Note the range in the dump files.  */
+
+static bool
+vect_get_range_info (tree var, wide_int *min_value, wide_int *max_value)
+{
+  value_range_type vr_type = get_range_info (var, min_value, max_value);
+  wide_int nonzero = get_nonzero_bits (var);
+  signop sgn = TYPE_SIGN (TREE_TYPE (var));
+  if (intersect_range_with_nonzero_bits (vr_type, min_value, max_value,
+					 nonzero, sgn) == VR_RANGE)
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_generic_expr_loc (MSG_NOTE, vect_location, TDF_SLIM, var);
+	  dump_printf (MSG_NOTE, " has range [");
+	  dump_hex (MSG_NOTE, *min_value);
+	  dump_printf (MSG_NOTE, ", ");
+	  dump_hex (MSG_NOTE, *max_value);
+	  dump_printf (MSG_NOTE, "]\n");
+	}
+      return true;
+    }
+  else
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_generic_expr_loc (MSG_NOTE, vect_location, TDF_SLIM, var);
+	  dump_printf (MSG_NOTE, " has no range info\n");
+	}
+      return false;
+    }
+}
+
 /* Report that we've found an instance of pattern PATTERN in
    statement STMT.  */
 
@@ -190,40 +224,6 @@ vect_supportable_direct_optab_p (tree otype, tree_code code,
   return true;
 }
 
-/* Check whether STMT2 is in the same loop or basic block as STMT1.
-   Which of the two applies depends on whether we're currently doing
-   loop-based or basic-block-based vectorization, as determined by
-   the vinfo_for_stmt for STMT1 (which must be defined).
-
-   If this returns true, vinfo_for_stmt for STMT2 is guaranteed
-   to be defined as well.  */
-
-static bool
-vect_same_loop_or_bb_p (gimple *stmt1, gimple *stmt2)
-{
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt1);
-  return vect_stmt_in_region_p (stmt_vinfo->vinfo, stmt2);
-}
-
-/* If the LHS of DEF_STMT has a single use, and that statement is
-   in the same loop or basic block, return it.  */
-
-static gimple *
-vect_single_imm_use (gimple *def_stmt)
-{
-  tree lhs = gimple_assign_lhs (def_stmt);
-  use_operand_p use_p;
-  gimple *use_stmt;
-
-  if (!single_imm_use (lhs, &use_p, &use_stmt))
-    return NULL;
-
-  if (!vect_same_loop_or_bb_p (def_stmt, use_stmt))
-    return NULL;
-
-  return use_stmt;
-}
-
 /* Round bit precision PRECISION up to a full element.  */
 
 static unsigned int
@@ -347,7 +347,9 @@ vect_unpromoted_value::set_op (tree op_in, vect_def_type dt_in,
    is possible to convert OP' back to OP using a possible sign change
    followed by a possible promotion P.  Return this OP', or null if OP is
    not a vectorizable SSA name.  If there is a promotion P, describe its
-   input in UNPROM, otherwise describe OP' in UNPROM.
+   input in UNPROM, otherwise describe OP' in UNPROM.  If SINGLE_USE_P
+   is nonnull, set *SINGLE_USE_P to false if any of the SSA names involved
+   have more than one user.
 
    A successful return means that it is possible to go from OP' to OP
    via UNPROM.  The cast from OP' to UNPROM is at most a sign change,
@@ -374,7 +376,8 @@ vect_unpromoted_value::set_op (tree op_in, vect_def_type dt_in,
 
 static tree
 vect_look_through_possible_promotion (vec_info *vinfo, tree op,
-				      vect_unpromoted_value *unprom)
+				      vect_unpromoted_value *unprom,
+				      bool *single_use_p = NULL)
 {
   tree res = NULL_TREE;
   tree op_type = TREE_TYPE (op);
@@ -420,7 +423,14 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
       if (!def_stmt)
 	break;
       if (dt == vect_internal_def)
-	caster = vinfo_for_stmt (def_stmt);
+	{
+	  caster = vinfo_for_stmt (def_stmt);
+	  /* Ignore pattern statements, since we don't link uses for them.  */
+	  if (single_use_p
+	      && !STMT_VINFO_RELATED_STMT (caster)
+	      && !has_single_use (res))
+	    *single_use_p = false;
+	}
       else
 	caster = NULL;
       gassign *assign = dyn_cast <gassign *> (def_stmt);
@@ -1371,363 +1381,318 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_out)
   return pattern_stmt;
 }
 
+/* Recognize cases in which an operation is performed in one type WTYPE
+   but could be done more efficiently in a narrower type NTYPE.  For example,
+   if we have:
 
-/* Return TRUE if the operation in STMT can be performed on a smaller type.
+     ATYPE a;  // narrower than NTYPE
+     BTYPE b;  // narrower than NTYPE
+     WTYPE aw = (WTYPE) a;
+     WTYPE bw = (WTYPE) b;
+     WTYPE res = aw + bw;  // only uses of aw and bw
 
-   Input:
-   STMT - a statement to check.
-   DEF - we support operations with two operands, one of which is constant.
-         The other operand can be defined by a demotion operation, or by a
-         previous statement in a sequence of over-promoted operations.  In the
-         later case DEF is used to replace that operand.  (It is defined by a
-         pattern statement we created for the previous statement in the
-         sequence).
+   then it would be more efficient to do:
 
-   Input/output:
-   NEW_TYPE - Output: a smaller type that we are trying to use.  Input: if not
-         NULL, it's the type of DEF.
-   STMTS - additional pattern statements.  If a pattern statement (type
-         conversion) is created in this function, its original statement is
-         added to STMTS.
+     NTYPE an = (NTYPE) a;
+     NTYPE bn = (NTYPE) b;
+     NTYPE resn = an + bn;
+     WTYPE res = (WTYPE) resn;
 
-   Output:
-   OP0, OP1 - if the operation fits a smaller type, OP0 and OP1 are the new
-         operands to use in the new pattern statement for STMT (will be created
-         in vect_recog_over_widening_pattern ()).
-   NEW_DEF_STMT - in case DEF has to be promoted, we create two pattern
-         statements for STMT: the first one is a type promotion and the second
-         one is the operation itself.  We return the type promotion statement
-	 in NEW_DEF_STMT and further store it in STMT_VINFO_PATTERN_DEF_SEQ of
-         the second pattern statement.  */
+   Other situations include things like:
 
-static bool
-vect_operation_fits_smaller_type (gimple *stmt, tree def, tree *new_type,
-				  tree *op0, tree *op1, gimple **new_def_stmt,
-				  vec<gimple *> *stmts)
-{
-  enum tree_code code;
-  tree const_oprnd, oprnd;
-  tree interm_type = NULL_TREE, half_type, new_oprnd, type;
-  gimple *def_stmt, *new_stmt;
-  bool first = false;
-  bool promotion;
+     ATYPE a;  // NTYPE or narrower
+     WTYPE aw = (WTYPE) a;
+     WTYPE res = aw + b;
 
-  *op0 = NULL_TREE;
-  *op1 = NULL_TREE;
-  *new_def_stmt = NULL;
+   when only "(NTYPE) res" is significant.  In that case it's more efficient
+   to truncate "b" and do the operation on NTYPE instead:
 
-  if (!is_gimple_assign (stmt))
-    return false;
+     NTYPE an = (NTYPE) a;
+     NTYPE bn = (NTYPE) b;  // truncation
+     NTYPE resn = an + bn;
+     WTYPE res = (WTYPE) resn;
 
-  code = gimple_assign_rhs_code (stmt);
-  if (code != LSHIFT_EXPR && code != RSHIFT_EXPR
-      && code != BIT_IOR_EXPR && code != BIT_XOR_EXPR && code != BIT_AND_EXPR)
-    return false;
+   All users of "res" should then use "resn" instead, making the final
+   statement dead (not marked as relevant).  The final statement is still
+   needed to maintain the type correctness of the IR.
 
-  oprnd = gimple_assign_rhs1 (stmt);
-  const_oprnd = gimple_assign_rhs2 (stmt);
-  type = gimple_expr_type (stmt);
-
-  if (TREE_CODE (oprnd) != SSA_NAME
-      || TREE_CODE (const_oprnd) != INTEGER_CST)
-    return false;
-
-  /* If oprnd has other uses besides that in stmt we cannot mark it
-     as being part of a pattern only.  */
-  if (!has_single_use (oprnd))
-    return false;
-
-  /* If we are in the middle of a sequence, we use DEF from a previous
-     statement.  Otherwise, OPRND has to be a result of type promotion.  */
-  if (*new_type)
-    {
-      half_type = *new_type;
-      oprnd = def;
-    }
-  else
-    {
-      first = true;
-      if (!type_conversion_p (oprnd, stmt, false, &half_type, &def_stmt,
-			      &promotion)
-	  || !promotion
-	  || !vect_same_loop_or_bb_p (stmt, def_stmt))
-        return false;
-    }
-
-  /* Can we perform the operation on a smaller type?  */
-  switch (code)
-    {
-      case BIT_IOR_EXPR:
-      case BIT_XOR_EXPR:
-      case BIT_AND_EXPR:
-        if (!int_fits_type_p (const_oprnd, half_type))
-          {
-            /* HALF_TYPE is not enough.  Try a bigger type if possible.  */
-            if (TYPE_PRECISION (type) < (TYPE_PRECISION (half_type) * 4))
-              return false;
-
-            interm_type = build_nonstandard_integer_type (
-                        TYPE_PRECISION (half_type) * 2, TYPE_UNSIGNED (type));
-            if (!int_fits_type_p (const_oprnd, interm_type))
-              return false;
-          }
-
-        break;
-
-      case LSHIFT_EXPR:
-        /* Try intermediate type - HALF_TYPE is not enough for sure.  */
-        if (TYPE_PRECISION (type) < (TYPE_PRECISION (half_type) * 4))
-          return false;
-
-        /* Check that HALF_TYPE size + shift amount <= INTERM_TYPE size.
-          (e.g., if the original value was char, the shift amount is at most 8
-           if we want to use short).  */
-        if (compare_tree_int (const_oprnd, TYPE_PRECISION (half_type)) == 1)
-          return false;
-
-        interm_type = build_nonstandard_integer_type (
-                        TYPE_PRECISION (half_type) * 2, TYPE_UNSIGNED (type));
-
-        if (!vect_supportable_shift (code, interm_type))
-          return false;
-
-        break;
-
-      case RSHIFT_EXPR:
-        if (vect_supportable_shift (code, half_type))
-          break;
-
-        /* Try intermediate type - HALF_TYPE is not supported.  */
-        if (TYPE_PRECISION (type) < (TYPE_PRECISION (half_type) * 4))
-          return false;
-
-        interm_type = build_nonstandard_integer_type (
-                        TYPE_PRECISION (half_type) * 2, TYPE_UNSIGNED (type));
-
-        if (!vect_supportable_shift (code, interm_type))
-          return false;
-
-        break;
-
-      default:
-        gcc_unreachable ();
-    }
-
-  /* There are four possible cases:
-     1. OPRND is defined by a type promotion (in that case FIRST is TRUE, it's
-        the first statement in the sequence)
-        a. The original, HALF_TYPE, is not enough - we replace the promotion
-           from HALF_TYPE to TYPE with a promotion to INTERM_TYPE.
-        b. HALF_TYPE is sufficient, OPRND is set as the RHS of the original
-           promotion.
-     2. OPRND is defined by a pattern statement we created.
-        a. Its type is not sufficient for the operation, we create a new stmt:
-           a type conversion for OPRND from HALF_TYPE to INTERM_TYPE.  We store
-           this statement in NEW_DEF_STMT, and it is later put in
-	   STMT_VINFO_PATTERN_DEF_SEQ of the pattern statement for STMT.
-        b. OPRND is good to use in the new statement.  */
-  if (first)
-    {
-      if (interm_type)
-        {
-          /* Replace the original type conversion HALF_TYPE->TYPE with
-             HALF_TYPE->INTERM_TYPE.  */
-          if (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt)))
-            {
-              new_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt));
-              /* Check if the already created pattern stmt is what we need.  */
-              if (!is_gimple_assign (new_stmt)
-                  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (new_stmt))
-                  || TREE_TYPE (gimple_assign_lhs (new_stmt)) != interm_type)
-                return false;
-
-	      stmts->safe_push (def_stmt);
-              oprnd = gimple_assign_lhs (new_stmt);
-            }
-          else
-            {
-              /* Create NEW_OPRND = (INTERM_TYPE) OPRND.  */
-              oprnd = gimple_assign_rhs1 (def_stmt);
-	      new_oprnd = make_ssa_name (interm_type);
-	      new_stmt = gimple_build_assign (new_oprnd, NOP_EXPR, oprnd);
-              STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt)) = new_stmt;
-              stmts->safe_push (def_stmt);
-              oprnd = new_oprnd;
-            }
-        }
-      else
-        {
-          /* Retrieve the operand before the type promotion.  */
-          oprnd = gimple_assign_rhs1 (def_stmt);
-        }
-    }
-  else
-    {
-      if (interm_type)
-        {
-          /* Create a type conversion HALF_TYPE->INTERM_TYPE.  */
-	  new_oprnd = make_ssa_name (interm_type);
-	  new_stmt = gimple_build_assign (new_oprnd, NOP_EXPR, oprnd);
-          oprnd = new_oprnd;
-          *new_def_stmt = new_stmt;
-        }
-
-      /* Otherwise, OPRND is already set.  */
-    }
-
-  if (interm_type)
-    *new_type = interm_type;
-  else
-    *new_type = half_type;
-
-  *op0 = oprnd;
-  *op1 = fold_convert (*new_type, const_oprnd);
-
-  return true;
-}
-
-
-/* Try to find a statement or a sequence of statements that can be performed
-   on a smaller type:
-
-     type x_t;
-     TYPE x_T, res0_T, res1_T;
-   loop:
-     S1  x_t = *p;
-     S2  x_T = (TYPE) x_t;
-     S3  res0_T = op (x_T, C0);
-     S4  res1_T = op (res0_T, C1);
-     S5  ... = () res1_T;  - type demotion
-
-   where type 'TYPE' is at least double the size of type 'type', C0 and C1 are
-   constants.
-   Check if S3 and S4 can be done on a smaller type than 'TYPE', it can either
-   be 'type' or some intermediate type.  For now, we expect S5 to be a type
-   demotion operation.  We also check that S3 and S4 have only one use.  */
+   vect_determine_precisions has already determined the minimum
+   precison of the operation and the minimum precision required
+   by users of the result.  */
 
 static gimple *
 vect_recog_over_widening_pattern (vec<gimple *> *stmts, tree *type_out)
 {
-  gimple *stmt = stmts->pop ();
-  gimple *pattern_stmt = NULL, *new_def_stmt, *prev_stmt = NULL,
-	 *use_stmt = NULL;
-  tree op0, op1, vectype = NULL_TREE, use_lhs, use_type;
-  tree var = NULL_TREE, new_type = NULL_TREE, new_oprnd;
-  bool first;
-  tree type = NULL;
-
-  first = true;
-  while (1)
-    {
-      if (!vinfo_for_stmt (stmt)
-          || STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (stmt)))
-        return NULL;
-
-      new_def_stmt = NULL;
-      if (!vect_operation_fits_smaller_type (stmt, var, &new_type,
-                                             &op0, &op1, &new_def_stmt,
-                                             stmts))
-        {
-          if (first)
-            return NULL;
-          else
-            break;
-        }
-
-      /* STMT can be performed on a smaller type.  Check its uses.  */
-      use_stmt = vect_single_imm_use (stmt);
-      if (!use_stmt || !is_gimple_assign (use_stmt))
-        return NULL;
-
-      /* Create pattern statement for STMT.  */
-      vectype = get_vectype_for_scalar_type (new_type);
-      if (!vectype)
-        return NULL;
-
-      /* We want to collect all the statements for which we create pattern
-         statetments, except for the case when the last statement in the
-         sequence doesn't have a corresponding pattern statement.  In such
-         case we associate the last pattern statement with the last statement
-         in the sequence.  Therefore, we only add the original statement to
-         the list if we know that it is not the last.  */
-      if (prev_stmt)
-        stmts->safe_push (prev_stmt);
-
-      var = vect_recog_temp_ssa_var (new_type, NULL);
-      pattern_stmt
-	= gimple_build_assign (var, gimple_assign_rhs_code (stmt), op0, op1);
-      STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt)) = pattern_stmt;
-      new_pattern_def_seq (vinfo_for_stmt (stmt), new_def_stmt);
-
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location,
-                           "created pattern stmt: ");
-          dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-        }
-
-      type = gimple_expr_type (stmt);
-      prev_stmt = stmt;
-      stmt = use_stmt;
-
-      first = false;
-    }
-
-  /* We got a sequence.  We expect it to end with a type demotion operation.
-     Otherwise, we quit (for now).  There are three possible cases: the
-     conversion is to NEW_TYPE (we don't do anything), the conversion is to
-     a type bigger than NEW_TYPE and/or the signedness of USE_TYPE and
-     NEW_TYPE differs (we create a new conversion statement).  */
-  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt)))
-    {
-      use_lhs = gimple_assign_lhs (use_stmt);
-      use_type = TREE_TYPE (use_lhs);
-      /* Support only type demotion or signedess change.  */
-      if (!INTEGRAL_TYPE_P (use_type)
-	  || TYPE_PRECISION (type) <= TYPE_PRECISION (use_type))
-        return NULL;
-
-      /* Check that NEW_TYPE is not bigger than the conversion result.  */
-      if (TYPE_PRECISION (new_type) > TYPE_PRECISION (use_type))
-	return NULL;
-
-      if (TYPE_UNSIGNED (new_type) != TYPE_UNSIGNED (use_type)
-          || TYPE_PRECISION (new_type) != TYPE_PRECISION (use_type))
-        {
-	  *type_out = get_vectype_for_scalar_type (use_type);
-	  if (!*type_out)
-	    return NULL;
-
-          /* Create NEW_TYPE->USE_TYPE conversion.  */
-	  new_oprnd = make_ssa_name (use_type);
-	  pattern_stmt = gimple_build_assign (new_oprnd, NOP_EXPR, var);
-          STMT_VINFO_RELATED_STMT (vinfo_for_stmt (use_stmt)) = pattern_stmt;
-
-          /* We created a pattern statement for the last statement in the
-             sequence, so we don't need to associate it with the pattern
-             statement created for PREV_STMT.  Therefore, we add PREV_STMT
-             to the list in order to mark it later in vect_pattern_recog_1.  */
-          if (prev_stmt)
-            stmts->safe_push (prev_stmt);
-        }
-      else
-        {
-          if (prev_stmt)
-	    STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (use_stmt))
-	       = STMT_VINFO_PATTERN_DEF_SEQ (vinfo_for_stmt (prev_stmt));
-
-	  *type_out = vectype;
-        }
-
-      stmts->safe_push (use_stmt);
-    }
-  else
-    /* TODO: support general case, create a conversion to the correct type.  */
+  gassign *last_stmt = dyn_cast <gassign *> (stmts->pop ());
+  if (!last_stmt)
     return NULL;
 
-  /* Pattern detected.  */
-  vect_pattern_detected ("vect_recog_over_widening_pattern", stmts->last ());
+  /* See whether we have found that this operation can be done on a
+     narrower type without changing its semantics.  */
+  stmt_vec_info last_stmt_info = vinfo_for_stmt (last_stmt);
+  unsigned int new_precision = last_stmt_info->operation_precision;
+  if (!new_precision)
+    return NULL;
 
+  vec_info *vinfo = last_stmt_info->vinfo;
+  tree lhs = gimple_assign_lhs (last_stmt);
+  tree type = TREE_TYPE (lhs);
+  tree_code code = gimple_assign_rhs_code (last_stmt);
+
+  /* Keep the first operand of a COND_EXPR as-is: only the other two
+     operands are interesting.  */
+  unsigned int first_op = (code == COND_EXPR ? 2 : 1);
+
+  /* Check the operands.  */
+  unsigned int nops = gimple_num_ops (last_stmt) - first_op;
+  auto_vec <vect_unpromoted_value, 3> unprom (nops);
+  unprom.quick_grow (nops);
+  unsigned int min_precision = 0;
+  bool single_use_p = false;
+  for (unsigned int i = 0; i < nops; ++i)
+    {
+      tree op = gimple_op (last_stmt, first_op + i);
+      if (TREE_CODE (op) == INTEGER_CST)
+	unprom[i].set_op (op, vect_constant_def);
+      else if (TREE_CODE (op) == SSA_NAME)
+	{
+	  bool op_single_use_p = true;
+	  if (!vect_look_through_possible_promotion (vinfo, op, &unprom[i],
+						     &op_single_use_p))
+	    return NULL;
+	  /* If:
+
+	     (1) N bits of the result are needed;
+	     (2) all inputs are widened from M<N bits; and
+	     (3) one operand OP is a single-use SSA name
+
+	     we can shift the M->N widening from OP to the output
+	     without changing the number or type of extensions involved.
+	     This then reduces the number of copies of STMT_INFO.
+
+	     If instead of (3) more than one operand is a single-use SSA name,
+	     shifting the extension to the output is even more of a win.
+
+	     If instead:
+
+	     (1) N bits of the result are needed;
+	     (2) one operand OP2 is widened from M2<N bits;
+	     (3) another operand OP1 is widened from M1<M2 bits; and
+	     (4) both OP1 and OP2 are single-use
+
+	     the choice is between:
+
+	     (a) truncating OP2 to M1, doing the operation on M1,
+		 and then widening the result to N
+
+	     (b) widening OP1 to M2, doing the operation on M2, and then
+		 widening the result to N
+
+	     Both shift the M2->N widening of the inputs to the output.
+	     (a) additionally shifts the M1->M2 widening to the output;
+	     it requires fewer copies of STMT_INFO but requires an extra
+	     M2->M1 truncation.
+
+	     Which is better will depend on the complexity and cost of
+	     STMT_INFO, which is hard to predict at this stage.  However,
+	     a clear tie-breaker in favor of (b) is the fact that the
+	     truncation in (a) increases the length of the operation chain.
+
+	     If instead of (4) only one of OP1 or OP2 is single-use,
+	     (b) is still a win over doing the operation in N bits:
+	     it still shifts the M2->N widening on the single-use operand
+	     to the output and reduces the number of STMT_INFO copies.
+
+	     If neither operand is single-use then operating on fewer than
+	     N bits might lead to more extensions overall.  Whether it does
+	     or not depends on global information about the vectorization
+	     region, and whether that's a good trade-off would again
+	     depend on the complexity and cost of the statements involved,
+	     as well as things like register pressure that are not normally
+	     modelled at this stage.  We therefore ignore these cases
+	     and just optimize the clear single-use wins above.
+
+	     Thus we take the maximum precision of the unpromoted operands
+	     and record whether any operand is single-use.  */
+	  if (unprom[i].dt == vect_internal_def)
+	    {
+	      min_precision = MAX (min_precision,
+				   TYPE_PRECISION (unprom[i].type));
+	      single_use_p |= op_single_use_p;
+	    }
+	}
+    }
+
+  /* Although the operation could be done in operation_precision, we have
+     to balance that against introducing extra truncations or extensions.
+     Calculate the minimum precision that can be handled efficiently.
+
+     The loop above determined that the operation could be handled
+     efficiently in MIN_PRECISION if SINGLE_USE_P; this would shift an
+     extension from the inputs to the output without introducing more
+     instructions, and would reduce the number of instructions required
+     for STMT_INFO itself.
+
+     vect_determine_precisions has also determined that the result only
+     needs min_output_precision bits.  Truncating by a factor of N times
+     requires a tree of N - 1 instructions, so if TYPE is N times wider
+     than min_output_precision, doing the operation in TYPE and truncating
+     the result requires N + (N - 1) = 2N - 1 instructions per output vector.
+     In contrast:
+
+     - truncating the input to a unary operation and doing the operation
+       in the new type requires at most N - 1 + 1 = N instructions per
+       output vector
+
+     - doing the same for a binary operation requires at most
+       (N - 1) * 2 + 1 = 2N - 1 instructions per output vector
+
+     Both unary and binary operations require fewer instructions than
+     this if the operands were extended from a suitable truncated form.
+     Thus there is usually nothing to lose by doing operations in
+     min_output_precision bits, but there can be something to gain.  */
+  if (!single_use_p)
+    min_precision = last_stmt_info->min_output_precision;
+  else
+    min_precision = MIN (min_precision, last_stmt_info->min_output_precision);
+
+  /* Apply the minimum efficient precision we just calculated.  */
+  if (new_precision < min_precision)
+    new_precision = min_precision;
+  if (new_precision >= TYPE_PRECISION (type))
+    return NULL;
+
+  vect_pattern_detected ("vect_recog_over_widening_pattern", last_stmt);
+
+  *type_out = get_vectype_for_scalar_type (type);
+  if (!*type_out)
+    return NULL;
+
+  /* We've found a viable pattern.  Get the new type of the operation.  */
+  bool unsigned_p = (last_stmt_info->operation_sign == UNSIGNED);
+  tree new_type = build_nonstandard_integer_type (new_precision, unsigned_p);
+
+  /* We specifically don't check here whether the target supports the
+     new operation, since it might be something that a later pattern
+     wants to rewrite anyway.  If targets have a minimum element size
+     for some optabs, we should pattern-match smaller ops to larger ops
+     where beneficial.  */
+  tree new_vectype = get_vectype_for_scalar_type (new_type);
+  if (!new_vectype)
+    return NULL;
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "demoting ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, type);
+      dump_printf (MSG_NOTE, " to ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, new_type);
+      dump_printf (MSG_NOTE, "\n");
+    }
+
+  /* Calculate the rhs operands for an operation on NEW_TYPE.  */
+  STMT_VINFO_PATTERN_DEF_SEQ (last_stmt_info) = NULL;
+  tree ops[3] = {};
+  for (unsigned int i = 1; i < first_op; ++i)
+    ops[i - 1] = gimple_op (last_stmt, i);
+  vect_convert_inputs (last_stmt_info, nops, &ops[first_op - 1],
+		       new_type, &unprom[0], new_vectype);
+
+  /* Use the operation to produce a result of type NEW_TYPE.  */
+  tree new_var = vect_recog_temp_ssa_var (new_type, NULL);
+  gimple *pattern_stmt = gimple_build_assign (new_var, code,
+					      ops[0], ops[1], ops[2]);
+  gimple_set_location (pattern_stmt, gimple_location (last_stmt));
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "created pattern stmt: ");
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
+    }
+
+  pattern_stmt = vect_convert_output (last_stmt_info, type,
+				      pattern_stmt, new_vectype);
+
+  stmts->safe_push (last_stmt);
+  return pattern_stmt;
+}
+
+/* Recognize cases in which the input to a cast is wider than its
+   output, and the input is fed by a widening operation.  Fold this
+   by removing the unnecessary intermediate widening.  E.g.:
+
+     unsigned char a;
+     unsigned int b = (unsigned int) a;
+     unsigned short c = (unsigned short) b;
+
+   -->
+
+     unsigned short c = (unsigned short) a;
+
+   Although this is rare in input IR, it is an expected side-effect
+   of the over-widening pattern above.
+
+   This is beneficial also for integer-to-float conversions, if the
+   widened integer has more bits than the float, and if the unwidened
+   input doesn't.  */
+
+static gimple *
+vect_recog_cast_forwprop_pattern (vec<gimple *> *stmts, tree *type_out)
+{
+  /* Check for a cast, including an integer-to-float conversion.  */
+  gassign *last_stmt = dyn_cast <gassign *> (stmts->pop ());
+  if (!last_stmt)
+    return NULL;
+  tree_code code = gimple_assign_rhs_code (last_stmt);
+  if (!CONVERT_EXPR_CODE_P (code) && code != FLOAT_EXPR)
+    return NULL;
+
+  /* Make sure that the rhs is a scalar with a natural bitsize.  */
+  tree lhs = gimple_assign_lhs (last_stmt);
+  if (!lhs)
+    return NULL;
+  tree lhs_type = TREE_TYPE (lhs);
+  scalar_mode lhs_mode;
+  if (VECT_SCALAR_BOOLEAN_TYPE_P (lhs_type)
+      || !is_a <scalar_mode> (TYPE_MODE (lhs_type), &lhs_mode))
+    return NULL;
+
+  /* Check for a narrowing operation (from a vector point of view).  */
+  tree rhs = gimple_assign_rhs1 (last_stmt);
+  tree rhs_type = TREE_TYPE (rhs);
+  if (!INTEGRAL_TYPE_P (rhs_type)
+      || VECT_SCALAR_BOOLEAN_TYPE_P (rhs_type)
+      || TYPE_PRECISION (rhs_type) <= GET_MODE_BITSIZE (lhs_mode))
+    return NULL;
+
+  /* Try to find an unpromoted input.  */
+  stmt_vec_info last_stmt_info = vinfo_for_stmt (last_stmt);
+  vec_info *vinfo = last_stmt_info->vinfo;
+  vect_unpromoted_value unprom;
+  if (!vect_look_through_possible_promotion (vinfo, rhs, &unprom)
+      || TYPE_PRECISION (unprom.type) >= TYPE_PRECISION (rhs_type))
+    return NULL;
+
+  /* If the bits above RHS_TYPE matter, make sure that they're the
+     same when extending from UNPROM as they are when extending from RHS.  */
+  if (!INTEGRAL_TYPE_P (lhs_type)
+      && TYPE_SIGN (rhs_type) != TYPE_SIGN (unprom.type))
+    return NULL;
+
+  /* We can get the same result by casting UNPROM directly, to avoid
+     the unnecessary widening and narrowing.  */
+  vect_pattern_detected ("vect_recog_cast_forwprop_pattern", last_stmt);
+
+  *type_out = get_vectype_for_scalar_type (lhs_type);
+  if (!*type_out)
+    return NULL;
+
+  tree new_var = vect_recog_temp_ssa_var (lhs_type, NULL);
+  gimple *pattern_stmt = gimple_build_assign (new_var, code, unprom.op);
+  gimple_set_location (pattern_stmt, gimple_location (last_stmt));
+
+  stmts->safe_push (last_stmt);
   return pattern_stmt;
 }
 
@@ -4205,6 +4170,390 @@ vect_recog_gather_scatter_pattern (vec<gimple *> *stmts, tree *type_out)
   return pattern_stmt;
 }
 
+/* Return true if TYPE is a non-boolean integer type.  These are the types
+   that we want to consider for narrowing.  */
+
+static bool
+vect_narrowable_type_p (tree type)
+{
+  return INTEGRAL_TYPE_P (type) && !VECT_SCALAR_BOOLEAN_TYPE_P (type);
+}
+
+/* Return true if the operation given by CODE can be truncated to N bits
+   when only N bits of the output are needed.  This is only true if bit N+1
+   of the inputs has no effect on the low N bits of the result.  */
+
+static bool
+vect_truncatable_operation_p (tree_code code)
+{
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case BIT_AND_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case COND_EXPR:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Record that STMT_INFO could be changed from operating on TYPE to
+   operating on a type with the precision and sign given by PRECISION
+   and SIGN respectively.  PRECISION is an arbitrary bit precision;
+   it might not be a whole number of bytes.  */
+
+static void
+vect_set_operation_type (stmt_vec_info stmt_info, tree type,
+			 unsigned int precision, signop sign)
+{
+  /* Round the precision up to a whole number of bytes.  */
+  precision = vect_element_precision (precision);
+  if (precision < TYPE_PRECISION (type)
+      && (!stmt_info->operation_precision
+	  || stmt_info->operation_precision > precision))
+    {
+      stmt_info->operation_precision = precision;
+      stmt_info->operation_sign = sign;
+    }
+}
+
+/* Record that STMT_INFO only requires MIN_INPUT_PRECISION from its
+   non-boolean inputs, all of which have type TYPE.  MIN_INPUT_PRECISION
+   is an arbitrary bit precision; it might not be a whole number of bytes.  */
+
+static void
+vect_set_min_input_precision (stmt_vec_info stmt_info, tree type,
+			      unsigned int min_input_precision)
+{
+  /* This operation in isolation only requires the inputs to have
+     MIN_INPUT_PRECISION of precision,  However, that doesn't mean
+     that MIN_INPUT_PRECISION is a natural precision for the chain
+     as a whole.  E.g. consider something like:
+
+	 unsigned short *x, *y;
+	 *y = ((*x & 0xf0) >> 4) | (*y << 4);
+
+     The right shift can be done on unsigned chars, and only requires the
+     result of "*x & 0xf0" to be done on unsigned chars.  But taking that
+     approach would mean turning a natural chain of single-vector unsigned
+     short operations into one that truncates "*x" and then extends
+     "(*x & 0xf0) >> 4", with two vectors for each unsigned short
+     operation and one vector for each unsigned char operation.
+     This would be a significant pessimization.
+
+     Instead only propagate the maximum of this precision and the precision
+     required by the users of the result.  This means that we don't pessimize
+     the case above but continue to optimize things like:
+
+	 unsigned char *y;
+	 unsigned short *x;
+	 *y = ((*x & 0xf0) >> 4) | (*y << 4);
+
+     Here we would truncate two vectors of *x to a single vector of
+     unsigned chars and use single-vector unsigned char operations for
+     everything else, rather than doing two unsigned short copies of
+     "(*x & 0xf0) >> 4" and then truncating the result.  */
+  min_input_precision = MAX (min_input_precision,
+			     stmt_info->min_output_precision);
+
+  if (min_input_precision < TYPE_PRECISION (type)
+      && (!stmt_info->min_input_precision
+	  || stmt_info->min_input_precision > min_input_precision))
+    stmt_info->min_input_precision = min_input_precision;
+}
+
+/* Subroutine of vect_determine_min_output_precision.  Return true if
+   we can calculate a reduced number of output bits for STMT_INFO,
+   whose result is LHS.  */
+
+static bool
+vect_determine_min_output_precision_1 (stmt_vec_info stmt_info, tree lhs)
+{
+  /* Take the maximum precision required by users of the result.  */
+  unsigned int precision = 0;
+  imm_use_iterator iter;
+  use_operand_p use;
+  FOR_EACH_IMM_USE_FAST (use, iter, lhs)
+    {
+      gimple *use_stmt = USE_STMT (use);
+      if (is_gimple_debug (use_stmt))
+	continue;
+      if (!vect_stmt_in_region_p (stmt_info->vinfo, use_stmt))
+	return false;
+      stmt_vec_info use_stmt_info = vinfo_for_stmt (use_stmt);
+      if (!use_stmt_info->min_input_precision)
+	return false;
+      precision = MAX (precision, use_stmt_info->min_input_precision);
+    }
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "only the low %d bits of ",
+		       precision);
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, lhs);
+      dump_printf (MSG_NOTE, " are significant\n");
+    }
+  stmt_info->min_output_precision = precision;
+  return true;
+}
+
+/* Calculate min_output_precision for STMT_INFO.  */
+
+static void
+vect_determine_min_output_precision (stmt_vec_info stmt_info)
+{
+  /* We're only interested in statements with a narrowable result.  */
+  tree lhs = gimple_get_lhs (stmt_info->stmt);
+  if (!lhs
+      || TREE_CODE (lhs) != SSA_NAME
+      || !vect_narrowable_type_p (TREE_TYPE (lhs)))
+    return;
+
+  if (!vect_determine_min_output_precision_1 (stmt_info, lhs))
+    stmt_info->min_output_precision = TYPE_PRECISION (TREE_TYPE (lhs));
+}
+
+/* Use range information to decide whether STMT (described by STMT_INFO)
+   could be done in a narrower type.  This is effectively a forward
+   propagation, since it uses context-independent information that applies
+   to all users of an SSA name.  */
+
+static void
+vect_determine_precisions_from_range (stmt_vec_info stmt_info, gassign *stmt)
+{
+  tree lhs = gimple_assign_lhs (stmt);
+  if (!lhs || TREE_CODE (lhs) != SSA_NAME)
+    return;
+
+  tree type = TREE_TYPE (lhs);
+  if (!vect_narrowable_type_p (type))
+    return;
+
+  /* First see whether we have any useful range information for the result.  */
+  unsigned int precision = TYPE_PRECISION (type);
+  signop sign = TYPE_SIGN (type);
+  wide_int min_value, max_value;
+  if (!vect_get_range_info (lhs, &min_value, &max_value))
+    return;
+
+  tree_code code = gimple_assign_rhs_code (stmt);
+  unsigned int nops = gimple_num_ops (stmt);
+
+  if (!vect_truncatable_operation_p (code))
+    /* Check that all relevant input operands are compatible, and update
+       [MIN_VALUE, MAX_VALUE] to include their ranges.  */
+    for (unsigned int i = 1; i < nops; ++i)
+      {
+	tree op = gimple_op (stmt, i);
+	if (TREE_CODE (op) == INTEGER_CST)
+	  {
+	    /* Don't require the integer to have RHS_TYPE (which it might
+	       not for things like shift amounts, etc.), but do require it
+	       to fit the type.  */
+	    if (!int_fits_type_p (op, type))
+	      return;
+
+	    min_value = wi::min (min_value, wi::to_wide (op, precision), sign);
+	    max_value = wi::max (max_value, wi::to_wide (op, precision), sign);
+	  }
+	else if (TREE_CODE (op) == SSA_NAME)
+	  {
+	    /* Ignore codes that don't take uniform arguments.  */
+	    if (!types_compatible_p (TREE_TYPE (op), type))
+	      return;
+
+	    wide_int op_min_value, op_max_value;
+	    if (!vect_get_range_info (op, &op_min_value, &op_max_value))
+	      return;
+
+	    min_value = wi::min (min_value, op_min_value, sign);
+	    max_value = wi::max (max_value, op_max_value, sign);
+	  }
+	else
+	  return;
+      }
+
+  /* Try to switch signed types for unsigned types if we can.
+     This is better for two reasons.  First, unsigned ops tend
+     to be cheaper than signed ops.  Second, it means that we can
+     handle things like:
+
+	signed char c;
+	int res = (int) c & 0xff00; // range [0x0000, 0xff00]
+
+     as:
+
+	signed char c;
+	unsigned short res_1 = (unsigned short) c & 0xff00;
+	int res = (int) res_1;
+
+     where the intermediate result res_1 has unsigned rather than
+     signed type.  */
+  if (sign == SIGNED && !wi::neg_p (min_value))
+    sign = UNSIGNED;
+
+  /* See what precision is required for MIN_VALUE and MAX_VALUE.  */
+  unsigned int precision1 = wi::min_precision (min_value, sign);
+  unsigned int precision2 = wi::min_precision (max_value, sign);
+  unsigned int value_precision = MAX (precision1, precision2);
+  if (value_precision >= precision)
+    return;
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "can narrow to %s:%d"
+		       " without loss of precision: ",
+		       sign == SIGNED ? "signed" : "unsigned",
+		       value_precision);
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+    }
+
+  vect_set_operation_type (stmt_info, type, value_precision, sign);
+  vect_set_min_input_precision (stmt_info, type, value_precision);
+}
+
+/* Use information about the users of STMT's result to decide whether
+   STMT (described by STMT_INFO) could be done in a narrower type.
+   This is effectively a backward propagation.  */
+
+static void
+vect_determine_precisions_from_users (stmt_vec_info stmt_info, gassign *stmt)
+{
+  tree_code code = gimple_assign_rhs_code (stmt);
+  unsigned int opno = (code == COND_EXPR ? 2 : 1);
+  tree type = TREE_TYPE (gimple_op (stmt, opno));
+  if (!vect_narrowable_type_p (type))
+    return;
+
+  unsigned int precision = TYPE_PRECISION (type);
+  unsigned int operation_precision, min_input_precision;
+  switch (code)
+    {
+    CASE_CONVERT:
+      /* Only the bits that contribute to the output matter.  Don't change
+	 the precision of the operation itself.  */
+      operation_precision = precision;
+      min_input_precision = stmt_info->min_output_precision;
+      break;
+
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+      {
+	tree shift = gimple_assign_rhs2 (stmt);
+	if (TREE_CODE (shift) != INTEGER_CST
+	    || !wi::ltu_p (wi::to_widest (shift), precision))
+	  return;
+	unsigned int const_shift = TREE_INT_CST_LOW (shift);
+	if (code == LSHIFT_EXPR)
+	  {
+	    /* We need CONST_SHIFT fewer bits of the input.  */
+	    operation_precision = stmt_info->min_output_precision;
+	    min_input_precision = (MAX (operation_precision, const_shift)
+				    - const_shift);
+	  }
+	else
+	  {
+	    /* We need CONST_SHIFT extra bits to do the operation.  */
+	    operation_precision = (stmt_info->min_output_precision
+				   + const_shift);
+	    min_input_precision = operation_precision;
+	  }
+	break;
+      }
+
+    default:
+      if (vect_truncatable_operation_p (code))
+	{
+	  /* Input bit N has no effect on output bits N-1 and lower.  */
+	  operation_precision = stmt_info->min_output_precision;
+	  min_input_precision = operation_precision;
+	  break;
+	}
+      return;
+    }
+
+  if (operation_precision < precision)
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location, "can narrow to %s:%d"
+			   " without affecting users: ",
+			   TYPE_UNSIGNED (type) ? "unsigned" : "signed",
+			   operation_precision);
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	}
+      vect_set_operation_type (stmt_info, type, operation_precision,
+			       TYPE_SIGN (type));
+    }
+  vect_set_min_input_precision (stmt_info, type, min_input_precision);
+}
+
+/* Handle vect_determine_precisions for STMT_INFO, given that we
+   have already done so for the users of its result.  */
+
+void
+vect_determine_stmt_precisions (stmt_vec_info stmt_info)
+{
+  vect_determine_min_output_precision (stmt_info);
+  if (gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt))
+    {
+      vect_determine_precisions_from_range (stmt_info, stmt);
+      vect_determine_precisions_from_users (stmt_info, stmt);
+    }
+}
+
+/* Walk backwards through the vectorizable region to determine the
+   values of these fields:
+
+   - min_output_precision
+   - min_input_precision
+   - operation_precision
+   - operation_sign.  */
+
+void
+vect_determine_precisions (vec_info *vinfo)
+{
+  DUMP_VECT_SCOPE ("vect_determine_precisions");
+
+  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+    {
+      struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+      basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
+      unsigned int nbbs = loop->num_nodes;
+
+      for (unsigned int i = 0; i < nbbs; i++)
+	{
+	  basic_block bb = bbs[nbbs - i - 1];
+	  for (gimple_stmt_iterator si = gsi_last_bb (bb);
+	       !gsi_end_p (si); gsi_prev (&si))
+	    vect_determine_stmt_precisions (vinfo_for_stmt (gsi_stmt (si)));
+	}
+    }
+  else
+    {
+      bb_vec_info bb_vinfo = as_a <bb_vec_info> (vinfo);
+      gimple_stmt_iterator si = bb_vinfo->region_end;
+      gimple *stmt;
+      do
+	{
+	  if (!gsi_stmt (si))
+	    si = gsi_last_bb (bb_vinfo->bb);
+	  else
+	    gsi_prev (&si);
+	  stmt = gsi_stmt (si);
+	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
+	    vect_determine_stmt_precisions (stmt_info);
+	}
+      while (stmt != gsi_stmt (bb_vinfo->region_begin));
+    }
+}
+
 typedef gimple *(*vect_recog_func_ptr) (vec<gimple *> *, tree *);
 
 struct vect_recog_func
@@ -4217,13 +4566,14 @@ struct vect_recog_func
    taken which means usually the more complex one needs to preceed the
    less comples onex (widen_sum only after dot_prod or sad for example).  */
 static vect_recog_func vect_vect_recog_func_ptrs[] = {
+  { vect_recog_over_widening_pattern, "over_widening" },
+  { vect_recog_cast_forwprop_pattern, "cast_forwprop" },
   { vect_recog_widen_mult_pattern, "widen_mult" },
   { vect_recog_dot_prod_pattern, "dot_prod" },
   { vect_recog_sad_pattern, "sad" },
   { vect_recog_widen_sum_pattern, "widen_sum" },
   { vect_recog_pow_pattern, "pow" },
   { vect_recog_widen_shift_pattern, "widen_shift" },
-  { vect_recog_over_widening_pattern, "over_widening" },
   { vect_recog_rotate_pattern, "rotate" },
   { vect_recog_vector_vector_shift_pattern, "vector_vector_shift" },
   { vect_recog_divmod_pattern, "divmod" },
@@ -4501,6 +4851,8 @@ vect_pattern_recog (vec_info *vinfo)
   gimple_stmt_iterator si;
   unsigned int i, j;
   auto_vec<gimple *, 1> stmts_to_replace;
+
+  vect_determine_precisions (vinfo);
 
   DUMP_VECT_SCOPE ("vect_pattern_recog");
 
