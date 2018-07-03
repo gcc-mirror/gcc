@@ -8545,15 +8545,18 @@ check_concept_fn (tree fn)
 {
   // A constraint is nullary.
   if (DECL_ARGUMENTS (fn))
-    error ("concept %q#D declared with function parameters", fn);
+    error_at (DECL_SOURCE_LOCATION (fn),
+	      "concept %q#D declared with function parameters", fn);
 
   // The declared return type of the concept shall be bool, and
   // it shall not be deduced from it definition.
   tree type = TREE_TYPE (TREE_TYPE (fn));
   if (is_auto (type))
-    error ("concept %q#D declared with a deduced return type", fn);
+    error_at (DECL_SOURCE_LOCATION (fn),
+	      "concept %q#D declared with a deduced return type", fn);
   else if (type != boolean_type_node)
-    error ("concept %q#D with non-%<bool%> return type %qT", fn, type);
+    error_at (DECL_SOURCE_LOCATION (fn),
+	      "concept %q#D with non-%<bool%> return type %qT", fn, type);
 }
 
 /* Helper function.  Replace the temporary this parameter injected
@@ -9795,6 +9798,18 @@ create_array_type_for_decl (tree name, tree type, tree size)
   return build_cplus_array_type (type, itype);
 }
 
+/* Returns the smallest location that is not UNKNOWN_LOCATION.  */
+
+static location_t
+min_location (location_t loca, location_t locb)
+{
+  if (loca == UNKNOWN_LOCATION
+      || (locb != UNKNOWN_LOCATION
+	  && linemap_location_before_p (line_table, locb, loca)))
+    return locb;
+  return loca;
+}
+
 /* Returns the smallest location != UNKNOWN_LOCATION among the
    three stored in LOCATIONS[ds_const], LOCATIONS[ds_volatile],
    and LOCATIONS[ds_restrict].  */
@@ -9807,13 +9822,11 @@ smallest_type_quals_location (int type_quals, const location_t* locations)
   if (type_quals & TYPE_QUAL_CONST)
     loc = locations[ds_const];
 
-  if ((type_quals & TYPE_QUAL_VOLATILE)
-      && (loc == UNKNOWN_LOCATION || locations[ds_volatile] < loc))
-    loc = locations[ds_volatile];
+  if (type_quals & TYPE_QUAL_VOLATILE)
+    loc = min_location (loc, locations[ds_volatile]);
 
-  if ((type_quals & TYPE_QUAL_RESTRICT)
-      && (loc == UNKNOWN_LOCATION || locations[ds_restrict] < loc))
-    loc = locations[ds_restrict];
+  if (type_quals & TYPE_QUAL_RESTRICT)
+    loc = min_location (loc, locations[ds_restrict]);
 
   return loc;
 }
@@ -10710,14 +10723,20 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (staticp == 2)
 	{
-	  error ("member %qD cannot be declared both %<virtual%> "
-		 "and %<static%>", dname);
+	  rich_location richloc (line_table, declspecs->locations[ds_virtual]);
+	  richloc.add_range (declspecs->locations[ds_storage_class], false);
+	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
+		    "and %<static%>", dname);
 	  storage_class = sc_none;
 	  staticp = 0;
 	}
       if (constexpr_p)
-	error ("member %qD cannot be declared both %<virtual%> "
-	       "and %<constexpr%>", dname);
+	{
+	  rich_location richloc (line_table, declspecs->locations[ds_virtual]);
+	  richloc.add_range (declspecs->locations[ds_constexpr], false);
+	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
+		    "and %<constexpr%>", dname);
+	}
     }
   friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
 
@@ -10726,18 +10745,27 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (typedef_p)
 	{
-	  error ("typedef declaration invalid in parameter declaration");
+	  error_at (declspecs->locations[ds_typedef],
+		    "typedef declaration invalid in parameter declaration");
 	  return error_mark_node;
 	}
       else if (template_parm_flag && storage_class != sc_none)
 	{
-	  error ("storage class specified for template parameter %qs", name);
+	  error_at (min_location (declspecs->locations[ds_thread],
+				  declspecs->locations[ds_storage_class]),
+		    "storage class specified for template parameter %qs",
+		    name);
 	  return error_mark_node;
 	}
       else if (storage_class == sc_static
 	       || storage_class == sc_extern
 	       || thread_p)
-	error ("storage class specifiers invalid in parameter declarations");
+	{
+	  error_at (min_location (declspecs->locations[ds_thread],
+				  declspecs->locations[ds_storage_class]),
+		    "storage class specified for parameter %qs", name);
+	  return error_mark_node;
+	}
 
       /* Function parameters cannot be concept. */
       if (concept_p)
@@ -10871,15 +10899,15 @@ grokdeclarator (const cp_declarator *declarator,
 	;
       else
 	{
+	  location_t loc
+	    = min_location (declspecs->locations[ds_thread],
+			    declspecs->locations[ds_storage_class]);
 	  if (decl_context == FIELD)
-	    error ("storage class specified for %qs", name);
+	    error_at (loc, "storage class specified for %qs", name);
+	  else if (decl_context == PARM || decl_context == CATCHPARM)
+	    error_at (loc, "storage class specified for parameter %qs", name);
 	  else
-	    {
-	      if (decl_context == PARM || decl_context == CATCHPARM)
-		error ("storage class specified for parameter %qs", name);
-	      else
-		error ("storage class specified for typename");
-	    }
+	    error_at (loc, "storage class specified for typename");
 	  if (storage_class == sc_register
 	      || storage_class == sc_auto
 	      || storage_class == sc_extern
@@ -10900,7 +10928,8 @@ grokdeclarator (const cp_declarator *declarator,
 	   && storage_class != sc_static)
     {
       if (declspecs->gnu_thread_keyword_p)
-	pedwarn (input_location, 0, "function-scope %qs implicitly auto and "
+	pedwarn (declspecs->locations[ds_thread],
+		 0, "function-scope %qs implicitly auto and "
 		 "declared %<__thread%>", name);
 
       /* When thread_local is applied to a variable of block scope the
@@ -10912,7 +10941,10 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (storage_class && friendp)
     {
-      error ("storage class specifiers invalid in friend function declarations");
+      error_at (min_location (declspecs->locations[ds_thread],
+			      declspecs->locations[ds_storage_class]),
+		"storage class specifiers invalid in friend function "
+		"declarations");
       storage_class = sc_none;
       staticp = 0;
     }
@@ -11238,7 +11270,8 @@ grokdeclarator (const cp_declarator *declarator,
 		if (virtualp)
 		  {
 		    /* Cannot be both friend and virtual.  */
-		    error ("virtual functions cannot be friends");
+		    error_at (declspecs->locations[ds_friend],
+			      "virtual functions cannot be friends");
 		    friendp = 0;
 		  }
 		if (decl_context == NORMAL)
@@ -12369,15 +12402,18 @@ grokdeclarator (const cp_declarator *declarator,
 	else if (thread_p)
 	  {
 	    if (declspecs->gnu_thread_keyword_p)
-	      error ("storage class %<__thread%> invalid for function %qs",
-		     name);
+	      error_at (declspecs->locations[ds_thread],
+			"storage class %<__thread%> invalid for function %qs",
+			name);
 	    else
-	      error ("storage class %<thread_local%> invalid for function %qs",
-		     name);
+	      error_at (declspecs->locations[ds_thread],
+			"storage class %<thread_local%> invalid for "
+			"function %qs", name);
 	  }
 
         if (virt_specifiers)
-          error ("virt-specifiers in %qs not allowed outside a class definition", name);
+          error ("virt-specifiers in %qs not allowed outside a class "
+		 "definition", name);
 	/* Function declaration not at top level.
 	   Storage classes other than `extern' are not allowed
 	   and `extern' makes no difference.  */

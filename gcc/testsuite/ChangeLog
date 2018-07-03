@@ -1,3 +1,20 @@
+2018-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/other/locations1.C: New.
+	* g++.dg/tls/locations1.C: Likewise.
+	* g++.dg/diagnostic/virtual-constexpr.C: Likewise.
+	* g++.dg/diagnostic/virtual-static.C: Likewise.
+	* g++.dg/concepts/fn-concept2.C: Test the locations too.
+	* g++.dg/cpp0x/constexpr-virtual5.C: Likewise.
+	* g++.dg/cpp0x/pr51463.C: Likewise.
+	* g++.dg/other/typedef1.C: Likewise.
+	* g++.dg/parse/dtor13.C: Likewise.
+	* g++.dg/template/error44.C: Likewise.
+	* g++.dg/template/typedef4.C: Likewise.
+	* g++.dg/template/typedef5.C: Likewise.
+	* g++.dg/tls/diag-2.C: Likewise.
+	* g++.old-deja/g++.brendan/crash11.C: Likewise.
+
 2018-07-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86201
