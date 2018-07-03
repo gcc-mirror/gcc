@@ -6313,6 +6313,13 @@ proc check_effective_target_vect_usad_char { } {
     return $et_vect_usad_char_saved($et_index)
 }
 
+# Return 1 if the target plus current options supports both signed
+# and unsigned average operations on vectors of bytes.
+
+proc check_effective_target_vect_avg_qi {} {
+    return 0
+}
+
 # Return 1 if the target plus current options supports a vector
 # demotion (packing) of shorts (to chars) and ints (to shorts) 
 # using modulo arithmetic, 0 otherwise.

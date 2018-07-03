@@ -5599,6 +5599,34 @@ Other shift and rotate instructions, analogous to the
 Vector shift and rotate instructions that take vectors as operand 2
 instead of a scalar type.
 
+@cindex @code{avg@var{m}3_floor} instruction pattern
+@cindex @code{uavg@var{m}3_floor} instruction pattern
+@item @samp{avg@var{m}3_floor}
+@itemx @samp{uavg@var{m}3_floor}
+Signed and unsigned average instructions.  These instructions add
+operands 1 and 2 without truncation, divide the result by 2,
+round towards -Inf, and store the result in operand 0.  This is
+equivalent to the C code:
+@smallexample
+narrow op0, op1, op2;
+@dots{}
+op0 = (narrow) (((wide) op1 + (wide) op2) >> 1);
+@end smallexample
+where the sign of @samp{narrow} determines whether this is a signed
+or unsigned operation.
+
+@cindex @code{avg@var{m}3_ceil} instruction pattern
+@cindex @code{uavg@var{m}3_ceil} instruction pattern
+@item @samp{avg@var{m}3_ceil}
+@itemx @samp{uavg@var{m}3_ceil}
+Like @samp{avg@var{m}3_floor} and @samp{uavg@var{m}3_floor}, but round
+towards +Inf.  This is equivalent to the C code:
+@smallexample
+narrow op0, op1, op2;
+@dots{}
+op0 = (narrow) (((wide) op1 + (wide) op2 + 1) >> 1);
+@end smallexample
+
 @cindex @code{bswap@var{m}2} instruction pattern
 @item @samp{bswap@var{m}2}
 Reverse the order of bytes of operand 1 and store the result in operand 0.
