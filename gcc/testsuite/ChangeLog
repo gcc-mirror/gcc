@@ -1,3 +1,14 @@
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/85694
+	* lib/target-supports.exp (check_effective_target_vect_avg_qi):
+	Return true for AArch64 without SVE.
+	* gcc.target/aarch64/vect_hadd_1.h: New file.
+	* gcc.target/aarch64/vect_shadd_1.c: New test.
+	* gcc.target/aarch64/vect_srhadd_1.c: Likewise.
+	* gcc.target/aarch64/vect_uhadd_1.c: Likewise.
+	* gcc.target/aarch64/vect_urhadd_1.c: Likewise.
+
 2018-07-03  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/86202

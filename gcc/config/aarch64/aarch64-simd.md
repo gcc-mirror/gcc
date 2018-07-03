@@ -3387,6 +3387,22 @@
 
 ;; <su><r>h<addsub>.
 
+(define_expand "<u>avg<mode>3_floor"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand")
+	(unspec:VDQ_BHSI [(match_operand:VDQ_BHSI 1 "register_operand")
+			  (match_operand:VDQ_BHSI 2 "register_operand")]
+			 HADD))]
+  "TARGET_SIMD"
+)
+
+(define_expand "<u>avg<mode>3_ceil"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand")
+	(unspec:VDQ_BHSI [(match_operand:VDQ_BHSI 1 "register_operand")
+			  (match_operand:VDQ_BHSI 2 "register_operand")]
+			 RHADD))]
+  "TARGET_SIMD"
+)
+
 (define_insn "aarch64_<sur>h<addsub><mode>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
         (unspec:VDQ_BHSI [(match_operand:VDQ_BHSI 1 "register_operand" "w")
