@@ -1,5 +1,6 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodule-user-header=legacy-1_a.H -fmodules-atom" }
+// the additional fmodules-atom should not clobber the modules-legacy
+// { dg-additional-options "-fmodules-legacy=legacy-1_a.H -fmodules-atom" }
 // { dg-module-bmi 1:legacy-1_a.H }
 
 #ifndef HEADER_H

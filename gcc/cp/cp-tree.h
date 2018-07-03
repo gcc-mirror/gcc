@@ -6661,7 +6661,7 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 /* In module.c  */
 inline bool modules_p () { return flag_modules != 0; }
 inline bool modules_atom_p () { return flag_modules < 0; }
-inline bool modules_header_p () { return flag_modules < -1; }
+inline bool modules_legacy_p () { return flag_modules < -1; }
 extern bool module_purview_p ();
 extern bool module_interface_p ();
 extern int module_exporting_level ();

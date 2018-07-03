@@ -412,7 +412,7 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
 	 totally suck doing that, and (b) we're allowed to encourage
 	 the user to place a bare semicolon marking the end of the
 	 preamble.  */
-      if (peeked_loc && only_import && !modules_header_p ())
+      if (peeked_loc && only_import && !modules_legacy_p ())
 	{
 	  /* Don't attempt rescanning if we emitted any diagnostics.
 	     We'll just be repeating ourselves.  */

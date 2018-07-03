@@ -2893,8 +2893,8 @@ module_state_hash::equal (const value_type existing,
 static const char *module_mapper_name;
 
 /* Legacy header mode.  */
-static const char *module_header_name;
-static bool module_header_is_system;
+static const char *module_legacy_name;
+static bool module_legacy_system_p;
 
 /* End of the prefix line maps.  */
 static unsigned prefix_line_maps_hwm;
@@ -7838,10 +7838,8 @@ module_state::get_option_string  ()
       if (opt->opt_index == OPT_fmodule_lazy
 	  || opt->opt_index == OPT_fmodule_preamble_
 	  || opt->opt_index == OPT_fmodule_mapper_
-	  || opt->opt_index == OPT_fmodule_user_header
-	  || opt->opt_index == OPT_fmodule_user_header_
-	  || opt->opt_index == OPT_fmodule_system_header
-	  || opt->opt_index == OPT_fmodule_system_header_
+	  || opt->opt_index == OPT_fmodules_legacy_
+	  || opt->opt_index == OPT_fmodules_legacy
 	  || opt->opt_index == OPT_fmodules_atom
 	  || opt->opt_index == OPT_fmodules_ts)
 	continue;
@@ -10691,18 +10689,15 @@ declare_module (const cp_expr &name, bool exporting_p, tree, line_maps *lmaps)
   location_t from_loc = ordinary_loc_of (lmaps, name.get_location ());
   if (module_state *state = module_state::find_module (from_loc, *name, true))
     {
-      if (state->is_legacy () != bool (module_header_name))
+      if (state->is_legacy () != modules_legacy_p ())
 	error_at (from_loc,
 		  state->is_legacy ()
-		  ? "legacy module only permitted with %<-fmodule-header%>"
-		  : "legacy module expected with %<-fmodule-header%>");
-      if (module_header_name)
+		  ? "legacy module only permitted with %<-fmodules-header%>"
+		  : "legacy module expected with %<-fmodules-header%>");
+      if (state->is_legacy ())
 	{
-	  if (!module_header_name[0])
-	    {
-	      module_header_name = IDENTIFIER_POINTER (state->name);
-	      module_header_is_system = state->kind == mk_legacy_system;
-	    }
+	  module_legacy_name = IDENTIFIER_POINTER (state->name);
+
 	  /* The user may have named the module before the main file.  */
 	  const line_map_ordinary *map
 	    = linemap_check_ordinary (linemap_lookup (lmaps, from_loc));
@@ -10906,7 +10901,7 @@ do_divert_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 cpp_divert_include_t *
 atom_divert_include ()
 {
-  return module_header_name ? do_divert_include : NULL;
+  return modules_legacy_p () ? do_divert_include : NULL;
 }
 
 /* We've just properly entered the main source file.  I.e. after the
@@ -10927,35 +10922,29 @@ atom_main_file (line_maps *, const line_map_ordinary *map, unsigned ix)
 bool
 maybe_atom_legacy_module (line_maps *lmaps)
 {
-  if (!module_header_name)
+  if (!modules_legacy_p ())
     return false;
 
-  if (!module_header_name[0])
+  if (!module_legacy_name)
     {
       /* Set the module header name from the main_input_filename.  */
       const char *main = main_input_filename;
-      size_t len = strlen (main);
-      for (; len >= 2; len--)
-	if (IS_DIR_SEPARATOR (main[len-1]))
+      for (size_t len = strlen (main); len-- > 0;)
+	if (main[len] == '.'
+	    && IS_DIR_SEPARATOR (main[len-1])
+	    && IS_DIR_SEPARATOR (main[len+1]))
 	  {
-	    /* Is this '//' or '/./'?  */
-	    size_t peek = len - 2;
-	    if (peek && main[peek] == '.')
-	      peek--;
-	    if (IS_DIR_SEPARATOR (main[peek]))
-	      break;
+	    main += len + 2;
+	    break;
 	  }
-      if (len < 2)
-	/* We didn't find a break, just use the whole path.  */
-	len = 0;
-      module_header_name = main + len;
+      module_legacy_name = main;
     }
-   
+
   location_t loc
     =  MAP_START_LOCATION (LINEMAPS_MAP_AT (lmaps, false,
 					    prefix_line_maps_hwm - 1));
-  tree mod_name = get_identifier (module_header_name);
-  cp_expr name (tree_cons (mod_name, module_header_is_system
+  tree mod_name = get_identifier (module_legacy_name);
+  cp_expr name (tree_cons (mod_name, module_legacy_system_p
 			   ? integer_zero_node : NULL_TREE, NULL_TREE), loc);
 
   declare_module (name, true, NULL, lmaps);
@@ -10972,7 +10961,7 @@ atom_module_preamble (location_t loc, line_maps *lmaps)
   if (adj < 0)
     fatal_error (loc, "returning to gate for a mechanical issue");
 
-  if (module_header_name)
+  if (modules_legacy_p ())
     /* Everything is exported.  */
     push_module_export (false, NULL);
 
@@ -10984,15 +10973,11 @@ atom_module_preamble (location_t loc, line_maps *lmaps)
 void
 init_module_processing ()
 {
-  if (module_header_name)
-    /* Force atom.  */
-    flag_modules = -2;
-
   /* PCH should not be reachable because of lang-specsm but the
      user could have overriden that.  */
   if (pch_file)
     fatal_error (input_location,
-		 "C++ modules incpmatible with precompiled headers");
+		 "C++ modules incompatible with precompiled headers");
 
   module_state::init ();
 }
@@ -11002,7 +10987,7 @@ init_module_processing ()
 void
 finish_module (line_maps *lmaps)
 {
-  if (module_header_name)
+  if (modules_legacy_p ())
     pop_module_export (0);
 
   module_state::fini ();
@@ -11103,7 +11088,7 @@ maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
 
 /* If CODE is a module option, handle it & return true.  Otherwise
    return false.  For unknown reasons I cannot get the option
-   generation machinery to set fmodule-mapper pr -fmodule-header to
+   generation machinery to set fmodule-mapper or -fmodule-header to
    make a string type option variable.  */
 
 bool
@@ -11111,32 +11096,36 @@ handle_module_option (unsigned code, const char *str, int num)
 {
   switch (opt_code (code))
     {
+    case OPT_fmodule_preamble_:
+      flag_module_preamble = num;
+      /* Fall through.  */
+
+    case OPT_fmodules_atom:
+      if (flag_modules >= 0)
+	flag_modules = -1;
+      return true;
+
     case OPT_fmodule_mapper_:
       module_mapper_name = str;
       return true;
 
-    case OPT_fmodule_preamble_:
-      /* Force atom.  */
-      flag_modules = -1;
-      flag_module_preamble = num;
-      return true;
-
-    case OPT_fmodule_user_header:
-      str="";
-      /* FALLTHROUGH.  */
-    case OPT_fmodule_user_header_:
-      module_header_is_system = false;
-      module_header_name = str;
-      flag_modules = -1;
-      return true;
-
-    case OPT_fmodule_system_header:
-      str="";
-      /* FALLTHROUGH.  */
-    case OPT_fmodule_system_header_:
-      module_header_is_system = true;
-      module_header_name = str;
-      flag_modules = -1;
+    case OPT_fmodules_legacy_:
+      {
+	int l = 0;
+	if (0 == strncmp (str, "system", 6))
+	  module_legacy_system_p = true, l = 6;
+	else if (0 == strncmp (str, "user", 4))
+	  module_legacy_system_p = false, l = 4;
+	if (l)
+	  {
+	    if (str[l] == ':')
+	      str += l + 1;
+	    else if (!str[l])
+	      str = NULL;
+	  }
+	flag_modules = -2;
+	module_legacy_name = str;
+      }
       return true;
 
     default:

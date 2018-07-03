@@ -1,5 +1,23 @@
 2018-07-03  Nathan Sidwell  <nathan@acm.org>
 
+	Merge legacy header options to -fmodules-
+	gcc/
+	* doc/invoke.texi (C++ Modules): Adjust.
+	gcc/c-family/
+	c.opt (fmodules_legacy, fmodules_legacy=): New.
+	(fmodule-{user,system}-header{,=}): Delete.
+	gcc/cp/
+	* cp-tree.h (modules_legacy_p): Renamed from modules_header_p.
+	* lang-specs.h (@c++-header): Update.
+	* lex.c (atom_preamble_prefix_peek): Adjust.
+	* module.c (module_legacy_name): Do not force to empty string.
+	(module_state::get_option_string): Adjust.
+	(declare_module, maybe_atom_legacy_module, init_module_processing)
+	(handle_module_option): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-[1234]*: update.
+	* g++.dg/modules/atom-inc-1.C: Update.
+
 	Explicit user/system legacy headers
 	gcc/c-family/
 	* c-lex.c (c_lex_with_flags): Encode header names in tree lists.

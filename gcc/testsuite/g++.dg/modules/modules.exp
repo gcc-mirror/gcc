@@ -232,7 +232,7 @@ proc cleanup_module_files { files } {
 }
 
 proc mode_list { test } {
-    if [search_for $test "-fmodules"] {
+    if [search_for $test "-fmodules-"] {
 	return { "" }
     }
     return { "-fmodules-ts" "-fmodules-atom" }
