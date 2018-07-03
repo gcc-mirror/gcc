@@ -48,7 +48,8 @@ along with GCC; see the file COPYING3.  If not see
       "             %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}"
       "   %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
       "   %(cc1_options) %2"
-      "   %{fmodules-atom:%{!fmodule-header*:-fmodule-header}}"
+      "   %{fmodules-atom:%{!fmodule-user-header*:%{!fmodule-system-header*:"
+	"-fmodule-user-header}}}"
       "   %{!fsyntax-only:%{!S:-o %g.s}"
       "     %{!fdump-ada-spec*:%{!fmodules-atom:"
       "          %{!o*:--output-pch=%i.gch}%W{o*:--output-pch=%*}}%V}}}}}",

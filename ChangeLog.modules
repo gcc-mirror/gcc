@@ -1,3 +1,33 @@
+2018-07-03  Nathan Sidwell  <nathan@acm.org>
+
+	Explicit user/system legacy headers
+	gcc/c-family/
+	* c-lex.c (c_lex_with_flags): Encode header names in tree lists.
+	* c.opt (fmodule-{user,system}-header): New.
+	gcc/cp/
+	* cxx-mapper.cc (module2bmi): Adjust.
+	(read_mapping_file): Encode legacy header names.
+	* lang-specs.h (@c++-header): Update.
+	* module.c (module_state_hash::hash): Update hashers.
+	(enum module_kind): New.
+	(module_state::set_name): Adjust.
+	(module_state_hash::equal): Adjust.
+	(module_header_is_system): New.
+	(make_legacy_name): Delete.
+	(module_state::get_module): Adjust.
+	(module_mapper::response_name): New.
+	(module_mapper::imex_query): Adjust.
+	(module_mapper::bewait_response): Adjust.
+	(module_mapper::divert_include): Adjust.
+	(declare_module, maybe_atom_legacy_module): Likewise.
+	(handle_module_option): Check new options.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: update BMI encodings.
+	* g++.dg/modules/legacy-[1234]*: update.
+	* g++.dg/modules/atom-inc-1.C: Update.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Document new options.
+
 2018-06-29  Nathan Sidwell  <nathan@acm.org>
 
 	Diverted header column preservation

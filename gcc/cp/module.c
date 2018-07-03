@@ -2498,6 +2498,7 @@ struct module_state_hash : nodel_ptr_hash<module_state> {
 
   static inline hashval_t hash (const value_type m);
   static inline bool equal (const value_type existing, compare_type candidate);
+  static inline hashval_t hash (const_tree n);
 };
 
 /* Likewise, this cannot be a member of module_state.  */
@@ -2603,6 +2604,14 @@ struct GTY ((tag ("false"))) spewing : public slurping
   unsigned prepare_linemaps (line_maps *, bool early_p);
 };
 
+/* What kind a module is.  */
+enum module_kind 
+{
+ mk_new, 	 	/* A new identifier-style module.  */
+ mk_legacy_user, 	/* A legacy quoted-string module.  */
+ mk_legacy_system	/* A legacy angle-string module.  */
+};
+
 /* State of a particular module. */
 
 class GTY(()) module_state {
@@ -2625,10 +2634,11 @@ class GTY(()) module_state {
 
   unsigned depth : 16;  /* Depth, direct imports are 0 */
 
+  module_kind kind : 2;
+
   bool direct : 1;	/* A direct import.  */
   bool exported : 1;	/* We are exported.  */
   bool imported : 1;	/* Import has been done.  */
-  bool legacy : 1;	/* A legacy module.  */
 
  public:
   module_state (tree name = NULL_TREE);
@@ -2649,15 +2659,19 @@ class GTY(()) module_state {
   }
   bool is_legacy () const
   {
-    return legacy;
+    return kind != mk_new;
   }
 
  private:
   void set_name (tree n)
   {
-    gcc_checking_assert (!name && IDENTIFIER_POINTER (n)[0] != '<');
-    if (IDENTIFIER_POINTER (n)[0] == '"')
-      legacy = true;
+    gcc_checking_assert (!name);
+    if (TREE_CODE (n) == TREE_LIST)
+      {
+	kind = TREE_VALUE (n) ? mk_legacy_system : mk_legacy_user;
+	n = TREE_PURPOSE (n);
+	gcc_checking_assert (identifier_p (n));
+      }
 
     name = n;
   }
@@ -2820,7 +2834,8 @@ module_state::module_state (tree n)
     filename (NULL), loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     mod (MODULE_UNKNOWN), crc (0), depth (65535)
 {
-  direct = exported = imported = legacy = false;
+  kind = mk_new;
+  direct = exported = imported = false;
   if (n)
     set_name (n);
 }
@@ -2830,17 +2845,46 @@ module_state::~module_state ()
   release ();
 }
 
-/* Hash module state by name.  */
-hashval_t module_state_hash::hash (const value_type m)
+/* Hash module state.  */
+
+hashval_t
+module_state_hash::hash (const value_type m)
 {
-  return IDENTIFIER_HASH_VALUE (m->name);
+  hashval_t h = IDENTIFIER_HASH_VALUE (m->name);
+
+  return iterative_hash_hashval_t (h, hashval_t (m->kind));
 }
 
-/* Always lookup by IDENTIFIER_NODE.  */
-bool module_state_hash::equal (const value_type existing,
-			       compare_type candidate)
+/* Hash a name.  */
+hashval_t
+module_state_hash::hash (const_tree n)
 {
-  return existing->name == candidate;
+  module_kind kind = mk_new;
+  if (TREE_CODE (n) == TREE_LIST)
+    {
+      kind = TREE_VALUE (n) ? mk_legacy_system : mk_legacy_user;
+      n = TREE_PURPOSE (n);
+    }
+    
+  hashval_t h = IDENTIFIER_HASH_VALUE (n);
+
+  return iterative_hash_hashval_t (h, hashval_t (kind));
+}
+
+/* Lookup by IDENTIFIER_NODE or TREE_LIST.  */
+
+bool
+module_state_hash::equal (const value_type existing,
+			  compare_type candidate)
+{
+  tree n = candidate;
+  module_kind k = mk_new;
+  if (TREE_CODE (candidate) == TREE_LIST)
+    {
+      k = TREE_VALUE (n) ? mk_legacy_system : mk_legacy_user;
+      n = TREE_PURPOSE (n);
+    }
+  return existing->name == n && existing->kind == k;
 }
 
 /* Some flag values: */
@@ -2850,6 +2894,7 @@ static const char *module_mapper_name;
 
 /* Legacy header mode.  */
 static const char *module_header_name;
+static bool module_header_is_system;
 
 /* End of the prefix line maps.  */
 static unsigned prefix_line_maps_hwm;
@@ -2997,6 +3042,7 @@ private:
   void send_command (location_t, const char * = NULL, ...) ATTRIBUTE_PRINTF_3;
   int get_response (location_t);
   char *response_token (location_t, bool all = false);
+  tree response_name (location_t);
   int response_word (location_t, const char *, ...);
   const char *response_error ()
   {
@@ -6642,32 +6688,14 @@ depset::tarjan::connect (depset *v)
     }
 }
 
-/* Create a legacy name from STR and LEN.  */
-
-static tree
-make_legacy_name (const char *str, size_t len)
-{
-  char *buf = new char[len + 2];
-  memcpy (buf + 1, str, len);
-  buf[0] = buf[len+1] = '"';
-  tree name = get_identifier_with_length (buf, len + 2);
-  delete buf;
-  return name;
-}
-
 /* Find or create module NAME in the hash table.  */
 
 module_state *
 module_state::get_module (tree name, module_state *dflt, bool insert)
 {
-  if (IDENTIFIER_POINTER (name)[0] == '<')
-    /* The alternative would be to have aliases in the module table.  */
-    name = make_legacy_name (IDENTIFIER_POINTER (name) + 1,
-			    IDENTIFIER_LENGTH (name) - 2);
-
+  hashval_t hv = module_state_hash::hash (name);
   module_state **slot
-    = hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name),
-				 insert ? INSERT : NO_INSERT);
+    = hash->find_slot_with_hash (name, hv, insert ? INSERT : NO_INSERT);
 
   if (!slot)
     return NULL;
@@ -7517,6 +7545,36 @@ module_mapper::response_token (location_t loc, bool all)
   return ptr;
 }
 
+/* Parse a module name of form [NUM:]NAME.  */
+
+tree
+module_mapper::response_name (location_t loc)
+{
+  char *name_str = response_token (loc);
+  if (!name_str)
+    return NULL_TREE;
+
+  unsigned k = 0;
+  if (ISDIGIT (name_str[0]))
+    {
+      char *end;
+      long v = strtol (name_str, &end, 10);
+      if (*end != ':' || v > 2)
+	{
+	  response_unexpected (loc);
+	  return NULL;
+	}
+      k = v;
+      name_str = end + 1;
+    }
+
+  tree mod_name = get_identifier (name_str);
+  if (k)
+    mod_name = tree_cons (mod_name, k == 2 ? integer_zero_node
+			  : NULL_TREE, NULL_TREE);
+  return mod_name;
+}
+
 int
 module_mapper::response_word (location_t loc, const char *option, ...)
 {
@@ -7604,9 +7662,11 @@ module_mapper::handshake (location_t loc, const char *cookie)
 void
 module_mapper::imex_query (const module_state *state, int importing)
 {
-  send_command (state->from_loc, "%sPORT %s",
+  const char *kind = (state->kind == mk_legacy_system ? "2:"
+		      : state->kind == mk_legacy_user ? "1:" : "");
+  send_command (state->from_loc, "%sPORT %s%s",
 		!importing ? "EX" : "BYIM" + importing + 1,
-		IDENTIFIER_POINTER (state->name));
+		kind, IDENTIFIER_POINTER (state->name));
 }
 
 /* Response to import/export query.  */
@@ -7644,27 +7704,27 @@ module_mapper::bewait_response (location_t loc)
   if (get_response (loc) <= 0)
     return NULL;
 
-  char *name_str = response_token (loc);
-  if (!name_str)
-    return NULL;
-
-  module_state *state = NULL;
-  if (strcmp (name_str, "-"))
+  if (tree mod_name = response_name (loc))
     {
-      tree mod_name = get_identifier (name_str);
-      state = module_state::get_module (mod_name);
-      char *fname = bmi_response (state);
-
-      if (!state || !state->direct || state->filename)
-	error_at (loc, "unexpected reponse from mapper %qs for module %qE",
-		  name, mod_name);
-      else if (fname)
-	state->filename = xstrdup (fname);
+      if (identifier_p (mod_name)
+	  && 0 == strcmp (IDENTIFIER_POINTER (mod_name), "-"))
+	{
+	  if (0 != response_word (loc, "ERROR", NULL))
+	    error_at (loc, "mapper bewait failure: %s", response_error ());
+	}
+      else if (module_state *state = module_state::get_module (mod_name))
+	{
+	  char *fname = bmi_response (state);
+	  
+	  if (!state || !state->direct || state->filename)
+	    error_at (loc, "unexpected bewait reponse from mapper %qs", name);
+	  else if (fname)
+	    state->filename = xstrdup (fname);
+	  return state;
+	}
     }
-  else if (!response_word (loc, "ERROR", NULL))
-    error_at (loc, "mapper bewait failure: %s", response_error ());
 
-  return state;
+  return NULL;
 }
 
 /* Import query.  */
@@ -7673,7 +7733,7 @@ char *
 module_mapper::import_export (const module_state *state, bool export_p)
 {
   module_mapper *mapper = get (state->from_loc);
-  
+
   if (mapper->is_server ())
     {
       mapper->imex_query (state, export_p ? 0 : +1);
@@ -7707,8 +7767,7 @@ module_mapper::export_done (const module_state *state)
 int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
 				   location_t loc, const char *file, bool angle)
 {
-  send_command (loc, "INCLUDE %c%s%c", angle ? '<' : '"', file,
-		angle ? '>' : '"');
+  send_command (loc, "INCLUDE %d:%s", angle + 1, file);
   if (get_response (loc) <= 0)
     return 0;
 
@@ -7742,7 +7801,7 @@ int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
   char *res = XNEWVEC (char, len);
 
   /* Indent so the filename falls at the same column as the original
-     source.  */
+     source.  Hence the need for a trailing gnu::export attribute.  */
   memset (res, ' ', col);
   size_t actual = col + snprintf (res + col, len - col,
 				  "import %c%s%c [[gnu::export]];\n\n",
@@ -7779,8 +7838,10 @@ module_state::get_option_string  ()
       if (opt->opt_index == OPT_fmodule_lazy
 	  || opt->opt_index == OPT_fmodule_preamble_
 	  || opt->opt_index == OPT_fmodule_mapper_
-	  || opt->opt_index == OPT_fmodule_header
-	  || opt->opt_index == OPT_fmodule_header_
+	  || opt->opt_index == OPT_fmodule_user_header
+	  || opt->opt_index == OPT_fmodule_user_header_
+	  || opt->opt_index == OPT_fmodule_system_header
+	  || opt->opt_index == OPT_fmodule_system_header_
 	  || opt->opt_index == OPT_fmodules_atom
 	  || opt->opt_index == OPT_fmodules_ts)
 	continue;
@@ -10638,7 +10699,10 @@ declare_module (const cp_expr &name, bool exporting_p, tree, line_maps *lmaps)
       if (module_header_name)
 	{
 	  if (!module_header_name[0])
-	    module_header_name = IDENTIFIER_POINTER (state->name);
+	    {
+	      module_header_name = IDENTIFIER_POINTER (state->name);
+	      module_header_is_system = state->kind == mk_legacy_system;
+	    }
 	  /* The user may have named the module before the main file.  */
 	  const line_map_ordinary *map
 	    = linemap_check_ordinary (linemap_lookup (lmaps, from_loc));
@@ -10886,11 +10950,13 @@ maybe_atom_legacy_module (line_maps *lmaps)
 	len = 0;
       module_header_name = main + len;
     }
-
-  cp_expr name (make_legacy_name (module_header_name,
-				  strlen (module_header_name)),
-		MAP_START_LOCATION (LINEMAPS_MAP_AT (lmaps, false,
-						     prefix_line_maps_hwm - 1)));
+   
+  location_t loc
+    =  MAP_START_LOCATION (LINEMAPS_MAP_AT (lmaps, false,
+					    prefix_line_maps_hwm - 1));
+  tree mod_name = get_identifier (module_header_name);
+  cp_expr name (tree_cons (mod_name, module_header_is_system
+			   ? integer_zero_node : NULL_TREE, NULL_TREE), loc);
 
   declare_module (name, true, NULL, lmaps);
   return true;
@@ -11055,10 +11121,20 @@ handle_module_option (unsigned code, const char *str, int num)
       flag_module_preamble = num;
       return true;
 
-    case OPT_fmodule_header:
+    case OPT_fmodule_user_header:
       str="";
       /* FALLTHROUGH.  */
-    case OPT_fmodule_header_:
+    case OPT_fmodule_user_header_:
+      module_header_is_system = false;
+      module_header_name = str;
+      flag_modules = -1;
+      return true;
+
+    case OPT_fmodule_system_header:
+      str="";
+      /* FALLTHROUGH.  */
+    case OPT_fmodule_system_header_:
+      module_header_is_system = true;
       module_header_name = str;
       flag_modules = -1;
       return true;

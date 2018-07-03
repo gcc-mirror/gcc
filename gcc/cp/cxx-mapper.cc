@@ -273,14 +273,15 @@ module2bmi (const char *module)
       static unsigned alloc = 0;
       unsigned l = strlen (module);
 
-      if (alloc < l + 5)
+      if (alloc < l + 10)
 	{
 	  alloc = l + 20;
 	  workspace = XRESIZEVEC (char, workspace, alloc);
 	}
-      bool legacy = module[0] == '"';
-      if (legacy)
-	module += 1, l -= 2;
+
+      int kind = ISDIGIT (module[0]) ? module[0] - '0' : 0;
+      if (kind)
+	module += 2, l -= 2;
       memcpy (workspace, module, l + 1);
       for (char *ptr = workspace; *ptr; ptr++)
 	{
@@ -293,8 +294,14 @@ module2bmi (const char *module)
 	    c = '=';
 	  *ptr = c;
 	}
-      /* New Module System or Replacement Module Form.  */
-      strcpy (workspace + l, legacy ? ".rmf" : ".nms");
+      const char *const sfx[] = 
+	{
+	 ".nms",   /* New Module System.  */
+	 ".u.nms",   /* User .  */
+	 ".s.nms",   /* System .  */
+	};
+
+      strcpy (workspace + l, sfx[kind]);
       res = workspace;
     }
   return res;
@@ -749,10 +756,29 @@ read_mapping_file (FILE *stream, const char *cookie, bool starting)
       if (flag_root && file && 0 == strncmp (file, flag_root, root_len)
 	  && IS_DIR_SEPARATOR (file[root_len]))
 	file += root_len + 1;
+      int mlen = strlen (mod);
+      char *dup_mod = XNEWVEC (char, mlen + 1);
+      char *key = dup_mod;
+      char c = mod[0] == '"' ? '1' : mod[0] == '<' ? '2' : 0;
+      if (c)
+	{
+	  if (mod[mlen-1] != (c == '1' ? '"' : '>'))
+	    noisy ("ill-formed legacy name '%s'", mod);
+	  mlen -= 2;
+	  mod += 1;
+	  *dup_mod++ = c;
+	  *dup_mod++ = ':';
+	}
+      memcpy (dup_mod, mod, mlen);
+      dup_mod[mlen] = 0;
 
       std::pair<module_map_t::iterator, bool> inserted
-	= module_map->insert (module_map_t::value_type (xstrdup (mod), 0));
-      if (inserted.second || (file && !inserted.first->second))
+	= module_map->insert (module_map_t::value_type (key, 0));
+
+      if (!inserted.second)
+	XDELETEVEC (key);
+
+      if (!inserted.first->second)
 	inserted.first->second = file ? xstrdup (file) : file;
     }
 }

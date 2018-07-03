@@ -2536,8 +2536,10 @@ usually not needed, as that is the default.  For now.
 @opindex fmodule-lazy
 Disable module importing.
 
-@item -fmodule-header
-@itemx -fmodule-header=@var{name}
+@item -fmodule-user-header
+@itemx -fmodule-user-header=@var{name}
+@itemx -fmodule-system-header
+@itemx -fmodule-system-header=@var{name}
 Compile as a legacy header module.
 
 @item -fmodule-mapper=@var{[hostname]:port}
@@ -29254,8 +29256,9 @@ Pathname of a BMI file.
 The source path of the file containing the import or include.
 
 @item @var{module}
-A module name.  Legacy header module names are surrounded by @samp{<>}
-or @samp{""} pairs
+A module name.  Legacy header module names are prefixed by @samp{1:}
+or @samp{2:} to indicate user or system headers respectively.  A
+@samp{0:} may be prefixed to redundantly indicate a regular module name.
 
 @item @var{msg}
 A human readable message.  This may contain whitespace.
@@ -29299,8 +29302,9 @@ Usually importing a module will load minimal information, defering the
 bulk of the loading to the point at which name-lookup inspects a
 particular namespace-scope name.
 
-The @option{-fmodule-header} option enables compilation of a header
-file as an Atom legacy header module.
+The @option{-fmodule-user-header} and @option{-fmodule-user-header}
+options enable compilation of a header file as an Atom legacy header
+module.
 
 The @option{-fmodule-preamble} option may be added when preprocessing with
 @option{-E}.  This causes preprocessing to terminate once the Atom

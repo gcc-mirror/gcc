@@ -1521,11 +1521,19 @@ fno-modules
 C++ ObjC++ Driver Undocumented RejectNegative Var(flag_modules,0) Integer
 ;; undocumented
 
-fmodule-header
+fmodule-user-header
 C++ ObjC Driver Undocumented RejectNegative
 ;; undocumented
 
-fmodule-header=
+fmodule-system-header
+C++ ObjC Driver Undocumented RejectNegative
+;; undocumented
+
+fmodule-user-header=
+C++ ObjC++ Driver Joined RejectNegative MissingArgError(missing header name)
+ATOM legacy import name
+
+fmodule-system-header=
 C++ ObjC++ Driver Joined RejectNegative MissingArgError(missing header name)
 ATOM legacy import name
 
