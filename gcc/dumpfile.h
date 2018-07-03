@@ -431,6 +431,9 @@ extern void dump_generic_expr (dump_flags_t, dump_flags_t, tree);
 extern void dump_gimple_stmt_loc (dump_flags_t, const dump_location_t &,
 				  dump_flags_t, gimple *, int);
 extern void dump_gimple_stmt (dump_flags_t, dump_flags_t, gimple *, int);
+extern void dump_gimple_expr_loc (dump_flags_t, const dump_location_t &,
+				  dump_flags_t, gimple *, int);
+extern void dump_gimple_expr (dump_flags_t, dump_flags_t, gimple *, int);
 extern void print_combine_total_stats (void);
 extern bool enable_rtl_dump_file (void);
 

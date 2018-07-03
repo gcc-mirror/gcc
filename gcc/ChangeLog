@@ -1,3 +1,12 @@
+2018-07-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vect_is_simple_use): Consolidate dumping,
+	always set *dt.  Dump vectype in vectype overload.
+	* dumpfile.h (dump_gimple_expr): New function.
+	(dump_gimple_expr_loc): Likewise.
+	* dumpfile.c (dump_gimple_expr): New function.
+	(dump_gimple_expr_loc): Likewise.
+
 2018-07-02  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (movqi_h8300, movqi_h8300hs): Consolidate

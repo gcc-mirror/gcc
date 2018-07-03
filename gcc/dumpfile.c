@@ -492,6 +492,42 @@ dump_gimple_stmt_loc (dump_flags_t dump_kind, const dump_location_t &loc,
     }
 }
 
+/* Dump gimple statement GS with SPC indentation spaces and
+   EXTRA_DUMP_FLAGS on the dump streams if DUMP_KIND is enabled.
+   Do not terminate with a newline or semicolon.  */
+
+void
+dump_gimple_expr (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
+		  gimple *gs, int spc)
+{
+  if (dump_file && (dump_kind & pflags))
+    print_gimple_expr (dump_file, gs, spc, dump_flags | extra_dump_flags);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    print_gimple_expr (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
+}
+
+/* Similar to dump_gimple_expr, except additionally print source location.  */
+
+void
+dump_gimple_expr_loc (dump_flags_t dump_kind, const dump_location_t &loc,
+		      dump_flags_t extra_dump_flags, gimple *gs, int spc)
+{
+  location_t srcloc = loc.get_location_t ();
+  if (dump_file && (dump_kind & pflags))
+    {
+      dump_loc (dump_kind, dump_file, srcloc);
+      print_gimple_expr (dump_file, gs, spc, dump_flags | extra_dump_flags);
+    }
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    {
+      dump_loc (dump_kind, alt_dump_file, srcloc);
+      print_gimple_expr (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
+    }
+}
+
+
 /* Dump expression tree T using EXTRA_DUMP_FLAGS on dump streams if
    DUMP_KIND is enabled.  */
 

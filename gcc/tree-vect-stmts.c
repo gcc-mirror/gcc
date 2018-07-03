@@ -10036,61 +10036,53 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
     {
       dump_printf_loc (MSG_NOTE, vect_location,
                        "vect_is_simple_use: operand ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, operand);
-      dump_printf (MSG_NOTE, "\n");
+      if (TREE_CODE (operand) == SSA_NAME
+	  && !SSA_NAME_IS_DEFAULT_DEF (operand))
+	dump_gimple_expr (MSG_NOTE, TDF_SLIM, SSA_NAME_DEF_STMT (operand), 0);
+      else
+	dump_generic_expr (MSG_NOTE, TDF_SLIM, operand);
     }
 
   if (CONSTANT_CLASS_P (operand))
-    {
-      *dt = vect_constant_def;
-      return true;
-    }
-
-  if (is_gimple_min_invariant (operand))
-    {
-      *dt = vect_external_def;
-      return true;
-    }
-
-  if (TREE_CODE (operand) != SSA_NAME)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not ssa-name.\n");
-      return false;
-    }
-
-  if (SSA_NAME_IS_DEFAULT_DEF (operand))
-    {
-      *dt = vect_external_def;
-      return true;
-    }
-
-  gimple *def_stmt = SSA_NAME_DEF_STMT (operand);
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "def_stmt: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, def_stmt, 0);
-    }
-
-  if (! vect_stmt_in_region_p (vinfo, def_stmt))
+    *dt = vect_constant_def;
+  else if (is_gimple_min_invariant (operand))
+    *dt = vect_external_def;
+  else if (TREE_CODE (operand) != SSA_NAME)
+    *dt = vect_unknown_def_type;
+  else if (SSA_NAME_IS_DEFAULT_DEF (operand))
     *dt = vect_external_def;
   else
     {
-      stmt_vec_info stmt_vinfo = vinfo_for_stmt (def_stmt);
-      if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
+      gimple *def_stmt = SSA_NAME_DEF_STMT (operand);
+      if (! vect_stmt_in_region_p (vinfo, def_stmt))
+	*dt = vect_external_def;
+      else
 	{
-	  def_stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-	  stmt_vinfo = vinfo_for_stmt (def_stmt);
+	  stmt_vec_info stmt_vinfo = vinfo_for_stmt (def_stmt);
+	  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
+	    {
+	      def_stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
+	      stmt_vinfo = vinfo_for_stmt (def_stmt);
+	    }
+	  switch (gimple_code (def_stmt))
+	    {
+	    case GIMPLE_PHI:
+	    case GIMPLE_ASSIGN:
+	    case GIMPLE_CALL:
+	      *dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
+	      break;
+	    default:
+	      *dt = vect_unknown_def_type;
+	      break;
+	    }
 	}
-      *dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
+      if (def_stmt_out)
+	*def_stmt_out = def_stmt;
     }
-  if (def_stmt_out)
-    *def_stmt_out = def_stmt;
 
   if (dump_enabled_p ())
     {
-      dump_printf_loc (MSG_NOTE, vect_location, "type of def: ");
+      dump_printf (MSG_NOTE, ", type of def: ");
       switch (*dt)
 	{
 	case vect_uninitialized_def:
@@ -10131,19 +10123,6 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
       return false;
     }
 
-  switch (gimple_code (def_stmt))
-    {
-    case GIMPLE_PHI:
-    case GIMPLE_ASSIGN:
-    case GIMPLE_CALL:
-      break;
-    default:
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "unsupported defining stmt:\n");
-      return false;
-    }
-
   return true;
 }
 
@@ -10179,6 +10158,13 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
       stmt_vec_info stmt_info = vinfo_for_stmt (def_stmt);
       *vectype = STMT_VINFO_VECTYPE (stmt_info);
       gcc_assert (*vectype != NULL_TREE);
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "vect_is_simple_use: vectype ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, *vectype);
+	  dump_printf (MSG_NOTE, "\n");
+	}
     }
   else if (*dt == vect_uninitialized_def
 	   || *dt == vect_constant_def
