@@ -3116,7 +3116,7 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   gcall *stmt;
   tree vec_dest;
   tree scalar_dest;
-  tree op, type;
+  tree op;
   tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE;
   stmt_vec_info stmt_info = vinfo_for_stmt (gs), prev_stmt_info;
   tree vectype_out, vectype_in;
@@ -3592,12 +3592,11 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (slp_node)
     return true;
 
-  type = TREE_TYPE (scalar_dest);
   if (is_pattern_stmt_p (stmt_info))
     stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
   lhs = gimple_get_lhs (stmt_info->stmt);
 
-  new_stmt = gimple_build_assign (lhs, build_zero_cst (type));
+  new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
   set_vinfo_for_stmt (new_stmt, stmt_info);
   set_vinfo_for_stmt (stmt_info->stmt, NULL);
   STMT_VINFO_STMT (stmt_info) = new_stmt;

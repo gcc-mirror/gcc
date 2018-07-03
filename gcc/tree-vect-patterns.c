@@ -1721,6 +1721,153 @@ vect_recog_over_widening_pattern (vec<gimple *> *stmts, tree *type_out)
   return pattern_stmt;
 }
 
+/* Recognize the patterns:
+
+	    ATYPE a;  // narrower than TYPE
+	    BTYPE b;  // narrower than TYPE
+	(1) TYPE avg = ((TYPE) a + (TYPE) b) >> 1;
+     or (2) TYPE avg = ((TYPE) a + (TYPE) b + 1) >> 1;
+
+   where only the bottom half of avg is used.  Try to transform them into:
+
+	(1) NTYPE avg' = .AVG_FLOOR ((NTYPE) a, (NTYPE) b);
+     or (2) NTYPE avg' = .AVG_CEIL ((NTYPE) a, (NTYPE) b);
+
+  followed by:
+
+	    TYPE avg = (TYPE) avg';
+
+  where NTYPE is no wider than half of TYPE.  Since only the bottom half
+  of avg is used, all or part of the cast of avg' should become redundant.  */
+
+static gimple *
+vect_recog_average_pattern (vec<gimple *> *stmts, tree *type_out)
+{
+  /* Check for a shift right by one bit.  */
+  gassign *last_stmt = dyn_cast <gassign *> (stmts->pop ());
+  if (!last_stmt
+      || gimple_assign_rhs_code (last_stmt) != RSHIFT_EXPR
+      || !integer_onep (gimple_assign_rhs2 (last_stmt)))
+    return NULL;
+
+  stmt_vec_info last_stmt_info = vinfo_for_stmt (last_stmt);
+  vec_info *vinfo = last_stmt_info->vinfo;
+
+  /* Check that the shift result is wider than the users of the
+     result need (i.e. that narrowing would be a natural choice).  */
+  tree lhs = gimple_assign_lhs (last_stmt);
+  tree type = TREE_TYPE (lhs);
+  unsigned int target_precision
+    = vect_element_precision (last_stmt_info->min_output_precision);
+  if (!INTEGRAL_TYPE_P (type) || target_precision >= TYPE_PRECISION (type))
+    return NULL;
+
+  /* Get the definition of the shift input.  */
+  tree rshift_rhs = gimple_assign_rhs1 (last_stmt);
+  stmt_vec_info plus_stmt_info = vect_get_internal_def (vinfo, rshift_rhs);
+  if (!plus_stmt_info)
+    return NULL;
+
+  /* Check whether the shift input can be seen as a tree of additions on
+     2 or 3 widened inputs.
+
+     Note that the pattern should be a win even if the result of one or
+     more additions is reused elsewhere: if the pattern matches, we'd be
+     replacing 2N RSHIFT_EXPRs and N VEC_PACK_*s with N IFN_AVG_*s.  */
+  internal_fn ifn = IFN_AVG_FLOOR;
+  vect_unpromoted_value unprom[3];
+  tree new_type;
+  unsigned int nops = vect_widened_op_tree (plus_stmt_info, PLUS_EXPR,
+					    PLUS_EXPR, false, 3,
+					    unprom, &new_type);
+  if (nops == 0)
+    return NULL;
+  if (nops == 3)
+    {
+      /* Check that one operand is 1.  */
+      unsigned int i;
+      for (i = 0; i < 3; ++i)
+	if (integer_onep (unprom[i].op))
+	  break;
+      if (i == 3)
+	return NULL;
+      /* Throw away the 1 operand and keep the other two.  */
+      if (i < 2)
+	unprom[i] = unprom[2];
+      ifn = IFN_AVG_CEIL;
+    }
+
+  vect_pattern_detected ("vect_recog_average_pattern", last_stmt);
+
+  /* We know that:
+
+     (a) the operation can be viewed as:
+
+	   TYPE widened0 = (TYPE) UNPROM[0];
+	   TYPE widened1 = (TYPE) UNPROM[1];
+	   TYPE tmp1 = widened0 + widened1 {+ 1};
+	   TYPE tmp2 = tmp1 >> 1;   // LAST_STMT_INFO
+
+     (b) the first two statements are equivalent to:
+
+	   TYPE widened0 = (TYPE) (NEW_TYPE) UNPROM[0];
+	   TYPE widened1 = (TYPE) (NEW_TYPE) UNPROM[1];
+
+     (c) vect_recog_over_widening_pattern has already tried to narrow TYPE
+	 where sensible;
+
+     (d) all the operations can be performed correctly at twice the width of
+	 NEW_TYPE, due to the nature of the average operation; and
+
+     (e) users of the result of the right shift need only TARGET_PRECISION
+	 bits, where TARGET_PRECISION is no more than half of TYPE's
+	 precision.
+
+     Under these circumstances, the only situation in which NEW_TYPE
+     could be narrower than TARGET_PRECISION is if widened0, widened1
+     and an addition result are all used more than once.  Thus we can
+     treat any widening of UNPROM[0] and UNPROM[1] to TARGET_PRECISION
+     as "free", whereas widening the result of the average instruction
+     from NEW_TYPE to TARGET_PRECISION would be a new operation.  It's
+     therefore better not to go narrower than TARGET_PRECISION.  */
+  if (TYPE_PRECISION (new_type) < target_precision)
+    new_type = build_nonstandard_integer_type (target_precision,
+					       TYPE_UNSIGNED (new_type));
+
+  /* Check for target support.  */
+  tree new_vectype = get_vectype_for_scalar_type (new_type);
+  if (!new_vectype
+      || !direct_internal_fn_supported_p (ifn, new_vectype,
+					  OPTIMIZE_FOR_SPEED))
+    return NULL;
+
+  /* The IR requires a valid vector type for the cast result, even though
+     it's likely to be discarded.  */
+  *type_out = get_vectype_for_scalar_type (type);
+  if (!*type_out)
+    return NULL;
+
+  /* Generate the IFN_AVG* call.  */
+  tree new_var = vect_recog_temp_ssa_var (new_type, NULL);
+  tree new_ops[2];
+  vect_convert_inputs (last_stmt_info, 2, new_ops, new_type,
+		       unprom, new_vectype);
+  gcall *average_stmt = gimple_build_call_internal (ifn, 2, new_ops[0],
+						    new_ops[1]);
+  gimple_call_set_lhs (average_stmt, new_var);
+  gimple_set_location (average_stmt, gimple_location (last_stmt));
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "created pattern stmt: ");
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, average_stmt, 0);
+    }
+
+  stmts->safe_push (last_stmt);
+  return vect_convert_output (last_stmt_info, type, average_stmt, new_vectype);
+}
+
 /* Recognize cases in which the input to a cast is wider than its
    output, and the input is fed by a widening operation.  Fold this
    by removing the unnecessary intermediate widening.  E.g.:
@@ -4670,6 +4817,9 @@ struct vect_recog_func
    less comples onex (widen_sum only after dot_prod or sad for example).  */
 static vect_recog_func vect_vect_recog_func_ptrs[] = {
   { vect_recog_over_widening_pattern, "over_widening" },
+  /* Must come after over_widening, which narrows the shift as much as
+     possible beforehand.  */
+  { vect_recog_average_pattern, "average" },
   { vect_recog_cast_forwprop_pattern, "cast_forwprop" },
   { vect_recog_widen_mult_pattern, "widen_mult" },
   { vect_recog_dot_prod_pattern, "dot_prod" },

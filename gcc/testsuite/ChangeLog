@@ -1,5 +1,25 @@
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/85694
+	* lib/target-supports.exp (check_effective_target_vect_avg_qi): New
+	proc.
+	* gcc.dg/vect/vect-avg-1.c: New test.
+	* gcc.dg/vect/vect-avg-2.c: Likewise.
+	* gcc.dg/vect/vect-avg-3.c: Likewise.
+	* gcc.dg/vect/vect-avg-4.c: Likewise.
+	* gcc.dg/vect/vect-avg-5.c: Likewise.
+	* gcc.dg/vect/vect-avg-6.c: Likewise.
+	* gcc.dg/vect/vect-avg-7.c: Likewise.
+	* gcc.dg/vect/vect-avg-8.c: Likewise.
+	* gcc.dg/vect/vect-avg-9.c: Likewise.
+	* gcc.dg/vect/vect-avg-10.c: Likewise.
+	* gcc.dg/vect/vect-avg-11.c: Likewise.
+	* gcc.dg/vect/vect-avg-12.c: Likewise.
+	* gcc.dg/vect/vect-avg-13.c: Likewise.
+	* gcc.dg/vect/vect-avg-14.c: Likewise.
+
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.dg/vect/vect-over-widen-5.c: Test that the extensions
 	get split into two for use by the over-widening pattern.
 	* gcc.dg/vect/vect-over-widen-6.c: Likewise.

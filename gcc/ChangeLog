@@ -1,5 +1,20 @@
 2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/85694
+	* doc/md.texi (avgM3_floor, uavgM3_floor, avgM3_ceil)
+	(uavgM3_ceil): Document new optabs.
+	* doc/sourcebuild.texi (vect_avg_qi): Document new target selector.
+	* internal-fn.def (IFN_AVG_FLOOR, IFN_AVG_CEIL): New internal
+	functions.
+	* optabs.def (savg_floor_optab, uavg_floor_optab, savg_ceil_optab)
+	(savg_ceil_optab): New optabs.
+	* tree-vect-patterns.c (vect_recog_average_pattern): New function.
+	(vect_vect_recog_func_ptrs): Add it.
+	* tree-vect-stmts.c (vectorizable_call): Get the type of the zero
+	constant directly from the associated lhs.
+
+2018-07-03  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* tree-vect-patterns.c (vect_split_statement): New function.
 	(vect_convert_input): Use it to try to split an existing cast.
 
