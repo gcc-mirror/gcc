@@ -1,3 +1,8 @@
+2018-07-03  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/86202
+	* gcc.dg/Wint-conversion-2.c: New test.
+
 2018-07-03  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/86389
