@@ -3,6 +3,9 @@
 	PR middle-end/86202
 	* gcc.dg/Wint-conversion-2.c: New test.
 
+	PR c++/84306
+	* g++.dg/overload/conv-op3.C: New test.
+
 2018-07-03  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/86389
