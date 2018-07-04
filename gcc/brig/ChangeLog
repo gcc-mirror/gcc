@@ -1,3 +1,8 @@
+2018-07-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR hsa/86371
+	* Make-lang.in (BRIGINCLUDES): Remove erroneous include path in $HOME.
+
 2018-06-28  Martin Liska  <mliska@suse.cz>
 
 	* brigspec.c: Add missing header file inclusion.
