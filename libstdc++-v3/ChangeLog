@@ -1,5 +1,39 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	P0646R1 Improving the Return Value of Erase-Like Algorithms I
+	* include/bits/forward_list.h (__cpp_lib_list_remove_return_type):
+	Define.
+	(forward_list::__remove_return_type): Define typedef as size_type or
+	void, according to __cplusplus value.
+	(_GLIBCXX_FWDLIST_REMOVE_RETURN_TYPE_TAG): Define macro as abi-tag or
+	empty, according to __cplusplus value.
+	(forward_list::remove, forward_list::unique): Use typedef and macro
+	to change return type and add abi-tag for C++2a.
+	(forward_list::remove_if<Pred>, forward_list::unique<BinPred>): Use
+	typedef to change return type for C++2a.
+	* include/bits/forward_list.tcc (_GLIBCXX20_ONLY): Define macro.
+	(forward_list::remove, forward_list::remove_if<Pred>)
+	(forward_list::unique<BinPred>): Return number of removed elements
+	for C++2a.
+	* include/bits/list.tcc (_GLIBCXX20_ONLY): Define macro.
+	(list::remove, list::unique, list::remove_if<Predicate>)
+	(list::unique<BinaryPredicate>): Return number of removed elements
+	for C++2a.
+	* include/bits/stl_list.h (__cpp_lib_list_remove_return_type): Define.
+	(list::__remove_return_type): Define typedef as size_type or
+	void, according to __cplusplus value.
+	(_GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG): Define macro as abi-tag or
+	empty, according to __cplusplus value.
+	(list::remove, list::unique): Use typedef and macro to change return
+	type and add abi-tag for C++2a.
+	(list::remove_if<Predicate>, list::unique<BinaryPredicate>): Use
+	typedef to change return type for C++2a.
+	* include/std/version (__cpp_lib_list_remove_return_type): Define.
+	* testsuite/23_containers/forward_list/operations/
+	remove_cxx20_return.cc: New.
+	* testsuite/23_containers/forward_list/operations/
+	unique_cxx20_return.cc: New.
+
 	P0458R2 Checking for Existence of an Element in Associative Containers
 	* include/bits/stl_map.h (map::contains): Add for C++2a.
 	* include/bits/stl_multimap.h (multimap::contains): Likewise.
