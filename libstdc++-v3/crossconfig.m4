@@ -217,6 +217,7 @@ case "${host}" in
       AC_DEFINE(HAVE_ISINFL)
       AC_DEFINE(HAVE_ISNANL)
     fi
+    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     ;;
   *-qnx6.1* | *-qnx6.2*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
