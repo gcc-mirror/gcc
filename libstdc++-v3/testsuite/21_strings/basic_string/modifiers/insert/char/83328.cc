@@ -20,18 +20,25 @@
 
 // PR libstdc++/83328
 
-#include <string>
 #include <testsuite_hooks.h>
+
+#ifdef _GLIBCXX_DEBUG
+#include <debug/string>
+using namespace __gnu_debug;
+#else
+#include <string>
+using namespace std;
+#endif
 
 void
 test01()
 {
-  std::string s = "insert";
+  string s = "insert";
   auto iter = s.insert(s.cbegin() + 2, std::initializer_list<char>{});
   VERIFY( iter == s.begin() + 2 );
 
   iter = s.insert(s.cend(), { 'e', 'd' });
-  std::string::iterator* check_type = &iter;
+  string::iterator* check_type = &iter;
   VERIFY( iter == s.cend() - 2 );
   VERIFY( s == "inserted" );
 

@@ -124,7 +124,7 @@ template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
     : _Base(__str, __pos, __n, __a) { }
 
     basic_string(const _CharT* __s, size_type __n,
-		   const _Allocator& __a = _Allocator())
+		 const _Allocator& __a = _Allocator())
     : _Base(__gnu_debug::__check_string(__s, __n), __n, __a) { }
 
     basic_string(const _CharT* __s, const _Allocator& __a = _Allocator())
@@ -566,7 +566,7 @@ template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
       insert(const_iterator __p, _InputIterator __first, _InputIterator __last)
       {
 	typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
-	__glibcxx_check_insert_range2(__p, __first, __last, __dist);
+	__glibcxx_check_insert_range(__p, __first, __last, __dist);
 
 	typename _Base::iterator __res;
 	if (__dist.second >= __dp_sign)

@@ -20,25 +20,32 @@
 // 21.3.1 basic_string constructors.
 
 #include <new>
-#include <string>
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
+#ifdef _GLIBCXX_DEBUG
+# include <debug/string>
+using namespace __gnu_debug;
+#else
+# include <string>
+using namespace std;
+#endif
+
 void test01(void)
 {
-  typedef std::string::size_type csize_type;
-  typedef std::string::iterator citerator;
-  csize_type npos = std::string::npos;
+  typedef string::size_type csize_type;
+  typedef string::iterator citerator;
+  csize_type npos = string::npos;
   csize_type csz01;
 
   const char str_lit01[] = "rodeo beach, marin";
-  const std::string str01(str_lit01);
-  const std::string str02("baker beach, san francisco");
+  const string str01(str_lit01);
+  const string str02("baker beach, san francisco");
 
   // basic_string(const string&, size_type pos = 0, siz_type n = npos, alloc)
   csz01 = str01.size();
   try {
-    std::string str03(str01, csz01 + 1);
+    string str03(str01, csz01 + 1);
     VERIFY( false );
   }		 
   catch(std::out_of_range& fail) {
@@ -49,7 +56,7 @@ void test01(void)
   }
 
   try {
-    std::string str03(str01, csz01);
+    string str03(str01, csz01);
     VERIFY( str03.size() == 0 );
     VERIFY( str03.size() <= str03.capacity() );
   }		 
@@ -62,7 +69,7 @@ void test01(void)
   // NB: As strlen(str_lit01) != csz01, this test is undefined. It
   // should not crash, but what gets constructed is a bit arbitrary.
   try {
-    std::string str03(str_lit01, csz01 + 1);
+    string str03(str_lit01, csz01 + 1);
     VERIFY( true );
   }		 
   catch(std::length_error& fail) {
@@ -76,7 +83,7 @@ void test01(void)
   // should not crash, but what gets constructed is a bit arbitrary.
   // The "maverick's" of all string objects.
   try {
-    std::string str04(str_lit01, npos); 
+    string str04(str_lit01, npos);
     VERIFY( true );
   }		 
   catch(std::length_error& fail) {
@@ -88,7 +95,7 @@ void test01(void)
 
   // Build a maxsize - 1 lengthed string consisting of all A's
   try {
-    std::string str03(csz01 - 1, 'A');
+    string str03(csz01 - 1, 'A');
     VERIFY( str03.size() == csz01 - 1 );
     VERIFY( str03.size() <= str03.capacity() );
   }		 
@@ -102,14 +109,14 @@ void test01(void)
   }
 
   // basic_string(const char* s, const allocator& a = allocator())
-  std::string str04(str_lit01);
+  string str04(str_lit01);
   VERIFY( str01 == str04 );
 
 
   // basic_string(size_type n, char c, const allocator& a = allocator())
   csz01 = str01.max_size();
   try {
-    std::string str03(csz01 + 1, 'z');
+    string str03(csz01 + 1, 'z');
     VERIFY( false );
   }		 
   catch(std::length_error& fail) {
@@ -120,7 +127,7 @@ void test01(void)
   }
 
   try {
-    std::string str04(npos, 'b'); // the "maverick's" of all string objects.
+    string str04(npos, 'b'); // the "maverick's" of all string objects.
     VERIFY( false );
   }		 
   catch(std::length_error& fail) {
@@ -131,7 +138,7 @@ void test01(void)
   }
 
   try {
-    std::string str03(csz01 - 1, 'z');
+    string str03(csz01 - 1, 'z');
     VERIFY( str03.size() != 0 );
     VERIFY( str03.size() <= str03.capacity() );
   }		 
@@ -144,10 +151,9 @@ void test01(void)
     VERIFY( false );
   }
 
-
   // template<typename _InputIter>
   //   basic_string(_InputIter begin, _InputIter end, const allocator& a)
-  std::string str06(str01.begin(), str01.end());
+  string str06(str01.begin(), str01.end());
   VERIFY( str06 == str01 );
 }
 
