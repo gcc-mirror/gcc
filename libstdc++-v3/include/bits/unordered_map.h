@@ -941,6 +941,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       count(const key_type& __x) const
       { return _M_h.count(__x); }
 
+#if __cplusplus > 201703L
+      /**
+       *  @brief  Finds whether an element with the given key exists.
+       *  @param  __x  Key of elements to be located.
+       *  @return  True if there is any element with the specified key.
+       */
+      bool
+      contains(const key_type& __x) const
+      { return _M_h.find(__x) != _M_h.end(); }
+#endif
+
       //@{
       /**
        *  @brief Finds a subsequence matching given key.
@@ -1818,6 +1829,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       size_type
       count(const key_type& __x) const
       { return _M_h.count(__x); }
+
+#if __cplusplus > 201703L
+      /**
+       *  @brief  Finds whether an element with the given key exists.
+       *  @param  __x  Key of elements to be located.
+       *  @return  True if there is any element with the specified key.
+       */
+      bool
+      contains(const key_type& __x) const
+      { return _M_h.find(__x) != _M_h.end(); }
+#endif
 
       //@{
       /**
