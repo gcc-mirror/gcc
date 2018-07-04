@@ -1,3 +1,9 @@
+2018-07-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/82009
+	* trans-decl.c (gfc_process_block_locals): Delete assert and set
+	saved_local_decls = NULL_TREE.
+
 2018-07-02  Richard Biener  <rguenther@suse.de>
 
 	PR lto/86321
