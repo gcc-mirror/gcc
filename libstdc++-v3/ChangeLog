@@ -1,6 +1,13 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-05-24  Maya Rashish  <coypu@sdf.org>
+
+	PR target/85904
+	* crossconfig.m4: Test for aligned_alloc on netbsd.
+	* configure: Regenerate.
+
+	Backport from mainline
 	2018-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85098
