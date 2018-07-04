@@ -1,3 +1,29 @@
+2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	P0458R2 Checking for Existence of an Element in Associative Containers
+	* include/bits/stl_map.h (map::contains): Add for C++2a.
+	* include/bits/stl_multimap.h (multimap::contains): Likewise.
+	* include/bits/stl_multiset.h (multiset::contains): Likewise.
+	* include/bits/stl_set.h (set::contains): Likewise.
+	* include/bits/stl_tree.h (__has_is_transparent_t): Define alias.
+	(_Rb_tree::_M_find_tr, _Rb_tree::_M_count_tr)
+	(_Rb_tree::_M_lower_bound_tr, _Rb_tree::_M_upper_bound_tr)
+	(_Rb_tree::_M_equal_range_tr): Use __has_is_transparent_t.
+	* include/bits/unordered_map.h (unordered_map::contains)
+	(unordered_multimap::contains): Add for C++2a.
+	* include/bits/unordered_set.h (unordered_set::contains)
+	(unordered_multiset::contains): Likewise.
+	* testsuite/23_containers/map/operations/contains.cc: New.
+	* testsuite/23_containers/multimap/operations/contains.cc: New.
+	* testsuite/23_containers/multiset/operations/contains.cc: New.
+	* testsuite/23_containers/set/operations/contains.cc: New.
+	* testsuite/23_containers/unordered_map/operations/contains.cc: New.
+	* testsuite/23_containers/unordered_multimap/operations/contains.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/operations/contains.cc:
+	New.
+	* testsuite/23_containers/unordered_set/operations/contains.cc: New.
+
 2018-07-03  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/string

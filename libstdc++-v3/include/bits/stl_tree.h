@@ -423,7 +423,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Rb_tree_rebalance_for_erase(_Rb_tree_node_base* const __z,
 			       _Rb_tree_node_base& __header) throw ();
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
   template<typename _Cmp, typename _SfinaeType, typename = __void_t<>>
     struct __has_is_transparent
     { };
@@ -432,6 +432,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __has_is_transparent<_Cmp, _SfinaeType,
 				__void_t<typename _Cmp::is_transparent>>
     { typedef void type; };
+
+  template<typename _Cmp, typename _SfinaeType>
+    using __has_is_transparent_t
+      = typename __has_is_transparent<_Cmp, _SfinaeType>::type;
 #endif
 
 #if __cplusplus > 201402L
@@ -1251,10 +1255,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       pair<const_iterator, const_iterator>
       equal_range(const key_type& __k) const;
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
       template<typename _Kt,
-	       typename _Req =
-		 typename __has_is_transparent<_Compare, _Kt>::type>
+	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
 	iterator
 	_M_find_tr(const _Kt& __k)
 	{
@@ -1263,8 +1266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Kt,
-	       typename _Req =
-		 typename __has_is_transparent<_Compare, _Kt>::type>
+	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
 	const_iterator
 	_M_find_tr(const _Kt& __k) const
 	{
@@ -1275,8 +1277,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Kt,
-	       typename _Req =
-		 typename __has_is_transparent<_Compare, _Kt>::type>
+	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
 	size_type
 	_M_count_tr(const _Kt& __k) const
 	{
@@ -1285,8 +1286,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Kt,
-	       typename _Req =
-		 typename __has_is_transparent<_Compare, _Kt>::type>
+	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
 	iterator
 	_M_lower_bound_tr(const _Kt& __k)
 	{
@@ -1295,8 +1295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Kt,
-	       typename _Req =
-		 typename __has_is_transparent<_Compare, _Kt>::type>
+	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
 	const_iterator
 	_M_lower_bound_tr(const _Kt& __k) const
 	{
@@ -1314,8 +1313,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Kt,
-	       typename _Req =
-		 typename __has_is_transparent<_Compare, _Kt>::type>
+	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
 	iterator
 	_M_upper_bound_tr(const _Kt& __k)
 	{
@@ -1324,8 +1322,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Kt,
-	       typename _Req =
-		 typename __has_is_transparent<_Compare, _Kt>::type>
+	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
 	const_iterator
 	_M_upper_bound_tr(const _Kt& __k) const
 	{
@@ -1343,8 +1340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Kt,
-	       typename _Req =
-		 typename __has_is_transparent<_Compare, _Kt>::type>
+	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
 	pair<iterator, iterator>
 	_M_equal_range_tr(const _Kt& __k)
 	{
@@ -1354,8 +1350,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Kt,
-	       typename _Req =
-		 typename __has_is_transparent<_Compare, _Kt>::type>
+	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
 	pair<const_iterator, const_iterator>
 	_M_equal_range_tr(const _Kt& __k) const
 	{
