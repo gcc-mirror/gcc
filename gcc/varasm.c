@@ -1805,17 +1805,21 @@ assemble_start_function (tree decl, const char *fnname)
       && optimize_function_for_speed_p (cfun))
     {
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
-      int align_log = align_functions_log;
+      int align_log = state_align_functions.levels[0].log;
 #endif
-      int max_skip = align_functions - 1;
+      int max_skip = state_align_functions.levels[0].maxskip;
       if (flag_limit_function_alignment && crtl->max_insn_address > 0
 	  && max_skip >= crtl->max_insn_address)
 	max_skip = crtl->max_insn_address - 1;
 
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
       ASM_OUTPUT_MAX_SKIP_ALIGN (asm_out_file, align_log, max_skip);
+      if (max_skip == state_align_functions.levels[0].maxskip)
+	ASM_OUTPUT_MAX_SKIP_ALIGN (asm_out_file,
+				   state_align_functions.levels[1].log,
+				   state_align_functions.levels[1].maxskip);
 #else
-      ASM_OUTPUT_ALIGN (asm_out_file, align_functions_log);
+      ASM_OUTPUT_ALIGN (asm_out_file, state_align_functions.levels[0].log);
 #endif
     }
 

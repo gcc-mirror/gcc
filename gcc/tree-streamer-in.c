@@ -530,7 +530,7 @@ streamer_read_tree_bitfields (struct lto_input_block *ib,
     unpack_ts_translation_unit_decl_value_fields (data_in, &bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    cl_optimization_stream_in (&bp, TREE_OPTIMIZATION (expr));
+    cl_optimization_stream_in (data_in, &bp, TREE_OPTIMIZATION (expr));
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     {

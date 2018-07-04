@@ -2843,12 +2843,18 @@ rx_option_override (void)
   rx_override_options_after_change ();
 
   /* These values are bytes, not log.  */
-  if (align_jumps == 0 && ! optimize_size)
-    align_jumps = ((rx_cpu_type == RX100 || rx_cpu_type == RX200) ? 4 : 8);
-  if (align_loops == 0 && ! optimize_size)
-    align_loops = ((rx_cpu_type == RX100 || rx_cpu_type == RX200) ? 4 : 8);
-  if (align_labels == 0 && ! optimize_size)
-    align_labels = ((rx_cpu_type == RX100 || rx_cpu_type == RX200) ? 4 : 8);
+  if (! optimize_size)
+    {
+      if (flag_align_jumps && !str_align_jumps)
+	str_align_jumps = ((rx_cpu_type == RX100
+			    || rx_cpu_type == RX200) ? "4" : "8");
+      if (flag_align_loops && !str_align_loops)
+	str_align_loops = ((rx_cpu_type == RX100
+			    || rx_cpu_type == RX200) ? "4" : "8");
+      if (flag_align_labels && !str_align_labels)
+	str_align_labels = ((rx_cpu_type == RX100
+			     || rx_cpu_type == RX200) ? "4" : "8");
+    }
 }
 
 

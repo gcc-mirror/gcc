@@ -365,9 +365,11 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
-@gccoptlist{-faggressive-loop-optimizations  -falign-functions[=@var{n}] @gol
--falign-jumps[=@var{n}] @gol
--falign-labels[=@var{n}]  -falign-loops[=@var{n}] @gol
+@gccoptlist{-faggressive-loop-optimizations @gol
+-falign-functions[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
+-falign-jumps[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
+-falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
+-falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]] @gol
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}] @gol
 -fauto-inc-dec  -fbranch-probabilities @gol
 -fbranch-target-load-optimize  -fbranch-target-load-optimize2 @gol
@@ -9240,18 +9242,35 @@ The @option{-fstrict-aliasing} option is enabled at levels
 
 @item -falign-functions
 @itemx -falign-functions=@var{n}
+@itemx -falign-functions=@var{n}:@var{m}
+@itemx -falign-functions=@var{n}:@var{m}:@var{n2}
+@itemx -falign-functions=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-functions
 Align the start of functions to the next power-of-two greater than
-@var{n}, skipping up to @var{n} bytes.  For instance,
-@option{-falign-functions=32} aligns functions to the next 32-byte
-boundary, but @option{-falign-functions=24} aligns to the next
-32-byte boundary only if this can be done by skipping 23 bytes or less.
+@var{n}, skipping up to @var{m}-1 bytes.  This ensures that at least
+the first @var{m} bytes of the function can be fetched by the CPU
+without crossing an @var{n}-byte alignment boundary.
 
-@option{-fno-align-functions} and @option{-falign-functions=1} are
-equivalent and mean that functions are not aligned.
+If @var{m} is not specified, it defaults to @var{n}.
+
+Examples: @option{-falign-functions=32} aligns functions to the next
+32-byte boundary, @option{-falign-functions=24} aligns to the next
+32-byte boundary only if this can be done by skipping 23 bytes or less,
+@option{-falign-functions=32:7} aligns to the next
+32-byte boundary only if this can be done by skipping 6 bytes or less.
+
+The second pair of @var{n2}:@var{m2} values allows you to specify
+a secondary alignment: @option{-falign-functions=64:7:32:3} aligns to
+the next 64-byte boundary if this can be done by skipping 6 bytes or less,
+otherwise aligns to the next 32-byte boundary if this can be done
+by skipping 2 bytes or less.
+If @var{m2} is not specified, it defaults to @var{n2}.
 
 Some assemblers only support this flag when @var{n} is a power of two;
 in that case, it is rounded up.
+
+@option{-fno-align-functions} and @option{-falign-functions=1} are
+equivalent and mean that functions are not aligned.
 
 If @var{n} is not specified or is zero, use a machine-dependent default.
 The maximum allowed @var{n} option value is 65536.
@@ -9266,12 +9285,13 @@ skip more bytes than the size of the function.
 
 @item -falign-labels
 @itemx -falign-labels=@var{n}
+@itemx -falign-labels=@var{n}:@var{m}
+@itemx -falign-labels=@var{n}:@var{m}:@var{n2}
+@itemx -falign-labels=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-labels
-Align all branch targets to a power-of-two boundary, skipping up to
-@var{n} bytes like @option{-falign-functions}.  This option can easily
-make code slower, because it must insert dummy operations for when the
-branch target is reached in the usual flow of the code.
+Align all branch targets to a power-of-two boundary.
 
+Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-labels} and @option{-falign-labels=1} are
 equivalent and mean that labels are not aligned.
 
@@ -9286,12 +9306,15 @@ Enabled at levels @option{-O2}, @option{-O3}.
 
 @item -falign-loops
 @itemx -falign-loops=@var{n}
+@itemx -falign-loops=@var{n}:@var{m}
+@itemx -falign-loops=@var{n}:@var{m}:@var{n2}
+@itemx -falign-loops=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-loops
-Align loops to a power-of-two boundary, skipping up to @var{n} bytes
-like @option{-falign-functions}.  If the loops are
-executed many times, this makes up for any execution of the dummy
-operations.
+Align loops to a power-of-two boundary.  If the loops are executed
+many times, this makes up for any execution of the dummy padding
+instructions.
 
+Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-loops} and @option{-falign-loops=1} are
 equivalent and mean that loops are not aligned.
 The maximum allowed @var{n} option value is 65536.
@@ -9302,12 +9325,15 @@ Enabled at levels @option{-O2}, @option{-O3}.
 
 @item -falign-jumps
 @itemx -falign-jumps=@var{n}
+@itemx -falign-jumps=@var{n}:@var{m}
+@itemx -falign-jumps=@var{n}:@var{m}:@var{n2}
+@itemx -falign-jumps=@var{n}:@var{m}:@var{n2}:@var{m2}
 @opindex falign-jumps
 Align branch targets to a power-of-two boundary, for branch targets
-where the targets can only be reached by jumping, skipping up to @var{n}
-bytes like @option{-falign-functions}.  In this case, no dummy operations
-need be executed.
+where the targets can only be reached by jumping.  In this case,
+no dummy operations need be executed.
 
+Parameters of this option are analogous to the @option{-falign-functions} option.
 @option{-fno-align-jumps} and @option{-falign-jumps=1} are
 equivalent and mean that loops are not aligned.
 

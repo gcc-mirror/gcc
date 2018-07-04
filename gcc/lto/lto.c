@@ -1222,8 +1222,8 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    if (memcmp (TREE_OPTIMIZATION (t1), TREE_OPTIMIZATION (t2),
-		sizeof (struct cl_optimization)) != 0)
+    if (!cl_optimization_option_eq (TREE_OPTIMIZATION (t1),
+				    TREE_OPTIMIZATION (t2)))
       return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_BINFO))

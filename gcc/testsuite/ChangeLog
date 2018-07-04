@@ -1,5 +1,14 @@
 2018-07-04  Martin Liska  <mliska@suse.cz>
 
+	PR middle-end/66240
+	PR target/45996
+	PR c/84100
+	* gcc.dg/pr84100.c (foo):
+	* gcc.target/i386/falign-functions-2.c: New test.
+	* gcc.target/i386/falign-functions.c: New test.
+
+2018-07-04  Martin Liska  <mliska@suse.cz>
+
 	* gcc.dg/pr47793.c: Remove.
 
 2018-07-04  Richard Sandiford  <richard.sandiford@arm.com>

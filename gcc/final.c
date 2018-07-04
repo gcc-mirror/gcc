@@ -2528,6 +2528,12 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    {
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
 	      ASM_OUTPUT_MAX_SKIP_ALIGN (file, align, max_skip);
+	      /* Above, we don't know whether a label, jump or loop
+		 alignment was used.  Conservatively apply
+		 label subalignment, not jump or loop
+		 subalignment (they are almost always larger).  */
+	      ASM_OUTPUT_MAX_SKIP_ALIGN (file, state_align_labels.levels[1].log,
+					 state_align_labels.levels[1].maxskip);
 #else
 #ifdef ASM_OUTPUT_ALIGN_WITH_NOP
               ASM_OUTPUT_ALIGN_WITH_NOP (file, align);

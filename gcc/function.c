@@ -4609,6 +4609,9 @@ invoke_set_current_function_hook (tree fndecl)
       targetm.set_current_function (fndecl);
       this_fn_optabs = this_target_optabs;
 
+      /* Initialize global alignment variables after op.  */
+      parse_alignment_opts ();
+
       if (opts != optimization_default_node)
 	{
 	  init_tree_optimization_optabs (opts);

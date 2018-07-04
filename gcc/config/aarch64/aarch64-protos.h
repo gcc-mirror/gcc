@@ -250,9 +250,9 @@ struct tune_params
   int memmov_cost;
   int issue_rate;
   unsigned int fusible_ops;
-  int function_align;
-  int jump_align;
-  int loop_align;
+  const char *function_align;
+  const char *jump_align;
+  const char *loop_align;
   int int_reassoc_width;
   int fp_reassoc_width;
   int vec_reassoc_width;
