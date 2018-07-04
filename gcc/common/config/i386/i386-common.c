@@ -275,6 +275,16 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET \
   (OPTION_MASK_ISA2_AVX512F_UNSET)
 
+/* Set 1 << value as value of -malign-FLAG option.  */
+
+static void
+set_malign_value (const char **flag, unsigned value)
+{
+  char *r = XNEWVEC (char, 6);
+  sprintf (r, "%d", 1 << value);
+  *flag = r;
+}
+
 /* Implement TARGET_HANDLE_OPTION.  */
 
 bool
@@ -1317,7 +1327,7 @@ ix86_handle_option (struct gcc_options *opts,
 	error_at (loc, "-malign-loops=%d is not between 0 and %d",
 		  value, MAX_CODE_ALIGN);
       else
-	opts->x_align_loops = 1 << value;
+	set_malign_value (&opts->x_str_align_loops, value);
       return true;
 
     case OPT_malign_jumps_:
@@ -1326,7 +1336,7 @@ ix86_handle_option (struct gcc_options *opts,
 	error_at (loc, "-malign-jumps=%d is not between 0 and %d",
 		  value, MAX_CODE_ALIGN);
       else
-	opts->x_align_jumps = 1 << value;
+	set_malign_value (&opts->x_str_align_jumps, value);
       return true;
 
     case OPT_malign_functions_:
@@ -1336,7 +1346,7 @@ ix86_handle_option (struct gcc_options *opts,
 	error_at (loc, "-malign-functions=%d is not between 0 and %d",
 		  value, MAX_CODE_ALIGN);
       else
-	opts->x_align_functions = 1 << value;
+	set_malign_value (&opts->x_str_align_functions, value);
       return true;
 
     case OPT_mbranch_cost_:

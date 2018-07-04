@@ -1,4 +1,123 @@
 2018-07-04  Denys Vlasenko  <dvlasenk@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/66240
+	PR target/45996
+	PR c/84100
+	* common.opt: Rename align options with 'str_' prefix.
+	* common/config/i386/i386-common.c (set_malign_value): New
+	function.
+	(ix86_handle_option): Use it to set -falign-* options/
+	* config/aarch64/aarch64-protos.h (struct tune_params): Change
+	type from int to string.
+	* config/aarch64/aarch64.c: Update default values from int
+	to string.
+	* config/alpha/alpha.c (alpha_override_options_after_change):
+	Likewise.
+	* config/arm/arm.c (arm_override_options_after_change_1): Likewise.
+	* config/i386/dragonfly.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Print
+	max skip conditionally.
+	* config/i386/freebsd.h (SUBALIGN_LOG): New.
+	(ASM_OUTPUT_MAX_SKIP_ALIGN): Print
+	max skip conditionally.
+	* config/i386/gas.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Print
+	max skip conditionally.
+	* config/i386/gnu-user.h (SUBALIGN_LOG): New.
+	(ASM_OUTPUT_MAX_SKIP_ALIGN): Print
+	max skip conditionally.
+	* config/i386/i386.c (struct ptt): Change type from int to
+	string.
+	(ix86_default_align): Set default values.
+	* config/i386/i386.h (ASM_OUTPUT_MAX_SKIP_PAD): Print
+	max skip conditionally.
+	* config/i386/iamcu.h (SUBALIGN_LOG): New.
+	(ASM_OUTPUT_MAX_SKIP_ALIGN):
+	* config/i386/lynx.h (ASM_OUTPUT_MAX_SKIP_ALIGN):
+	* config/i386/netbsd-elf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Print
+	max skip conditionally.
+	* config/i386/openbsdelf.h (SUBALIGN_LOG): New.
+	(ASM_OUTPUT_MAX_SKIP_ALIGN) Print max skip conditionally.:
+	* config/i386/x86-64.h (SUBALIGN_LOG): New.
+	(ASM_OUTPUT_MAX_SKIP_ALIGN): Print
+	max skip conditionally.
+	(ASM_OUTPUT_MAX_SKIP_PAD): Likewise.
+	* config/ia64/ia64.c (ia64_option_override): Set default values
+        for alignment options.
+	* config/m68k/m68k.c: Handle new str_align_* options.
+	* config/mips/mips.c (mips_set_compression_mode): Change
+	type of constants.
+	(mips_option_override): Set default values for options.
+	* config/powerpcspe/powerpcspe.c (rs6000_option_override_internal):
+        Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Likewise.
+	* config/rx/rx.c (rx_option_override): Likewise.
+	* config/rx/rx.h (JUMP_ALIGN): Use align_jumps_log.
+	(LABEL_ALIGN): Use align_labels_log.
+	(LOOP_ALIGN): Use align_loops_align.
+	* config/s390/s390.c (s390_asm_output_function_label): Use new
+        macros.
+	* config/sh/sh.c (sh_override_options_after_change):
+	Change type of constants.
+	* config/spu/spu.c (spu_sched_init): Likewise.
+	* config/sparc/sparc.c (sparc_option_override): Set default
+        values for options.
+	* config/visium/visium.c (visium_option_override): Likewise.
+	* config/visium/visium.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Do not
+        emit p2align format with last argument if it's not needed.
+	* doc/invoke.texi: Document extended format of -falign-*.
+	* final.c: Use align_labels alignment.
+	* flags.h (struct target_flag_state): Change type to use
+	align_flags.
+	(struct align_flags_tuple): New.
+	(struct align_flags): Likewise.
+	(align_loops_log): Redefine macro to use new types.
+	(align_loops_max_skip): Redefine macro to use new types.
+	(align_jumps_log): Redefine macro to use new types.
+	(align_jumps_max_skip): Redefine macro to use new types.
+	(align_labels_log): Redefine macro to use new types.
+	(align_labels_max_skip): Redefine macro to use new types.
+	(align_functions_log): Redefine macro to use new types.
+	(align_loops): Redefine macro to use new types.
+	(align_jumps): Redefine macro to use new types.
+	(align_labels): Redefine macro to use new types.
+	(align_functions): Redefine macro to use new types.
+	(align_functions_max_skip): Redefine macro to use new types.
+	(align_loops_value): New macro.
+	(align_jumps_value): New macro.
+	(align_labels_value): New macro.
+	(align_functions_value): New macro.
+	* function.c (invoke_set_current_function_hook): Propagate
+	alignment values from flags to global variables default in
+	topleev.h.
+	* ipa-icf.c (sem_function::equals_wpa): Use
+	cl_optimization_option_eq instead of memcmp.
+	* lto-streamer.h (cl_optimization_stream_out): Support streaming
+	of string types.
+	(cl_optimization_stream_in): Likewise.
+	* optc-save-gen.awk: Support strings in cl_optimization.
+	* opth-gen.awk: Likewise.
+	* opts.c (finish_options): Remove error checking of invalid
+	value ranges.
+	(MAX_CODE_ALIGN): Remove.
+	(MAX_CODE_ALIGN_VALUE): Likewise.
+	(parse_and_check_align_values): New function.
+	(check_alignment_argument): Likewise.
+	(common_handle_option): Use check_alignment_argument.
+	* opts.h (parse_and_check_align_values): Declare.
+	* toplev.c (init_alignments): Remove.
+	(read_log_maxskip): New.
+	(parse_N_M): Likewise.
+	(parse_alignment_opts): Likewise.
+	(backend_init_target): Remove usage of init_alignments.
+	* toplev.h (parse_alignment_opts): Declare.
+	* tree-streamer-in.c (streamer_read_tree_bitfields): Add new
+	argument.
+	* tree-streamer-out.c (streamer_write_tree_bitfields): Likewise.
+	* tree.c (cl_option_hasher::equal): New.
+	* varasm.c: Use new global macros.
+
+2018-07-04  Denys Vlasenko  <dvlasenk@redhat.com>
 
 	* config/i386/dragonfly.h: (ASM_OUTPUT_MAX_SKIP_ALIGN):
 	Use a simpler align directive also if MAXSKIP = ALIGN-1.

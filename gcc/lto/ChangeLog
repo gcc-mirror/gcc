@@ -1,3 +1,11 @@
+2018-07-04  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/66240
+	PR target/45996
+	PR c/84100
+	* lto.c (compare_tree_sccs_1): Use cl_optimization_option_eq
+	instead of memcmp.
+
 2018-06-20  Martin Liska  <mliska@suse.cz>
 
 	* lto-symtab.c (lto_symtab_merge_p): Remove not valid

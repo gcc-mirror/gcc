@@ -5406,29 +5406,30 @@ rs6000_option_override_internal (bool global_init_p)
 	  if (rs6000_cpu == PROCESSOR_TITAN
 	      || rs6000_cpu == PROCESSOR_CELL)
 	    {
-	      if (align_functions <= 0)
-		align_functions = 8;
-	      if (align_jumps <= 0)
-		align_jumps = 8;
-	      if (align_loops <= 0)
-		align_loops = 8;
+	      if (flag_align_functions && !str_align_functions)
+		str_align_functions = "8";
+	      if (flag_align_jumps && !str_align_jumps)
+		str_align_jumps = "8";
+	      if (flag_align_loops && !str_align_loops)
+		str_align_loops = "8";
 	    }
 	  if (rs6000_align_branch_targets)
 	    {
-	      if (align_functions <= 0)
-		align_functions = 16;
-	      if (align_jumps <= 0)
-		align_jumps = 16;
-	      if (align_loops <= 0)
+	      if (flag_align_functions && !str_align_functions)
+		str_align_functions = "16";
+	      if (flag_align_jumps && !str_align_jumps)
+		str_align_jumps = "16";
+	      if (flag_align_loops && !str_align_loops)
 		{
 		  can_override_loop_align = 1;
-		  align_loops = 16;
+		  str_align_loops = "16";
 		}
 	    }
-	  if (align_jumps_max_skip <= 0)
-	    align_jumps_max_skip = 15;
-	  if (align_loops_max_skip <= 0)
-	    align_loops_max_skip = 15;
+
+	  if (flag_align_jumps && !str_align_jumps)
+	    str_align_jumps = "16";
+	  if (flag_align_loops && !str_align_loops)
+	    str_align_loops = "16";
 	}
 
       /* Arrange to save and restore machine status around nested functions.  */

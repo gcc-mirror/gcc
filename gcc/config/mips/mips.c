@@ -501,9 +501,9 @@ unsigned int mips_base_compression_flags;
 static int mips_base_schedule_insns; /* flag_schedule_insns */
 static int mips_base_reorder_blocks_and_partition; /* flag_reorder... */
 static int mips_base_move_loop_invariants; /* flag_move_loop_invariants */
-static int mips_base_align_loops; /* align_loops */
-static int mips_base_align_jumps; /* align_jumps */
-static int mips_base_align_functions; /* align_functions */
+static const char *mips_base_align_loops; /* align_loops */
+static const char *mips_base_align_jumps; /* align_jumps */
+static const char *mips_base_align_functions; /* align_functions */
 
 /* Index [M][R] is true if register R is allowed to hold a value of mode M.  */
 static bool mips_hard_regno_mode_ok_p[MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
@@ -19517,9 +19517,9 @@ mips_set_compression_mode (unsigned int compression_mode)
   flag_schedule_insns = mips_base_schedule_insns;
   flag_reorder_blocks_and_partition = mips_base_reorder_blocks_and_partition;
   flag_move_loop_invariants = mips_base_move_loop_invariants;
-  align_loops = mips_base_align_loops;
-  align_jumps = mips_base_align_jumps;
-  align_functions = mips_base_align_functions;
+  str_align_loops = mips_base_align_loops;
+  str_align_jumps = mips_base_align_jumps;
+  str_align_functions = mips_base_align_functions;
   target_flags &= ~(MASK_MIPS16 | MASK_MICROMIPS);
   target_flags |= compression_mode;
 
@@ -19589,12 +19589,12 @@ mips_set_compression_mode (unsigned int compression_mode)
       /* Provide default values for align_* for 64-bit targets.  */
       if (TARGET_64BIT)
 	{
-	  if (align_loops == 0)
-	    align_loops = 8;
-	  if (align_jumps == 0)
-	    align_jumps = 8;
-	  if (align_functions == 0)
-	    align_functions = 8;
+	  if (flag_align_loops && !str_align_loops)
+	    str_align_loops = "8";
+	  if (flag_align_jumps && !str_align_jumps)
+	    str_align_jumps = "8";
+	  if (flag_align_functions && !str_align_functions)
+	    str_align_functions = "8";
 	}
 
       targetm.min_anchor_offset = -32768;
@@ -20278,9 +20278,9 @@ mips_option_override (void)
   mips_base_schedule_insns = flag_schedule_insns;
   mips_base_reorder_blocks_and_partition = flag_reorder_blocks_and_partition;
   mips_base_move_loop_invariants = flag_move_loop_invariants;
-  mips_base_align_loops = align_loops;
-  mips_base_align_jumps = align_jumps;
-  mips_base_align_functions = align_functions;
+  mips_base_align_loops = str_align_loops;
+  mips_base_align_jumps = str_align_jumps;
+  mips_base_align_functions = str_align_functions;
 
   /* Now select the ISA mode.
 

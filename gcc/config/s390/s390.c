@@ -7543,9 +7543,9 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
       function_alignment = MAX (8, DECL_ALIGN (decl) / BITS_PER_UNIT);
       if (! DECL_USER_ALIGN (decl))
 	function_alignment = MAX (function_alignment,
-				  (unsigned int) align_functions);
+				  (unsigned int) align_functions_max_skip + 1);
       fputs ("\t# alignment for hotpatch\n", asm_out_file);
-      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (function_alignment));
+      ASM_OUTPUT_ALIGN (asm_out_file, align_functions_log);
     }
 
   if (S390_USE_TARGET_ATTRIBUTE && TARGET_DEBUG_ARG)

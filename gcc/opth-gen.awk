@@ -308,6 +308,9 @@ print "";
 print "/* Hash optimization from a structure.  */";
 print "extern hashval_t cl_optimization_hash (const struct cl_optimization *);";
 print "";
+print "/* Compare two optimization options.  */";
+print "extern bool cl_optimization_option_eq (cl_optimization const *ptr1, cl_optimization const *ptr2);"
+print "";
 print "/* Generator files may not have access to location_t, and don't need these.  */"
 print "#if defined(UNKNOWN_LOCATION)"
 print "bool                                                                  "
