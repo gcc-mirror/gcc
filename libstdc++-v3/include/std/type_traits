@@ -1136,7 +1136,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_trivially_constructible
   template<typename _Tp, typename... _Args>
     struct is_trivially_constructible
-    : public __bool_constant<__is_trivially_constructible(_Tp, _Args...)>
+    : public __and_<is_constructible<_Tp, _Args...>, __bool_constant<
+		      __is_trivially_constructible(_Tp, _Args...)>>::type
     { };
 
   /// is_trivially_default_constructible
@@ -1159,21 +1160,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_implicitly_default_constructible_impl
-      : public __do_is_implicitly_default_constructible_impl
-  {
-    typedef decltype(__test(declval<_Tp>())) type;
-  };
+    : public __do_is_implicitly_default_constructible_impl
+    {
+      typedef decltype(__test(declval<_Tp>())) type;
+    };
 
   template<typename _Tp>
     struct __is_implicitly_default_constructible_safe
-      : public __is_implicitly_default_constructible_impl<_Tp>::type
-  { };
+    : public __is_implicitly_default_constructible_impl<_Tp>::type
+    { };
 
   template <typename _Tp>
     struct __is_implicitly_default_constructible
-      : public __and_<is_default_constructible<_Tp>,
-                      __is_implicitly_default_constructible_safe<_Tp>>
-  { };
+    : public __and_<is_default_constructible<_Tp>,
+		    __is_implicitly_default_constructible_safe<_Tp>>
+    { };
 
   /// is_trivially_copy_constructible
 

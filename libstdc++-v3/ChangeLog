@@ -1,5 +1,15 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86398
+	* include/std/type_traits (is_trivially_constructible): Check
+	is_constructible before __is_trivially_constructible.
+	* testsuite/20_util/is_trivially_constructible/value.cc: Add more
+	tests, including negative cases.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Use
+	zero for dg-error lineno.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
 	* include/std/bit (__rotl, __rotr): Avoid branch.
 	(_If_is_unsigned_integer): Use remove_cv_t.
 	* testsuite/26_numerics/bit/bitops.count/popcount.cc: New.
