@@ -1,6 +1,12 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-04-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE): Qualify
+	__get calls to avoid ADL and avoid ambiguity due to Clang bug.
+
+	Backport from mainline
 	2018-03-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (__get): Qualify calls to avoid ADL.
