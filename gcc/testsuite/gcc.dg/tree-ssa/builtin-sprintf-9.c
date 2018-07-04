@@ -85,6 +85,5 @@ void test_warn_sprintf_f (double x)
 
 
 /* { dg-final { scan-tree-dump-times "call_in_true_branch_not_eliminated_" 0 "optimized" } }
-   { dg-final { scan-tree-dump-times "call_made_in_true_branch_" 6" optimized" } }
-   { dg-final { scan-tree-dump-times "call_made_in_false_branch_" 6 "optimized" } }
- */
+   { dg-final { scan-tree-dump-times "call_made_in_true_branch_" 6 "optimized" } }
+   { dg-final { scan-tree-dump-times "call_made_in_false_branch_" 6 "optimized" } } */

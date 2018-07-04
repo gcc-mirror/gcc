@@ -1,3 +1,8 @@
+2018-07-04  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86274
+	* gcc.dg/tree-ssa/builtin-sprintf-9.c: Fix typo.
+
 2018-07-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/82009
