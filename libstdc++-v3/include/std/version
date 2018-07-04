@@ -105,6 +105,7 @@
 #define __cpp_lib_is_swappable 201603
 #define __cpp_lib_launder 201606
 #define __cpp_lib_lcm 201606
+#define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_logical_traits 201510
 #define __cpp_lib_make_from_tuple 201606
 #define __cpp_lib_map_insertion 201411

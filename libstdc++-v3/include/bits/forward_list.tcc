@@ -278,11 +278,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  return iterator(const_cast<_Node_base*>(__pos._M_node));
       }
 
+#if __cplusplus > 201703L
+# define _GLIBCXX20_ONLY(__expr) __expr
+#else
+# define _GLIBCXX20_ONLY(__expr)
+#endif
+
   template<typename _Tp, typename _Alloc>
-    void
+    auto
     forward_list<_Tp, _Alloc>::
-    remove(const _Tp& __val)
+    remove(const _Tp& __val) -> __remove_return_type
     {
+      size_type __removed __attribute__((__unused__)) = 0;
       _Node_base* __curr = &this->_M_impl._M_head;
       _Node_base* __extra = nullptr;
 
@@ -293,6 +300,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      if (__tmp->_M_valptr() != std::__addressof(__val))
 		{
 		  this->_M_erase_after(__curr);
+		  _GLIBCXX20_ONLY( __removed++ );
 		  continue;
 		}
 	      else
@@ -302,45 +310,61 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 
       if (__extra)
-	this->_M_erase_after(__extra);
+	{
+	  this->_M_erase_after(__extra);
+	  _GLIBCXX20_ONLY( __removed++ );
+	}
+      return _GLIBCXX20_ONLY( __removed );
     }
 
   template<typename _Tp, typename _Alloc>
     template<typename _Pred>
-      void
+      auto
       forward_list<_Tp, _Alloc>::
-      remove_if(_Pred __pred)
+      remove_if(_Pred __pred) -> __remove_return_type
       {
+	size_type __removed __attribute__((__unused__)) = 0;
 	_Node_base* __curr = &this->_M_impl._M_head;
 	while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
 	  {
 	    if (__pred(*__tmp->_M_valptr()))
-	      this->_M_erase_after(__curr);
+	      {
+		this->_M_erase_after(__curr);
+		_GLIBCXX20_ONLY( __removed++ );
+	      }
 	    else
 	      __curr = __curr->_M_next;
 	  }
+	return _GLIBCXX20_ONLY( __removed );
       }
 
   template<typename _Tp, typename _Alloc>
     template<typename _BinPred>
-      void
+      auto
       forward_list<_Tp, _Alloc>::
-      unique(_BinPred __binary_pred)
+      unique(_BinPred __binary_pred) -> __remove_return_type
       {
 	iterator __first = begin();
 	iterator __last = end();
 	if (__first == __last)
-	  return;
+	  return _GLIBCXX20_ONLY(0);
+	size_type __removed __attribute__((__unused__)) = 0;
 	iterator __next = __first;
 	while (++__next != __last)
 	{
 	  if (__binary_pred(*__first, *__next))
-	    erase_after(__first);
+	    {
+	      erase_after(__first);
+	      _GLIBCXX20_ONLY( __removed++ );
+	    }
 	  else
 	    __first = __next;
 	  __next = __first;
 	}
+        return _GLIBCXX20_ONLY( __removed );
       }
+
+#undef _GLIBCXX20_ONLY
 
   template<typename _Tp, typename _Alloc>
     template<typename _Comp>
