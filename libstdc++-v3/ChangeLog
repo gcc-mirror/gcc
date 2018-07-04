@@ -1,6 +1,16 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	LWG 3075 basic_string needs deduction guides from basic_string_view
+	* include/bits/basic_string.h: Add deduction guides from string_view.
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc: Test
+	deduction from string views.
+	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc:
+	Likewise.
+
+	Backport from mainline
 	2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/84087 LWG DR 2268 basic_string default arguments
