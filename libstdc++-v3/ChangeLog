@@ -1,4 +1,16 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/make_heap/complexity.cc: Require effective
+	target for std::random_device.
+	* testsuite/26_numerics/random/random_device/cons/default.cc:
+	Likewise.
+	* testsuite/experimental/algorithm/sample-2.cc: Likewise.
+	* testsuite/experimental/algorithm/shuffle.cc: Likewise.
+	* testsuite/experimental/random/randint.cc: Likewise.
+	* testsuite/lib/libstdc++.exp
+	(check_effective_target_random_device): New proc.
+
+2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	* include/std/bit (__rotl, __rotr): Fix for non-power of two sizes.
