@@ -1,3 +1,11 @@
+2018-07-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85620
+	* gcc.target/i386/pr85620-1.c: New test.
+	* gcc.target/i386/pr85620-2.c: Likewise.
+	* gcc.target/i386/pr85620-3.c: Likewise.
+	* gcc.target/i386/pr85620-4.c: Likewise.
+
 2018-07-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86274

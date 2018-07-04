@@ -2621,7 +2621,26 @@ rest_of_insert_endbranch (void)
 	{
 	  if (CALL_P (insn))
 	    {
-	      if (find_reg_note (insn, REG_SETJMP, NULL) == NULL)
+	      bool need_endbr;
+	      need_endbr = find_reg_note (insn, REG_SETJMP, NULL) != NULL;
+	      if (!need_endbr && !SIBLING_CALL_P (insn))
+		{
+		  rtx call = get_call_rtx_from (insn);
+		  rtx fnaddr = XEXP (call, 0);
+
+		  /* Also generate ENDBRANCH for non-tail call which
+		     may return via indirect branch.  */
+		  if (MEM_P (fnaddr)
+		      && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+		    {
+		      tree fndecl = SYMBOL_REF_DECL (XEXP (fnaddr, 0));
+		      if (fndecl
+			  && lookup_attribute ("indirect_return",
+					       DECL_ATTRIBUTES (fndecl)))
+			need_endbr = true;
+		    }
+		}
+	      if (!need_endbr)
 		continue;
 	      /* Generate ENDBRANCH after CALL, which can return more than
 		 twice, setjmp-like functions.  */
@@ -45896,6 +45915,8 @@ static const struct attribute_spec ix86_attribute_table[] =
   { "indirect_branch", 1, 1, true, false, false, false,
     ix86_handle_fndecl_attribute, NULL },
   { "function_return", 1, 1, true, false, false, false,
+    ix86_handle_fndecl_attribute, NULL },
+  { "indirect_return", 0, 0, true, false, false, false,
     ix86_handle_fndecl_attribute, NULL },
 
   /* End element.  */
