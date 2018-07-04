@@ -6751,7 +6751,7 @@ gfc_process_block_locals (gfc_namespace* ns)
 {
   tree decl;
 
-  gcc_assert (saved_local_decls == NULL_TREE);
+  saved_local_decls = NULL_TREE;
   has_coarray_vars = false;
 
   generate_local_vars (ns);
