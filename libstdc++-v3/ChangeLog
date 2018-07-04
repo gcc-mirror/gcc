@@ -1,6 +1,13 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85671
+	* include/bits/fs_path.h (operator/): Permit copy elision.
+	* include/experimental/bits/fs_path.h (operator/): Likewise.
+
+	Backport from mainline
 	2018-06-14  Daniel Trebbien <dtrebbien@gmail.com>
 		    Jonathan Wakely  <jwakely@redhat.com>
 
