@@ -1,6 +1,12 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h: Remove redundant preprocessor
+	condition.
+
+	Backport from mainline
 	2018-06-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/cpp_type_traits.h [__cplusplus >= 201703]
