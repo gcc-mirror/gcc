@@ -1,6 +1,16 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-06-14  Daniel Trebbien <dtrebbien@gmail.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83982
+	* include/bits/vector.tcc (vector::_M_default_append(size_type)):
+	Default-construct new elements before moving existing ones.
+	* testsuite/23_containers/vector/capacity/resize/strong_guarantee.cc:
+	New.
+
+	Backport from mainline
 	2018-05-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/84087 LWG DR 2268 basic_string default arguments
