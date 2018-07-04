@@ -1,6 +1,12 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__gen_vtable_impl::__visit_invoke): Qualify
+	__invoke to prevent ADL.
+
+	Backport from mainline
 	2018-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE): Qualify
