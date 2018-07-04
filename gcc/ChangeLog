@@ -1,3 +1,19 @@
+2018-07-04  Denys Vlasenko  <dvlasenk@redhat.com>
+
+	* config/i386/dragonfly.h: (ASM_OUTPUT_MAX_SKIP_ALIGN):
+	Use a simpler align directive also if MAXSKIP = ALIGN-1.
+	* config/i386/gas.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/lynx.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/netbsd-elf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/i386.h (ASM_OUTPUT_MAX_SKIP_PAD): Likewise.
+	* config/i386/freebsd.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Remove "If N
+	is large, do at least 8 byte alignment" code. Add SUBALIGN_LOG
+	define. Use a simpler align directive also if MAXSKIP = ALIGN-1.
+	* config/i386/gnu-user.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/iamcu.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/openbsdelf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+
 2018-07-04  Martin Liska  <mliska@suse.cz>
             Jonathan Wakely  <jwakely@redhat.com>
 
