@@ -1160,6 +1160,13 @@ requirements of the license of GCC.
     <listitem><para>Add noexcept.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr3076"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#3076">3076</link>:
+       <emphasis><code>basic_string</code> CTAD ambiguity
+       </emphasis>
+    </term>
+    <listitem><para>Change constructors to constrained templates.
+    </para></listitem></varlistentry>
+
   </variablelist>
 
  </section>
