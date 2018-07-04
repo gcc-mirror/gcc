@@ -1,5 +1,10 @@
 2018-07-03  Jeff Law  <law@redhat.com>
-
+	* config/h8300/h8300.md (movmd_internal_normal): Consolidated with
+	(movmd_internal) into a single pattern using the P mode iterator.
+	(movmd splitters): Similarly.
+	(stpcpy_internal_normal, stpcpy_internal): Similarly for thes patterns.
+	(movsd splitters): Similarly.
+	
 	* config/h8300/h8300.c (h8300_insn_length_from_table): Consolidate
 	ADDB, ADDW and ADDL into a single ADD attribute which selects the
 	right table based on the size of the operand.
