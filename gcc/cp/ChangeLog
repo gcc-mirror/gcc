@@ -1,3 +1,14 @@
+2018-07-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backport from mainline
+	2018-07-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	gcc/cp/
+
+	PR c++/86398
+	* method.c (is_trivially_xible): Return false
+	if is_xible_helper returns a NULL_TREE.
+
 2018-07-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86378 - functional cast in noexcept-specifier.
