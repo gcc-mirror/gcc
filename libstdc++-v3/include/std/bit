@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
       const unsigned __sN = __s % _Nd;
-      return (__x << __sN) | (__x >> ((-__sN) % _Nd));
+      return (__x << __sN) | (__x >> ((_Nd - __sN) % _Nd));
     }
 
   template<typename _Tp>
@@ -55,7 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
       const unsigned __sN = __s % _Nd;
-      return (__x >> __sN) | (__x << ((-__sN) % _Nd));
+      return (__x >> __sN) | (__x << ((_Nd - __sN) % _Nd));
     }
 
   template<typename _Tp>
