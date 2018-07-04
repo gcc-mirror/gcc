@@ -1,3 +1,9 @@
+2018-07-03  Martin Sebor  <msebor@redhat.com>
+
+	* print-tree.c (print_real_cst): New function.
+	(print_node_brief): Call it.
+	(print_node): Ditto.
+
 2018-07-03  Jeff Law  <law@redhat.com>
 
 	* config/h8300/h8300.md (ors code_iterator): New.
@@ -12,7 +18,7 @@
 	(movmd splitters): Similarly.
 	(stpcpy_internal_normal, stpcpy_internal): Similarly for thes patterns.
 	(movsd splitters): Similarly.
-	
+
 	* config/h8300/h8300.c (h8300_insn_length_from_table): Consolidate
 	ADDB, ADDW and ADDL into a single ADD attribute which selects the
 	right table based on the size of the operand.
