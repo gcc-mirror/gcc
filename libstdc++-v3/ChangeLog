@@ -1,4 +1,9 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/bit (__rotl, __rotr): Fix for non-power of two sizes.
+
+2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/86398
 	* include/std/type_traits (is_trivially_constructible): Check
