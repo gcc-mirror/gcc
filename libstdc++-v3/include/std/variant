@@ -249,7 +249,7 @@ namespace __variant
   template<typename _Variant, size_t _Np>
     void
     __erased_dtor(_Variant&& __v)
-    { std::_Destroy(std::__addressof(__get<_Np>(__v))); }
+    { std::_Destroy(std::__addressof(__variant::__get<_Np>(__v))); }
 
   template<typename _Lhs, typename _Rhs>
     void
