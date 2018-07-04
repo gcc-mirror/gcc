@@ -1,3 +1,8 @@
+2018-07-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr_1): Initialize
+	neg_*_op* variables.
+
 2018-07-04  Martin Liska  <mliska@suse.cz>
 
 	* tree-switch-conversion.c: Define

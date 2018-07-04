@@ -1661,6 +1661,8 @@ extract_range_from_binary_expr_1 (value_range *vr,
       tree sym_max_op1 = NULL_TREE;
       bool neg_min_op0, neg_min_op1, neg_max_op0, neg_max_op1;
 
+      neg_min_op0 = neg_min_op1 = neg_max_op0 = neg_max_op1 = false;
+
       /* If we have a PLUS or MINUS with two VR_RANGEs, either constant or
 	 single-symbolic ranges, try to compute the precise resulting range,
 	 but only if we know that this resulting range will also be constant
