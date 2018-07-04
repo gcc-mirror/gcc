@@ -1,6 +1,12 @@
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h [__cplusplus >= 201703]
+	(__is_byte<byte>): Define specialization for std::byte.
+
+	Backport from mainline
 	2018-06-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	LWG 3050 Fix cv-qualification of convertibility constraints
