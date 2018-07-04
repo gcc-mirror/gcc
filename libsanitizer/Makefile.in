@@ -140,8 +140,8 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	$(RECURSIVE_CLEAN_TARGETS:-recursive=) tags TAGS ctags CTAGS
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = sanitizer_common interception libbacktrace lsan asan \
-	ubsan tsan
+DIST_SUBDIRS = sanitizer_common interception libbacktrace lsan ubsan \
+	asan tsan
 ACLOCAL = @ACLOCAL@
 ALLOC_FILE = @ALLOC_FILE@
 AMTAR = @AMTAR@
@@ -294,7 +294,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 sanincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include/sanitizer
 nodist_saninclude_HEADERS = $(am__append_1)
 @SANITIZER_SUPPORTED_TRUE@SUBDIRS = sanitizer_common $(am__append_2) \
-@SANITIZER_SUPPORTED_TRUE@	$(am__append_3) lsan asan ubsan \
+@SANITIZER_SUPPORTED_TRUE@	$(am__append_3) lsan ubsan asan \
 @SANITIZER_SUPPORTED_TRUE@	$(am__append_4)
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
