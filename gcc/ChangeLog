@@ -1,3 +1,10 @@
+2018-07-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/85620
+	* config/i386/i386.c (rest_of_insert_endbranch): Also generate
+	ENDBRANCH for non-tail call which may return via indirect branch.
+	* doc/extend.texi: Document indirect_return attribute.
+
 2018-07-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86274

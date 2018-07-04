@@ -5886,6 +5886,12 @@ foo (void)
 @}
 @end smallexample
 
+@item indirect_return
+@cindex @code{indirect_return} function attribute, x86
+
+The @code{indirect_return} attribute on a function is used to inform
+the compiler that the function may return via indirect branch.
+
 @end table
 
 On the x86, the inliner does not inline a
