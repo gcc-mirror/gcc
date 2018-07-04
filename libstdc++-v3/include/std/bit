@@ -46,9 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
       const unsigned __sN = __s % _Nd;
-      if (__sN)
-        return (__x << __sN) | (__x >> (_Nd - __sN));
-      return __x;
+      return (__x << __sN) | (__x >> ((-__sN) % _Nd));
     }
 
   template<typename _Tp>
@@ -57,9 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
       const unsigned __sN = __s % _Nd;
-      if (__sN)
-        return (__x >> __sN) | (__x << (_Nd - __sN));
-      return __x;
+      return (__x >> __sN) | (__x << ((-__sN) % _Nd));
     }
 
   template<typename _Tp>
@@ -237,7 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Up = _Tp>
     using _If_is_unsigned_integer
-      = typename _If_is_unsigned_integer_type<_Tp, _Up>::type;
+      = typename _If_is_unsigned_integer_type<remove_cv_t<_Tp>, _Up>::type;
 
 #if ! __STRICT_ANSI__
   // [bitops.rot], rotating
