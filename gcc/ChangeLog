@@ -13,6 +13,9 @@
 
 2018-07-03  Jeff Law  <law@redhat.com>
 
+	* config/h8300/h8300.md (logical<mode>3_sn, logical<mode>3): Merge
+	into a single pattern.
+
 	* config/h8300/h8300.md (ors code_iterator): New.
 	(bsetqi_msx, bnotqi_msx patterns and splitters): Consolidate into
 	a single pattern and single splitter.
