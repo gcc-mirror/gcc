@@ -684,9 +684,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       decltype(auto)
       static constexpr __visit_invoke(_Visitor&& __visitor, _Variants... __vars)
       {
-	return __invoke(std::forward<_Visitor>(__visitor),
-			std::get<__indices>(
-			    std::forward<_Variants>(__vars))...);
+	return std::__invoke(std::forward<_Visitor>(__visitor),
+	    std::get<__indices>(std::forward<_Variants>(__vars))...);
       }
 
       static constexpr auto
