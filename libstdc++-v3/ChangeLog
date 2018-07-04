@@ -1,3 +1,16 @@
+2018-07-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/string
+	(__gnu_debug::basic_string<>::insert<_Ite>(const_iterator, _Ite, _Ite)):
+	Use __glibcxx_check_insert_range.
+	* 21_strings/basic_string/cons/char/1.cc: Adapt test to use
+	__gnu_debug::string when _GLIBCXX_DEBUG.
+	* 21_strings/basic_string/init-list.cc: Likewise.
+	* 21_strings/basic_string/modifiers/insert/char/1.cc: Likewise.
+	* 21_strings/basic_string/modifiers/insert/char/2.cc: Likewise.
+	* 21_strings/basic_string/modifiers/insert/char/83328.cc: Likewise.
+	* 21_strings/basic_string/types/1.cc: Likewise.
+
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/25_algorithms/make_heap/complexity.cc: Require effective
