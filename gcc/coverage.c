@@ -1227,7 +1227,7 @@ coverage_init (const char *filename)
       if (profile_data_prefix)
 	{
 #if HAVE_DOS_BASED_FILE_SYSTEM
-	  const char separator = "\\";
+	  const char *separator = "\\";
 #else
 	  const char *separator = "/";
 #endif
