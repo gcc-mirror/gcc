@@ -1,4 +1,12 @@
 2018-07-03  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.md (ors code_iterator): New.
+	(bsetqi_msx, bnotqi_msx patterns and splitters): Consolidate into
+	a single pattern and single splitter.
+	(bsethi_msx, bnothi_msx patterns): Consolidate into a single pattern.
+	(iorqi3_1, xorqi3_1): Likewise.
+	(iorqi3, xorqi3 expanders): Similarly.
+
 	* config/h8300/h8300.md (movmd_internal_normal): Consolidated with
 	(movmd_internal) into a single pattern using the P mode iterator.
 	(movmd splitters): Similarly.
