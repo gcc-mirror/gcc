@@ -1,3 +1,9 @@
+2018-07-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust test because aarch64
+	has a slightly different IL that provides more threading
+	opportunities.
+
 2018-07-04  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/66240
