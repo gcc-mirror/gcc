@@ -1,3 +1,9 @@
+2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (__rotl, __rotr): Avoid branch.
+	(_If_is_unsigned_integer): Use remove_cv_t.
+	* testsuite/26_numerics/bit/bitops.count/popcount.cc: New.
+
 2018-07-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	P0556R3 Integral power-of-2 operations, P0553R2 Bit operations
