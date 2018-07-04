@@ -1,5 +1,12 @@
 2018-07-03  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/86274
+	* gimple-ssa-sprintf.c (fmtresult::type_max_digits): Verify
+	precondition.
+	(format_floating): Correct handling of infinities and NaNs.
+
+2018-07-03  Martin Sebor  <msebor@redhat.com>
+
 	* print-tree.c (print_real_cst): New function.
 	(print_node_brief): Call it.
 	(print_node): Ditto.

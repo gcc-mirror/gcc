@@ -1,3 +1,14 @@
+2018-07-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86274
+	* gcc.dg/tree-ssa/builtin-sprintf-9.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-10.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-15.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-7.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf.c: Same.
+	* gcc.dg/tree-ssa/pr83198.c: Same.
+
 2018-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/other/locations1.C: New.
