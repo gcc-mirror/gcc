@@ -295,7 +295,7 @@ namespace __detail
     }
 
 #define __INSERT_REGEX_MATCHER(__func, ...)\
-	do\
+	do {\
 	  if (!(_M_flags & regex_constants::icase))\
 	    if (!(_M_flags & regex_constants::collate))\
 	      __func<false, false>(__VA_ARGS__);\
@@ -306,7 +306,7 @@ namespace __detail
 	      __func<true, false>(__VA_ARGS__);\
 	    else\
 	      __func<true, true>(__VA_ARGS__);\
-	while (false)
+	} while (false)
 
   template<typename _TraitsT>
     bool

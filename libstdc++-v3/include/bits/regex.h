@@ -776,6 +776,48 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _AutomatonPtr	_M_automaton;
     };
 
+#if __cplusplus < 201703L
+  template<typename _Ch, typename _Tr>
+    constexpr regex_constants::syntax_option_type
+    basic_regex<_Ch, _Tr>::icase;
+
+  template<typename _Ch, typename _Tr>
+    constexpr regex_constants::syntax_option_type
+    basic_regex<_Ch, _Tr>::nosubs;
+
+  template<typename _Ch, typename _Tr>
+    constexpr regex_constants::syntax_option_type
+    basic_regex<_Ch, _Tr>::optimize;
+
+  template<typename _Ch, typename _Tr>
+    constexpr regex_constants::syntax_option_type
+    basic_regex<_Ch, _Tr>::collate;
+
+  template<typename _Ch, typename _Tr>
+    constexpr regex_constants::syntax_option_type
+    basic_regex<_Ch, _Tr>::ECMAScript;
+
+  template<typename _Ch, typename _Tr>
+    constexpr regex_constants::syntax_option_type
+    basic_regex<_Ch, _Tr>::basic;
+
+  template<typename _Ch, typename _Tr>
+    constexpr regex_constants::syntax_option_type
+    basic_regex<_Ch, _Tr>::extended;
+
+  template<typename _Ch, typename _Tr>
+    constexpr regex_constants::syntax_option_type
+    basic_regex<_Ch, _Tr>::awk;
+
+  template<typename _Ch, typename _Tr>
+    constexpr regex_constants::syntax_option_type
+    basic_regex<_Ch, _Tr>::grep;
+
+  template<typename _Ch, typename _Tr>
+    constexpr regex_constants::syntax_option_type
+    basic_regex<_Ch, _Tr>::egrep;
+#endif // ! C++17
+
 #if __cpp_deduction_guides >= 201606
   template<typename _ForwardIterator>
     basic_regex(_ForwardIterator, _ForwardIterator,
