@@ -314,6 +314,22 @@ static const struct cpu_addrcost_table thunderx2t99_addrcost_table =
   0, /* imm_offset  */
 };
 
+static const struct cpu_addrcost_table qdf24xx_addrcost_table =
+{
+    {
+      1, /* hi  */
+      1, /* si  */
+      1, /* di  */
+      2, /* ti  */
+    },
+  1, /* pre_modify  */
+  1, /* post_modify  */
+  3, /* register_offset  */
+  4, /* register_sextend  */
+  3, /* register_zextend  */
+  2, /* imm_offset  */
+};
+
 static const struct cpu_regmove_cost generic_regmove_cost =
 {
   1, /* GP2GP  */
@@ -856,7 +872,7 @@ static const struct tune_params xgene1_tunings =
 static const struct tune_params qdf24xx_tunings =
 {
   &qdf24xx_extra_costs,
-  &generic_addrcost_table,
+  &qdf24xx_addrcost_table,
   &qdf24xx_regmove_cost,
   &generic_vector_cost,
   &generic_branch_cost,
