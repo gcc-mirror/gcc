@@ -1,3 +1,8 @@
+2018-07-04  Martin Liska  <mliska@suse.cz>
+
+	* tree-switch-conversion.c: Define
+        max_ratio_for_speed and max_ratio_for_size constants.
+
 2018-07-04  Denys Vlasenko  <dvlasenk@redhat.com>
 	    Martin Liska  <mliska@suse.cz>
 

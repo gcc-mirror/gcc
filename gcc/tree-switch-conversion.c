@@ -1212,6 +1212,11 @@ jump_table_cluster::is_beneficial (const vec<cluster *> &,
   return end - start + 1 >= case_values_threshold ();
 }
 
+/* Definition of jump_table_cluster constants.  */
+
+const unsigned HOST_WIDE_INT jump_table_cluster::max_ratio_for_size;
+const unsigned HOST_WIDE_INT jump_table_cluster::max_ratio_for_speed;
+
 /* Find bit tests of given CLUSTERS, where all members of the vector
    are of type simple_cluster.  New clusters are returned.  */
 
