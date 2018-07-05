@@ -1030,8 +1030,6 @@ enum cris_symbol_type
 
 #define FUNCTION_MODE QImode
 
-#define NO_IMPLICIT_EXTERN_C
-
 /*
  * Local variables:
  * eval: (c-set-style "gnu")

@@ -1,3 +1,9 @@
+2018-07-05  Nathan Sidwell  <nathan@acm.org>
+
+	* cp/decl.c (decls_match): Check SYSTEM_IMPLICIT_EXTERN_C not
+	NO_IMPLICIT_EXTERN_C.
+	* cp/parser.c (cp_parser_parameter_declaration_clause): Likewise.
+
 2018-07-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/86398
