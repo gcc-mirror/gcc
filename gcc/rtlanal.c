@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "addresses.h"
 #include "rtl-iter.h"
+#include "hard-reg-set.h"
 
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
@@ -1621,8 +1622,9 @@ set_noop_p (const_rtx set)
 	if (maybe_ne (rtx_to_poly_int64 (XVECEXP (par, 0, i)), c0 + i))
 	  return 0;
       return
-	simplify_subreg_regno (REGNO (src0), GET_MODE (src0),
-			       offset, GET_MODE (dst)) == (int) REGNO (dst);
+	REG_CAN_CHANGE_MODE_P (REGNO (dst), GET_MODE (src0), GET_MODE (dst))
+	&& simplify_subreg_regno (REGNO (src0), GET_MODE (src0),
+				  offset, GET_MODE (dst)) == (int) REGNO (dst);
     }
 
   return (REG_P (src) && REG_P (dst)

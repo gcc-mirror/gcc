@@ -1,5 +1,10 @@
 2018-07-05  Tamar Christina  <tamar.christina@arm.com>
 
+	PR target/84711
+	* gcc.dg/vect/pr84711.c: New.
+
+2018-07-05  Tamar Christina  <tamar.christina@arm.com>
+
 	* gcc.target/aarch64/struct_cpy.c: New.
 
 2018-07-05  Christophe Lyon  <christophe.lyon@linaro.org>
