@@ -993,7 +993,7 @@ proper position among the other output files.  */
     %{static:%ecannot specify -static with -fsanitize=address}}\
     %{%:sanitize(thread):" LIBTSAN_SPEC "\
     %{static:%ecannot specify -static with -fsanitize=thread}}\
-    %{!%:sanitize(address):%{%:sanitize(undefined):" LIBUBSAN_SPEC "}}\
+    %{%:sanitize(undefined):" LIBUBSAN_SPEC "}\
     %{%:sanitize(leak):" LIBLSAN_SPEC "}}}"
 #endif
 

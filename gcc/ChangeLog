@@ -1,3 +1,13 @@
+2018-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert
+	2018-07-04  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/84250
+	* config/gnu-user.h (LIBASAN_EARLY_SPEC): Pass -lstdc++ for static
+	libasan.
+	* gcc.c: Do not pass LIBUBSAN_SPEC if ASan is enabled with UBSan.
+
 2018-07-04  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/84250

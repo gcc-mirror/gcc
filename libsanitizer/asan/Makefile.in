@@ -110,8 +110,7 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libasan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(top_builddir)/lsan/libsanitizer_lsan.la \
-	$(top_builddir)/ubsan/libsanitizer_ubsan.la $(am__append_2) \
+	$(top_builddir)/lsan/libsanitizer_lsan.la $(am__append_2) \
 	$(am__append_3) $(am__DEPENDENCIES_1)
 am__objects_1 = asan_activation.lo asan_allocator.lo asan_debugging.lo \
 	asan_descriptions.lo asan_errors.lo asan_fake_stack.lo \
@@ -177,7 +176,7 @@ CYGPATH_W = @CYGPATH_W@
 DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS \
 	-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS \
 	-DASAN_HAS_EXCEPTIONS=1 -DASAN_NEEDS_SEGV=1 \
-	-DCAN_SANITIZE_UB=1 $(am__append_1)
+	-DCAN_SANITIZE_UB=0 $(am__append_1)
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -347,8 +346,7 @@ asan_files = \
 libasan_la_SOURCES = $(asan_files)
 libasan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(top_builddir)/lsan/libsanitizer_lsan.la \
-	$(top_builddir)/ubsan/libsanitizer_ubsan.la $(am__append_2) \
+	$(top_builddir)/lsan/libsanitizer_lsan.la $(am__append_2) \
 	$(am__append_3) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libasan)
 

@@ -161,7 +161,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LIBASAN_EARLY_SPEC "%{!shared:libasan_preinit%O%s} " \
   "%{static-libasan:%{!shared:" \
   LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
-  LD_DYNAMIC_OPTION " -lstdc++ }}%{!static-libasan:-lasan}"
+  LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan}"
 #undef LIBTSAN_EARLY_SPEC
 #define LIBTSAN_EARLY_SPEC "%{!shared:libtsan_preinit%O%s} " \
   "%{static-libtsan:%{!shared:" \
