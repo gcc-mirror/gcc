@@ -257,7 +257,7 @@ error (const char *msg, ...)
    know.  */
 
 const char *
-module2bmi (const char *module)
+module2bmi (const char *module, bool &alias)
 {
   const char *res = NULL;
 
@@ -266,6 +266,15 @@ module2bmi (const char *module)
       module_map_t::iterator iter = module_map->find (module);
       res = iter != module_map->end () ? iter->second : NULL;
     }
+
+  if (res && res[0] == '=')
+    {
+      /* An alias.  */
+      res++;
+      alias = true;
+    }
+  else
+    alias = false;
 
   if (!res && flag_fallback)
     {
@@ -713,6 +722,34 @@ buffer::get_word (unsigned id, const char *option, ...)
   return -1;
 }
 
+char *
+encode_module_name (const char *mod, const char *pfx = NULL)
+{
+  size_t mlen = strlen (mod);
+  size_t plen = pfx ? strlen (pfx) : 0;
+  char *key = XNEWVEC (char, plen + mlen + 1);
+  char *ptr = key;
+  if (pfx)
+    {
+      memcpy (ptr, pfx, plen);
+      ptr += plen;
+    }
+
+  if (char c = mod[0] == '"' ? '1' : mod[0] == '<' ? '2' : 0)
+    {
+      if (mod[mlen-1] != (c == '1' ? '"' : '>'))
+	noisy ("ill-formed legacy name '%s'", mod);
+      mlen -= 2;
+      mod += 1;
+      *ptr++ = c;
+      *ptr++ = ':';
+    }
+  memcpy (ptr, mod, mlen);
+  ptr[mlen] = 0;
+
+  return key;
+}
+
 /* Read the mapping file STREAM and populate the module_map from it.  */
 
 void
@@ -756,30 +793,23 @@ read_mapping_file (FILE *stream, const char *cookie, bool starting)
       if (flag_root && file && 0 == strncmp (file, flag_root, root_len)
 	  && IS_DIR_SEPARATOR (file[root_len]))
 	file += root_len + 1;
-      int mlen = strlen (mod);
-      char *dup_mod = XNEWVEC (char, mlen + 1);
-      char *key = dup_mod;
-      char c = mod[0] == '"' ? '1' : mod[0] == '<' ? '2' : 0;
-      if (c)
-	{
-	  if (mod[mlen-1] != (c == '1' ? '"' : '>'))
-	    noisy ("ill-formed legacy name '%s'", mod);
-	  mlen -= 2;
-	  mod += 1;
-	  *dup_mod++ = c;
-	  *dup_mod++ = ':';
-	}
-      memcpy (dup_mod, mod, mlen);
-      dup_mod[mlen] = 0;
 
+      mod = encode_module_name (mod);
       std::pair<module_map_t::iterator, bool> inserted
-	= module_map->insert (module_map_t::value_type (key, 0));
+	= module_map->insert (module_map_t::value_type (mod, 0));
 
       if (!inserted.second)
-	XDELETEVEC (key);
+	XDELETEVEC (mod);
 
-      if (!inserted.first->second)
-	inserted.first->second = file ? xstrdup (file) : file;
+      if (!inserted.first->second && file)
+	{
+	  if (file[0] == '=')
+	    /* An alias.  */
+	    file = encode_module_name (file + 1, "=");
+	  else
+	    file = xstrdup (file);
+	  inserted.first->second = file;
+	}
     }
 }
 
@@ -972,8 +1002,10 @@ client::imex_response (unsigned id, const char *name, bool deferred)
 {
   const char *sfx = &" "[!deferred];
   const char *pfx = deferred ? name : sfx;
-  if (const char *bmi = module2bmi (name))
-    write.send_response (id, "%s%sOK %s", pfx, sfx, bmi);
+  bool alias;
+  if (const char *bmi = module2bmi (name, alias))
+    write.send_response (id, "%s%s%s %s", pfx, sfx,
+			 alias ? "ALIAS" : "OK", bmi);
   else
     write.send_response (id, "%s%sERROR Unknown module", pfx, sfx);
 }
@@ -1085,14 +1117,20 @@ client::action ()
 			/* We may want to tell the compiler go look on
 			   the search path.  */
 			bool do_imp = false;
+			const char *alias = NULL;
 			if (module_map)
 			  {
 			    module_map_t::iterator iter
 			      = module_map->find (module);
 			    if (iter != module_map->end ())
-			      do_imp = true;
+			      {
+				do_imp = true;
+				if (iter->second && iter->second[0] == '=')
+				  alias = iter->second + 1;
+			      }
 			  }
-			write.send_response (id, do_imp ? "IMPORT" : "INCLUDE");
+			write.send_response (id, do_imp ? "IMPORT %s"
+					     : "INCLUDE", alias ? alias : "");
 		      }
 		      break;
 

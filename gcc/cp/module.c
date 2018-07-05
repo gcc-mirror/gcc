@@ -3013,6 +3013,10 @@ public:
   {
     return batching;
   }
+  bool eol_p () const
+  {
+    return pos == end;
+  }
 
 public:
   void imex_query (const module_state *, int dir);
@@ -3042,6 +3046,7 @@ private:
   void send_command (location_t, const char * = NULL, ...) ATTRIBUTE_PRINTF_3;
   int get_response (location_t);
   char *response_token (location_t, bool all = false);
+  module_kind module_name_kind (location_t, const char *&);
   tree response_name (location_t);
   int response_word (location_t, const char *, ...);
   const char *response_error ()
@@ -3295,31 +3300,36 @@ dumper::operator () (const char *format, ...)
 	  {
 	    tree_code code = (tree_code)va_arg (args, unsigned);
 	    fputs (get_tree_code_name (code), dumps->stream);
-	    break;
 	  }
+	  break;
 	case 'I': /* Identifier.  */
 	  {
 	    tree t = va_arg (args, tree);
 	    dumps->nested_name (t);
-	    break;
 	  }
+	  break;
 	case 'M': /* Module. */
 	  {
 	    module_state *m = va_arg (args, module_state *);
 	    if (m)
-	      dumps->nested_name (m->name);
+	      {
+		if (m->kind != mk_new)
+		  fputs (m->kind == mk_legacy_system ? "system:" : "user:",
+			 dumps->stream);
+		dumps->nested_name (m->name);
+	      }
 	    else
 	      fputs ("(none)", dumps->stream);
-	    break;
 	  }
+	  break;
 	case 'N': /* Name.  */
 	  {
 	    tree t = va_arg (args, tree);
 	    fputc ('\'', dumps->stream);
 	    dumps->nested_name (t);
 	    fputc ('\'', dumps->stream);
-	    break;
 	  }
+	  break;
 	case 'P': /* Pair.  */
 	  {
 	    tree ctx = va_arg (args, tree);
@@ -3330,15 +3340,15 @@ dumper::operator () (const char *format, ...)
 	      fputs ("::", dumps->stream);
 	    dumps->nested_name (name);
 	    fputc ('\'', dumps->stream);
-	    break;
 	  }
+	  break;
 	case 'R': /* Ratio */
 	  {
 	    unsigned a = va_arg (args, unsigned);
 	    unsigned b = va_arg (args, unsigned);
 	    fprintf (dumps->stream, "%.1f", (float) a / (b + !b));
-	    break;
 	  }
+	  break;
 	case 'S': /* Symbol name */
 	  {
 	    tree t = va_arg (args, tree);
@@ -3352,14 +3362,14 @@ dumper::operator () (const char *format, ...)
 		       dumps->stream);
 		fputc (')', dumps->stream);
 	      }
-	    break;
 	  }
+	  break;
 	case 'U': /* long unsigned.  */
 	  {
 	    unsigned long u = va_arg (args, unsigned long);
 	    fprintf (dumps->stream, "%lu", u);
-	    break;
 	  }
+	  break;
 	case 'V': /* Verson.  */
 	  {
 	    int v = va_arg (args, unsigned);
@@ -3367,38 +3377,44 @@ dumper::operator () (const char *format, ...)
 
 	    version2string (v, string);
 	    fputs (string, dumps->stream);
-	    break;
 	  }
+	  break;
+	case 'c': /* Character.  */
+	  {
+	    int c = va_arg (args, int);
+	    fputc (c, dumps->stream);
+	  }
+	  break;
 	case 'd': /* Decimal Int.  */
 	  {
 	    int d = va_arg (args, int);
 	    fprintf (dumps->stream, "%d", d);
-	    break;
 	  }
+	  break;
 	case 'p': /* Pointer. */
 	  {
 	    void *p = va_arg (args, void *);
 	    fprintf (dumps->stream, "%p", p);
-	    break;
 	  }
+	  break;
 	case 's': /* String. */
 	  {
 	    const char *s = va_arg (args, char *);
 	    fputs (s, dumps->stream);
-	    break;
 	  }
+	  break;
 	case 'u': /* Unsigned.  */
 	  {
 	    unsigned u = va_arg (args, unsigned);
 	    fprintf (dumps->stream, "%u", u);
-	    break;
 	  }
+	  break;
 	case 'x': /* Hex. */
 	  {
 	    unsigned x = va_arg (args, unsigned);
 	    fprintf (dumps->stream, "%x", x);
-	    break;
 	  }
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -7508,7 +7524,7 @@ module_mapper::response_unexpected (location_t loc)
 bool
 module_mapper::response_eol (location_t loc, bool ignore)
 {
-  bool at_end = pos == end;
+  bool at_end = eol_p ();
   if (!at_end && !ignore)
     response_unexpected (loc);
   pos = end;
@@ -7545,16 +7561,10 @@ module_mapper::response_token (location_t loc, bool all)
   return ptr;
 }
 
-/* Parse a module name of form [NUM:]NAME.  */
-
-tree
-module_mapper::response_name (location_t loc)
+module_kind
+module_mapper::module_name_kind (location_t loc, const char *&name_str)
 {
-  char *name_str = response_token (loc);
-  if (!name_str)
-    return NULL_TREE;
-
-  unsigned k = 0;
+  module_kind mk = mk_new;
   if (ISDIGIT (name_str[0]))
     {
       char *end;
@@ -7562,15 +7572,33 @@ module_mapper::response_name (location_t loc)
       if (*end != ':' || v > 2)
 	{
 	  response_unexpected (loc);
-	  return NULL;
+	  name_str = NULL;
 	}
-      k = v;
-      name_str = end + 1;
+      else
+	{
+	  mk = module_kind (v);
+	  name_str = end + 1;
+	}
     }
+  return mk;
+}
+
+/* Parse a module name of form [NUM:]NAME.  */
+
+tree
+module_mapper::response_name (location_t loc)
+{
+  const char *name_str = response_token (loc);
+  if (!name_str)
+    return NULL_TREE;
+
+  module_kind mk = module_name_kind (loc, name_str);
+  if (!name_str)
+    return NULL;
 
   tree mod_name = get_identifier (name_str);
-  if (k)
-    mod_name = tree_cons (mod_name, k == 2 ? integer_zero_node
+  if (mk != mk_new)
+    mod_name = tree_cons (mod_name, mk == mk_legacy_system ? integer_zero_node
 			  : NULL_TREE, NULL_TREE);
   return mod_name;
 }
@@ -7763,7 +7791,12 @@ module_mapper::export_done (const module_state *state)
   return ok;
 }
 
-/* Include diversion.  */
+/* Include diversion.  Query if include FILE should be turned into an
+   import of a legacy header.  Return 0 if it should remain a #include.
+   If READER is non-NULL, do the diversion by pushing a buffer
+   containing the diverted text (ending in two \n's).  Return non-zero
+   indicator of who owns the pushed buffer.  */
+
 int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
 				   location_t loc, const char *file, bool angle)
 {
@@ -7772,6 +7805,7 @@ int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
     return 0;
 
   int action = 0;
+  const char *diversion = NULL;
   // FIXME:Search response?
   switch (response_word (loc, "IMPORT", "INCLUDE", NULL))
     {
@@ -7779,6 +7813,8 @@ int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
       break;
     case 0:  /* Divert to import.  */
       action = 1;
+      if (!eol_p ())
+	diversion = response_token (loc);
       break;
     case 1:  /* Treat as include.  */
       break;
@@ -7787,28 +7823,37 @@ int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
   if (!action)
     return 0;
 
-  dump () && dump ("Diverting include %s to import", file);
+  if (reader)
+    {
+      loc = ordinary_loc_of (lmaps, loc);
+      const line_map_ordinary *map
+	= linemap_check_ordinary (linemap_lookup (lmaps, loc));
+      unsigned col = SOURCE_COLUMN (map, loc);
+      col = col > sizeof ("import") + 1 ? col - (sizeof ("import") + 1) : 0; 
 
-  loc = ordinary_loc_of (lmaps, loc);
-  const line_map_ordinary *map
-    = linemap_check_ordinary (linemap_lookup (lmaps, loc));
-  unsigned col = SOURCE_COLUMN (map, loc);
-  col = col > sizeof ("import") + 1 ? col - (sizeof ("import") + 1) : 0; 
+      module_kind mk;
+      if (diversion)
+	mk = module_name_kind (loc, diversion);
+      if (diversion)
+	file = diversion;
+      else
+	mk = angle ? mk_legacy_system : mk_legacy_user;
 
-  /* Divert.  We can use the command buffer len to know how much to
-     allocate, as we just printed the filename to it above.  */
-  size_t len = size + 60 + col;
-  char *res = XNEWVEC (char, len);
+      /* Divert.   */
+      size_t len = strlen (file) + 60 + col;
+      char *res = XNEWVEC (char, len);
 
-  /* Indent so the filename falls at the same column as the original
-     source.  Hence the need for a trailing gnu::export attribute.  */
-  memset (res, ' ', col);
-  size_t actual = col + snprintf (res + col, len - col,
-				  "import %c%s%c [[gnu::export]];\n\n",
-				  angle ? '<' : '"', file, angle ? '>' : '"');
-  gcc_assert (actual < len);
-  cpp_push_buffer (reader, reinterpret_cast <unsigned char *> (res),
-		   actual, false);
+      /* Indent so the filename falls at the same column as the original
+	 source.  Hence the need for a trailing gnu::export attribute.  */
+      const char *const ps[][2] = {{"", ""}, {"\"", "\""}, {"<", ">"}};
+      memset (res, ' ', col);
+      size_t actual = col + snprintf (res + col, len - col,
+				      "import %s%s%s [[gnu::export]];\n\n",
+				      ps[mk][0], file, ps[mk][1]);
+      gcc_assert (actual < len);
+      cpp_push_buffer (reader, reinterpret_cast <unsigned char *> (res),
+		       actual, false);
+    }
   return +1;  /* cpplib will delete the buffer.  */
 }
 
@@ -7890,8 +7935,8 @@ module_state::write_readme (elf_out *to, const char *options)
 
   readme.begin (false);
 
-  readme.printf ("GNU C++ Module (%s%s)",
-		 is_legacy () ? "Legacy " : "",
+  readme.printf ("GNU C++ Module (%s%s)", kind == mk_legacy_user ? "Legacy User "
+		 : kind == mk_legacy_system ? "Legacy System "  : "",
 		 modules_atom_p () ? "ATOM" : "TS");
   /* Compiler's version.  */
   readme.printf ("compiler:%s", version_string);
@@ -10891,17 +10936,29 @@ do_divert_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
     // FIXME: post-preamble warnings?
     return 0;
 
-  module_mapper *mapper = module_mapper::get (loc);
-  if (!mapper->is_live ())
-    return 0;
+  dump.push (NULL);
 
-  return mapper->divert_include (reader, lmaps, loc, header, angle);
+  dump () && dump ("Checking diversion of include %c%s%c",
+		   angle ? '<' : '"', header, angle ? '>' : '"');
+  int res = 0;
+  module_mapper *mapper = module_mapper::get (loc);
+  if (mapper->is_live ())
+    res = mapper->divert_include (reader, lmaps, loc, header, angle);
+
+  dump () && dump (res ? "Diverting include to import"
+		   : "Keeping include as include");
+
+  dump.pop (0);
+
+  return res;
 }
 
 cpp_divert_include_t *
 atom_divert_include ()
 {
-  return modules_legacy_p () ? do_divert_include : NULL;
+  /* We enable include diversion in atom mode -- not just legacy
+     header mode.  */
+  return modules_atom_p () ? do_divert_include : NULL;
 }
 
 /* We've just properly entered the main source file.  I.e. after the

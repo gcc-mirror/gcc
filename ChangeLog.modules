@@ -1,3 +1,20 @@
+2018-07-05  Nathan Sidwell  <nathan@acm.org>
+
+	Legacy header aliasing
+	gcc/
+	* doc/invoke.texi (C++ Modules): Update protocol docs
+	gcc/cp/
+	* cxx-module.cc (module2bmi): Deal with aliasing.
+	(encode_module_name): New.
+	(read_mapping_file): Use it.  Deal with aliasing.
+	(client::imex_response): Likewise.
+	(client::action): Likewise,
+	* module.c (module_mapper::module_name_kind): New.
+	(module_mapper::response_name): Use it.
+	(module_mapper::divert_include): Allow aliasing.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-5.*: New.
+
 2018-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	Merge legacy header options to -fmodules-

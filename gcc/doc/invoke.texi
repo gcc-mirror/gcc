@@ -29210,17 +29210,22 @@ source being compiled.  Response is either @samp{OK
 
 @item IMPORT @var{module}
 A query for an import (including for a module implementation unit).
-The response should be @samp{OK @var{bmipath}}.  If the request is
-not fulfilable, the response is @samp{ERROR [@var{msg}]}.  Usually an
-error response will cause compilation to terminate.
+The response is @samp{OK @var{bmipath}} to indicate a BMI file.  The
+response may be @samp{ALIAS @var{module}}, to indicate the requested
+module is an alias for another module (required for legacy header
+importing, where @samp{"foo"} and @samp{<foo>} may refer to the same
+legacy header.  If the request is not fulfilable, the response is
+@samp{ERROR [@var{msg}]}.  Usually an error response will cause
+compilation to terminate.
 
 @item INCLUDE @var{header}
-A @code{#include} directive for @var{header} is about to be processed
-while preprocessing @var{from}, in legacy header mode.  The response
-informs the compiler how to treat the inclusion.  A response of
-@samp{INCLUDE} causes textual inclusion.  A response of @samp{IMPORT}
-causes importation.  (A subsequent import query will be forthcoming.)
-(This is not implemented.)
+A @code{#include} directive for @var{header} is about to be processed,
+in legacy header mode.  The response informs the compiler how to treat
+the inclusion.  A response of @samp{INCLUDE} causes textual inclusion.
+A response of @samp{IMPORT [@var{module}]} causes importation.  If the
+import response includes a module name, that will be the imported
+module.  Otherwise the import shall be @var{header}.  A subsequent
+@samp{IMPORT} or @samp{BYIMPORT} query will be forthcoming.
 
 @item RESET
 This command resets the server.  There is no response.  It may be
