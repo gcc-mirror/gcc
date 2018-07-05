@@ -11,7 +11,6 @@ AM_CXXFLAGS += $(EXTRA_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 
 toolexeclib_LTLIBRARIES = libubsan.la
-noinst_LTLIBRARIES = libsanitizer_ubsan.la
 
 ubsan_plugin_files = \
 	ubsan_diag.cc \
@@ -26,10 +25,7 @@ ubsan_plugin_files = \
 
 ubsan_files = $(ubsan_plugin_files)
 
-libsanitizer_ubsan_la_SOURCES = $(ubsan_plugin_files)
-libsanitizer_ubsan_la_LIBADD = $(LIBSTDCXX_RAW_CXX_LDFLAGS)
-
-libubsan_la_SOURCES = $(ubsan_files)
+libubsan_la_SOURCES = $(ubsan_files) 
 libubsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la 
 if !USING_MAC_INTERPOSE
 libubsan_la_LIBADD += $(top_builddir)/interception/libinterception.la

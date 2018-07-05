@@ -103,18 +103,15 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
-LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libsanitizer_ubsan_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+libubsan_la_DEPENDENCIES =  \
+	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
+	$(am__append_1) $(am__append_2) $(am__DEPENDENCIES_1)
 am__objects_1 = ubsan_diag.lo ubsan_flags.lo ubsan_handlers.lo \
 	ubsan_handlers_cxx.lo ubsan_init.lo ubsan_type_hash.lo \
 	ubsan_type_hash_itanium.lo ubsan_type_hash_win.lo \
 	ubsan_value.lo
-am_libsanitizer_ubsan_la_OBJECTS = $(am__objects_1)
-libsanitizer_ubsan_la_OBJECTS = $(am_libsanitizer_ubsan_la_OBJECTS)
-libubsan_la_DEPENDENCIES =  \
-	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(am__append_1) $(am__append_2) $(am__DEPENDENCIES_1)
 am__objects_2 = $(am__objects_1)
 am_libubsan_la_OBJECTS = $(am__objects_2)
 libubsan_la_OBJECTS = $(am_libubsan_la_OBJECTS)
@@ -134,7 +131,7 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libsanitizer_ubsan_la_SOURCES) $(libubsan_la_SOURCES)
+SOURCES = $(libubsan_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -301,7 +298,6 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-std=gnu++11 $(EXTRA_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 toolexeclib_LTLIBRARIES = libubsan.la
-noinst_LTLIBRARIES = libsanitizer_ubsan.la
 ubsan_plugin_files = \
 	ubsan_diag.cc \
 	ubsan_flags.cc \
@@ -314,9 +310,7 @@ ubsan_plugin_files = \
 	ubsan_value.cc
 
 ubsan_files = $(ubsan_plugin_files)
-libsanitizer_ubsan_la_SOURCES = $(ubsan_plugin_files)
-libsanitizer_ubsan_la_LIBADD = $(LIBSTDCXX_RAW_CXX_LDFLAGS)
-libubsan_la_SOURCES = $(ubsan_files)
+libubsan_la_SOURCES = $(ubsan_files) 
 libubsan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(am__append_1) $(am__append_2) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
@@ -395,15 +389,6 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclib_LTLIBRARIES)'; test -n "$(toolexeclibdir)" || list=; \
@@ -436,8 +421,6 @@ clean-toolexeclibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libsanitizer_ubsan.la: $(libsanitizer_ubsan_la_OBJECTS) $(libsanitizer_ubsan_la_DEPENDENCIES) $(EXTRA_libsanitizer_ubsan_la_DEPENDENCIES) 
-	$(CXXLINK)  $(libsanitizer_ubsan_la_OBJECTS) $(libsanitizer_ubsan_la_LIBADD) $(LIBS)
 libubsan.la: $(libubsan_la_OBJECTS) $(libubsan_la_DEPENDENCIES) $(EXTRA_libubsan_la_DEPENDENCIES) 
 	$(libubsan_la_LINK) -rpath $(toolexeclibdir) $(libubsan_la_OBJECTS) $(libubsan_la_LIBADD) $(LIBS)
 
@@ -574,8 +557,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
-	clean-toolexeclibLTLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -646,19 +629,18 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES \
-	clean-toolexeclibLTLIBRARIES ctags distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags dvi dvi-am \
-	html html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip \
-	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-toolexeclibLTLIBRARIES
+	clean-libtool clean-toolexeclibLTLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags dvi dvi-am html html-am info info-am install \
+	install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip install-toolexeclibLTLIBRARIES installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-toolexeclibLTLIBRARIES
 
 
 # Use special rules for files that require RTTI support.
