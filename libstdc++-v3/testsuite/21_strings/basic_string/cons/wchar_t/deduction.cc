@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
+// { dg-xfail-if "COW string missing deduction guides" { ! cxx11-abi } }
 
 #include <string>
 #include <testsuite_iterators.h>
