@@ -1,5 +1,22 @@
 2018-07-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/85831
+	* config/abi/pre/gnu.ver: Export move constructors and move
+	assignment operators for std::logic_error and std::runtime_error.
+	* include/std/stdexcept: Use _GLIBCXX_NOTHROW instead of
+	_GLIBCXX_USE_NOEXCEPT.
+	(logic_error, runtime_error): Declare move constructors and move
+	assignment operators. When not declared already, define copy
+	constructors and copy assignment operators as explicit-defaulted.
+	(domain_error, invalid_argument, length_error, out_of_range)
+	(overflow_error, underflow_error): Define move constructors and move
+	assignment operators as explicitly-defaulted.
+	* libsupc++/exception.h (exception): Likewise.
+	* src/c++11/cow-stdexcept.cc (logic_error, runtime_error): Define
+	move constructors and move assignment operators as defaulted.
+	* testsuite/19_diagnostics/stdexcept.cc: Check that constructors and
+	assignment operators are defined.
+
 	* testsuite/21_strings/basic_string/cons/char/deduction.cc: XFAIL for
 	COW strings.
 	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc:

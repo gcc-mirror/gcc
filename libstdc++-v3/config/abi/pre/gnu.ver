@@ -2014,6 +2014,13 @@ GLIBCXX_3.4.26 {
     # std::basic_string::insert(const_iterator, initializer_list)
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE6insertEN9__gnu_cxx17__normal_iteratorIPK[cw]S4_EESt16initializer_listI[cw]E;
 
+    # std::logic_error move operations
+    _ZNSt11logic_errorC[12]EOS_;
+    _ZNSt11logic_erroraSEOS_;
+    # std::runtime_error move operations
+    _ZNSt13runtime_errorC[12]EOS_;
+    _ZNSt13runtime_erroraSEOS_;
+
 } GLIBCXX_3.4.25;
 
 # Symbols in the support library (libsupc++) have their own tag.
