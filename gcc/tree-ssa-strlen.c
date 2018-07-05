@@ -1156,22 +1156,17 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
       if (src_is_array && !array_at_struct_end_p (src))
 	{
 	  tree type = TREE_TYPE (src);
-	  if (tree dom = TYPE_DOMAIN (type))
-	    {
-	      tree maxval = TYPE_MAX_VALUE (dom);
-	      if (maxval)
-		max = wi::to_wide (maxval);
-	      else
-		max = wi::zero (min.get_precision ());
+	  if (tree size = TYPE_SIZE_UNIT (type))
+	    if (size && TREE_CODE (size) == INTEGER_CST)
+	      max = wi::to_wide (size);
 
-	      /* For strlen() the upper bound above is equal to
-		 the longest string that can be stored in the array
-		 (i.e., it accounts for the terminating nul.  For
-		 strnlen() bump up the maximum by one since the array
-		 need not be nul-terminated.  */
-	      if (bound)
-		++max;
-	    }
+	  /* For strlen() the upper bound above is equal to
+	     the longest string that can be stored in the array
+	     (i.e., it accounts for the terminating nul.  For
+	     strnlen() bump up the maximum by one since the array
+	     need not be nul-terminated.  */
+	  if (!bound && max != 0)
+	    --max;
 	}
       else
 	{

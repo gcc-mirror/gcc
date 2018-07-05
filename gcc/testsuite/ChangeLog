@@ -1,3 +1,9 @@
+2018-07-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/86400
+	* gcc.dg/strlenopt-47.c: New test.
+	* gcc.dg/strlenopt-48.c: New test.
+
 2018-07-05  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/84711
