@@ -3,4 +3,4 @@
 
 #include "avx2-gather-5.c"
 
-/* { dg-final { scan-tree-dump-times "note: vectorized 1 loops in function" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 1 "vect" } } */
