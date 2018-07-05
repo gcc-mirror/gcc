@@ -1,3 +1,9 @@
+2018-07-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/86400
+	* tree-ssa-strlen.c (maybe_set_strlen_range): Use type size rather
+	than its domain to compute its the upper bound of a char array.
+
 2018-07-05  Nathan Sidwell  <nathan@acm.org>
 
 	Replace NO_IMPLICIT_EXTERN_C with SYSTEM_IMPLICIT_EXTERN_C.
