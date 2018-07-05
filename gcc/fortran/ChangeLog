@@ -1,3 +1,11 @@
+2018-07-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86408
+	* resolve.c.c (resolve_contained_fntype): Reference to C418 is
+	in F2008 and not F2003.
+	(resolve_function): Ditto in error message. Also, exclude
+	deferred character length results from the error.
+
 2018-07-05  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/83183

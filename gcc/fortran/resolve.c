@@ -601,7 +601,7 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 	}
     }
 
-  /* Fortran 2003 Draft Standard, page 535, C418, on type-param-value
+  /* Fortran 2008 Draft Standard, page 535, C418, on type-param-value
      type, lists the only ways a character length value of * can be used:
      dummy arguments of procedures, named constants, function results and
      in allocate statements if the allocate_object is an assumed length dummy
@@ -3117,10 +3117,11 @@ resolve_function (gfc_expr *expr)
      cannot be an assumed length character (F2003: C418).  */
   if (sym && sym->attr.abstract && sym->attr.function
       && sym->result->ts.u.cl
-      && sym->result->ts.u.cl->length == NULL)
+      && sym->result->ts.u.cl->length == NULL
+      && !sym->result->ts.deferred)
     {
       gfc_error ("ABSTRACT INTERFACE %qs at %L must not have an assumed "
-		 "character length result (F2003: C418)", sym->name,
+		 "character length result (F2008: C418)", sym->name,
 		 &sym->declared_at);
       return false;
     }
