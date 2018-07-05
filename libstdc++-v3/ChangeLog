@@ -1,3 +1,23 @@
+2018-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/58265
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	[_GLIBCXX_FULLY_DYNAMIC_STRING==0] (basic_string::basic_string()):
+	Add GLIBCXX_NOEXCEPT.
+	(basic_string::operator=(basic_string&&)): Add _GLIBCXX_NOEXCEPT_IF
+	to depend on the allocator's is_always_equal property (LWG 2063).
+	(basic_string::swap(basic_string&)): Likewise.
+	* include/bits/basic_string.tcc [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::swap(basic_string&)): Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/move_assign.cc:
+	Check is_nothrow_move_assignable.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/move_assign.cc:
+	Check is_nothrow_move_assignable.
+	* testsuite/21_strings/basic_string/cons/char/
+	noexcept_move_construct.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/
+	noexcept_move_construct.cc: Likewise.
+
 2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	P0646R1 Improving the Return Value of Erase-Like Algorithms I

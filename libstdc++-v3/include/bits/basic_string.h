@@ -3486,6 +3486,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        */
       basic_string()
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+      _GLIBCXX_NOEXCEPT
       : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
 #else
       : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()){ }
@@ -3642,7 +3643,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @param  __str  Source string.
        */
       basic_string&
-      operator=(const basic_string& __str) 
+      operator=(const basic_string& __str)
       { return this->assign(__str); }
 
       /**
@@ -3675,9 +3676,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  The contents of @a str are moved into this string (without copying).
        *  @a str is a valid, but unspecified string.
        **/
-      // PR 58265, this should be noexcept.
       basic_string&
       operator=(basic_string&& __str)
+      _GLIBCXX_NOEXCEPT_IF(allocator_traits<_Alloc>::is_always_equal::value)
       {
 	// NB: DR 1204.
 	this->swap(__str);
@@ -5111,9 +5112,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  Exchanges the contents of this string with that of @a __s in constant
        *  time.
       */
-      // PR 58265, this should be noexcept.
       void
-      swap(basic_string& __s);
+      swap(basic_string& __s)
+      _GLIBCXX_NOEXCEPT_IF(allocator_traits<_Alloc>::is_always_equal::value);
 
       // String operations:
       /**
