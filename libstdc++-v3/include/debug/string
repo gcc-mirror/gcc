@@ -563,7 +563,7 @@ template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
       insert(iterator __p, _InputIterator __first, _InputIterator __last)
       {
 	typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
-	__glibcxx_check_insert_range2(__p, __first, __last, __dist);
+	__glibcxx_check_insert_range(__p, __first, __last, __dist);
 
 	if (__dist.second >= __dp_sign)
 	  _Base::insert(__p.base(), __gnu_debug::__unsafe(__first),
