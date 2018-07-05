@@ -1,3 +1,9 @@
+2018-07-05  Carl Love  <cel@us.ibm.com>
+	* gcc.target/altivec-1-runnable.c: New test file.
+	* gcc.target/altivec-2-runnable.c: New test file.
+	* gcc.target/vsx-7.c (main2): Change expected expected instruction
+	for tests.
+
 2018-07-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/86400

@@ -1,3 +1,10 @@
+2018-07-05  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Map ALTIVEC_BUILTIN_VEC_UNPACKH for
+	float argument to VSX_BUILTIN_DOUBLEH_V4SF.
+	Map ALTIVEC_BUILTIN_VEC_UNPACKL for float argument to
+	VSX_BUILTIN_DOUBLEL_V4SF.
+
 2018-07-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/86400
