@@ -2233,8 +2233,9 @@
 ;; Max/Min are introduced by idiom recognition by GCC's mid-end.  An
 ;; expression like:
 ;;      a = (b < c) ? b : c;
-;; is idiom-matched as MIN_EXPR<b,c> only if -ffinite-math-only is enabled
-;; either explicitly or indirectly via -ffast-math.
+;; is idiom-matched as MIN_EXPR<b,c> only if -ffinite-math-only and
+;; -fno-signed-zeros are enabled either explicitly or indirectly via
+;; -ffast-math.
 ;;
 ;; MIN_EXPR and MAX_EXPR eventually map to 'smin' and 'smax' in RTL.
 ;; The 'smax' and 'smin' RTL standard pattern names do not specify which
