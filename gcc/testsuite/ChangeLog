@@ -1,3 +1,13 @@
+2018-07-03  Carl Love  <cel@us.ibm.com>
+
+	Backport from trunk
+	2018-07-03  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/altivec-1-runnable.c: New test file.
+	* gcc.target/altivec-2-runnable.c: New test file.
+	* gcc.target/vsx-7.c (main2):  Test file changes not backported from
+	mainline since test file does not exist in GCC 8.
+
 2018-07-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82969

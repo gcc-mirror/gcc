@@ -1,3 +1,13 @@
+2018-07-03  Carl Love  <cel@us.ibm.com>
+
+	Backport from trunk
+	2018-07-03  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Map ALTIVEC_BUILTIN_VEC_UNPACKH for
+	float argument to VSX_BUILTIN_DOUBLEH_V4SF.
+	Map ALTIVEC_BUILTIN_VEC_UNPACKL for float argument to
+	VSX_BUILTIN_DOUBLEL_V4SF.
+
 2018-07-04  Luis Machado  <luis.machado@linaro.org>
 
 	* config/aarch64/aarch64.c (qdf24xx_addrcost_table): New static
