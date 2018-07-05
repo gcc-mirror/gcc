@@ -53,7 +53,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // Copy constructors and assignment operators defined using COW std::string
+  // Copy/move constructors and assignment operators defined using COW string.
+  // These operations are noexcept even though copying a COW string is not,
+  // but we know that the string member in an exception has not been "leaked"
+  // so copying is a simple reference count increment.
 
   logic_error::logic_error(const logic_error& e) noexcept
   : exception(e), _M_msg(e._M_msg) { }
@@ -61,12 +64,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   logic_error& logic_error::operator=(const logic_error& e) noexcept
   { _M_msg = e._M_msg; return *this; }
 
+  logic_error::logic_error(logic_error&& e) noexcept = default;
+
+  logic_error&
+  logic_error::operator=(logic_error&& e) noexcept = default;
+
   runtime_error::runtime_error(const runtime_error& e) noexcept
   : exception(e), _M_msg(e._M_msg) { }
 
   runtime_error&
   runtime_error::operator=(const runtime_error& e) noexcept
   { _M_msg = e._M_msg; return *this; }
+
+  runtime_error::runtime_error(runtime_error&& e) noexcept = default;
+
+  runtime_error&
+  runtime_error::operator=(runtime_error&& e) noexcept = default;
 
   // New C++11 constructors:
 
