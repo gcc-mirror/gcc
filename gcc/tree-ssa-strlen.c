@@ -1186,11 +1186,13 @@ maybe_set_strlen_range (tree lhs, tree src)
     return;
 
   tree type = TREE_TYPE (src);
-  if (tree dom = TYPE_DOMAIN (type))
-    if (tree maxval = TYPE_MAX_VALUE (dom))
+  if (tree size = TYPE_SIZE_UNIT (type))
+    if (size && TREE_CODE (size) == INTEGER_CST)
       {
-	wide_int max = wi::to_wide (maxval);
+	wide_int max = wi::to_wide (size);
 	wide_int min = wi::zero (max.get_precision ());
+	if (max != 0)
+	  --max;
 	set_range_info (lhs, VR_RANGE, min, max);
       }
 }
