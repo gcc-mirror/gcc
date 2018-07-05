@@ -1,6 +1,11 @@
 2018-07-05  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/84711
+	* gcc.target/arm/big-endian-subreg.c: New.
+
+2018-07-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/84711
 	* gcc.dg/vect/pr84711.c: New.
 
 2018-07-05  Tamar Christina  <tamar.christina@arm.com>
