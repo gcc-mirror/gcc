@@ -1,5 +1,12 @@
 2018-07-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc: XFAIL for
+	COW strings.
+	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/debug.cc: Likewise.
+
 	PR libstdc++/58265
 	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
 	(basic_string::assign(basic_string&&)): Add conditional noexcept
