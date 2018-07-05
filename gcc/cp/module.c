@@ -10933,20 +10933,36 @@ do_divert_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
     return 0;
 
   if (module_preamble_end_loc)
-    // FIXME: post-preamble warnings?
-    return 0;
+    reader = NULL;
 
   dump.push (NULL);
 
-  dump () && dump ("Checking diversion of include %c%s%c",
+  dump () && dump ("Checking %sdiversion of include %c%s%c",
+		   reader ? "" : "post-preamble ",
 		   angle ? '<' : '"', header, angle ? '>' : '"');
   int res = 0;
   module_mapper *mapper = module_mapper::get (loc);
   if (mapper->is_live ())
     res = mapper->divert_include (reader, lmaps, loc, header, angle);
 
-  dump () && dump (res ? "Diverting include to import"
-		   : "Keeping include as include");
+  if (reader)
+    dump () && dump (res ? "Diverting include to import"
+		     : "Keeping include as include");
+  else if (res)
+    {
+      bool warned = warning_at (loc, OPT_Wlegacy_header,
+				"header %c%s%c cannot be a legacy module"
+				" because it is after the preamble",
+				angle ? '<' : '"', header, angle ? '>' : '"');
+      /* We should have issued a warning, because that was the only
+	 point of checking.  */
+      gcc_checking_assert (warned);
+      if (warned)
+	inform (module_preamble_end_loc, "preamble ended here");
+
+      /* Don't actually divert! */
+      res = 0;
+    }
 
   dump.pop (0);
 
@@ -10956,9 +10972,27 @@ do_divert_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 cpp_divert_include_t *
 atom_divert_include ()
 {
+  /* Wlegacy-header should default differently in preprocessing mode
+     than in compilation mode.  */
+  if (warn_legacy_header < 0)
+    warn_legacy_header = !flag_preprocess_only;
+
   /* We enable include diversion in atom mode -- not just legacy
      header mode.  */
   return modules_atom_p () ? do_divert_include : NULL;
+}
+
+void
+atom_preamble_end (cpp_reader *reader, location_t loc)
+{
+  module_preamble_end_loc = loc;
+
+  if (!warn_legacy_header)
+    {
+      /* Turn off incude diversion.  */
+      cpp_callbacks *cb = cpp_get_callbacks (reader);
+      cb->divert_include = NULL;
+    }
 }
 
 /* We've just properly entered the main source file.  I.e. after the

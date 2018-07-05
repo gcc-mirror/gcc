@@ -247,12 +247,20 @@ atom_preamble_fsm (int state, cpp_reader *pfile,
       if (new_state)
 	return (state & (APS_IMPORT | APS_MODULE)) | new_state;
     }
-  else if (flag_module_preamble < 0)
-    return -1;
 
-  return atom_preamble_prefix_peek (false,
-				    state & (APS_IMPORT | APS_MODULE),
-				    pfile);
+  if (int res = atom_preamble_prefix_peek (false,
+					   state & (APS_IMPORT | APS_MODULE),
+					   pfile))
+    /* More preamble.  */
+    return res;
+
+  /* No more preamble.  */
+  atom_preamble_end (pfile, ploc);
+  
+  if (flag_module_preamble < 0)
+    return -1;
+  else
+    return 0;
 }
 
 #if CHECKING_P

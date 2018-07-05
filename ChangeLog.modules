@@ -1,5 +1,21 @@
 2018-07-05  Nathan Sidwell  <nathan@acm.org>
 
+	Legacy header warning
+	gcc/
+	* invoke.texi (Wlegacy-header): New warning.
+	gcc/c-family/
+	* c.opt (Wlegacy-header): New.
+	gcc/cp/
+	* cp-tree.h (atom_preamble_end): Declare.
+	* cp-lang.c (atom_preamble_fsm): Use it.
+	* lex.c (atom_preamble_prefix_peek): Check OPT_Wlegacy_header.
+	* module.c (do_divert_include): Likewise.
+	(atom_divert_include): Default -Wlegacy-header.
+	(atom_preamble_end): New.
+	* parser.c (c_parse_file): Use it.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-6*: New.
+
 	Legacy header aliasing
 	gcc/
 	* doc/invoke.texi (C++ Modules): Update protocol docs
@@ -13,7 +29,7 @@
 	(module_mapper::response_name): Use it.
 	(module_mapper::divert_include): Allow aliasing.
 	gcc/testsuite/
-	* g++.dg/modules/legacy-5.*: New.
+	* g++.dg/modules/legacy-5*: New.
 
 2018-07-03  Nathan Sidwell  <nathan@acm.org>
 

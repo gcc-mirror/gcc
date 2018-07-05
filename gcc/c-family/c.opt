@@ -1510,39 +1510,43 @@ Allow implicit conversions between vectors with differing numbers of subparts an
 
 ; I couldn't get Alias to work, but this approach does.
 fmodules-ts
-C++ ObjC++ Driver RejectNegative Var(flag_modules,+1) Integer
+C++ ObjC++ RejectNegative Var(flag_modules,+1) Integer
 Enable c++ modules-ts (experimental)
 
 fmodules-atom
-C++ ObjC++ Driver RejectNegative
+C++ ObjC++ RejectNegative
 Enable C++ modules-atom (experimental)
 
 fmodules-legacy
-C++ ObjC Driver RejectNegative Var(flag_modules,-2) Undocumented RejectNegative
+C++ ObjC RejectNegative Var(flag_modules,-2) Undocumented RejectNegative
 Enable C++ legacy module (experimental)
 
 fno-modules
-C++ ObjC++ Driver Undocumented RejectNegative Var(flag_modules,0) Integer
+C++ ObjC++ Undocumented RejectNegative Var(flag_modules,0) Integer
 ;; undocumented
 
 fmodules-legacy=
-C++ ObjC++ Driver Joined RejectNegative MissingArgError(missing header name)
+C++ ObjC++ Joined RejectNegative MissingArgError(missing header name)
 Specify C++ legacy module (experimental)
 
 fmodule-mapper=
-C++ ObjC++ Driver Joined RejectNegative MissingArgError(missing mapper)
+C++ ObjC++ Joined RejectNegative MissingArgError(missing mapper)
 Mapper for module to BMI files
 
 fmodule-preamble
-Driver C++ Var(flag_module_preamble,65535,-1) Integer
+C++ ObjC++ Var(flag_module_preamble,65535,-1) Integer
 Stop after preprocessing atom module preamble
 
 fmodule-preamble=
-C++ Undocumented RejectNegative Joined Var(flag_module_preamble) Integer Init(-1) MissingArgError(missing preamble length)
+C++ ObjC++ Undocumented RejectNegative Joined Var(flag_module_preamble) Integer Init(-1) MissingArgError(missing preamble length)
 
 fmodule-lazy
-C++ ObjC++ Driver Var(flag_module_lazy) Init(1)
+C++ ObjC++ Var(flag_module_lazy) Init(1)
 Enable lazy module importing
+
+Wlegacy-header
+C++ ObjC++ Var(warn_legacy_header) Init(-1) Warning
+Warn about post-preamble legacy headers
 
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)

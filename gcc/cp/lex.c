@@ -412,24 +412,26 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
 	 totally suck doing that, and (b) we're allowed to encourage
 	 the user to place a bare semicolon marking the end of the
 	 preamble.  */
-      if (peeked_loc && only_import && !modules_legacy_p ())
+      if (peeked_loc && only_import)
 	{
-	  /* Don't attempt rescanning if we emitted any diagnostics.
-	     We'll just be repeating ourselves.  */
-	  bool no_rescan = errorcount || warningcount || werrorcount;
-
-	  warning_at (peeked_loc, 0,
+	  /* Don't be inhibited by the next warning -- that'd be
+	     dumb.  */
+	  bool msgs = errorcount || warningcount || werrorcount;
+	  warning_at (peeked_loc, modules_legacy_p () ? OPT_Wlegacy_header : 0,
 		      "module preamble ended immediately before"
 		      " preprocessor directive");
 	  if (for_parser)
 	    {
 	      inform (peeked_loc,
 		      "explicitly mark the end with an earlier %<;%>");
-	      if (!no_rescan)
+	      /* Don't attempt rescanning if we emitted any diagnostics.
+		 We'll just be repeating ourselves.  */
+	      if (!msgs)
 		/* This never returns, if successful.  */
 		maybe_repeat_preamble (cpp_tok->src_loc, count, pfile);
-	      /* In some cases we cannot rescan.  */
-	      inform (cpp_tok->src_loc, "cannot rescan preamble");
+	      if (!modules_legacy_p ())
+		/* In some cases we cannot rescan.  */
+		inform (cpp_tok->src_loc, "cannot rescan preamble");
 	    }
 	}
 

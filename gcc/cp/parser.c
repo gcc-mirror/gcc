@@ -39463,7 +39463,7 @@ c_parse_file (void)
 	}
       cp_lexer_get_preprocessor_token (0, &first);
       if (modules_atom_p ())
-	module_preamble_end_loc = first.location;
+	atom_preamble_end (parse_in, first.location);
     }
 
   cp_parser_fill_main (the_parser, &first);
