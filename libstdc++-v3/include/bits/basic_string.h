@@ -725,7 +725,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  The contents of @a str are moved into this string (without copying).
        *  @a str is a valid, but unspecified string.
        **/
-      // PR 58265, this should be noexcept.
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2063. Contradictory requirements for string move assignment
       basic_string&
@@ -4275,9 +4274,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  This function sets this string to the exact contents of @a __str.
        *  @a __str is a valid, but unspecified string.
        */
-      // PR 58265, this should be noexcept.
       basic_string&
       assign(basic_string&& __str)
+      noexcept(allocator_traits<_Alloc>::is_always_equal::value)
       {
 	this->swap(__str);
 	return *this;

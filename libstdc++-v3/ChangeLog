@@ -2,6 +2,15 @@
 
 	PR libstdc++/58265
 	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::assign(basic_string&&)): Add conditional noexcept
+	depending on the allocator's is_always_equal property (LWG 2063).
+	* testsuite/21_strings/basic_string/modifiers/assign/char/
+	move_assign.cc: Check for non-throwing exception specification.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/
+	move_assign.cc: Likewise.
+
+	PR libstdc++/58265
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
 	[_GLIBCXX_FULLY_DYNAMIC_STRING==0] (basic_string::basic_string()):
 	Add GLIBCXX_NOEXCEPT.
 	(basic_string::operator=(basic_string&&)): Add _GLIBCXX_NOEXCEPT_IF
