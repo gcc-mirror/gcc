@@ -1,3 +1,8 @@
+2018-06-19  Bernhard M. Wiedemann  <bwiedemann@suse.de>
+
+        * libtool.m4: Sort output of 'find' to enable deterministic builds.
+	* ltmain.sh: Likewise.
+
 2018-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* contrib/config-list.mk: Remove powerpc-linux_paired.
