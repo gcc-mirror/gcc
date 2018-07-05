@@ -1,3 +1,7 @@
+2018-07-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* configure: Regenerated.
+
 2018-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (install_leaf): Use enable_gcov instead of
