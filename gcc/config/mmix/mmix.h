@@ -789,8 +789,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define FUNCTION_MODE QImode
 
-#define NO_IMPLICIT_EXTERN_C
-
 /* mmix-knuth-mmixware target has no support of C99 runtime */
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function

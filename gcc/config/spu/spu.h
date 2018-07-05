@@ -483,8 +483,6 @@ do {									\
 
 #define FUNCTION_MODE QImode
 
-#define NO_IMPLICIT_EXTERN_C 1
-
 
 /* Address spaces.  */
 #define ADDR_SPACE_EA	1

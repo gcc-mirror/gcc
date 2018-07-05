@@ -1211,14 +1211,6 @@ do									\
    machines this should be `QImode'. */
 #define FUNCTION_MODE SImode
 
-/* `NO_IMPLICIT_EXTERN_C'
-
-   Define this macro if the system header files support C++ as well as
-   C.  This macro inhibits the usual method of using system header
-   files in C++, which is to pretend that the file's contents are
-   enclosed in `extern "C" {...}'. */
-#define NO_IMPLICIT_EXTERN_C
-
 /* Dividing the Output into Sections (Texts, Data, ...)
 
    An object file is divided into sections containing different types

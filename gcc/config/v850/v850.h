@@ -834,12 +834,6 @@ extern const char * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS]
 
 #define TARGET_ASM_INIT_SECTIONS v850_asm_init_sections
 
-/* Define this so that the cc1plus will not think that system header files
-   need an implicit 'extern "C" { ... }' assumed.  This breaks testing C++
-   in a build directory where the libstdc++ header files are found via a
-   -isystem <path-to-build-dir>.  */
-#define NO_IMPLICIT_EXTERN_C
-
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) \
   ((LENGTH) = v850_adjust_insn_length ((INSN), (LENGTH)))
 

@@ -70,5 +70,3 @@ asm (TEXT_SECTION_ASM_OP);
 #undef SUBTARGET_DRIVER_SELF_SPECS
 #define SUBTARGET_DRIVER_SELF_SPECS \
      "%{mfdpic:-msim} %{mid-shared-library:-msim}"
-
-#define NO_IMPLICIT_EXTERN_C

@@ -21363,7 +21363,7 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
   else if (token->type == CPP_CLOSE_PAREN)
     /* There are no parameters.  */
     {
-#ifndef NO_IMPLICIT_EXTERN_C
+#ifdef SYSTEM_IMPLICIT_EXTERN_C
       if (in_system_header_at (input_location)
 	  && current_class_type == NULL
 	  && current_lang_name == lang_name_c)
