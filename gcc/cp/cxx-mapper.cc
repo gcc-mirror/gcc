@@ -257,7 +257,7 @@ error (const char *msg, ...)
    know.  */
 
 const char *
-module2bmi (const char *module, bool &alias)
+module2bmi (const char *module)
 {
   const char *res = NULL;
 
@@ -268,13 +268,8 @@ module2bmi (const char *module, bool &alias)
     }
 
   if (res && res[0] == '=')
-    {
-      /* An alias.  */
-      res++;
-      alias = true;
-    }
-  else
-    alias = false;
+    /* An include alias.  */
+    res = NULL;
 
   if (!res && flag_fallback)
     {
@@ -1002,10 +997,8 @@ client::imex_response (unsigned id, const char *name, bool deferred)
 {
   const char *sfx = &" "[!deferred];
   const char *pfx = deferred ? name : sfx;
-  bool alias;
-  if (const char *bmi = module2bmi (name, alias))
-    write.send_response (id, "%s%s%s %s", pfx, sfx,
-			 alias ? "ALIAS" : "OK", bmi);
+  if (const char *bmi = module2bmi (name))
+    write.send_response (id, "%s%sOK %s", pfx, sfx, bmi);
   else
     write.send_response (id, "%s%sERROR Unknown module", pfx, sfx);
 }

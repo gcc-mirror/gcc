@@ -1,5 +1,13 @@
 2018-07-05  Nathan Sidwell  <nathan@acm.org>
 
+	No ALIASes for IMPORTS
+	gcc/cp/
+	* cxx-mapper.cc (module2bmi): No aliases here.
+	(client::imex_response): Adjust.
+	gcc/
+	* doc/invoke.texi (C++ Modules): Remove ALIAS from IMPORT response
+	set.
+
 	Legacy header warning
 	gcc/
 	* invoke.texi (Wlegacy-header): New warning.
