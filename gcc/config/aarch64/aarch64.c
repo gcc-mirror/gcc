@@ -16137,26 +16137,29 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 bool
 aarch64_expand_movmem (rtx *operands)
 {
-  unsigned int n;
+  int n, mode_bits;
   rtx dst = operands[0];
   rtx src = operands[1];
   rtx base;
+  machine_mode cur_mode = BLKmode, next_mode;
   bool speed_p = !optimize_function_for_size_p (cfun);
 
   /* When optimizing for size, give a better estimate of the length of a
-     memcpy call, but use the default otherwise.  */
-  unsigned int max_instructions = (speed_p ? 15 : AARCH64_CALL_RATIO) / 2;
+     memcpy call, but use the default otherwise.  Moves larger than 8 bytes
+     will always require an even number of instructions to do now.  And each
+     operation requires both a load+store, so devide the max number by 2.  */
+  int max_num_moves = (speed_p ? 16 : AARCH64_CALL_RATIO) / 2;
 
   /* We can't do anything smart if the amount to copy is not constant.  */
   if (!CONST_INT_P (operands[2]))
     return false;
 
-  n = UINTVAL (operands[2]);
+  n = INTVAL (operands[2]);
 
-  /* Try to keep the number of instructions low.  For cases below 16 bytes we
-     need to make at most two moves.  For cases above 16 bytes it will be one
-     move for each 16 byte chunk, then at most two additional moves.  */
-  if (((n / 16) + (n % 16 ? 2 : 0)) > max_instructions)
+  /* Try to keep the number of instructions low.  For all cases we will do at
+     most two moves for the residual amount, since we'll always overlap the
+     remainder.  */
+  if (((n / 16) + (n % 16 ? 2 : 0)) > max_num_moves)
     return false;
 
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
@@ -16165,81 +16168,36 @@ aarch64_expand_movmem (rtx *operands)
   base = copy_to_mode_reg (Pmode, XEXP (src, 0));
   src = adjust_automodify_address (src, VOIDmode, base, 0);
 
-  /* Simple cases.  Copy 0-3 bytes, as (if applicable) a 2-byte, then a
-     1-byte chunk.  */
-  if (n < 4)
+  /* Convert n to bits to make the rest of the code simpler.  */
+  n = n * BITS_PER_UNIT;
+
+  while (n > 0)
     {
-      if (n >= 2)
+      /* Find the largest mode in which to do the copy in without over reading
+	 or writing.  */
+      opt_scalar_int_mode mode_iter;
+      FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
+	if (GET_MODE_BITSIZE (mode_iter.require ()) <= n)
+	  cur_mode = mode_iter.require ();
+
+      gcc_assert (cur_mode != BLKmode);
+
+      mode_bits = GET_MODE_BITSIZE (cur_mode).to_constant ();
+      aarch64_copy_one_block_and_progress_pointers (&src, &dst, cur_mode);
+
+      n -= mode_bits;
+
+      /* Do certain trailing copies as overlapping if it's going to be
+	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
+	 byte copy it's more efficient to do two overlapping 8 byte copies than
+	 8 + 6 + 1.  */
+      next_mode = smallest_mode_for_size (n, MODE_INT);
+      int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
+      if (n > 0 && n_bits > n && n_bits <= 8 * BITS_PER_UNIT)
 	{
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, HImode);
-	  n -= 2;
-	}
-
-      if (n == 1)
-	aarch64_copy_one_block_and_progress_pointers (&src, &dst, QImode);
-
-      return true;
-    }
-
-  /* Copy 4-8 bytes.  First a 4-byte chunk, then (if applicable) a second
-     4-byte chunk, partially overlapping with the previously copied chunk.  */
-  if (n < 8)
-    {
-      aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-      n -= 4;
-      if (n > 0)
-	{
-	  int move = n - 4;
-
-	  src = aarch64_move_pointer (src, move);
-	  dst = aarch64_move_pointer (dst, move);
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-	}
-      return true;
-    }
-
-  /* Copy more than 8 bytes.  Copy chunks of 16 bytes until we run out of
-     them, then (if applicable) an 8-byte chunk.  */
-  while (n >= 8)
-    {
-      if (n / 16)
-	{
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, TImode);
-	  n -= 16;
-	}
-      else
-	{
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, DImode);
-	  n -= 8;
-	}
-    }
-
-  /* Finish the final bytes of the copy.  We can always do this in one
-     instruction.  We either copy the exact amount we need, or partially
-     overlap with the previous chunk we copied and copy 8-bytes.  */
-  if (n == 0)
-    return true;
-  else if (n == 1)
-    aarch64_copy_one_block_and_progress_pointers (&src, &dst, QImode);
-  else if (n == 2)
-    aarch64_copy_one_block_and_progress_pointers (&src, &dst, HImode);
-  else if (n == 4)
-    aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-  else
-    {
-      if (n == 3)
-	{
-	  src = aarch64_move_pointer (src, -1);
-	  dst = aarch64_move_pointer (dst, -1);
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-	}
-      else
-	{
-	  int move = n - 8;
-
-	  src = aarch64_move_pointer (src, move);
-	  dst = aarch64_move_pointer (dst, move);
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, DImode);
+	  src = aarch64_move_pointer (src, (n - n_bits) / BITS_PER_UNIT);
+	  dst = aarch64_move_pointer (dst, (n - n_bits) / BITS_PER_UNIT);
+	  n = n_bits;
 	}
     }
 

@@ -1,3 +1,7 @@
+2018-07-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_movmem): Fix mode size.
+
 2018-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Revert
