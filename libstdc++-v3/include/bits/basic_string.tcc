@@ -967,6 +967,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     basic_string<_CharT, _Traits, _Alloc>::
     swap(basic_string& __s)
+    _GLIBCXX_NOEXCEPT_IF(allocator_traits<_Alloc>::is_always_equal::value)
     {
       if (_M_rep()->_M_is_leaked())
 	_M_rep()->_M_set_sharable();

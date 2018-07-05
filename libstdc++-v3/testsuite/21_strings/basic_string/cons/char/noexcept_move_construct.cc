@@ -23,4 +23,8 @@
 
 typedef std::string stype;
 
+// True except for COW strings with _GLIBCXX_FULLY_DYNAMIC_STRING:
 static_assert(std::is_nothrow_move_constructible<stype>::value, "Error");
+
+// True for std::allocator because is_always_equal, but not true in general:
+static_assert(std::is_nothrow_move_assignable<stype>::value, "lwg 2063");
