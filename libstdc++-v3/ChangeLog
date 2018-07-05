@@ -58,8 +58,9 @@
 	New.
 	* testsuite/23_containers/unordered_set/operations/contains.cc: New.
 
-2018-07-03  François Dumont  <fdumont@gcc.gnu.org>
+2018-07-04  François Dumont  <fdumont@gcc.gnu.org>
 
+	PR libstdc++/86272
 	* include/debug/string
 	(__gnu_debug::basic_string<>::insert<_Ite>(const_iterator, _Ite, _Ite)):
 	Use __glibcxx_check_insert_range.
