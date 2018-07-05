@@ -123,13 +123,10 @@ proc dg-final { args } {
     set line [lindex $args 0]
     set code [lindex $args 1]
     set directive [lindex $code 0]
-    set withline \
-	[switch $directive {
-	    gdb-test {expr {1}}
-	    default  {expr {0}}
-	}]
-    if { $withline == 1 } {
-	set code [linsert $code 1 $line]
+    switch $directive {
+	gdb-test {
+	    set code [linsert $code 1 $line]
+	}
     }
     append final-code "$code\n"
 }

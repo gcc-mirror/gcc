@@ -1,3 +1,7 @@
+2018-07-05  Tom de Vries  <tdevries@suse.de>
+
+	* lib/gcc-dg.exp (dg-final): Simplify tcl code.
+
 2018-07-04  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86274
