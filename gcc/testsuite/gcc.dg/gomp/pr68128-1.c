@@ -29,4 +29,4 @@ foo (float *u, float v, float w, float x, float y, float z, float t)
     }
 }
 
-/* { dg-final { scan-tree-dump "note: vectorized 1 loops in function" "vect" { target i?86-*-* x86_64-*-* } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" { target i?86-*-* x86_64-*-* } } } */

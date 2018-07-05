@@ -12,7 +12,7 @@ subroutine test1(a)
   DO i=1, 8, 1
     call dummy(a(i))
   ENDDO
-! { dg-final { scan-tree-dump "12:.*: note: loop with 8 iterations completely unrolled" "cunrolli" } } */
+! { dg-final { scan-tree-dump "12:.*: loop with 8 iterations completely unrolled" "cunrolli" } } */
 end subroutine test1
 
 subroutine test2(a, n)

@@ -1,3 +1,32 @@
+2018-07-05  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* c-c++-common/unroll-1.c: Remove 'note:' in matching string.
+	* c-c++-common/unroll-2.c: Likewise.
+	* g++.dg/cdce3.C: Likewise.
+	* g++.dg/ext/unroll-1.C: Likewise.
+	* g++.dg/ext/unroll-2.C: Likewise.
+	* g++.dg/ext/unroll-3.C: Likewise.
+	* gcc.dg/cdce1.c: Likewise.
+	* gcc.dg/cdce2.c: Likewise.
+	* gcc.dg/gomp/pr68128-1.c: Likewise.
+	* gcc.dg/vect/pr46032.c: Likewise.
+	* gcc.dg/vect/vect-cond-10.c: Likewise.
+	* gcc.dg/vect/vect-cond-8.c: Likewise.
+	* gcc.dg/vect/vect-cond-9.c: Likewise.
+	* gcc.dg/vect/vect-mask-load-1.c: Likewise.
+	* gcc.dg/vect/vect-mask-loadstore-1.c: Likewise.
+	* gcc.target/i386/avx-cvt-2.c: Likewise.
+	* gcc.target/i386/avx-cvt-3.c: Likewise.
+	* gcc.target/i386/avx2-cvt-2.c: Likewise.
+	* gcc.target/i386/avx2-gather-2.c: Likewise.
+	* gcc.target/i386/avx2-gather-6.c: Likewise.
+	* gcc.target/i386/avx512f-gather-2.c: Likewise.
+	* gcc.target/i386/sse2-cvt-2.c: Likewise.
+	* gfortran.dg/directive_unroll_1.f90: Likewise.
+	* gfortran.dg/directive_unroll_2.f90: Likewise.
+	* gnat.dg/unroll2.adb: Likewise.
+	* gnat.dg/unroll3.adb: Likewise.
+
 2018-07-05  Tom de Vries  <tdevries@suse.de>
 
 	* lib/gcc-dg.exp (dg-final): Simplify tcl code.
