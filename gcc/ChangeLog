@@ -1,3 +1,7 @@
+2018-07-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* configure: Regenerated.
+
 2018-07-05  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c: Map ALTIVEC_BUILTIN_VEC_UNPACKH for
