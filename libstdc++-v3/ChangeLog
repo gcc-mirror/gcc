@@ -1,5 +1,7 @@
 2018-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/pre/gnu.ver: Use wildcards to combine related patterns.
+
 	P0935R0 Eradicating unnecessarily explicit default constructors
 	* config/abi/pre/gnu.ver: Tighten existing patterns and export new
 	default constructor symbols.
