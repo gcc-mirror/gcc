@@ -10236,121 +10236,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	    }
 	}
 
-      /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,
-	 ((A & N) + B) & M -> (A + B) & M
-	 Similarly if (N & M) == 0,
-	 ((A | N) + B) & M -> (A + B) & M
-	 and for - instead of + (or unary - instead of +)
-	 and/or ^ instead of |.
-	 If B is constant and (B & M) == 0, fold into A & M.  */
-      if (TREE_CODE (arg1) == INTEGER_CST)
-	{
-	  wi::tree_to_wide_ref cst1 = wi::to_wide (arg1);
-	  if ((~cst1 != 0) && (cst1 & (cst1 + 1)) == 0
-	      && INTEGRAL_TYPE_P (TREE_TYPE (arg0))
-	      && (TREE_CODE (arg0) == PLUS_EXPR
-		  || TREE_CODE (arg0) == MINUS_EXPR
-		  || TREE_CODE (arg0) == NEGATE_EXPR)
-	      && (TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0))
-		  || TREE_CODE (TREE_TYPE (arg0)) == INTEGER_TYPE))
-	    {
-	      tree pmop[2];
-	      int which = 0;
-	      wide_int cst0;
-
-	      /* Now we know that arg0 is (C + D) or (C - D) or
-		 -C and arg1 (M) is == (1LL << cst) - 1.
-		 Store C into PMOP[0] and D into PMOP[1].  */
-	      pmop[0] = TREE_OPERAND (arg0, 0);
-	      pmop[1] = NULL;
-	      if (TREE_CODE (arg0) != NEGATE_EXPR)
-		{
-		  pmop[1] = TREE_OPERAND (arg0, 1);
-		  which = 1;
-		}
-
-	      if ((wi::max_value (TREE_TYPE (arg0)) & cst1) != cst1)
-		which = -1;
-
-	      for (; which >= 0; which--)
-		switch (TREE_CODE (pmop[which]))
-		  {
-		  case BIT_AND_EXPR:
-		  case BIT_IOR_EXPR:
-		  case BIT_XOR_EXPR:
-		    if (TREE_CODE (TREE_OPERAND (pmop[which], 1))
-			!= INTEGER_CST)
-		      break;
-		    cst0 = wi::to_wide (TREE_OPERAND (pmop[which], 1)) & cst1;
-		    if (TREE_CODE (pmop[which]) == BIT_AND_EXPR)
-		      {
-			if (cst0 != cst1)
-			  break;
-		      }
-		    else if (cst0 != 0)
-		      break;
-		    /* If C or D is of the form (A & N) where
-		       (N & M) == M, or of the form (A | N) or
-		       (A ^ N) where (N & M) == 0, replace it with A.  */
-		    pmop[which] = TREE_OPERAND (pmop[which], 0);
-		    break;
-		  case INTEGER_CST:
-		    /* If C or D is a N where (N & M) == 0, it can be
-		       omitted (assumed 0).  */
-		    if ((TREE_CODE (arg0) == PLUS_EXPR
-			 || (TREE_CODE (arg0) == MINUS_EXPR && which == 0))
-			&& (cst1 & wi::to_wide (pmop[which])) == 0)
-		      pmop[which] = NULL;
-		    break;
-		  default:
-		    break;
-		  }
-
-	      /* Only build anything new if we optimized one or both arguments
-		 above.  */
-	      if (pmop[0] != TREE_OPERAND (arg0, 0)
-		  || (TREE_CODE (arg0) != NEGATE_EXPR
-		      && pmop[1] != TREE_OPERAND (arg0, 1)))
-		{
-		  tree utype = TREE_TYPE (arg0);
-		  if (! TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
-		    {
-		      /* Perform the operations in a type that has defined
-			 overflow behavior.  */
-		      utype = unsigned_type_for (TREE_TYPE (arg0));
-		      if (pmop[0] != NULL)
-			pmop[0] = fold_convert_loc (loc, utype, pmop[0]);
-		      if (pmop[1] != NULL)
-			pmop[1] = fold_convert_loc (loc, utype, pmop[1]);
-		    }
-
-		  if (TREE_CODE (arg0) == NEGATE_EXPR)
-		    tem = fold_build1_loc (loc, NEGATE_EXPR, utype, pmop[0]);
-		  else if (TREE_CODE (arg0) == PLUS_EXPR)
-		    {
-		      if (pmop[0] != NULL && pmop[1] != NULL)
-			tem = fold_build2_loc (loc, PLUS_EXPR, utype,
-					       pmop[0], pmop[1]);
-		      else if (pmop[0] != NULL)
-			tem = pmop[0];
-		      else if (pmop[1] != NULL)
-			tem = pmop[1];
-		      else
-			return build_int_cst (type, 0);
-		    }
-		  else if (pmop[0] == NULL)
-		    tem = fold_build1_loc (loc, NEGATE_EXPR, utype, pmop[1]);
-		  else
-		    tem = fold_build2_loc (loc, MINUS_EXPR, utype,
-					   pmop[0], pmop[1]);
-		  /* TEM is now the new binary +, - or unary - replacement.  */
-		  tem = fold_build2_loc (loc, BIT_AND_EXPR, utype, tem,
-					 fold_convert_loc (loc, utype, arg1));
-		  return fold_convert_loc (loc, type, tem);
-		}
-	    }
-	}
-
       /* Simplify ((int)c & 0377) into (int)c, if c is unsigned char.  */
       if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg0) == NOP_EXPR
 	  && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg0, 0))))
@@ -11262,6 +11147,100 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
     default:
       return NULL_TREE;
     } /* switch (code) */
+}
+
+/* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,
+   ((A & N) + B) & M -> (A + B) & M
+   Similarly if (N & M) == 0,
+   ((A | N) + B) & M -> (A + B) & M
+   and for - instead of + (or unary - instead of +)
+   and/or ^ instead of |.
+   If B is constant and (B & M) == 0, fold into A & M.
+
+   This function is a helper for match.pd patterns.  Return non-NULL
+   type in which the simplified operation should be performed only
+   if any optimization is possible.
+
+   ARG1 is M above, ARG00 is left operand of +/-, if CODE00 is BIT_*_EXPR,
+   then ARG00{0,1} are operands of that bitop, otherwise CODE00 is ERROR_MARK.
+   Similarly for ARG01, CODE01 and ARG01{0,1}, just for the right operand of
+   +/-.  */
+tree
+fold_bit_and_mask (tree type, tree arg1, enum tree_code code,
+		   tree arg00, enum tree_code code00, tree arg000, tree arg001,
+		   tree arg01, enum tree_code code01, tree arg010, tree arg011,
+		   tree *pmop)
+{
+  gcc_assert (TREE_CODE (arg1) == INTEGER_CST);
+  gcc_assert (code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR);
+  wi::tree_to_wide_ref cst1 = wi::to_wide (arg1);
+  if (~cst1 == 0
+      || (cst1 & (cst1 + 1)) != 0
+      || !INTEGRAL_TYPE_P (type)
+      || (!TYPE_OVERFLOW_WRAPS (type)
+	  && TREE_CODE (type) != INTEGER_TYPE)
+      || (wi::max_value (type) & cst1) != cst1)
+    return NULL_TREE;
+
+  enum tree_code codes[2] = { code00, code01 };
+  tree arg0xx[4] = { arg000, arg001, arg010, arg011 };
+  int which = 0;
+  wide_int cst0;
+
+  /* Now we know that arg0 is (C + D) or (C - D) or -C and
+     arg1 (M) is == (1LL << cst) - 1.
+     Store C into PMOP[0] and D into PMOP[1].  */
+  pmop[0] = arg00;
+  pmop[1] = arg01;
+  which = code != NEGATE_EXPR;
+
+  for (; which >= 0; which--)
+    switch (codes[which])
+      {
+      case BIT_AND_EXPR:
+      case BIT_IOR_EXPR:
+      case BIT_XOR_EXPR:
+	gcc_assert (TREE_CODE (arg0xx[2 * which + 1]) == INTEGER_CST);
+	cst0 = wi::to_wide (arg0xx[2 * which + 1]) & cst1;
+	if (codes[which] == BIT_AND_EXPR)
+	  {
+	    if (cst0 != cst1)
+	      break;
+	  }
+	else if (cst0 != 0)
+	  break;
+	/* If C or D is of the form (A & N) where
+	   (N & M) == M, or of the form (A | N) or
+	   (A ^ N) where (N & M) == 0, replace it with A.  */
+	pmop[which] = arg0xx[2 * which];
+	break;
+      case ERROR_MARK:
+	if (TREE_CODE (pmop[which]) != INTEGER_CST)
+	  break;
+	/* If C or D is a N where (N & M) == 0, it can be
+	   omitted (replaced with 0).  */
+	if ((code == PLUS_EXPR
+	     || (code == MINUS_EXPR && which == 0))
+	    && (cst1 & wi::to_wide (pmop[which])) == 0)
+	  pmop[which] = build_int_cst (type, 0);
+	/* Similarly, with C - N where (-N & M) == 0.  */
+	if (code == MINUS_EXPR
+	    && which == 1
+	    && (cst1 & -wi::to_wide (pmop[which])) == 0)
+	  pmop[which] = build_int_cst (type, 0);
+	break;
+      default:
+	gcc_unreachable ();
+      }
+
+  /* Only build anything new if we optimized one or both arguments above.  */
+  if (pmop[0] == arg00 && pmop[1] == arg01)
+    return NULL_TREE;
+
+  if (TYPE_OVERFLOW_WRAPS (type))
+    return type;
+  else
+    return unsigned_type_for (type);
 }
 
 /* Used by contains_label_[p1].  */

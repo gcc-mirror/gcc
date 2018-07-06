@@ -96,6 +96,9 @@ extern tree omit_two_operands_loc (location_t, tree, tree, tree, tree);
 extern tree invert_truthvalue_loc (location_t, tree);
 extern tree fold_unary_to_constant (enum tree_code, tree, tree);
 extern tree fold_binary_to_constant (enum tree_code, tree, tree, tree);
+extern tree fold_bit_and_mask (tree, tree, enum tree_code,
+			       tree, enum tree_code, tree, tree,
+			       tree, enum tree_code, tree, tree, tree *);
 extern tree fold_read_from_constant_string (tree);
 extern tree int_const_binop (enum tree_code, const_tree, const_tree);
 #define build_fold_addr_expr(T)\
