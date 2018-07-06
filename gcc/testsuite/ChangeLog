@@ -1,3 +1,7 @@
+2018-07-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/struct_cpy.c: Remove ;.
+
 2018-07-05  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/asm-2.c (REGISTER): Override for v850 too.
