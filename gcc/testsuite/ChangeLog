@@ -1,3 +1,11 @@
+2018-07-06  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* gcc.dg/tree-ssa/phi-opt-16.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-17.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-18.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-19.c: New test.
+	* gcc.dg/tree-ssa/popcount3.c: New test.
+
 2018-07-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gcc.dg/tree-ssa/pr64183.c: Disable final value replacement
