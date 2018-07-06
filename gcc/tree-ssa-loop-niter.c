@@ -2596,10 +2596,15 @@ number_of_iterations_popcount (loop_p loop, edge exit,
 
   niter->niter = iter;
   niter->assumptions = boolean_true_node;
+
   if (adjust)
-    niter->may_be_zero = fold_build2 (EQ_EXPR, boolean_type_node, src,
+    {
+      tree may_be_zero = fold_build2 (EQ_EXPR, boolean_type_node, src,
 				      build_zero_cst
 				      (TREE_TYPE (src)));
+      niter->may_be_zero =
+	simplify_using_initial_conditions (loop, may_be_zero);
+    }
   else
     niter->may_be_zero = boolean_false_node;
 
