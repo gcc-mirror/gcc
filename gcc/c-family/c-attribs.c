@@ -1517,6 +1517,10 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	  return NULL_TREE;
 	}
 
+      /* Allow the target a chance to translate MODE into something supported.
+	 See PR86324.  */
+      mode = targetm.translate_mode_attribute (mode);
+
       valid_mode = false;
       switch (GET_MODE_CLASS (mode))
 	{

@@ -1,3 +1,9 @@
+2018-07-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/86324
+	gcc.target/powerpc/pr86324-1.c: New test.
+	gcc.target/powerpc/pr86324-2.c: Likewise.
+
 2018-07-06  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/84711

@@ -1802,6 +1802,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_EH_RETURN_FILTER_MODE
 #define TARGET_EH_RETURN_FILTER_MODE rs6000_eh_return_filter_mode
 
+#undef TARGET_TRANSLATE_MODE_ATTRIBUTE
+#define TARGET_TRANSLATE_MODE_ATTRIBUTE rs6000_translate_mode_attribute
+
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P rs6000_scalar_mode_supported_p
 
@@ -35676,6 +35679,18 @@ static scalar_int_mode
 rs6000_eh_return_filter_mode (void)
 {
   return TARGET_32BIT ? SImode : word_mode;
+}
+
+/* Target hook for translate_mode_attribute.  */
+static machine_mode
+rs6000_translate_mode_attribute (machine_mode mode)
+{
+  if ((FLOAT128_IEEE_P (mode)
+       && ieee128_float_type_node == long_double_type_node)
+      || (FLOAT128_IBM_P (mode)
+	  && ibm128_float_type_node == long_double_type_node))
+    return COMPLEX_MODE_P (mode) ? E_TCmode : E_TFmode;
+  return mode;
 }
 
 /* Target hook for scalar_mode_supported_p.  */

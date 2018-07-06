@@ -3310,6 +3310,16 @@ constants can be done inline.  The function\n\
  HOST_WIDE_INT, (const_tree constant, HOST_WIDE_INT basic_align),
  default_constant_alignment)
 
+DEFHOOK
+(translate_mode_attribute,
+ "Define this hook if during mode attribute processing, the port should\n\
+translate machine_mode @var{mode} to another mode.  For example, rs6000's\n\
+@code{KFmode}, when it is the same as @code{TFmode}.\n\
+\n\
+The default version of the hook returns that mode that was passed in.",
+ machine_mode, (machine_mode mode),
+ default_translate_mode_attribute)
+
 /* True if MODE is valid for the target.  By "valid", we mean able to
    be manipulated in non-trivial ways.  In particular, this means all
    the arithmetic is supported.  */

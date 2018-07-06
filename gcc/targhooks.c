@@ -393,6 +393,14 @@ default_mangle_assembler_name (const char *name ATTRIBUTE_UNUSED)
   return get_identifier (stripped);
 }
 
+/* The default implementation of TARGET_TRANSLATE_MODE_ATTRIBUTE.  */
+
+machine_mode
+default_translate_mode_attribute (machine_mode mode)
+{
+  return mode;
+}
+
 /* True if MODE is valid for the target.  By "valid", we mean able to
    be manipulated in non-trivial ways.  In particular, this means all
    the arithmetic is supported.
