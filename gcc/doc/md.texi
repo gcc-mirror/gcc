@@ -8060,6 +8060,30 @@ those in @code{define_expand}, however, these statements must not
 generate any new pseudo-registers.  Once reload has completed, they also
 must not allocate any space in the stack frame.
 
+There are two special macros defined for use in the preparation statements:
+@code{DONE} and @code{FAIL}.  Use them with a following semicolon,
+as a statement.
+
+@table @code
+
+@findex DONE
+@item DONE
+Use the @code{DONE} macro to end RTL generation for the splitter.  The
+only RTL insns generated as replacement for the matched input insn will
+be those already emitted by explicit calls to @code{emit_insn} within
+the preparation statements; the replacement pattern is not used.
+
+@findex FAIL
+@item FAIL
+Make the @code{define_split} fail on this occasion.  When a @code{define_split}
+fails, it means that the splitter was not truly available for the inputs
+it was given, and the input insn will not be split.
+@end table
+
+If the preparation falls through (invokes neither @code{DONE} nor
+@code{FAIL}), then the @code{define_split} uses the replacement
+template.
+
 Patterns are matched against @var{insn-pattern} in two different
 circumstances.  If an insn needs to be split for delay slot scheduling
 or insn scheduling, the insn is already known to be valid, which means
@@ -8614,6 +8638,33 @@ so here's a silly made-up example:
    (set (match_dup 3) (match_dup 4))]
   "")
 @end smallexample
+
+There are two special macros defined for use in the preparation statements:
+@code{DONE} and @code{FAIL}.  Use them with a following semicolon,
+as a statement.
+
+@table @code
+
+@findex DONE
+@item DONE
+Use the @code{DONE} macro to end RTL generation for the peephole.  The
+only RTL insns generated as replacement for the matched input insn will
+be those already emitted by explicit calls to @code{emit_insn} within
+the preparation statements; the replacement pattern is not used.
+
+@findex FAIL
+@item FAIL
+Make the @code{define_peephole2} fail on this occasion.  When a @code{define_peephole2}
+fails, it means that the replacement was not truly available for the
+particular inputs it was given.  In that case, GCC may still apply a
+later @code{define_peephole2} that also matches the given insn pattern.
+(Note that this is different from @code{define_split}, where @code{FAIL}
+prevents the input insn from being split at all.)
+@end table
+
+If the preparation falls through (invokes neither @code{DONE} nor
+@code{FAIL}), then the @code{define_peephole2} uses the replacement
+template.
 
 @noindent
 If we had not added the @code{(match_dup 4)} in the middle of the input
