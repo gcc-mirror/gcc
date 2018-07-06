@@ -1,5 +1,9 @@
 2018-07-06  Jim Wilson  <jimw@sifive.com>
 
+	* Makefile.rtl: Add riscv*-linux* support.
+	* libgnarl/s-linux__riscv.ads: New.
+	* libgnat/system-linux-riscv.ads: New.
+
 	* Make-generated.in (treeprs.ads): Use $(GNATMAKE) instead of gnatmake.
 	(einfo.h, sinfo.h, stamp-snames, stamp-nmake): Likewise.
 	* gcc-interface/Makefile.in (xoscons): Likewise.
