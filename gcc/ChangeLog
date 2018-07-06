@@ -1,3 +1,7 @@
+2018-07-05  Jim Wilson  <jimw@sifive.com>
+
+	* config.gcc (riscv*-*-*): When setting xlen, handle riscv-*.
+
 2018-07-05  Indu Bhagat  <indu.bhagat@oracle.com> 
 
 	* config/aarch64/aarch64-simd.md: correct flags text for 
