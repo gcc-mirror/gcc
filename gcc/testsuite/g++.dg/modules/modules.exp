@@ -211,7 +211,10 @@ proc dg-module-pre-prune { args } {
     lappend module_pre_prunes $lit
 }
 
-# run the literal tests before pruning output
+# Move normal pruner out of the way
+rename g++-dg-prune saved-g++-dg-prune 
+
+# Overrude pruner to run the pre-prune tests first
 proc g++-dg-prune { system text } {
     global module_pre_prunes
     foreach literal $module_pre_prunes {
@@ -221,7 +224,7 @@ proc g++-dg-prune { system text } {
 	    fail "$literal"
 	}
     }
-    return [gcc-dg-prune $system $text]
+    return [saved-g++-dg-prune $system $text]
 }
 
 # delete the specified set of module files
@@ -295,4 +298,8 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
     }
 }
 
+# Move normal pruner back again
+rename g++-dg-prune {}
+rename saved-g++-dg-prune g++-dg-prune 
+	     
 dg-finish

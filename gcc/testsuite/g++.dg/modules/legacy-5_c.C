@@ -4,5 +4,5 @@
 #include "header.h"
 #include <header.h>
 
-// { dg-final { scan-lang-dump module {Starting module system:header.h} } }
-// { dg-final { scan-lang-dump-not module {Starting module user:header.h} } }
+// { dg-final { scan-lang-dump {Starting module system:header.h} module } }
+// { dg-final { scan-lang-dump-not {Starting module user:header.h} module } }

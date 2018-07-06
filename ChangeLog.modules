@@ -1,3 +1,9 @@
+2018-07-06  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: Restore g++-dg-prune after test.
+	* g++.dg/modules/legacy-5_c.C: Fix scan-lang-dump.
+
 2018-07-05  Nathan Sidwell  <nathan@acm.org>
 
 	No ALIASes for IMPORTS
