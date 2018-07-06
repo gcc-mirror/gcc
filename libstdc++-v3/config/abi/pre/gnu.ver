@@ -2174,14 +2174,10 @@ CXXABI_1.3.3 {
 
 #ifdef HAVE_EXCEPTION_PTR_SINCE_GCC46
     # exception_ptr
-    _ZNSt15__exception_ptr13exception_ptrC1Ev;
-    _ZNSt15__exception_ptr13exception_ptrC2Ev;
-    _ZNSt15__exception_ptr13exception_ptrC1ERKS0_;
-    _ZNSt15__exception_ptr13exception_ptrC2ERKS0_;
-    _ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE;
-    _ZNSt15__exception_ptr13exception_ptrC2EMS0_FvvE;
-    _ZNSt15__exception_ptr13exception_ptrD1Ev;
-    _ZNSt15__exception_ptr13exception_ptrD2Ev;
+    _ZNSt15__exception_ptr13exception_ptrC[12]Ev;
+    _ZNSt15__exception_ptr13exception_ptrC[12]ERKS0_;
+    _ZNSt15__exception_ptr13exception_ptrC[12]EMS0_FvvE;
+    _ZNSt15__exception_ptr13exception_ptrD[12]Ev;
     _ZNSt15__exception_ptr13exception_ptraSERKS0_;
     _ZNKSt15__exception_ptr13exception_ptrcvMS0_FvvEEv;
     _ZNKSt15__exception_ptr13exception_ptrntEv;
