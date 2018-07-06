@@ -3594,9 +3594,7 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
 bool
 cpp_fun_like_macro_p (cpp_hashnode *node)
 {
-  return (node->type == NT_MACRO
-	  && (node->flags & (NODE_BUILTIN | NODE_MACRO_ARG)) == 0
-	  && node->value.macro->fun_like);
+  return cpp_macro_p (node) && node->value.macro->fun_like;
 }
 
 /* Returns the name, arguments and expansion of a macro, in a format
