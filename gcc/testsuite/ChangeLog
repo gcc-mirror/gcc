@@ -1,3 +1,7 @@
+2018-07-05  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/asm-2.c (REGISTER): Override for v850 too.
+
 2018-07-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/86408
