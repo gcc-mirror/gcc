@@ -1,5 +1,10 @@
 2018-07-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* tree-ssa-loop-niter.c (number_of_iterations_popcount): If popcount
+	argument is checked for zero before entering loop, avoid checking again.
+
+2018-07-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* gimplify.h (generic_expr_could_trap_p): Set as global function.
 	* gimplify.h (generic_expr_could_trap_p): Likwise.
 	* tree-scalar-evolution.c (expression_expensive_p): Handle COND_EXPR.
