@@ -1,3 +1,9 @@
+2018-07-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gimplify.h (generic_expr_could_trap_p): Set as global function.
+	* gimplify.h (generic_expr_could_trap_p): Likwise.
+	* tree-scalar-evolution.c (expression_expensive_p): Handle COND_EXPR.
+
 2018-07-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86401

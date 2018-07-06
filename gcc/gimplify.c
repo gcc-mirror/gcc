@@ -3878,7 +3878,7 @@ gimplify_pure_cond_expr (tree *expr_p, gimple_seq *pre_p)
    EXPR is GENERIC, while tree_could_trap_p can be called
    only on GIMPLE.  */
 
-static bool
+bool
 generic_expr_could_trap_p (tree expr)
 {
   unsigned i, n;
