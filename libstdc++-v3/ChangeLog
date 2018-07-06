@@ -1,5 +1,18 @@
 2018-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	P0935R0 Eradicating unnecessarily explicit default constructors
+	* config/abi/pre/gnu.ver: Tighten existing patterns and export new
+	default constructor symbols.
+	* include/std/sstream (basic_stringbuf, basic_istringstream)
+	(basic_ostringstream, basic_stringstream): Remove default arguments
+	from explicit constructors taking ios_base::openmode and add separate
+	non-explicit default constructors.
+	* testsuite/27_io/basic_istringstream/cons/default.cc: New.
+	* testsuite/27_io/basic_ostringstream/cons/default.cc: New.
+	* testsuite/27_io/basic_stringstream/cons/default.cc: New.
+	* testsuite/27_io/basic_stringbuf/cons/char/default.cc: New.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/default.cc: New.
+
 	* include/std/variant (__accepted_index): Use void_t.
 
 2018-07-05  Jonathan Wakely  <jwakely@redhat.com>
