@@ -1,3 +1,8 @@
+2018-07-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.guess: Sync with upstream version 2018-06-26.
+	* config.sub: Sync with upstream version 2018-07-02.
+
 2018-06-19  Bernhard M. Wiedemann  <bwiedemann@suse.de>
 
         * libtool.m4: Sort output of 'find' to enable deterministic builds.
