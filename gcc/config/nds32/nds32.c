@@ -320,6 +320,10 @@ static const struct attribute_spec nds32_attribute_table[] =
   /* The attribute is used to tell this function to be ROM patch.  */
   { "indirect_call",0,  0, false, false, false, false, NULL, NULL },
 
+  /* FOR BACKWARD COMPATIBILITY,
+     this attribute also tells no prologue/epilogue.  */
+  { "no_prologue",  0,  0, false, false, false, false, NULL, NULL },
+
   /* The last attribute spec is set to be NULL.  */
   { NULL,           0,  0, false, false, false, false, NULL, NULL }
 };
@@ -348,6 +352,10 @@ nds32_init_machine_status (void)
   /* Initially this function is not under strictly aligned situation.  */
   machine->strict_aligned_p = 0;
 
+  /* Initially this function has no naked and no_prologue attributes.  */
+  machine->attr_naked_p = 0;
+  machine->attr_no_prologue_p = 0;
+
   return machine;
 }
 
@@ -365,6 +373,15 @@ nds32_compute_stack_frame (void)
      needs prologue/epilogue.  */
   cfun->machine->naked_p = 0;
 
+  /* We need to mark whether this function has naked and no_prologue
+     attribute so that we can distinguish the difference if users applies
+     -mret-in-naked-func option.  */
+  cfun->machine->attr_naked_p
+    = lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
+      ? 1 : 0;
+  cfun->machine->attr_no_prologue_p
+    = lookup_attribute ("no_prologue", DECL_ATTRIBUTES (current_function_decl))
+      ? 1 : 0;
 
   /* If __builtin_eh_return is used, we better have frame pointer needed
      so that we can easily locate the stack slot of return address.  */
@@ -501,7 +518,7 @@ nds32_compute_stack_frame (void)
     }
 
   /* Check if this function can omit prologue/epilogue code fragment.
-     If there is 'naked' attribute in this function,
+     If there is 'no_prologue'/'naked' attribute in this function,
      we can set 'naked_p' flag to indicate that
      we do not have to generate prologue/epilogue.
      Or, if all the following conditions succeed,
@@ -514,7 +531,8 @@ nds32_compute_stack_frame (void)
 		    is no outgoing size.
        condition 3: There is no local_size, which means
 		    we do not need to adjust $sp.  */
-  if (lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
+  if (lookup_attribute ("no_prologue", DECL_ATTRIBUTES (current_function_decl))
+      || lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
       || (cfun->machine->callee_saved_first_gpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_last_gpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_first_fpr_regno == SP_REGNUM
@@ -1373,17 +1391,25 @@ nds32_needs_double_word_align (machine_mode mode, const_tree type)
 }
 
 /* Return true if FUNC is a naked function.  */
-static bool
+bool
 nds32_naked_function_p (tree func)
 {
-  tree t;
+  /* FOR BACKWARD COMPATIBILITY,
+     we need to support 'no_prologue' attribute as well.  */
+  tree t_naked;
+  tree t_no_prologue;
 
   if (TREE_CODE (func) != FUNCTION_DECL)
     abort ();
 
-  t = lookup_attribute ("naked", DECL_ATTRIBUTES (func));
+  /* We have to use lookup_attribute() to check attributes.
+     Because attr_naked_p and attr_no_prologue_p are set in
+     nds32_compute_stack_frame() and the function has not been
+     invoked yet.  */
+  t_naked       = lookup_attribute ("naked", DECL_ATTRIBUTES (func));
+  t_no_prologue = lookup_attribute ("no_prologue", DECL_ATTRIBUTES (func));
 
-  return (t != NULL_TREE);
+  return ((t_naked != NULL_TREE) || (t_no_prologue != NULL_TREE));
 }
 
 /* Function that determine whether a load postincrement is a good thing to use
@@ -1601,6 +1627,11 @@ static void
 nds32_register_passes (void)
 {
   nds32_register_pass (
+    make_pass_nds32_fp_as_gp,
+    PASS_POS_INSERT_BEFORE,
+    "ira");
+
+  nds32_register_pass (
     make_pass_nds32_relax_opt,
     PASS_POS_INSERT_AFTER,
     "mach");
@@ -1666,6 +1697,9 @@ static void
 nds32_conditional_register_usage (void)
 {
   int regno;
+
+  if (TARGET_LINUX_ABI)
+    fixed_regs[TP_REGNUM] = 1;
 
   if (TARGET_HARD_FLOAT)
     {
@@ -2165,56 +2199,12 @@ static void
 nds32_asm_function_end_prologue (FILE *file)
 {
   fprintf (file, "\t! END PROLOGUE\n");
-
-  /* If frame pointer is NOT needed and -mfp-as-gp is issued,
-     we can generate special directive: ".omit_fp_begin"
-     to guide linker doing fp-as-gp optimization.
-     However, for a naked function, which means
-     it should not have prologue/epilogue,
-     using fp-as-gp still requires saving $fp by push/pop behavior and
-     there is no benefit to use fp-as-gp on such small function.
-     So we need to make sure this function is NOT naked as well.  */
-  if (!frame_pointer_needed
-      && !cfun->machine->naked_p
-      && cfun->machine->fp_as_gp_p)
-    {
-      fprintf (file, "\t! ----------------------------------------\n");
-      fprintf (file, "\t! Guide linker to do "
-		     "link time optimization: fp-as-gp\n");
-      fprintf (file, "\t! We add one more instruction to "
-		     "initialize $fp near to $gp location.\n");
-      fprintf (file, "\t! If linker fails to use fp-as-gp transformation,\n");
-      fprintf (file, "\t! this extra instruction should be "
-		     "eliminated at link stage.\n");
-      fprintf (file, "\t.omit_fp_begin\n");
-      fprintf (file, "\tla\t$fp,_FP_BASE_\n");
-      fprintf (file, "\t! ----------------------------------------\n");
-    }
 }
 
 /* Before rtl epilogue has been expanded, this function is used.  */
 static void
 nds32_asm_function_begin_epilogue (FILE *file)
 {
-  /* If frame pointer is NOT needed and -mfp-as-gp is issued,
-     we can generate special directive: ".omit_fp_end"
-     to claim fp-as-gp optimization range.
-     However, for a naked function,
-     which means it should not have prologue/epilogue,
-     using fp-as-gp still requires saving $fp by push/pop behavior and
-     there is no benefit to use fp-as-gp on such small function.
-     So we need to make sure this function is NOT naked as well.  */
-  if (!frame_pointer_needed
-      && !cfun->machine->naked_p
-      && cfun->machine->fp_as_gp_p)
-    {
-      fprintf (file, "\t! ----------------------------------------\n");
-      fprintf (file, "\t! Claim the range of fp-as-gp "
-		     "link time optimization\n");
-      fprintf (file, "\t.omit_fp_end\n");
-      fprintf (file, "\t! ----------------------------------------\n");
-    }
-
   fprintf (file, "\t! BEGIN EPILOGUE\n");
 }
 
@@ -3133,14 +3123,35 @@ nds32_asm_file_start (void)
   fprintf (asm_out_file, "\t! This asm file is generated by compiler\n");
   fprintf (asm_out_file, "\t.flag\tverbatim\n");
 
-  if (TARGET_ICT_MODEL_LARGE)
-    fprintf (asm_out_file, "\t.ict_model\tlarge\n");
-  else
-    fprintf (asm_out_file, "\t.ict_model\tsmall\n");
-  /* Give assembler the size of each vector for interrupt handler.  */
-  fprintf (asm_out_file, "\t! This vector size directive is required "
-			 "for checking inconsistency on interrupt handler\n");
-  fprintf (asm_out_file, "\t.vec_size\t%d\n", nds32_isr_vector_size);
+  /* Insert directive for linker to distinguish object's ict flag.  */
+  if (!TARGET_LINUX_ABI)
+    {
+      if (TARGET_ICT_MODEL_LARGE)
+	fprintf (asm_out_file, "\t.ict_model\tlarge\n");
+      else
+	fprintf (asm_out_file, "\t.ict_model\tsmall\n");
+    }
+
+  /* We need to provide the size of each vector for interrupt handler
+     under elf toolchain.  */
+  if (!TARGET_LINUX_ABI)
+    {
+      fprintf (asm_out_file, "\t! This vector size directive is required "
+			     "for checking inconsistency on interrupt handler\n");
+      fprintf (asm_out_file, "\t.vec_size\t%d\n", nds32_isr_vector_size);
+    }
+
+  /* If user enables '-mforce-fp-as-gp' or compiles programs with -Os,
+     the compiler may produce 'la $fp,_FP_BASE_' instruction
+     at prologue for fp-as-gp optimization.
+     We should emit weak reference of _FP_BASE_ to avoid undefined reference
+     in case user does not pass '--relax' option to linker.  */
+  if (!TARGET_LINUX_ABI && (TARGET_FORCE_FP_AS_GP || optimize_size))
+    {
+      fprintf (asm_out_file, "\t! This weak reference is required to do "
+			     "fp-as-gp link time optimization\n");
+      fprintf (asm_out_file, "\t.weak\t_FP_BASE_\n");
+    }
 
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
@@ -3270,6 +3281,11 @@ static void
 nds32_asm_file_end (void)
 {
   nds32_asm_file_end_for_isr ();
+
+  /* The NDS32 Linux stack is mapped non-executable by default, so add a
+     .note.GNU-stack section.  */
+  if (TARGET_LINUX_ABI)
+    file_end_indicate_exec_stack ();
 
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 }
@@ -3498,7 +3514,7 @@ nds32_print_operand (FILE *stream, rtx x, int code)
     case SYMBOL_REF:
       output_addr_const (stream, x);
 
-      if (nds32_indirect_call_referenced_p (x))
+      if (!TARGET_LINUX_ABI && nds32_indirect_call_referenced_p (x))
 	fprintf (stream, "@ICT");
 
       break;
@@ -3913,6 +3929,9 @@ nds32_insert_attributes (tree decl, tree *attributes)
     {
       tree new_attrs = *attributes;
 
+      if (TARGET_LINUX_ABI)
+	error("cannot use indirect_call attribute under linux toolchain");
+
       if (lookup_attribute ("noinline", new_attrs) == NULL)
 	new_attrs = tree_cons (get_identifier ("noinline"), NULL, new_attrs);
       if (lookup_attribute ("noclone", new_attrs) == NULL)
@@ -4068,7 +4087,9 @@ nds32_option_override (void)
     }
   if (TARGET_ISA_V3)
     {
-      /* Under V3 ISA, currently nothing should be strictly set.  */
+      /* If this is ARCH_V3J, we need to enable TARGET_REDUCED_REGS.  */
+      if (nds32_arch_option == ARCH_V3J)
+	target_flags |= MASK_REDUCED_REGS;
     }
   if (TARGET_ISA_V3M)
     {
@@ -4099,6 +4120,12 @@ nds32_option_override (void)
       for (r = 16; r <= 27; r++)
 	fixed_regs[r] = call_used_regs[r] = 1;
     }
+
+  /* See if user explicitly would like to use fp-as-gp optimization.
+     If so, we must prevent $fp from being allocated
+     during register allocation.  */
+  if (TARGET_FORCE_FP_AS_GP)
+    fixed_regs[FP_REGNUM] = call_used_regs[FP_REGNUM] = 1;
 
   if (!TARGET_16_BIT)
     {
@@ -4161,6 +4188,13 @@ nds32_expand_builtin (tree exp,
   return nds32_expand_builtin_impl (exp, target, subtarget, mode, ignore);
 }
 
+/* Implement TARGET_INIT_LIBFUNCS.  */
+static void
+nds32_init_libfuncs (void)
+{
+  if (TARGET_LINUX_ABI)
+    init_sync_libfuncs (UNITS_PER_WORD);
+}
 
 /* ------------------------------------------------------------------------ */
 
@@ -4518,6 +4552,10 @@ nds32_expand_prologue (void)
      The result will be in cfun->machine.  */
   nds32_compute_stack_frame ();
 
+  /* Check frame_pointer_needed again to prevent fp is need after reload.  */
+  if (frame_pointer_needed)
+    cfun->machine->fp_as_gp_p = false;
+
   /* If this is a variadic function, first we need to push argument
      registers that hold the unnamed argument value.  */
   if (cfun->machine->va_args_size != 0)
@@ -4719,7 +4757,16 @@ nds32_expand_epilogue (bool sibcall_p)
       /* Generate return instruction by using 'return_internal' pattern.
 	 Make sure this instruction is after gen_blockage().  */
       if (!sibcall_p)
-	emit_jump_insn (gen_return_internal ());
+	{
+	  /* We need to further check attributes to determine whether
+	     there should be return instruction at epilogue.
+	     If the attribute naked exists but -mno-ret-in-naked-func
+	     is issued, there is NO need to generate return instruction.  */
+	  if (cfun->machine->attr_naked_p && !flag_ret_in_naked_func)
+	    return;
+
+	  emit_jump_insn (gen_return_internal ());
+	}
       return;
     }
 
@@ -4916,6 +4963,10 @@ nds32_expand_prologue_v3push (void)
   if (cfun->machine->callee_saved_gpr_regs_size > 0)
     df_set_regs_ever_live (FP_REGNUM, 1);
 
+  /* Check frame_pointer_needed again to prevent fp is need after reload.  */
+  if (frame_pointer_needed)
+    cfun->machine->fp_as_gp_p = false;
+
   /* If the function is 'naked',
      we do not have to generate prologue code fragment.  */
   if (cfun->machine->naked_p && !flag_pic)
@@ -5075,9 +5126,19 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
   if (cfun->machine->naked_p)
     {
       /* Generate return instruction by using 'return_internal' pattern.
-	 Make sure this instruction is after gen_blockage().  */
+	 Make sure this instruction is after gen_blockage().
+	 First we need to check this is a function without sibling call.  */
       if (!sibcall_p)
-	emit_jump_insn (gen_return_internal ());
+	{
+	  /* We need to further check attributes to determine whether
+	     there should be return instruction at epilogue.
+	     If the attribute naked exists but -mno-ret-in-naked-func
+	     is issued, there is NO need to generate return instruction.  */
+	  if (cfun->machine->attr_naked_p && !flag_ret_in_naked_func)
+	    return;
+
+	  emit_jump_insn (gen_return_internal ());
+	}
       return;
     }
 
@@ -5239,6 +5300,11 @@ nds32_can_use_return_insn (void)
   /* Prior to reloading, we can't tell how many registers must be saved.
      Thus we can not determine whether this function has null epilogue.  */
   if (!reload_completed)
+    return 0;
+
+  /* If attribute 'naked' appears but -mno-ret-in-naked-func is used,
+     we cannot use return instruction.  */
+  if (cfun->machine->attr_naked_p && !flag_ret_in_naked_func)
     return 0;
 
   sp_adjust = cfun->machine->local_size
@@ -5721,6 +5787,9 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 
 /* Emulating TLS.  */
 
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS TARGET_LINUX_ABI
+
 
 /* Defining coprocessor specifics for MIPS targets.  */
 
@@ -5748,6 +5817,8 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN nds32_expand_builtin
 
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS nds32_init_libfuncs
 
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
 #define TARGET_USE_BLOCKS_FOR_CONSTANT_P nds32_use_blocks_for_constant_p

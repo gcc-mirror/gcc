@@ -3909,6 +3909,7 @@ package body Sem_Ch12 is
       Loc            : constant Source_Ptr := Sloc (N);
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_SM   : constant SPARK_Mode_Type := SPARK_Mode;
@@ -4736,8 +4737,8 @@ package body Sem_Ch12 is
       end if;
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Mode (Saved_GM);
-      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
       Style_Check := Saved_Style_Check;
 
    exception
@@ -4751,8 +4752,8 @@ package body Sem_Ch12 is
          end if;
 
          Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-         Restore_Ghost_Mode (Saved_GM);
-         Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
          Style_Check := Saved_Style_Check;
    end Analyze_Package_Instantiation;
 
@@ -5399,6 +5400,7 @@ package body Sem_Ch12 is
       --  Local variables
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_SM   : constant SPARK_Mode_Type := SPARK_Mode;
@@ -5773,8 +5775,8 @@ package body Sem_Ch12 is
       end if;
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Mode (Saved_GM);
-      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
 
    exception
       when Instantiation_Error =>
@@ -5787,8 +5789,8 @@ package body Sem_Ch12 is
          end if;
 
          Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-         Restore_Ghost_Mode (Saved_GM);
-         Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+         Restore_Ghost_Region (Saved_GM, Saved_IGR);
+         Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
@@ -9525,9 +9527,13 @@ package body Sem_Ch12 is
                --  the freeze node for Inst must be inserted after that of
                --  Parent_Inst. This relation is established by comparing
                --  the Slocs of Parent_Inst freeze node and Inst.
+               --  We examine the parents of the enclosing lists to handle
+               --  the case where the parent instance is in the visible part
+               --  of a package declaration, and the inner instance is in
+               --  the corresponding private part.
 
-               if List_Containing (Get_Unit_Instantiation_Node (Par)) =
-                  List_Containing (N)
+               if Parent (List_Containing (Get_Unit_Instantiation_Node (Par)))
+                    = Parent (List_Containing (N))
                  and then Sloc (Freeze_Node (Par)) < Sloc (N)
                then
                   Insert_Freeze_Node_For_Instance (N, F_Node);
@@ -11271,6 +11277,7 @@ package body Sem_Ch12 is
       --  Local variables
 
       Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
       Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
       Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
       --  Save the Ghost and SPARK mode-related data to restore on exit
@@ -11600,8 +11607,8 @@ package body Sem_Ch12 is
 
    <<Leave>>
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Mode (Saved_GM);
-      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
       Style_Check := Saved_Style_Check;
    end Instantiate_Package_Body;
 
@@ -11628,6 +11635,7 @@ package body Sem_Ch12 is
                       Defining_Unit_Name (Parent (Act_Decl));
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       Saved_SM   : constant SPARK_Mode_Type := SPARK_Mode;
@@ -11929,8 +11937,8 @@ package body Sem_Ch12 is
 
    <<Leave>>
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Mode (Saved_GM);
-      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+      Restore_SPARK_Mode   (Saved_SM, Saved_SMP);
       Style_Check := Saved_Style_Check;
    end Instantiate_Subprogram_Body;
 
@@ -12352,6 +12360,86 @@ package body Sem_Ch12 is
          Ancestor_Discr : Entity_Id;
 
       begin
+         --  Verify that the actual includes the progenitors of the formal,
+         --  if any. The formal may depend on previous formals and their
+         --  instance, so we must examine instance of interfaces if present.
+         --  The actual may be an extension of an interface, in which case
+         --  it does not appear in the interface list, so this must be
+         --  checked separately.
+
+         if Present (Interface_List (Def)) then
+            if not Has_Interfaces (Act_T) then
+               Error_Msg_NE
+                 ("actual must implement all interfaces of formal&",
+                   Actual, A_Gen_T);
+
+            else
+               declare
+                  Act_Iface_List : Elist_Id;
+                  Iface          : Node_Id;
+                  Iface_Ent      : Entity_Id;
+
+                  function Instance_Exists (I : Entity_Id) return Boolean;
+                  --  If the interface entity is declared in a generic unit,
+                  --  this can only be legal if we are within an instantiation
+                  --  of a child of that generic. There is currently no
+                  --  mechanism to relate an interface declared within a
+                  --  generic to the corresponding interface in an instance,
+                  --  so we traverse the list of interfaces of the actual,
+                  --  looking for a name match.
+
+                  ---------------------
+                  -- Instance_Exists --
+                  ---------------------
+
+                  function Instance_Exists (I : Entity_Id) return Boolean is
+                     Iface_Elmt : Elmt_Id;
+
+                  begin
+                     Iface_Elmt := First_Elmt (Act_Iface_List);
+                     while Present (Iface_Elmt) loop
+                        if Is_Generic_Instance (Scope (Node (Iface_Elmt)))
+                          and then Chars (Node (Iface_Elmt)) = Chars (I)
+                        then
+                           return True;
+                        end if;
+
+                        Next_Elmt (Iface_Elmt);
+                     end loop;
+
+                     return False;
+                  end Instance_Exists;
+
+               begin
+                  Iface := First (Abstract_Interface_List (A_Gen_T));
+                  Collect_Interfaces (Act_T, Act_Iface_List);
+
+                  while Present (Iface) loop
+                     Iface_Ent := Get_Instance_Of (Entity (Iface));
+
+                     if Is_Ancestor (Iface_Ent, Act_T)
+                      or else Is_Progenitor (Iface_Ent, Act_T)
+                     then
+                        null;
+
+                     elsif Ekind (Scope (Iface_Ent)) = E_Generic_Package
+                       and then Instance_Exists (Iface_Ent)
+                     then
+                        null;
+
+                     else
+                        Error_Msg_Name_1 := Chars (Act_T);
+                        Error_Msg_NE
+                          ("Actual% must implement interface&",
+                           Actual, Etype (Iface));
+                     end if;
+
+                     Next (Iface);
+                  end loop;
+               end;
+            end if;
+         end if;
+
          --  If the parent type in the generic declaration is itself a previous
          --  formal type, then it is local to the generic and absent from the
          --  analyzed generic definition. In that case the ancestor is the

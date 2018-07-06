@@ -423,6 +423,12 @@ func releaseSudog(s *sudog) {
 
 // funcPC returns the entry PC of the function f.
 // It assumes that f is a func value. Otherwise the behavior is undefined.
+// CAREFUL: In programs with plugins, funcPC can return different values
+// for the same function (because there are actually multiple copies of
+// the same function in the address space). To be safe, don't use the
+// results of this function in any == expression. It is only safe to
+// use the result as an address at which to start executing code.
+//
 // For gccgo note that this differs from the gc implementation; the gc
 // implementation adds sys.PtrSize to the address of the interface
 // value, but GCC's alias analysis decides that that can not be a

@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "debug.h"
 #include "omp-offload.h"
+#include "print-tree.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -65,6 +66,9 @@ struct output_block *
 create_output_block (enum lto_section_type section_type)
 {
   struct output_block *ob = XCNEW (struct output_block);
+  if (streamer_dump_file)
+    fprintf (streamer_dump_file, "Creating output block for %s\n",
+	     lto_section_name [section_type]);
 
   ob->section_type = section_type;
   ob->decl_state = lto_get_out_decl_state ();
@@ -130,9 +134,12 @@ tree_is_indexable (tree t)
   if ((TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
       && DECL_CONTEXT (t))
     return variably_modified_type_p (TREE_TYPE (DECL_CONTEXT (t)), NULL_TREE);
-  /* IMPORTED_DECL is put into BLOCK and thus it never can be shared.  */
+  /* IMPORTED_DECL is put into BLOCK and thus it never can be shared.
+     We should no longer need to stream it.  */
   else if (TREE_CODE (t) == IMPORTED_DECL)
-    return false;
+    gcc_unreachable ();
+  else if (TREE_CODE (t) == LABEL_DECL)
+    return FORCED_LABEL (t) || DECL_NONLOCAL (t);
   else if (((VAR_P (t) && !TREE_STATIC (t))
 	    || TREE_CODE (t) == TYPE_DECL
 	    || TREE_CODE (t) == CONST_DECL
@@ -738,6 +745,14 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 
   enum tree_code code;
 
+  if (streamer_dump_file)
+    {
+      print_node_brief (streamer_dump_file, "    Streaming ",
+	 		expr, 4);
+      fprintf (streamer_dump_file, "  to %s\n",
+	       lto_section_name [ob->section_type]);
+    }
+
   code = TREE_CODE (expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
@@ -789,10 +804,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 
       DFS_follow_tree_edge (DECL_ATTRIBUTES (expr));
 
-      /* Do not follow DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
-	 for early inlining so drop it on the floor instead of ICEing in
-	 dwarf2out.c.
-	 We however use DECL_ABSTRACT_ORIGIN == error_mark_node to mark
+      /* We use DECL_ABSTRACT_ORIGIN == error_mark_node to mark
 	 declarations which should be eliminated by decl merging. Be sure none
 	 leaks to this point.  */
       gcc_assert (DECL_ABSTRACT_ORIGIN (expr) != error_mark_node);
@@ -905,20 +917,8 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	  DFS_follow_tree_edge (t);
 
       DFS_follow_tree_edge (BLOCK_SUPERCONTEXT (expr));
+      DFS_follow_tree_edge (BLOCK_ABSTRACT_ORIGIN (expr));
 
-      /* Follow BLOCK_ABSTRACT_ORIGIN for the limited cases we can
-	 handle - those that represent inlined function scopes.
-	 For the drop rest them on the floor instead of ICEing
-	 in dwarf2out.c, but keep the notion of whether the block
-	 is an inlined block by refering to itself for the sake of
-	 tree_nonartificial_location.  */
-      if (inlined_function_outer_scope_p (expr))
-	{
-	  tree ultimate_origin = block_ultimate_origin (expr);
-	  DFS_follow_tree_edge (ultimate_origin);
-	}
-      else if (BLOCK_ABSTRACT_ORIGIN (expr))
-	DFS_follow_tree_edge (expr);
       /* Do not follow BLOCK_NONLOCALIZED_VARS.  We cannot handle debug
 	 information for early inlined BLOCKs so drop it on the floor instead
 	 of ICEing in dwarf2out.c.  */
@@ -942,15 +942,10 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	DFS_follow_tree_edge (t);
       DFS_follow_tree_edge (BINFO_OFFSET (expr));
       DFS_follow_tree_edge (BINFO_VTABLE (expr));
-      DFS_follow_tree_edge (BINFO_VPTR_FIELD (expr));
 
-      /* The number of BINFO_BASE_ACCESSES has already been emitted in
-	 EXPR's bitfield section.  */
-      FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_ACCESSES (expr), i, t)
-	DFS_follow_tree_edge (t);
-
-      /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
-	 and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
+      /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX,
+	 BINFO_BASE_ACCESSES and BINFO_VPTR_INDEX; these are used
+	 by C++ FE only.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
@@ -1335,11 +1330,9 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	visit (b);
       visit (BINFO_OFFSET (t));
       visit (BINFO_VTABLE (t));
-      visit (BINFO_VPTR_FIELD (t));
-      FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_ACCESSES (t), i, b)
-	visit (b);
       /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
-	 and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
+	 BINFO_BASE_ACCESSES and BINFO_VPTR_INDEX; these are used
+	 by C++ FE only.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
@@ -1635,6 +1628,13 @@ lto_output_tree (struct output_block *ob, tree expr,
 	 we stream out.  */
       gcc_assert (!in_dfs_walk);
 
+      if (streamer_dump_file)
+	{
+	  print_node_brief (streamer_dump_file, "   Streaming SCC of ",
+			    expr, 4);
+          fprintf (streamer_dump_file, "\n");
+	}
+
       /* Start the DFS walk.  */
       /* Save ob state ... */
       /* let's see ... */
@@ -1651,6 +1651,12 @@ lto_output_tree (struct output_block *ob, tree expr,
       streamer_write_uhwi (ob, ix);
       streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
 			   lto_tree_code_to_tag (TREE_CODE (expr)));
+      if (streamer_dump_file)
+	{
+	  print_node_brief (streamer_dump_file, "   Finished SCC of ",
+			    expr, 4);
+          fprintf (streamer_dump_file, "\n\n");
+	}
       lto_stats.num_pickle_refs_output++;
     }
 }
@@ -2072,6 +2078,10 @@ output_function (struct cgraph_node *node)
   basic_block bb;
   struct output_block *ob;
 
+  if (streamer_dump_file)
+    fprintf (streamer_dump_file, "\nStreaming body of %s\n",
+	     node->name ());
+
   function = node->decl;
   fn = DECL_STRUCT_FUNCTION (function);
   ob = create_output_block (LTO_section_function_body);
@@ -2190,6 +2200,9 @@ output_function (struct cgraph_node *node)
   produce_asm (ob, function);
 
   destroy_output_block (ob);
+  if (streamer_dump_file)
+    fprintf (streamer_dump_file, "Finished streaming %s\n",
+	     node->name ());
 }
 
 /* Output the body of function NODE->DECL.  */
@@ -2199,6 +2212,10 @@ output_constructor (struct varpool_node *node)
 {
   tree var = node->decl;
   struct output_block *ob;
+
+  if (streamer_dump_file)
+    fprintf (streamer_dump_file, "\nStreaming constructor of %s\n",
+	     node->name ());
 
   ob = create_output_block (LTO_section_function_body);
 
@@ -2216,6 +2233,9 @@ output_constructor (struct varpool_node *node)
   produce_asm (ob, var);
 
   destroy_output_block (ob);
+  if (streamer_dump_file)
+    fprintf (streamer_dump_file, "Finished streaming %s\n",
+	     node->name ());
 }
 
 
@@ -2406,7 +2426,9 @@ lto_output (void)
 		}
 	      decl_state = lto_new_out_decl_state ();
 	      lto_push_out_decl_state (decl_state);
-	      if (gimple_has_body_p (node->decl) || !flag_wpa
+	      if (gimple_has_body_p (node->decl)
+		  || (!flag_wpa
+		      && flag_incremental_link != INCREMENTAL_LINK_LTO)
 		  /* Thunks have no body but they may be synthetized
 		     at WPA time.  */
 		  || DECL_ARGUMENTS (node->decl))
@@ -2438,7 +2460,8 @@ lto_output (void)
 	      decl_state = lto_new_out_decl_state ();
 	      lto_push_out_decl_state (decl_state);
 	      if (DECL_INITIAL (node->decl) != error_mark_node
-		  || !flag_wpa)
+		  || (!flag_wpa
+		      && flag_incremental_link != INCREMENTAL_LINK_LTO))
 		output_constructor (node);
 	      else
 		copy_function_or_variable (node);
@@ -2482,6 +2505,12 @@ write_global_stream (struct output_block *ob,
   for (index = 0; index < size; index++)
     {
       t = lto_tree_ref_encoder_get_tree (encoder, index);
+      if (streamer_dump_file)
+	{
+          fprintf (streamer_dump_file, " %i:", (int)index);
+	  print_node_brief (streamer_dump_file, "", t, 4);
+          fprintf (streamer_dump_file, "\n");
+	}
       if (!streamer_tree_cache_lookup (ob->writer_cache, t, NULL))
 	stream_write_tree (ob, t, false);
     }
@@ -2857,12 +2886,18 @@ produce_asm_for_decls (void)
       }
 
   /* Write the global symbols.  */
+  if (streamer_dump_file)
+    fprintf (streamer_dump_file, "Outputting global stream\n");
   lto_output_decl_state_streams (ob, out_state);
   num_fns = lto_function_decl_states.length ();
   for (idx = 0; idx < num_fns; idx++)
     {
       fn_out_state =
 	lto_function_decl_states[idx];
+      if (streamer_dump_file)
+        fprintf (streamer_dump_file, "Outputting stream for %s\n",
+		 IDENTIFIER_POINTER
+		    (DECL_ASSEMBLER_NAME (fn_out_state->fn_decl)));
       lto_output_decl_state_streams (ob, fn_out_state);
     }
 

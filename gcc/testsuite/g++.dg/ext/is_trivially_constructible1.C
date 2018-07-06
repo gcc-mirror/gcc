@@ -39,6 +39,11 @@ SA(!__is_trivially_constructible(void,int));
 SA(!__is_trivially_constructible(const void,int));
 SA(!__is_trivially_constructible(volatile void,int));
 SA(!__is_trivially_constructible(const volatile void,int));
+SA(!__is_trivially_constructible(int, void*));
+SA(!__is_trivially_constructible(int, int*));
+SA(!__is_trivially_constructible(int, const int*));
+SA(!__is_trivially_constructible(int*, void*));
+SA(!__is_trivially_constructible(int*, const int*));
 
 SA(!__is_trivially_constructible(D));
 

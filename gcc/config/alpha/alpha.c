@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "flags.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -614,13 +615,13 @@ alpha_override_options_after_change (void)
   /* ??? Kludge these by not doing anything if we don't optimize.  */
   if (optimize > 0)
     {
-      if (align_loops <= 0)
-	align_loops = 16;
-      if (align_jumps <= 0)
-	align_jumps = 16;
+      if (flag_align_loops && !str_align_loops)
+	str_align_loops = "16";
+      if (flag_align_jumps && !str_align_jumps)
+	str_align_jumps = "16";
     }
-  if (align_functions <= 0)
-    align_functions = 16;
+  if (flag_align_functions && !str_align_functions)
+    str_align_functions = "16";
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -9268,10 +9269,11 @@ alpha_align_insns_1 (unsigned int max_align,
   /* Let shorten branches care for assigning alignments to code labels.  */
   shorten_branches (get_insns ());
 
-  if (align_functions < 4)
+  unsigned int option_alignment = align_functions_max_skip + 1;
+  if (option_alignment < 4)
     align = 4;
-  else if ((unsigned int) align_functions < max_align)
-    align = align_functions;
+  else if ((unsigned int) option_alignment < max_align)
+    align = option_alignment;
   else
     align = max_align;
 

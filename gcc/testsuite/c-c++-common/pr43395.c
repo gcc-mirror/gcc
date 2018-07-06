@@ -5,27 +5,24 @@
 void *
 foo (void)
 {
- lab: /* { dg-line foo_lab } */
+ lab:
   return &&lab;
-/* { dg-warning "function returns address of label" "" { target c } .-1 } */
-/* { dg-warning "address of label" "" { target c++ } foo_lab } */
+/* { dg-warning "address of label" "" { target *-*-* } .-1 } */
 }
 
 void *
 bar (void)
 {
   __label__ lab;
- lab: /* { dg-line bar_lab } */
+ lab:
   return &&lab;
-/* { dg-warning "function returns address of label" "" { target c } .-1 } */
-/* { dg-warning "address of label" "" { target c++ } bar_lab } */
+/* { dg-warning "address of label" "" { target *-*-* } .-1 } */
 }
 
 void *
 baz (void)
 {
-  int i; /* { dg-line baz_i } */
+  int i;
   return &i;
-/* { dg-warning "function returns address of local variable" "" { target c } .-1 } */
-/* { dg-warning "address of local variable" "" { target c++ } baz_i } */
+/* { dg-warning "address of local variable" "" { target *-*-* } .-1 } */
 }

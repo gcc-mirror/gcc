@@ -27,10 +27,13 @@ along with this program; see the file COPYING3.  If not see
    More information at http://gcc.gnu.org/wiki/whopr/driver.
 
    This plugin should be passed the lto-wrapper options and will forward them.
-   It also has 2 options of its own:
+   It also has options at his own:
    -debug: Print the command line used to run lto-wrapper.
    -nop: Instead of running lto-wrapper, pass the original to the plugin. This
-   only works if the input files are hybrid.  */
+   only works if the input files are hybrid. 
+   -linker-output-known: Do not determine linker output
+   -sym-style={none,win32,underscore|uscore}
+   -pass-through  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -159,6 +162,7 @@ static ld_plugin_add_symbols add_symbols;
 
 static struct plugin_file_info *claimed_files = NULL;
 static unsigned int num_claimed_files = 0;
+static unsigned int non_claimed_files = 0;
 
 /* List of files with offloading.  */
 static struct plugin_offload_file *offload_files;
@@ -185,6 +189,7 @@ static char nop;
 static char *resolution_file = NULL;
 static enum ld_plugin_output_file_type linker_output;
 static int linker_output_set;
+static int linker_output_known;
 
 /* The version of gold being used, or -1 if not gold.  The number is
    MAJOR * 100 + MINOR.  */
@@ -637,7 +642,8 @@ static enum ld_plugin_status
 all_symbols_read_handler (void)
 {
   unsigned i;
-  unsigned num_lto_args = num_claimed_files + lto_wrapper_num_args + 3;
+  unsigned num_lto_args = num_claimed_files + lto_wrapper_num_args + 2
+    	   + !linker_output_known;
   char **lto_argv;
   const char *linker_output_str = NULL;
   const char **lto_arg_ptr;
@@ -661,26 +667,37 @@ all_symbols_read_handler (void)
   for (i = 0; i < lto_wrapper_num_args; i++)
     *lto_arg_ptr++ = lto_wrapper_argv[i];
 
-  assert (linker_output_set);
-  switch (linker_output)
+  if (!linker_output_known)
     {
-    case LDPO_REL:
-      linker_output_str = "-flinker-output=rel";
-      break;
-    case LDPO_DYN:
-      linker_output_str = "-flinker-output=dyn";
-      break;
-    case LDPO_PIE:
-      linker_output_str = "-flinker-output=pie";
-      break;
-    case LDPO_EXEC:
-      linker_output_str = "-flinker-output=exec";
-      break;
-    default:
-      message (LDPL_FATAL, "unsupported linker output %i", linker_output);
-      break;
+      assert (linker_output_set);
+      switch (linker_output)
+	{
+	case LDPO_REL:
+	  if (non_claimed_files)
+	    {
+	      message (LDPL_WARNING, "incremental linking of LTO and non-LTO "
+		       "objects; using -flinker-output=nolto-rel which will "
+		       "bypass whole program optimization");
+	      linker_output_str = "-flinker-output=nolto-rel";
+	    }
+	  else
+	    linker_output_str = "-flinker-output=rel";
+	  break;
+	case LDPO_DYN:
+	  linker_output_str = "-flinker-output=dyn";
+	  break;
+	case LDPO_PIE:
+	  linker_output_str = "-flinker-output=pie";
+	  break;
+	case LDPO_EXEC:
+	  linker_output_str = "-flinker-output=exec";
+	  break;
+	default:
+	  message (LDPL_FATAL, "unsupported linker output %i", linker_output);
+	  break;
+	}
+      *lto_arg_ptr++ = xstrdup (linker_output_str);
     }
-  *lto_arg_ptr++ = xstrdup (linker_output_str);
 
   if (num_offload_files > 0)
     {
@@ -1108,6 +1125,7 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   goto cleanup;
 
  err:
+  non_claimed_files++;
   free (lto_file.name);
 
  cleanup:
@@ -1122,6 +1140,8 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
 static void
 process_option (const char *option)
 {
+  if (strcmp (option, "-linker-output-known") == 0)
+    linker_output_known = 1;
   if (strcmp (option, "-debug") == 0)
     debug = 1;
   else if (strcmp (option, "-nop") == 0)

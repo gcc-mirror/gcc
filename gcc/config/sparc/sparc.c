@@ -1906,7 +1906,7 @@ sparc_option_override (void)
     target_flags &= ~MASK_FSMULD;
 
   /* Supply a default value for align_functions.  */
-  if (align_functions == 0)
+  if (flag_align_functions && !str_align_functions)
     {
       if (sparc_cpu == PROCESSOR_ULTRASPARC
 	  || sparc_cpu == PROCESSOR_ULTRASPARC3
@@ -1914,10 +1914,10 @@ sparc_option_override (void)
 	  || sparc_cpu == PROCESSOR_NIAGARA2
 	  || sparc_cpu == PROCESSOR_NIAGARA3
 	  || sparc_cpu == PROCESSOR_NIAGARA4)
-	align_functions = 32;
+	str_align_functions = "32";
       else if (sparc_cpu == PROCESSOR_NIAGARA7
 	       || sparc_cpu == PROCESSOR_M8)
-	align_functions = 64;
+	str_align_functions = "64";
     }
 
   /* Validate PCC_STRUCT_RETURN.  */
@@ -10502,6 +10502,10 @@ sparc_solaris_elf_asm_named_section (const char *name, unsigned int flags,
 
   if (!(flags & SECTION_DEBUG))
     fputs (",#alloc", asm_out_file);
+#if HAVE_GAS_SECTION_EXCLUDE
+  if (flags & SECTION_EXCLUDE)
+    fputs (",#exclude", asm_out_file);
+#endif
   if (flags & SECTION_WRITE)
     fputs (",#write", asm_out_file);
   if (flags & SECTION_TLS)

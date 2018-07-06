@@ -343,9 +343,6 @@
 /* Define to 1 if you have the `unshare' function. */
 #undef HAVE_UNSHARE
 
-/* Define to 1 if you have the <ustat.h> header file and it works. */
-#undef HAVE_USTAT_H
-
 /* Define to 1 if you have the `utimensat' function. */
 #undef HAVE_UTIMENSAT
 

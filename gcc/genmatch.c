@@ -2370,6 +2370,18 @@ get_operand_type (id_base *op, unsigned pos,
   else if (*op == COND_EXPR
 	   && pos == 0)
     return "boolean_type_node";
+  else if (strncmp (op->id, "CFN_COND_", 9) == 0)
+    {
+      /* IFN_COND_* operands 1 and later by default have the same type
+	 as the result.  The type of operand 0 needs to be specified
+	 explicitly.  */
+      if (pos > 0 && expr_type)
+	return expr_type;
+      else if (pos > 0 && in_type)
+	return in_type;
+      else
+	return NULL;
+    }
   else
     {
       /* Otherwise all types should match - choose one in order of
@@ -2429,7 +2441,8 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       in_type = NULL;
     }
   else if (*opr == COND_EXPR
-	   || *opr == VEC_COND_EXPR)
+	   || *opr == VEC_COND_EXPR
+	   || strncmp (opr->id, "CFN_COND_", 9) == 0)
     {
       /* Conditions are of the same type as their first alternative.  */
       sprintf (optype, "TREE_TYPE (ops%d[1])", depth);
@@ -2484,17 +2497,16 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       /* ???  Building a stmt can fail for various reasons here, seq being
          NULL or the stmt referencing SSA names occuring in abnormal PHIs.
 	 So if we fail here we should continue matching other patterns.  */
-      fprintf_indent (f, indent, "code_helper tem_code = %s;\n", opr_name);
-      fprintf_indent (f, indent, "tree tem_ops[3] = { ");
+      fprintf_indent (f, indent, "gimple_match_op tem_op (%s, %s",
+		      opr_name, type);
       for (unsigned i = 0; i < ops.length (); ++i)
-	fprintf (f, "ops%d[%u]%s", depth, i,
-		 i == ops.length () - 1 ? " };\n" : ", ");
+	fprintf (f, ", ops%d[%u]", depth, i);
+      fprintf (f, ");\n");
       fprintf_indent (f, indent,
-		      "gimple_resimplify%d (lseq, &tem_code, %s, tem_ops, valueize);\n",
-		      ops.length (), type);
+		      "gimple_resimplify%d (lseq, &tem_op, valueize);\n",
+		      ops.length ());
       fprintf_indent (f, indent,
-		      "res = maybe_push_res_to_seq (tem_code, %s, tem_ops, lseq);\n",
-		      type);
+		      "res = maybe_push_res_to_seq (&tem_op, lseq);\n");
       fprintf_indent (f, indent,
 		      "if (!res) return false;\n");
       if (*opr == CONVERT_EXPR)
@@ -3322,17 +3334,22 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	  else if (is_a <predicate_id *> (opr))
 	    is_predicate = true;
 	  if (!is_predicate)
-	    fprintf_indent (f, indent, "*res_code = %s;\n",
+	    fprintf_indent (f, indent, "res_op->set_op (%s, type, %d);\n",
 			    *e->operation == CONVERT_EXPR
-			    ? "NOP_EXPR" : e->operation->id);
+			    ? "NOP_EXPR" : e->operation->id,
+			    e->ops.length ());
 	  for (unsigned j = 0; j < e->ops.length (); ++j)
 	    {
 	      char dest[32];
-	      snprintf (dest, 32, "res_ops[%d]", j);
+	      if (is_predicate)
+		snprintf (dest, 32, "res_ops[%d]", j);
+	      else
+		snprintf (dest, 32, "res_op->ops[%d]", j);
 	      const char *optype
 		= get_operand_type (opr, j,
 				    "type", e->expr_type,
-				    j == 0 ? NULL : "TREE_TYPE (res_ops[0])");
+				    j == 0 ? NULL
+				    : "TREE_TYPE (res_op->ops[0])");
 	      /* We need to expand GENERIC conditions we captured from
 	         COND_EXPRs and we need to unshare them when substituting
 		 into COND_EXPRs.  */
@@ -3348,30 +3365,29 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	     gimple_build w/o actually building the stmt.  */
 	  if (!is_predicate)
 	    fprintf_indent (f, indent,
-			    "gimple_resimplify%d (lseq, res_code, type, "
-			    "res_ops, valueize);\n", e->ops.length ());
+			    "gimple_resimplify%d (lseq, res_op,"
+			    " valueize);\n", e->ops.length ());
 	}
       else if (result->type == operand::OP_CAPTURE
 	       || result->type == operand::OP_C_EXPR)
 	{
-	  result->gen_transform (f, indent, "res_ops[0]", true, 1, "type",
+	  fprintf_indent (f, indent, "tree tem;\n");
+	  result->gen_transform (f, indent, "tem", true, 1, "type",
 				 &cinfo, indexes);
-	  fprintf_indent (f, indent, "*res_code = TREE_CODE (res_ops[0]);\n");
+	  fprintf_indent (f, indent, "res_op->set_value (tem);\n");
 	  if (is_a <capture *> (result)
 	      && cinfo.info[as_a <capture *> (result)->where].cond_expr_cond_p)
 	    {
 	      /* ???  Stupid tcc_comparison GENERIC trees in COND_EXPRs.  Deal
 		 with substituting a capture of that.  */
 	      fprintf_indent (f, indent,
-			      "if (COMPARISON_CLASS_P (res_ops[0]))\n");
+			      "if (COMPARISON_CLASS_P (tem))\n");
 	      fprintf_indent (f, indent,
 			      "  {\n");
 	      fprintf_indent (f, indent,
-			      "    tree tem = res_ops[0];\n");
+			      "    res_op->ops[0] = TREE_OPERAND (tem, 0);\n");
 	      fprintf_indent (f, indent,
-			      "    res_ops[0] = TREE_OPERAND (tem, 0);\n");
-	      fprintf_indent (f, indent,
-			      "    res_ops[1] = TREE_OPERAND (tem, 1);\n");
+			      "    res_op->ops[1] = TREE_OPERAND (tem, 1);\n");
 	      fprintf_indent (f, indent,
 			      "  }\n");
 	    }
@@ -3529,7 +3545,7 @@ dt_simplify::gen (FILE *f, int indent, bool gimple)
     {
       if (gimple)
 	{
-	  fprintf_indent (f, indent, "if (%s (res_code, res_ops, seq, "
+	  fprintf_indent (f, indent, "if (%s (res_op, seq, "
 			  "valueize, type, captures", info->fname);
 	  for (unsigned i = 0; i < s->for_subst_vec.length (); ++i)
 	    if (s->for_subst_vec[i].first->used)
@@ -3697,9 +3713,8 @@ decision_tree::gen (FILE *f, bool gimple)
 			    fcnt++);
       if (gimple)
 	fprintf (f, "\nstatic bool\n"
-		 "%s (code_helper *res_code, tree *res_ops,\n"
-		 "                 gimple_seq *seq, tree (*valueize)(tree) "
-		 "ATTRIBUTE_UNUSED,\n"
+		 "%s (gimple_match_op *res_op, gimple_seq *seq,\n"
+		 "                 tree (*valueize)(tree) ATTRIBUTE_UNUSED,\n"
 		 "                 const tree ARG_UNUSED (type), tree *ARG_UNUSED "
 		 "(captures)\n",
 		 s->fname);
@@ -3735,7 +3750,7 @@ decision_tree::gen (FILE *f, bool gimple)
     }
   fprintf (stderr, "removed %u duplicate tails\n", rcnt);
 
-  for (unsigned n = 1; n <= 3; ++n)
+  for (unsigned n = 1; n <= 4; ++n)
     {
       /* First generate split-out functions.  */
       for (unsigned i = 0; i < root->kids.length (); i++)
@@ -3753,8 +3768,9 @@ decision_tree::gen (FILE *f, bool gimple)
 
 	  if (gimple)
 	    fprintf (f, "\nstatic bool\n"
-		     "gimple_simplify_%s (code_helper *res_code, tree *res_ops,\n"
-		     "                 gimple_seq *seq, tree (*valueize)(tree) "
+		     "gimple_simplify_%s (gimple_match_op *res_op,"
+		     " gimple_seq *seq,\n"
+		     "                 tree (*valueize)(tree) "
 		     "ATTRIBUTE_UNUSED,\n"
 		     "                 code_helper ARG_UNUSED (code), tree "
 		     "ARG_UNUSED (type)\n",
@@ -3780,8 +3796,8 @@ decision_tree::gen (FILE *f, bool gimple)
          tail-calls to the split-out functions.  */
       if (gimple)
 	fprintf (f, "\nstatic bool\n"
-		 "gimple_simplify (code_helper *res_code, tree *res_ops,\n"
-		 "                 gimple_seq *seq, tree (*valueize)(tree),\n"
+		 "gimple_simplify (gimple_match_op *res_op, gimple_seq *seq,\n"
+		 "                 tree (*valueize)(tree) ATTRIBUTE_UNUSED,\n"
 		 "                 code_helper code, const tree type");
       else
 	fprintf (f, "\ntree\n"
@@ -3819,7 +3835,7 @@ decision_tree::gen (FILE *f, bool gimple)
 		     is_a <fn_id *> (e->operation) ? "-" : "",
 		     e->operation->id);
 	  if (gimple)
-	    fprintf (f, "      return gimple_simplify_%s (res_code, res_ops, "
+	    fprintf (f, "      return gimple_simplify_%s (res_op, "
 		     "seq, valueize, code, type", e->operation->id);
 	  else
 	    fprintf (f, "      return generic_simplify_%s (loc, code, type",

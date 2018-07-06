@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "builtins.h"
 
-static const char *ipa_ref_use_name[] = {"read","write","addr","alias","chkp"};
+static const char *ipa_ref_use_name[] = {"read","write","addr","alias"};
 
 const char * const ld_plugin_symbol_resolution_names[]=
 {
@@ -1959,11 +1959,11 @@ symtab_node::nonzero_address ()
       return true;
     }
 
-  /* If target is defined and not extern, we know it will be output and thus
-     it will bind to non-NULL.
-     Play safe for flag_delete_null_pointer_checks where weak definition maye
+  /* If target is defined and either comdat or not extern, we know it will be
+     output and thus it will bind to non-NULL.
+     Play safe for flag_delete_null_pointer_checks where weak definition may
      be re-defined by NULL.  */
-  if (definition && !DECL_EXTERNAL (decl)
+  if (definition && (!DECL_EXTERNAL (decl) || DECL_COMDAT (decl))
       && (flag_delete_null_pointer_checks || !DECL_WEAK (decl)))
     {
       if (!DECL_WEAK (decl))

@@ -59,7 +59,9 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vect_recog_over_widening_pattern: detected" 2 "vect" { target { ! vect_widen_shift } } } } */
-/* { dg-final { scan-tree-dump-times "vect_recog_over_widening_pattern: detected" 1 "vect" { target vect_widen_shift } } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* << 3} "vect" } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* >> 3} "vect" } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* >> 8} "vect" } } */
+/* { dg-final { scan-tree-dump {vect_recog_over_widening_pattern: detected:[^\n]* << 9} "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 

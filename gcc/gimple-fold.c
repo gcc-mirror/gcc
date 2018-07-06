@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "optabs-query.h"
 #include "omp-general.h"
-#include "ipa-chkp.h"
 #include "tree-cfg.h"
 #include "fold-const-call.h"
 #include "stringpool.h"
@@ -348,8 +347,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 		  {
 		    if (dump_enabled_p ())
 		      {
-			location_t loc = gimple_location_safe (stmt);
-			dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
 					 "resolving virtual function address "
 					 "reference to function %s\n",
 					 targets.length () == 1
@@ -632,7 +630,9 @@ var_decl_component_p (tree var)
   tree inner = var;
   while (handled_component_p (inner))
     inner = TREE_OPERAND (inner, 0);
-  return SSA_VAR_P (inner);
+  return (DECL_P (inner)
+	  || (TREE_CODE (inner) == MEM_REF
+	      && TREE_CODE (TREE_OPERAND (inner, 0)) == ADDR_EXPR));
 }
 
 /* If the SIZE argument representing the size of an object is in a range
@@ -645,7 +645,7 @@ size_must_be_zero_p (tree size)
   if (integer_zerop (size))
     return true;
 
-  if (TREE_CODE (size) != SSA_NAME)
+  if (TREE_CODE (size) != SSA_NAME || !INTEGRAL_TYPE_P (TREE_TYPE (size)))
     return false;
 
   wide_int min, max;
@@ -725,18 +725,6 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
       tree srctype, desttype;
       unsigned int src_align, dest_align;
       tree off0;
-
-      /* Inlining of memcpy/memmove may cause bounds lost (if we copy
-	 pointers as wide integer) and also may result in huge function
-	 size because of inlined bounds copy.  Thus don't inline for
-	 functions we want to instrument.  */
-      if (flag_check_pointer_bounds
-	  && chkp_instrumentable_p (cfun->decl)
-	  /* Even if data may contain pointers we can inline if copy
-	     less than a pointer size.  */
-	  && (!tree_fits_uhwi_p (len)
-	      || compare_tree_int (len, POINTER_SIZE_UNITS) >= 0))
-	return false;
 
       /* Build accesses at offset zero with a ref-all character type.  */
       off0 = build_int_cst (build_pointer_type_for_mode (char_type_node,
@@ -2062,10 +2050,12 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
   if (!nowarn && cmpsrc == 0)
     {
       tree fndecl = gimple_call_fndecl (stmt);
-
-      /* To avoid certain truncation the specified bound should also
-	 not be equal to (or less than) the length of the source.  */
       location_t loc = gimple_location (stmt);
+
+      /* To avoid possible overflow the specified bound should also
+	 not be equal to the length of the source, even when the size
+	 of the destination is unknown (it's not an uncommon mistake
+	 to specify as the bound to strncpy the length of the source).  */
       if (warning_at (loc, OPT_Wstringop_overflow_,
 		      "%G%qD specified bound %E equals source length",
 		      stmt, fndecl, len))
@@ -2215,12 +2205,14 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
       switch (fcode)
 	{
 	case BUILT_IN_STRCMP:
+	case BUILT_IN_STRCMP_EQ:
 	  {
 	    r = strcmp (p1, p2);
 	    known_result = true;
 	    break;
 	  }
 	case BUILT_IN_STRNCMP:
+	case BUILT_IN_STRNCMP_EQ:
 	  {
 	    if (length == -1)
 	      break;
@@ -2254,6 +2246,7 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
 
   bool nonzero_length = length >= 1
     || fcode == BUILT_IN_STRCMP
+    || fcode == BUILT_IN_STRCMP_EQ
     || fcode == BUILT_IN_STRCASECMP;
 
   location_t loc = gimple_location (stmt);
@@ -3546,9 +3539,10 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
       return true;
     }
 
-  tree lhs = gimple_call_lhs (stmt);
-  if (lhs && TREE_CODE (lhs) == SSA_NAME)
-    set_range_info (lhs, VR_RANGE, minlen, maxlen);
+  if (tree lhs = gimple_call_lhs (stmt))
+    if (TREE_CODE (lhs) == SSA_NAME
+	&& INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+      set_range_info (lhs, VR_RANGE, minlen, maxlen);
 
   return false;
 }
@@ -3687,8 +3681,10 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_STRSTR:
       return gimple_fold_builtin_strstr (gsi);
     case BUILT_IN_STRCMP:
+    case BUILT_IN_STRCMP_EQ:
     case BUILT_IN_STRCASECMP:
     case BUILT_IN_STRNCMP:
+    case BUILT_IN_STRNCMP_EQ:
     case BUILT_IN_STRNCASECMP:
       return gimple_fold_builtin_string_compare (gsi);
     case BUILT_IN_MEMCHR:
@@ -4066,8 +4062,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	      tree lhs = gimple_call_lhs (stmt);
 	      if (dump_enabled_p ())
 		{
-		  location_t loc = gimple_location_safe (stmt);
-		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
 				   "folding virtual function call to %s\n",
 		 		   targets.length () == 1
 		  		   ? targets[0]->name ()
@@ -4360,34 +4355,29 @@ has_use_on_stmt (tree name, gimple *stmt)
 
 static bool
 replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
-				  code_helper rcode, tree *ops,
+				  gimple_match_op *res_op,
 				  gimple_seq *seq, bool inplace)
 {
   gimple *stmt = gsi_stmt (*gsi);
+  tree *ops = res_op->ops;
+  unsigned int num_ops = res_op->num_ops;
 
   /* Play safe and do not allow abnormals to be mentioned in
      newly created statements.  See also maybe_push_res_to_seq.
      As an exception allow such uses if there was a use of the
      same SSA name on the old stmt.  */
-  if ((TREE_CODE (ops[0]) == SSA_NAME
-       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[0])
-       && !has_use_on_stmt (ops[0], stmt))
-      || (ops[1]
-	  && TREE_CODE (ops[1]) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[1])
-	  && !has_use_on_stmt (ops[1], stmt))
-      || (ops[2]
-	  && TREE_CODE (ops[2]) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[2])
-	  && !has_use_on_stmt (ops[2], stmt))
-      || (COMPARISON_CLASS_P (ops[0])
-	  && ((TREE_CODE (TREE_OPERAND (ops[0], 0)) == SSA_NAME
-	       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (ops[0], 0))
-	       && !has_use_on_stmt (TREE_OPERAND (ops[0], 0), stmt))
-	      || (TREE_CODE (TREE_OPERAND (ops[0], 1)) == SSA_NAME
-		  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (ops[0], 1))
-		  && !has_use_on_stmt (TREE_OPERAND (ops[0], 1), stmt)))))
-    return false;
+  for (unsigned int i = 0; i < num_ops; ++i)
+    if (TREE_CODE (ops[i]) == SSA_NAME
+	&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[i])
+	&& !has_use_on_stmt (ops[i], stmt))
+      return false;
+
+  if (num_ops > 0 && COMPARISON_CLASS_P (ops[0]))
+    for (unsigned int i = 0; i < 2; ++i)
+      if (TREE_CODE (TREE_OPERAND (ops[0], i)) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (ops[0], i))
+	  && !has_use_on_stmt (TREE_OPERAND (ops[0], i), stmt))
+	return false;
 
   /* Don't insert new statements when INPLACE is true, even if we could
      reuse STMT for the final statement.  */
@@ -4396,19 +4386,19 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     {
-      gcc_assert (rcode.is_tree_code ());
-      if (TREE_CODE_CLASS ((enum tree_code)rcode) == tcc_comparison
+      gcc_assert (res_op->code.is_tree_code ());
+      if (TREE_CODE_CLASS ((enum tree_code) res_op->code) == tcc_comparison
 	  /* GIMPLE_CONDs condition may not throw.  */
 	  && (!flag_exceptions
 	      || !cfun->can_throw_non_call_exceptions
-	      || !operation_could_trap_p (rcode,
+	      || !operation_could_trap_p (res_op->code,
 					  FLOAT_TYPE_P (TREE_TYPE (ops[0])),
 					  false, NULL_TREE)))
-	gimple_cond_set_condition (cond_stmt, rcode, ops[0], ops[1]);
-      else if (rcode == SSA_NAME)
+	gimple_cond_set_condition (cond_stmt, res_op->code, ops[0], ops[1]);
+      else if (res_op->code == SSA_NAME)
 	gimple_cond_set_condition (cond_stmt, NE_EXPR, ops[0],
 				   build_zero_cst (TREE_TYPE (ops[0])));
-      else if (rcode == INTEGER_CST)
+      else if (res_op->code == INTEGER_CST)
 	{
 	  if (integer_zerop (ops[0]))
 	    gimple_cond_make_false (cond_stmt);
@@ -4417,8 +4407,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	}
       else if (!inplace)
 	{
-	  tree res = maybe_push_res_to_seq (rcode, boolean_type_node,
-					    ops, seq);
+	  tree res = maybe_push_res_to_seq (res_op, seq);
 	  if (!res)
 	    return false;
 	  gimple_cond_set_condition (cond_stmt, NE_EXPR, res,
@@ -4438,14 +4427,16 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
       return true;
     }
   else if (is_gimple_assign (stmt)
-	   && rcode.is_tree_code ())
+	   && res_op->code.is_tree_code ())
     {
       if (!inplace
-	  || gimple_num_ops (stmt) > get_gimple_rhs_num_ops (rcode))
+	  || gimple_num_ops (stmt) > get_gimple_rhs_num_ops (res_op->code))
 	{
-	  maybe_build_generic_op (rcode,
-				  TREE_TYPE (gimple_assign_lhs (stmt)), ops);
-	  gimple_assign_set_rhs_with_ops (gsi, rcode, ops[0], ops[1], ops[2]);
+	  maybe_build_generic_op (res_op);
+	  gimple_assign_set_rhs_with_ops (gsi, res_op->code,
+					  res_op->op_or_null (0),
+					  res_op->op_or_null (1),
+					  res_op->op_or_null (2));
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "gimple_simplified to ");
@@ -4458,17 +4449,12 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	  return true;
 	}
     }
-  else if (rcode.is_fn_code ()
-	   && gimple_call_combined_fn (stmt) == rcode)
+  else if (res_op->code.is_fn_code ()
+	   && gimple_call_combined_fn (stmt) == res_op->code)
     {
-      unsigned i;
-      for (i = 0; i < gimple_call_num_args (stmt); ++i)
-	{
-	  gcc_assert (ops[i] != NULL_TREE);
-	  gimple_call_set_arg (stmt, i, ops[i]);
-	}
-      if (i < 3)
-	gcc_assert (ops[i] == NULL_TREE);
+      gcc_assert (num_ops == gimple_call_num_args (stmt));
+      for (unsigned int i = 0; i < num_ops; ++i)
+	gimple_call_set_arg (stmt, i, ops[i]);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "gimple_simplified to ");
@@ -4484,8 +4470,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
       if (gimple_has_lhs (stmt))
 	{
 	  tree lhs = gimple_get_lhs (stmt);
-	  if (!maybe_push_res_to_seq (rcode, TREE_TYPE (lhs),
-				      ops, seq, lhs))
+	  if (!maybe_push_res_to_seq (res_op, seq, lhs))
 	    return false;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -4751,12 +4736,11 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
       || gimple_code (stmt) == GIMPLE_COND)
     {
       gimple_seq seq = NULL;
-      code_helper rcode;
-      tree ops[3] = {};
-      if (gimple_simplify (stmt, &rcode, ops, inplace ? NULL : &seq,
+      gimple_match_op res_op;
+      if (gimple_simplify (stmt, &res_op, inplace ? NULL : &seq,
 			   valueize, valueize))
 	{
-	  if (replace_stmt_with_simplification (gsi, rcode, ops, &seq, inplace))
+	  if (replace_stmt_with_simplification (gsi, &res_op, &seq, inplace))
 	    changed = true;
 	  else
 	    gimple_seq_discard (seq);
@@ -6106,19 +6090,18 @@ tree
 gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 				tree (*gvalueize) (tree))
 {
-  code_helper rcode;
-  tree ops[3] = {};
+  gimple_match_op res_op;
   /* ???  The SSA propagators do not correctly deal with following SSA use-def
      edges if there are intermediate VARYING defs.  For this reason
      do not follow SSA edges here even though SCCVN can technically
      just deal fine with that.  */
-  if (gimple_simplify (stmt, &rcode, ops, NULL, gvalueize, valueize))
+  if (gimple_simplify (stmt, &res_op, NULL, gvalueize, valueize))
     {
       tree res = NULL_TREE;
-      if (gimple_simplified_result_is_gimple_val (rcode, ops))
-	res = ops[0];
+      if (gimple_simplified_result_is_gimple_val (&res_op))
+	res = res_op.ops[0];
       else if (mprts_hook)
-	res = mprts_hook (rcode, gimple_expr_type (stmt), ops);
+	res = mprts_hook (&res_op);
       if (res)
 	{
 	  if (dump_file && dump_flags & TDF_DETAILS)

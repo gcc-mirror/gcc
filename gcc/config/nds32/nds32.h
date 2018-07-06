@@ -318,6 +318,10 @@ struct GTY(()) machine_function
        2. The rtl lowering and optimization are close to target code.
 	  For this case we need address to be strictly aligned.  */
   int strict_aligned_p;
+
+  /* Record two similar attributes status.  */
+  int attr_naked_p;
+  int attr_no_prologue_p;
 };
 
 /* A C structure that contains the arguments information.  */
@@ -849,6 +853,7 @@ enum nds32_builtins
 
 #define TARGET_ISA_V3 \
   (nds32_arch_option == ARCH_V3 \
+   || nds32_arch_option == ARCH_V3J \
    || nds32_arch_option == ARCH_V3F \
    || nds32_arch_option == ARCH_V3S)
 #define TARGET_ISA_V3M  (nds32_arch_option == ARCH_V3M)
@@ -918,6 +923,14 @@ enum nds32_builtins
 
 #define TARGET_CONFIG_FPU_DEFAULT NDS32_CONFIG_FPU_2
 
+/* ------------------------------------------------------------------------ */
+
+#ifdef TARGET_DEFAULT_RELAX
+#  define NDS32_RELAX_SPEC " %{!mno-relax:--relax}"
+#else
+#  define NDS32_RELAX_SPEC " %{mrelax:--relax}"
+#endif
+
 #ifdef TARGET_DEFAULT_EXT_DSP
 #  define NDS32_EXT_DSP_SPEC " %{!mno-ext-dsp:-mext-dsp}"
 #else
@@ -959,34 +972,6 @@ enum nds32_builtins
   " %{mext-dsp:-mdsp-ext}" \
   " %{O|O1|O2|O3|Ofast:-O1;:-Os}"
 
-/* If user issues -mrelax, we need to pass '--relax' to linker.  */
-#define LINK_SPEC \
-  " %{mbig-endian:-EB} %{mlittle-endian:-EL}" \
-  " %{mrelax:--relax}"
-
-#define LIB_SPEC \
-  " -lc -lgloss"
-
-/* The option -mno-ctor-dtor can disable constructor/destructor feature
-   by applying different crt stuff.  In the convention, crt0.o is the
-   startup file without constructor/destructor;
-   crt1.o, crti.o, crtbegin.o, crtend.o, and crtn.o are the
-   startup files with constructor/destructor.
-   Note that crt0.o, crt1.o, crti.o, and crtn.o are provided
-   by newlib/mculib/glibc/ublic, while crtbegin.o and crtend.o are
-   currently provided by GCC for nds32 target.
-
-   For nds32 target so far:
-   If -mno-ctor-dtor, we are going to link
-   "crt0.o [user objects]".
-   If general cases, we are going to link
-   "crt1.o crtbegin1.o [user objects] crtend1.o".  */
-#define STARTFILE_SPEC \
-  " %{!mno-ctor-dtor:crt1.o%s;:crt0.o%s}" \
-  " %{!mno-ctor-dtor:crtbegin1.o%s}"
-#define ENDFILE_SPEC \
-  " %{!mno-ctor-dtor:crtend1.o%s}"
-
 /* The TARGET_BIG_ENDIAN_DEFAULT is defined if we
    configure gcc with --target=nds32be-* setting.
    Check gcc/config.gcc for more information.  */
@@ -996,9 +981,11 @@ enum nds32_builtins
 #  define NDS32_ENDIAN_DEFAULT "mlittle-endian"
 #endif
 
-/* Currently we only have elf toolchain,
-   where -mcmodel=medium is always the default.  */
-#define NDS32_CMODEL_DEFAULT "mcmodel=medium"
+#if TARGET_ELF
+#  define NDS32_CMODEL_DEFAULT "mcmodel=medium"
+#else
+#  define NDS32_CMODEL_DEFAULT "mcmodel=large"
+#endif
 
 #define MULTILIB_DEFAULTS \
   { NDS32_ENDIAN_DEFAULT, NDS32_CMODEL_DEFAULT }

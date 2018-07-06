@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "toplev.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -651,15 +652,17 @@ m68k_option_override (void)
     }
 
 #ifndef ASM_OUTPUT_ALIGN_WITH_NOP
-  if (align_labels > 2)
+  parse_alignment_opts ();
+  if (align_labels_value > 2)
     {
-      warning (0, "-falign-labels=%d is not supported", align_labels);
-      align_labels = 0;
+      warning (0, "-falign-labels=%d is not supported", align_labels_value);
+      str_align_labels = "1";
     }
-  if (align_loops > 2)
+
+  if (align_loops_value > 2)
     {
-      warning (0, "-falign-loops=%d is not supported", align_loops);
-      align_loops = 0;
+      warning (0, "-falign-loops=%d is not supported", align_loops_value);
+      str_align_loops = "1";
     }
 #endif
 

@@ -56,6 +56,11 @@
   UNSPECV_FRFLAGS
   UNSPECV_FSFLAGS
 
+  ;; Interrupt handler instructions.
+  UNSPECV_MRET
+  UNSPECV_SRET
+  UNSPECV_URET
+
   ;; Blockage and synchronization.
   UNSPECV_BLOCKAGE
   UNSPECV_FENCE
@@ -64,11 +69,16 @@
 
 (define_constants
   [(RETURN_ADDR_REGNUM		1)
+   (GP_REGNUM 			3)
    (T0_REGNUM			5)
    (T1_REGNUM			6)
    (S0_REGNUM			8)
    (S1_REGNUM			9)
    (S2_REGNUM			18)
+
+   (NORMAL_RETURN		0)
+   (SIBCALL_RETURN		1)
+   (EXCEPTION_RETURN		2)
 ])
 
 (include "predicates.md")
@@ -1701,6 +1711,38 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
+;; Handle AND with 2^N-1 for N from 12 to XLEN.  This can be split into
+;; two logical shifts.  Otherwise it requires 3 instructions: lui,
+;; xor/addi/srli, and.
+(define_split
+  [(set (match_operand:GPR 0 "register_operand")
+	(and:GPR (match_operand:GPR 1 "register_operand")
+		 (match_operand:GPR 2 "p2m1_shift_operand")))]
+  ""
+ [(set (match_dup 0)
+       (ashift:GPR (match_dup 1) (match_dup 2)))
+  (set (match_dup 0)
+       (lshiftrt:GPR (match_dup 0) (match_dup 2)))]
+{
+  operands[2] = GEN_INT (BITS_PER_WORD
+			 - exact_log2 (INTVAL (operands[2]) + 1));
+})
+  
+;; Handle AND with 0xF...F0...0 where there are 32 to 63 zeros.  This can be
+;; split into two shifts.  Otherwise it requires 3 instructions: li, sll, and.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(and:DI (match_operand:DI 1 "register_operand")
+		(match_operand:DI 2 "high_mask_shift_operand")))]
+  "TARGET_64BIT"
+  [(set (match_dup 0)
+	(lshiftrt:DI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(ashift:DI (match_dup 0) (match_dup 2)))]
+{
+  operands[2] = GEN_INT (ctz_hwi (INTVAL (operands[2])));
+})
+
 ;;
 ;;  ....................
 ;;
@@ -2032,7 +2074,7 @@
   [(const_int 2)]
   ""
 {
-  riscv_expand_epilogue (false);
+  riscv_expand_epilogue (NORMAL_RETURN);
   DONE;
 })
 
@@ -2040,7 +2082,7 @@
   [(const_int 2)]
   ""
 {
-  riscv_expand_epilogue (true);
+  riscv_expand_epilogue (SIBCALL_RETURN);
   DONE;
 })
 
@@ -2082,6 +2124,9 @@
     emit_insn (gen_eh_set_lr_di (operands[0]));
   else
     emit_insn (gen_eh_set_lr_si (operands[0]));
+
+  emit_jump_insn (gen_eh_return_internal ());
+  emit_barrier ();
   DONE;
 })
 
@@ -2109,6 +2154,14 @@
   riscv_set_return_address (operands[0], operands[1]);
   DONE;
 })
+
+(define_insn_and_split "eh_return_internal"
+  [(eh_return)]
+  ""
+  "#"
+  "epilogue_completed"
+  [(const_int 0)]
+  "riscv_expand_epilogue (EXCEPTION_RETURN); DONE;")
 
 ;;
 ;;  ....................
@@ -2267,12 +2320,30 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec_volatile [(const_int 0)] UNSPECV_FRFLAGS))]
   "TARGET_HARD_FLOAT"
-  "frflags %0")
+  "frflags\t%0")
 
 (define_insn "riscv_fsflags"
   [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSFLAGS)]
   "TARGET_HARD_FLOAT"
-  "fsflags %0")
+  "fsflags\t%0")
+
+(define_insn "riscv_mret"
+  [(return)
+   (unspec_volatile [(const_int 0)] UNSPECV_MRET)]
+  ""
+  "mret")
+
+(define_insn "riscv_sret"
+  [(return)
+   (unspec_volatile [(const_int 0)] UNSPECV_SRET)]
+  ""
+  "sret")
+
+(define_insn "riscv_uret"
+  [(return)
+   (unspec_volatile [(const_int 0)] UNSPECV_URET)]
+  ""
+  "uret")
 
 (define_insn "stack_tie<mode>"
   [(set (mem:BLK (scratch))

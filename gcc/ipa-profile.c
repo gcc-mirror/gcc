@@ -345,17 +345,20 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
 	case NODE_FREQUENCY_UNLIKELY_EXECUTED:
 	  break;
 	case NODE_FREQUENCY_EXECUTED_ONCE:
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Called by %s that is executed once\n",
-		     edge->caller->name ());
-	  d->maybe_unlikely_executed = false;
-	  if (ipa_call_summaries->get (edge)->loop_depth)
-	    {
-	      d->maybe_executed_once = false;
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-	        fprintf (dump_file, "  Called in loop\n");
-	    }
-	  break;
+	  {
+	    if (dump_file && (dump_flags & TDF_DETAILS))
+	      fprintf (dump_file, "  Called by %s that is executed once\n",
+		       edge->caller->name ());
+	    d->maybe_unlikely_executed = false;
+	    ipa_call_summary *s = ipa_call_summaries->get (edge);
+	    if (s != NULL && s->loop_depth)
+	      {
+		d->maybe_executed_once = false;
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  fprintf (dump_file, "  Called in loop\n");
+	      }
+	    break;
+	  }
 	case NODE_FREQUENCY_HOT:
 	case NODE_FREQUENCY_NORMAL:
 	  if (dump_file && (dump_flags & TDF_DETAILS))

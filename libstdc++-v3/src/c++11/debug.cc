@@ -40,7 +40,8 @@
 
 #include <cxxabi.h> // for __cxa_demangle
 
-#if defined _GLIBCXX_HAVE_EXECINFO_H
+// libstdc++/85768
+#if 0 // defined _GLIBCXX_HAVE_EXECINFO_H
 # include <execinfo.h> // for backtrace
 #endif
 
@@ -376,9 +377,10 @@ namespace __gnu_debug
   _M_detach()
   {
     if (_M_sequence)
-      _M_sequence->_M_detach(this);
-
-    _M_reset();
+      {
+	_M_sequence->_M_detach(this);
+	_M_reset();
+      }
   }
 
   void
@@ -386,9 +388,10 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      _M_sequence->_M_detach_single(this);
-
-    _M_reset();
+      {
+	_M_sequence->_M_detach_single(this);
+	_M_reset();
+      }
   }
 
   void
@@ -459,9 +462,10 @@ namespace __gnu_debug
   _M_detach()
   {
     if (_M_sequence)
-      _M_get_container()->_M_detach_local(this);
-
-    _M_reset();
+      {
+	_M_get_container()->_M_detach_local(this);
+	_M_reset();
+      }
   }
 
   void
@@ -469,9 +473,10 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      _M_get_container()->_M_detach_local_single(this);
-
-    _M_reset();
+      {
+	_M_get_container()->_M_detach_local_single(this);
+	_M_reset();
+      }
   }
 
   void
@@ -1050,7 +1055,8 @@ namespace __gnu_debug
 	print_literal(ctx, "\n");
       }
 
-#if defined _GLIBCXX_HAVE_EXECINFO_H
+// libstdc++/85768
+#if 0 //defined _GLIBCXX_HAVE_EXECINFO_H
     {
       void* stack[32];
       int nb = backtrace(stack, 32);

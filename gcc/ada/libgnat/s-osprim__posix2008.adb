@@ -32,7 +32,10 @@
 --  This version is for POSIX.1-2008-like operating systems
 
 with System.CRTL;
+with System.OS_Constants;
 package body System.OS_Primitives is
+
+   subtype int is System.CRTL.int;
 
    --  ??? These definitions are duplicated from System.OS_Interface because
    --  we don't want to depend on any package. Consider removing these
@@ -54,43 +57,22 @@ package body System.OS_Primitives is
    -----------
 
    function Clock return Duration is
+      TS     : aliased timespec;
+      Result : int;
 
-      type timeval is array (1 .. 3) of Long_Integer;
-      --  The timeval array is sized to contain Long_Long_Integer sec and
-      --  Long_Integer usec. If Long_Long_Integer'Size = Long_Integer'Size then
-      --  it will be overly large but that will not effect the implementation
-      --  since it is not accessed directly.
+      type clockid_t is new int;
+      CLOCK_REALTIME : constant clockid_t :=
+         System.OS_Constants.CLOCK_REALTIME;
 
-      procedure timeval_to_duration
-        (T    : not null access timeval;
-         sec  : not null access Long_Long_Integer;
-         usec : not null access Long_Integer);
-      pragma Import (C, timeval_to_duration, "__gnat_timeval_to_duration");
-
-      Micro  : constant := 10**6;
-      sec    : aliased Long_Long_Integer;
-      usec   : aliased Long_Integer;
-      TV     : aliased timeval;
-      Result : Integer;
-      pragma Unreferenced (Result);
-
-      function gettimeofday
-        (Tv : access timeval;
-         Tz : System.Address := System.Null_Address) return Integer;
-      pragma Import (C, gettimeofday, "gettimeofday");
+      function clock_gettime
+        (clock_id : clockid_t;
+         tp       : access timespec) return int;
+      pragma Import (C, clock_gettime, "clock_gettime");
 
    begin
-      --  The return codes for gettimeofday are as follows (from man pages):
-      --    EPERM  settimeofday is called by someone other than the superuser
-      --    EINVAL Timezone (or something else) is invalid
-      --    EFAULT One of tv or tz pointed outside accessible address space
-
-      --  None of these codes signal a potential clock skew, hence the return
-      --  value is never checked.
-
-      Result := gettimeofday (TV'Access, System.Null_Address);
-      timeval_to_duration (TV'Access, sec'Access, usec'Access);
-      return Duration (sec) + Duration (usec) / Micro;
+      Result := clock_gettime (CLOCK_REALTIME, TS'Unchecked_Access);
+      pragma Assert (Result = 0);
+      return Duration (TS.tv_sec) + Duration (TS.tv_nsec) / 10#1#E9;
    end Clock;
 
    -----------------
@@ -127,38 +109,7 @@ package body System.OS_Primitives is
    procedure Timed_Delay
      (Time : Duration;
       Mode : Integer)
-   is
-      Request    : aliased timespec;
-      Remaind    : aliased timespec;
-      Rel_Time   : Duration;
-      Abs_Time   : Duration;
-      Base_Time  : constant Duration := Clock;
-      Check_Time : Duration := Base_Time;
-
-      Result : Integer;
-      pragma Unreferenced (Result);
-
-   begin
-      if Mode = Relative then
-         Rel_Time := Time;
-         Abs_Time := Time + Check_Time;
-      else
-         Rel_Time := Time - Check_Time;
-         Abs_Time := Time;
-      end if;
-
-      if Rel_Time > 0.0 then
-         loop
-            Request := To_Timespec (Rel_Time);
-            Result := nanosleep (Request'Access, Remaind'Access);
-            Check_Time := Clock;
-
-            exit when Abs_Time <= Check_Time or else Check_Time < Base_Time;
-
-            Rel_Time := Abs_Time - Check_Time;
-         end loop;
-      end if;
-   end Timed_Delay;
+   is separate;
 
    ----------------
    -- Initialize --

@@ -58,6 +58,8 @@
 #include "dumpfile.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "flags.h"
+#include "toplev.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -238,8 +240,9 @@ spu_option_override (void)
   flag_omit_frame_pointer = 1;
 
   /* Functions must be 8 byte aligned so we correctly handle dual issue */
-  if (align_functions < 8)
-    align_functions = 8;
+  parse_alignment_opts ();
+  if (align_functions_value < 8)
+    str_align_functions = "8";
 
   spu_hint_dist = 8*4 - spu_max_nops*4;
   if (spu_hint_dist < 0) 
@@ -2769,7 +2772,7 @@ static void
 spu_sched_init (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 		int max_ready ATTRIBUTE_UNUSED)
 {
-  if (align_labels > 4 || align_loops > 4 || align_jumps > 4)
+  if (align_labels_value > 4 || align_loops_value > 4 || align_jumps_value > 4)
     {
       /* When any block might be at least 8-byte aligned, assume they
          will all be at least 8-byte aligned to make sure dual issue

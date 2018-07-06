@@ -913,13 +913,13 @@ package body Exp_Ch11 is
             Cond := Condition (Raise_S);
 
             --  The only other possibility is a node that is or used to be a
-            --  simple raise statement.
+            --  simple raise statement. Note that the string expression in the
+            --  original Raise statement is ignored.
 
          else
             Orig := Original_Node (Raise_S);
             pragma Assert (Nkind (Orig) = N_Raise_Statement
-                             and then Present (Name (Orig))
-                             and then No (Expression (Orig)));
+                             and then Present (Name (Orig)));
             Excep := Entity (Name (Orig));
             Cond := Empty;
          end if;

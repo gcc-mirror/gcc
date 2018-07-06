@@ -121,7 +121,7 @@ cp_ubsan_maybe_instrument_member_call (tree stmt)
   tree *opp = &CALL_EXPR_ARG (stmt, 0);
   tree op = *opp;
   if (op == error_mark_node
-      || !POINTER_TYPE_P (TREE_TYPE (op)))
+      || !INDIRECT_TYPE_P (TREE_TYPE (op)))
     return;
   while (TREE_CODE (op) == COMPOUND_EXPR)
     {
@@ -257,9 +257,9 @@ tree
 cp_ubsan_maybe_instrument_downcast (location_t loc, tree type,
 				    tree intype, tree op)
 {
-  if (!POINTER_TYPE_P (type)
-      || !POINTER_TYPE_P (intype)
-      || !POINTER_TYPE_P (TREE_TYPE (op))
+  if (!INDIRECT_TYPE_P (type)
+      || !INDIRECT_TYPE_P (intype)
+      || !INDIRECT_TYPE_P (TREE_TYPE (op))
       || !CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (op)))
       || !is_properly_derived_from (TREE_TYPE (type), TREE_TYPE (intype)))
     return NULL_TREE;

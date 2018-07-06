@@ -158,9 +158,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * Constructs a temporary buffer of a size somewhere between
-       * zero and the size of the given range.
+       * zero and the given length.
        */
-      _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last);
+      _Temporary_buffer(_ForwardIterator __seed, size_type __original_len);
 
       ~_Temporary_buffer()
       {
@@ -241,9 +241,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _ForwardIterator, typename _Tp>
     _Temporary_buffer<_ForwardIterator, _Tp>::
-    _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last)
-    : _M_original_len(std::distance(__first, __last)),
-      _M_len(0), _M_buffer(0)
+    _Temporary_buffer(_ForwardIterator __seed, size_type __original_len)
+    : _M_original_len(__original_len), _M_len(0), _M_buffer(0)
     {
       __try
 	{
@@ -253,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_len = __p.second;
 	  if (_M_buffer)
 	    std::__uninitialized_construct_buf(_M_buffer, _M_buffer + _M_len,
-					       __first);
+					       __seed);
 	}
       __catch(...)
 	{
@@ -268,4 +267,3 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif /* _STL_TEMPBUF_H */
-

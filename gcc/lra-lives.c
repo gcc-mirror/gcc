@@ -581,7 +581,8 @@ check_pseudos_live_through_calls (int regno,
   for (hr = 0; hr < FIRST_PSEUDO_REGISTER; hr++)
     if (targetm.hard_regno_call_part_clobbered (hr,
 						PSEUDO_REGNO_MODE (regno)))
-      SET_HARD_REG_BIT (lra_reg_info[regno].conflict_hard_regs, hr);
+      add_to_hard_reg_set (&lra_reg_info[regno].conflict_hard_regs,
+			   PSEUDO_REGNO_MODE (regno), hr);
   lra_reg_info[regno].call_p = true;
   if (! sparseset_bit_p (pseudos_live_through_setjumps, regno))
     return;

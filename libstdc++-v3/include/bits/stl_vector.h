@@ -85,34 +85,58 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename __gnu_cxx::__alloc_traits<_Tp_alloc_type>::pointer
        	pointer;
 
-      struct _Vector_impl
-      : public _Tp_alloc_type
+      struct _Vector_impl_data
       {
 	pointer _M_start;
 	pointer _M_finish;
 	pointer _M_end_of_storage;
 
-	_Vector_impl()
-	: _Tp_alloc_type(), _M_start(), _M_finish(), _M_end_of_storage()
-	{ }
-
-	_Vector_impl(_Tp_alloc_type const& __a) _GLIBCXX_NOEXCEPT
-	: _Tp_alloc_type(__a), _M_start(), _M_finish(), _M_end_of_storage()
+	_Vector_impl_data() _GLIBCXX_NOEXCEPT
+	: _M_start(), _M_finish(), _M_end_of_storage()
 	{ }
 
 #if __cplusplus >= 201103L
-	_Vector_impl(_Tp_alloc_type&& __a) noexcept
-	: _Tp_alloc_type(std::move(__a)),
-	  _M_start(), _M_finish(), _M_end_of_storage()
-	{ }
+	_Vector_impl_data(_Vector_impl_data&& __x) noexcept
+	: _M_start(__x._M_start), _M_finish(__x._M_finish),
+	  _M_end_of_storage(__x._M_end_of_storage)
+	{ __x._M_start = __x._M_finish = __x._M_end_of_storage = pointer(); }
 #endif
 
-	void _M_swap_data(_Vector_impl& __x) _GLIBCXX_NOEXCEPT
+	void
+	_M_swap_data(_Vector_impl_data& __x) _GLIBCXX_NOEXCEPT
 	{
 	  std::swap(_M_start, __x._M_start);
 	  std::swap(_M_finish, __x._M_finish);
 	  std::swap(_M_end_of_storage, __x._M_end_of_storage);
 	}
+      };
+
+      struct _Vector_impl
+	: public _Tp_alloc_type, public _Vector_impl_data
+      {
+	_Vector_impl() _GLIBCXX_NOEXCEPT_IF( noexcept(_Tp_alloc_type()) )
+	: _Tp_alloc_type()
+	{ }
+
+	_Vector_impl(_Tp_alloc_type const& __a) _GLIBCXX_NOEXCEPT
+	: _Tp_alloc_type(__a)
+	{ }
+
+#if __cplusplus >= 201103L
+	// Not defaulted, to enforce noexcept(true) even when
+	// !is_nothrow_move_constructible<_Tp_alloc_type>.
+	_Vector_impl(_Vector_impl&& __x) noexcept
+	: _Tp_alloc_type(std::move(__x)), _Vector_impl_data(std::move(__x))
+	{ }
+
+	_Vector_impl(_Tp_alloc_type&& __a) noexcept
+	: _Tp_alloc_type(std::move(__a))
+	{ }
+
+	_Vector_impl(_Tp_alloc_type&& __a, _Vector_impl&& __rv) noexcept
+	: _Tp_alloc_type(std::move(__a)), _Vector_impl_data(std::move(__rv))
+	{ }
+#endif
 
 #if _GLIBCXX_SANITIZE_STD_ALLOCATOR && _GLIBCXX_SANITIZE_VECTOR
 	template<typename = _Tp_alloc_type>
@@ -235,37 +259,43 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       _Tp_alloc_type&
       _M_get_Tp_allocator() _GLIBCXX_NOEXCEPT
-      { return *static_cast<_Tp_alloc_type*>(&this->_M_impl); }
+      { return this->_M_impl; }
 
       const _Tp_alloc_type&
       _M_get_Tp_allocator() const _GLIBCXX_NOEXCEPT
-      { return *static_cast<const _Tp_alloc_type*>(&this->_M_impl); }
+      { return this->_M_impl; }
 
       allocator_type
       get_allocator() const _GLIBCXX_NOEXCEPT
       { return allocator_type(_M_get_Tp_allocator()); }
 
-      _Vector_base()
-      : _M_impl() { }
+#if __cplusplus >= 201103L
+      _Vector_base() = default;
+#else
+      _Vector_base() { }
+#endif
 
       _Vector_base(const allocator_type& __a) _GLIBCXX_NOEXCEPT
       : _M_impl(__a) { }
 
+      // Kept for ABI compatibility.
+#if !_GLIBCXX_INLINE_VERSION
       _Vector_base(size_t __n)
       : _M_impl()
       { _M_create_storage(__n); }
+#endif
 
       _Vector_base(size_t __n, const allocator_type& __a)
       : _M_impl(__a)
       { _M_create_storage(__n); }
 
 #if __cplusplus >= 201103L
+      _Vector_base(_Vector_base&&) = default;
+
+      // Kept for ABI compatibility.
+# if !_GLIBCXX_INLINE_VERSION
       _Vector_base(_Tp_alloc_type&& __a) noexcept
       : _M_impl(std::move(__a)) { }
-
-      _Vector_base(_Vector_base&& __x) noexcept
-      : _M_impl(std::move(__x._M_get_Tp_allocator()))
-      { this->_M_impl._M_swap_data(__x._M_impl); }
 
       _Vector_base(_Vector_base&& __x, const allocator_type& __a)
       : _M_impl(__a)
@@ -278,6 +308,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    _M_create_storage(__n);
 	  }
       }
+# endif
+
+      _Vector_base(const allocator_type& __a, _Vector_base&& __x)
+      : _M_impl(_Tp_alloc_type(__a), std::move(__x._M_impl))
+      { }
 #endif
 
       ~_Vector_base() _GLIBCXX_NOEXCEPT
@@ -304,7 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _Tr::deallocate(_M_impl, __p, __n);
       }
 
-    private:
+    protected:
       void
       _M_create_storage(size_t __n)
       {
@@ -388,11 +423,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Creates a %vector with no elements.
        */
-      vector()
 #if __cplusplus >= 201103L
-      noexcept(is_nothrow_default_constructible<_Alloc>::value)
+      vector() = default;
+#else
+      vector() { }
 #endif
-      : _Base() { }
 
       /**
        *  @brief  Creates a %vector with no elements.
@@ -468,13 +503,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
       /**
        *  @brief  %Vector move constructor.
-       *  @param  __x  A %vector of identical element and allocator types.
        *
-       *  The newly-created %vector contains the exact contents of @a __x.
-       *  The contents of @a __x are a valid, but unspecified %vector.
+       *  The newly-created %vector contains the exact contents of the
+       *  moved instance.
+       *  The contents of the moved instance are a valid, but unspecified
+       *  %vector.
        */
-      vector(vector&& __x) noexcept
-      : _Base(std::move(__x)) { }
+      vector(vector&&) noexcept = default;
 
       /// Copy constructor with alternative allocator
       vector(const vector& __x, const allocator_type& __a)
@@ -486,13 +521,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 				      _M_get_Tp_allocator());
       }
 
-      /// Move constructor with alternative allocator
-      vector(vector&& __rv, const allocator_type& __m)
-      noexcept(_Alloc_traits::_S_always_equal())
-      : _Base(std::move(__rv), __m)
+    private:
+      vector(vector&& __rv, const allocator_type& __m, true_type) noexcept
+      : _Base(__m, std::move(__rv))
+      { }
+
+      vector(vector&& __rv, const allocator_type& __m, false_type)
+      : _Base(__m)
       {
-	if (__rv.get_allocator() != __m)
+	if (__rv.get_allocator() == __m)
+	  this->_M_impl._M_swap_data(__rv._M_impl);
+	else if (!__rv.empty())
 	  {
+	    this->_M_create_storage(__rv.size());
 	    this->_M_impl._M_finish =
 	      std::__uninitialized_move_a(__rv.begin(), __rv.end(),
 					  this->_M_impl._M_start,
@@ -500,6 +541,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    __rv.clear();
 	  }
       }
+
+    public:
+      /// Move constructor with alternative allocator
+      vector(vector&& __rv, const allocator_type& __m)
+      noexcept( noexcept(
+	vector(std::declval<vector&&>(), std::declval<const allocator_type&>(),
+	       std::declval<typename _Alloc_traits::is_always_equal>())) )
+      : vector(std::move(__rv), __m, typename _Alloc_traits::is_always_equal{})
+      { }
 
       /**
        *  @brief  Builds a %vector from an initializer list.
@@ -543,7 +593,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	vector(_InputIterator __first, _InputIterator __last,
 	       const allocator_type& __a = allocator_type())
 	: _Base(__a)
-	{ _M_initialize_dispatch(__first, __last, __false_type()); }
+	{
+	  _M_range_initialize(__first, __last,
+			      std::__iterator_category(__first));
+	}
 #else
       template<typename _InputIterator>
 	vector(_InputIterator __first, _InputIterator __last,
@@ -1414,6 +1467,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // Called by the range constructor to implement [23.1.1]/9
 
+#if __cplusplus < 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
@@ -1432,30 +1486,35 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
 			       __false_type)
 	{
-	  typedef typename std::iterator_traits<_InputIterator>::
-	    iterator_category _IterCategory;
-	  _M_range_initialize(__first, __last, _IterCategory());
+	  _M_range_initialize(__first, __last,
+			      std::__iterator_category(__first));
 	}
+#endif
 
       // Called by the second initialize_dispatch above
       template<typename _InputIterator>
 	void
-	_M_range_initialize(_InputIterator __first,
-			    _InputIterator __last, std::input_iterator_tag)
+	_M_range_initialize(_InputIterator __first, _InputIterator __last,
+			    std::input_iterator_tag)
 	{
-	  for (; __first != __last; ++__first)
+	  __try {
+	    for (; __first != __last; ++__first)
 #if __cplusplus >= 201103L
-	    emplace_back(*__first);
+	      emplace_back(*__first);
 #else
-	    push_back(*__first);
+	      push_back(*__first);
 #endif
+	  } __catch(...) {
+	    clear();
+	    __throw_exception_again;
+	  }
 	}
 
       // Called by the second initialize_dispatch above
       template<typename _ForwardIterator>
 	void
-	_M_range_initialize(_ForwardIterator __first,
-			    _ForwardIterator __last, std::forward_iterator_tag)
+	_M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
+			    std::forward_iterator_tag)
 	{
 	  const size_type __n = std::distance(__first, __last);
 	  this->_M_impl._M_start = this->_M_allocate(__n);
@@ -1669,7 +1728,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // moved, either because the source's allocator will move too
       // or because the allocators are equal.
       void
-      _M_move_assign(vector&& __x, std::true_type) noexcept
+      _M_move_assign(vector&& __x, true_type) noexcept
       {
 	vector __tmp(get_allocator());
 	this->_M_impl._M_swap_data(__tmp._M_impl);
@@ -1680,10 +1739,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // Do move assignment when it might not be possible to move source
       // object's memory, resulting in a linear-time operation.
       void
-      _M_move_assign(vector&& __x, std::false_type)
+      _M_move_assign(vector&& __x, false_type)
       {
 	if (__x._M_get_Tp_allocator() == this->_M_get_Tp_allocator())
-	  _M_move_assign(std::move(__x), std::true_type());
+	  _M_move_assign(std::move(__x), true_type());
 	else
 	  {
 	    // The rvalue's allocator cannot be moved and is not equal,

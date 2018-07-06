@@ -1030,12 +1030,12 @@ package body Exp_Disp is
                Next_Formal (Old_Formal);
                exit when No (Old_Formal);
 
-               Set_Next_Entity (New_Formal, New_Copy (Old_Formal));
-               Next_Entity (New_Formal);
-               Next_Actual (Param);
+               Link_Entities (New_Formal, New_Copy (Old_Formal));
+               Next_Entity   (New_Formal);
+               Next_Actual   (Param);
             end loop;
 
-            Set_Next_Entity (New_Formal, Empty);
+            Unlink_Next_Entity (New_Formal);
             Set_Last_Entity (Subp_Typ, Extra);
          end if;
 
@@ -4516,8 +4516,9 @@ package body Exp_Disp is
       Name_TSD          : constant Name_Id :=
                             New_External_Name (Tname, 'B', Suffix_Index => -1);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       AI                 : Elmt_Id;
       AI_Tag_Elmt        : Elmt_Id;
@@ -6545,7 +6546,7 @@ package body Exp_Disp is
       Register_CG_Node (Typ);
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
       return Result;
    end Make_DT;

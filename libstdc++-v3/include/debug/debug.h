@@ -62,6 +62,9 @@ namespace __gnu_debug
 
 # define __glibcxx_requires_cond(_Cond,_Msg)
 # define __glibcxx_requires_valid_range(_First,_Last)
+# define __glibcxx_requires_can_increment(_First,_Size)
+# define __glibcxx_requires_can_increment_range(_First1,_Last1,_First2)
+# define __glibcxx_requires_can_decrement_range(_First1,_Last1,_First2)
 # define __glibcxx_requires_sorted(_First,_Last)
 # define __glibcxx_requires_sorted_pred(_First,_Last,_Pred)
 # define __glibcxx_requires_sorted_set(_First1,_Last1,_First2)
@@ -86,6 +89,12 @@ namespace __gnu_debug
 # define __glibcxx_requires_cond(_Cond,_Msg) _GLIBCXX_DEBUG_VERIFY(_Cond,_Msg)
 # define __glibcxx_requires_valid_range(_First,_Last)	\
   __glibcxx_check_valid_range(_First,_Last)
+# define __glibcxx_requires_can_increment(_First,_Size)	\
+  __glibcxx_check_can_increment(_First,_Size)
+# define __glibcxx_requires_can_increment_range(_First1,_Last1,_First2)	\
+  __glibcxx_check_can_increment_range(_First1,_Last1,_First2)
+# define __glibcxx_requires_can_decrement_range(_First1,_Last1,_First2)	\
+  __glibcxx_check_can_decrement_range(_First1,_Last1,_First2)
 # define __glibcxx_requires_sorted(_First,_Last)	\
   __glibcxx_check_sorted(_First,_Last)
 # define __glibcxx_requires_sorted_pred(_First,_Last,_Pred)	\

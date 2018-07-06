@@ -7,13 +7,13 @@ class A { };
 decltype(auto)
 foo ()
 {
-  A c;			// { dg-warning "reference to local variable 'c' returned" }
-  return (c);
+  A c;
+  return (c);	   // { dg-warning "reference to local variable 'c' returned" }
 }
 
 decltype(auto)
 bar ()
 {
-  A c;			// { dg-warning "reference to local variable 'c' returned" }
-  return 1==1 ? c : c;
+  A c;
+  return 1==1 ? c : c; // { dg-warning "reference to local variable 'c' returned" }
 }

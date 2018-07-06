@@ -5590,6 +5590,14 @@ proc check_effective_target_vect_double { } {
     return $et_vect_double_saved($et_index)
 }
 
+# Return 1 if the target supports conditional addition, subtraction,
+# multiplication, division, minimum and maximum on vectors of double,
+# via the cond_ optabs.  Return 0 otherwise.
+
+proc check_effective_target_vect_double_cond_arith { } {
+    return [check_effective_target_aarch64_sve]
+}
+
 # Return 1 if the target supports hardware vectors of long long, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
@@ -6303,6 +6311,14 @@ proc check_effective_target_vect_usad_char { } {
     verbose "check_effective_target_vect_usad_char:\
 	     returning $et_vect_usad_char_saved($et_index)" 2
     return $et_vect_usad_char_saved($et_index)
+}
+
+# Return 1 if the target plus current options supports both signed
+# and unsigned average operations on vectors of bytes.
+
+proc check_effective_target_vect_avg_qi {} {
+    return [expr { [istarget aarch64*-*-*]
+		   && ![check_effective_target_aarch64_sve] }]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -8793,6 +8809,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget powerpc*-*-*]
 	 || [istarget nios2*-*-*]
 	 || [istarget riscv*-*-*]
+	 || [istarget v850*-*-*]
 	 || [istarget visium-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1

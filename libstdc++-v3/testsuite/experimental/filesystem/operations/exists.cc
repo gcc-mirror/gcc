@@ -28,16 +28,18 @@ using std::experimental::filesystem::path;
 void
 test01()
 {
-  VERIFY( exists(path{"/"}) );
-  VERIFY( exists(path{"/."}) );
+  const path root = __gnu_test::root_path();
+
+  VERIFY( exists(root) );
+  VERIFY( exists(root/".") );
   VERIFY( exists(path{"."}) );
   VERIFY( exists(path{".."}) );
   VERIFY( exists(std::experimental::filesystem::current_path()) );
 
   std::error_code ec = std::make_error_code(std::errc::invalid_argument);
-  VERIFY( exists(path{"/"}, ec) );
+  VERIFY( exists(root, ec) );
   VERIFY( !ec );
-  VERIFY( exists(path{"/."}, ec) );
+  VERIFY( exists(root/".", ec) );
   VERIFY( !ec );
   VERIFY( exists(path{"."}, ec) );
   VERIFY( !ec );

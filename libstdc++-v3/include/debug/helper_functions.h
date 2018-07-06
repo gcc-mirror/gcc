@@ -37,6 +37,9 @@
 
 namespace __gnu_debug
 {
+  template<typename _Iterator, typename _Sequence>
+    class _Safe_iterator;
+
   /** The precision to which we can calculate the distance between
    *  two iterators.
    */
@@ -163,6 +166,16 @@ namespace __gnu_debug
       typename _Distance_traits<_InputIterator>::__type __dist;
       return __valid_range(__first, __last, __dist);
     }
+
+  // Fallback method, always ok.
+  template<typename _InputIterator, typename _Size>
+    inline bool
+    __can_advance(_InputIterator, _Size)
+    { return true; }
+
+  template<typename _Iterator, typename _Sequence, typename _Size>
+    bool
+    __can_advance(const _Safe_iterator<_Iterator, _Sequence>&, _Size);
 
 #if __cplusplus < 201103L
   // Helper struct to detect random access safe iterators.

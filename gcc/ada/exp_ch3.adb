@@ -131,10 +131,6 @@ package body Exp_Ch3 is
    --  of a record type that has user-defined primitive equality operations.
    --  The resulting operation is a TSS subprogram.
 
-   procedure Build_Variant_Record_Equality (Typ  : Entity_Id);
-   --  Create An Equality function for the untagged variant record Typ and
-   --  attach it to the TSS list
-
    procedure Check_Stream_Attributes (Typ : Entity_Id);
    --  Check that if a limited extension has a parent with user-defined stream
    --  attributes, and does not itself have user-defined stream-attributes,
@@ -1552,6 +1548,27 @@ package body Exp_Ch3 is
       else
          Decls := No_List;
          Decl  := Empty;
+      end if;
+
+      --  Handle the optionally generated formal *_skip_null_excluding_checks
+
+      if Needs_Conditional_Null_Excluding_Check (Full_Init_Type) then
+
+         --  Look at the associated node for the object we are referencing
+         --  and verify that we are expanding a call to an Init_Proc for an
+         --  internally generated object declaration before passing True and
+         --  skipping the relevant checks.
+
+         if Nkind (Id_Ref) in N_Has_Entity
+           and then Comes_From_Source (Associated_Node (Id_Ref))
+         then
+            Append_To (Args, New_Occurrence_Of (Standard_True, Loc));
+
+         --  Otherwise, we pass False to perform null-excluding checks
+
+         else
+            Append_To (Args, New_Occurrence_Of (Standard_False, Loc));
+         end if;
       end if;
 
       --  Add discriminant values if discriminants are present
@@ -4235,7 +4252,14 @@ package body Exp_Ch3 is
 
    --  Generates:
 
-   --    function _Equality (X, Y : T) return Boolean is
+   --    function <<Body_Id>> (Left, Right : T) return Boolean is
+   --       [ X : T renames Left;  ]
+   --       [ Y : T renames Right; ]
+   --       --  The above renamings are generated only if the parameters of
+   --       --  this built function (which are passed by the caller) are not
+   --       --  named 'X' and 'Y'; these names are required to reuse several
+   --       --  expander routines when generating this body.
+
    --    begin
    --       --  Compare discriminants
 
@@ -4266,70 +4290,44 @@ package body Exp_Ch3 is
    --       return True;
    --    end _Equality;
 
-   procedure Build_Variant_Record_Equality (Typ : Entity_Id) is
-      Loc : constant Source_Ptr := Sloc (Typ);
+   function Build_Variant_Record_Equality
+     (Typ         : Entity_Id;
+      Body_Id     : Entity_Id;
+      Param_Specs : List_Id) return Node_Id
+   is
+      Loc   : constant Source_Ptr := Sloc (Typ);
+      Def   : constant Node_Id    := Parent (Typ);
+      Comps : constant Node_Id    := Component_List (Type_Definition (Def));
+      Left  : constant Entity_Id  := Defining_Identifier (First (Param_Specs));
+      Right : constant Entity_Id  :=
+                    Defining_Identifier (Next (First (Param_Specs)));
+      Decls : constant List_Id    := New_List;
+      Stmts : constant List_Id    := New_List;
 
-      F : constant Entity_Id :=
-            Make_Defining_Identifier (Loc,
-              Chars => Make_TSS_Name (Typ, TSS_Composite_Equality));
-
-      X : constant Entity_Id := Make_Defining_Identifier (Loc, Name_X);
-      Y : constant Entity_Id := Make_Defining_Identifier (Loc, Name_Y);
-
-      Def    : constant Node_Id := Parent (Typ);
-      Comps  : constant Node_Id := Component_List (Type_Definition (Def));
-      Stmts  : constant List_Id := New_List;
-      Pspecs : constant List_Id := New_List;
+      Subp_Body : Node_Id;
 
    begin
-      --  If we have a variant record with restriction No_Implicit_Conditionals
-      --  in effect, then we skip building the procedure. This is safe because
-      --  if we can see the restriction, so can any caller, calls to equality
-      --  test routines are not allowed for variant records if this restriction
-      --  is active.
+      pragma Assert (not Is_Tagged_Type (Typ));
 
-      if Restriction_Active (No_Implicit_Conditionals) then
-         return;
+      --  In order to reuse the expander routines Make_Eq_If and Make_Eq_Case
+      --  the name of the formals must be X and Y; otherwise we generate two
+      --  renaming declarations for such purpose.
+
+      if Chars (Left) /= Name_X then
+         Append_To (Decls,
+           Make_Object_Renaming_Declaration (Loc,
+             Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
+             Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
+             Name                => Make_Identifier (Loc, Chars (Left))));
       end if;
 
-      --  Derived Unchecked_Union types no longer inherit the equality function
-      --  of their parent.
-
-      if Is_Derived_Type (Typ)
-        and then not Is_Unchecked_Union (Typ)
-        and then not Has_New_Non_Standard_Rep (Typ)
-      then
-         declare
-            Parent_Eq : constant Entity_Id :=
-                          TSS (Root_Type (Typ), TSS_Composite_Equality);
-         begin
-            if Present (Parent_Eq) then
-               Copy_TSS (Parent_Eq, Typ);
-               return;
-            end if;
-         end;
+      if Chars (Right) /= Name_Y then
+         Append_To (Decls,
+           Make_Object_Renaming_Declaration (Loc,
+             Defining_Identifier => Make_Defining_Identifier (Loc, Name_Y),
+             Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
+             Name                => Make_Identifier (Loc, Chars (Right))));
       end if;
-
-      Discard_Node (
-        Make_Subprogram_Body (Loc,
-          Specification =>
-            Make_Function_Specification (Loc,
-              Defining_Unit_Name       => F,
-              Parameter_Specifications => Pspecs,
-              Result_Definition => New_Occurrence_Of (Standard_Boolean, Loc)),
-          Declarations               => New_List,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts)));
-
-      Append_To (Pspecs,
-        Make_Parameter_Specification (Loc,
-          Defining_Identifier => X,
-          Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
-
-      Append_To (Pspecs,
-        Make_Parameter_Specification (Loc,
-          Defining_Identifier => Y,
-          Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
 
       --  Unchecked_Unions require additional machinery to support equality.
       --  Two extra parameters (A and B) are added to the equality function
@@ -4340,9 +4338,10 @@ package body Exp_Ch3 is
 
       if Is_Unchecked_Union (Typ) then
          declare
+            A          : Entity_Id;
+            B          : Entity_Id;
             Discr      : Entity_Id;
             Discr_Type : Entity_Id;
-            A, B       : Entity_Id;
             New_Discrs : Elist_Id;
 
          begin
@@ -4351,21 +4350,24 @@ package body Exp_Ch3 is
             Discr := First_Discriminant (Typ);
             while Present (Discr) loop
                Discr_Type := Etype (Discr);
-               A := Make_Defining_Identifier (Loc,
-                      Chars => New_External_Name (Chars (Discr), 'A'));
 
-               B := Make_Defining_Identifier (Loc,
-                      Chars => New_External_Name (Chars (Discr), 'B'));
+               A :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (Discr), 'A'));
+
+               B :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (Discr), 'B'));
 
                --  Add new parameters to the parameter list
 
-               Append_To (Pspecs,
+               Append_To (Param_Specs,
                  Make_Parameter_Specification (Loc,
                    Defining_Identifier => A,
                    Parameter_Type      =>
                      New_Occurrence_Of (Discr_Type, Loc)));
 
-               Append_To (Pspecs,
+               Append_To (Param_Specs,
                  Make_Parameter_Specification (Loc,
                    Defining_Identifier => B,
                    Parameter_Type      =>
@@ -4394,9 +4396,9 @@ package body Exp_Ch3 is
             end loop;
 
             --  Generate component-by-component comparison. Note that we must
-            --  propagate the inferred discriminants formals to act as
-            --  the case statement switch. Their value is added when an
-            --  equality call on unchecked unions is expanded.
+            --  propagate the inferred discriminants formals to act as the case
+            --  statement switch. Their value is added when an equality call on
+            --  unchecked unions is expanded.
 
             Append_List_To (Stmts, Make_Eq_Case (Typ, Comps, New_Discrs));
          end;
@@ -4413,12 +4415,20 @@ package body Exp_Ch3 is
         Make_Simple_Return_Statement (Loc,
           Expression => New_Occurrence_Of (Standard_True, Loc)));
 
-      Set_TSS (Typ, F);
-      Set_Is_Pure (F);
+      Subp_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Make_Function_Specification (Loc,
+              Defining_Unit_Name       => Body_Id,
+              Parameter_Specifications => Param_Specs,
+              Result_Definition        =>
+                New_Occurrence_Of (Standard_Boolean, Loc)),
+          Declarations               => Decls,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => Stmts));
 
-      if not Debug_Generated_Code then
-         Set_Debug_Info_Off (F);
-      end if;
+      return Subp_Body;
    end Build_Variant_Record_Equality;
 
    -----------------------------
@@ -4963,6 +4973,73 @@ package body Exp_Ch3 is
    -------------------------------
 
    procedure Expand_Freeze_Record_Type (N : Node_Id) is
+      procedure Build_Variant_Record_Equality (Typ  : Entity_Id);
+      --  Create An Equality function for the untagged variant record Typ and
+      --  attach it to the TSS list.
+
+      -----------------------------------
+      -- Build_Variant_Record_Equality --
+      -----------------------------------
+
+      procedure Build_Variant_Record_Equality (Typ : Entity_Id) is
+         Loc : constant Source_Ptr := Sloc (Typ);
+         F   : constant Entity_Id  :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => Make_TSS_Name (Typ, TSS_Composite_Equality));
+      begin
+         --  For a variant record with restriction No_Implicit_Conditionals
+         --  in effect we skip building the procedure. This is safe because
+         --  if we can see the restriction, so can any caller, and calls to
+         --  equality test routines are not allowed for variant records if
+         --  this restriction is active.
+
+         if Restriction_Active (No_Implicit_Conditionals) then
+            return;
+         end if;
+
+         --  Derived Unchecked_Union types no longer inherit the equality
+         --  function of their parent.
+
+         if Is_Derived_Type (Typ)
+           and then not Is_Unchecked_Union (Typ)
+           and then not Has_New_Non_Standard_Rep (Typ)
+         then
+            declare
+               Parent_Eq : constant Entity_Id :=
+                             TSS (Root_Type (Typ), TSS_Composite_Equality);
+            begin
+               if Present (Parent_Eq) then
+                  Copy_TSS (Parent_Eq, Typ);
+                  return;
+               end if;
+            end;
+         end if;
+
+         Discard_Node (
+           Build_Variant_Record_Equality
+             (Typ         => Typ,
+              Body_Id     => F,
+              Param_Specs => New_List (
+                Make_Parameter_Specification (Loc,
+                  Defining_Identifier =>
+                    Make_Defining_Identifier (Loc, Name_X),
+                  Parameter_Type      => New_Occurrence_Of (Typ, Loc)),
+
+                Make_Parameter_Specification (Loc,
+                  Defining_Identifier =>
+                    Make_Defining_Identifier (Loc, Name_Y),
+                  Parameter_Type      => New_Occurrence_Of (Typ, Loc)))));
+
+         Set_TSS (Typ, F);
+         Set_Is_Pure (F);
+
+         if not Debug_Generated_Code then
+            Set_Debug_Info_Off (F);
+         end if;
+      end Build_Variant_Record_Equality;
+
+      --  Local variables
+
       Typ      : constant Node_Id := Entity (N);
       Typ_Decl : constant Node_Id := Parent (Typ);
 
@@ -6053,7 +6130,8 @@ package body Exp_Ch3 is
                        N    => Obj_Def,
                        Size => Esize (Def_Id)));
 
-                  Analyze_And_Resolve (Expression (N), Typ);
+                  Analyze_And_Resolve
+                    (Expression (N), Typ, Suppress => All_Checks);
 
                --  Otherwise invoke the type init proc, generate:
                --    Type_Init_Proc (Obj);
@@ -6785,8 +6863,8 @@ package body Exp_Ch3 is
                                    SPARK_Pragma_Inherited (Def_Id);
 
                   begin
-                     Set_Next_Entity (New_Id, Next_Entity (Def_Id));
-                     Set_Next_Entity (Def_Id, Next_Temp);
+                     Link_Entities (New_Id, Next_Entity (Def_Id));
+                     Link_Entities (Def_Id, Next_Temp);
 
                      Set_Chars   (Defining_Identifier (N), Chars   (Def_Id));
                      Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
@@ -6952,9 +7030,11 @@ package body Exp_Ch3 is
 
                --  If we cannot convert the expression into a renaming we must
                --  consider it an internal error because the backend does not
-               --  have support to handle it.
+               --  have support to handle it. Also, when a raise expression is
+               --  encountered we ignore it since it doesn't return a value and
+               --  thus cannot trigger a copy.
 
-               else
+               elsif Nkind (Original_Node (Expr_Q)) /= N_Raise_Expression then
                   pragma Assert (False);
                   raise Program_Error;
                end if;
@@ -7554,8 +7634,9 @@ package body Exp_Ch3 is
 
       Def_Id : constant Entity_Id := Entity (N);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Result : Boolean := False;
 
@@ -7920,13 +8001,13 @@ package body Exp_Ch3 is
          end if;
       end if;
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
       return Result;
 
    exception
       when RE_Not_Available =>
-         Restore_Ghost_Mode (Saved_GM);
+         Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
          return False;
    end Freeze_Type;
@@ -8583,6 +8664,24 @@ package body Exp_Ch3 is
              Parameter_Type      => New_Occurrence_Of (Standard_String, Loc)));
       end if;
 
+      --  Due to certain edge cases such as arrays with null-excluding
+      --  components being built with the secondary stack it becomes necessary
+      --  to add a formal to the Init_Proc which controls whether we raise
+      --  Constraint_Errors on generated calls for internal object
+      --  declarations.
+
+      if Needs_Conditional_Null_Excluding_Check (Typ) then
+         Append_To (Formals,
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier (Loc,
+                 New_External_Name (Chars
+                   (Component_Type (Typ)), "_skip_null_excluding_check")),
+             In_Present          => True,
+             Parameter_Type      =>
+               New_Occurrence_Of (Standard_Boolean, Loc)));
+      end if;
+
       return Formals;
 
    exception
@@ -9121,9 +9220,9 @@ package body Exp_Ch3 is
       end loop;
    end Make_Controlling_Function_Wrappers;
 
-   -------------------
-   --  Make_Eq_Body --
-   -------------------
+   ------------------
+   -- Make_Eq_Body --
+   ------------------
 
    function Make_Eq_Body
      (Typ     : Entity_Id;

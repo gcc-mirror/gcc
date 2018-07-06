@@ -143,8 +143,19 @@ DEF_INTERNAL_OPTAB_FN (FMS, ECF_CONST, fms, ternary)
 DEF_INTERNAL_OPTAB_FN (FNMA, ECF_CONST, fnma, ternary)
 DEF_INTERNAL_OPTAB_FN (FNMS, ECF_CONST, fnms, ternary)
 
+DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_FLOOR, ECF_CONST | ECF_NOTHROW, first,
+			      savg_floor, uavg_floor, binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_CEIL, ECF_CONST | ECF_NOTHROW, first,
+			      savg_ceil, uavg_ceil, binary)
+
 DEF_INTERNAL_OPTAB_FN (COND_ADD, ECF_CONST, cond_add, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_SUB, ECF_CONST, cond_sub, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_MUL, ECF_CONST, cond_smul, cond_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_DIV, ECF_CONST, first,
+			      cond_sdiv, cond_udiv, cond_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MOD, ECF_CONST, first,
+			      cond_smod, cond_umod, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_RDIV, ECF_CONST, cond_sdiv, cond_binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MIN, ECF_CONST, first,
 			      cond_smin, cond_umin, cond_binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MAX, ECF_CONST, first,
@@ -173,7 +184,7 @@ DEF_INTERNAL_OPTAB_FN (REDUC_XOR, ECF_CONST | ECF_NOTHROW,
 
 /* Extract the last active element from a vector.  */
 DEF_INTERNAL_OPTAB_FN (EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
-		       extract_last, cond_unary)
+		       extract_last, fold_left)
 
 /* Same, but return the first argument if no elements are active.  */
 DEF_INTERNAL_OPTAB_FN (FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,

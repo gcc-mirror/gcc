@@ -62,13 +62,25 @@ typedef struct _var_map
 
   /* Map of partitions numbers to base variable table indexes.  */
   int *partition_to_base_index;
+
+  /* Bitmap of basic block.  It describes the region within which the analysis
+     is done.  Using pointer avoids allocating memory in out-of-ssa case.  */
+  bitmap bmp_bbs;
+
+  /* Vector of basic block in the region.  */
+  vec<basic_block> vec_bbs;
+
+  /* True if this map is for out-of-ssa, otherwise for live range
+     computation.  When for out-of-ssa, it also means the var map is computed
+     for whole current function.  */
+  bool outofssa_p;
 } *var_map;
 
 
 /* Value used to represent no partition number.  */
 #define NO_PARTITION		-1
 
-extern var_map init_var_map (int);
+extern var_map init_var_map (int, struct loop* = NULL);
 extern void delete_var_map (var_map);
 extern int var_union (var_map, tree, tree);
 extern void partition_view_normal (var_map);
@@ -80,6 +92,19 @@ extern void remove_unused_locals (void);
 extern void dump_var_map (FILE *, var_map);
 extern void debug (_var_map &ref);
 extern void debug (_var_map *ptr);
+
+
+/* Return TRUE if region of the MAP contains basic block BB.  */
+
+inline bool
+region_contains_p (var_map map, basic_block bb)
+{
+  /* It's possible that the function is called with ENTRY_BLOCK/EXIT_BLOCK.  */
+  if (map->outofssa_p)
+    return (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK);
+
+  return bitmap_bit_p (map->bmp_bbs, bb->index);
+}
 
 
 /* Return number of partitions in MAP.  */
@@ -286,18 +311,6 @@ static inline var_map
 live_var_map (tree_live_info_p live)
 {
   return live->map;
-}
-
-
-/* Merge the live on entry information in LIVE for partitions P1 and P2. Place
-   the result into P1.  Clear P2.  */
-
-static inline void
-live_merge_and_clear (tree_live_info_p live, int p1, int p2)
-{
-  gcc_checking_assert (&live->livein[p1] && &live->livein[p2]);
-  bitmap_ior_into (&live->livein[p1], &live->livein[p2]);
-  bitmap_clear (&live->livein[p2]);
 }
 
 

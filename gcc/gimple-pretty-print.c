@@ -153,7 +153,7 @@ print_gimple_stmt (FILE *file, gimple *g, int spc, dump_flags_t flags)
 DEBUG_FUNCTION void
 debug (gimple &ref)
 {
-  print_gimple_stmt (stderr, &ref, 0, 0);
+  print_gimple_stmt (stderr, &ref, 0, TDF_NONE);
 }
 
 DEBUG_FUNCTION void
@@ -358,14 +358,17 @@ dump_unary_rhs (pretty_printer *buffer, gassign *gs, int spc,
       break;
 
     case ABS_EXPR:
+    case ABSU_EXPR:
       if (flags & TDF_GIMPLE)
 	{
-	  pp_string (buffer, "__ABS ");
+	  pp_string (buffer,
+		     rhs_code == ABS_EXPR ? "__ABS " : "__ABSU ");
 	  dump_generic_node (buffer, rhs, spc, flags, false);
 	}
       else
 	{
-	  pp_string (buffer, "ABS_EXPR <");
+	  pp_string (buffer,
+		     rhs_code == ABS_EXPR ? "ABS_EXPR <" : "ABSU_EXPR <");
 	  dump_generic_node (buffer, rhs, spc, flags, false);
 	  pp_greater (buffer);
 	}
@@ -429,6 +432,7 @@ dump_binary_rhs (pretty_printer *buffer, gassign *gs, int spc,
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_FLOAT_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
     case VEC_SERIES_EXPR:
@@ -641,12 +645,11 @@ static void
 dump_gimple_return (pretty_printer *buffer, greturn *gs, int spc,
 		    dump_flags_t flags)
 {
-  tree t, t2;
+  tree t;
 
   t = gimple_return_retval (gs);
-  t2 = gimple_return_retbnd (gs);
   if (flags & TDF_RAW)
-    dump_gimple_fmt (buffer, spc, flags, "%G <%T %T>", gs, t, t2);
+    dump_gimple_fmt (buffer, spc, flags, "%G <%T>", gs, t);
   else
     {
       pp_string (buffer, "return");
@@ -654,11 +657,6 @@ dump_gimple_return (pretty_printer *buffer, greturn *gs, int spc,
 	{
 	  pp_space (buffer);
 	  dump_generic_node (buffer, t, spc, flags, false);
-	}
-      if (t2)
-	{
-	  pp_string (buffer, ", ");
-	  dump_generic_node (buffer, t2, spc, flags, false);
 	}
       pp_semicolon (buffer);
     }

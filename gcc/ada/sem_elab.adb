@@ -2072,8 +2072,8 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS. As a result, ABE checks and diagnostics are
-      --  not performed in this mode.
+      --  Nothing to do for ASIS because ABE checks and diagnostics are not
+      --  performed in this mode.
 
       elsif ASIS_Mode then
          return;
@@ -2274,121 +2274,15 @@ package body Sem_Elab is
       Read  : Boolean;
       Write : Boolean)
    is
-      function In_Pragma (Nod : Node_Id) return Boolean;
-      --  Determine whether arbitrary node Nod appears within a pragma
-
-      ---------------
-      -- In_Pragma --
-      ---------------
-
-      function In_Pragma (Nod : Node_Id) return Boolean is
-         Par : Node_Id;
-
-      begin
-         Par := Nod;
-         while Present (Par) loop
-            if Nkind (Par) = N_Pragma then
-               return True;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return False;
-      end In_Pragma;
-
-      --  Local variables
-
       Marker    : Node_Id;
-      Prag      : Node_Id;
       Var_Attrs : Variable_Attributes;
       Var_Id    : Entity_Id;
 
-   --  Start of processing for Build_Variable_Reference_Marker
-
    begin
-      --  Nothing to do when switch -gnatH (legacy elaboration checking mode
-      --  enabled) is in effect because the legacy ABE mechanism does not need
-      --  to carry out this action.
-
-      if Legacy_Elaboration_Checks then
-         return;
-
-      --  Nothing to do for ASIS. As a result, ABE checks and diagnostics are
-      --  not performed in this mode.
-
-      elsif ASIS_Mode then
-         return;
-
-      --  Nothing to do when the reference is being preanalyzed as the marker
-      --  will be inserted in the wrong place.
-
-      elsif Preanalysis_Active then
-         return;
-
-      --  Nothing to do when the input does not denote a reference
-
-      elsif not Nkind_In (N, N_Expanded_Name, N_Identifier) then
-         return;
-
-      --  Nothing to do for internally-generated references
-
-      elsif not Comes_From_Source (N) then
-         return;
-
-      --  Nothing to do when the reference is erroneous, left in a bad state,
-      --  or does not denote a variable.
-
-      elsif not (Present (Entity (N))
-                  and then Ekind (Entity (N)) = E_Variable
-                  and then Entity (N) /= Any_Id)
-      then
-         return;
-      end if;
-
       Extract_Variable_Reference_Attributes
         (Ref    => N,
          Var_Id => Var_Id,
          Attrs  => Var_Attrs);
-
-      Prag := SPARK_Pragma (Var_Id);
-
-      if Comes_From_Source (Var_Id)
-
-         --  Both the variable and the reference must appear in SPARK_Mode On
-         --  regions because this scenario falls under the SPARK rules.
-
-         and then Present (Prag)
-         and then Get_SPARK_Mode_From_Annotation (Prag) = On
-         and then Is_SPARK_Mode_On_Node (N)
-
-         --  The reference must not be considered when it appears in a pragma.
-         --  If the pragma has run-time semantics, then the reference will be
-         --  reconsidered once the pragma is expanded.
-
-         --  Performance note: parent traversal
-
-         and then not In_Pragma (N)
-      then
-         null;
-
-      --  Otherwise the reference is not suitable for ABE processing. This
-      --  prevents the generation of variable markers which will never play
-      --  a role in ABE diagnostics.
-
-      else
-         return;
-      end if;
-
-      --  At this point it is known that the variable reference will play some
-      --  role in ABE checks and diagnostics. Create a corresponding variable
-      --  marker in case the original variable reference is folded or optimized
-      --  away.
 
       Marker := Make_Variable_Reference_Marker (Sloc (N));
 
@@ -2425,8 +2319,8 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS. As a result, no ABE checks and diagnostics
-      --  are performed in this mode.
+      --  Nothing to do for ASIS because ABE checks and diagnostics are not
+      --  performed in this mode.
 
       elsif ASIS_Mode then
          return;
@@ -8033,16 +7927,12 @@ package body Sem_Elab is
    ----------------------
 
    function Non_Private_View (Typ : Entity_Id) return Entity_Id is
-      Result : Entity_Id;
-
    begin
-      Result := Typ;
-
-      if Is_Private_Type (Result) and then Present (Full_View (Result)) then
-         Result := Full_View (Result);
+      if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
+         return Full_View (Typ);
+      else
+         return Typ;
       end if;
-
-      return Result;
    end Non_Private_View;
 
    -----------------------------
@@ -10820,8 +10710,8 @@ package body Sem_Elab is
       if Legacy_Elaboration_Checks then
          return;
 
-      --  Nothing to do for ASIS. As a result, no ABE checks and diagnostics
-      --  are performed in this mode.
+      --  Nothing to do for ASIS because ABE checks and diagnostics are not
+      --  performed in this mode.
 
       elsif ASIS_Mode then
          return;
@@ -11141,31 +11031,18 @@ package body Sem_Elab is
       procedure Find_And_Process_Nested_Scenarios;
       pragma Inline (Find_And_Process_Nested_Scenarios);
       --  Examine the declarations and statements of subprogram body N for
-      --  suitable scenarios. Save each discovered scenario and process it
-      --  accordingly.
-
-      procedure Process_Nested_Scenarios (Nested : Elist_Id);
-      pragma Inline (Process_Nested_Scenarios);
-      --  Invoke Process_Conditional_ABE on each individual scenario found in
-      --  list Nested.
+      --  suitable scenarios.
 
       ---------------------------------------
       -- Find_And_Process_Nested_Scenarios --
       ---------------------------------------
 
       procedure Find_And_Process_Nested_Scenarios is
-         Body_Id : constant Entity_Id := Defining_Entity (N);
-
          function Is_Potential_Scenario
            (Nod : Node_Id) return Traverse_Result;
          --  Determine whether arbitrary node Nod denotes a suitable scenario.
          --  If it does, save it in the Nested_Scenarios list of the subprogram
          --  body, and process it.
-
-         procedure Save_Scenario (Nod : Node_Id);
-         pragma Inline (Save_Scenario);
-         --  Save scenario Nod in the Nested_Scenarios list of the subprogram
-         --  body.
 
          procedure Traverse_List (List : List_Id);
          pragma Inline (Traverse_List);
@@ -11259,14 +11136,7 @@ package body Sem_Elab is
 
             --  General case
 
-            --  Save a suitable scenario in the Nested_Scenarios list of the
-            --  subprogram body. As a result any subsequent traversals of the
-            --  subprogram body started from a different top-level scenario no
-            --  longer need to reexamine the tree.
-
             elsif Is_Suitable_Scenario (Nod) then
-               Save_Scenario (Nod);
-
                Process_Conditional_ABE
                  (N     => Nod,
                   State => State);
@@ -11274,24 +11144,6 @@ package body Sem_Elab is
 
             return OK;
          end Is_Potential_Scenario;
-
-         -------------------
-         -- Save_Scenario --
-         -------------------
-
-         procedure Save_Scenario (Nod : Node_Id) is
-            Nested : Elist_Id;
-
-         begin
-            Nested := Nested_Scenarios (Body_Id);
-
-            if No (Nested) then
-               Nested := New_Elmt_List;
-               Set_Nested_Scenarios (Body_Id, Nested);
-            end if;
-
-            Append_Elmt (Nod, Nested);
-         end Save_Scenario;
 
          -------------------
          -- Traverse_List --
@@ -11321,28 +11173,6 @@ package body Sem_Elab is
          Traverse_Potential_Scenarios (Handled_Statement_Sequence (N));
       end Find_And_Process_Nested_Scenarios;
 
-      ------------------------------
-      -- Process_Nested_Scenarios --
-      ------------------------------
-
-      procedure Process_Nested_Scenarios (Nested : Elist_Id) is
-         Nested_Elmt : Elmt_Id;
-
-      begin
-         Nested_Elmt := First_Elmt (Nested);
-         while Present (Nested_Elmt) loop
-            Process_Conditional_ABE
-              (N     => Node (Nested_Elmt),
-               State => State);
-
-            Next_Elmt (Nested_Elmt);
-         end loop;
-      end Process_Nested_Scenarios;
-
-      --  Local variables
-
-      Nested : Elist_Id;
-
    --  Start of processing for Traverse_Body
 
    begin
@@ -11367,23 +11197,10 @@ package body Sem_Elab is
          Set_Is_Visited_Body (N);
       end if;
 
-      Nested := Nested_Scenarios (Defining_Entity (N));
+      --  Examine the declarations and statements of the subprogram body for
+      --  suitable scenarios, save and process them accordingly.
 
-      --  The subprogram body was already examined as part of the elaboration
-      --  graph starting from a different top-level scenario. There is no need
-      --  to traverse the declarations and statements again because this will
-      --  yield the exact same scenarios. Use the nested scenarios collected
-      --  during the first inspection of the body.
-
-      if Present (Nested) then
-         Process_Nested_Scenarios (Nested);
-
-      --  Otherwise examine the declarations and statements of the subprogram
-      --  body for suitable scenarios, save and process them accordingly.
-
-      else
-         Find_And_Process_Nested_Scenarios;
-      end if;
+      Find_And_Process_Nested_Scenarios;
    end Traverse_Body;
 
    -----------------
@@ -12978,7 +12795,7 @@ package body Sem_Elab is
       then
          return;
 
-      --  Nothing to do if call is being pre-analyzed, as when within a
+      --  Nothing to do if call is being preanalyzed, as when within a
       --  pre/postcondition, a predicate, or an invariant.
 
       elsif In_Spec_Expression then

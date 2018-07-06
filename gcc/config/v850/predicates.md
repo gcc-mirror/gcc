@@ -475,7 +475,7 @@
 ;; Return true if OP is a float value operand with value as 1.
 
 (define_predicate "const_float_1_operand"
-  (match_code "const_int")
+  (match_code "const_double")
 {
   if (GET_CODE (op) != CONST_DOUBLE
       || mode != GET_MODE (op)
@@ -483,19 +483,6 @@
     return 0;
 
   return op == CONST1_RTX(mode);
-})
-
-;; Return true if OP is a float value operand with value as 0.
-
-(define_predicate "const_float_0_operand"
-  (match_code "const_int")
-{
-  if (GET_CODE (op) != CONST_DOUBLE
-      || mode != GET_MODE (op)
-      || (mode != DFmode && mode != SFmode))
-    return 0;
-
-  return op == CONST0_RTX(mode);
 })
 
 (define_predicate "label_ref_operand"

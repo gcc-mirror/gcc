@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_APP_ON "#APP\n"
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
-#define NO_IMPLICIT_EXTERN_C
 #define TARGET_POSIX_IO
 
 #undef  SIZE_TYPE

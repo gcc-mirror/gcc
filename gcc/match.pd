@@ -74,6 +74,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (FLOOR)
 DEFINE_INT_AND_FLOAT_ROUND_FN (CEIL)
 DEFINE_INT_AND_FLOAT_ROUND_FN (ROUND)
 DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
+
+/* Binary operations and their associated IFN_COND_* function.  */
+(define_operator_list UNCOND_BINARY
+  plus minus
+  mult trunc_div trunc_mod rdiv
+  min max
+  bit_and bit_ior bit_xor)
+(define_operator_list COND_BINARY
+  IFN_COND_ADD IFN_COND_SUB
+  IFN_COND_MUL IFN_COND_DIV IFN_COND_MOD IFN_COND_RDIV
+  IFN_COND_MIN IFN_COND_MAX
+  IFN_COND_AND IFN_COND_IOR IFN_COND_XOR)
     
 /* As opposed to convert?, this still creates a single pattern, so
    it is not a suitable replacement for convert? in all cases.  */
@@ -89,6 +101,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* This one has to be last, or it shadows the others.  */
 (match (nop_convert @0)
  @0) 
+
+/* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
+   ABSU_EXPR returns unsigned absolute value of the operand and the operand
+   of the ABSU_EXPR will have the corresponding signed type.  */
+(simplify (abs (convert @0))
+ (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && !TYPE_UNSIGNED (TREE_TYPE (@0))
+      && element_precision (type) > element_precision (TREE_TYPE (@0)))
+  (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+   (convert (absu:utype @0)))))
+
 
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
@@ -1450,14 +1473,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (op @1 { build_zero_cst (TREE_TYPE (@1)); }))))
 
 /* Transform:
- * (X / Y) == 0 -> X < Y if X, Y are unsigned.
- * (X / Y) != 0 -> X >= Y, if X, Y are unsigned.
- */
+   (X / Y) == 0 -> X < Y if X, Y are unsigned.
+   (X / Y) != 0 -> X >= Y, if X, Y are unsigned.  */
 (for cmp (eq ne)
      ocmp (lt ge)
  (simplify
   (cmp (trunc_div @0 @1) integer_zerop)
   (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       /* Complex ==/!= is allowed, but not </>=.  */
+       && TREE_CODE (TREE_TYPE (@0)) != COMPLEX_TYPE
        && (VECTOR_TYPE_P (type) || !VECTOR_TYPE_P (TREE_TYPE (@0))))
    (ocmp @0 @1))))
 
@@ -1759,10 +1783,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   (neg_inner_op @0 { wide_int_to_tree (type, wi::to_wide (cst)); })
 	   /* Last resort, use some unsigned type.  */
 	   (with { tree utype = unsigned_type_for (type); }
-	    (view_convert (inner_op
-			   (view_convert:utype @0)
-			   (view_convert:utype
-			    { drop_tree_overflow (cst); })))))))))))))
+	    (if (utype)
+	     (view_convert (inner_op
+			    (view_convert:utype @0)
+			    (view_convert:utype
+			     { drop_tree_overflow (cst); }))))))))))))))
 
   /* (CST1 - A) +- CST2 -> CST3 - A  */
   (for outer_op (plus minus)
@@ -4703,59 +4728,105 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		      wi::to_wide (@ipos) + isize))
     (BIT_FIELD_REF @0 @rsize @rpos)))))
 
-(for fmas (FMA)
+(if (canonicalize_math_after_vectorization_p ())
+ (for fmas (FMA)
+  (simplify
+   (fmas:c (negate @0) @1 @2)
+   (IFN_FNMA @0 @1 @2))
+  (simplify
+   (fmas @0 @1 (negate @2))
+   (IFN_FMS @0 @1 @2))
+  (simplify
+   (fmas:c (negate @0) @1 (negate @2))
+   (IFN_FNMS @0 @1 @2))
+  (simplify
+   (negate (fmas@3 @0 @1 @2))
+   (if (single_use (@3))
+    (IFN_FNMS @0 @1 @2))))
+
  (simplify
-  (fmas:c (negate @0) @1 @2)
-  (IFN_FNMA @0 @1 @2))
- (simplify
-  (fmas @0 @1 (negate @2))
-  (IFN_FMS @0 @1 @2))
- (simplify
-  (fmas:c (negate @0) @1 (negate @2))
+  (IFN_FMS:c (negate @0) @1 @2)
   (IFN_FNMS @0 @1 @2))
  (simplify
-  (negate (fmas@3 @0 @1 @2))
+  (IFN_FMS @0 @1 (negate @2))
+  (IFN_FMA @0 @1 @2))
+ (simplify
+  (IFN_FMS:c (negate @0) @1 (negate @2))
+  (IFN_FNMA @0 @1 @2))
+ (simplify
+  (negate (IFN_FMS@3 @0 @1 @2))
+   (if (single_use (@3))
+    (IFN_FNMA @0 @1 @2)))
+
+ (simplify
+  (IFN_FNMA:c (negate @0) @1 @2)
+  (IFN_FMA @0 @1 @2))
+ (simplify
+  (IFN_FNMA @0 @1 (negate @2))
+  (IFN_FNMS @0 @1 @2))
+ (simplify
+  (IFN_FNMA:c (negate @0) @1 (negate @2))
+  (IFN_FMS @0 @1 @2))
+ (simplify
+  (negate (IFN_FNMA@3 @0 @1 @2))
   (if (single_use (@3))
-   (IFN_FNMS @0 @1 @2))))
+   (IFN_FMS @0 @1 @2)))
 
-(simplify
- (IFN_FMS:c (negate @0) @1 @2)
- (IFN_FNMS @0 @1 @2))
-(simplify
- (IFN_FMS @0 @1 (negate @2))
- (IFN_FMA @0 @1 @2))
-(simplify
- (IFN_FMS:c (negate @0) @1 (negate @2))
- (IFN_FNMA @0 @1 @2))
-(simplify
- (negate (IFN_FMS@3 @0 @1 @2))
+ (simplify
+  (IFN_FNMS:c (negate @0) @1 @2)
+  (IFN_FMS @0 @1 @2))
+ (simplify
+  (IFN_FNMS @0 @1 (negate @2))
+  (IFN_FNMA @0 @1 @2))
+ (simplify
+  (IFN_FNMS:c (negate @0) @1 (negate @2))
+  (IFN_FMA @0 @1 @2))
+ (simplify
+  (negate (IFN_FNMS@3 @0 @1 @2))
   (if (single_use (@3))
-   (IFN_FNMA @0 @1 @2)))
+   (IFN_FMA @0 @1 @2))))
 
-(simplify
- (IFN_FNMA:c (negate @0) @1 @2)
- (IFN_FMA @0 @1 @2))
-(simplify
- (IFN_FNMA @0 @1 (negate @2))
- (IFN_FNMS @0 @1 @2))
-(simplify
- (IFN_FNMA:c (negate @0) @1 (negate @2))
- (IFN_FMS @0 @1 @2))
-(simplify
- (negate (IFN_FNMA@3 @0 @1 @2))
- (if (single_use (@3))
-  (IFN_FMS @0 @1 @2)))
+/* POPCOUNT simplifications.  */
+(for popcount (BUILT_IN_POPCOUNT BUILT_IN_POPCOUNTL BUILT_IN_POPCOUNTLL
+	       BUILT_IN_POPCOUNTIMAX)
+  /* popcount(X&1) is nop_expr(X&1).  */
+  (simplify
+    (popcount @0)
+    (if (tree_nonzero_bits (@0) == 1)
+      (convert @0)))
+  /* popcount(X) + popcount(Y) is popcount(X|Y) when X&Y must be zero.  */
+  (simplify
+    (plus (popcount:s @0) (popcount:s @1))
+    (if (wi::bit_and (tree_nonzero_bits (@0), tree_nonzero_bits (@1)) == 0)
+      (popcount (bit_ior @0 @1))))
+  /* popcount(X) == 0 is X == 0, and related (in)equalities.  */
+  (for cmp (le eq ne gt)
+       rep (eq eq ne ne)
+    (simplify
+      (cmp (popcount @0) integer_zerop)
+      (rep @0 { build_zero_cst (TREE_TYPE (@0)); }))))
 
-(simplify
- (IFN_FNMS:c (negate @0) @1 @2)
- (IFN_FMS @0 @1 @2))
-(simplify
- (IFN_FNMS @0 @1 (negate @2))
- (IFN_FNMA @0 @1 @2))
-(simplify
- (IFN_FNMS:c (negate @0) @1 (negate @2))
- (IFN_FMA @0 @1 @2))
-(simplify
- (negate (IFN_FNMS@3 @0 @1 @2))
- (if (single_use (@3))
-  (IFN_FMA @0 @1 @2)))
+/* Simplify:
+
+     a = a1 op a2
+     r = c ? a : b;
+
+   to:
+
+     r = c ? a1 op a2 : b;
+
+   if the target can do it in one go.  This makes the operation conditional
+   on c, so could drop potentially-trapping arithmetic, but that's a valid
+   simplification if the result of the operation isn't needed.  */
+(for uncond_op (UNCOND_BINARY)
+     cond_op (COND_BINARY)
+ (simplify
+  (vec_cond @0 (view_convert? (uncond_op@4 @1 @2)) @3)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_op @0 @1 @2 (view_convert:op_type @3))))))
+ (simplify
+  (vec_cond @0 @1 (view_convert? (uncond_op@4 @2 @3)))
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1)))))))

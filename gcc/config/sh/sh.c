@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "rtl-iter.h"
 #include "regs.h"
+#include "toplev.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1007,29 +1008,37 @@ sh_override_options_after_change (void)
       Aligning all jumps increases the code size, even if it might
       result in slightly faster code.  Thus, it is set to the smallest 
       alignment possible if not specified by the user.  */
-  if (align_loops == 0)
-    align_loops = optimize_size ? 2 : 4;
+  if (flag_align_loops && !str_align_loops)
+    str_align_loops = optimize_size ? "2" : "4";
 
-  if (align_jumps == 0)
-    align_jumps = 2;
-  else if (align_jumps < 2)
-    align_jumps = 2;
+  /* Parse values so that we can compare for current value.  */
+  parse_alignment_opts ();
+  if (flag_align_jumps && !str_align_jumps)
+    str_align_jumps = "2";
+  else if (align_jumps_value < 2)
+    str_align_jumps = "2";
 
-  if (align_functions == 0)
-    align_functions = optimize_size ? 2 : 4;
+  if (flag_align_functions && !str_align_functions)
+    str_align_functions = optimize_size ? "2" : "4";
 
   /* The linker relaxation code breaks when a function contains
      alignments that are larger than that at the start of a
      compilation unit.  */
   if (TARGET_RELAX)
     {
-      int min_align = align_loops > align_jumps ? align_loops : align_jumps;
+      /* Parse values so that we can compare for current value.  */
+      parse_alignment_opts ();
+      int min_align = MAX (align_loops_value, align_jumps_value);
 
       /* Also take possible .long constants / mova tables into account.	*/
       if (min_align < 4)
 	min_align = 4;
-      if (align_functions < min_align)
-	align_functions = min_align;
+      if (align_functions_value < min_align)
+	{
+	  char *r = XNEWVEC (char, 16);
+	  sprintf (r, "%d", min_align);
+	  str_align_functions = r;
+	}
     }
 }
 
@@ -4583,7 +4592,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 {
   rtx_insn *scan = barrier;
   bool need_align = true;
-  rtx lab;
+  rtx_code_label *lab;
   label_ref_list_t ref;
   bool have_df = false;
 
@@ -4600,7 +4609,8 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 	      scan = emit_insn_after (gen_align_2 (), scan);
 	      need_align = false;
 	    }
-	  for (lab = p->label; lab; lab = LABEL_REFS (lab))
+	  for (lab = p->label; lab;
+	       lab = safe_as_a <rtx_code_label *> (LABEL_REFS (lab)))
 	    scan = emit_label_after (lab, scan);
 	  scan = emit_insn_after (gen_consttable_2 (p->value, const0_rtx),
 				  scan);
@@ -4627,7 +4637,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 	    rtx src = SET_SRC (XVECEXP (PATTERN (start), 0, 0));
 	    rtx lab = XEXP (XVECEXP (src, 0, 3), 0);
 
-	    scan = emit_label_after (lab, scan);
+	    scan = emit_label_after (as_a <rtx_insn *> (lab), scan);
 	  }
     }
   if (TARGET_FMOVD && TARGET_ALIGN_DOUBLE && have_df)
@@ -4650,7 +4660,8 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 	    case E_SFmode:
 	      if (align_insn && !p->part_of_sequence_p)
 		{
-		  for (lab = p->label; lab; lab = LABEL_REFS (lab))
+		  for (lab = p->label; lab;
+		       lab = safe_as_a <rtx_code_label *> (LABEL_REFS (lab)))
 		    emit_label_before (lab, align_insn);
 		  emit_insn_before (gen_consttable_4 (p->value, const0_rtx),
 				    align_insn);
@@ -4666,7 +4677,8 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 		}
 	      else
 		{
-		  for (lab = p->label; lab; lab = LABEL_REFS (lab))
+		  for (lab = p->label; lab;
+		       lab = safe_as_a <rtx_code_label *> (LABEL_REFS (lab)))
 		    scan = emit_label_after (lab, scan);
 		  scan = emit_insn_after (gen_consttable_4 (p->value,
 							    const0_rtx), scan);
@@ -4682,7 +4694,8 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 		}
 	      /* FALLTHRU */
 	    case E_DImode:
-	      for (lab = p->label; lab; lab = LABEL_REFS (lab))
+	      for (lab = p->label; lab;
+		   lab = safe_as_a <rtx_code_label *> (LABEL_REFS (lab)))
 		scan = emit_label_after (lab, scan);
 	      scan = emit_insn_after (gen_consttable_8 (p->value, const0_rtx),
 				      scan);
@@ -4721,7 +4734,8 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 	      scan = emit_label_after (gen_label_rtx (), scan);
 	      scan = emit_insn_after (gen_align_4 (), scan);
 	    }
-	  for (lab = p->label; lab; lab = LABEL_REFS (lab))
+	  for (lab = p->label; lab;
+	       lab = safe_as_a <rtx_code_label *> (LABEL_REFS (lab)))
 	    scan = emit_label_after (lab, scan);
 	  scan = emit_insn_after (gen_consttable_4 (p->value, const0_rtx),
 				  scan);
@@ -4734,7 +4748,8 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 	      scan = emit_label_after (gen_label_rtx (), scan);
 	      scan = emit_insn_after (gen_align_4 (), scan);
 	    }
-	  for (lab = p->label; lab; lab = LABEL_REFS (lab))
+	  for (lab = p->label; lab;
+	       lab = safe_as_a <rtx_code_label *> (LABEL_REFS (lab)))
 	    scan = emit_label_after (lab, scan);
 	  scan = emit_insn_after (gen_consttable_8 (p->value, const0_rtx),
 				  scan);
@@ -5706,7 +5721,7 @@ fixup_addr_diff_vecs (rtx_insn *first)
       /* Emit the reference label of the braf where it belongs, right after
 	 the casesi_jump_2 (i.e. braf).  */
       braf_label = XEXP (XEXP (SET_SRC (XVECEXP (prevpat, 0, 0)), 1), 0);
-      emit_label_after (braf_label, prev);
+      emit_label_after (as_a <rtx_insn *> (braf_label), prev);
 
       /* Fix up the ADDR_DIF_VEC to be relative
 	 to the reference address of the braf.  */
@@ -5810,7 +5825,7 @@ barrier_align (rtx_insn *barrier_or_label)
 	{
 	  rtx_insn *x;
 	  if (jump_to_next
-	      || next_real_insn (JUMP_LABEL (prev)) == next
+	      || next_real_insn (JUMP_LABEL_AS_INSN (prev)) == next
 	      /* If relax_delay_slots() decides NEXT was redundant
 		 with some previous instruction, it will have
 		 redirected PREV's jump to the following insn.  */
@@ -6310,7 +6325,7 @@ sh_reorg (void)
 
 /* Return the UID of the insn that follows the specified label.  */
 int
-get_dest_uid (rtx label, int max_uid)
+get_dest_uid (rtx_insn *label, int max_uid)
 {
   rtx_insn *dest = next_real_insn (label);
 
@@ -6370,7 +6385,7 @@ split_branches (rtx_insn *first)
 	    if (get_attr_length (insn) > 4)
 	      {
 		rtx src = SET_SRC (PATTERN (insn));
-		rtx olabel = XEXP (XEXP (src, 1), 0);
+		rtx_insn *olabel = safe_as_a <rtx_insn *> (XEXP (XEXP (src, 1), 0));
 		int addr = INSN_ADDRESSES (INSN_UID (insn));
 		rtx_insn *label = 0;
 		int dest_uid = get_dest_uid (olabel, max_uid);

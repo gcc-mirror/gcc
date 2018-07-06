@@ -254,7 +254,9 @@ define fgroup DOTPROD	NEON dotprod
 
 # List of all quirk bits to strip out when comparing CPU features with
 # architectures.
-define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd
+# xscale isn't really a 'quirk', but it isn't an architecture either and we
+# need to ignore it for matching purposes.
+define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd xscale
 
 # Architecture entries
 # format:
@@ -1339,6 +1341,15 @@ begin cpu cortex-a75
  costs cortex_a73
 end cpu cortex-a75
 
+begin cpu cortex-a76
+ cname cortexa76
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+end cpu cortex-a76
 
 # ARMv8.2 A-profile ARM DynamIQ big.LITTLE implementations
 begin cpu cortex-a75.cortex-a55
@@ -1350,6 +1361,16 @@ begin cpu cortex-a75.cortex-a55
  option crypto add FP_ARMv8 CRYPTO
  costs cortex_a73
 end cpu cortex-a75.cortex-a55
+
+begin cpu cortex-a76.cortex-a55
+ cname cortexa76cortexa55
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+end cpu cortex-a76.cortex-a55
 
 # V8 M-profile implementations.
 begin cpu cortex-m23

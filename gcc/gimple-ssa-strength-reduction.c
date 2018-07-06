@@ -3379,7 +3379,7 @@ insert_initializers (slsr_cand_t c)
 	      fputs ("Using existing initializer: ", dump_file);
 	      print_gimple_stmt (dump_file,
 				 SSA_NAME_DEF_STMT (incr_vec[i].initializer),
-				 0, 0);
+				 0, TDF_NONE);
 	    }
 	  continue;
 	}
@@ -3661,6 +3661,11 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
   orig_rhs1 = gimple_assign_rhs1 (c->cand_stmt);
   orig_rhs2 = gimple_assign_rhs2 (c->cand_stmt);
   cand_incr = cand_increment (c);
+
+  /* If orig_rhs2 is NULL, we have already replaced this in situ with
+     a copy statement under another interpretation.  */
+  if (!orig_rhs2)
+    return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

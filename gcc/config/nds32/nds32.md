@@ -1830,12 +1830,33 @@
     nds32_expand_prologue_v3push ();
   else
     nds32_expand_prologue ();
+
+  /* If cfun->machine->fp_as_gp_p is true, we can generate special
+     directive to guide linker doing fp-as-gp optimization.
+     However, for a naked function, which means
+     it should not have prologue/epilogue,
+     using fp-as-gp still requires saving $fp by push/pop behavior and
+     there is no benefit to use fp-as-gp on such small function.
+     So we need to make sure this function is NOT naked as well.  */
+  if (cfun->machine->fp_as_gp_p && !cfun->machine->naked_p)
+    emit_insn (gen_omit_fp_begin (gen_rtx_REG (SImode, FP_REGNUM)));
+
   DONE;
 })
 
 (define_expand "epilogue" [(const_int 0)]
   ""
 {
+  /* If cfun->machine->fp_as_gp_p is true, we can generate special
+     directive to guide linker doing fp-as-gp optimization.
+     However, for a naked function, which means
+     it should not have prologue/epilogue,
+     using fp-as-gp still requires saving $fp by push/pop behavior and
+     there is no benefit to use fp-as-gp on such small function.
+     So we need to make sure this function is NOT naked as well.  */
+  if (cfun->machine->fp_as_gp_p && !cfun->machine->naked_p)
+    emit_insn (gen_omit_fp_end (gen_rtx_REG (SImode, FP_REGNUM)));
+
   /* Note that only under V3/V3M ISA, we could use v3pop epilogue.
      In addition, we need to check if v3push is indeed available.  */
   if (NDS32_V3PUSH_AVAILABLE_P)
@@ -1935,7 +1956,8 @@
   "nds32_can_use_return_insn ()"
 {
   /* Emit as the simple return.  */
-  if (cfun->machine->naked_p
+  if (!cfun->machine->fp_as_gp_p
+      && cfun->machine->naked_p
       && (cfun->machine->va_args_size == 0))
     {
       emit_jump_insn (gen_return_internal ());
@@ -1945,9 +1967,14 @@
 
 ;; This pattern is expanded only by the shrink-wrapping optimization
 ;; on paths where the function prologue has not been executed.
+;; However, such optimization may reorder the prologue/epilogue blocks
+;; together with basic blocks within function body.
+;; So we must disable this pattern if we have already decided
+;; to perform fp_as_gp optimization, which requires prologue to be
+;; first block and epilogue to be last block.
 (define_expand "simple_return"
   [(simple_return)]
-  ""
+  "!cfun->machine->fp_as_gp_p"
   ""
 )
 
@@ -2162,6 +2189,25 @@
   [(set_attr "length" "0")]
 )
 
+;; Output .omit_fp_begin for fp-as-gp optimization.
+;; Also we have to set $fp register.
+(define_insn "omit_fp_begin"
+  [(set (match_operand:SI 0 "register_operand" "=x")
+	(unspec_volatile:SI [(const_int 0)] UNSPEC_VOLATILE_OMIT_FP_BEGIN))]
+  ""
+  "! -----\;.omit_fp_begin\;la\t$fp,_FP_BASE_\;! -----"
+  [(set_attr "length" "8")]
+)
+
+;; Output .omit_fp_end for fp-as-gp optimization.
+;; Claim that we have to use $fp register.
+(define_insn "omit_fp_end"
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "x")] UNSPEC_VOLATILE_OMIT_FP_END)]
+  ""
+  "! -----\;.omit_fp_end\;! -----"
+  [(set_attr "length" "0")]
+)
+
 (define_insn "pop25return"
   [(return)
    (unspec_volatile:SI [(reg:SI LP_REGNUM)] UNSPEC_VOLATILE_POP25_RETURN)]
@@ -2175,11 +2221,31 @@
   [(set (match_operand:SI 0 "register_operand"          "=r")
 	(plus:SI (match_operand:SI 1 "register_operand"  "0")
 		 (pc)))]
-  "flag_pic"
+  "TARGET_LINUX_ABI || flag_pic"
   "add5.pc\t%0"
   [(set_attr "type"    "alu")
    (set_attr "length"    "4")]
 )
+
+(define_expand "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(bswap:SI (match_operand:SI 1 "register_operand" "r")))]
+  ""
+{
+  emit_insn (gen_unspec_wsbh (operands[0], operands[1]));
+  emit_insn (gen_rotrsi3 (operands[0], operands[0], GEN_INT (16)));
+  DONE;
+})
+
+(define_insn "bswaphi2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(bswap:HI (match_operand:HI 1 "register_operand" "r")))]
+  ""
+  "wsbh\t%0, %1"
+  [(set_attr "type"    "alu")
+   (set_attr "length"    "4")]
+)
+
 ;; ----------------------------------------------------------------------------
 
 ;; Patterns for exception handling

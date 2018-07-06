@@ -1923,6 +1923,14 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
 
   base_type = gfc_get_array_descriptor_base (dimen, codimen, restricted);
   fat_type = build_distinct_type_copy (base_type);
+  /* Unshare TYPE_FIELDs.  */
+  for (tree *tp = &TYPE_FIELDS (fat_type); *tp; tp = &DECL_CHAIN (*tp))
+    {
+      tree next = DECL_CHAIN (*tp);
+      *tp = copy_node (*tp);
+      DECL_CONTEXT (*tp) = fat_type;
+      DECL_CHAIN (*tp) = next;
+    }
   /* Make sure that nontarget and target array type have the same canonical
      type (and same stub decl for debug info).  */
   base_type = gfc_get_array_descriptor_base (dimen, codimen, false);

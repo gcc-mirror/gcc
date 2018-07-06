@@ -102,10 +102,6 @@ along with GCC; see the file COPYING3.  If not see
   "%{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{g*:-a archive} %{shared:-b}"
 #endif
 
-/* hpux8 and later have C++ compatible include files, so do not
-   pretend they are `extern "C"'.  */
-#define NO_IMPLICIT_EXTERN_C
-
 /* hpux11 and earlier don't have fputc_unlocked, so we must inhibit the
    transformation of fputs_unlocked and fprintf_unlocked to fputc_unlocked.  */
 #define DONT_HAVE_FPUTC_UNLOCKED

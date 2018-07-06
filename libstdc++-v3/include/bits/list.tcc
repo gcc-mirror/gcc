@@ -320,11 +320,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
           insert(__last1, __first2, __last2);
       }
 
+#if __cplusplus > 201703L
+# define _GLIBCXX20_ONLY(__expr) __expr
+#else
+# define _GLIBCXX20_ONLY(__expr)
+#endif
+
   template<typename _Tp, typename _Alloc>
-    void
+    typename list<_Tp, _Alloc>::__remove_return_type
     list<_Tp, _Alloc>::
     remove(const value_type& __value)
     {
+      size_type __removed __attribute__((__unused__)) = 0;
       iterator __first = begin();
       iterator __last = end();
       iterator __extra = __last;
@@ -338,34 +345,46 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      // 526. Is it undefined if a function in the standard changes
 	      // in parameters?
 	      if (std::__addressof(*__first) != std::__addressof(__value))
-		_M_erase(__first);
+		{
+		  _M_erase(__first);
+		  _GLIBCXX20_ONLY( __removed++ );
+		}
 	      else
 		__extra = __first;
 	    }
 	  __first = __next;
 	}
       if (__extra != __last)
-	_M_erase(__extra);
+	{
+	  _M_erase(__extra);
+	  _GLIBCXX20_ONLY( __removed++ );
+	}
+      return _GLIBCXX20_ONLY( __removed );
     }
 
   template<typename _Tp, typename _Alloc>
-    void
+    typename list<_Tp, _Alloc>::__remove_return_type
     list<_Tp, _Alloc>::
     unique()
     {
       iterator __first = begin();
       iterator __last = end();
       if (__first == __last)
-	return;
+	return _GLIBCXX20_ONLY( 0 );
+      size_type __removed __attribute__((__unused__)) = 0;
       iterator __next = __first;
       while (++__next != __last)
 	{
 	  if (*__first == *__next)
-	    _M_erase(__next);
+	    {
+	      _M_erase(__next);
+	      _GLIBCXX20_ONLY( __removed++ );
+	    }
 	  else
 	    __first = __next;
 	  __next = __first;
 	}
+      return _GLIBCXX20_ONLY( __removed );
     }
 
   template<typename _Tp, typename _Alloc>
@@ -510,10 +529,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     template <typename _Predicate>
-      void
+      typename list<_Tp, _Alloc>::__remove_return_type
       list<_Tp, _Alloc>::
       remove_if(_Predicate __pred)
       {
+	size_type __removed __attribute__((__unused__)) = 0;
         iterator __first = begin();
         iterator __last = end();
         while (__first != __last)
@@ -521,31 +541,42 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    iterator __next = __first;
 	    ++__next;
 	    if (__pred(*__first))
-	      _M_erase(__first);
+	      {
+		_M_erase(__first);
+		_GLIBCXX20_ONLY( __removed++ );
+	      }
 	    __first = __next;
 	  }
+	return _GLIBCXX20_ONLY( __removed );
       }
 
   template<typename _Tp, typename _Alloc>
     template <typename _BinaryPredicate>
-      void
+      typename list<_Tp, _Alloc>::__remove_return_type
       list<_Tp, _Alloc>::
       unique(_BinaryPredicate __binary_pred)
       {
         iterator __first = begin();
         iterator __last = end();
         if (__first == __last)
-	  return;
+	  return _GLIBCXX20_ONLY(0);
+        size_type __removed __attribute__((__unused__)) = 0;
         iterator __next = __first;
         while (++__next != __last)
 	  {
 	    if (__binary_pred(*__first, *__next))
-	      _M_erase(__next);
+	      {
+		_M_erase(__next);
+		_GLIBCXX20_ONLY( __removed++ );
+	      }
 	    else
 	      __first = __next;
 	    __next = __first;
 	  }
+	return _GLIBCXX20_ONLY( __removed );
       }
+
+#undef _GLIBCXX20_ONLY
 
   template<typename _Tp, typename _Alloc>
     template <typename _StrictWeakOrdering>

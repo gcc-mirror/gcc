@@ -708,7 +708,7 @@ package body Sem_Ch6 is
          Set_Corresponding_Body (N, Defining_Entity (New_Body));
          Set_Corresponding_Spec (New_Body, Def_Id);
 
-         --  Within a generic pre-analyze the original expression for name
+         --  Within a generic preanalyze the original expression for name
          --  capture. The body is also generated but plays no role in
          --  this because it is not part of the original source.
 
@@ -794,8 +794,8 @@ package body Sem_Ch6 is
             Form_New_Spec : Entity_Id;
             Form_Old_Def  : Entity_Id;
             Form_Old_Spec : Entity_Id;
-         begin
 
+         begin
             Form_New_Spec := First (Parameter_Specifications (New_Spec));
             Form_Old_Spec := First (Parameter_Specifications (Spec));
 
@@ -809,13 +809,10 @@ package body Sem_Ch6 is
                --  formals we exempt them from unreferenced warnings by marking
                --  them as always referenced.
 
-               Set_Referenced
-                 (Form_Old_Def,
-                  (Is_Formal (Form_Old_Def)
-                     and then Is_Controlling_Formal (Form_Old_Def))
-                   or else Referenced (Form_Old_Def));
-                   --  or else Is_Dispatching_Operation
-                   --          (Corresponding_Spec (New_Body)));
+               Set_Referenced (Form_Old_Def,
+                 (Is_Formal (Form_Old_Def)
+                    and then Is_Controlling_Formal (Form_Old_Def))
+                  or else Referenced (Form_Old_Def));
 
                Next (Form_New_Spec);
                Next (Form_Old_Spec);
@@ -1799,8 +1796,9 @@ package body Sem_Ch6 is
       Loc     : constant Source_Ptr := Sloc (N);
       P       : constant Node_Id    := Name (N);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Actual : Node_Id;
       New_N  : Node_Id;
@@ -2043,7 +2041,7 @@ package body Sem_Ch6 is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Procedure_Call;
 
    ------------------------------
@@ -2714,6 +2712,22 @@ package body Sem_Ch6 is
              Specification => Copy_Subprogram_Spec (Body_Spec));
          Set_Comes_From_Source (Subp_Decl, True);
 
+         --  Also mark parameters as coming from source
+
+         if Present (Parameter_Specifications (Specification (Subp_Decl))) then
+            declare
+               Form : Entity_Id;
+            begin
+               Form :=
+                 First (Parameter_Specifications (Specification (Subp_Decl)));
+
+               while Present (Form) loop
+                  Set_Comes_From_Source (Defining_Identifier (Form), True);
+                  Next (Form);
+               end loop;
+            end;
+         end if;
+
          --  Relocate the aspects and relevant pragmas from the subprogram body
          --  to the generated spec because it acts as the initial declaration.
 
@@ -3042,11 +3056,16 @@ package body Sem_Ch6 is
 
          --  If procedure with No_Return, check returns
 
-         elsif Nkind (Body_Spec) = N_Procedure_Specification
-           and then Present (Spec_Id)
-           and then No_Return (Spec_Id)
-         then
-            Check_Returns (HSS, 'P', Missing_Ret, Spec_Id);
+         elsif Nkind (Body_Spec) = N_Procedure_Specification then
+            if Present (Spec_Id) then
+               Id := Spec_Id;
+            else
+               Id := Body_Id;
+            end if;
+
+            if No_Return (Id) then
+               Check_Returns (HSS, 'P', Missing_Ret, Id);
+            end if;
          end if;
 
          --  Special checks in SPARK mode
@@ -3505,6 +3524,7 @@ package body Sem_Ch6 is
       --  Local variables
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
       Saved_ISMP : constant Boolean         :=
                      Ignore_SPARK_Mode_Pragmas_In_Instance;
       --  Save the Ghost and SPARK mode-related data to restore on exit
@@ -3644,7 +3664,7 @@ package body Sem_Ch6 is
 
                if No (Spec_Id) and then GNATprove_Mode
 
-                 --  Inlining does not apply during pre-analysis of code
+                 --  Inlining does not apply during preanalysis of code
 
                  and then Full_Analysis
 
@@ -3841,11 +3861,13 @@ package body Sem_Ch6 is
 
       --  If the subprogram has a class-wide clone, build its body as a copy
       --  of the original body, and rewrite body of original subprogram as a
-      --  wrapper that calls the clone.
+      --  wrapper that calls the clone. If N is a stub, this construction will
+      --  take place when the proper body is analyzed.
 
       if Present (Spec_Id)
         and then Present (Class_Wide_Clone (Spec_Id))
         and then (Comes_From_Source (N) or else Was_Expression_Function (N))
+        and then Nkind (N) /= N_Subprogram_Body_Stub
       then
          Build_Class_Wide_Clone_Body (Spec_Id, N);
 
@@ -4514,7 +4536,7 @@ package body Sem_Ch6 is
             --  Body entities present (formals), so chain stuff past them
 
             else
-               Set_Next_Entity
+               Link_Entities
                  (Last_Entity (Body_Id), Next_Entity (Last_Real_Spec_Entity));
             end if;
 
@@ -4720,7 +4742,7 @@ package body Sem_Ch6 is
 
    <<Leave>>
       Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Subprogram_Body_Helper;
 
    ------------------------------------
@@ -10057,9 +10079,6 @@ package body Sem_Ch6 is
       E : Entity_Id;
       --  Entity that S overrides
 
-      Prev_Vis : Entity_Id := Empty;
-      --  Predecessor of E in Homonym chain
-
       procedure Check_For_Primitive_Subprogram
         (Is_Primitive  : out Boolean;
          Is_Overriding : Boolean := False);
@@ -11020,198 +11039,161 @@ package body Sem_Ch6 is
 
                   Overridden_Subp := E;
 
-                  declare
-                     Prev : Entity_Id;
+                  --  It is possible for E to be in the current scope and
+                  --  yet not in the entity chain. This can only occur in a
+                  --  generic context where E is an implicit concatenation
+                  --  in the formal part, because in a generic body the
+                  --  entity chain starts with the formals.
 
-                  begin
-                     Prev := First_Entity (Current_Scope);
-                     while Present (Prev) and then Next_Entity (Prev) /= E loop
-                        Next_Entity (Prev);
-                     end loop;
+                  --  In GNATprove mode, a wrapper for an operation with
+                  --  axiomatization may be a homonym of another declaration
+                  --  for an actual subprogram (needs refinement ???).
 
-                     --  It is possible for E to be in the current scope and
-                     --  yet not in the entity chain. This can only occur in a
-                     --  generic context where E is an implicit concatenation
-                     --  in the formal part, because in a generic body the
-                     --  entity chain starts with the formals.
+                  if No (Prev_Entity (E)) then
+                     if In_Instance
+                       and then GNATprove_Mode
+                       and then
+                         Nkind (Original_Node (Unit_Declaration_Node (S))) =
+                                          N_Subprogram_Renaming_Declaration
+                     then
+                        return;
+                     else
+                        pragma Assert (Chars (E) = Name_Op_Concat);
+                        null;
+                     end if;
+                  end if;
 
-                     --  In GNATprove mode, a wrapper for an operation with
-                     --  axiomatization may be a homonym of another declaration
-                     --  for an actual subprogram (needs refinement ???).
+                  --  E must be removed both from the entity_list of the
+                  --  current scope, and from the visibility chain.
 
-                     if No (Prev) then
-                        if In_Instance
-                          and then GNATprove_Mode
-                          and then
-                            Nkind (Original_Node (Unit_Declaration_Node (S))) =
-                                             N_Subprogram_Renaming_Declaration
-                        then
-                           return;
+                  if Debug_Flag_E then
+                     Write_Str ("Override implicit operation ");
+                     Write_Int (Int (E));
+                     Write_Eol;
+                  end if;
+
+                  --  If E is a predefined concatenation, it stands for four
+                  --  different operations. As a result, a single explicit
+                  --  declaration does not hide it. In a possible ambiguous
+                  --  situation, Disambiguate chooses the user-defined op,
+                  --  so it is correct to retain the previous internal one.
+
+                  if Chars (E) /= Name_Op_Concat
+                    or else Ekind (E) /= E_Operator
+                  then
+                     --  For nondispatching derived operations that are
+                     --  overridden by a subprogram declared in the private
+                     --  part of a package, we retain the derived subprogram
+                     --  but mark it as not immediately visible. If the
+                     --  derived operation was declared in the visible part
+                     --  then this ensures that it will still be visible
+                     --  outside the package with the proper signature
+                     --  (calls from outside must also be directed to this
+                     --  version rather than the overriding one, unlike the
+                     --  dispatching case). Calls from inside the package
+                     --  will still resolve to the overriding subprogram
+                     --  since the derived one is marked as not visible
+                     --  within the package.
+
+                     --  If the private operation is dispatching, we achieve
+                     --  the overriding by keeping the implicit operation
+                     --  but setting its alias to be the overriding one. In
+                     --  this fashion the proper body is executed in all
+                     --  cases, but the original signature is used outside
+                     --  of the package.
+
+                     --  If the overriding is not in the private part, we
+                     --  remove the implicit operation altogether.
+
+                     if Is_Private_Declaration (S) then
+                        if not Is_Dispatching_Operation (E) then
+                           Set_Is_Immediately_Visible (E, False);
                         else
-                           pragma Assert (Chars (E) = Name_Op_Concat);
+                           --  Work done in Override_Dispatching_Operation, so
+                           --  nothing else needs to be done here.
+
                            null;
                         end if;
-                     end if;
-
-                     --  E must be removed both from the entity_list of the
-                     --  current scope, and from the visibility chain.
-
-                     if Debug_Flag_E then
-                        Write_Str ("Override implicit operation ");
-                        Write_Int (Int (E));
-                        Write_Eol;
-                     end if;
-
-                     --  If E is a predefined concatenation, it stands for four
-                     --  different operations. As a result, a single explicit
-                     --  declaration does not hide it. In a possible ambiguous
-                     --  situation, Disambiguate chooses the user-defined op,
-                     --  so it is correct to retain the previous internal one.
-
-                     if Chars (E) /= Name_Op_Concat
-                       or else Ekind (E) /= E_Operator
-                     then
-                        --  For nondispatching derived operations that are
-                        --  overridden by a subprogram declared in the private
-                        --  part of a package, we retain the derived subprogram
-                        --  but mark it as not immediately visible. If the
-                        --  derived operation was declared in the visible part
-                        --  then this ensures that it will still be visible
-                        --  outside the package with the proper signature
-                        --  (calls from outside must also be directed to this
-                        --  version rather than the overriding one, unlike the
-                        --  dispatching case). Calls from inside the package
-                        --  will still resolve to the overriding subprogram
-                        --  since the derived one is marked as not visible
-                        --  within the package.
-
-                        --  If the private operation is dispatching, we achieve
-                        --  the overriding by keeping the implicit operation
-                        --  but setting its alias to be the overriding one. In
-                        --  this fashion the proper body is executed in all
-                        --  cases, but the original signature is used outside
-                        --  of the package.
-
-                        --  If the overriding is not in the private part, we
-                        --  remove the implicit operation altogether.
-
-                        if Is_Private_Declaration (S) then
-                           if not Is_Dispatching_Operation (E) then
-                              Set_Is_Immediately_Visible (E, False);
-                           else
-                              --  Work done in Override_Dispatching_Operation,
-                              --  so nothing else needs to be done here.
-
-                              null;
-                           end if;
-
-                        else
-                           --  Find predecessor of E in Homonym chain
-
-                           if E = Current_Entity (E) then
-                              Prev_Vis := Empty;
-                           else
-                              Prev_Vis := Current_Entity (E);
-                              while Homonym (Prev_Vis) /= E loop
-                                 Prev_Vis := Homonym (Prev_Vis);
-                              end loop;
-                           end if;
-
-                           if Prev_Vis /= Empty then
-
-                              --  Skip E in the visibility chain
-
-                              Set_Homonym (Prev_Vis, Homonym (E));
-
-                           else
-                              Set_Name_Entity_Id (Chars (E), Homonym (E));
-                           end if;
-
-                           Set_Next_Entity (Prev, Next_Entity (E));
-
-                           if No (Next_Entity (Prev)) then
-                              Set_Last_Entity (Current_Scope, Prev);
-                           end if;
-                        end if;
-                     end if;
-
-                     Enter_Overloaded_Entity (S);
-
-                     --  For entities generated by Derive_Subprograms the
-                     --  overridden operation is the inherited primitive
-                     --  (which is available through the attribute alias).
-
-                     if not (Comes_From_Source (E))
-                       and then Is_Dispatching_Operation (E)
-                       and then Find_Dispatching_Type (E) =
-                                Find_Dispatching_Type (S)
-                       and then Present (Alias (E))
-                       and then Comes_From_Source (Alias (E))
-                     then
-                        Set_Overridden_Operation    (S, Alias (E));
-                        Inherit_Subprogram_Contract (S, Alias (E));
-
-                     --  Normal case of setting entity as overridden
-
-                     --  Note: Static_Initialization and Overridden_Operation
-                     --  attributes use the same field in subprogram entities.
-                     --  Static_Initialization is only defined for internal
-                     --  initialization procedures, where Overridden_Operation
-                     --  is irrelevant. Therefore the setting of this attribute
-                     --  must check whether the target is an init_proc.
-
-                     elsif not Is_Init_Proc (S) then
-                        Set_Overridden_Operation    (S, E);
-                        Inherit_Subprogram_Contract (S, E);
-                     end if;
-
-                     Check_Overriding_Indicator (S, E, Is_Primitive => True);
-
-                     --  The Ghost policy in effect at the point of declaration
-                     --  of a parent subprogram and an overriding subprogram
-                     --  must match (SPARK RM 6.9(17)).
-
-                     Check_Ghost_Overriding (S, E);
-
-                     --  If S is a user-defined subprogram or a null procedure
-                     --  expanded to override an inherited null procedure, or a
-                     --  predefined dispatching primitive then indicate that E
-                     --  overrides the operation from which S is inherited.
-
-                     if Comes_From_Source (S)
-                       or else
-                         (Present (Parent (S))
-                           and then
-                             Nkind (Parent (S)) = N_Procedure_Specification
-                           and then
-                             Null_Present (Parent (S)))
-                       or else
-                         (Present (Alias (E))
-                           and then
-                             Is_Predefined_Dispatching_Operation (Alias (E)))
-                     then
-                        if Present (Alias (E)) then
-                           Set_Overridden_Operation    (S, Alias (E));
-                           Inherit_Subprogram_Contract (S, Alias (E));
-                        end if;
-                     end if;
-
-                     if Is_Dispatching_Operation (E) then
-
-                        --  An overriding dispatching subprogram inherits the
-                        --  convention of the overridden subprogram (AI-117).
-
-                        Set_Convention (S, Convention (E));
-                        Check_Dispatching_Operation (S, E);
 
                      else
-                        Check_Dispatching_Operation (S, Empty);
+                        Remove_Entity_And_Homonym (E);
                      end if;
+                  end if;
 
-                     Check_For_Primitive_Subprogram
-                       (Is_Primitive_Subp, Is_Overriding => True);
-                     goto Check_Inequality;
-                  end;
+                  Enter_Overloaded_Entity (S);
+
+                  --  For entities generated by Derive_Subprograms the
+                  --  overridden operation is the inherited primitive
+                  --  (which is available through the attribute alias).
+
+                  if not (Comes_From_Source (E))
+                    and then Is_Dispatching_Operation (E)
+                    and then Find_Dispatching_Type (E) =
+                             Find_Dispatching_Type (S)
+                    and then Present (Alias (E))
+                    and then Comes_From_Source (Alias (E))
+                  then
+                     Set_Overridden_Operation    (S, Alias (E));
+                     Inherit_Subprogram_Contract (S, Alias (E));
+
+                  --  Normal case of setting entity as overridden
+
+                  --  Note: Static_Initialization and Overridden_Operation
+                  --  attributes use the same field in subprogram entities.
+                  --  Static_Initialization is only defined for internal
+                  --  initialization procedures, where Overridden_Operation
+                  --  is irrelevant. Therefore the setting of this attribute
+                  --  must check whether the target is an init_proc.
+
+                  elsif not Is_Init_Proc (S) then
+                     Set_Overridden_Operation    (S, E);
+                     Inherit_Subprogram_Contract (S, E);
+                  end if;
+
+                  Check_Overriding_Indicator (S, E, Is_Primitive => True);
+
+                  --  The Ghost policy in effect at the point of declaration
+                  --  of a parent subprogram and an overriding subprogram
+                  --  must match (SPARK RM 6.9(17)).
+
+                  Check_Ghost_Overriding (S, E);
+
+                  --  If S is a user-defined subprogram or a null procedure
+                  --  expanded to override an inherited null procedure, or a
+                  --  predefined dispatching primitive then indicate that E
+                  --  overrides the operation from which S is inherited.
+
+                  if Comes_From_Source (S)
+                    or else
+                      (Present (Parent (S))
+                        and then Nkind (Parent (S)) = N_Procedure_Specification
+                        and then Null_Present (Parent (S)))
+                    or else
+                      (Present (Alias (E))
+                        and then
+                          Is_Predefined_Dispatching_Operation (Alias (E)))
+                  then
+                     if Present (Alias (E)) then
+                        Set_Overridden_Operation    (S, Alias (E));
+                        Inherit_Subprogram_Contract (S, Alias (E));
+                     end if;
+                  end if;
+
+                  if Is_Dispatching_Operation (E) then
+
+                     --  An overriding dispatching subprogram inherits the
+                     --  convention of the overridden subprogram (AI-117).
+
+                     Set_Convention (S, Convention (E));
+                     Check_Dispatching_Operation (S, E);
+
+                  else
+                     Check_Dispatching_Operation (S, Empty);
+                  end if;
+
+                  Check_For_Primitive_Subprogram
+                    (Is_Primitive_Subp, Is_Overriding => True);
+                  goto Check_Inequality;
 
                --  Apparent redeclarations in instances can occur when two
                --  formal types get the same actual type. The subprograms in

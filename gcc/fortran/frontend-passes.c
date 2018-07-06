@@ -57,6 +57,8 @@ static bool has_dimen_vector_ref (gfc_expr *);
 static int matmul_temp_args (gfc_code **, int *,void *data);
 static int index_interchange (gfc_code **, int*, void *);
 
+static bool is_fe_temp (gfc_expr *e);
+
 #ifdef CHECKING_P
 static void check_locus (gfc_namespace *);
 #endif
@@ -252,6 +254,9 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   if (expr1->ts.type != BT_CHARACTER
       || !gfc_expr_attr(expr1).allocatable
       || !expr1->ts.deferred)
+    return 0;
+
+  if (is_fe_temp (expr1))
     return 0;
 
   expr2 = gfc_discard_nops (co->expr2);
@@ -2933,9 +2938,14 @@ get_array_inq_function (gfc_isym_id id, gfc_expr *e, int dim)
 			   gfc_index_integer_kind);
 
   ec = gfc_copy_expr (e);
+
+  /* No bounds checking, this will be done before the loops if -fcheck=bounds
+     is in effect.  */
+  ec->no_bounds_check = 1;
   fcn = gfc_build_intrinsic_call (current_ns, id, name, e->where, 3,
 				  ec, dim_arg,  kind);
   gfc_simplify_expr (fcn, 0);
+  fcn->no_bounds_check = 1;
   return fcn;
 }
 
@@ -3640,6 +3650,9 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 	}
     }
 
+  /* Bounds checking will be done before the loops if -fcheck=bounds
+     is in effect. */
+  e->no_bounds_check = 1;
   return e;
 }
 
@@ -3827,7 +3840,7 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
 	    m_case = A1B2;
 	}
     }
-    
+
   if (m_case == none)
     return 0;
 
@@ -3906,10 +3919,13 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
       next_code_point = &if_limit->block->next;
     }
 
+  zero_e->no_bounds_check = 1;
+
   assign_zero = XCNEW (gfc_code);
   assign_zero->op = EXEC_ASSIGN;
   assign_zero->loc = co->loc;
   assign_zero->expr1 = gfc_copy_expr (expr1);
+  assign_zero->expr1->no_bounds_check = 1;
   assign_zero->expr2 = zero_e;
 
   /* Handle the reallocation, if needed.  */
@@ -3921,19 +3937,32 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
 	 bounds checking, the rest will be allocated.  Also check this
 	 for A2B1.   */
 
-      if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS) && (m_case == A2B2 || m_case == A2B1))
+      if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
 	{
 	  gfc_code *test;
-	  gfc_expr *a2, *b1;
+	  if (m_case == A2B2 || m_case == A2B1)
+	    {
+	      gfc_expr *a2, *b1;
 
-	  a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
-	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
-	  test = runtime_error_ne (b1, a2, "Dimension of array B incorrect "
-				   "in MATMUL intrinsic: Is %ld, should be %ld");
-	  *next_code_point = test;
-	  next_code_point = &test->next;
+	      a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
+	      b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	      test = runtime_error_ne (b1, a2, "Dimension of array B incorrect "
+				       "in MATMUL intrinsic: Is %ld, should be %ld");
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+	    }
+	  else if (m_case == A1B2)
+	    {
+	      gfc_expr *a1, *b1;
+
+	      a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
+	      b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	      test = runtime_error_ne (b1, a1, "Dimension of array B incorrect "
+				       "in MATMUL intrinsic: Is %ld, should be %ld");
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+	    }
 	}
-
 
       lhs_alloc = matmul_lhs_realloc (expr1, matrix_a, matrix_b, m_case);
 

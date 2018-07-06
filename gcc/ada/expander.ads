@@ -135,12 +135,12 @@ package Expander is
    --        or declaration (see routines Start_Generic_Processing and
    --        End_Generic_Processing in Sem_Ch12)
    --
-   --    (b) when starting/completing the pre-analysis of an expression
-   --        (see the spec of package Sem for more info on pre-analysis.)
+   --    (b) when starting/completing the preanalysis of an expression
+   --        (see the spec of package Sem for more info on preanalysis.)
    --
    --  Note that when processing a spec expression (In_Spec_Expression
    --  is True) or performing semantic analysis of a generic spec or body
-   --  (Inside_A_Generic) or when performing pre-analysis (Full_Analysis is
+   --  (Inside_A_Generic) or when performing preanalysis (Full_Analysis is
    --  False) the Expander_Active flag is False.
 
    procedure Expand (N : Node_Id);

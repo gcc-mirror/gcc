@@ -184,11 +184,11 @@ package body Sem_Util is
          --  If we are dealing with a synchronized subtype, go to the base
          --  type, whose declaration has the interface list.
 
-         --  Shouldn't this be Declaration_Node???
+         Nod := Declaration_Node (Base_Type (Typ));
 
-         Nod := Parent (Base_Type (Typ));
-
-         if Nkind (Nod) = N_Full_Type_Declaration then
+         if Nkind_In (Nod, N_Full_Type_Declaration,
+                           N_Private_Type_Declaration)
+         then
             return Empty_List;
          end if;
 
@@ -727,7 +727,7 @@ package body Sem_Util is
         and then Scop = Current_Scope
       then
          --  The inherited operation is available at the earliest place after
-         --  the derived type declaration ( RM 7.3.1 (6/1)). This is only
+         --  the derived type declaration (RM 7.3.1 (6/1)). This is only
          --  relevant for type extensions. If the parent operation appears
          --  after the type extension, the operation is not visible.
 
@@ -740,8 +740,8 @@ package body Sem_Util is
             then
                if Sloc (Decl) > Sloc (Par) then
                   Next_E := Next_Entity (Par);
-                  Set_Next_Entity (Par, S);
-                  Set_Next_Entity (S, Next_E);
+                  Link_Entities (Par, S);
+                  Link_Entities (S, Next_E);
                   return;
 
                else
@@ -1365,7 +1365,18 @@ package body Sem_Util is
       --  (the original primitive may have carried one).
 
       Set_Must_Override (Specification (Clone_Body), False);
-      Insert_Before (Bod, Clone_Body);
+
+      --  If the subprogram body is the proper body of a stub, insert the
+      --  subprogram after the stub, i.e. the same declarative region as
+      --  the original sugprogram.
+
+      if Nkind (Parent (Bod)) = N_Subunit then
+         Insert_After (Corresponding_Stub (Parent (Bod)), Clone_Body);
+
+      else
+         Insert_Before (Bod, Clone_Body);
+      end if;
+
       Analyze (Clone_Body);
    end Build_Class_Wide_Clone_Body;
 
@@ -3869,6 +3880,18 @@ package body Sem_Util is
                Result_Seen := True;
                return Abandon;
 
+            --  Warn on infinite recursion if call is to current function
+
+            elsif Nkind (N) = N_Function_Call
+              and then Is_Entity_Name (Name (N))
+              and then Entity (Name (N)) = Subp_Id
+              and then not Is_Potentially_Unevaluated (N)
+            then
+               Error_Msg_NE
+                 ("call to & within its postcondition will lead to infinite "
+                  & "recursion?", N, Subp_Id);
+               return OK;
+
             --  Continue the traversal
 
             else
@@ -5061,15 +5084,7 @@ package body Sem_Util is
    ----------------------------------
 
    function Collect_Primitive_Operations (T : Entity_Id) return Elist_Id is
-      B_Type         : constant Entity_Id := Base_Type (T);
-      B_Decl         : constant Node_Id   := Original_Node (Parent (B_Type));
-      B_Scope        : Entity_Id          := Scope (B_Type);
-      Op_List        : Elist_Id;
-      Formal         : Entity_Id;
-      Is_Prim        : Boolean;
-      Is_Type_In_Pkg : Boolean;
-      Formal_Derived : Boolean := False;
-      Id             : Entity_Id;
+      B_Type : constant Entity_Id := Base_Type (T);
 
       function Match (E : Entity_Id) return Boolean;
       --  True if E's base type is B_Type, or E is of an anonymous access type
@@ -5096,6 +5111,18 @@ package body Sem_Util is
                and then Ekind (Etyp) = E_Incomplete_Type
                and then Full_View (Etyp) = B_Type);
       end Match;
+
+      --  Local variables
+
+      B_Decl         : constant Node_Id := Original_Node (Parent (B_Type));
+      B_Scope        : Entity_Id        := Scope (B_Type);
+      Op_List        : Elist_Id;
+      Eq_Prims_List  : Elist_Id := No_Elist;
+      Formal         : Entity_Id;
+      Is_Prim        : Boolean;
+      Is_Type_In_Pkg : Boolean;
+      Formal_Derived : Boolean := False;
+      Id             : Entity_Id;
 
    --  Start of processing for Collect_Primitive_Operations
 
@@ -5137,11 +5164,11 @@ package body Sem_Util is
       --  Locate the primitive subprograms of the type
 
       else
-         --  The primitive operations appear after the base type, except
-         --  if the derivation happens within the private part of B_Scope
-         --  and the type is a private type, in which case both the type
-         --  and some primitive operations may appear before the base
-         --  type, and the list of candidates starts after the type.
+         --  The primitive operations appear after the base type, except if the
+         --  derivation happens within the private part of B_Scope and the type
+         --  is a private type, in which case both the type and some primitive
+         --  operations may appear before the base type, and the list of
+         --  candidates starts after the type.
 
          if In_Open_Scopes (B_Scope)
            and then Scope (T) = B_Scope
@@ -5149,10 +5176,10 @@ package body Sem_Util is
          then
             Id := Next_Entity (T);
 
-         --  In Ada 2012, If the type has an incomplete partial view, there
-         --  may be primitive operations declared before the full view, so
-         --  we need to start scanning from the incomplete view, which is
-         --  earlier on the entity chain.
+         --  In Ada 2012, If the type has an incomplete partial view, there may
+         --  be primitive operations declared before the full view, so we need
+         --  to start scanning from the incomplete view, which is earlier on
+         --  the entity chain.
 
          elsif Nkind (Parent (B_Type)) = N_Full_Type_Declaration
            and then Present (Incomplete_View (Parent (B_Type)))
@@ -5245,6 +5272,22 @@ package body Sem_Util is
 
                   else
                      Append_Elmt (Id, Op_List);
+
+                     --  Save collected equality primitives for later filtering
+                     --  (if we are processing a private type for which we can
+                     --  collect several candidates).
+
+                     if Inherits_From_Tagged_Full_View (T)
+                       and then Chars (Id) = Name_Op_Eq
+                       and then Etype (First_Formal (Id)) =
+                                Etype (Next_Formal (First_Formal (Id)))
+                     then
+                        if No (Eq_Prims_List) then
+                           Eq_Prims_List := New_Elmt_List;
+                        end if;
+
+                        Append_Elmt (Id, Eq_Prims_List);
+                     end if;
                   end if;
                end if;
             end if;
@@ -5262,6 +5305,43 @@ package body Sem_Util is
                Id := First_Entity (System_Aux_Id);
             end if;
          end loop;
+
+         --  Filter collected equality primitives
+
+         if Inherits_From_Tagged_Full_View (T)
+           and then Present (Eq_Prims_List)
+         then
+            declare
+               First  : constant Elmt_Id := First_Elmt (Eq_Prims_List);
+               Second : Elmt_Id;
+
+            begin
+               pragma Assert (No (Next_Elmt (First))
+                 or else No (Next_Elmt (Next_Elmt (First))));
+
+               --  No action needed if we have collected a single equality
+               --  primitive
+
+               if Present (Next_Elmt (First)) then
+                  Second := Next_Elmt (First);
+
+                  if Is_Dispatching_Operation
+                       (Ultimate_Alias (Node (First)))
+                  then
+                     Remove (Op_List, Node (First));
+
+                  elsif Is_Dispatching_Operation
+                          (Ultimate_Alias (Node (Second)))
+                  then
+                     Remove (Op_List, Node (Second));
+
+                  else
+                     pragma Assert (False);
+                     raise Program_Error;
+                  end if;
+               end if;
+            end;
+         end if;
       end if;
 
       return Op_List;
@@ -7043,7 +7123,7 @@ package body Sem_Util is
                   null;
 
                else
-                  Set_Next_Entity (Prev, Next_Entity (E));
+                  Link_Entities (Prev, Next_Entity (E));
 
                   if No (Next_Entity (Prev)) then
                      Set_Last_Entity (Current_Scope, Prev);
@@ -8244,6 +8324,98 @@ package body Sem_Util is
          Context := Scope (Context);
       end loop;
    end Find_Placement_In_State_Space;
+
+   -----------------------
+   -- Find_Primitive_Eq --
+   -----------------------
+
+   function Find_Primitive_Eq (Typ : Entity_Id) return Entity_Id is
+      function Find_Eq_Prim (Prims_List : Elist_Id) return Entity_Id;
+      --  Search for the equality primitive; return Empty if the primitive is
+      --  not found.
+
+      ------------------
+      -- Find_Eq_Prim --
+      ------------------
+
+      function Find_Eq_Prim (Prims_List : Elist_Id) return Entity_Id is
+         Prim      : Entity_Id;
+         Prim_Elmt : Elmt_Id;
+
+      begin
+         Prim_Elmt := First_Elmt (Prims_List);
+         while Present (Prim_Elmt) loop
+            Prim := Node (Prim_Elmt);
+
+            --  Locate primitive equality with the right signature
+
+            if Chars (Prim) = Name_Op_Eq
+              and then Etype (First_Formal (Prim)) =
+                       Etype (Next_Formal (First_Formal (Prim)))
+              and then Base_Type (Etype (Prim)) = Standard_Boolean
+            then
+               return Prim;
+            end if;
+
+            Next_Elmt (Prim_Elmt);
+         end loop;
+
+         return Empty;
+      end Find_Eq_Prim;
+
+      --  Local Variables
+
+      Eq_Prim   : Entity_Id;
+      Full_Type : Entity_Id;
+
+   --  Start of processing for Find_Primitive_Eq
+
+   begin
+      if Is_Private_Type (Typ) then
+         Full_Type := Underlying_Type (Typ);
+      else
+         Full_Type := Typ;
+      end if;
+
+      if No (Full_Type) then
+         return Empty;
+      end if;
+
+      Full_Type := Base_Type (Full_Type);
+
+      --  When the base type itself is private, use the full view
+
+      if Is_Private_Type (Full_Type) then
+         Full_Type := Underlying_Type (Full_Type);
+      end if;
+
+      if Is_Class_Wide_Type (Full_Type) then
+         Full_Type := Root_Type (Full_Type);
+      end if;
+
+      if not Is_Tagged_Type (Full_Type) then
+         Eq_Prim := Find_Eq_Prim (Collect_Primitive_Operations (Typ));
+
+      --  If this is an untagged private type completed with a derivation of
+      --  an untagged private type whose full view is a tagged type, we use
+      --  the primitive operations of the private parent type (since it does
+      --  not have a full view, and also because its equality primitive may
+      --  have been overridden in its untagged full view). If no equality was
+      --  defined for it then take its dispatching equality primitive.
+
+      elsif Inherits_From_Tagged_Full_View (Typ) then
+         Eq_Prim := Find_Eq_Prim (Collect_Primitive_Operations (Typ));
+
+         if No (Eq_Prim) then
+            Eq_Prim := Find_Eq_Prim (Primitive_Operations (Full_Type));
+         end if;
+
+      else
+         Eq_Prim := Find_Eq_Prim (Primitive_Operations (Full_Type));
+      end if;
+
+      return Eq_Prim;
+   end Find_Primitive_Eq;
 
    ------------------------
    -- Find_Specific_Type --
@@ -12592,6 +12764,20 @@ package body Sem_Util is
       end if;
    end Inherit_Rep_Item_Chain;
 
+   ------------------------------------
+   -- Inherits_From_Tagged_Full_View --
+   ------------------------------------
+
+   function Inherits_From_Tagged_Full_View (Typ : Entity_Id) return Boolean is
+   begin
+      return Is_Private_Type (Typ)
+        and then Present (Full_View (Typ))
+        and then Is_Private_Type (Full_View (Typ))
+        and then not Is_Tagged_Type (Full_View (Typ))
+        and then Present (Underlying_Type (Full_View (Typ)))
+        and then Is_Tagged_Type (Underlying_Type (Full_View (Typ)));
+   end Inherits_From_Tagged_Full_View;
+
    ---------------------------------
    -- Insert_Explicit_Dereference --
    ---------------------------------
@@ -13062,86 +13248,84 @@ package body Sem_Util is
    ----------------------
 
    function Is_Atomic_Object (N : Node_Id) return Boolean is
+      function Is_Atomic_Entity (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Atomic_Entity);
+      --  Determine whether arbitrary entity Id is either atomic or has atomic
+      --  components.
 
-      function Object_Has_Atomic_Components (N : Node_Id) return Boolean;
-      --  Determines if given object has atomic components
+      function Is_Atomic_Prefix (Pref : Node_Id) return Boolean;
+      --  Determine whether prefix Pref of an indexed or selected component is
+      --  an atomic object.
 
-      function Is_Atomic_Prefix (N : Node_Id) return Boolean;
-      --  If prefix is an implicit dereference, examine designated type
+      ----------------------
+      -- Is_Atomic_Entity --
+      ----------------------
+
+      function Is_Atomic_Entity (Id : Entity_Id) return Boolean is
+      begin
+         return Is_Atomic (Id) or else Has_Atomic_Components (Id);
+      end Is_Atomic_Entity;
 
       ----------------------
       -- Is_Atomic_Prefix --
       ----------------------
 
-      function Is_Atomic_Prefix (N : Node_Id) return Boolean is
+      function Is_Atomic_Prefix (Pref : Node_Id) return Boolean is
+         Typ : constant Entity_Id := Etype (Pref);
+
       begin
-         if Is_Access_Type (Etype (N)) then
+         if Is_Access_Type (Typ) then
+            return Has_Atomic_Components (Designated_Type (Typ));
+
+         elsif Is_Atomic_Entity (Typ) then
+            return True;
+
+         elsif Is_Entity_Name (Pref)
+           and then Is_Atomic_Entity (Entity (Pref))
+         then
+            return True;
+
+         elsif Nkind (Pref) = N_Indexed_Component then
+            return Is_Atomic_Prefix (Prefix (Pref));
+
+         elsif Nkind (Pref) = N_Selected_Component then
             return
-              Has_Atomic_Components (Designated_Type (Etype (N)));
-         else
-            return Object_Has_Atomic_Components (N);
+              Is_Atomic_Prefix (Prefix (Pref))
+                or else Is_Atomic (Entity (Selector_Name (Pref)));
          end if;
+
+         return False;
       end Is_Atomic_Prefix;
-
-      ----------------------------------
-      -- Object_Has_Atomic_Components --
-      ----------------------------------
-
-      function Object_Has_Atomic_Components (N : Node_Id) return Boolean is
-      begin
-         if Has_Atomic_Components (Etype (N))
-           or else Is_Atomic (Etype (N))
-         then
-            return True;
-
-         elsif Is_Entity_Name (N)
-           and then (Has_Atomic_Components (Entity (N))
-                      or else Is_Atomic (Entity (N)))
-         then
-            return True;
-
-         elsif Nkind (N) = N_Selected_Component
-           and then Is_Atomic (Entity (Selector_Name (N)))
-         then
-            return True;
-
-         elsif Nkind (N) = N_Indexed_Component
-           or else Nkind (N) = N_Selected_Component
-         then
-            return Is_Atomic_Prefix (Prefix (N));
-
-         else
-            return False;
-         end if;
-      end Object_Has_Atomic_Components;
 
    --  Start of processing for Is_Atomic_Object
 
    begin
-      --  Predicate is not relevant to subprograms
+      if Is_Entity_Name (N) then
+         return Is_Atomic_Object_Entity (Entity (N));
 
-      if Is_Entity_Name (N) and then Is_Overloadable (Entity (N)) then
-         return False;
+      elsif Nkind (N) = N_Indexed_Component then
+         return Is_Atomic (Etype (N)) or else Is_Atomic_Prefix (Prefix (N));
 
-      elsif Is_Atomic (Etype (N))
-        or else (Is_Entity_Name (N) and then Is_Atomic (Entity (N)))
-      then
-         return True;
-
-      elsif Nkind (N) = N_Selected_Component
-        and then Is_Atomic (Entity (Selector_Name (N)))
-      then
-         return True;
-
-      elsif Nkind (N) = N_Indexed_Component
-        or else Nkind (N) = N_Selected_Component
-      then
-         return Is_Atomic_Prefix (Prefix (N));
-
-      else
-         return False;
+      elsif Nkind (N) = N_Selected_Component then
+         return
+           Is_Atomic (Etype (N))
+             or else Is_Atomic_Prefix (Prefix (N))
+             or else Is_Atomic (Entity (Selector_Name (N)));
       end if;
+
+      return False;
    end Is_Atomic_Object;
+
+   -----------------------------
+   -- Is_Atomic_Object_Entity --
+   -----------------------------
+
+   function Is_Atomic_Object_Entity (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Is_Object (Id)
+          and then (Is_Atomic (Id) or else Is_Atomic (Etype (Id)));
+   end Is_Atomic_Object_Entity;
 
    -----------------------------
    -- Is_Atomic_Or_VFA_Object --
@@ -15763,7 +15947,7 @@ package body Sem_Util is
       --  original node is a conversion, then Is_Variable will not be true
       --  but we still want to allow the conversion if it converts a variable).
 
-      elsif Original_Node (AV) /= AV then
+      elsif Is_Rewrite_Substitution (AV) then
 
          --  In Ada 2012, the explicit dereference may be a rewritten call to a
          --  Reference function.
@@ -15976,16 +16160,19 @@ package body Sem_Util is
          return True;
 
       --  The volatile object appears as the prefix of attributes Address,
-      --  Alignment, Component_Size, First_Bit, Last_Bit, Position, Size,
-      --  Storage_Size.
+      --  Alignment, Component_Size, First, First_Bit, Last, Last_Bit, Length,
+      --  Position, Size, Storage_Size.
 
       elsif Nkind (Context) = N_Attribute_Reference
         and then Prefix (Context) = Obj_Ref
         and then Nam_In (Attribute_Name (Context), Name_Address,
                                                    Name_Alignment,
                                                    Name_Component_Size,
+                                                   Name_First,
                                                    Name_First_Bit,
+                                                   Name_Last,
                                                    Name_Last_Bit,
+                                                   Name_Length,
                                                    Name_Position,
                                                    Name_Size,
                                                    Name_Storage_Size)
@@ -16266,7 +16453,9 @@ package body Sem_Util is
       while Present (Par)
         and then Nkind (Par) /= N_Pragma_Argument_Association
       loop
-         if Nkind (Original_Node (Par)) = N_And_Then then
+         if Is_Rewrite_Substitution (Par)
+           and then Nkind (Original_Node (Par)) = N_And_Then
+         then
             return True;
          end if;
 
@@ -17192,6 +17381,29 @@ package body Sem_Util is
         and then Ekind (Defining_Entity (N)) /= E_Subprogram_Body;
    end Is_Subprogram_Stub_Without_Prior_Declaration;
 
+   ---------------------------
+   -- Is_Suitable_Primitive --
+   ---------------------------
+
+   function Is_Suitable_Primitive (Subp_Id : Entity_Id) return Boolean is
+   begin
+      --  The Default_Initial_Condition and invariant procedures must not be
+      --  treated as primitive operations even when they apply to a tagged
+      --  type. These routines must not act as targets of dispatching calls
+      --  because they already utilize class-wide-precondition semantics to
+      --  handle inheritance and overriding.
+
+      if Ekind (Subp_Id) = E_Procedure
+        and then (Is_DIC_Procedure (Subp_Id)
+                    or else
+                  Is_Invariant_Procedure (Subp_Id))
+      then
+         return False;
+      end if;
+
+      return True;
+   end Is_Suitable_Primitive;
+
    --------------------------
    -- Is_Suspension_Object --
    --------------------------
@@ -17233,7 +17445,9 @@ package body Sem_Util is
          --  The object is synchronized if it is atomic and Async_Writers is
          --  enabled.
 
-         elsif Is_Atomic (Id) and then Async_Writers_Enabled (Id) then
+         elsif Is_Atomic_Object_Entity (Id)
+           and then Async_Writers_Enabled (Id)
+         then
             return True;
 
          --  A constant is a synchronized object by default
@@ -17641,6 +17855,10 @@ package body Sem_Util is
             K : constant Entity_Kind := Ekind (E);
 
          begin
+            if Is_Loop_Parameter (E) then
+               return False;
+            end if;
+
             return    (K = E_Variable
                         and then Nkind (Parent (E)) /= N_Exception_Handler)
               or else (K = E_Component
@@ -17855,15 +18073,19 @@ package body Sem_Util is
    -----------------------------
 
    procedure Iterate_Call_Parameters (Call : Node_Id) is
-      Formal : Entity_Id := First_Formal (Get_Called_Entity (Call));
       Actual : Node_Id   := First_Actual (Call);
+      Formal : Entity_Id := First_Formal (Get_Called_Entity (Call));
 
    begin
       while Present (Formal) and then Present (Actual) loop
          Handle_Parameter (Formal, Actual);
-         Formal := Next_Formal (Formal);
-         Actual := Next_Actual (Actual);
+
+         Next_Formal (Formal);
+         Next_Actual (Actual);
       end loop;
+
+      pragma Assert (No (Formal));
+      pragma Assert (No (Actual));
    end Iterate_Call_Parameters;
 
    ---------------------------
@@ -18252,6 +18474,7 @@ package body Sem_Util is
       begin
          if Nkind (N) = N_Allocator then
             if Is_Dynamic then
+               Set_Is_Static_Coextension (N, False);
                Set_Is_Dynamic_Coextension (N);
 
             --  If the allocator expression is potentially dynamic, it may
@@ -18262,8 +18485,10 @@ package body Sem_Util is
             elsif Nkind (Expression (N)) = N_Qualified_Expression
               and then Nkind (Expression (Expression (N))) = N_Op_Concat
             then
+               Set_Is_Static_Coextension (N, False);
                Set_Is_Dynamic_Coextension (N);
             else
+               Set_Is_Dynamic_Coextension (N, False);
                Set_Is_Static_Coextension (N);
             end if;
          end if;
@@ -19031,6 +19256,144 @@ package body Sem_Util is
          return False;
       end if;
    end Needs_Simple_Initialization;
+
+   -------------------------------------
+   -- Needs_Variable_Reference_Marker --
+   -------------------------------------
+
+   function Needs_Variable_Reference_Marker
+     (N        : Node_Id;
+      Calls_OK : Boolean) return Boolean
+   is
+      function Within_Suitable_Context (Ref : Node_Id) return Boolean;
+      --  Deteremine whether variable reference Ref appears within a suitable
+      --  context that allows the creation of a marker.
+
+      -----------------------------
+      -- Within_Suitable_Context --
+      -----------------------------
+
+      function Within_Suitable_Context (Ref : Node_Id) return Boolean is
+         Par : Node_Id;
+
+      begin
+         Par := Ref;
+         while Present (Par) loop
+
+            --  The context is not suitable when the reference appears within
+            --  the formal part of an instantiation which acts as compilation
+            --  unit because there is no proper list for the insertion of the
+            --  marker.
+
+            if Nkind (Par) = N_Generic_Association
+              and then Nkind (Parent (Par)) in N_Generic_Instantiation
+              and then Nkind (Parent (Parent (Par))) = N_Compilation_Unit
+            then
+               return False;
+
+            --  The context is not suitable when the reference appears within
+            --  a pragma. If the pragma has run-time semantics, the reference
+            --  will be reconsidered once the pragma is expanded.
+
+            elsif Nkind (Par) = N_Pragma then
+               return False;
+
+            --  The context is not suitable when the reference appears within a
+            --  subprogram call, and the caller requests this behavior.
+
+            elsif not Calls_OK
+              and then Nkind_In (Par, N_Entry_Call_Statement,
+                                      N_Function_Call,
+                                      N_Procedure_Call_Statement)
+            then
+               return False;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return True;
+      end Within_Suitable_Context;
+
+      --  Local variables
+
+      Prag   : Node_Id;
+      Var_Id : Entity_Id;
+
+   --  Start of processing for Needs_Variable_Reference_Marker
+
+   begin
+      --  No marker needs to be created when switch -gnatH (legacy elaboration
+      --  checking mode enabled) is in effect because the legacy ABE mechanism
+      --  does not use markers.
+
+      if Legacy_Elaboration_Checks then
+         return False;
+
+      --  No marker needs to be created for ASIS because ABE diagnostics and
+      --  checks are not performed in this mode.
+
+      elsif ASIS_Mode then
+         return False;
+
+      --  No marker needs to be created when the reference is preanalyzed
+      --  because the marker will be inserted in the wrong place.
+
+      elsif Preanalysis_Active then
+         return False;
+
+      --  Only references warrant a marker
+
+      elsif not Nkind_In (N, N_Expanded_Name, N_Identifier) then
+         return False;
+
+      --  Only source references warrant a marker
+
+      elsif not Comes_From_Source (N) then
+         return False;
+
+      --  No marker needs to be created when the reference is erroneous, left
+      --  in a bad state, or does not denote a variable.
+
+      elsif not (Present (Entity (N))
+                  and then Ekind (Entity (N)) = E_Variable
+                  and then Entity (N) /= Any_Id)
+      then
+         return False;
+      end if;
+
+      Var_Id := Entity (N);
+      Prag   := SPARK_Pragma (Var_Id);
+
+      --  Both the variable and reference must appear in SPARK_Mode On regions
+      --  because this elaboration scenario falls under the SPARK rules.
+
+      if not (Comes_From_Source (Var_Id)
+               and then Present (Prag)
+               and then Get_SPARK_Mode_From_Annotation (Prag) = On
+               and then Is_SPARK_Mode_On_Node (N))
+      then
+         return False;
+
+      --  No marker needs to be created when the reference does not appear
+      --  within a suitable context (see body for details).
+
+      --  Performance note: parent traversal
+
+      elsif not Within_Suitable_Context (N) then
+         return False;
+      end if;
+
+      --  At this point it is known that the variable reference will play a
+      --  role in ABE diagnostics and requires a marker.
+
+      return True;
+   end Needs_Variable_Reference_Marker;
 
    ------------------------
    -- New_Copy_List_Tree --
@@ -19972,6 +20335,13 @@ package body Sem_Util is
                     Semantic => True)));
             end if;
          end if;
+
+         --  Prev_Entity
+
+         Set_Prev_Entity (Id, Node_Id (
+           Copy_Field_With_Replacement
+             (Field    => Union_Id (Prev_Entity (Id)),
+              Semantic => True)));
 
          --  Next_Entity
 
@@ -22352,6 +22722,16 @@ package body Sem_Util is
          end if;
       end if;
 
+      --  In CodePeer mode and GNATprove mode, we need to consider all
+      --  assertions, unless they are disabled. Force Name_Check on
+      --  ignored assertions.
+
+      if Nam_In (Kind, Name_Ignore, Name_Off)
+        and then (CodePeer_Mode or GNATprove_Mode)
+      then
+         Kind := Name_Check;
+      end if;
+
       return Kind;
    end Policy_In_Effect;
 
@@ -22813,19 +23193,19 @@ package body Sem_Util is
          if Has_Inheritable_Invariants (From_Typ)
            and then not Has_Inheritable_Invariants (Typ)
          then
-            Set_Has_Inheritable_Invariants (Typ, True);
+            Set_Has_Inheritable_Invariants (Typ);
          end if;
 
          if Has_Inherited_Invariants (From_Typ)
            and then not Has_Inherited_Invariants (Typ)
          then
-            Set_Has_Inherited_Invariants (Typ, True);
+            Set_Has_Inherited_Invariants (Typ);
          end if;
 
          if Has_Own_Invariants (From_Typ)
            and then not Has_Own_Invariants (Typ)
          then
-            Set_Has_Own_Invariants (Typ, True);
+            Set_Has_Own_Invariants (Typ);
          end if;
 
          if Present (Full_IP) and then No (Invariant_Procedure (Typ)) then
@@ -22957,92 +23337,43 @@ package body Sem_Util is
       end if;
    end References_Generic_Formal_Type;
 
-   -------------------
-   -- Remove_Entity --
-   -------------------
+   -------------------------------
+   -- Remove_Entity_And_Homonym --
+   -------------------------------
 
-   procedure Remove_Entity (Id : Entity_Id) is
-      Scop    : constant Entity_Id := Scope (Id);
-      Prev_Id : Entity_Id;
-
+   procedure Remove_Entity_And_Homonym (Id : Entity_Id) is
    begin
-      --  Remove the entity from the homonym chain. When the entity is the
-      --  head of the chain, associate the entry in the name table with its
-      --  homonym effectively making it the new head of the chain.
-
-      if Current_Entity (Id) = Id then
-         Set_Name_Entity_Id (Chars (Id), Homonym (Id));
-
-      --  Otherwise link the previous and next homonyms
-
-      else
-         Prev_Id := Current_Entity (Id);
-         if Present (Prev_Id) then
-            while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
-               Prev_Id := Homonym (Prev_Id);
-            end loop;
-
-            Set_Homonym (Prev_Id, Homonym (Id));
-         end if;
-      end if;
-
-      --  Remove the entity from the scope entity chain. When the entity is
-      --  the head of the chain, set the next entity as the new head of the
-      --  chain.
-
-      if First_Entity (Scop) = Id then
-         Prev_Id := Empty;
-         Set_First_Entity (Scop, Next_Entity (Id));
-
-      --  Otherwise the entity is either in the middle of the chain or it acts
-      --  as its tail. Traverse and link the previous and next entities.
-
-      else
-         Prev_Id := First_Entity (Scop);
-         while Present (Prev_Id) and then Next_Entity (Prev_Id) /= Id loop
-            Next_Entity (Prev_Id);
-         end loop;
-
-         if Present (Prev_Id) then
-            Set_Next_Entity (Prev_Id, Next_Entity (Id));
-         end if;
-      end if;
-
-      --  Handle the case where the entity acts as the tail of the scope entity
-      --  chain.
-
-      if Last_Entity (Scop) = Id then
-         Set_Last_Entity (Scop, Prev_Id);
-      end if;
-   end Remove_Entity;
+      Remove_Entity (Id);
+      Remove_Homonym (Id);
+   end Remove_Entity_And_Homonym;
 
    --------------------
    -- Remove_Homonym --
    --------------------
 
-   procedure Remove_Homonym (E : Entity_Id) is
-      Prev  : Entity_Id := Empty;
-      H     : Entity_Id;
+   procedure Remove_Homonym (Id : Entity_Id) is
+      Hom  : Entity_Id;
+      Prev : Entity_Id := Empty;
 
    begin
-      if E = Current_Entity (E) then
-         if Present (Homonym (E)) then
-            Set_Current_Entity (Homonym (E));
+      if Id = Current_Entity (Id) then
+         if Present (Homonym (Id)) then
+            Set_Current_Entity (Homonym (Id));
          else
-            Set_Name_Entity_Id (Chars (E), Empty);
+            Set_Name_Entity_Id (Chars (Id), Empty);
          end if;
 
       else
-         H := Current_Entity (E);
-         while Present (H) and then H /= E loop
-            Prev := H;
-            H    := Homonym (H);
+         Hom := Current_Entity (Id);
+         while Present (Hom) and then Hom /= Id loop
+            Prev := Hom;
+            Hom  := Homonym (Hom);
          end loop;
 
-         --  If E is not on the homonym chain, nothing to do
+         --  If Id is not on the homonym chain, nothing to do
 
-         if Present (H) then
-            Set_Homonym (Prev, Homonym (E));
+         if Present (Hom) then
+            Set_Homonym (Prev, Homonym (Id));
          end if;
       end if;
    end Remove_Homonym;
@@ -23080,9 +23411,7 @@ package body Sem_Util is
    --  Start of processing for Remove_Overloaded_Entity
 
    begin
-      --  Remove the entity from both the homonym and scope chains
-
-      Remove_Entity (Id);
+      Remove_Entity_And_Homonym (Id);
 
       --  The entity denotes a primitive subprogram. Remove it from the list of
       --  primitives of the associated controlling type.
@@ -24633,7 +24962,7 @@ package body Sem_Util is
          --  destination scope.
 
          if Present (Last_Entity (To)) then
-            Set_Next_Entity (Last_Entity (To), Id);
+            Link_Entities (Last_Entity (To), Id);
          else
             Set_First_Entity (To, Id);
          end if;

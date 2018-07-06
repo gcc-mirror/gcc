@@ -82,7 +82,7 @@ test02()
   empty = is_empty(f.path);
   VERIFY( empty );
 
-  std::ofstream{f.path.native()} << "data";
+  std::ofstream{f.path} << "data";
   ec = bad_ec;
   empty = is_empty(p, ec);
   VERIFY( !ec );

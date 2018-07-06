@@ -2966,11 +2966,19 @@ memory with a single instruction.
 Odd numbered general registers (R1, R3, R5).  These are used for
 16-bit multiply operations.
 
+@item D
+A memory reference that is encoded within the opcode, but not
+auto-increment or auto-decrement.
+
 @item f
 Any of the floating point registers (AC0 through AC5).
 
 @item G
 Floating point constant 0.
+
+@item h
+Floating point registers AC4 and AC5.  These cannot be loaded from/to
+memory with a single instruction.
 
 @item I
 An integer constant that fits in 16 bits.
@@ -2992,7 +3000,7 @@ The integer constant @minus{}1.
 The integer constant 0.
 
 @item O
-Integer constants @minus{}4 through @minus{}1 and 1 through 4; shifts by these
+Integer constants 0 through 3; shifts by these
 amounts are handled as multiple single-bit shifts rather than a single
 variable-length shift.
 
@@ -4189,12 +4197,6 @@ VSIB address operand.
 @item Ts
 Address operand without segment register.
 
-@item Ti
-MPX address operand without index.
-
-@item Tb
-MPX address operand without base.
-
 @end table
 
 @item Xstormy16---@file{config/stormy16/stormy16.h}
@@ -5371,6 +5373,14 @@ of two vectors.  Operands 1 and 2 are vectors of the same mode having N
 floating point elements of size S@.  Operand 0 is the resulting vector
 in which 2*N elements of size N/2 are concatenated.
 
+@cindex @code{vec_packs_float_@var{m}} instruction pattern
+@cindex @code{vec_packu_float_@var{m}} instruction pattern
+@item @samp{vec_packs_float_@var{m}}, @samp{vec_packu_float_@var{m}}
+Narrow, convert to floating point type and merge the elements
+of two vectors.  Operands 1 and 2 are vectors of the same mode having N
+signed/unsigned integral elements of size S@.  Operand 0 is the resulting vector
+in which 2*N elements of size N/2 are concatenated.
+
 @cindex @code{vec_unpacks_hi_@var{m}} instruction pattern
 @cindex @code{vec_unpacks_lo_@var{m}} instruction pattern
 @item @samp{vec_unpacks_hi_@var{m}}, @samp{vec_unpacks_lo_@var{m}}
@@ -5398,6 +5408,20 @@ Extract, convert to floating point type and widen the high/low part of a
 vector of signed/unsigned integral elements.  The input vector (operand 1)
 has N elements of size S@.  Convert the high/low elements of the vector using
 floating point conversion and place the resulting N/2 values of size 2*S in
+the output vector (operand 0).
+
+@cindex @code{vec_unpack_sfix_trunc_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpack_sfix_trunc_lo_@var{m}} instruction pattern
+@cindex @code{vec_unpack_ufix_trunc_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpack_ufix_trunc_lo_@var{m}} instruction pattern
+@item @samp{vec_unpack_sfix_trunc_hi_@var{m}},
+@itemx @samp{vec_unpack_sfix_trunc_lo_@var{m}}
+@itemx @samp{vec_unpack_ufix_trunc_hi_@var{m}}
+@itemx @samp{vec_unpack_ufix_trunc_lo_@var{m}}
+Extract, convert to signed/unsigned integer type and widen the high/low part of a
+vector of floating point elements.  The input vector (operand 1)
+has N elements of size S@.  Convert the high/low elements of the vector
+to integers and place the resulting N/2 values of size 2*S in
 the output vector (operand 0).
 
 @cindex @code{vec_widen_umult_hi_@var{m}} instruction pattern
@@ -5574,6 +5598,34 @@ Other shift and rotate instructions, analogous to the
 @item @samp{vashl@var{m}3}, @samp{vashr@var{m}3}, @samp{vlshr@var{m}3}, @samp{vrotl@var{m}3}, @samp{vrotr@var{m}3}
 Vector shift and rotate instructions that take vectors as operand 2
 instead of a scalar type.
+
+@cindex @code{avg@var{m}3_floor} instruction pattern
+@cindex @code{uavg@var{m}3_floor} instruction pattern
+@item @samp{avg@var{m}3_floor}
+@itemx @samp{uavg@var{m}3_floor}
+Signed and unsigned average instructions.  These instructions add
+operands 1 and 2 without truncation, divide the result by 2,
+round towards -Inf, and store the result in operand 0.  This is
+equivalent to the C code:
+@smallexample
+narrow op0, op1, op2;
+@dots{}
+op0 = (narrow) (((wide) op1 + (wide) op2) >> 1);
+@end smallexample
+where the sign of @samp{narrow} determines whether this is a signed
+or unsigned operation.
+
+@cindex @code{avg@var{m}3_ceil} instruction pattern
+@cindex @code{uavg@var{m}3_ceil} instruction pattern
+@item @samp{avg@var{m}3_ceil}
+@itemx @samp{uavg@var{m}3_ceil}
+Like @samp{avg@var{m}3_floor} and @samp{uavg@var{m}3_floor}, but round
+towards +Inf.  This is equivalent to the C code:
+@smallexample
+narrow op0, op1, op2;
+@dots{}
+op0 = (narrow) (((wide) op1 + (wide) op2 + 1) >> 1);
+@end smallexample
 
 @cindex @code{bswap@var{m}2} instruction pattern
 @item @samp{bswap@var{m}2}
@@ -6333,6 +6385,11 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 
 @cindex @code{cond_add@var{mode}} instruction pattern
 @cindex @code{cond_sub@var{mode}} instruction pattern
+@cindex @code{cond_mul@var{mode}} instruction pattern
+@cindex @code{cond_div@var{mode}} instruction pattern
+@cindex @code{cond_udiv@var{mode}} instruction pattern
+@cindex @code{cond_mod@var{mode}} instruction pattern
+@cindex @code{cond_umod@var{mode}} instruction pattern
 @cindex @code{cond_and@var{mode}} instruction pattern
 @cindex @code{cond_ior@var{mode}} instruction pattern
 @cindex @code{cond_xor@var{mode}} instruction pattern
@@ -6342,6 +6399,11 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @cindex @code{cond_umax@var{mode}} instruction pattern
 @item @samp{cond_add@var{mode}}
 @itemx @samp{cond_sub@var{mode}}
+@itemx @samp{cond_mul@var{mode}}
+@itemx @samp{cond_div@var{mode}}
+@itemx @samp{cond_udiv@var{mode}}
+@itemx @samp{cond_mod@var{mode}}
+@itemx @samp{cond_umod@var{mode}}
 @itemx @samp{cond_and@var{mode}}
 @itemx @samp{cond_ior@var{mode}}
 @itemx @samp{cond_xor@var{mode}}
@@ -6349,13 +6411,21 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @itemx @samp{cond_smax@var{mode}}
 @itemx @samp{cond_umin@var{mode}}
 @itemx @samp{cond_umax@var{mode}}
-Perform an elementwise operation on vector operands 2 and 3,
-under the control of the vector mask in operand 1, and store the result
-in operand 0.  This is equivalent to:
+When operand 1 is true, perform an operation on operands 2 and 3 and
+store the result in operand 0, otherwise store operand 4 in operand 0.
+The operation works elementwise if the operands are vectors.
+
+The scalar case is equivalent to:
 
 @smallexample
-for (i = 0; i < GET_MODE_NUNITS (@var{n}); i++)
-  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op2[i];
+op0 = op1 ? op2 @var{op} op3 : op4;
+@end smallexample
+
+while the vector case is equivalent to:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op4[i];
 @end smallexample
 
 where, for example, @var{op} is @code{+} for @samp{cond_add@var{mode}}.
@@ -6364,8 +6434,9 @@ When defined for floating-point modes, the contents of @samp{op3[i]}
 are not interpreted if @var{op1[i]} is false, just like they would not
 be in a normal C @samp{?:} condition.
 
-Operands 0, 2 and 3 all have mode @var{m}, while operand 1 has the mode
-returned by @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
+integer if @var{m} is scalar, otherwise it has the mode returned by
+@code{TARGET_VECTORIZE_GET_MASK_MODE}.
 
 @cindex @code{neg@var{mode}cc} instruction pattern
 @item @samp{neg@var{mode}cc}

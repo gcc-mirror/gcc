@@ -1264,13 +1264,13 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
   CLEAR_HARD_REG_SET (temp_hard_reg_set);
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if (elimination_map[ep->from] == NULL)
-      SET_HARD_REG_BIT (temp_hard_reg_set, ep->from);
+      add_to_hard_reg_set (&temp_hard_reg_set, Pmode, ep->from);
     else if (elimination_map[ep->from] == ep)
       {
 	/* Prevent the hard register into which we eliminate from
 	   the usage for pseudos.  */
         if (ep->from != ep->to)
-	  SET_HARD_REG_BIT (temp_hard_reg_set, ep->to);
+	  add_to_hard_reg_set (&temp_hard_reg_set, Pmode, ep->to);
 	if (maybe_ne (ep->previous_offset, ep->offset))
 	  {
 	    bitmap_ior_into (insns_with_changed_offsets,

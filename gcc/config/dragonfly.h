@@ -104,10 +104,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef  OBJECT_FORMAT_ELF
 #define OBJECT_FORMAT_ELF
 
-/* Don't assume anything about the header files.  */
-#undef  NO_IMPLICIT_EXTERN_C
-#define NO_IMPLICIT_EXTERN_C	1
-
 /* Follow DragonFly's standard headers (<machine/stdint.h>, etc...).  */
 
 #undef  WCHAR_TYPE

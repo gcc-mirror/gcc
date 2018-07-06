@@ -88,7 +88,7 @@ extern int shl_sext_length (rtx);
 extern bool gen_shl_sext (rtx, rtx, rtx, rtx);
 extern int regs_used (rtx, int);
 extern void fixup_addr_diff_vecs (rtx_insn *);
-extern int get_dest_uid (rtx, int);
+extern int get_dest_uid (rtx_insn *, int);
 extern void final_prescan_insn (rtx_insn *, rtx *, int);
 extern enum tls_model tls_symbolic_operand (rtx, machine_mode);
 extern bool system_reg_operand (rtx, machine_mode);

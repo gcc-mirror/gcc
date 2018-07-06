@@ -261,6 +261,15 @@ enum sanitize_code {
 				  | SANITIZE_BOUNDS_STRICT
 };
 
+/* Settings of flag_incremental_link.  */
+enum incremental_link {
+  INCREMENTAL_LINK_NONE,
+  /* Do incremental linking and produce binary.  */
+  INCREMENTAL_LINK_NOLTO,
+  /* Do incremental linking and produce IL.  */
+  INCREMENTAL_LINK_LTO
+};
+
 /* Different trace modes.  */
 enum sanitize_coverage_code {
   /* Trace PC.  */
@@ -289,6 +298,7 @@ enum lto_partition_model {
 enum lto_linker_output {
   LTO_LINKER_OUTPUT_UNKNOWN,
   LTO_LINKER_OUTPUT_REL,
+  LTO_LINKER_OUTPUT_NOLTOREL,
   LTO_LINKER_OUTPUT_DYN,
   LTO_LINKER_OUTPUT_PIE,
   LTO_LINKER_OUTPUT_EXEC

@@ -150,13 +150,6 @@ static GTY(()) vec<rtx, va_gc> *used_rtx_array;
    it.  */
 static GTY(()) vec<tree, va_gc> *incomplete_types;
 
-/* A pointer to the base of a table of references to declaration
-   scopes.  This table is a display which tracks the nesting
-   of declaration scopes at the current scope and containing
-   scopes.  This table is used to find the proper place to
-   define type declaration DIE's.  */
-static GTY(()) vec<tree, va_gc> *decl_scope_table;
-
 /* Pointers to various DWARF2 sections.  */
 static GTY(()) section *debug_info_section;
 static GTY(()) section *debug_skeleton_info_section;
@@ -3835,8 +3828,6 @@ static void add_name_and_src_coords_attributes (dw_die_ref, tree, bool = false);
 static void add_discr_value (dw_die_ref, dw_discr_value *);
 static void add_discr_list (dw_die_ref, dw_discr_list_ref);
 static inline dw_discr_list_ref AT_discr_list (dw_attr_node *);
-static void push_decl_scope (tree);
-static void pop_decl_scope (void);
 static dw_die_ref scope_die_for (tree, dw_die_ref);
 static inline int local_scope_p (dw_die_ref);
 static inline int class_scope_p (dw_die_ref);
@@ -5860,7 +5851,8 @@ dwarf2out_die_ref_for_decl (tree decl, const char **sym,
 {
   dw_die_ref die;
 
-  if (flag_wpa && !decl_die_table)
+  if ((flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO)
+      && !decl_die_table)
     return false;
 
   if (TREE_CODE (decl) == BLOCK)
@@ -5870,10 +5862,11 @@ dwarf2out_die_ref_for_decl (tree decl, const char **sym,
   if (!die)
     return false;
 
-  /* During WPA stage we currently use DIEs to store the
-     decl <-> label + offset map.  That's quite inefficient but it
-     works for now.  */
-  if (flag_wpa)
+  /* During WPA stage and incremental linking we currently use DIEs
+     to store the decl <-> label + offset map.  That's quite inefficient
+     but it works for now.  */
+  if (flag_wpa
+      || flag_incremental_link == INCREMENTAL_LINK_LTO)
     {
       dw_die_ref ref = get_AT_ref (die, DW_AT_abstract_origin);
       if (!ref)
@@ -5924,7 +5917,8 @@ dwarf2out_register_external_die (tree decl, const char *sym,
   if (debug_info_level == DINFO_LEVEL_NONE)
     return;
 
-  if (flag_wpa && !decl_die_table)
+  if ((flag_wpa
+       || flag_incremental_link == INCREMENTAL_LINK_LTO) && !decl_die_table)
     decl_die_table = hash_table<decl_die_hasher>::create_ggc (1000);
 
   dw_die_ref die
@@ -5959,7 +5953,8 @@ dwarf2out_register_external_die (tree decl, const char *sym,
 	parent = BLOCK_DIE (ctx);
       else if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
 	       /* Keep the 1:1 association during WPA.  */
-	       && !flag_wpa)
+	       && !flag_wpa
+	       && flag_incremental_link != INCREMENTAL_LINK_LTO)
 	/* Otherwise all late annotations go to the main CU which
 	   imports the original CUs.  */
 	parent = comp_unit_die ();
@@ -5980,7 +5975,7 @@ dwarf2out_register_external_die (tree decl, const char *sym,
   switch (TREE_CODE (decl))
     {
     case TRANSLATION_UNIT_DECL:
-      if (! flag_wpa)
+      if (! flag_wpa && flag_incremental_link != INCREMENTAL_LINK_LTO)
 	{
 	  die = comp_unit_die ();
 	  dw_die_ref import = new_die (DW_TAG_imported_unit, die, NULL_TREE);
@@ -10025,7 +10020,15 @@ new_loc_list (dw_loc_descr_ref expr, const char *begin, var_loc_view vbegin,
   return retlist;
 }
 
-/* Return true iff there's any nonzero view number in the loc list.  */
+/* Return true iff there's any nonzero view number in the loc list.
+
+   ??? When views are not enabled, we'll often extend a single range
+   to the entire function, so that we emit a single location
+   expression rather than a location list.  With views, even with a
+   single range, we'll output a list if start or end have a nonzero
+   view.  If we change this, we may want to stop splitting a single
+   range in dw_loc_list just because of a nonzero view, even if it
+   straddles across hot/cold partitions.  */
 
 static bool
 loc_list_has_views (dw_loc_list_ref list)
@@ -12914,7 +12917,6 @@ is_base_type (tree type)
     case FIXED_POINT_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
-    case POINTER_BOUNDS_TYPE:
       return 1;
 
     case VOID_TYPE:
@@ -17136,7 +17138,13 @@ dw_loc_list (var_loc_list *loc_list, tree decl, int want_address)
 		 of first partition and second one starting at the
 		 beginning of second partition.  */
 	      if (node == loc_list->last_before_switch
-		  && (node != loc_list->first || loc_list->first->next)
+		  && (node != loc_list->first || loc_list->first->next
+		      /* If we are to emit a view number, we will emit
+			 a loclist rather than a single location
+			 expression for the entire function (see
+			 loc_list_has_views), so we have to split the
+			 range that straddles across partitions.  */
+		      || !ZERO_VIEW_P (node->view))
 		  && current_function_decl)
 		{
 		  endname = cfun->fde->dw_fde_end;
@@ -21344,22 +21352,6 @@ dwarf2out_vms_debug_main_pointer (void)
 }
 #endif /* VMS_DEBUGGING_INFO */
 
-/* Push a new declaration scope.  */
-
-static void
-push_decl_scope (tree scope)
-{
-  vec_safe_push (decl_scope_table, scope);
-}
-
-/* Pop a declaration scope.  */
-
-static inline void
-pop_decl_scope (void)
-{
-  decl_scope_table->pop ();
-}
-
 /* walk_tree helper function for uses_local_type, below.  */
 
 static tree
@@ -22291,21 +22283,18 @@ gen_formal_types_die (tree function_or_method_type, dw_die_ref context_die)
 	break;
 
       /* Output a (nameless) DIE to represent the formal parameter itself.  */
-      if (!POINTER_BOUNDS_TYPE_P (formal_type))
+      parm_die = gen_formal_parameter_die (formal_type, NULL,
+					   true /* Emit name attribute.  */,
+					   context_die);
+      if (TREE_CODE (function_or_method_type) == METHOD_TYPE
+	  && link == first_parm_type)
 	{
-	  parm_die = gen_formal_parameter_die (formal_type, NULL,
-					       true /* Emit name attribute.  */,
-					       context_die);
-	  if (TREE_CODE (function_or_method_type) == METHOD_TYPE
-	      && link == first_parm_type)
-	    {
-	      add_AT_flag (parm_die, DW_AT_artificial, 1);
-	      if (dwarf_version >= 3 || !dwarf_strict)
-		add_AT_die_ref (context_die, DW_AT_object_pointer, parm_die);
-	    }
-	  else if (arg && DECL_ARTIFICIAL (arg))
-	    add_AT_flag (parm_die, DW_AT_artificial, 1);
+	  add_AT_flag (parm_die, DW_AT_artificial, 1);
+	  if (dwarf_version >= 3 || !dwarf_strict)
+	    add_AT_die_ref (context_die, DW_AT_object_pointer, parm_die);
 	}
+      else if (arg && DECL_ARTIFICIAL (arg))
+	add_AT_flag (parm_die, DW_AT_artificial, 1);
 
       link = TREE_CHAIN (link);
       if (arg)
@@ -22345,7 +22334,6 @@ gen_type_die_for_member (tree type, tree member, dw_die_ref context_die)
       dw_die_ref type_die;
       gcc_assert (!decl_ultimate_origin (member));
 
-      push_decl_scope (type);
       type_die = lookup_type_die_strip_naming_typedef (type);
       if (TREE_CODE (member) == FUNCTION_DECL)
 	gen_subprogram_die (member, type_die);
@@ -22367,8 +22355,6 @@ gen_type_die_for_member (tree type, tree member, dw_die_ref context_die)
 	}
       else
 	gen_variable_die (member, NULL_TREE, type_die);
-
-      pop_decl_scope ();
     }
 }
 
@@ -22766,26 +22752,22 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 apply; we just use the old DIE.  */
       expanded_location s = expand_location (DECL_SOURCE_LOCATION (decl));
       struct dwarf_file_data * file_index = lookup_filename (s.file);
-      if ((is_cu_die (old_die->die_parent)
-	   /* This condition fixes the inconsistency/ICE with the
-	      following Fortran test (or some derivative thereof) while
-	      building libgfortran:
+      if (((is_unit_die (old_die->die_parent)
+	    /* This condition fixes the inconsistency/ICE with the
+	       following Fortran test (or some derivative thereof) while
+	       building libgfortran:
 
-		 module some_m
-		 contains
-		    logical function funky (FLAG)
-		      funky = .true.
-		   end function
-		 end module
-	   */
-	   || (old_die->die_parent
-	       && old_die->die_parent->die_tag == DW_TAG_module)
-	   || context_die == NULL)
+		  module some_m
+		  contains
+		     logical function funky (FLAG)
+		       funky = .true.
+		    end function
+		  end module
+	     */
+	    || (old_die->die_parent
+		&& old_die->die_parent->die_tag == DW_TAG_module)
+	    || context_die == NULL)
 	   && (DECL_ARTIFICIAL (decl)
-	       /* The location attributes may be in the abstract origin
-		  which in the case of LTO might be not available to
-		  look at.  */
-	       || get_AT (old_die, DW_AT_abstract_origin)
 	       || (get_AT_file (old_die, DW_AT_decl_file) == file_index
 		   && (get_AT_unsigned (old_die, DW_AT_decl_line)
 		       == (unsigned) s.line)
@@ -22793,6 +22775,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		       || s.column == 0
 		       || (get_AT_unsigned (old_die, DW_AT_decl_column)
 			   == (unsigned) s.column)))))
+	  /* With LTO if there's an abstract instance for
+	     the old DIE, this is a concrete instance and
+	     thus re-use the DIE.  */
+	  || get_AT (old_die, DW_AT_abstract_origin))
 	{
 	  subr_die = old_die;
 
@@ -23172,7 +23158,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    gen_formal_parameter_pack_die (generic_decl_parm,
 					   parm, subr_die,
 					   &parm);
-	  else if (parm && !POINTER_BOUNDS_P (parm))
+	  else if (parm)
 	    {
 	      dw_die_ref parm_die = gen_decl_die (parm, NULL, NULL, subr_die);
 
@@ -24460,6 +24446,9 @@ gen_compile_unit_die (const char *filename)
   /* Use a degraded Fortran setting in strict DWARF2 so is_fortran works.  */
   else if (strncmp (language_string, "GNU Fortran", 11) == 0)
     language = DW_LANG_Fortran90;
+  /* Likewise for Ada.  */
+  else if (strcmp (language_string, "GNU Ada") == 0)
+    language = DW_LANG_Ada83;
 
   add_AT_unsigned (die, DW_AT_language, language);
 
@@ -25136,9 +25125,7 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
       if (type_die->die_parent == NULL)
 	add_child_die (scope_die, type_die);
 
-      push_decl_scope (type);
       gen_member_die (type, type_die);
-      pop_decl_scope ();
 
       add_gnat_descriptive_type_attribute (type_die, type, context_die);
       if (TYPE_ARTIFICIAL (type))
@@ -25292,14 +25279,12 @@ gen_tagged_type_die (tree type,
 		     dw_die_ref context_die,
 		     enum debug_info_usage usage)
 {
-  int need_pop;
-
   if (type == NULL_TREE
       || !is_tagged_type (type))
     return;
 
   if (TREE_ASM_WRITTEN (type))
-    need_pop = 0;
+    ;
   /* If this is a nested type whose containing class hasn't been written
      out yet, writing it out will cover this one, too.  This does not apply
      to instantiations of member class templates; they need to be added to
@@ -25316,9 +25301,7 @@ gen_tagged_type_die (tree type,
 	return;
 
       /* If that failed, attach ourselves to the stub.  */
-      push_decl_scope (TYPE_CONTEXT (type));
       context_die = lookup_type_die (TYPE_CONTEXT (type));
-      need_pop = 1;
     }
   else if (TYPE_CONTEXT (type) != NULL_TREE
 	   && (TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL))
@@ -25331,13 +25314,9 @@ gen_tagged_type_die (tree type,
 	 specification.  */
       if (context_die && is_declaration_die (context_die))
 	context_die = NULL;
-      need_pop = 0;
     }
   else
-    {
-      context_die = declare_in_namespace (type, context_die);
-      need_pop = 0;
-    }
+    context_die = declare_in_namespace (type, context_die);
 
   if (TREE_CODE (type) == ENUMERAL_TYPE)
     {
@@ -25348,9 +25327,6 @@ gen_tagged_type_die (tree type,
     }
   else
     gen_struct_or_union_type_die (type, context_die, usage);
-
-  if (need_pop)
-    pop_decl_scope ();
 
   /* Don't set TREE_ASM_WRITTEN on an incomplete struct; we want to fix
      it up if it is ever completed.  gen_*_type_die will set it for us
@@ -25557,7 +25533,6 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
     case FIXED_POINT_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
-    case POINTER_BOUNDS_TYPE:
       /* No DIEs needed for fundamental types.  */
       break;
 
@@ -26137,12 +26112,6 @@ gen_decl_die (tree decl, tree origin, struct vlr_context *ctx,
   if (DECL_P (decl_or_origin) && DECL_IGNORED_P (decl_or_origin))
     return NULL;
 
-  /* Ignore pointer bounds decls.  */
-  if (DECL_P (decl_or_origin)
-      && TREE_TYPE (decl_or_origin)
-      && POINTER_BOUNDS_P (decl_or_origin))
-    return NULL;
-
   switch (TREE_CODE (decl_or_origin))
     {
     case ERROR_MARK:
@@ -26476,7 +26445,7 @@ dwarf2out_late_global_decl (tree decl)
 {
   /* Fill-in any location information we were unable to determine
      on the first pass.  */
-  if (VAR_P (decl) && !POINTER_BOUNDS_P (decl))
+  if (VAR_P (decl))
     {
       dw_die_ref die = lookup_decl_die (decl);
 
@@ -28647,9 +28616,6 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 
   /* Allocate the cached_dw_loc_list_table.  */
   cached_dw_loc_list_table = hash_table<dw_loc_list_hasher>::create_ggc (10);
-
-  /* Allocate the initial hunk of the decl_scope_table.  */
-  vec_alloc (decl_scope_table, 256);
 
   /* Allocate the initial hunk of the abbrev_die_table.  */
   vec_alloc (abbrev_die_table, 256);
@@ -31293,9 +31259,15 @@ dwarf2out_finish (const char *)
     {
       if (have_location_lists)
 	{
-	  if (dwarf_version >= 5)
-	    add_AT_loclistsptr (comp_unit_die (), DW_AT_loclists_base,
-				loc_section_label);
+	  /* Since we generate the loclists in the split DWARF .dwo
+	     file itself, we don't need to generate a loclists_base
+	     attribute for the split compile unit DIE.  That attribute
+	     (and using relocatable sec_offset FORMs) isn't allowed
+	     for a split compile unit.  Only if the .debug_loclists
+	     section was in the main file, would we need to generate a
+	     loclists_base attribute here (for the full or skeleton
+	     unit DIE).  */
+
 	  /* optimize_location_lists calculates the size of the lists,
 	     so index them first, and assign indices to the entries.
 	     Although optimize_location_lists will remove entries from
@@ -32086,7 +32058,6 @@ dwarf2out_c_finalize (void)
   cached_next_real_insn = NULL;
   used_rtx_array = NULL;
   incomplete_types = NULL;
-  decl_scope_table = NULL;
   debug_info_section = NULL;
   debug_skeleton_info_section = NULL;
   debug_abbrev_section = NULL;

@@ -601,9 +601,10 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 	}
     }
 
-  /* Fortran 95 Draft Standard, page 51, Section 5.1.1.5, on the Character
+  /* Fortran 2008 Draft Standard, page 535, C418, on type-param-value
      type, lists the only ways a character length value of * can be used:
-     dummy arguments of procedures, named constants, and function results
+     dummy arguments of procedures, named constants, function results and
+     in allocate statements if the allocate_object is an assumed length dummy
      in external functions.  Internal function results and results of module
      procedures are not on this list, ergo, not permitted.  */
 
@@ -996,6 +997,10 @@ resolve_common_blocks (gfc_symtree *common_root)
     resolve_common_blocks (common_root->right);
 
   resolve_common_vars (common_root->n.common, true);
+
+  if (!gfc_notify_std (GFC_STD_F2018_OBS, "COMMON block at %L",
+		       &common_root->n.common->where))
+    return;
 
   /* The common name is a global name - in Fortran 2003 also if it has a
      C binding name, since Fortran 2008 only the C binding name is a global
@@ -3055,8 +3060,8 @@ update_current_proc_array_outer_dependency (gfc_symbol *sym)
 
   /* If SYM has references to outer arrays, so has the procedure calling
      SYM.  If SYM is a procedure pointer, we can assume the worst.  */
-  if (sym->attr.array_outer_dependency
-      || sym->attr.proc_pointer)
+  if ((sym->attr.array_outer_dependency || sym->attr.proc_pointer)
+      && gfc_current_ns->proc_name)
     gfc_current_ns->proc_name->attr.array_outer_dependency = 1;
 }
 
@@ -3099,12 +3104,25 @@ resolve_function (gfc_expr *expr)
       return false;
     }
 
-  /* If this ia a deferred TBP with an abstract interface (which may
+  /* If this is a deferred TBP with an abstract interface (which may
      of course be referenced), expr->value.function.esym will be set.  */
   if (sym && sym->attr.abstract && !expr->value.function.esym)
     {
       gfc_error ("ABSTRACT INTERFACE %qs must not be referenced at %L",
 		 sym->name, &expr->where);
+      return false;
+    }
+
+  /* If this is a deferred TBP with an abstract interface, its result
+     cannot be an assumed length character (F2003: C418).  */
+  if (sym && sym->attr.abstract && sym->attr.function
+      && sym->result->ts.u.cl
+      && sym->result->ts.u.cl->length == NULL
+      && !sym->result->ts.deferred)
+    {
+      gfc_error ("ABSTRACT INTERFACE %qs at %L must not have an assumed "
+		 "character length result (F2008: C418)", sym->name,
+		 &sym->declared_at);
       return false;
     }
 
@@ -3874,7 +3892,13 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg,
+      if (op1->ts.type == BT_DERIVED || op2->ts.type == BT_DERIVED)
+	sprintf (msg,
+	       _("Unexpected derived-type entities in binary intrinsic "
+		 "numeric operator %%<%s%%> at %%L"),
+	       gfc_op2string (e->value.op.op));
+      else
+      	sprintf (msg,
 	       _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
@@ -7763,12 +7787,17 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
       gfc_check_vardef_context (errmsg, false, false, false,
 				_("ERRMSG variable"));
 
+      /* F18:R928  alloc-opt             is ERRMSG = errmsg-variable
+	 F18:R930  errmsg-variable       is scalar-default-char-variable
+	 F18:R906  default-char-variable is variable
+	 F18:C906  default-char-variable shall be default character.  */
       if ((errmsg->ts.type != BT_CHARACTER
 	   && !(errmsg->ref
 		&& (errmsg->ref->type == REF_ARRAY
 		    || errmsg->ref->type == REF_COMPONENT)))
-	  || errmsg->rank > 0 )
-	gfc_error ("Errmsg-variable at %L must be a scalar CHARACTER "
+	  || errmsg->rank > 0
+	  || errmsg->ts.kind != gfc_default_character_kind)
+	gfc_error ("ERRMSG variable at %L shall be a scalar default CHARACTER "
 		   "variable", &errmsg->where);
 
       for (p = code->ext.alloc.list; p; p = p->next)
@@ -9527,6 +9556,7 @@ resolve_sync (gfc_code *code)
     }
 
   /* Check STAT.  */
+  gfc_resolve_expr (code->expr2);
   if (code->expr2
       && (code->expr2->ts.type != BT_INTEGER || code->expr2->rank != 0
 	  || code->expr2->expr_type != EXPR_VARIABLE))
@@ -9534,6 +9564,7 @@ resolve_sync (gfc_code *code)
 	       &code->expr2->where);
 
   /* Check ERRMSG.  */
+  gfc_resolve_expr (code->expr3);
   if (code->expr3
       && (code->expr3->ts.type != BT_CHARACTER || code->expr3->rank != 0
 	  || code->expr3->expr_type != EXPR_VARIABLE))
@@ -9927,6 +9958,9 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
   gfc_forall_iterator *fa;
 
   old_nvar = nvar;
+
+  if (!gfc_notify_std (GFC_STD_F2018_OBS, "FORALL construct at %L", &code->loc))
+    return;
 
   /* Start to resolve a FORALL construct   */
   if (forall_save == 0)
@@ -10364,6 +10398,11 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       && rhs->ts.type == BT_CLASS
       && rhs->expr_type != EXPR_ARRAY)
     gfc_add_data_component (rhs);
+
+  /* Make sure there is a vtable and, in particular, a _copy for the
+     rhs type.  */
+  if (UNLIMITED_POLY (lhs) && lhs->rank && rhs->ts.type != BT_CLASS)
+    gfc_find_vtab (&rhs->ts);
 
   bool caf_convert_to_send = flag_coarray == GFC_FCOARRAY_LIB
       && (lhs_coindexed
@@ -12501,7 +12540,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       while (curr_arg != NULL)
         {
           /* Skip implicitly typed dummy args here.  */
-	  if (curr_arg->sym->attr.implicit_type == 0)
+	  if (curr_arg->sym && curr_arg->sym->attr.implicit_type == 0)
 	    if (!gfc_verify_c_interop_param (curr_arg->sym))
 	      /* If something is found to fail, record the fact so we
 		 can mark the symbol for the procedure as not being

@@ -186,7 +186,7 @@ package body Freeze is
    --  This procedure is called for each subprogram to complete processing of
    --  default expressions at the point where all types are known to be frozen.
    --  The expressions must be analyzed in full, to make sure that all error
-   --  processing is done (they have only been pre-analyzed). If the expression
+   --  processing is done (they have only been preanalyzed). If the expression
    --  is not an entity or literal, its analysis may generate code which must
    --  not be executed. In that case we build a function body to hold that
    --  code. This wrapper function serves no other purpose (it used to be
@@ -2165,7 +2165,12 @@ package body Freeze is
       N                 : Node_Id;
       Do_Freeze_Profile : Boolean := True) return List_Id
    is
-      Loc    : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
+
       Atype  : Entity_Id;
       Comp   : Entity_Id;
       F_Node : Node_Id;
@@ -2181,8 +2186,8 @@ package body Freeze is
       Test_E : Entity_Id := E;
       --  This could use a comment ???
 
-      procedure Add_To_Result (N : Node_Id);
-      --  N is a freezing action to be appended to the Result
+      procedure Add_To_Result (Fnod : Node_Id);
+      --  Add freeze action Fnod to list Result
 
       function After_Last_Declaration return Boolean;
       --  If Loc is a freeze_entity that appears after the last declaration
@@ -2244,12 +2249,24 @@ package body Freeze is
       -- Add_To_Result --
       -------------------
 
-      procedure Add_To_Result (N : Node_Id) is
+      procedure Add_To_Result (Fnod : Node_Id) is
       begin
-         if No (Result) then
-            Result := New_List (N);
+         --  The Ghost mode of the enclosing context is ignored, while the
+         --  entity being frozen is living. Insert the freezing action prior
+         --  to the start of the enclosing ignored Ghost region. As a result
+         --  the freezeing action will be preserved when the ignored Ghost
+         --  context is eliminated.
+
+         if Saved_GM = Ignore
+           and then Ghost_Mode /= Ignore
+           and then Present (Ignored_Ghost_Region)
+         then
+            Insert_Action (Ignored_Ghost_Region, Fnod);
+
+         --  Otherwise add the freezing action to the result list
+
          else
-            Append (N, Result);
+            Append_New_To (Result, Fnod);
          end if;
       end Add_To_Result;
 
@@ -3188,7 +3205,6 @@ package body Freeze is
       -------------------------------
 
       procedure Freeze_Object_Declaration (E : Entity_Id) is
-
          procedure Check_Large_Modular_Array (Typ : Entity_Id);
          --  Check that the size of array type Typ can be computed without
          --  overflow, and generates a Storage_Error otherwise. This is only
@@ -3425,12 +3441,18 @@ package body Freeze is
                           (Is_OK_Static_Expression (Expression (Decl))
                             or else Nkind (Expression (Decl)) = N_Null)))
                then
-                  Error_Msg_NE
-                    ("Thread_Local_Storage variable& is "
-                     & "improperly initialized", Decl, E);
-                  Error_Msg_NE
-                    ("\only allowed initialization is explicit "
-                     & "NULL or static expression", Decl, E);
+                  if Nkind (Expression (Decl)) = N_Aggregate
+                    and then Compile_Time_Known_Aggregate (Expression (Decl))
+                  then
+                     null;
+                  else
+                     Error_Msg_NE
+                       ("Thread_Local_Storage variable& is improperly "
+                        & "initialized", Decl, E);
+                     Error_Msg_NE
+                       ("\only allowed initialization is explicit NULL, "
+                        & "static expression or static aggregate", Decl, E);
+                  end if;
                end if;
             end;
          end if;
@@ -4305,7 +4327,7 @@ package body Freeze is
 
                   else
                      if Present (Prev) then
-                        Set_Next_Entity (Prev, Next_Entity (Comp));
+                        Link_Entities (Prev, Next_Entity (Comp));
                      else
                         Set_First_Entity (Rec, Next_Entity (Comp));
                      end if;
@@ -5172,13 +5194,24 @@ package body Freeze is
 
             --  Build the call
 
+            --  An imported function whose result type is anonymous access
+            --  creates a new anonymous access type when it is relocated into
+            --  the declarations of the body generated below. As a result, the
+            --  accessibility level of these two anonymous access types may not
+            --  be compatible even though they are essentially the same type.
+            --  Use an unchecked type conversion to reconcile this case. Note
+            --  that the conversion is safe because in the named access type
+            --  case, both the body and imported function utilize the same
+            --  type.
+
             if Ekind_In (E, E_Function, E_Generic_Function) then
                Stmt :=
                  Make_Simple_Return_Statement (Loc,
                    Expression =>
-                     Make_Function_Call (Loc,
-                       Name                   => Make_Identifier (Loc, CE),
-                       Parameter_Associations => Parms));
+                     Unchecked_Convert_To (Etype (E),
+                       Make_Function_Call (Loc,
+                         Name                   => Make_Identifier (Loc, CE),
+                         Parameter_Associations => Parms)));
 
             else
                Stmt :=
@@ -5219,11 +5252,6 @@ package body Freeze is
             Set_Is_Public (E);
          end if;
       end Wrap_Imported_Subprogram;
-
-      --  Local variables
-
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
 
    --  Start of processing for Freeze_Entity
 
@@ -6843,7 +6871,7 @@ package body Freeze is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
       return Result;
    end Freeze_Entity;
@@ -6855,12 +6883,15 @@ package body Freeze is
    procedure Freeze_Enumeration_Type (Typ : Entity_Id) is
    begin
       --  By default, if no size clause is present, an enumeration type with
-      --  Convention C is assumed to interface to a C enum, and has integer
-      --  size. This applies to types. For subtypes, verify that its base
-      --  type has no size clause either. Treat other foreign conventions
-      --  in the same way, and also make sure alignment is set right.
+      --  Convention C is assumed to interface to a C enum and has integer
+      --  size, except for a boolean type because it is assumed to interface
+      --  to _Bool introduced in C99. This applies to types. For subtypes,
+      --  verify that its base type has no size clause either. Treat other
+      --  foreign conventions in the same way, and also make sure alignment
+      --  is set right.
 
       if Has_Foreign_Convention (Typ)
+        and then not Is_Boolean_Type (Typ)
         and then not Has_Size_Clause (Typ)
         and then not Has_Size_Clause (Base_Type (Typ))
         and then Esize (Typ) < Standard_Integer_Size

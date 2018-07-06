@@ -303,15 +303,6 @@ extern unsigned aarch64_architecture_version;
    register.  GCC internally uses the poly_int variable aarch64_sve_vg
    instead.  */
 
-/* Note that we don't mark X30 as a call-clobbered register.  The idea is
-   that it's really the call instructions themselves which clobber X30.
-   We don't care what the called function does with it afterwards.
-
-   This approach makes it easier to implement sibcalls.  Unlike normal
-   calls, sibcalls don't clobber X30, so the register reaches the
-   called function intact.  EPILOGUE_USES says that X30 is useful
-   to the called function.  */
-
 #define FIXED_REGISTERS					\
   {							\
     0, 0, 0, 0,   0, 0, 0, 0,	/* R0 - R7 */		\
@@ -326,6 +317,13 @@ extern unsigned aarch64_architecture_version;
     0, 0, 0, 0,   0, 0, 0, 0,   /* P0 - P7 */           \
     0, 0, 0, 0,   0, 0, 0, 0,   /* P8 - P15 */          \
   }
+
+/* X30 is marked as caller-saved which is in line with regular function call
+   behavior since the call instructions clobber it; AARCH64_EXPAND_CALL does
+   that for regular function calls and avoids it for sibcalls.  X30 is
+   considered live for sibcalls; EPILOGUE_USES helps achieve that by returning
+   true but not until function epilogues have been generated.  This ensures
+   that X30 is available for use in leaf functions if needed.  */
 
 #define CALL_USED_REGISTERS				\
   {							\
@@ -391,9 +389,10 @@ extern unsigned aarch64_architecture_version;
     V_ALIASES(28), V_ALIASES(29), V_ALIASES(30), V_ALIASES(31)  \
   }
 
-/* Say that the epilogue uses the return address register.  Note that
-   in the case of sibcalls, the values "used by the epilogue" are
-   considered live at the start of the called function.  */
+/* Say that the return address register is used by the epilogue, but only after
+   epilogue generation is complete.  Note that in the case of sibcalls, the
+   values "used by the epilogue" are considered live at the start of the called
+   function.  */
 
 #define EPILOGUE_USES(REGNO) \
   (epilogue_completed && (REGNO) == LR_REGNUM)

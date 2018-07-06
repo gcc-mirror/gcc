@@ -84,6 +84,13 @@ package Exp_Ch3 is
    --  Constructor_Ref is a call to a constructor subprogram. It is currently
    --  used only to support C++ constructors.
 
+   function Build_Variant_Record_Equality
+     (Typ         : Entity_Id;
+      Body_Id     : Entity_Id;
+      Param_Specs : List_Id) return Node_Id;
+   --  Build the body of the equality function Body_Id for the untagged variant
+   --  record Typ with the given parameters specification list.
+
    function Freeze_Type (N : Node_Id) return Boolean;
    --  This function executes the freezing actions associated with the given
    --  freeze type node N and returns True if the node is to be deleted. We

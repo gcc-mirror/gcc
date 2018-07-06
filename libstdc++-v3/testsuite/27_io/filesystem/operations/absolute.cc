@@ -41,6 +41,22 @@ test01()
 void
 test02()
 {
+  std::error_code ec = make_error_code(std::errc::invalid_argument);
+  path root = __gnu_test::root_path();
+  VERIFY( absolute(root) == root );
+  VERIFY( absolute(root, ec) == root && !ec );
+  VERIFY( absolute(path{}, ec).empty() && ec );
+
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  path p1("/");
+  VERIFY( absolute(p1) != p1 );
+  path p2("/foo");
+  VERIFY( absolute(p2) != p2 );
+  path p3("foo");
+  VERIFY( absolute(p3) != p3 );
+  path p4("C:\\");
+  VERIFY( absolute(p4) == p4 );
+#else
   path p1("/");
   VERIFY( absolute(p1) == p1 );
   path p2("/foo");
@@ -48,6 +64,7 @@ test02()
   path p3("foo");
   VERIFY( absolute(p3) != p3 );
   VERIFY( absolute(p3) == (std::filesystem::current_path()/p3) );
+#endif
 }
 
 int

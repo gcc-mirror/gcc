@@ -2369,107 +2369,6 @@ built-in function.",
  (tree exp, rtx target, rtx subtarget, machine_mode mode, int ignore),
  default_expand_builtin)
 
-DEFHOOK
-(builtin_chkp_function,
- "This hook allows target to redefine built-in functions used by\n\
-Pointer Bounds Checker for code instrumentation.  Hook should return\n\
-fndecl of function implementing generic builtin whose code is\n\
-passed in @var{fcode}.  Currently following built-in functions are\n\
-obtained using this hook:\n\
-@deftypefn {Built-in Function} __bounds_type __chkp_bndmk (const void *@var{lb}, size_t @var{size})\n\
-Function code - BUILT_IN_CHKP_BNDMK.  This built-in function is used\n\
-by Pointer Bounds Checker to create bound values.  @var{lb} holds low\n\
-bound of the resulting bounds.  @var{size} holds size of created bounds.\n\
-@end deftypefn\n\
-\n\
-@deftypefn {Built-in Function} void __chkp_bndstx (const void *@var{ptr}, __bounds_type @var{b}, const void **@var{loc})\n\
-Function code - @code{BUILT_IN_CHKP_BNDSTX}.  This built-in function is used\n\
-by Pointer Bounds Checker to store bounds @var{b} for pointer @var{ptr}\n\
-when @var{ptr} is stored by address @var{loc}.\n\
-@end deftypefn\n\
-\n\
-@deftypefn {Built-in Function} __bounds_type __chkp_bndldx (const void **@var{loc}, const void *@var{ptr})\n\
-Function code - @code{BUILT_IN_CHKP_BNDLDX}.  This built-in function is used\n\
-by Pointer Bounds Checker to get bounds of pointer @var{ptr} loaded by\n\
-address @var{loc}.\n\
-@end deftypefn\n\
-\n\
-@deftypefn {Built-in Function} void __chkp_bndcl (const void *@var{ptr}, __bounds_type @var{b})\n\
-Function code - @code{BUILT_IN_CHKP_BNDCL}.  This built-in function is used\n\
-by Pointer Bounds Checker to perform check for pointer @var{ptr} against\n\
-lower bound of bounds @var{b}.\n\
-@end deftypefn\n\
-\n\
-@deftypefn {Built-in Function} void __chkp_bndcu (const void *@var{ptr}, __bounds_type @var{b})\n\
-Function code - @code{BUILT_IN_CHKP_BNDCU}.  This built-in function is used\n\
-by Pointer Bounds Checker to perform check for pointer @var{ptr} against\n\
-upper bound of bounds @var{b}.\n\
-@end deftypefn\n\
-\n\
-@deftypefn {Built-in Function} __bounds_type __chkp_bndret (void *@var{ptr})\n\
-Function code - @code{BUILT_IN_CHKP_BNDRET}.  This built-in function is used\n\
-by Pointer Bounds Checker to obtain bounds returned by a call statement.\n\
-@var{ptr} passed to built-in is @code{SSA_NAME} returned by the call.\n\
-@end deftypefn\n\
-\n\
-@deftypefn {Built-in Function} __bounds_type __chkp_intersect (__bounds_type @var{b1}, __bounds_type @var{b2})\n\
-Function code - @code{BUILT_IN_CHKP_INTERSECT}.  This built-in function\n\
-returns intersection of bounds @var{b1} and @var{b2}.\n\
-@end deftypefn\n\
-\n\
-@deftypefn {Built-in Function} __bounds_type __chkp_narrow (const void *@var{ptr}, __bounds_type @var{b}, size_t @var{s})\n\
-Function code - @code{BUILT_IN_CHKP_NARROW}.  This built-in function\n\
-returns intersection of bounds @var{b} and\n\
-[@var{ptr}, @var{ptr} + @var{s} - @code{1}].\n\
-@end deftypefn\n\
-\n\
-@deftypefn {Built-in Function} size_t __chkp_sizeof (const void *@var{ptr})\n\
-Function code - @code{BUILT_IN_CHKP_SIZEOF}.  This built-in function\n\
-returns size of object referenced by @var{ptr}. @var{ptr} is always\n\
-@code{ADDR_EXPR} of @code{VAR_DECL}.  This built-in is used by\n\
-Pointer Bounds Checker when bounds of object cannot be computed statically\n\
-(e.g. object has incomplete type).\n\
-@end deftypefn\n\
-\n\
-@deftypefn {Built-in Function} const void *__chkp_extract_lower (__bounds_type @var{b})\n\
-Function code - @code{BUILT_IN_CHKP_EXTRACT_LOWER}.  This built-in function\n\
-returns lower bound of bounds @var{b}.\n\
-@end deftypefn\n\
-\n\
-@deftypefn {Built-in Function} const void *__chkp_extract_upper (__bounds_type @var{b})\n\
-Function code - @code{BUILT_IN_CHKP_EXTRACT_UPPER}.  This built-in function\n\
-returns upper bound of bounds @var{b}.\n\
-@end deftypefn",
- tree, (unsigned fcode),
- default_builtin_chkp_function)
-
-DEFHOOK
-(chkp_bound_type,
- "Return type to be used for bounds",
- tree, (void),
- default_chkp_bound_type)
-
-DEFHOOK
-(chkp_bound_mode,
- "Return mode to be used for bounds.",
- machine_mode, (void),
- default_chkp_bound_mode)
-
-DEFHOOK
-(chkp_make_bounds_constant,
- "Return constant used to statically initialize constant bounds\n\
-with specified lower bound @var{lb} and upper bounds @var{ub}.",
- tree, (HOST_WIDE_INT lb, HOST_WIDE_INT ub),
- default_chkp_make_bounds_constant)
-
-DEFHOOK
-(chkp_initialize_bounds,
- "Generate a list of statements @var{stmts} to initialize pointer\n\
-bounds variable @var{var} with bounds @var{lb} and @var{ub}.  Return\n\
-the number of generated statements.",
- int, (tree var, tree lb, tree ub, tree *stmts),
- default_chkp_initialize_bounds)
-
 /* Select a replacement for a target-specific builtin.  This is done
    *before* regular type checking, and so allows the target to
    implement a crude form of function overloading.  The result is a
@@ -4919,15 +4818,6 @@ aggregate data types, because these are returned in another way.  See\n\
 @code{TARGET_STRUCT_VALUE_RTX} and related macros, below.",
  rtx, (const_tree ret_type, const_tree fn_decl_or_type, bool outgoing),
  default_function_value)
-
-/* Return the rtx for bounds of returned pointer.  */
-DEFHOOK
-(chkp_function_value_bounds,
- "Define this to return an RTX representing the place where a function\n\
-returns bounds for returned pointers.  Arguments meaning is similar to\n\
-@code{TARGET_FUNCTION_VALUE}.",
- rtx, (const_tree ret_type, const_tree fn_decl_or_type, bool outgoing),
- default_chkp_function_value_bounds)
 
 /* Return the rtx for the result of a libcall of mode MODE,
    calling the function FN_NAME.  */

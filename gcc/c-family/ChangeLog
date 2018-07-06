@@ -1,3 +1,121 @@
+2018-07-05  Nathan Sidwell  <nathan@acm.org>
+
+	* c-lex.c (fe_file_change): Check SYSTEM_IMPLICIT_EXTERN_C not
+	NO_IMPLICIT_EXTERN_C.
+
+2018-06-28  Martin Liska  <mliska@suse.cz>
+
+	* cppspec.c: Include opt-suggestions.h.
+
+2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add
+	PRAGMA_OACC_CLAUSE_{FINALIZE,IF_PRESENT}. Remove
+	PRAGMA_OACC_CLAUSE_PRESENT_OR_{COPY,COPYIN,COPYOUT,CREATE}.
+
+2018-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86210
+	* c-common.c (check_nonnull_arg): Use fold_for_warn.  Adjust obsolete
+	comment.
+
+2018-06-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/85602
+	* c-warn.c (sizeof_pointer_memaccess_warning): Check for attribute
+	nonstring.
+
+2018-06-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* c-common.c (c_common_truthvalue_conversion): Handle ABSU_EXPR.
+
+2018-06-13  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (c_common_post_options): Warn about useless -Wabi.
+	(c_common_handle_option) [OPT_Wabi_]: Remove flag_abi_compat_version
+	handling.
+
+	PR c++/86094 - wrong code with defaulted move ctor.
+	* c-opts.c (c_common_post_options): Bump the current ABI version to
+	13.  Set warn_abi_version and flag_abi_compat_version to the current
+	version rather than 0.  Fix defaulting flag_abi_compat_version from
+	warn_abi_version.
+
+2018-06-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/85931
+	* c-warn.c (sizeof_pointer_memaccess_warning): Avoid warning when
+	sizeof source and destination yields the same value.
+
+2018-06-12  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Make MPX-related options as Deprecated.
+
+2018-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-pretty-print.c (c_pretty_printer::statement): Use TDF_NONE
+	rather than 0.
+
+2018-06-08  Martin Liska  <mliska@suse.cz>
+
+	* c-attribs.c (handle_bnd_variable_size_attribute): Remove support
+	for MPX (macros, related functions, fields in cgraph_node, ...).
+	(handle_bnd_legacy): Likewise.
+	(handle_bnd_instrument): Likewise.
+	* c.opt: Likewise.
+
+2018-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86068
+	* c-cppbuiltin.c (c_cpp_builtins): Fix a typo, set
+	__cpp_transactional_memory to 201500 instead of 210500.
+
+2018-06-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85710 - ICE with -Wmemset-elt-size.
+	* c-warn.c (warn_for_memset): Don't crash on incomplete element type.
+
+2018-06-01  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Bump __cpp_deduction_guides to
+	201703.
+
+2018-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_declaration) <TYPE_DECL>: Generate a forward
+	declaration for a typedef independently of whether the declaration of
+	the subtype is generated.
+
+2018-05-31  Martin Sebor  <msebor@redhat.com>
+
+	PR c/82063
+	* c.opt (-Wno-alloc-size-larger-than): New option.
+
+2018-04-22  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/55976
+	* c-opts.c (c_common_post_options): Set default for warn_return_type
+	for C++/C++ with ObjC extensions only. For C, makes it possible to 
+	differentiate between default (no option), -Wreturn-type, and
+	-Wno-return-type.
+
+2018-05-29  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Winit-list-lifetime): New flag.
+
+2018-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-lex.c (get_fileinfo): Use splay_tree_compare_strings and
+	splay_tree_delete_pointers.
+
+2018-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/85921
+	* c-warn.c (diagnose_mismatched_attributes): Remove unnecessary
+	noinline variable to workaround broken kernel headers.
+
 2018-05-18  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (Wdeprecated-copy): New flag.

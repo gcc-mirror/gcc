@@ -251,9 +251,6 @@
 ;; will be disabled when !TARGET_SVE.
 (define_attr "sve" "no,yes" (const_string "no"))
 
-(define_attr "length" ""
-  (const_int 4))
-
 ;; Attribute that controls whether an alternative is enabled or not.
 ;; Currently it is only used to disable alternatives which touch fp or simd
 ;; registers when -mgeneral-regs-only is specified.
@@ -276,6 +273,14 @@
 ;; 0 :=: no
 ;; 1 :=: yes
 (define_attr "far_branch" "" (const_int 0))
+
+;; Attribute that specifies whether the alternative uses MOVPRFX.
+(define_attr "movprfx" "no,yes" (const_string "no"))
+
+(define_attr "length" ""
+  (cond [(eq_attr "movprfx" "yes")
+           (const_int 8)
+        ] (const_int 4)))
 
 ;; Strictly for compatibility with AArch32 in pipeline models, since AArch64 has
 ;; no predicated insns.
@@ -1149,7 +1154,7 @@
   {
     if (!TARGET_FLOAT)
       {
-	aarch64_err_no_fpadvsimd (<MODE>mode, "code");
+	aarch64_err_no_fpadvsimd (<MODE>mode);
 	FAIL;
       }
 
@@ -1161,13 +1166,14 @@
 )
 
 (define_insn "*movhf_aarch64"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r")
-	(match_operand:HF 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r"))]
+  [(set (match_operand:HF 0 "nonimmediate_operand" "=w,w  , w,?r,w,w  ,w  ,w,m,r,m ,r")
+	(match_operand:HF 1 "general_operand"      "Y ,?rY,?r, w,w,Ufc,Uvi,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], HFmode)
     || aarch64_reg_or_fp_zero (operands[1], HFmode))"
   "@
    movi\\t%0.4h, #0
    fmov\\t%h0, %w1
+   dup\\t%w0.4h, %w1
    umov\\t%w0, %1.h[0]
    mov\\t%0.h[0], %1.h[0]
    fmov\\t%h0, %1
@@ -1177,10 +1183,10 @@
    ldrh\\t%w0, %1
    strh\\t%w1, %0
    mov\\t%w0, %w1"
-  [(set_attr "type" "neon_move,f_mcr,neon_to_gp,neon_move,fconsts, \
+  [(set_attr "type" "neon_move,f_mcr,neon_move,neon_to_gp, neon_move,fconsts, \
 		     neon_move,f_loads,f_stores,load_4,store_4,mov_reg")
-   (set_attr "simd" "yes,*,yes,yes,*,yes,*,*,*,*,*")
-   (set_attr "fp16"   "*,yes,*,*,yes,*,*,*,*,*,*")]
+   (set_attr "simd" "yes,*,yes,yes,yes,*,yes,*,*,*,*,*")
+   (set_attr "fp16"   "*,yes,*,*,*,yes,*,*,*,*,*,*")]
 )
 
 (define_insn "*movsf_aarch64"
@@ -5100,6 +5106,16 @@
 	(FIXUORS:GPI (match_operand:<FCVT_CHANGE_MODE> 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fcvtz<su>\t%<w>0, %<fpw>1"
+  [(set_attr "type" "f_cvtf2i")]
+)
+
+(define_insn "*fix_to_zero_extend<mode>di2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (unsigned_fix:SI
+	  (match_operand:GPF 1 "register_operand" "w"))))]
+  "TARGET_FLOAT"
+  "fcvtzu\t%w0, %<s>1"
   [(set_attr "type" "f_cvtf2i")]
 )
 

@@ -417,8 +417,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	  value = 2;
 	}
       warn_abi_version = value;
-      if (flag_abi_compat_version == -1)
-	flag_abi_compat_version = value;
       break;
 
     case OPT_fcanonical_system_headers:
@@ -915,30 +913,47 @@ c_common_post_options (const char **pfilename)
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;
 
-  if (warn_abi_version == -1)
-    {
-      if (flag_abi_compat_version != -1)
-	warn_abi_version = flag_abi_compat_version;
-      else
-	warn_abi_version = 0;
-    }
-
   if (flag_abi_compat_version == 1)
     {
       warning (0, "%<-fabi-compat-version=1%> is not supported, using =2");
       flag_abi_compat_version = 2;
     }
-  else if (flag_abi_compat_version == -1)
-    {
-      /* Generate compatibility aliases for ABI v11 (7.1) by default. */
-      flag_abi_compat_version
-	= (flag_abi_version == 0 ? 11 : 0);
-    }
 
-  /* Change flag_abi_version to be the actual current ABI level for the
-     benefit of c_cpp_builtins.  */
-  if (flag_abi_version == 0)
-    flag_abi_version = 12;
+  /* Change flag_abi_version to be the actual current ABI level, for the
+     benefit of c_cpp_builtins, and to make comparison simpler.  */
+  const int latest_abi_version = 13;
+  /* Generate compatibility aliases for ABI v11 (7.1) by default.  */
+  const int abi_compat_default = 11;
+
+#define clamp(X) if (X == 0 || X > latest_abi_version) X = latest_abi_version
+  clamp (flag_abi_version);
+  clamp (warn_abi_version);
+  clamp (flag_abi_compat_version);
+#undef clamp
+
+  /* Default -Wabi= or -fabi-compat-version= from each other.  */
+  if (warn_abi_version == -1 && flag_abi_compat_version != -1)
+    warn_abi_version = flag_abi_compat_version;
+  else if (flag_abi_compat_version == -1 && warn_abi_version != -1)
+    flag_abi_compat_version = warn_abi_version;
+  else if (warn_abi_version == -1 && flag_abi_compat_version == -1)
+    {
+      warn_abi_version = latest_abi_version;
+      if (flag_abi_version == latest_abi_version)
+	{
+	  if (warning (OPT_Wabi, "-Wabi won't warn about anything"))
+	    {
+	      inform (input_location, "-Wabi warns about differences "
+		      "from the most up-to-date ABI, which is also used "
+		      "by default");
+	      inform (input_location, "use e.g. -Wabi=11 to warn about "
+		      "changes from GCC 7");
+	    }
+	  flag_abi_compat_version = abi_compat_default;
+	}
+      else
+	flag_abi_compat_version = latest_abi_version;
+    }
 
   /* By default, enable the new inheriting constructor semantics along with ABI
      11.  New and old should coexist fine, but it is a change in what
@@ -994,8 +1009,9 @@ c_common_post_options (const char **pfilename)
 	flag_extern_tls_init = 1;
     }
 
-  if (warn_return_type == -1)
-    warn_return_type = c_dialect_cxx ();
+  /* Enable by default only for C++ and C++ with ObjC extensions.  */
+  if (warn_return_type == -1 && c_dialect_cxx ())
+    warn_return_type = 1;
 
   if (num_in_fnames > 1)
     error ("too many filenames given.  Type %s --help for usage",

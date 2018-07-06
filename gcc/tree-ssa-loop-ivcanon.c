@@ -691,7 +691,7 @@ try_unroll_loop_completely (struct loop *loop,
 			    edge exit, tree niter, bool may_be_zero,
 			    enum unroll_level ul,
 			    HOST_WIDE_INT maxiter,
-			    location_t locus, bool allow_peel)
+			    dump_user_location_t locus, bool allow_peel)
 {
   unsigned HOST_WIDE_INT n_unroll = 0;
   bool n_unroll_found = false;
@@ -1162,7 +1162,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
   tree niter;
   HOST_WIDE_INT maxiter;
   bool modified = false;
-  location_t locus = UNKNOWN_LOCATION;
+  dump_user_location_t locus;
   struct tree_niter_desc niter_desc;
   bool may_be_zero = false;
 
@@ -1177,7 +1177,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
 	= niter_desc.may_be_zero && !integer_zerop (niter_desc.may_be_zero);
     }
   if (TREE_CODE (niter) == INTEGER_CST)
-    locus = gimple_location (last_stmt (exit->src));
+    locus = last_stmt (exit->src);
   else
     {
       /* For non-constant niter fold may_be_zero into niter again.  */
@@ -1204,7 +1204,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
 	niter = find_loop_niter_by_eval (loop, &exit);
 
       if (exit)
-        locus = gimple_location (last_stmt (exit->src));
+        locus = last_stmt (exit->src);
 
       if (TREE_CODE (niter) != INTEGER_CST)
 	exit = NULL;

@@ -52,6 +52,10 @@ package System.OS_Primitives is
    --  with 32-bit words, and possibly on some specific ports of GNAT),
    --  Duration'Last is used instead.
 
+   Max_System_Delay : constant Duration := Max_Sensible_Delay;
+   --  If the Max_System_Delay is larger it doesn't matter. Setting it equal
+   --  allows optimization of code in some targets delay functions.
+
    procedure Initialize;
    --  Initialize global settings related to this package. This procedure
    --  should be called before any other subprograms in this package. Note

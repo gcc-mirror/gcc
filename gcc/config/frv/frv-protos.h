@@ -67,7 +67,7 @@ extern void frv_ifcvt_modify_tests	(struct ce_if_block *, rtx *, rtx *);
 extern void frv_ifcvt_modify_multiple_tests
 					(struct ce_if_block *, basic_block,
 					 rtx *, rtx *);
-extern rtx frv_ifcvt_modify_insn	(struct ce_if_block *, rtx, rtx);
+extern rtx frv_ifcvt_modify_insn	(struct ce_if_block *, rtx, rtx_insn *);
 extern void frv_ifcvt_modify_final	(struct ce_if_block *);
 extern void frv_ifcvt_modify_cancel	(struct ce_if_block *);
 #endif

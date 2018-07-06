@@ -259,8 +259,15 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
 
   oprnd0 = ops->op0;
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
-  widen_pattern_optab =
-    optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
+  if (ops->code == VEC_UNPACK_FIX_TRUNC_HI_EXPR
+      || ops->code == VEC_UNPACK_FIX_TRUNC_LO_EXPR)
+    /* The sign is from the result type rather than operand's type
+       for these ops.  */
+    widen_pattern_optab
+      = optab_for_tree_code (ops->code, ops->type, optab_default);
+  else
+    widen_pattern_optab
+      = optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
   if (ops->code == WIDEN_MULT_PLUS_EXPR
       || ops->code == WIDEN_MULT_MINUS_EXPR)
     icode = find_widening_optab_handler (widen_pattern_optab,
@@ -1068,7 +1075,9 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
       || binoptab == vec_pack_usat_optab
       || binoptab == vec_pack_ssat_optab
       || binoptab == vec_pack_ufix_trunc_optab
-      || binoptab == vec_pack_sfix_trunc_optab)
+      || binoptab == vec_pack_sfix_trunc_optab
+      || binoptab == vec_packu_float_optab
+      || binoptab == vec_packs_float_optab)
     {
       /* The mode of the result is different then the mode of the
 	 arguments.  */
@@ -7207,6 +7216,44 @@ create_convert_operand_from_type (struct expand_operand *op,
 			       TYPE_UNSIGNED (type));
 }
 
+/* Return true if the requirements on operands OP1 and OP2 of instruction
+   ICODE are similar enough for the result of legitimizing OP1 to be
+   reusable for OP2.  OPNO1 and OPNO2 are the operand numbers associated
+   with OP1 and OP2 respectively.  */
+
+static inline bool
+can_reuse_operands_p (enum insn_code icode,
+		      unsigned int opno1, unsigned int opno2,
+		      const struct expand_operand *op1,
+		      const struct expand_operand *op2)
+{
+  /* Check requirements that are common to all types.  */
+  if (op1->type != op2->type
+      || op1->mode != op2->mode
+      || (insn_data[(int) icode].operand[opno1].mode
+	  != insn_data[(int) icode].operand[opno2].mode))
+    return false;
+
+  /* Check the requirements for specific types.  */
+  switch (op1->type)
+    {
+    case EXPAND_OUTPUT:
+      /* Outputs must remain distinct.  */
+      return false;
+
+    case EXPAND_FIXED:
+    case EXPAND_INPUT:
+    case EXPAND_ADDRESS:
+    case EXPAND_INTEGER:
+      return true;
+
+    case EXPAND_CONVERT_TO:
+    case EXPAND_CONVERT_FROM:
+      return op1->unsigned_p == op2->unsigned_p;
+    }
+  gcc_unreachable ();
+}
+
 /* Try to make operands [OPS, OPS + NOPS) match operands [OPNO, OPNO + NOPS)
    of instruction ICODE.  Return true on success, leaving the new operand
    values in the OPS themselves.  Emit no code on failure.  */
@@ -7215,16 +7262,36 @@ bool
 maybe_legitimize_operands (enum insn_code icode, unsigned int opno,
 			   unsigned int nops, struct expand_operand *ops)
 {
-  rtx_insn *last;
-  unsigned int i;
+  rtx_insn *last = get_last_insn ();
+  rtx *orig_values = XALLOCAVEC (rtx, nops);
+  for (unsigned int i = 0; i < nops; i++)
+    {
+      orig_values[i] = ops[i].value;
 
-  last = get_last_insn ();
-  for (i = 0; i < nops; i++)
-    if (!maybe_legitimize_operand (icode, opno + i, &ops[i]))
-      {
-	delete_insns_since (last);
-	return false;
-      }
+      /* First try reusing the result of an earlier legitimization.
+	 This avoids duplicate rtl and ensures that tied operands
+	 remain tied.
+
+	 This search is linear, but NOPS is bounded at compile time
+	 to a small number (current a single digit).  */
+      unsigned int j = 0;
+      for (; j < i; ++j)
+	if (can_reuse_operands_p (icode, opno + j, opno + i, &ops[j], &ops[i])
+	    && rtx_equal_p (orig_values[j], orig_values[i])
+	    && ops[j].value
+	    && insn_operand_matches (icode, opno + i, ops[j].value))
+	  {
+	    ops[i].value = copy_rtx (ops[j].value);
+	    break;
+	  }
+
+      /* Otherwise try legitimizing the operand on its own.  */
+      if (j == i && !maybe_legitimize_operand (icode, opno + i, &ops[i]))
+	{
+	  delete_insns_since (last);
+	  return false;
+	}
+    }
   return true;
 }
 

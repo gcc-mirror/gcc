@@ -169,7 +169,13 @@ package body Sem_Ch5 is
                Ent : constant Entity_Id := Entity (N);
 
             begin
-               if Ekind (Ent) = E_In_Parameter then
+               if Ekind (Ent) = E_Loop_Parameter
+                 or else Is_Loop_Parameter (Ent)
+               then
+                  Error_Msg_N ("assignment to loop parameter not allowed", N);
+                  return;
+
+               elsif Ekind (Ent) = E_In_Parameter then
                   Error_Msg_N
                     ("assignment to IN mode parameter not allowed", N);
                   return;
@@ -186,10 +192,6 @@ package body Sem_Ch5 is
                then
                   Error_Msg_N
                     ("protected function cannot modify protected object", N);
-                  return;
-
-               elsif Ekind (Ent) = E_Loop_Parameter then
-                  Error_Msg_N ("assignment to loop parameter not allowed", N);
                   return;
                end if;
             end;
@@ -450,8 +452,9 @@ package body Sem_Ch5 is
       Save_Full_Analysis : Boolean := False;
       --  Force initialization to facilitate static analysis
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
    --  Start of processing for Analyze_Assignment
 
@@ -1197,7 +1200,7 @@ package body Sem_Ch5 is
       Analyze_Dimension (N);
 
    <<Leave>>
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
       --  If the right-hand side contains target names, expansion has been
       --  disabled to prevent expansion that might move target names out of
@@ -2275,7 +2278,7 @@ package body Sem_Ch5 is
          begin
 
             --  If the domain of iteration is an array component that depends
-            --  on a discriminant, create actual subtype for it. Pre-analysis
+            --  on a discriminant, create actual subtype for it. preanalysis
             --  does not generate the actual subtype of a selected component.
 
             if Nkind (Iter_Name) = N_Selected_Component
@@ -2699,7 +2702,7 @@ package body Sem_Ch5 is
       --  If the iteration is given by a range, create temporaries and
       --  assignment statements block to capture the bounds and perform
       --  required finalization actions in case a bound includes a function
-      --  call that uses the temporary stack. We first pre-analyze a copy of
+      --  call that uses the temporary stack. We first preanalyze a copy of
       --  the range in order to determine the expected type, and analyze and
       --  resolve the original bounds.
 
@@ -3128,7 +3131,7 @@ package body Sem_Ch5 is
 
          else
             --  A quantified expression that appears in a pre/post condition
-            --  is pre-analyzed several times.  If the range is given by an
+            --  is preanalyzed several times.  If the range is given by an
             --  attribute reference it is rewritten as a range, and this is
             --  done even with expansion disabled. If the type is already set
             --  do not reanalyze, because a range with static bounds may be

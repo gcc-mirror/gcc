@@ -17,8 +17,8 @@
 # <http://www.gnu.org/licenses/>.
 
 # Create target-specific versions of the libraries
-MULTILIB_OPTIONS  = m8byte-align mgcc-abi msoft-float
-MULTILIB_DIRNAMES =  8byte        gcc-abi  soft-float
+MULTILIB_OPTIONS  = mgcc-abi msoft-float
+MULTILIB_DIRNAMES =  gcc-abi  soft-float
 
 MULTILIB_OPTIONS  += mv850e3v5
 MULTILIB_DIRNAMES +=  v850e3v5

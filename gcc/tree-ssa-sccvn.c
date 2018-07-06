@@ -999,7 +999,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 
 	/* And now the usual component-reference style ops.  */
 	case BIT_FIELD_REF:
-	  offset += wi::to_offset (op->op1);
+	  offset += wi::to_poly_offset (op->op1);
 	  break;
 
 	case COMPONENT_REF:
@@ -1133,8 +1133,6 @@ copy_reference_ops_from_call (gcall *call,
   if (stmt_could_throw_p (call) && (lr = lookup_stmt_eh_lp (call)) > 0)
     temp.op2 = size_int (lr);
   temp.off = -1;
-  if (gimple_call_with_bounds_p (call))
-    temp.with_bounds = 1;
   result->safe_push (temp);
 
   /* Copy the call arguments.  As they can be references as well,
@@ -1265,10 +1263,10 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       ptroff = gimple_assign_rhs2 (def_stmt);
       if (TREE_CODE (ptr) != SSA_NAME
 	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ptr)
-	  || TREE_CODE (ptroff) != INTEGER_CST)
+	  || !poly_int_tree_p (ptroff))
 	return false;
 
-      off += wi::to_offset (ptroff);
+      off += wi::to_poly_offset (ptroff);
       op->op0 = ptr;
     }
 
@@ -1655,25 +1653,25 @@ static unsigned mprts_hook_cnt;
 /* Hook for maybe_push_res_to_seq, lookup the expression in the VN tables.  */
 
 static tree
-vn_lookup_simplify_result (code_helper rcode, tree type, tree *ops_)
+vn_lookup_simplify_result (gimple_match_op *res_op)
 {
-  if (!rcode.is_tree_code ())
+  if (!res_op->code.is_tree_code ())
     return NULL_TREE;
-  tree *ops = ops_;
-  unsigned int length = TREE_CODE_LENGTH ((tree_code) rcode);
-  if (rcode == CONSTRUCTOR
+  tree *ops = res_op->ops;
+  unsigned int length = res_op->num_ops;
+  if (res_op->code == CONSTRUCTOR
       /* ???  We're arriving here with SCCVNs view, decomposed CONSTRUCTOR
          and GIMPLEs / match-and-simplifies, CONSTRUCTOR as GENERIC tree.  */
-      && TREE_CODE (ops_[0]) == CONSTRUCTOR)
+      && TREE_CODE (res_op->ops[0]) == CONSTRUCTOR)
     {
-      length = CONSTRUCTOR_NELTS (ops_[0]);
+      length = CONSTRUCTOR_NELTS (res_op->ops[0]);
       ops = XALLOCAVEC (tree, length);
       for (unsigned i = 0; i < length; ++i)
-	ops[i] = CONSTRUCTOR_ELT (ops_[0], i)->value;
+	ops[i] = CONSTRUCTOR_ELT (res_op->ops[0], i)->value;
     }
   vn_nary_op_t vnresult = NULL;
-  tree res = vn_nary_op_lookup_pieces (length, (tree_code) rcode,
-				       type, ops, &vnresult);
+  tree res = vn_nary_op_lookup_pieces (length, (tree_code) res_op->code,
+				       res_op->type, ops, &vnresult);
   /* We can end up endlessly recursing simplifications if the lookup above
      presents us with a def-use chain that mirrors the original simplification.
      See PR80887 for an example.  Limit successful lookup artificially
@@ -1695,8 +1693,7 @@ vn_lookup_simplify_result (code_helper rcode, tree type, tree *ops_)
    INSERT is true.  */
 
 static tree
-vn_nary_build_or_lookup_1 (code_helper rcode, tree type, tree *ops,
-			   bool insert)
+vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
 {
   tree result = NULL_TREE;
   /* We will be creating a value number for
@@ -1706,31 +1703,31 @@ vn_nary_build_or_lookup_1 (code_helper rcode, tree type, tree *ops,
   mprts_hook = vn_lookup_simplify_result;
   mprts_hook_cnt = 9;
   bool res = false;
-  switch (TREE_CODE_LENGTH ((tree_code) rcode))
+  switch (TREE_CODE_LENGTH ((tree_code) res_op->code))
     {
     case 1:
-      res = gimple_resimplify1 (NULL, &rcode, type, ops, vn_valueize);
+      res = gimple_resimplify1 (NULL, res_op, vn_valueize);
       break;
     case 2:
-      res = gimple_resimplify2 (NULL, &rcode, type, ops, vn_valueize);
+      res = gimple_resimplify2 (NULL, res_op, vn_valueize);
       break;
     case 3:
-      res = gimple_resimplify3 (NULL, &rcode, type, ops, vn_valueize);
+      res = gimple_resimplify3 (NULL, res_op, vn_valueize);
       break;
     }
   mprts_hook = NULL;
   gimple *new_stmt = NULL;
   if (res
-      && gimple_simplified_result_is_gimple_val (rcode, ops))
+      && gimple_simplified_result_is_gimple_val (res_op))
     /* The expression is already available.  */
-    result = ops[0];
+    result = res_op->ops[0];
   else
     {
-      tree val = vn_lookup_simplify_result (rcode, type, ops);
+      tree val = vn_lookup_simplify_result (res_op);
       if (!val && insert)
 	{
 	  gimple_seq stmts = NULL;
-	  result = maybe_push_res_to_seq (rcode, type, ops, &stmts);
+	  result = maybe_push_res_to_seq (res_op, &stmts);
 	  if (result)
 	    {
 	      gcc_assert (gimple_seq_singleton_p (stmts));
@@ -1792,9 +1789,9 @@ vn_nary_build_or_lookup_1 (code_helper rcode, tree type, tree *ops,
    value-number for the simplified result or by inserting the operation.  */
 
 static tree
-vn_nary_build_or_lookup (code_helper rcode, tree type, tree *ops)
+vn_nary_build_or_lookup (gimple_match_op *res_op)
 {
-  return vn_nary_build_or_lookup_1 (rcode, type, ops, true);
+  return vn_nary_build_or_lookup_1 (res_op, true);
 }
 
 /* Try to simplify the expression RCODE OPS... of type TYPE and return
@@ -1803,11 +1800,11 @@ vn_nary_build_or_lookup (code_helper rcode, tree type, tree *ops)
 tree
 vn_nary_simplify (vn_nary_op_t nary)
 {
-  if (nary->length > 3)
+  if (nary->length > gimple_match_op::MAX_NUM_OPS)
     return NULL_TREE;
-  tree ops[3];
-  memcpy (ops, nary->op, sizeof (tree) * nary->length);
-  return vn_nary_build_or_lookup_1 (nary->opcode, nary->type, ops, false);
+  gimple_match_op op (nary->opcode, nary->type, nary->length);
+  memcpy (op.ops, nary->op, sizeof (tree) * nary->length);
+  return vn_nary_build_or_lookup_1 (&op, false);
 }
 
 
@@ -1991,6 +1988,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &maxsize2,
 					   &reverse);
 	  if (!known_size_p (maxsize2)
+	      || !known_eq (maxsize2, size2)
 	      || !operand_equal_p (base, base2, OEP_ADDRESS_OF))
 	    return (void *)-1;
 	}
@@ -2032,10 +2030,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  else if (INTEGRAL_TYPE_P (vr->type)
 		   && known_eq (ref->size, 8))
 	    {
-	      code_helper rcode = NOP_EXPR;
-	      tree ops[3] = {};
-	      ops[0] = gimple_call_arg (def_stmt, 1);
-	      val = vn_nary_build_or_lookup (rcode, vr->type, ops);
+	      gimple_match_op res_op (NOP_EXPR, vr->type,
+				      gimple_call_arg (def_stmt, 1));
+	      val = vn_nary_build_or_lookup (&res_op);
 	      if (!val
 		  || (TREE_CODE (val) == SSA_NAME
 		      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
@@ -2174,12 +2171,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	      || known_eq (ref->size, TYPE_PRECISION (vr->type)))
 	  && multiple_p (ref->size, BITS_PER_UNIT))
 	{
-	  code_helper rcode = BIT_FIELD_REF;
-	  tree ops[3];
-	  ops[0] = SSA_VAL (gimple_assign_rhs1 (def_stmt));
-	  ops[1] = bitsize_int (ref->size);
-	  ops[2] = bitsize_int (offset - offset2);
-	  tree val = vn_nary_build_or_lookup (rcode, vr->type, ops);
+	  gimple_match_op op (BIT_FIELD_REF, vr->type,
+			      SSA_VAL (gimple_assign_rhs1 (def_stmt)),
+			      bitsize_int (ref->size),
+			      bitsize_int (offset - offset2));
+	  tree val = vn_nary_build_or_lookup (&op);
 	  if (val
 	      && (TREE_CODE (val) != SSA_NAME
 		  || ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val)))
@@ -2273,14 +2269,16 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       /* Apply an extra offset to the inner MEM_REF of the RHS.  */
       if (maybe_ne (extra_off, 0))
 	{
-	  if (rhs.length () < 2
-	      || rhs[0].opcode != MEM_REF
-	      || known_eq (rhs[0].off, -1))
+	  if (rhs.length () < 2)
 	    return (void *)-1;
-	  rhs[0].off += extra_off;
-	  rhs[0].op0 = int_const_binop (PLUS_EXPR, rhs[0].op0,
-					build_int_cst (TREE_TYPE (rhs[0].op0),
-						       extra_off));
+	  int ix = rhs.length () - 2;
+	  if (rhs[ix].opcode != MEM_REF
+	      || known_eq (rhs[ix].off, -1))
+	    return (void *)-1;
+	  rhs[ix].off += extra_off;
+	  rhs[ix].op0 = int_const_binop (PLUS_EXPR, rhs[ix].op0,
+					 build_int_cst (TREE_TYPE (rhs[ix].op0),
+							extra_off));
 	}
 
       /* We need to pre-pend vr->operands[0..i] to rhs.  */
@@ -3704,9 +3702,8 @@ visit_nary_op (tree lhs, gassign *stmt)
 		      unsigned rhs_prec = TYPE_PRECISION (TREE_TYPE (rhs1));
 		      if (lhs_prec == rhs_prec)
 			{
-			  ops[1] = NULL_TREE;
-			  result = vn_nary_build_or_lookup (NOP_EXPR,
-							    type, ops);
+			  gimple_match_op match_op (NOP_EXPR, type, ops[0]);
+			  result = vn_nary_build_or_lookup (&match_op);
 			  if (result)
 			    {
 			      bool changed = set_ssa_val_to (lhs, result);
@@ -3716,12 +3713,12 @@ visit_nary_op (tree lhs, gassign *stmt)
 			}
 		      else
 			{
-			  ops[1] = wide_int_to_tree (type,
-						     wi::mask (rhs_prec, false,
-							       lhs_prec));
-			  result = vn_nary_build_or_lookup (BIT_AND_EXPR,
-							    TREE_TYPE (lhs),
-							    ops);
+			  tree mask = wide_int_to_tree
+			    (type, wi::mask (rhs_prec, false, lhs_prec));
+			  gimple_match_op match_op (BIT_AND_EXPR,
+						    TREE_TYPE (lhs),
+						    ops[0], mask);
+			  result = vn_nary_build_or_lookup (&match_op);
 			  if (result)
 			    {
 			      bool changed = set_ssa_val_to (lhs, result);
@@ -3842,9 +3839,8 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
 	 of VIEW_CONVERT_EXPR <TREE_TYPE (result)> (result).
 	 So first simplify and lookup this expression to see if it
 	 is already available.  */
-      code_helper rcode = VIEW_CONVERT_EXPR;
-      tree ops[3] = { result };
-      result = vn_nary_build_or_lookup (rcode, TREE_TYPE (op), ops);
+      gimple_match_op res_op (VIEW_CONVERT_EXPR, TREE_TYPE (op), result);
+      result = vn_nary_build_or_lookup (&res_op);
     }
 
   if (result)
@@ -5871,8 +5867,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		    fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
 		  if (dump_enabled_p ())
 		    {
-		      location_t loc = gimple_location (stmt);
-		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
 				       "converting indirect call to "
 				       "function %s\n",
 				       lang_hooks.decl_printable_name (fn, 2));
@@ -5997,7 +5992,7 @@ vn_eliminate (bitmap inserted_exprs)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Removing dead stmt ");
-	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_NONE);
 	}
 
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);

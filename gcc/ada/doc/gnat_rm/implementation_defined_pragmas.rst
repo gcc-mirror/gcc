@@ -396,7 +396,7 @@ Pragma Assertion_Policy
 
 Syntax::
 
-  pragma Assertion_Policy (CHECK | DISABLE | IGNORE);
+  pragma Assertion_Policy (CHECK | DISABLE | IGNORE | SUPPRESSIBLE);
 
   pragma Assertion_Policy (
       ASSERTION_KIND => POLICY_IDENTIFIER
@@ -1173,9 +1173,9 @@ are equivalent to
   pragma Postcondition (if C2 then Pred2);
 
 
-The precondition ensures that one and only one of the conditions is
+The precondition ensures that one and only one of the case guards is
 satisfied on entry to the subprogram.
-The postcondition ensures that for the condition that was True on entry,
+The postcondition ensures that for the case guard that was True on entry,
 the corrresponding consequence is True on exit. Other consequence expressions
 are not evaluated.
 
@@ -1190,13 +1190,13 @@ expressed as contract cases:
 The placement and visibility rules for ``Contract_Cases`` pragmas are
 identical to those described for preconditions and postconditions.
 
-The compiler checks that boolean expressions given in conditions and
-consequences are valid, where the rules for conditions are the same as
+The compiler checks that boolean expressions given in case guards and
+consequences are valid, where the rules for case guards are the same as
 the rule for an expression in ``Precondition`` and the rules for
 consequences are the same as the rule for an expression in
 ``Postcondition``. In particular, attributes ``'Old`` and
 ``'Result`` can only be used within consequence expressions.
-The condition for the last contract case may be ``others``, to denote
+The case guard for the last contract case may be ``others``, to denote
 any case not captured by the previous cases. The
 following is an example of use within a package spec:
 
@@ -1214,7 +1214,7 @@ following is an example of use within a package spec:
 
 
 The meaning of contract cases is that only one case should apply at each
-call, as determined by the corresponding condition evaluating to True,
+call, as determined by the corresponding case guard evaluating to True,
 and that the consequence for this case should hold when the subprogram
 returns.
 
@@ -6613,13 +6613,17 @@ Syntax:
 This pragma specifies that the specified entity, which must be
 a variable declared in a library-level package, is to be marked as
 "Thread Local Storage" (``TLS``). On systems supporting this (which
-include Windows, Solaris, GNU/Linux and VxWorks 6), this causes each
+include Windows, Solaris, GNU/Linux, and VxWorks 6), this causes each
 thread (and hence each Ada task) to see a distinct copy of the variable.
 
-The variable may not have default initialization, and if there is
+The variable must not have default initialization, and if there is
 an explicit initialization, it must be either ``null`` for an
-access variable, or a static expression for a scalar variable.
-This provides a low level mechanism similar to that provided by
+access variable, a static expression for a scalar variable, or a fully
+static aggregate for a composite type, that is to say, an aggregate all
+of whose components are static, and which does not include packed or
+discriminated components.
+
+This provides a low-level mechanism similar to that provided by
 the ``Ada.Task_Attributes`` package, but much more efficient
 and is also useful in writing interface code that will interact
 with foreign threads.

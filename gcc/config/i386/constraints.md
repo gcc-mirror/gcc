@@ -94,9 +94,6 @@
 (define_register_constraint "v" "TARGET_SSE ? ALL_SSE_REGS : NO_REGS"
  "Any EVEX encodable SSE register (@code{%xmm0-%xmm31}).")
 
-(define_register_constraint "w" "TARGET_MPX ? BND_REGS : NO_REGS"
- "@internal Any bound register.")
-
 ;; We use the Y prefix to denote any number of conditional register sets:
 ;;  z	First SSE register.
 ;;  d	any EVEX encodable SSE register for AVX512BW target or
@@ -319,11 +316,3 @@
 (define_address_constraint "Ts"
   "Address operand without segment register"
   (match_operand 0 "address_no_seg_operand"))
-
-(define_address_constraint "Ti"
-  "MPX address operand without index"
-  (match_operand 0 "address_mpx_no_index_operand"))
-
-(define_address_constraint "Tb"
-  "MPX address operand without base"
-  (match_operand 0 "address_mpx_no_base_operand"))

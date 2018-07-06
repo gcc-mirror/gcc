@@ -317,6 +317,22 @@ static const struct cpu_addrcost_table thunderx2t99_addrcost_table =
   0, /* imm_offset  */
 };
 
+static const struct cpu_addrcost_table qdf24xx_addrcost_table =
+{
+    {
+      1, /* hi  */
+      1, /* si  */
+      1, /* di  */
+      2, /* ti  */
+    },
+  1, /* pre_modify  */
+  1, /* post_modify  */
+  3, /* register_offset  */
+  4, /* register_sextend  */
+  3, /* register_zextend  */
+  2, /* imm_offset  */
+};
+
 static const struct cpu_regmove_cost generic_regmove_cost =
 {
   1, /* GP2GP  */
@@ -621,9 +637,9 @@ static const struct tune_params generic_tunings =
   4, /* memmov_cost  */
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
-  8,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "8",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -647,9 +663,9 @@ static const struct tune_params cortexa35_tunings =
   1, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
-  16,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -673,9 +689,9 @@ static const struct tune_params cortexa53_tunings =
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
-  16,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -699,9 +715,9 @@ static const struct tune_params cortexa57_tunings =
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fusible_ops  */
-  16,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -725,9 +741,9 @@ static const struct tune_params cortexa72_tunings =
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fusible_ops  */
-  16,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -751,9 +767,9 @@ static const struct tune_params cortexa73_tunings =
   2, /* issue_rate.  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
-  16,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -778,9 +794,9 @@ static const struct tune_params exynosm1_tunings =
   4,	/* memmov_cost  */
   3,	/* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
-  4,	/* function_align.  */
-  4,	/* jump_align.  */
-  4,	/* loop_align.  */
+  "4",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "4",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -803,9 +819,9 @@ static const struct tune_params thunderxt88_tunings =
   6, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
-  8,	/* function_align.  */
-  8,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "8",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -828,9 +844,9 @@ static const struct tune_params thunderx_tunings =
   6, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
-  8,	/* function_align.  */
-  8,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "8",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -854,9 +870,9 @@ static const struct tune_params xgene1_tunings =
   6, /* memmov_cost  */
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
-  16,	/* function_align.  */
-  8,	/* jump_align.  */
-  16,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -864,14 +880,14 @@ static const struct tune_params xgene1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
 static const struct tune_params qdf24xx_tunings =
 {
   &qdf24xx_extra_costs,
-  &generic_addrcost_table,
+  &qdf24xx_addrcost_table,
   &qdf24xx_regmove_cost,
   &generic_vector_cost,
   &generic_branch_cost,
@@ -880,9 +896,9 @@ static const struct tune_params qdf24xx_tunings =
   4, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fuseable_ops  */
-  16,	/* function_align.  */
-  8,	/* jump_align.  */
-  16,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -908,9 +924,9 @@ static const struct tune_params saphira_tunings =
   4, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fuseable_ops  */
-  16,	/* function_align.  */
-  8,	/* jump_align.  */
-  16,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -934,9 +950,9 @@ static const struct tune_params thunderx2t99_tunings =
   4, /* issue_rate.  */
   (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC
    | AARCH64_FUSE_ALU_BRANCH), /* fusible_ops  */
-  16,	/* function_align.  */
-  8,	/* jump_align.  */
-  16,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "16",	/* loop_align.  */
   3,	/* int_reassoc_width.  */
   2,	/* fp_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
@@ -1061,26 +1077,36 @@ aarch64_gen_far_branch (rtx * operands, int pos_label, const char * dest,
 }
 
 void
-aarch64_err_no_fpadvsimd (machine_mode mode, const char *msg)
+aarch64_err_no_fpadvsimd (machine_mode mode)
 {
-  const char *mc = FLOAT_MODE_P (mode) ? "floating-point" : "vector";
   if (TARGET_GENERAL_REGS_ONLY)
-    error ("%qs is incompatible with %s %s", "-mgeneral-regs-only", mc, msg);
+    if (FLOAT_MODE_P (mode))
+      error ("%qs is incompatible with the use of floating-point types",
+	     "-mgeneral-regs-only");
+    else
+      error ("%qs is incompatible with the use of vector types",
+	     "-mgeneral-regs-only");
   else
-    error ("%qs feature modifier is incompatible with %s %s", "+nofp", mc, msg);
+    if (FLOAT_MODE_P (mode))
+      error ("%qs feature modifier is incompatible with the use of"
+	     " floating-point types", "+nofp");
+    else
+      error ("%qs feature modifier is incompatible with the use of"
+	     " vector types", "+nofp");
 }
 
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.
-   The register allocator chooses ALL_REGS if FP_REGS and GENERAL_REGS have
-   the same cost even if ALL_REGS has a much larger cost.  ALL_REGS is also
-   used if the cost of both FP_REGS and GENERAL_REGS is lower than the memory
-   cost (in this case the best class is the lowest cost one).  Using ALL_REGS
-   irrespectively of its cost results in bad allocations with many redundant
-   int<->FP moves which are expensive on various cores.
-   To avoid this we don't allow ALL_REGS as the allocno class, but force a
-   decision between FP_REGS and GENERAL_REGS.  We use the allocno class if it
-   isn't ALL_REGS.  Similarly, use the best class if it isn't ALL_REGS.
-   Otherwise set the allocno class depending on the mode.
+   The register allocator chooses POINTER_AND_FP_REGS if FP_REGS and
+   GENERAL_REGS have the same cost - even if POINTER_AND_FP_REGS has a much
+   higher cost.  POINTER_AND_FP_REGS is also used if the cost of both FP_REGS
+   and GENERAL_REGS is lower than the memory cost (in this case the best class
+   is the lowest cost one).  Using POINTER_AND_FP_REGS irrespectively of its
+   cost results in bad allocations with many redundant int<->FP moves which
+   are expensive on various cores.
+   To avoid this we don't allow POINTER_AND_FP_REGS as the allocno class, but
+   force a decision between FP_REGS and GENERAL_REGS.  We use the allocno class
+   if it isn't POINTER_AND_FP_REGS.  Similarly, use the best class if it isn't
+   POINTER_AND_FP_REGS.  Otherwise set the allocno class depending on the mode.
    The result of this is that it is no longer inefficient to have a higher
    memory move cost than the register move cost.
 */
@@ -1091,10 +1117,12 @@ aarch64_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
 {
   machine_mode mode;
 
-  if (allocno_class != ALL_REGS)
+  if (!reg_class_subset_p (GENERAL_REGS, allocno_class)
+      || !reg_class_subset_p (FP_REGS, allocno_class))
     return allocno_class;
 
-  if (best_class != ALL_REGS)
+  if (!reg_class_subset_p (GENERAL_REGS, best_class)
+      || !reg_class_subset_p (FP_REGS, best_class))
     return best_class;
 
   mode = PSEUDO_REGNO_MODE (regno);
@@ -3500,7 +3528,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
   if (allocate_nvrn)
     {
       if (!TARGET_FLOAT)
-	aarch64_err_no_fpadvsimd (mode, "argument");
+	aarch64_err_no_fpadvsimd (mode);
 
       if (nvrn + nregs <= NUM_FP_ARG_REGS)
 	{
@@ -3642,7 +3670,7 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
       int nregs ATTRIBUTE_UNUSED; /* Likewise.  */
       if (aarch64_vfp_is_call_or_return_candidate (TYPE_MODE (type), type,
 						   &mode, &nregs, NULL))
-	aarch64_err_no_fpadvsimd (TYPE_MODE (type), "return type");
+	aarch64_err_no_fpadvsimd (TYPE_MODE (type));
     }
   return;
 }
@@ -5662,7 +5690,10 @@ aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
   return mode == SImode || mode == DImode
 	 || mode == SFmode || mode == DFmode
 	 || (aarch64_vector_mode_supported_p (mode)
-	     && known_eq (GET_MODE_SIZE (mode), 8));
+	     && (known_eq (GET_MODE_SIZE (mode), 8)
+		 || (known_eq (GET_MODE_SIZE (mode), 16)
+		    && (aarch64_tune_params.extra_tuning_flags
+			& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0)));
 }
 
 /* Return true if REGNO is a virtual pointer register, or an eliminable
@@ -5819,7 +5850,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
 	  if (load_store_pair_p)
 	    return ((known_eq (GET_MODE_SIZE (mode), 4)
-		     || known_eq (GET_MODE_SIZE (mode), 8))
+		     || known_eq (GET_MODE_SIZE (mode), 8)
+		     || known_eq (GET_MODE_SIZE (mode), 16))
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
 	    return (offset_9bit_signed_unscaled_p (mode, offset)
@@ -5879,7 +5911,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
 	  if (load_store_pair_p)
 	    return ((known_eq (GET_MODE_SIZE (mode), 4)
-		     || known_eq (GET_MODE_SIZE (mode), 8))
+		     || known_eq (GET_MODE_SIZE (mode), 8)
+		     || known_eq (GET_MODE_SIZE (mode), 16))
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
 	    return offset_9bit_signed_unscaled_p (mode, offset);
@@ -10539,12 +10572,12 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
      alignment to what the target wants.  */
   if (!opts->x_optimize_size)
     {
-      if (opts->x_align_loops <= 0)
-	opts->x_align_loops = aarch64_tune_params.loop_align;
-      if (opts->x_align_jumps <= 0)
-	opts->x_align_jumps = aarch64_tune_params.jump_align;
-      if (opts->x_align_functions <= 0)
-	opts->x_align_functions = aarch64_tune_params.function_align;
+      if (opts->x_flag_align_loops && !opts->x_str_align_loops)
+	opts->x_str_align_loops = aarch64_tune_params.loop_align;
+      if (opts->x_flag_align_jumps && !opts->x_str_align_jumps)
+	opts->x_str_align_jumps = aarch64_tune_params.jump_align;
+      if (opts->x_flag_align_functions && !opts->x_str_align_functions)
+	opts->x_str_align_functions = aarch64_tune_params.function_align;
     }
 
   /* We default to no pc-relative literal loads.  */
@@ -12235,7 +12268,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
       /* TYPE passed in fp/simd registers.  */
       if (!TARGET_FLOAT)
-	aarch64_err_no_fpadvsimd (mode, "varargs");
+	aarch64_err_no_fpadvsimd (mode);
 
       f_top = build3 (COMPONENT_REF, TREE_TYPE (f_vrtop),
 		      unshare_expr (valist), f_vrtop, NULL_TREE);
@@ -16104,26 +16137,29 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 bool
 aarch64_expand_movmem (rtx *operands)
 {
-  unsigned int n;
+  int n, mode_bits;
   rtx dst = operands[0];
   rtx src = operands[1];
   rtx base;
+  machine_mode cur_mode = BLKmode, next_mode;
   bool speed_p = !optimize_function_for_size_p (cfun);
 
   /* When optimizing for size, give a better estimate of the length of a
-     memcpy call, but use the default otherwise.  */
-  unsigned int max_instructions = (speed_p ? 15 : AARCH64_CALL_RATIO) / 2;
+     memcpy call, but use the default otherwise.  Moves larger than 8 bytes
+     will always require an even number of instructions to do now.  And each
+     operation requires both a load+store, so devide the max number by 2.  */
+  int max_num_moves = (speed_p ? 16 : AARCH64_CALL_RATIO) / 2;
 
   /* We can't do anything smart if the amount to copy is not constant.  */
   if (!CONST_INT_P (operands[2]))
     return false;
 
-  n = UINTVAL (operands[2]);
+  n = INTVAL (operands[2]);
 
-  /* Try to keep the number of instructions low.  For cases below 16 bytes we
-     need to make at most two moves.  For cases above 16 bytes it will be one
-     move for each 16 byte chunk, then at most two additional moves.  */
-  if (((n / 16) + (n % 16 ? 2 : 0)) > max_instructions)
+  /* Try to keep the number of instructions low.  For all cases we will do at
+     most two moves for the residual amount, since we'll always overlap the
+     remainder.  */
+  if (((n / 16) + (n % 16 ? 2 : 0)) > max_num_moves)
     return false;
 
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
@@ -16132,81 +16168,36 @@ aarch64_expand_movmem (rtx *operands)
   base = copy_to_mode_reg (Pmode, XEXP (src, 0));
   src = adjust_automodify_address (src, VOIDmode, base, 0);
 
-  /* Simple cases.  Copy 0-3 bytes, as (if applicable) a 2-byte, then a
-     1-byte chunk.  */
-  if (n < 4)
+  /* Convert n to bits to make the rest of the code simpler.  */
+  n = n * BITS_PER_UNIT;
+
+  while (n > 0)
     {
-      if (n >= 2)
+      /* Find the largest mode in which to do the copy in without over reading
+	 or writing.  */
+      opt_scalar_int_mode mode_iter;
+      FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
+	if (GET_MODE_BITSIZE (mode_iter.require ()) <= n)
+	  cur_mode = mode_iter.require ();
+
+      gcc_assert (cur_mode != BLKmode);
+
+      mode_bits = GET_MODE_BITSIZE (cur_mode).to_constant ();
+      aarch64_copy_one_block_and_progress_pointers (&src, &dst, cur_mode);
+
+      n -= mode_bits;
+
+      /* Do certain trailing copies as overlapping if it's going to be
+	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
+	 byte copy it's more efficient to do two overlapping 8 byte copies than
+	 8 + 6 + 1.  */
+      next_mode = smallest_mode_for_size (n, MODE_INT);
+      int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
+      if (n > 0 && n_bits > n && n_bits <= 8 * BITS_PER_UNIT)
 	{
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, HImode);
-	  n -= 2;
-	}
-
-      if (n == 1)
-	aarch64_copy_one_block_and_progress_pointers (&src, &dst, QImode);
-
-      return true;
-    }
-
-  /* Copy 4-8 bytes.  First a 4-byte chunk, then (if applicable) a second
-     4-byte chunk, partially overlapping with the previously copied chunk.  */
-  if (n < 8)
-    {
-      aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-      n -= 4;
-      if (n > 0)
-	{
-	  int move = n - 4;
-
-	  src = aarch64_move_pointer (src, move);
-	  dst = aarch64_move_pointer (dst, move);
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-	}
-      return true;
-    }
-
-  /* Copy more than 8 bytes.  Copy chunks of 16 bytes until we run out of
-     them, then (if applicable) an 8-byte chunk.  */
-  while (n >= 8)
-    {
-      if (n / 16)
-	{
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, TImode);
-	  n -= 16;
-	}
-      else
-	{
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, DImode);
-	  n -= 8;
-	}
-    }
-
-  /* Finish the final bytes of the copy.  We can always do this in one
-     instruction.  We either copy the exact amount we need, or partially
-     overlap with the previous chunk we copied and copy 8-bytes.  */
-  if (n == 0)
-    return true;
-  else if (n == 1)
-    aarch64_copy_one_block_and_progress_pointers (&src, &dst, QImode);
-  else if (n == 2)
-    aarch64_copy_one_block_and_progress_pointers (&src, &dst, HImode);
-  else if (n == 4)
-    aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-  else
-    {
-      if (n == 3)
-	{
-	  src = aarch64_move_pointer (src, -1);
-	  dst = aarch64_move_pointer (dst, -1);
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-	}
-      else
-	{
-	  int move = n - 8;
-
-	  src = aarch64_move_pointer (src, move);
-	  dst = aarch64_move_pointer (dst, move);
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, DImode);
+	  src = aarch64_move_pointer (src, (n - n_bits) / BITS_PER_UNIT);
+	  dst = aarch64_move_pointer (dst, (n - n_bits) / BITS_PER_UNIT);
+	  n = n_bits;
 	}
     }
 
@@ -16966,6 +16957,50 @@ aarch64_swap_ldrstr_operands (rtx* operands, bool load)
     }
 }
 
+/* Taking X and Y to be HOST_WIDE_INT pointers, return the result of a
+   comparison between the two.  */
+int
+aarch64_host_wide_int_compare (const void *x, const void *y)
+{
+  return wi::cmps (* ((const HOST_WIDE_INT *) x),
+		   * ((const HOST_WIDE_INT *) y));
+}
+
+/* Taking X and Y to be pairs of RTX, one pointing to a MEM rtx and the
+   other pointing to a REG rtx containing an offset, compare the offsets
+   of the two pairs.
+
+   Return:
+
+	1 iff offset (X) > offset (Y)
+	0 iff offset (X) == offset (Y)
+	-1 iff offset (X) < offset (Y)  */
+int
+aarch64_ldrstr_offset_compare (const void *x, const void *y)
+{
+  const rtx * operands_1 = (const rtx *) x;
+  const rtx * operands_2 = (const rtx *) y;
+  rtx mem_1, mem_2, base, offset_1, offset_2;
+
+  if (MEM_P (operands_1[0]))
+    mem_1 = operands_1[0];
+  else
+    mem_1 = operands_1[1];
+
+  if (MEM_P (operands_2[0]))
+    mem_2 = operands_2[0];
+  else
+    mem_2 = operands_2[1];
+
+  /* Extract the offsets.  */
+  extract_base_offset_in_addr (mem_1, &base, &offset_1);
+  extract_base_offset_in_addr (mem_2, &base, &offset_2);
+
+  gcc_assert (offset_1 != NULL_RTX && offset_2 != NULL_RTX);
+
+  return wi::cmps (INTVAL (offset_1), INTVAL (offset_2));
+}
+
 /* Given OPERANDS of consecutive load/store, check if we can merge
    them into ldp/stp by adjusting the offset.  LOAD is true if they
    are load instructions.  MODE is the mode of memory operands.
@@ -16992,7 +17027,7 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 				       scalar_mode mode)
 {
   enum reg_class rclass_1, rclass_2, rclass_3, rclass_4;
-  HOST_WIDE_INT offval_1, offval_2, offval_3, offval_4, msize;
+  HOST_WIDE_INT offvals[4], msize;
   rtx mem_1, mem_2, mem_3, mem_4, reg_1, reg_2, reg_3, reg_4;
   rtx base_1, base_2, base_3, base_4, offset_1, offset_2, offset_3, offset_4;
 
@@ -17008,8 +17043,12 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
       mem_4 = operands[7];
       gcc_assert (REG_P (reg_1) && REG_P (reg_2)
 		  && REG_P (reg_3) && REG_P (reg_4));
-      if (REGNO (reg_1) == REGNO (reg_2) || REGNO (reg_3) == REGNO (reg_4))
-	return false;
+
+      /* Do not attempt to merge the loads if the loads clobber each other.  */
+      for (int i = 0; i < 8; i += 2)
+	for (int j = i + 2; j < 8; j += 2)
+	  if (reg_overlap_mentioned_p (operands[i], operands[j]))
+	    return false;
     }
   else
     {
@@ -17051,32 +17090,34 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
       || !rtx_equal_p (base_3, base_4))
     return false;
 
-  offval_1 = INTVAL (offset_1);
-  offval_2 = INTVAL (offset_2);
-  offval_3 = INTVAL (offset_3);
-  offval_4 = INTVAL (offset_4);
+  offvals[0] = INTVAL (offset_1);
+  offvals[1] = INTVAL (offset_2);
+  offvals[2] = INTVAL (offset_3);
+  offvals[3] = INTVAL (offset_4);
   msize = GET_MODE_SIZE (mode);
-  /* Check if the offsets are consecutive.  */
-  if ((offval_1 != (offval_2 + msize)
-       || offval_1 != (offval_3 + msize * 2)
-       || offval_1 != (offval_4 + msize * 3))
-      && (offval_4 != (offval_3 + msize)
-	  || offval_4 != (offval_2 + msize * 2)
-	  || offval_4 != (offval_1 + msize * 3)))
+
+  /* Check if the offsets can be put in the right order to do a ldp/stp.  */
+  qsort (offvals, 4, sizeof (HOST_WIDE_INT), aarch64_host_wide_int_compare);
+
+  if (!(offvals[1] == offvals[0] + msize
+	&& offvals[3] == offvals[2] + msize))
+    return false;
+
+  /* Check that offsets are within range of each other.  The ldp/stp
+     instructions have 7 bit immediate offsets, so use 0x80.  */
+  if (offvals[2] - offvals[0] >= msize * 0x80)
+    return false;
+
+  /* The offsets must be aligned with respect to each other.  */
+  if (offvals[0] % msize != offvals[2] % msize)
     return false;
 
   /* Check if the addresses are clobbered by load.  */
-  if (load)
-    {
-      if (reg_mentioned_p (reg_1, mem_1)
-	  || reg_mentioned_p (reg_2, mem_2)
-	  || reg_mentioned_p (reg_3, mem_3))
-	return false;
-
-      /* In increasing order, the last load can clobber the address.  */
-      if (offval_1 > offval_2 && reg_mentioned_p (reg_4, mem_4))
-	return false;
-    }
+  if (load && (reg_mentioned_p (reg_1, mem_1)
+	       || reg_mentioned_p (reg_2, mem_2)
+	       || reg_mentioned_p (reg_3, mem_3)
+	       || reg_mentioned_p (reg_4, mem_4)))
+    return false;
 
   /* If we have SImode and slow unaligned ldp,
      check the alignment to be at least 8 byte. */
@@ -17115,8 +17156,8 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 }
 
 /* Given OPERANDS of consecutive load/store, this function pairs them
-   into ldp/stp after adjusting the offset.  It depends on the fact
-   that addresses of load/store instructions are in increasing order.
+   into LDP/STP after adjusting the offset.  It depends on the fact
+   that the operands can be sorted so the offsets are correct for STP.
    MODE is the mode of memory operands.  CODE is the rtl operator
    which should be applied to all memory operands, it's SIGN_EXTEND,
    ZERO_EXTEND or UNKNOWN.  */
@@ -17125,100 +17166,109 @@ bool
 aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 			     scalar_mode mode, RTX_CODE code)
 {
-  rtx base, offset_1, offset_2, t1, t2;
+  rtx base, offset_1, offset_3, t1, t2;
   rtx mem_1, mem_2, mem_3, mem_4;
-  HOST_WIDE_INT off_val, abs_off, adj_off, new_off, stp_off_limit, msize;
+  rtx temp_operands[8];
+  HOST_WIDE_INT off_val_1, off_val_3, base_off, new_off_1, new_off_3,
+		stp_off_upper_limit, stp_off_lower_limit, msize;
+
+  /* We make changes on a copy as we may still bail out.  */
+  for (int i = 0; i < 8; i ++)
+    temp_operands[i] = operands[i];
+
+  /* Sort the operands.  */
+  qsort (temp_operands, 4, 2 * sizeof (rtx *), aarch64_ldrstr_offset_compare);
 
   if (load)
     {
-      mem_1 = operands[1];
-      mem_2 = operands[3];
+      mem_1 = temp_operands[1];
+      mem_2 = temp_operands[3];
+      mem_3 = temp_operands[5];
+      mem_4 = temp_operands[7];
     }
   else
     {
-      mem_1 = operands[0];
-      mem_2 = operands[2];
-    }
-
-  extract_base_offset_in_addr (mem_1, &base, &offset_1);
-  extract_base_offset_in_addr (mem_2, &base, &offset_2);
-  gcc_assert (base != NULL_RTX && offset_1 != NULL_RTX
-	      && offset_2 != NULL_RTX);
-
-  if (INTVAL (offset_1) > INTVAL (offset_2))
-    {
-      std::swap (operands[0], operands[6]);
-      std::swap (operands[1], operands[7]);
-      std::swap (operands[2], operands[4]);
-      std::swap (operands[3], operands[5]);
-    }
-
-  if (load)
-    {
-      mem_1 = operands[1];
-      mem_2 = operands[3];
-      mem_3 = operands[5];
-      mem_4 = operands[7];
-    }
-  else
-    {
-      mem_1 = operands[0];
-      mem_2 = operands[2];
-      mem_3 = operands[4];
-      mem_4 = operands[6];
+      mem_1 = temp_operands[0];
+      mem_2 = temp_operands[2];
+      mem_3 = temp_operands[4];
+      mem_4 = temp_operands[6];
       gcc_assert (code == UNKNOWN);
     }
 
-  /* Extract the offset of the new first address.  */
   extract_base_offset_in_addr (mem_1, &base, &offset_1);
-  extract_base_offset_in_addr (mem_2, &base, &offset_2);
+  extract_base_offset_in_addr (mem_3, &base, &offset_3);
+  gcc_assert (base != NULL_RTX && offset_1 != NULL_RTX
+	      && offset_3 != NULL_RTX);
 
-  /* Adjust offset thus it can fit in ldp/stp instruction.  */
+  /* Adjust offset so it can fit in LDP/STP instruction.  */
   msize = GET_MODE_SIZE (mode);
-  stp_off_limit = msize * 0x40;
-  off_val = INTVAL (offset_1);
-  abs_off = (off_val < 0) ? -off_val : off_val;
-  new_off = abs_off % stp_off_limit;
-  adj_off = abs_off - new_off;
+  stp_off_upper_limit = msize * (0x40 - 1);
+  stp_off_lower_limit = - msize * 0x40;
 
-  /* Further adjust to make sure all offsets are OK.  */
-  if ((new_off + msize * 2) >= stp_off_limit)
+  off_val_1 = INTVAL (offset_1);
+  off_val_3 = INTVAL (offset_3);
+
+  /* The base offset is optimally half way between the two STP/LDP offsets.  */
+  if (msize <= 4)
+    base_off = (off_val_1 + off_val_3) / 2;
+  else
+    /* However, due to issues with negative LDP/STP offset generation for
+       larger modes, for DF, DI and vector modes. we must not use negative
+       addresses smaller than 9 signed unadjusted bits can store.  This
+       provides the most range in this case.  */
+    base_off = off_val_1;
+
+  /* Adjust the base so that it is aligned with the addresses but still
+     optimal.  */
+  if (base_off % msize != off_val_1 % msize)
+    /* Fix the offset, bearing in mind we want to make it bigger not
+       smaller.  */
+    base_off += (((base_off % msize) - (off_val_1 % msize)) + msize) % msize;
+  else if (msize <= 4)
+    /* The negative range of LDP/STP is one larger than the positive range.  */
+    base_off += msize;
+
+  /* Check if base offset is too big or too small.  We can attempt to resolve
+     this issue by setting it to the maximum value and seeing if the offsets
+     still fit.  */
+  if (base_off >= 0x1000)
     {
-      adj_off += stp_off_limit;
-      new_off -= stp_off_limit;
+      base_off = 0x1000 - 1;
+      /* We must still make sure that the base offset is aligned with respect
+	 to the address.  But it may may not be made any bigger.  */
+      base_off -= (((base_off % msize) - (off_val_1 % msize)) + msize) % msize;
     }
 
-  /* Make sure the adjustment can be done with ADD/SUB instructions.  */
-  if (adj_off >= 0x1000)
-    return false;
-
-  if (off_val < 0)
+  /* Likewise for the case where the base is too small.  */
+  if (base_off <= -0x1000)
     {
-      adj_off = -adj_off;
-      new_off = -new_off;
+      base_off = -0x1000 + 1;
+      base_off += (((base_off % msize) - (off_val_1 % msize)) + msize) % msize;
     }
 
-  /* Create new memory references.  */
-  mem_1 = change_address (mem_1, VOIDmode,
-			  plus_constant (DImode, operands[8], new_off));
+  /* Offset of the first STP/LDP.  */
+  new_off_1 = off_val_1 - base_off;
 
-  /* Check if the adjusted address is OK for ldp/stp.  */
-  if (!aarch64_mem_pair_operand (mem_1, mode))
+  /* Offset of the second STP/LDP.  */
+  new_off_3 = off_val_3 - base_off;
+
+  /* The offsets must be within the range of the LDP/STP instructions.  */
+  if (new_off_1 > stp_off_upper_limit || new_off_1 < stp_off_lower_limit
+      || new_off_3 > stp_off_upper_limit || new_off_3 < stp_off_lower_limit)
     return false;
 
-  msize = GET_MODE_SIZE (mode);
-  mem_2 = change_address (mem_2, VOIDmode,
-			  plus_constant (DImode,
-					 operands[8],
-					 new_off + msize));
-  mem_3 = change_address (mem_3, VOIDmode,
-			  plus_constant (DImode,
-					 operands[8],
-					 new_off + msize * 2));
-  mem_4 = change_address (mem_4, VOIDmode,
-			  plus_constant (DImode,
-					 operands[8],
-					 new_off + msize * 3));
+  replace_equiv_address_nv (mem_1, plus_constant (Pmode, operands[8],
+						  new_off_1), true);
+  replace_equiv_address_nv (mem_2, plus_constant (Pmode, operands[8],
+						  new_off_1 + msize), true);
+  replace_equiv_address_nv (mem_3, plus_constant (Pmode, operands[8],
+						  new_off_3), true);
+  replace_equiv_address_nv (mem_4, plus_constant (Pmode, operands[8],
+						  new_off_3 + msize), true);
+
+  if (!aarch64_mem_pair_operand (mem_1, mode)
+      || !aarch64_mem_pair_operand (mem_3, mode))
+    return false;
 
   if (code == ZERO_EXTEND)
     {
@@ -17237,21 +17287,29 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 
   if (load)
     {
+      operands[0] = temp_operands[0];
       operands[1] = mem_1;
+      operands[2] = temp_operands[2];
       operands[3] = mem_2;
+      operands[4] = temp_operands[4];
       operands[5] = mem_3;
+      operands[6] = temp_operands[6];
       operands[7] = mem_4;
     }
   else
     {
       operands[0] = mem_1;
+      operands[1] = temp_operands[1];
       operands[2] = mem_2;
+      operands[3] = temp_operands[3];
       operands[4] = mem_3;
+      operands[5] = temp_operands[5];
       operands[6] = mem_4;
+      operands[7] = temp_operands[7];
     }
 
   /* Emit adjusting instruction.  */
-  emit_insn (gen_rtx_SET (operands[8], plus_constant (DImode, base, adj_off)));
+  emit_insn (gen_rtx_SET (operands[8], plus_constant (DImode, base, base_off)));
   /* Emit ldp/stp instructions.  */
   t1 = gen_rtx_SET (operands[0], operands[1]);
   t2 = gen_rtx_SET (operands[2], operands[3]);

@@ -2988,10 +2988,10 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   expand_direct_optab_fn (FN, STMT, OPTAB, 3)
 
 #define expand_cond_unary_optab_fn(FN, STMT, OPTAB) \
-  expand_direct_optab_fn (FN, STMT, OPTAB, 2)
+  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
 
 #define expand_cond_binary_optab_fn(FN, STMT, OPTAB) \
-  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
+  expand_direct_optab_fn (FN, STMT, OPTAB, 4)
 
 #define expand_fold_extract_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 3)
@@ -3219,12 +3219,19 @@ static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
   0
 };
 
-/* Return a function that performs the conditional form of CODE, i.e.:
+/* Return a function that only performs CODE when a certain condition is met
+   and that uses a given fallback value otherwise.  For example, if CODE is
+   a binary operation associated with conditional function FN:
 
-     LHS = RHS1 ? RHS2 CODE RHS3 : RHS2
+     LHS = FN (COND, A, B, ELSE)
 
-   (operating elementwise if the operands are vectors).  Return IFN_LAST
-   if no such function exists.  */
+   is equivalent to the C expression:
+
+     LHS = COND ? A CODE B : ELSE;
+
+   operating elementwise if the operands are vectors.
+
+   Return IFN_LAST if no such function exists.  */
 
 internal_fn
 get_conditional_internal_fn (tree_code code)
@@ -3239,6 +3246,12 @@ get_conditional_internal_fn (tree_code code)
       return IFN_COND_MIN;
     case MAX_EXPR:
       return IFN_COND_MAX;
+    case TRUNC_DIV_EXPR:
+      return IFN_COND_DIV;
+    case TRUNC_MOD_EXPR:
+      return IFN_COND_MOD;
+    case RDIV_EXPR:
+      return IFN_COND_RDIV;
     case BIT_AND_EXPR:
       return IFN_COND_AND;
     case BIT_IOR_EXPR:

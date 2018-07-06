@@ -781,15 +781,19 @@ unsigned
 fmtresult::type_max_digits (tree type, int base)
 {
   unsigned prec = TYPE_PRECISION (type);
-  if (base == 8)
-    return (prec + 2) / 3;
+  switch (base)
+    {
+    case 8:
+      return (prec + 2) / 3;
+    case 10:
+      /* Decimal approximation: yields 3, 5, 10, and 20 for precision
+	 of 8, 16, 32, and 64 bits.  */
+      return prec * 301 / 1000 + 1;
+    case 16:
+      return prec / 4;
+    }
 
-  if (base == 16)
-    return prec / 4;
-
-  /* Decimal approximation: yields 3, 5, 10, and 20 for precision
-     of 8, 16, 32, and 64 bits.  */
-  return prec * 301 / 1000 + 1;
+  gcc_unreachable ();
 }
 
 static bool
@@ -1759,6 +1763,11 @@ format_floating (const directive &dir, const HOST_WIDE_INT prec[2])
   unsigned flagmin = (1 /* for the first digit */
 		      + (dir.get_flag ('+') | dir.get_flag (' ')));
 
+  /* The minimum is 3 for "inf" and "nan" for all specifiers, plus 1
+     for the plus sign/space with the '+' and ' ' flags, respectively,
+     unless reduced below.  */
+  res.range.min = 2 + flagmin;
+
   /* When the pound flag is set the decimal point is included in output
      regardless of precision.  Whether or not a decimal point is included
      otherwise depends on the specification and precision.  */
@@ -1775,14 +1784,13 @@ format_floating (const directive &dir, const HOST_WIDE_INT prec[2])
 	else if (dir.prec[0] > 0)
 	  minprec = dir.prec[0] + !radix /* decimal point */;
 
-	res.range.min = (2 /* 0x */
-			 + flagmin
-			 + radix
-			 + minprec
-			 + 3 /* p+0 */);
+	res.range.likely = (2 /* 0x */
+			    + flagmin
+			    + radix
+			    + minprec
+			    + 3 /* p+0 */);
 
 	res.range.max = format_floating_max (type, 'a', prec[1]);
-	res.range.likely = res.range.min;
 
 	/* The unlikely maximum accounts for the longest multibyte
 	   decimal point character.  */
@@ -1800,15 +1808,14 @@ format_floating (const directive &dir, const HOST_WIDE_INT prec[2])
 	   non-zero, decimal point.  */
 	HOST_WIDE_INT minprec = prec[0] ? prec[0] + !radix : 0;
 
-	/* The minimum output is "[-+]1.234567e+00" regardless
+	/* The likely minimum output is "[-+]1.234567e+00" regardless
 	   of the value of the actual argument.  */
-	res.range.min = (flagmin
-			 + radix
-			 + minprec
-			 + 2 /* e+ */ + 2);
+	res.range.likely = (flagmin
+			    + radix
+			    + minprec
+			    + 2 /* e+ */ + 2);
 
 	res.range.max = format_floating_max (type, 'e', prec[1]);
-	res.range.likely = res.range.min;
 
 	/* The unlikely maximum accounts for the longest multibyte
 	   decimal point character.  */
@@ -1827,12 +1834,15 @@ format_floating (const directive &dir, const HOST_WIDE_INT prec[2])
 	   decimal point.  */
 	HOST_WIDE_INT minprec = prec[0] ? prec[0] + !radix : 0;
 
-	/* The lower bound when precision isn't specified is 8 bytes
-	   ("1.23456" since precision is taken to be 6).  When precision
-	   is zero, the lower bound is 1 byte (e.g., "1").  Otherwise,
-	   when precision is greater than zero, then the lower bound
-	   is 2 plus precision (plus flags).  */
-	res.range.min = flagmin + radix + minprec;
+	/* For finite numbers (i.e., not infinity or NaN) the lower bound
+	   when precision isn't specified is 8 bytes ("1.23456" since
+	   precision is taken to be 6).  When precision is zero, the lower
+	   bound is 1 byte (e.g., "1").  Otherwise, when precision is greater
+	   than zero, then the lower bound is 2 plus precision (plus flags).
+	   But in all cases, the lower bound is no greater than 3.  */
+	unsigned HOST_WIDE_INT min = flagmin + radix + minprec;
+	if (min < res.range.min)
+	  res.range.min = min;
 
 	/* Compute the upper bound for -TYPE_MAX.  */
 	res.range.max = format_floating_max (type, 'f', prec[1]);
@@ -1842,7 +1852,7 @@ format_floating (const directive &dir, const HOST_WIDE_INT prec[2])
 	if (dir.prec[0] < 0 && dir.prec[1] > 0)
 	  res.range.likely = 3;
 	else
-	  res.range.likely = res.range.min;
+	  res.range.likely = min;
 
 	/* The unlikely maximum accounts for the longest multibyte
 	   decimal point character.  */
@@ -1860,7 +1870,9 @@ format_floating (const directive &dir, const HOST_WIDE_INT prec[2])
 	   the lower bound on the range of bytes (not counting flags
 	   or width) is 1 plus radix (i.e., either "0" or "0." for
 	   "%g" and "%#g", respectively, with a zero argument).  */
-	res.range.min = flagmin + radix;
+	unsigned HOST_WIDE_INT min = flagmin + radix;
+	if (min < res.range.min)
+	  res.range.min = min;
 
 	char spec = 'g';
 	HOST_WIDE_INT maxprec = dir.prec[1];
@@ -1991,6 +2003,32 @@ format_floating (const directive &dir, tree arg, vr_values *)
   /* Get the real type format desription for the target.  */
   const REAL_VALUE_TYPE *rvp = TREE_REAL_CST_PTR (arg);
   const real_format *rfmt = REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (arg)));
+
+  if (!real_isfinite (rvp))
+    {
+      /* The format for Infinity and NaN is "[-]inf"/"[-]infinity"
+	 and "[-]nan" with the choice being implementation-defined
+	 but not locale dependent.  */
+      bool sign = dir.get_flag ('+') || real_isneg (rvp);
+      res.range.min = 3 + sign;
+
+      res.range.likely = res.range.min;
+      res.range.max = res.range.min;
+      /* The inlikely maximum is "[-/+]infinity" or "[-/+]nan".  */
+      res.range.unlikely = sign + (real_isinf (rvp) ? 8 : 3);
+
+      /* The range for infinity and NaN is known unless either width
+	 or precision is unknown.  Width has the same effect regardless
+	 of whether the argument is finite.  Precision is either ignored
+	 (e.g., Glibc) or can have an effect on the short vs long format
+	 such as inf/infinity (e.g., Solaris).  */
+      res.knownrange = dir.known_width_and_precision ();
+
+      /* Adjust the range for width but ignore precision.  */
+      res.adjust_for_width_or_precision (dir.width);
+
+      return res;
+    }
 
   char fmtstr [40];
   char *pfmt = fmtstr;

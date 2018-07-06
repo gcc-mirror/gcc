@@ -429,11 +429,6 @@ cgraph_edge::rebuild_edges (void)
     }
   record_eh_tables (node, cfun);
   gcc_assert (!node->global.inlined_to);
-
-  if (node->instrumented_version
-      && !node->instrumentation_clone)
-    node->create_reference (node->instrumented_version, IPA_REF_CHKP, NULL);
-
   return 0;
 }
 
@@ -464,10 +459,6 @@ cgraph_edge::rebuild_references (void)
 	node->record_stmt_references (gsi_stmt (gsi));
     }
   record_eh_tables (node, cfun);
-
-  if (node->instrumented_version
-      && !node->instrumentation_clone)
-    node->create_reference (node->instrumented_version, IPA_REF_CHKP, NULL);
 }
 
 namespace {

@@ -273,8 +273,11 @@ package body Osint.C is
    begin
       Name_Buffer (1 .. Src'Length) := Src;
       Name_Len := Src'Length;
-      Discard := Create_Auxiliary_File (Name_Find, "rep");
-      return;
+      if List_Representation_Info_To_JSON then
+         Discard := Create_Auxiliary_File (Name_Find, "json");
+      else
+         Discard := Create_Auxiliary_File (Name_Find, "rep");
+      end if;
    end Create_Repinfo_File;
 
    ---------------------------

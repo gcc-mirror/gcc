@@ -1345,7 +1345,7 @@ package body Sem_Ch4 is
             --  parameter has been analyzed, but may need a subsequent
             --  dereference, so skip its analysis now.
 
-            if N /= Original_Node (N)
+            if Is_Rewrite_Substitution (N)
               and then Nkind (Original_Node (N)) = Nkind (N)
               and then Nkind (Name (N)) /= Nkind (Name (Original_Node (N)))
               and then Present (Parameter_Associations (N))
@@ -3905,7 +3905,7 @@ package body Sem_Ch4 is
             Comp := First_Entity (T);
             while Present (Comp) loop
                if Chars (Comp) = Chars (Sel)
-                 and then Is_Visible_Component (Comp)
+                 and then Is_Visible_Component (Comp, Sel)
                then
 
                   --  AI05-105:  if the context is an object renaming with
@@ -5324,7 +5324,7 @@ package body Sem_Ch4 is
                Comp := First_Component (Base_Type (Prefix_Type));
                while Present (Comp) loop
                   if Chars (Comp) = Chars (Sel)
-                    and then Is_Visible_Component (Comp)
+                    and then Is_Visible_Component (Comp, Sel)
                   then
                      Set_Entity_With_Checks (Sel, Comp);
                      Generate_Reference (Comp, Sel);
@@ -6031,7 +6031,7 @@ package body Sem_Ch4 is
 
       Comp  := First_Entity (Prefix);
       while Nr_Of_Suggestions <= Max_Suggestions and then Present (Comp) loop
-         if Is_Visible_Component (Comp) then
+         if Is_Visible_Component (Comp, Sel) then
             if Is_Bad_Spelling_Of (Chars (Comp), Chars (Sel)) then
                Nr_Of_Suggestions := Nr_Of_Suggestions + 1;
 

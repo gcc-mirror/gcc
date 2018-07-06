@@ -1,0 +1,50 @@
+#  Specific regression driver for arm.
+#  Copyright (C) 2009-2018 Free Software Foundation, Inc.
+#
+#  This file is part of GCC.
+#
+#  GCC is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3, or (at your option)
+#  any later version.
+#
+#  GCC is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with GCC; see the file COPYING3.  If not see
+#  <http://www.gnu.org/licenses/>.  */
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't an arm target.
+if {![istarget arm*-*-*] } then {
+  return
+}
+
+# Load support procs.
+load_lib g++-dg.exp
+
+global DEFAULT_CXXFLAGS
+if ![info exists DEFAULT_CXXFLAGS] then {
+    set DEFAULT_CXXFLAGS " -pedantic-errors"
+}
+
+
+global dg_runtest_extra_prunes
+set dg_runtest_extra_prunes ""
+lappend dg_runtest_extra_prunes "warning: switch -m(cpu|arch)=.* conflicts with -m(cpu|arch)=.* switch"
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] \
+        "" $DEFAULT_CXXFLAGS
+
+# All done.
+set dg_runtest_extra_prunes ""
+dg-finish
+

@@ -199,6 +199,8 @@ namespace __debug
       : _Base(__x, __a) { }
 
       vector(vector&& __x, const allocator_type& __a)
+	noexcept( noexcept(
+	  _Base(std::declval<_Base&&>()), std::declval<const allocator_type&>()) )
       : _Safe(std::move(__x._M_safe()), __a),
 	_Base(std::move(__x._M_base()), __a),
 	_Safe_vector(std::move(__x)) { }
@@ -782,6 +784,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const __debug::vector<bool, _Alloc>& __b) const noexcept
       { return std::hash<_GLIBCXX_STD_C::vector<bool, _Alloc>>()(__b); }
     };
+
+ template<typename _Iterator, typename _Container, typename _Sequence>
+    _Iterator
+    __niter_base(const __gnu_debug::_Safe_iterator<
+		 __gnu_cxx::__normal_iterator<_Iterator, _Container>,
+		 _Sequence>& __it)
+    { return std::__niter_base(__it.base()); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 #endif

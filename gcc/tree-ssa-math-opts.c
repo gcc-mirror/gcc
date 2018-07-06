@@ -2711,7 +2711,7 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Generated FMA ");
-	  print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
+	  print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, TDF_NONE);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -3047,7 +3047,7 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Deferred generating FMA for multiplication ");
-	  print_gimple_stmt (dump_file, mul_stmt, 0, 0);
+	  print_gimple_stmt (dump_file, mul_stmt, 0, TDF_NONE);
 	  fprintf (dump_file, "\n");
 	}
 

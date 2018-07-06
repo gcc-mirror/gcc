@@ -268,7 +268,7 @@ case ${target} in
  | pdp11-*-bsd				\
  | sparc-hal-solaris2*			\
  | thumb-*-*				\
- | *-*-freebsd[12] | *-*-freebsd[12].*	\
+ | *-*-freebsd[12] | *-*-freebsd[1234].* \
  | *-*-freebsd*aout*			\
  | *-*-linux*aout*			\
  | *-*-linux*coff*			\
@@ -448,6 +448,16 @@ mips*-*-*)
 nds32*)
 	cpu_type=nds32
 	extra_headers="nds32_intrinsic.h"
+	case ${target} in
+	  nds32*-*-linux*)
+	    extra_options="${extra_options} nds32/nds32-linux.opt"
+	    ;;
+	  nds32*-*-elf*)
+	    extra_options="${extra_options} nds32/nds32-elf.opt"
+	    ;;
+	  *)
+	    ;;
+	esac
 	extra_objs="nds32-cost.o nds32-intrinsic.o nds32-isr.o nds32-md-auxiliary.o nds32-pipelines-auxiliary.o nds32-predicates.o nds32-memory-manipulation.o nds32-fp-as-gp.o nds32-relax-opt.o nds32-utils.o"
 	;;
 nios2-*-*)
@@ -640,7 +650,7 @@ bdver3 bdver4 znver1 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
 core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
 sandybridge ivybridge haswell broadwell bonnell silvermont knl knm \
 skylake-avx512 cannonlake icelake-client icelake-server skylake goldmont \
-goldmont-plus x86-64 native"
+goldmont-plus tremont x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -1014,11 +1024,6 @@ aarch64*-*-linux*)
 alpha*-*-linux*)
 	tm_file="elfos.h ${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
 	tmake_file="${tmake_file} alpha/t-linux alpha/t-alpha"
-	extra_options="${extra_options} alpha/elf.opt"
-	;;
-alpha*-*-freebsd*)
-	tm_file="elfos.h ${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
-	tmake_file="${tmake_file} alpha/t-alpha"
 	extra_options="${extra_options} alpha/elf.opt"
 	;;
 alpha*-*-netbsd*)
@@ -2075,10 +2080,17 @@ riscv*-*-linux*)
 	;;
 riscv*-*-elf* | riscv*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
-	case "x${enable_multilib}" in
-	xno) ;;
-	xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
-	*) echo "Unknown value for enable_multilib"; exit 1
+	case ${target} in
+	*-*-rtems*)
+	  tm_file="${tm_file} rtems.h riscv/rtems.h"
+	  tmake_file="${tmake_file} riscv/t-rtems"
+	  ;;
+	*)
+	  case "x${enable_multilib}" in
+	  xno) ;;
+	  xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
+	  *) echo "Unknown value for enable_multilib"; exit 1
+	  esac
 	esac
 	tmake_file="${tmake_file} riscv/t-riscv"
 	gnu_ld=yes
@@ -2086,11 +2098,6 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	# Force .init_array support.  The configure script cannot always
 	# automatically detect that GAS supports it, yet we require it.
 	gcc_cv_initfini_array=yes
-	case ${target} in
-	riscv*-*-rtems*)
-	  tm_file="${tm_file} rtems.h riscv/rtems.h"
-	  ;;
-	esac
 	;;
 riscv*-*-freebsd*)
 	tm_file="${tm_file} elfos.h ${fbsd_tm_file} riscv/freebsd.h"
@@ -2335,18 +2342,32 @@ msp430*-*-*)
 	tmake_file="${tmake_file} msp430/t-msp430"
 	extra_gcc_objs="driver-msp430.o"
 	;;
-nds32le-*-*)
+nds32*-*-*)
 	target_cpu_default="0"
 	tm_defines="${tm_defines}"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/nds32_intrinsic.h"
-	tmake_file="nds32/t-nds32 nds32/t-mlibs"
-	;;
-nds32be-*-*)
-	target_cpu_default="0|MASK_BIG_ENDIAN"
-	tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/nds32_intrinsic.h"
-	tmake_file="nds32/t-nds32 nds32/t-mlibs"
+	case ${target} in
+	  nds32le*-*-*)
+	    ;;
+	  nds32be-*-*)
+	    target_cpu_default="${target_cpu_default}|MASK_BIG_ENDIAN"
+	    tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+	    ;;
+	esac
+	case ${target} in
+	  nds32*-*-elf*)
+	    tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} nds32/elf.h nds32/nds32_intrinsic.h"
+	    tmake_file="nds32/t-nds32 nds32/t-elf"
+	    ;;
+	  nds32*-*-linux*)
+	    tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h nds32/linux.h nds32/nds32_intrinsic.h"
+	    tmake_file="${tmake_file} nds32/t-nds32 nds32/t-linux"
+	    ;;
+	esac
 
+	# Handle --enable-default-relax setting.
+	if test x${enable_default_relax} = xyes; then
+		tm_defines="${tm_defines} TARGET_DEFAULT_RELAX=1"
+	fi
 	# Handle --with-ext-dsp
 	if test x${with_ext_dsp} = xyes; then
 		tm_defines="${tm_defines} TARGET_DEFAULT_EXT_DSP=1"
@@ -4070,7 +4091,7 @@ case "${target}" in
 		supported_defaults="abi arch tune"
 
 		case "${target}" in
-		riscv32*) xlen=32 ;;
+		riscv-* | riscv32*) xlen=32 ;;
 		riscv64*) xlen=64 ;;
 		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
 		esac
@@ -4383,15 +4404,30 @@ case "${target}" in
 		"")
 			# the default library is newlib
 			with_nds32_lib=newlib
+			tm_defines="${tm_defines} TARGET_DEFAULT_CTOR_DTOR=1"
 			;;
 		newlib)
 			# OK
+			tm_defines="${tm_defines} TARGET_DEFAULT_CTOR_DTOR=1"
 			;;
 		mculib)
 			# OK
+			# for the arch=v3f or arch=v3s under mculib toolchain,
+			# we would like to set -fno-math-errno as default
+			case "${with_arch}" in
+			v3f | v3s)
+				tm_defines="${tm_defines} TARGET_DEFAULT_NO_MATH_ERRNO=1"
+				;;
+			esac
+			;;
+		glibc)
+			# OK
+			tm_defines="${tm_defines} TARGET_DEFAULT_TLSDESC_TRAMPOLINE=1"
+			;;
+		uclibc)
 			;;
 		*)
-			echo "Cannot accept --with-nds32-lib=$with_nds32_lib, available values are: newlib mculib" 1>&2
+			echo "Cannot accept --with-nds32-lib=$with_nds32_lib, available values are: newlib mculib glibc uclibc" 1>&2
 			exit 1
 			;;
 		esac
@@ -4530,16 +4566,6 @@ case "${target}" in
 		elif test x$with_long_double_format = xibm; then
 		    tm_defines="${tm_defines} TARGET_IEEEQUAD_DEFAULT=0"
 		fi
-
-		case "${target}:${enable_multilib}:${with_long_double_format}" in
-		    powerpc64le*:yes:ieee | powerpc64le*:yes:ibm)
-			tm_defines="${tm_defines} TARGET_IEEEQUAD_MULTILIB=1"
-			tmake_file="${tmake_file} rs6000/t-ldouble-linux64le-${with_long_double_format}"
-			;;
-		    *)
-			:
-			;;
-		esac
 		;;
 
 	s390*-*-*)

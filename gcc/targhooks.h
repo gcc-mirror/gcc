@@ -266,13 +266,6 @@ extern rtx default_load_bounds_for_arg (rtx, rtx, rtx);
 extern void default_store_bounds_for_arg (rtx, rtx, rtx, rtx);
 extern rtx default_load_returned_bounds (rtx);
 extern void default_store_returned_bounds (rtx,rtx);
-extern tree default_chkp_bound_type (void);
-extern machine_mode default_chkp_bound_mode (void);
-extern tree default_builtin_chkp_function (unsigned int);
-extern rtx default_chkp_function_value_bounds (const_tree, const_tree, bool);
-extern tree default_chkp_make_bounds_constant (HOST_WIDE_INT lb, HOST_WIDE_INT ub);
-extern int default_chkp_initialize_bounds (tree var, tree lb, tree ub,
-					   tree *stmts);
 extern void default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE_UNUSED,
 						  machine_mode mode ATTRIBUTE_UNUSED,
 						  tree type ATTRIBUTE_UNUSED,

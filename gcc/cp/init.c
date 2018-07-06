@@ -553,7 +553,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
     {
       init = DECL_INITIAL (DECL_TI_TEMPLATE (member));
       location_t expr_loc
-	= EXPR_LOC_OR_LOC (init, DECL_SOURCE_LOCATION (member));
+	= cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (member));
       tree *slot;
       if (TREE_CODE (init) == DEFAULT_ARG)
 	/* Unparsed.  */;
@@ -577,6 +577,16 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 
 	  DECL_INSTANTIATING_NSDMI_P (member) = 1;
 
+	  bool pushed = false;
+	  if (!currently_open_class (DECL_CONTEXT (member)))
+	    {
+	      push_to_top_level ();
+	      push_nested_class (DECL_CONTEXT (member));
+	      pushed = true;
+	    }
+
+	  gcc_checking_assert (!processing_template_decl);
+
 	  inject_this_parameter (DECL_CONTEXT (member), TYPE_UNQUALIFIED);
 
 	  start_lambda_scope (member);
@@ -597,6 +607,12 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	      if (!nsdmi_inst)
 		nsdmi_inst = tree_cache_map::create_ggc (37);
 	      nsdmi_inst->put (member, init);
+	    }
+
+	  if (pushed)
+	    {
+	      pop_nested_class ();
+	      pop_from_top_level ();
 	    }
 
 	  input_location = sloc;
@@ -672,6 +688,64 @@ maybe_reject_flexarray_init (tree member, tree init)
 
   error_at (loc, "initializer for flexible array member %q#D", member);
   return true;
+}
+
+/* If INIT's value can come from a call to std::initializer_list<T>::begin,
+   return that function.  Otherwise, NULL_TREE.  */
+
+static tree
+find_list_begin (tree init)
+{
+  STRIP_NOPS (init);
+  while (TREE_CODE (init) == COMPOUND_EXPR)
+    init = TREE_OPERAND (init, 1);
+  STRIP_NOPS (init);
+  if (TREE_CODE (init) == COND_EXPR)
+    {
+      tree left = TREE_OPERAND (init, 1);
+      if (!left)
+	left = TREE_OPERAND (init, 0);
+      left = find_list_begin (left);
+      if (left)
+	return left;
+      return find_list_begin (TREE_OPERAND (init, 2));
+    }
+  if (TREE_CODE (init) == CALL_EXPR)
+    if (tree fn = get_callee_fndecl (init))
+      if (id_equal (DECL_NAME (fn), "begin")
+	  && is_std_init_list (DECL_CONTEXT (fn)))
+	return fn;
+  return NULL_TREE;
+}
+
+/* If INIT initializing MEMBER is copying the address of the underlying array
+   of an initializer_list, warn.  */
+
+static void
+maybe_warn_list_ctor (tree member, tree init)
+{
+  tree memtype = TREE_TYPE (member);
+  if (!init || !TYPE_PTR_P (memtype)
+      || !is_list_ctor (current_function_decl))
+    return;
+
+  tree parms = FUNCTION_FIRST_USER_PARMTYPE (current_function_decl);
+  tree initlist = non_reference (TREE_VALUE (parms));
+  tree targs = CLASSTYPE_TI_ARGS (initlist);
+  tree elttype = TREE_VEC_ELT (targs, 0);
+
+  if (!same_type_ignoring_top_level_qualifiers_p
+      (TREE_TYPE (memtype), elttype))
+    return;
+
+  tree begin = find_list_begin (init);
+  if (!begin)
+    return;
+
+  location_t loc = cp_expr_loc_or_loc (init, input_location);
+  warning_at (loc, OPT_Winit_list_lifetime,
+	     "initializing %qD from %qE does not extend the lifetime "
+	     "of the underlying array", member, begin);
 }
 
 /* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
@@ -885,6 +959,8 @@ perform_member_init (tree member, tree init)
 	   in that case.  */
 	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 						tf_warning_or_error);
+
+      maybe_warn_list_ctor (member, init);
 
       /* Reject a member initializer for a flexible array member.  */
       if (init && !maybe_reject_flexarray_init (member, init))
@@ -1664,7 +1740,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
     return error_mark_node;
 
   location_t init_loc = (init
-			 ? EXPR_LOC_OR_LOC (init, input_location)
+			 ? cp_expr_loc_or_loc (init, input_location)
 			 : location_of (exp));
 
   TREE_READONLY (exp) = 0;
@@ -1678,6 +1754,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       if (VAR_P (exp) && DECL_DECOMPOSITION_P (exp))
 	{
 	  from_array = 1;
+	  init = mark_rvalue_use (init);
 	  if (init && DECL_P (init)
 	      && !(flags & LOOKUP_ONLYCONVERTING))
 	    {
@@ -2326,12 +2403,7 @@ build_raw_new_expr (vec<tree, va_gc> *placement, tree type, tree nelts,
   else if (init->is_empty ())
     init_list = void_node;
   else
-    {
-      init_list = build_tree_list_vec (init);
-      for (tree v = init_list; v; v = TREE_CHAIN (v))
-	if (TREE_CODE (TREE_VALUE (v)) == OVERLOAD)
-	  lookup_keep (TREE_VALUE (v), true);
-    }
+    init_list = build_tree_list_vec (init);
 
   new_expr = build4 (NEW_EXPR, build_pointer_type (type),
 		     build_tree_list_vec (placement), type, nelts,
@@ -2494,7 +2566,7 @@ find_flexarray_init (tree t, tree init)
 static void
 warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 {
-  location_t loc = EXPR_LOC_OR_LOC (oper, input_location);
+  location_t loc = cp_expr_loc_or_loc (oper, input_location);
 
   /* The number of bytes to add to or subtract from the size of the provided
      buffer based on an offset into an array or an array element reference.
@@ -2600,7 +2672,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
     }
 
   tree opertype = TREE_TYPE (oper);
-  if ((addr_expr || !POINTER_TYPE_P (opertype))
+  if ((addr_expr || !INDIRECT_TYPE_P (opertype))
       && (VAR_P (oper)
 	  || TREE_CODE (oper) == FIELD_DECL
 	  || TREE_CODE (oper) == PARM_DECL))
@@ -2857,10 +2929,9 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       outer_nelts_from_type = true;
     }
 
-  /* Lots of logic below. depends on whether we have a constant number of
+  /* Lots of logic below depends on whether we have a constant number of
      elements, so go ahead and fold it now.  */
-  if (outer_nelts)
-    outer_nelts = maybe_constant_value (outer_nelts);
+  const_tree cst_outer_nelts = fold_non_dependent_expr (outer_nelts, complain);
 
   /* If our base type is an array, then make sure we know how many elements
      it has.  */
@@ -2887,7 +2958,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	{
 	  if (complain & tf_error)
 	    {
-	      error_at (EXPR_LOC_OR_LOC (inner_nelts, input_location),
+	      error_at (cp_expr_loc_or_loc (inner_nelts, input_location),
 			"array size in new-expression must be constant");
 	      cxx_constant_value(inner_nelts);
 	    }
@@ -2912,11 +2983,11 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   /* Warn if we performed the (T[N]) to T[N] transformation and N is
      variable.  */
   if (outer_nelts_from_type
-      && !TREE_CONSTANT (outer_nelts))
+      && !TREE_CONSTANT (cst_outer_nelts))
     {
       if (complain & tf_warning_or_error)
 	{
-	  pedwarn (EXPR_LOC_OR_LOC (outer_nelts, input_location), OPT_Wvla,
+	  pedwarn (cp_expr_loc_or_loc (outer_nelts, input_location), OPT_Wvla,
 		   typedef_variant_p (orig_type)
 		   ? G_("non-constant array new length must be specified "
 			"directly, not by typedef")
@@ -2933,6 +3004,11 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
         error ("invalid type %<void%> for new");
       return error_mark_node;
     }
+
+  if (is_std_init_list (elt_type))
+    warning (OPT_Winit_list_lifetime,
+	     "%<new%> of initializer_list does not "
+	     "extend the lifetime of the underlying array");
 
   if (abstract_virtuals_error_sfinae (ACU_NEW, elt_type, complain))
     return error_mark_node;
@@ -3011,9 +3087,9 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
       size = size_binop (MULT_EXPR, size, fold_convert (sizetype, nelts));
 
-      if (INTEGER_CST == TREE_CODE (outer_nelts))
+      if (TREE_CODE (cst_outer_nelts) == INTEGER_CST)
 	{
-	  if (tree_int_cst_lt (max_outer_nelts_tree, outer_nelts))
+	  if (tree_int_cst_lt (max_outer_nelts_tree, cst_outer_nelts))
 	    {
 	      /* When the array size is constant, check it at compile time
 		 to make sure it doesn't exceed the implementation-defined
@@ -3586,10 +3662,26 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (auto_node)
 	{
 	  tree d_init = NULL_TREE;
-	  if (vec_safe_length (*init) == 1)
+	  const size_t len = vec_safe_length (*init);
+	  /* E.g. new auto(x) must have exactly one element, or
+	     a {} initializer will have one element.  */
+	  if (len == 1)
 	    {
 	      d_init = (**init)[0];
 	      d_init = resolve_nondeduced_context (d_init, complain);
+	    }
+	  /* For the rest, e.g. new A(1, 2, 3), create a list.  */
+	  else if (len > 1)
+	    {
+	      unsigned int n;
+	      tree t;
+	      tree *pp = &d_init;
+	      FOR_EACH_VEC_ELT (**init, n, t)
+		{
+		  t = resolve_nondeduced_context (t, complain);
+		  *pp = build_tree_list (NULL_TREE, t);
+		  pp = &TREE_CHAIN (*pp);
+		}
 	    }
 	  type = do_auto_deduction (type, d_init, auto_node, complain);
 	}
@@ -3639,13 +3731,13 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Try to determine the constant value only for the purposes
 	 of the diagnostic below but continue to use the original
 	 value and handle const folding later.  */
-      const_tree cst_nelts = maybe_constant_value (nelts);
+      const_tree cst_nelts = fold_non_dependent_expr (nelts, complain);
 
       /* The expression in a noptr-new-declarator is erroneous if it's of
 	 non-class type and its value before converting to std::size_t is
 	 less than zero. ... If the expression is a constant expression,
 	 the program is ill-fomed.  */
-      if (INTEGER_CST == TREE_CODE (cst_nelts)
+      if (TREE_CODE (cst_nelts) == INTEGER_CST
 	  && tree_int_cst_sgn (cst_nelts) == -1)
 	{
 	  if (complain & tf_error)
@@ -4012,7 +4104,7 @@ build_vec_init (tree base, tree maxindex, tree init,
   tree obase = base;
   bool xvalue = false;
   bool errors = false;
-  location_t loc = (init ? EXPR_LOC_OR_LOC (init, input_location)
+  location_t loc = (init ? cp_expr_loc_or_loc (init, input_location)
 		    : location_of (base));
 
   if (TREE_CODE (atype) == ARRAY_TYPE && TYPE_DOMAIN (atype))

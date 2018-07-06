@@ -5786,6 +5786,27 @@ gfc_check_mvbits (gfc_expr *from, gfc_expr *frompos, gfc_expr *len,
 }
 
 
+/* Check the arguments for RANDOM_INIT.  */
+
+bool
+gfc_check_random_init (gfc_expr *repeatable, gfc_expr *image_distinct)
+{
+  if (!type_check (repeatable, 0, BT_LOGICAL))
+    return false;
+
+  if (!scalar_check (repeatable, 0))
+    return false;
+
+  if (!type_check (image_distinct, 1, BT_LOGICAL))
+    return false;
+
+  if (!scalar_check (image_distinct, 1))
+    return false;
+
+  return true;
+}
+
+
 bool
 gfc_check_random_number (gfc_expr *harvest)
 {

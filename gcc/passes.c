@@ -117,8 +117,6 @@ void
 pass_manager::execute_early_local_passes ()
 {
   execute_pass_list (cfun, pass_build_ssa_passes_1->sub);
-  if (flag_check_pointer_bounds)
-    execute_pass_list (cfun, pass_chkp_instrumentation_passes_1->sub);
   execute_pass_list (cfun, pass_local_optimization_passes_1->sub);
 }
 
@@ -432,36 +430,6 @@ public:
 
 }; // class pass_build_ssa_passes
 
-const pass_data pass_data_chkp_instrumentation_passes =
-{
-  SIMPLE_IPA_PASS, /* type */
-  "chkp_passes", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_chkp_instrumentation_passes : public simple_ipa_opt_pass
-{
-public:
-  pass_chkp_instrumentation_passes (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_chkp_instrumentation_passes, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *)
-    {
-      /* Don't bother doing anything if the program has errors.  */
-      return (flag_check_pointer_bounds
-	      && !seen_error () && !in_lto_p);
-    }
-
-}; // class pass_chkp_instrumentation_passes
-
 const pass_data pass_data_local_optimization_passes =
 {
   SIMPLE_IPA_PASS, /* type */
@@ -497,12 +465,6 @@ simple_ipa_opt_pass *
 make_pass_build_ssa_passes (gcc::context *ctxt)
 {
   return new pass_build_ssa_passes (ctxt);
-}
-
-simple_ipa_opt_pass *
-make_pass_chkp_instrumentation_passes (gcc::context *ctxt)
-{
-  return new pass_chkp_instrumentation_passes (ctxt);
 }
 
 simple_ipa_opt_pass *
@@ -784,7 +746,7 @@ pass_manager::register_one_dump_file (opt_pass *pass)
   char num[11];
   dump_kind dkind;
   int id;
-  int optgroup_flags = OPTGROUP_NONE;
+  optgroup_flags_t optgroup_flags = OPTGROUP_NONE;
   gcc::dump_manager *dumps = m_ctxt->get_dumps ();
 
   /* See below in next_pass_1.  */
@@ -1208,7 +1170,7 @@ is_pass_explicitly_enabled_or_disabled (opt_pass *pass,
   if (!slot)
     return false;
 
-  cgraph_uid = func ? cgraph_node::get (func)->uid : 0;
+  cgraph_uid = func ? cgraph_node::get (func)->get_uid () : 0;
   if (func && DECL_ASSEMBLER_NAME_SET_P (func))
     aname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (func));
 
@@ -1673,22 +1635,16 @@ do_per_function (void (*callback) (function *, void *data), void *data)
 static int nnodes;
 static GTY ((length ("nnodes"))) cgraph_node **order;
 
+#define uid_hash_t hash_set<int_hash <int, 0, -1> >
+
 /* Hook called when NODE is removed and therefore should be
-   excluded from order vector.  DATA is an array of integers.
-   DATA[0] holds max index it may be accessed by.  For cgraph
-   node DATA[node->uid + 1] holds index of this node in order
-   vector.  */
+   excluded from order vector.  DATA is a hash set with removed nodes.  */
+
 static void
 remove_cgraph_node_from_order (cgraph_node *node, void *data)
 {
-  int *order_idx = (int *)data;
-
-  if (node->uid >= order_idx[0])
-    return;
-
-  int idx = order_idx[node->uid + 1];
-  if (idx >= 0 && idx < nnodes && order[idx] == node)
-    order[idx] = NULL;
+  uid_hash_t *removed_nodes = (uid_hash_t *)data;
+  removed_nodes->add (node->get_uid ());
 }
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
@@ -1705,29 +1661,22 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
   else
     {
       cgraph_node_hook_list *hook;
-      int *order_idx;
+      uid_hash_t removed_nodes;
       gcc_assert (!order);
       order = ggc_vec_alloc<cgraph_node *> (symtab->cgraph_count);
 
-      order_idx = XALLOCAVEC (int, symtab->cgraph_max_uid + 1);
-      memset (order_idx + 1, -1, sizeof (int) * symtab->cgraph_max_uid);
-      order_idx[0] = symtab->cgraph_max_uid;
-
       nnodes = ipa_reverse_postorder (order);
       for (i = nnodes - 1; i >= 0; i--)
-	{
-	  order[i]->process = 1;
-	  order_idx[order[i]->uid + 1] = i;
-	}
+	order[i]->process = 1;
       hook = symtab->add_cgraph_removal_hook (remove_cgraph_node_from_order,
-					      order_idx);
+					      &removed_nodes);
       for (i = nnodes - 1; i >= 0; i--)
 	{
-	  /* Function could be inlined and removed as unreachable.  */
-	  if (!order[i])
-	    continue;
+	  cgraph_node *node = order[i];
 
-	  struct cgraph_node *node = order[i];
+	  /* Function could be inlined and removed as unreachable.  */
+	  if (node == NULL || removed_nodes.contains (node->get_uid ()))
+	    continue;
 
 	  /* Allow possibly removed nodes to be garbage collected.  */
 	  order[i] = NULL;
@@ -2692,6 +2641,9 @@ ipa_write_summaries (void)
   if ((!flag_generate_lto && !flag_generate_offload) || seen_error ())
     return;
 
+  gcc_assert (!dump_file);
+  streamer_dump_file = dump_begin (TDI_lto_stream_out, NULL);
+
   select_what_to_stream ();
 
   encoder = lto_symtab_encoder_new (false);
@@ -2708,7 +2660,7 @@ ipa_write_summaries (void)
     {
       struct cgraph_node *node = order[i];
 
-      if (node->has_gimple_body_p ())
+      if (gimple_has_body_p (node->decl))
 	{
 	  /* When streaming out references to statements as part of some IPA
 	     pass summary, the statements need to have uids assigned and the
@@ -2734,6 +2686,11 @@ ipa_write_summaries (void)
   ipa_write_summaries_1 (compute_ltrans_boundary (encoder));
 
   free (order);
+  if (streamer_dump_file)
+    {
+      dump_end (TDI_lto_stream_out, streamer_dump_file);
+      streamer_dump_file = NULL;
+    }
 }
 
 /* Same as execute_pass_list but assume that subpasses of IPA passes

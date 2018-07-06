@@ -91,6 +91,37 @@
   aarch64_swap_ldrstr_operands (operands, false);
 })
 
+(define_peephole2
+  [(set (match_operand:VQ 0 "register_operand" "")
+	(match_operand:VQ 1 "memory_operand" ""))
+   (set (match_operand:VQ2 2 "register_operand" "")
+	(match_operand:VQ2 3 "memory_operand" ""))]
+  "TARGET_SIMD
+   && aarch64_operands_ok_for_ldpstp (operands, true, <VQ:MODE>mode)
+   && (aarch64_tune_params.extra_tuning_flags
+	& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (set (match_dup 2) (match_dup 3))])]
+{
+  aarch64_swap_ldrstr_operands (operands, true);
+})
+
+(define_peephole2
+  [(set (match_operand:VQ 0 "memory_operand" "")
+	(match_operand:VQ 1 "register_operand" ""))
+   (set (match_operand:VQ2 2 "memory_operand" "")
+	(match_operand:VQ2 3 "register_operand" ""))]
+  "TARGET_SIMD
+   && aarch64_operands_ok_for_ldpstp (operands, false, <VQ:MODE>mode)
+   && (aarch64_tune_params.extra_tuning_flags
+	& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (set (match_dup 2) (match_dup 3))])]
+{
+  aarch64_swap_ldrstr_operands (operands, false);
+})
+
+
 ;; Handle sign/zero extended consecutive load/store.
 
 (define_peephole2

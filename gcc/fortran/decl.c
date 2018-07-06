@@ -387,7 +387,20 @@ match_data_constant (gfc_expr **result)
       return m;
     }
   else if (m == MATCH_YES)
-    gfc_free_expr (*result);
+    {
+      /* F2018:R845 data-stmt-constant is initial-data-target.
+	 A data-stmt-constant shall be ... initial-data-target if and
+	 only if the corresponding data-stmt-object has the POINTER
+	 attribute. ...  If data-stmt-constant is initial-data-target
+	 the corresponding data statement object shall be
+	 data-pointer-initialization compatible (7.5.4.6) with the initial
+	 data target; the data statement object is initially associated
+	 with the target.  */
+      if ((*result)->symtree->n.sym->attr.save
+	  && (*result)->symtree->n.sym->attr.target)
+	return m;
+      gfc_free_expr (*result);
+    }
 
   gfc_current_locus = old_loc;
 
@@ -2418,7 +2431,7 @@ variable_decl (int elem)
 	    }
 
 	  if (not_constant)
-	    { 
+	    {
 	      gfc_error ("Explicit shaped array with nonconstant bounds at %C");
 	      m = MATCH_ERROR;
 	      goto cleanup;
@@ -2522,13 +2535,12 @@ variable_decl (int elem)
       gfc_find_symbol (name, gfc_current_ns, 1, &sym);
       if (sym != NULL && sym->attr.cray_pointee)
 	{
-	  sym->ts.type = current_ts.type;
-	  sym->ts.kind = current_ts.kind;
-	  sym->ts.u.cl = cl;
-	  sym->ts.u.derived = current_ts.u.derived;
-	  sym->ts.is_c_interop = current_ts.is_c_interop;
-	  sym->ts.is_iso_c = current_ts.is_iso_c;
 	  m = MATCH_YES;
+	  if (!gfc_add_type (sym, &current_ts, &gfc_current_locus))
+	    {
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 
 	  /* Check to see if we have an array specification.  */
 	  if (cp_as != NULL)
@@ -3226,12 +3238,20 @@ done:
     cl->length = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
   else
     {
-      /* If gfortran ends up here, then the len may be reducible to a
-	 constant.  Try to do that here.  If it does not reduce, simply
-	 assign len to the charlen.  */
+      /* If gfortran ends up here, then len may be reducible to a constant.
+	 Try to do that here.  If it does not reduce, simply assign len to
+	 charlen.  A complication occurs with user-defined generic functions,
+	 which are not resolved.  Use a private namespace to deal with
+	 generic functions.  */
+
       if (len && len->expr_type != EXPR_CONSTANT)
 	{
+	  gfc_namespace *old_ns;
 	  gfc_expr *e;
+
+	  old_ns = gfc_current_ns;
+	  gfc_current_ns = gfc_get_namespace (NULL, 0);
+
 	  e = gfc_copy_expr (len);
 	  gfc_reduce_init_expr (e);
 	  if (e->expr_type == EXPR_CONSTANT)
@@ -3242,10 +3262,12 @@ done:
 	    }
 	  else
 	    gfc_free_expr (e);
-	  cl->length = len;
+
+	  gfc_free_namespace (gfc_current_ns);
+	  gfc_current_ns = old_ns;
 	}
-      else
-	cl->length = len;
+
+      cl->length = len;
     }
 
   ts->u.cl = cl;
@@ -4704,9 +4726,10 @@ match_attr_spec (void)
 {
   /* Modifiers that can exist in a type statement.  */
   enum
-  { GFC_DECL_BEGIN = 0,
-    DECL_ALLOCATABLE = GFC_DECL_BEGIN, DECL_DIMENSION, DECL_EXTERNAL,
-    DECL_IN, DECL_OUT, DECL_INOUT, DECL_INTRINSIC, DECL_OPTIONAL,
+  { GFC_DECL_BEGIN = 0, DECL_ALLOCATABLE = GFC_DECL_BEGIN,
+    DECL_IN = INTENT_IN, DECL_OUT = INTENT_OUT, DECL_INOUT = INTENT_INOUT,
+    DECL_DIMENSION, DECL_EXTERNAL,
+    DECL_INTRINSIC, DECL_OPTIONAL,
     DECL_PARAMETER, DECL_POINTER, DECL_PROTECTED, DECL_PRIVATE,
     DECL_STATIC, DECL_AUTOMATIC,
     DECL_PUBLIC, DECL_SAVE, DECL_TARGET, DECL_VALUE, DECL_VOLATILE,
@@ -4716,6 +4739,9 @@ match_attr_spec (void)
 
 /* GFC_DECL_END is the sentinel, index starts at 0.  */
 #define NUM_DECL GFC_DECL_END
+
+  /* Make sure that values from sym_intent are safe to be used here.  */
+  gcc_assert (INTENT_IN > 0);
 
   locus start, seen_at[NUM_DECL];
   int seen[NUM_DECL];
@@ -4834,13 +4860,12 @@ match_attr_spec (void)
 		      if (match_string_p ("nt"))
 			{
 			  /* Matched "intent".  */
-			  /* TODO: Call match_intent_spec from here.  */
-			  if (gfc_match (" ( in out )") == MATCH_YES)
-			    d = DECL_INOUT;
-			  else if (gfc_match (" ( in )") == MATCH_YES)
-			    d = DECL_IN;
-			  else if (gfc_match (" ( out )") == MATCH_YES)
-			    d = DECL_OUT;
+			  d = match_intent_spec ();
+			  if (d == INTENT_UNKNOWN)
+			    {
+			      m = MATCH_ERROR;
+			      goto cleanup;
+			    }
 			}
 		    }
 		  else if (ch == 'r')
@@ -9778,9 +9803,9 @@ gfc_match_structure_decl (void)
 
 
 /* This function does some work to determine which matcher should be used to
- * match a statement beginning with "TYPE". This is used to disambiguate TYPE
+ * match a statement beginning with "TYPE".  This is used to disambiguate TYPE
  * as an alias for PRINT from derived type declarations, TYPE IS statements,
- * and derived type data declarations.  */
+ * and [parameterized] derived type declarations.  */
 
 match
 gfc_match_type (gfc_statement *st)
@@ -9807,11 +9832,7 @@ gfc_match_type (gfc_statement *st)
   /* If we see an attribute list before anything else it's definitely a derived
    * type declaration.  */
   if (gfc_match (" ,") == MATCH_YES || gfc_match (" ::") == MATCH_YES)
-    {
-      gfc_current_locus = old_loc;
-      *st = ST_DERIVED_DECL;
-      return gfc_match_derived_decl ();
-    }
+    goto derived;
 
   /* By now "TYPE" has already been matched. If we do not see a name, this may
    * be something like "TYPE *" or "TYPE <fmt>".  */
@@ -9826,29 +9847,11 @@ gfc_match_type (gfc_statement *st)
 	  *st = ST_WRITE;
 	  return MATCH_YES;
 	}
-      gfc_current_locus = old_loc;
-      *st = ST_DERIVED_DECL;
-      return gfc_match_derived_decl ();
+      goto derived;
     }
 
-  /* A derived type declaration requires an EOS. Without it, assume print.  */
-  m = gfc_match_eos ();
-  if (m == MATCH_NO)
-    {
-      /* Check manually for TYPE IS (... - this is invalid print syntax.  */
-      if (strncmp ("is", name, 3) == 0
-	  && gfc_match (" (", name) == MATCH_YES)
-	{
-	  gfc_current_locus = old_loc;
-	  gcc_assert (gfc_match (" is") == MATCH_YES);
-	  *st = ST_TYPE_IS;
-	  return gfc_match_type_is ();
-	}
-      gfc_current_locus = old_loc;
-      *st = ST_WRITE;
-      return gfc_match_print ();
-    }
-  else
+  /* Check for EOS.  */
+  if (gfc_match_eos () == MATCH_YES)
     {
       /* By now we have "TYPE <name> <EOS>". Check first if the name is an
        * intrinsic typename - if so let gfc_match_derived_decl dump an error.
@@ -9861,12 +9864,36 @@ gfc_match_type (gfc_statement *st)
 	  *st = ST_DERIVED_DECL;
 	  return m;
 	}
-      gfc_current_locus = old_loc;
-      *st = ST_WRITE;
-      return gfc_match_print ();
+    }
+  else
+    {
+      /* Here we have "TYPE <name>". Check for <TYPE IS (> or a PDT declaration
+	 like <type name(parameter)>.  */
+      gfc_gobble_whitespace ();
+      bool paren = gfc_peek_ascii_char () == '(';
+      if (paren)
+	{
+	  if (strcmp ("is", name) == 0)
+	    goto typeis;
+	  else
+	    goto derived;
+	}
     }
 
-  return MATCH_NO;
+  /* Treat TYPE... like PRINT...  */
+  gfc_current_locus = old_loc;
+  *st = ST_WRITE;
+  return gfc_match_print ();
+
+derived:
+  gfc_current_locus = old_loc;
+  *st = ST_DERIVED_DECL;
+  return gfc_match_derived_decl ();
+
+typeis:
+  gfc_current_locus = old_loc;
+  *st = ST_TYPE_IS;
+  return gfc_match_type_is ();
 }
 
 
@@ -9960,8 +9987,12 @@ gfc_match_derived_decl (void)
 
   if (!gensym->attr.generic && gensym->ts.type != BT_UNKNOWN)
     {
-      gfc_error ("Derived type name %qs at %C already has a basic type "
-		 "of %s", gensym->name, gfc_typename (&gensym->ts));
+      if (gensym->ts.u.derived)
+	gfc_error ("Derived type name %qs at %C already has a basic type "
+		   "of %s", gensym->name, gfc_typename (&gensym->ts));
+      else
+	gfc_error ("Derived type name %qs at %C already has a basic type",
+		   gensym->name);
       return MATCH_ERROR;
     }
 

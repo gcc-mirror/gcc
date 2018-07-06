@@ -188,9 +188,6 @@ extern void *__deregister_frame_info_bases (const void *)
 				     TARGET_ATTRIBUTE_WEAK;
 extern void __do_global_ctors_1 (void);
 
-/* Likewise for _Jv_RegisterClasses.  */
-extern void _Jv_RegisterClasses (void *) TARGET_ATTRIBUTE_WEAK;
-
 /* Likewise for transactional memory clone tables.  */
 extern void _ITM_registerTMCloneTable (void *, size_t) TARGET_ATTRIBUTE_WEAK;
 extern void _ITM_deregisterTMCloneTable (void *) TARGET_ATTRIBUTE_WEAK;

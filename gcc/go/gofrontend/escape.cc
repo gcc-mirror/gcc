@@ -43,6 +43,12 @@ Node::type() const
         // which may also be pointer. We model it as another void*, so
         // we don't lose pointer-ness.
         return this->child()->type();
+      else if (this->child()->type()->is_slice_type())
+        // We model "indirect" of a slice as dereferencing its pointer
+        // field (to get element). Use element type here.
+        return this->child()->type()->array_type()->element_type();
+      else if (this->child()->type()->is_string_type())
+        return Type::lookup_integer_type("uint8");
       else
         return this->child()->type()->deref();
     }
@@ -1811,57 +1817,74 @@ Escape_analysis_assign::expression(Expression** pexpr)
 
     case Expression::EXPRESSION_UNARY:
       {
-	if ((*pexpr)->unary_expression()->op() != OPERATOR_AND)
-	  break;
-
-	Node* addr_node = Node::make_node(*pexpr);
-	this->context_->track(addr_node);
-
 	Expression* operand = (*pexpr)->unary_expression()->operand();
-	Named_object* var = NULL;
-	if (operand->var_expression() != NULL)
-	  var = operand->var_expression()->named_object();
-	else if (operand->enclosed_var_expression() != NULL)
-	  var = operand->enclosed_var_expression()->variable();
 
-	if (var == NULL)
-	  break;
+        if ((*pexpr)->unary_expression()->op() == OPERATOR_AND)
+          {
+            this->context_->track(n);
 
-	if (var->is_variable()
-	    && !var->var_value()->is_parameter())
-	  {
-	    // For &x, use the loop depth of x if known.
-	    Node::Escape_state* addr_state =
-	      addr_node->state(this->context_, NULL);
-	    Node* operand_node = Node::make_node(operand);
-	    Node::Escape_state* operand_state =
-	      operand_node->state(this->context_, NULL);
-	    if (operand_state->loop_depth != 0)
-	      addr_state->loop_depth = operand_state->loop_depth;
-	  }
-	else if ((var->is_variable()
-		  && var->var_value()->is_parameter())
-		 || var->is_result_variable())
-	  {
-	    Node::Escape_state* addr_state =
-	      addr_node->state(this->context_, NULL);
-	    addr_state->loop_depth = 1;
-	  }
+            Named_object* var = NULL;
+            if (operand->var_expression() != NULL)
+              var = operand->var_expression()->named_object();
+            else if (operand->enclosed_var_expression() != NULL)
+              var = operand->enclosed_var_expression()->variable();
+
+            if (var != NULL
+                && ((var->is_variable() && var->var_value()->is_parameter())
+                    || var->is_result_variable()))
+              {
+                Node::Escape_state* addr_state = n->state(this->context_, NULL);
+                addr_state->loop_depth = 1;
+                break;
+              }
+          }
+
+        if ((*pexpr)->unary_expression()->op() != OPERATOR_AND
+            && (*pexpr)->unary_expression()->op() != OPERATOR_MULT)
+          break;
+
+        // For &x and *x, use the loop depth of x if known.
+        Node::Escape_state* expr_state = n->state(this->context_, NULL);
+        Node* operand_node = Node::make_node(operand);
+        Node::Escape_state* operand_state = operand_node->state(this->context_, NULL);
+        if (operand_state->loop_depth != 0)
+          expr_state->loop_depth = operand_state->loop_depth;
       }
       break;
 
     case Expression::EXPRESSION_ARRAY_INDEX:
       {
         Array_index_expression* aie = (*pexpr)->array_index_expression();
+
+        // Propagate the loopdepth to element.
+        Node* array_node = Node::make_node(aie->array());
+        Node::Escape_state* elem_state = n->state(this->context_, NULL);
+        Node::Escape_state* array_state = array_node->state(this->context_, NULL);
+        elem_state->loop_depth = array_state->loop_depth;
+
         if (aie->end() != NULL && !aie->array()->type()->is_slice_type())
           {
-            // Slicing an array.
+            // Slicing an array. This effectively takes the address of the array.
             Expression* addr = Expression::make_unary(OPERATOR_AND, aie->array(),
                                                       aie->location());
             Node* addr_node = Node::make_node(addr);
             n->set_child(addr_node);
             this->context_->track(addr_node);
+
+            Node::Escape_state* addr_state = addr_node->state(this->context_, NULL);
+            addr_state->loop_depth = array_state->loop_depth;
           }
+      }
+      break;
+
+    case Expression::EXPRESSION_FIELD_REFERENCE:
+      {
+        // Propagate the loopdepth to field.
+        Node* struct_node =
+          Node::make_node((*pexpr)->field_reference_expression()->expr());
+        Node::Escape_state* field_state = n->state(this->context_, NULL);
+        Node::Escape_state* struct_state = struct_node->state(this->context_, NULL);
+        field_state->loop_depth = struct_state->loop_depth;
       }
       break;
 
@@ -3288,28 +3311,33 @@ Escape_analysis_tag::tag(Named_object* fn)
   Function_type* fntype = fn->func_value()->type();
   Bindings* bindings = fn->func_value()->block()->bindings();
 
-  if (fntype->is_method()
-      && !fntype->receiver()->name().empty()
-      && !Gogo::is_sink_name(fntype->receiver()->name()))
+  if (fntype->is_method())
     {
-      Named_object* rcvr_no = bindings->lookup(fntype->receiver()->name());
-      go_assert(rcvr_no != NULL);
-      Node* rcvr_node = Node::make_node(rcvr_no);
-      switch ((rcvr_node->encoding() & ESCAPE_MASK))
-	{
-	case Node::ESCAPE_NONE: // not touched by flood
-	case Node::ESCAPE_RETURN:
-	  if (fntype->receiver()->type()->has_pointer())
-	    // Don't bother tagging for scalars.
-	    fntype->add_receiver_note(rcvr_node->encoding());
-	  break;
+      if (fntype->receiver()->name().empty()
+          || Gogo::is_sink_name(fntype->receiver()->name()))
+        // Unnamed receiver is not used in the function body, does not escape.
+        fntype->add_receiver_note(Node::ESCAPE_NONE);
+      else
+        {
+          Named_object* rcvr_no = bindings->lookup(fntype->receiver()->name());
+          go_assert(rcvr_no != NULL);
+          Node* rcvr_node = Node::make_node(rcvr_no);
+          switch ((rcvr_node->encoding() & ESCAPE_MASK))
+            {
+            case Node::ESCAPE_NONE: // not touched by flood
+            case Node::ESCAPE_RETURN:
+              if (fntype->receiver()->type()->has_pointer())
+                // Don't bother tagging for scalars.
+                fntype->add_receiver_note(rcvr_node->encoding());
+              break;
 
-	case Node::ESCAPE_HEAP: // flooded, moved to heap.
-	  break;
+            case Node::ESCAPE_HEAP: // flooded, moved to heap.
+              break;
 
-	default:
-	  break;
-	}
+            default:
+              break;
+            }
+        }
     }
 
   int i = 0;

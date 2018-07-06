@@ -38,11 +38,15 @@ global GDB
 if ![info exists ::env(GUALITY_GDB_NAME)] {
     if [info exists GDB] {
 	set guality_gdb_name "$GDB"
+    } elseif [file exists $rootme/../gdb/gdb] {
+	# If we're doing a combined build, and gdb is available, use it.
+	set guality_gdb_name "$rootme/../gdb/gdb"
     } else {
 	set guality_gdb_name "[transform gdb]"
     }
     setenv GUALITY_GDB_NAME "$guality_gdb_name"
 }
+report_gdb $::env(GUALITY_GDB_NAME) [info script]
 
 if {[check_guality "
   #include \"$srcdir/$subdir/guality.h\"
