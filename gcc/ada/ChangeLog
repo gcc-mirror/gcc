@@ -1,3 +1,8 @@
+2018-07-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgnat/system-rtems.ads (Frontend_Exceptions): Set to False.
+	(ZCX_By_Default): Set to True.
+
 2018-07-02  Martin Liska  <mliska@suse.cz>
 
 	* gnatvsn.ads: Bump Library_Version to 9.
