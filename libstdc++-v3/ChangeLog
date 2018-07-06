@@ -1,3 +1,17 @@
+2018-07-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/functions.h (__gnu_debug::__check_string): Move...
+	* include/debug/string (__gnu_debug::__check_string): ... here.
+	(_GLIBCXX_DEBUG_VERIFY_STR_COND_AT): New.
+	(__glibcxx_check_string_n_constructor): New.
+	(__gnu_debug::basic_string<>(const _CharT*, size_type, const _Alloc&)):
+	Use latter.
+	(__glibcxx_check_string_constructor): New.
+	(__gnu_debug::basic_string<>(const _CharT*, const _Alloc&)):
+	Use latter.
+	* testsuite/21_strings/basic_string/debug/1_neg.cc: New.
+	* testsuite/21_strings/basic_string/debug/2_neg.cc: New.
+
 2018-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/84928 use std::move in <numeric> algorithms
