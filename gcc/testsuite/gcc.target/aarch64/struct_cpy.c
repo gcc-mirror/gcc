@@ -46,22 +46,22 @@ struct struct16 foo16 = {
   volatile struct struct##x var##x = foo##x; \
 }
 
-FUN(1);
-FUN(2);
-FUN(3);
-FUN(4);
-FUN(5);
-FUN(6);
-FUN(7);
-FUN(8);
-FUN(9);
-FUN(10);
-FUN(11);
-FUN(12);
-FUN(13);
-FUN(14);
-FUN(15);
-FUN(16);
+FUN(1)
+FUN(2)
+FUN(3)
+FUN(4)
+FUN(5)
+FUN(6)
+FUN(7)
+FUN(8)
+FUN(9)
+FUN(10)
+FUN(11)
+FUN(12)
+FUN(13)
+FUN(14)
+FUN(15)
+FUN(16)
 
 /* { dg-final { scan-assembler-times {ldr\s} 18 } } */
 /* { dg-final { scan-assembler-times {ldrb} 4 } } */
