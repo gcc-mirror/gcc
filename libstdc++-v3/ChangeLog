@@ -1,3 +1,7 @@
+2018-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__accepted_index): Use void_t.
+
 2018-07-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85831
