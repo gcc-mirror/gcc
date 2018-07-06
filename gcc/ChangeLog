@@ -1,3 +1,8 @@
+2018-07-06  Paul Koning  <ni1d@arrl.net>
+
+	* doc/md.texi (define_split): Document DONE and FAIL.
+	(define_peephole2): Ditto.
+
 2018-07-05  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/86010
