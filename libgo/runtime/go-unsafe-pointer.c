@@ -15,10 +15,10 @@
    descriptor.  */
 
 extern const struct __go_type_descriptor unsafe_Pointer
-  __asm__ (GOSYM_PREFIX "__go_tdn_unsafe.Pointer");
+  __asm__ (GOSYM_PREFIX "unsafe.Pointer..d");
 
 extern const byte unsafe_Pointer_gc[]
-  __asm__ (GOSYM_PREFIX "__go_tdn_unsafe.Pointer$gc");
+  __asm__ (GOSYM_PREFIX "unsafe.Pointer..g");
 
 /* Used to determine the field alignment.  */
 struct field_align
@@ -38,9 +38,9 @@ static const String reflection_string =
 const byte unsafe_Pointer_gc[] = { 1 };
 
 extern const FuncVal runtime_pointerhash_descriptor
-  __asm__ (GOSYM_PREFIX "runtime.pointerhash$descriptor");
+  __asm__ (GOSYM_PREFIX "runtime.pointerhash..f");
 extern const FuncVal runtime_pointerequal_descriptor
-  __asm__ (GOSYM_PREFIX "runtime.pointerequal$descriptor");
+  __asm__ (GOSYM_PREFIX "runtime.pointerequal..f");
 
 const struct __go_type_descriptor unsafe_Pointer =
 {
@@ -75,7 +75,7 @@ const struct __go_type_descriptor unsafe_Pointer =
    it to be defined elsewhere.  */
 
 extern const struct __go_ptr_type pointer_unsafe_Pointer
-  __asm__ (GOSYM_PREFIX "__go_td_pN14_unsafe.Pointer");
+  __asm__ (GOSYM_PREFIX "type...1unsafe.Pointer");
 
 /* The reflection string.  */
 #define PREFLECTION "*unsafe.Pointer"
@@ -86,7 +86,7 @@ static const String preflection_string =
 };
 
 extern const byte pointer_unsafe_Pointer_gc[]
-  __asm__ (GOSYM_PREFIX "__go_td_pN14_unsafe.Pointer$gc");
+  __asm__ (GOSYM_PREFIX "type...1unsafe.Pointer..g");
 
 const byte pointer_unsafe_Pointer_gc[] = { 1 };
 

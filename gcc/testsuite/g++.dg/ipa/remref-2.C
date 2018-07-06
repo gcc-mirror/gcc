@@ -29,7 +29,7 @@ allocate_a ()
   a = new A();
 }
 
-main()
+int main()
 {
   allocate_a();
   for (int i=0; i<10000;i++)

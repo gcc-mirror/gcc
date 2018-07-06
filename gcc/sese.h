@@ -1,5 +1,5 @@
 /* Single entry single exit control flow regions.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Jan Sjodin <jan.sjodin@amd.com> and
    Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -120,20 +120,6 @@ sese_nb_params (sese_info_p region)
 static inline bool
 bb_in_region (const_basic_block bb, const_basic_block entry, const_basic_block exit)
 {
-  /* FIXME: PR67842.  */
-#if 0
-  if (flag_checking)
-    {
-      edge e;
-      edge_iterator ei;
-
-      /* Check that there are no edges coming in the region: all the
-	 predecessors of EXIT are dominated by ENTRY.  */
-      FOR_EACH_EDGE (e, ei, exit->preds)
-	gcc_assert (dominated_by_p (CDI_DOMINATORS, e->src, entry));
-    }
-#endif
-
   return dominated_by_p (CDI_DOMINATORS, bb, entry)
 	 && !(dominated_by_p (CDI_DOMINATORS, bb, exit)
 	      && !dominated_by_p (CDI_DOMINATORS, entry, exit));
@@ -240,19 +226,6 @@ static inline basic_block
 if_region_get_condition_block (ifsese if_region)
 {
   return if_region_entry (if_region)->dest;
-}
-
-/* Free and compute again all the dominators information.  */
-
-static inline void
-recompute_all_dominators (void)
-{
-  mark_irreducible_loops ();
-  free_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_DOMINATORS);
-
-  free_dominance_info (CDI_POST_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 }
 
 typedef std::pair <gimple *, tree> scalar_use;

@@ -1,5 +1,5 @@
 /* Machine mode class definitions for GCC.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
   DEF_MODE_CLASS (MODE_DECIMAL_FLOAT),	/* decimal floating point */	   \
   DEF_MODE_CLASS (MODE_COMPLEX_INT), 	/* complex numbers */		   \
   DEF_MODE_CLASS (MODE_COMPLEX_FLOAT),					   \
+  DEF_MODE_CLASS (MODE_VECTOR_BOOL),	/* vectors of single bits */	   \
   DEF_MODE_CLASS (MODE_VECTOR_INT),	/* SIMD vectors */		   \
   DEF_MODE_CLASS (MODE_VECTOR_FRACT),	/* SIMD vectors */		   \
   DEF_MODE_CLASS (MODE_VECTOR_UFRACT),	/* SIMD vectors */		   \

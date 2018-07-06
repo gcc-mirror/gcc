@@ -1,5 +1,5 @@
 ;; IA-64 machine description for vector operations.
-;; Copyright (C) 2004-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -1547,19 +1547,6 @@
   rtx op2 = gen_lowpart (V4HImode, operands[2]);
   ia64_expand_vec_perm_even_odd (operands[0], op1, op2, TARGET_BIG_ENDIAN);
   DONE;
-})
-
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:VEC 0 "register_operand" "")
-   (match_operand:VEC 1 "register_operand" "")
-   (match_operand:VEC 2 "register_operand" "")
-   (match_operand:<vecint> 3 "" "")]
-  ""
-{
-  if (ia64_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
 })
 
 ;; Missing operations

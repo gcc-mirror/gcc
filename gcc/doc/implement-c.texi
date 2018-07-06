@@ -1,4 +1,4 @@
-@c Copyright (C) 2001-2017 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -567,14 +567,14 @@ volatile int *src = @var{somevalue};
 According to the C standard, such an expression is an rvalue whose type
 is the unqualified version of its original type, i.e. @code{int}.  Whether
 GCC interprets this as a read of the volatile object being pointed to or
-only as a request to evaluate the expression for its side-effects depends
+only as a request to evaluate the expression for its side effects depends
 on this type.
 
 If it is a scalar type, or on most targets an aggregate type whose only
 member object is of a scalar type, or a union type whose member objects
 are of scalar types, the expression is interpreted by GCC as a read of
 the volatile object; in the other cases, the expression is only evaluated
-for its side-effects.
+for its side effects.
 
 @end itemize
 

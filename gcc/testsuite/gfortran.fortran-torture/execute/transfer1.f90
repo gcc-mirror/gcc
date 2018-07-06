@@ -6,5 +6,5 @@ program chop
   ix = transfer(x,ix)
   iy = transfer(y,iy)
   print '(2z20.8)', ix, iy
-  if (ix /= iy) call abort
+  if (ix /= iy) STOP 1
 end program chop

@@ -21,8 +21,8 @@ program test
   !$acc exit data copyout (a(1:N), b(1:N))
 
   do i = 1, n
-    if (a(i) .ne. 3.0) call abort
-    if (b(i) .ne. 3.0) call abort
+    if (a(i) .ne. 3.0) STOP 1
+    if (b(i) .ne. 3.0) STOP 2
   end do
 
   a(:) = 5.0
@@ -39,7 +39,7 @@ program test
   !$acc exit data copyout (a(1:N), b(1:N))
 
   do i = 1, n
-    if (a(i) .ne. 5.0) call abort
-    if (b(i) .ne. 5.0) call abort
+    if (a(i) .ne. 5.0) STOP 3
+    if (b(i) .ne. 5.0) STOP 4
   end do
 end program test

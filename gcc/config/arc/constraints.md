@@ -1,5 +1,5 @@
 ;; Constraint definitions for Synopsys DesignWare ARC.
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -347,11 +347,7 @@
        (match_test "!cmem_address (XEXP (op, 0), SImode)")
        (not (match_operand 0 "long_immediate_loadstore_operand"))))
 
-; Don't use define_memory_constraint here as the relocation patching
-; for small data symbols only works within a ld/st instruction and
-; define_memory_constraint may result in the address being calculated
-; into a register first.
-(define_constraint "Usd"
+(define_memory_constraint "Usd"
    "@internal
     A valid _small-data_ memory operand for ARCompact instructions"
    (and (match_code "mem")
@@ -400,6 +396,19 @@
   (ior (and (match_code "symbol_ref")
 	    (match_test "arc_is_shortcall_p (op)"))
        (match_code "label_ref")))
+
+(define_constraint "Cji"
+  "JLI call"
+  (and (match_code "symbol_ref")
+       (match_test "TARGET_CODE_DENSITY")
+       (match_test "arc_is_jli_call_p (op)")))
+
+(define_constraint "Csc"
+  "Secure call"
+  (and (match_code "symbol_ref")
+       (match_test "TARGET_CODE_DENSITY")
+       (match_test "TARGET_EM")
+       (match_test "arc_is_secure_call_p (op)")))
 
 (define_constraint "Cpc"
   "pc-relative constant"

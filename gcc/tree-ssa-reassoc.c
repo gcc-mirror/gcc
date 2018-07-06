@@ -1,5 +1,5 @@
 /* Reassociation for trees.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -232,7 +232,7 @@ reassoc_remove_stmt (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
 
-  if (!MAY_HAVE_DEBUG_STMTS || gimple_code (stmt) == GIMPLE_PHI)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS || gimple_code (stmt) == GIMPLE_PHI)
     return gsi_remove (gsi, true);
 
   gimple_stmt_iterator prev = *gsi;
@@ -470,7 +470,8 @@ get_rank (tree e)
 
 /* We want integer ones to end up last no matter what, since they are
    the ones we can do the most with.  */
-#define INTEGER_CONST_TYPE 1 << 3
+#define INTEGER_CONST_TYPE 1 << 4
+#define FLOAT_ONE_CONST_TYPE 1 << 3
 #define FLOAT_CONST_TYPE 1 << 2
 #define OTHER_CONST_TYPE 1 << 1
 
@@ -482,7 +483,14 @@ constant_type (tree t)
   if (INTEGRAL_TYPE_P (TREE_TYPE (t)))
     return INTEGER_CONST_TYPE;
   else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (t)))
-    return FLOAT_CONST_TYPE;
+    {
+      /* Sort -1.0 and 1.0 constants last, while in some cases
+	 const_binop can't optimize some inexact operations, multiplication
+	 by -1.0 or 1.0 can be always merged with others.  */
+      if (real_onep (t) || real_minus_onep (t))
+	return FLOAT_ONE_CONST_TYPE;
+      return FLOAT_CONST_TYPE;
+    }
   else
     return OTHER_CONST_TYPE;
 }
@@ -504,7 +512,7 @@ sort_by_operand_rank (const void *pa, const void *pb)
   if (oea->rank == 0)
     {
       if (constant_type (oeb->op) != constant_type (oea->op))
-	return constant_type (oeb->op) - constant_type (oea->op);
+	return constant_type (oea->op) - constant_type (oeb->op);
       else
 	/* To make sorting result stable, we use unique IDs to determine
 	   order.  */
@@ -543,7 +551,7 @@ sort_by_operand_rank (const void *pa, const void *pb)
 	    return -1;
 	  /* If neither is, compare bb_rank.  */
 	  if (bb_rank[bbb->index] != bb_rank[bba->index])
-	    return bb_rank[bbb->index] - bb_rank[bba->index];
+	    return (bb_rank[bbb->index] >> 16) - (bb_rank[bba->index] >> 16);
 	}
 
       bool da = reassoc_stmt_dominates_stmt_p (stmta, stmtb);
@@ -3027,7 +3035,8 @@ optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
 static bool
 optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 				vec<operand_entry *> *ops,
-				struct range_entry *ranges)
+				struct range_entry *ranges,
+				basic_block first_bb)
 {
   int i;
   bool any_changes = false;
@@ -3134,6 +3143,60 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
       int *idx = map->get (rhs1);
       if (idx == NULL)
 	continue;
+
+      /* maybe_optimize_range_tests allows statements without side-effects
+	 in the basic blocks as long as they are consumed in the same bb.
+	 Make sure rhs2's def stmt is not among them, otherwise we can't
+	 use safely get_nonzero_bits on it.  E.g. in:
+	  # RANGE [-83, 1] NONZERO 173
+	  # k_32 = PHI <k_47(13), k_12(9)>
+	 ...
+	  if (k_32 >= 0)
+	    goto <bb 5>; [26.46%]
+	  else
+	    goto <bb 9>; [73.54%]
+
+	  <bb 5> [local count: 140323371]:
+	  # RANGE [0, 1] NONZERO 1
+	  _5 = (int) k_32;
+	  # RANGE [0, 4] NONZERO 4
+	  _21 = _5 << 2;
+	  # RANGE [0, 4] NONZERO 4
+	  iftmp.0_44 = (char) _21;
+	  if (k_32 < iftmp.0_44)
+	    goto <bb 6>; [84.48%]
+	  else
+	    goto <bb 9>; [15.52%]
+	 the ranges on _5/_21/iftmp.0_44 are flow sensitive, assume that
+	 k_32 >= 0.  If we'd optimize k_32 >= 0 to true and k_32 < iftmp.0_44
+	 to (unsigned) k_32 < (unsigned) iftmp.0_44, then we would execute
+	 those stmts even for negative k_32 and the value ranges would be no
+	 longer guaranteed and so the optimization would be invalid.  */
+      if (opcode == ERROR_MARK)
+	{
+	  gimple *g = SSA_NAME_DEF_STMT (rhs2);
+	  basic_block bb2 = gimple_bb (g);
+	  if (bb2
+	      && bb2 != first_bb
+	      && dominated_by_p (CDI_DOMINATORS, bb2, first_bb))
+	    {
+	      /* As an exception, handle a few common cases.  */
+	      if (gimple_assign_cast_p (g)
+		  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (g)))
+		  && TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (g)))
+		  && (TYPE_PRECISION (TREE_TYPE (rhs2))
+		      > TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (g)))))
+		/* Zero-extension is always ok.  */ ;
+	      else if (is_gimple_assign (g)
+		       && gimple_assign_rhs_code (g) == BIT_AND_EXPR
+		       && TREE_CODE (gimple_assign_rhs2 (g)) == INTEGER_CST
+		       && !wi::neg_p (wi::to_wide (gimple_assign_rhs2 (g))))
+		/* Masking with INTEGER_CST with MSB clear is always ok
+		   too.  */ ;
+	      else
+		continue;
+	    }
+	}
 
       wide_int nz = get_nonzero_bits (rhs2);
       if (wi::neg_p (nz))
@@ -3261,11 +3324,12 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
    maybe_optimize_range_tests for inter-bb range optimization.
    In that case if oe->op is NULL, oe->id is bb->index whose
    GIMPLE_COND is && or ||ed into the test, and oe->rank says
-   the actual opcode.  */
+   the actual opcode.
+   FIRST_BB is the first basic block if OPCODE is ERROR_MARK.  */
 
 static bool
 optimize_range_tests (enum tree_code opcode,
-		      vec<operand_entry *> *ops)
+		      vec<operand_entry *> *ops, basic_block first_bb)
 {
   unsigned int length = ops->length (), i, j, first;
   operand_entry *oe;
@@ -3345,7 +3409,7 @@ optimize_range_tests (enum tree_code opcode,
   any_changes |= optimize_range_tests_cmp_bitwise (opcode, first, length,
 						   ops, ranges);
   any_changes |= optimize_range_tests_var_bound (opcode, first, length, ops,
-						 ranges);
+						 ranges, first_bb);
 
   if (any_changes && opcode != ERROR_MARK)
     {
@@ -4092,7 +4156,7 @@ maybe_optimize_range_tests (gimple *stmt)
 	break;
     }
   if (ops.length () > 1)
-    any_changes = optimize_range_tests (ERROR_MARK, &ops);
+    any_changes = optimize_range_tests (ERROR_MARK, &ops, first_bb);
   if (any_changes)
     {
       unsigned int idx, max_idx = 0;
@@ -5847,7 +5911,7 @@ reassociate_bb (basic_block bb)
 		  if (is_vector)
 		    optimize_vec_cond_expr (rhs_code, &ops);
 		  else
-		    optimize_range_tests (rhs_code, &ops);
+		    optimize_range_tests (rhs_code, &ops, NULL);
 	        }
 
 	      if (rhs_code == MULT_EXPR && !is_vector)
@@ -6131,7 +6195,7 @@ init_reassoc (void)
 
   /* Set up rank for each BB  */
   for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
-    bb_rank[bbs[i]] = ++rank  << 16;
+    bb_rank[bbs[i]] = ++rank << 16;
 
   free (bbs);
   calculate_dominance_info (CDI_POST_DOMINATORS);

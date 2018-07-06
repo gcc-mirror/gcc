@@ -1,5 +1,5 @@
 /* A hash map traits.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,6 +32,7 @@ template <typename H, typename Value>
 struct simple_hashmap_traits
 {
   typedef typename H::value_type key_type;
+  static const bool maybe_mx = true;
   static inline hashval_t hash (const key_type &);
   static inline bool equal_keys (const key_type &, const key_type &);
   template <typename T> static inline void remove (T &);
@@ -96,6 +97,12 @@ simple_hashmap_traits <H, Value>::mark_deleted (T &entry)
 {
   H::mark_deleted (entry.m_key);
 }
+
+template <typename H, typename Value>
+struct simple_cache_map_traits: public simple_hashmap_traits<H,Value>
+{
+  static const bool maybe_mx = false;
+};
 
 /* Implement traits for a hash_map with values of type Value for cases
    in which the key cannot represent empty and deleted slots.  Instead

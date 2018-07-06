@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2014, AdaCore                     --
+--                     Copyright (C) 2002-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,7 @@ with GNAT.Regpat;               use GNAT.Regpat;
 
 procedure VxAddr2Line is
 
-   package Unsigned_32_IO is new Modular_IO (Unsigned_32);
+   package Unsigned_64_IO is new Modular_IO (Unsigned_64);
    --  Instantiate Modular_IO to have Put
 
    Ref_Symbol : constant String := "adainit";
@@ -83,17 +83,20 @@ procedure VxAddr2Line is
 
    --  All supported architectures
    type Architecture is
-     (DEC_ALPHA,
+     (LINUX_AARCH64,
+      LINUX_ARM,
       LINUX_E500V2,
       LINUX_I586,
       LINUX_POWERPC,
+      LINUX_POWERPC64,
+      LINUX_X86_64,
+      WINDOWS_AARCH64,
+      WINDOWS_ARM,
       WINDOWS_E500V2,
       WINDOWS_I586,
-      WINDOWS_M68K,
       WINDOWS_POWERPC,
-      SOLARIS_E500V2,
-      SOLARIS_I586,
-      SOLARIS_POWERPC);
+      WINDOWS_POWERPC64,
+      WINDOWS_X86_64);
 
    type Arch_Record is record
       Addr2line_Binary : String_Access;
@@ -110,7 +113,7 @@ procedure VxAddr2Line is
       --  which will avoid computational overflows. Typically only useful when
       --  64bit addresses are provided.
 
-      Bt_Offset_From_Call : Unsigned_32;
+      Bt_Offset_From_Call : Unsigned_64;
       --  Offset from a backtrace address to the address of the corresponding
       --  call instruction. This should always be 0, except on platforms where
       --  the backtrace addresses actually correspond to return and not call
@@ -119,11 +122,16 @@ procedure VxAddr2Line is
 
    --  Configuration for each of the architectures
    Arch_List : array (Architecture'Range) of Arch_Record :=
-     (DEC_ALPHA =>
+     (LINUX_AARCH64 =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
-         Addr_Digits_To_Skip => 8,
-         Bt_Offset_From_Call => 0),
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -2),
+      LINUX_ARM =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -2),
       LINUX_E500V2 =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
@@ -139,21 +147,26 @@ procedure VxAddr2Line is
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
          Bt_Offset_From_Call => -4),
-      SOLARIS_E500V2 =>
+      LINUX_POWERPC64 =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
          Bt_Offset_From_Call => -4),
-      SOLARIS_I586 =>
+      LINUX_X86_64 =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
          Bt_Offset_From_Call => -2),
-      SOLARIS_POWERPC =>
+      WINDOWS_AARCH64 =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
-         Bt_Offset_From_Call => -4),
+         Bt_Offset_From_Call => -2),
+      WINDOWS_ARM =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -2),
       WINDOWS_E500V2 =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
@@ -164,16 +177,21 @@ procedure VxAddr2Line is
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
          Bt_Offset_From_Call => -2),
-      WINDOWS_M68K =>
-        (Addr2line_Binary    => null,
-         Nm_Binary           => null,
-         Addr_Digits_To_Skip => 0,
-         Bt_Offset_From_Call => -4),
       WINDOWS_POWERPC =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
-         Bt_Offset_From_Call => -4)
+         Bt_Offset_From_Call => -4),
+      WINDOWS_POWERPC64 =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -4),
+      WINDOWS_X86_64 =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -2)
      );
 
    --  Current architecture
@@ -193,14 +211,14 @@ procedure VxAddr2Line is
    procedure Usage;
    --  Displays the short help message and then terminates the program
 
-   function Get_Reference_Offset return Unsigned_32;
+   function Get_Reference_Offset return Unsigned_64;
    --  Computes the static offset of the reference symbol by calling nm
 
-   function Get_Value_From_Hex_Arg (Arg : Natural) return Unsigned_32;
+   function Get_Value_From_Hex_Arg (Arg : Natural) return Unsigned_64;
    --  Threats the argument number Arg as a C-style hexadecimal literal
    --  and returns its integer value
 
-   function Hex_Image (Value : Unsigned_32) return String_Access;
+   function Hex_Image (Value : Unsigned_64) return String_Access;
    --  Returns access to a string that contains hexadecimal image of Value
 
    --  Separate functions that provide build-time customization:
@@ -228,16 +246,11 @@ procedure VxAddr2Line is
          return;
       end if;
 
-      if Proc = "alpha" then
-         Cur_Arch := DEC_ALPHA;
+      --  Let's detect a Linux or Windows host.
+      if Directory_Separator = '/' then
+         Cur_Arch := Architecture'Value ("linux_" & Proc);
       else
-         --  Let's detect the host.
-         --  ??? A naive implementation that can't distinguish between Unixes
-         if Directory_Separator = '/' then
-            Cur_Arch := Architecture'Value ("solaris_" & Proc);
-         else
-            Cur_Arch := Architecture'Value ("windows_" & Proc);
-         end if;
+         Cur_Arch := Architecture'Value ("windows_" & Proc);
       end if;
 
       if Arch_List (Cur_Arch).Addr2line_Binary = null then
@@ -271,7 +284,7 @@ procedure VxAddr2Line is
    -- Get_Reference_Offset --
    --------------------------
 
-   function Get_Reference_Offset return Unsigned_32 is
+   function Get_Reference_Offset return Unsigned_64 is
       Nm_Cmd  : constant String_Access :=
                   Locate_Exec_On_Path (Arch_List (Cur_Arch).Nm_Binary.all);
 
@@ -306,11 +319,11 @@ procedure VxAddr2Line is
       declare
          Match_String : constant String := Expect_Out_Match (Pd);
          Matches      : Match_Array (0 .. 1);
-         Value        : Unsigned_32;
+         Value        : Unsigned_64;
 
       begin
          Match (Reference, Match_String, Matches);
-         Value := Unsigned_32'Value
+         Value := Unsigned_64'Value
            ("16#"
             & Match_String (Matches (1).First .. Matches (1).Last) & "#");
 
@@ -346,7 +359,7 @@ procedure VxAddr2Line is
    -- Get_Value_From_Hex_Arg --
    ----------------------------
 
-   function Get_Value_From_Hex_Arg (Arg : Natural) return Unsigned_32 is
+   function Get_Value_From_Hex_Arg (Arg : Natural) return Unsigned_64 is
       Cur_Arg : constant String := Argument (Arg);
       Offset  : Natural;
 
@@ -365,7 +378,7 @@ procedure VxAddr2Line is
 
       --  Convert to value
 
-      return Unsigned_32'Value
+      return Unsigned_64'Value
         ("16#" & Cur_Arg (Offset .. Cur_Arg'Last) & "#");
 
    exception
@@ -379,12 +392,12 @@ procedure VxAddr2Line is
    -- Hex_Image --
    ---------------
 
-   function Hex_Image (Value : Unsigned_32) return String_Access is
+   function Hex_Image (Value : Unsigned_64) return String_Access is
       Result    : String (1 .. 20);
       Start_Pos : Natural;
 
    begin
-      Unsigned_32_IO.Put (Result, Value, 16);
+      Unsigned_64_IO.Put (Result, Value, 16);
       Start_Pos := Index (Result, "16#") + 3;
       return new String'(Result (Start_Pos .. Result'Last - 1));
    end Hex_Image;
@@ -402,7 +415,7 @@ procedure VxAddr2Line is
       OS_Exit (1);
    end Usage;
 
-   Ref_Static_Offset, Ref_Runtime_Address, Bt_Address : Unsigned_32;
+   Ref_Static_Offset, Ref_Runtime_Address, Bt_Address : Unsigned_64;
 
    Addr2line_Cmd : String_Access;
 

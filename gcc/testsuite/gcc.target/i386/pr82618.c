@@ -1,6 +1,6 @@
 /* PR target/82618 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mno-stv" } */
 
 #ifdef __SIZEOF_INT128__
 typedef unsigned __int128 U;

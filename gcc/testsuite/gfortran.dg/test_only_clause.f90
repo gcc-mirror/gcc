@@ -14,7 +14,7 @@ module testOnlyClause
       ! f90IntPtr coming in has value of -11; this will make it -12
       f90IntPtr = f90IntPtr - 1
       if(f90IntPtr .ne. -12) then
-         call abort()
+         STOP 1
       endif
     end subroutine testOnly
 end module testOnlyClause

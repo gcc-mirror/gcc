@@ -1,8 +1,8 @@
 // PR libstdc++/81706
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
 // { dg-options "-O3 -mavx2 -mno-avx512f" }
-// { dg-final { scan-assembler "call\[^\n\r]_ZGVdN4v_cos" } }
-// { dg-final { scan-assembler "call\[^\n\r]_ZGVdN4v_sin" } }
+// { dg-final { scan-assembler "call\[^\n\r]__?ZGVdN4v_cos" } }
+// { dg-final { scan-assembler "call\[^\n\r]__?ZGVdN4v_sin" } }
 
 #ifdef __cplusplus
 extern "C" {

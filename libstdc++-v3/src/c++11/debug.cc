@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,6 +39,10 @@
 #include <algorithm> // for std::min
 
 #include <cxxabi.h> // for __cxa_demangle
+
+#if defined _GLIBCXX_HAVE_EXECINFO_H
+# include <execinfo.h> // for backtrace
+#endif
 
 #include "mutex_pool.h"
 
@@ -716,7 +720,10 @@ namespace
 		"dereferenceable (start-of-sequence)",
 		"dereferenceable",
 		"past-the-end",
-		"before-begin"
+		"before-begin",
+		"dereferenceable (start-of-reverse-sequence)",
+		"dereferenceable (reverse)",
+		"past-the-reverse-end"
 	      };
 	    print_word(ctx, state_names[iterator._M_state]);
 	  }
@@ -923,9 +930,9 @@ namespace
 	    continue;
 	  }
 
-	if (*start != '%')
+	if (!num_parameters || *start != '%')
 	  {
-	    // Normal char.
+	    // Normal char or no parameter to look for.
 	    buf[bufindex++] = *start++;
 	    continue;
 	  }
@@ -1033,6 +1040,38 @@ namespace __gnu_debug
 
     if (ctx._M_max_length)
       ctx._M_wordwrap = true;
+
+    if (_M_function)
+      {
+	print_literal(ctx, "In function:\n");
+	print_string(ctx, _M_function, nullptr, 0);
+	print_literal(ctx, "\n");
+	ctx._M_first_line = true;
+	print_literal(ctx, "\n");
+      }
+
+#if defined _GLIBCXX_HAVE_EXECINFO_H
+    {
+      void* stack[32];
+      int nb = backtrace(stack, 32);
+
+      // Note that we skip current method symbol.
+      if (nb > 1)
+	{
+	  print_literal(ctx, "Backtrace:\n");
+	  auto symbols = backtrace_symbols(stack, nb);
+	  for (int i = 1; i < nb; ++i)
+	    {
+	      print_word(ctx, symbols[i]);
+	      print_literal(ctx, "\n");
+	    }
+
+	  free(symbols);
+	  ctx._M_first_line = true;
+	  print_literal(ctx, "\n");
+	}
+    }
+#endif
 
     print_literal(ctx, "Error: ");
 

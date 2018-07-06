@@ -7,7 +7,7 @@
 ! Original testcase by Vittorio Zecca <zeccav@gmail.com>
 !
       I=5
-      if (any((/(i,i=1,I)/) /= (/1,2,3,4,5/))) call abort ! { dg-warning "final expression references control variable" }
-      if (I /= 5) call abort
+      if (any((/(i,i=1,I)/) /= (/1,2,3,4,5/))) STOP 1! { dg-warning "final expression references control variable" }
+      if (I /= 5) STOP 2
       end
 

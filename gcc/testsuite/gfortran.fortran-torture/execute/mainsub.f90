@@ -6,7 +6,7 @@ program mainsub
 
    i = 0
    call test (i)
-   if (i .ne. 42) call abort
+   if (i .ne. 42) STOP 1
 end program
 
 subroutine test (p)

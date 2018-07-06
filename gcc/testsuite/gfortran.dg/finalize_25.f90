@@ -42,11 +42,11 @@ program main
 
   cnt = 0
   call ndm(x)
-  if (cnt /= 2) call abort()
+  if (cnt /= 2) STOP 1
 
   cnt = 0
   call ndm2()
-  if (cnt /= 3) call abort()
+  if (cnt /= 3) STOP 2
 contains
   subroutine ndm2
     type(nde2) :: s,i

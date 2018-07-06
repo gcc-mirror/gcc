@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,10 +32,7 @@ extern bool arc_double_limm_p (rtx);
 extern void arc_print_operand (FILE *, rtx, int);
 extern void arc_print_operand_address (FILE *, rtx);
 extern void arc_final_prescan_insn (rtx_insn *, rtx *, int);
-extern void arc_set_default_type_attributes(tree type);
 extern const char *arc_output_libcall (const char *);
-extern bool prepare_extend_operands (rtx *operands, enum rtx_code code,
-				     machine_mode omode);
 extern int arc_output_addsi (rtx *operands, bool, bool);
 extern int arc_output_commutative_cond_exec (rtx *operands, bool);
 extern bool arc_expand_movmem (rtx *operands);
@@ -47,6 +44,7 @@ extern void arc_expand_compare_and_swap (rtx *);
 extern bool compact_memory_operand_p (rtx, machine_mode, bool, bool);
 extern int arc_return_address_register (unsigned int);
 extern unsigned int arc_compute_function_type (struct function *);
+extern bool arc_is_uncached_mem_p (rtx);
 #endif /* RTX_CODE */
 
 extern unsigned int arc_compute_frame_size (int);
@@ -59,15 +57,12 @@ void arc_asm_output_aligned_decl_local (FILE *, tree, const char *,
 					unsigned HOST_WIDE_INT);
 extern rtx arc_return_addr_rtx (int , rtx);
 extern bool check_if_valid_regno_const (rtx *, int);
-extern bool check_if_valid_sleep_operand (rtx *, int);
 extern bool arc_legitimate_constant_p (machine_mode, rtx);
 extern bool arc_legitimate_pic_addr_p (rtx);
 extern bool arc_raw_symbolic_reference_mentioned_p (rtx, bool);
 extern bool arc_is_longcall_p (rtx);
 extern bool arc_is_shortcall_p (rtx);
 extern bool valid_brcc_with_delay_p (rtx *);
-extern bool small_data_pattern (rtx , machine_mode);
-extern rtx arc_rewrite_small_data (rtx);
 extern bool arc_ccfsm_cond_exec_p (void);
 struct secondary_reload_info;
 extern int arc_register_move_cost (machine_mode, enum reg_class,
@@ -96,10 +91,8 @@ extern void split_addsi (rtx *);
 extern void split_subsi (rtx *);
 extern void arc_pad_return (void);
 extern void arc_split_move (rtx *);
-extern int arc_verify_short (rtx_insn *insn, int unalign, int);
 extern const char *arc_short_long (rtx_insn *insn, const char *, const char *);
 extern rtx arc_regno_use_in (unsigned int, rtx);
-extern int arc_attr_type (rtx_insn *);
 extern bool arc_scheduling_not_expected (void);
 extern bool arc_sets_cc_p (rtx_insn *insn);
 extern int arc_label_align (rtx_insn *label);
@@ -111,8 +104,11 @@ extern bool arc_epilogue_uses (int regno);
 extern bool arc_eh_uses (int regno);
 /* insn-attrtab.c doesn't include reload.h, which declares regno_clobbered_p. */
 extern int regno_clobbered_p (unsigned int, rtx_insn *, machine_mode, int);
-extern int arc_return_slot_offset (void);
 extern bool arc_legitimize_reload_address (rtx *, machine_mode, int, int);
 extern void arc_secondary_reload_conv (rtx, rtx, rtx, bool);
 extern void arc_cpu_cpp_builtins (cpp_reader *);
 extern bool arc_store_addr_hazard_p (rtx_insn *, rtx_insn *);
+extern rtx arc_eh_return_address_location (void);
+extern bool arc_is_jli_call_p (rtx);
+extern void arc_file_end (void);
+extern bool arc_is_secure_call_p (rtx);

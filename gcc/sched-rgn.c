@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -2497,6 +2497,11 @@ add_branch_dependences (rtx_insn *head, rtx_insn *tail)
       while (insn != head && DEBUG_INSN_P (insn));
     }
 
+  /* Selective scheduling handles control dependencies by itself, and
+     CANT_MOVE flags ensure that other insns will be kept in place.  */
+  if (sel_sched_p ())
+    return;
+
   /* Make sure these insns are scheduled last in their block.  */
   insn = last;
   if (insn != 0)
@@ -2725,9 +2730,7 @@ compute_block_dependences (int bb)
 
   sched_analyze (&tmp_deps, head, tail);
 
-  /* Selective scheduling handles control dependencies by itself.  */
-  if (!sel_sched_p ())
-    add_branch_dependences (head, tail);
+  add_branch_dependences (head, tail);
 
   if (current_nr_blocks > 1)
     propagate_deps (bb, &tmp_deps);
@@ -3258,10 +3261,10 @@ sched_rgn_init (bool single_blocks_p)
 	free_dominance_info (CDI_DOMINATORS);
     }
 
-  gcc_assert (0 < nr_regions && nr_regions <= n_basic_blocks_for_fn (cfun));
+  gcc_assert (nr_regions > 0 && nr_regions <= n_basic_blocks_for_fn (cfun));
 
-  RGN_BLOCKS (nr_regions) = (RGN_BLOCKS (nr_regions - 1) +
-			     RGN_NR_BLOCKS (nr_regions - 1));
+  RGN_BLOCKS (nr_regions) = (RGN_BLOCKS (nr_regions - 1)
+			     + RGN_NR_BLOCKS (nr_regions - 1));
   nr_regions_initial = nr_regions;
 }
 

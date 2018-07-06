@@ -41,15 +41,15 @@ prog kernel &KernelWithBarrier(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
 };
 
 /* The kernel function itself should have a fingerprint as follows */
-/* _Kernel (unsigned char * __args, void * __context, void * __group_base_addr, void * __private_base_addr) */
-/* { dg-final { scan-tree-dump "_Kernel \\\(unsigned char \\\* __args, void \\\* __context, void \\\* __group_base_addr, unsigned int __group_local_offset, void \\\* __private_base_addr\\\)" "gimple"} } */
+/* _Kernel (const unsigned char * restrict __args, void * restrict __context, unsigned char * restrict __group_base_addr, unsigned int __group_local_offset, unsigned char * restrict __private_base_addr) */
+/* { dg-final { scan-tree-dump "_Kernel \\\(const unsigned char \\\* restrict __args, void \\\* restrict __context, unsigned char \\\* restrict __group_base_addr, unsigned int __group_local_offset, unsigned char \\\* restrict __private_base_addr\\\)" "gimple"} } */
 
 /* ld_kernarg: mem_read.0 = MEM[(unsigned long *)__args]; */
 /* { dg-final { scan-tree-dump "mem_read.\[0-9\] = MEM\\\[\\\(unsigned long \\\*\\\)__args\\\];" "gimple"} } */
 
 /* The latter ld_global_u32 should be visible as a pointer dereference (after pointer arithmetics on a temporary var): */
 /* mem_read.2 = *D.1691; */
-/* { dg-final { scan-tree-dump "mem_read.\[0-9\] = \\\*\[_0-9\]+;" "gimple"} } */
+/* { dg-final { scan-tree-dump "mem_read.\[0-9\]+ = \\\*\[_0-9\]+;" "gimple"} } */
 
 /* add_u32s should generate +operators */
 /* { dg-final { scan-tree-dump "s2 = s0 \\\+ s1;" "gimple"} } */
@@ -71,8 +71,8 @@ prog kernel &KernelWithBarrier(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
 /* { dg-final { scan-tree-dump "if \\\(__local_z < __cur_wg_size_z\\\) goto __wi_loop_z; else goto" "gimple"} } */
 
 /* The launcher should call __hsail_launch_wg_function in this case: */
-/* Kernel (void * __context, void * __group_base_addr) */
-/* { dg-final { scan-tree-dump "Kernel \\\(void \\\* __context, void \\\* __group_base_addr\\\)" "gimple"} } */
+/* Kernel (void * restrict __context, unsigned char * restrict __group_base_addr) */
+/* { dg-final { scan-tree-dump "Kernel \\\(void \\\* restrict __context, unsigned char \\\* restrict __group_base_addr\\\)" "gimple"} } */
 /* { dg-final { scan-tree-dump "__hsail_launch_wg_function \\\(_Kernel, __context, __group_base_addr, group_local_offset.*\\\);" "gimple"} }*/
 
 /* The kernel should have the magic metadata section injected to the ELF. */

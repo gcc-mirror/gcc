@@ -1,5 +1,5 @@
 /* DWARF2 exception handling and frame unwinding for Xtensa.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -483,7 +483,7 @@ uw_init_context_1 (struct _Unwind_Context *context, void *outer_cfa,
    macro because __builtin_eh_return must be invoked in the context of
    our caller.  */
 
-#define uw_install_context(CURRENT, TARGET)				 \
+#define uw_install_context(CURRENT, TARGET, FRAMES)				 \
   do									 \
     {									 \
       long offset = uw_install_context_1 ((CURRENT), (TARGET));		 \

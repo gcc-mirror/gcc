@@ -1,5 +1,5 @@
 /* Helper routines for memory move and comparison insns.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -16,6 +16,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -183,8 +185,12 @@ expand_block_move (rtx *operands)
   return false;
 }
 
-static const int prob_unlikely = REG_BR_PROB_BASE / 10;
-static const int prob_likely = REG_BR_PROB_BASE / 4;
+static const int prob_unlikely
+  = profile_probability::from_reg_br_prob_base (REG_BR_PROB_BASE / 10)
+    .to_reg_br_prob_note ();
+static const int prob_likely
+  = profile_probability::from_reg_br_prob_base (REG_BR_PROB_BASE / 4)
+    .to_reg_br_prob_note ();
 
 /* Emit code to perform a strcmp.
 

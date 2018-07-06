@@ -1,5 +1,5 @@
 /* Common hooks for Renesas M32R.
-   Copyright (C) 1996-2017 Free Software Foundation, Inc.
+   Copyright (C) 1996-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -25,12 +25,6 @@
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
-
-static const struct default_options m32r_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -65,8 +59,6 @@ m32r_handle_option (struct gcc_options *opts,
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_CPU_DEFAULT
 #undef  TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION m32r_handle_option
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE m32r_option_optimization_table
 
 #undef  TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO		sjlj_except_unwind_info

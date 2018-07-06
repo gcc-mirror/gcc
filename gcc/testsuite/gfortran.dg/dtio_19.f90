@@ -61,8 +61,8 @@ program p
   use object_interface
 
   call assert (non_abstract_child1 (99))
-  if (trim (buffer(1)) .ne. "write_formatted1 => 99") call abort
+  if (trim (buffer(1)) .ne. "write_formatted1 => 99") STOP 1
 
   call assert (non_abstract_child2 (42.0))
-  if (trim (buffer(1)) .ne. "write_formatted2 => 42.0") call abort
+  if (trim (buffer(1)) .ne. "write_formatted2 => 42.0") STOP 2
 end

@@ -22,6 +22,6 @@ program forall2
       .ne. reshape((/ 1, 5, 9,13,&
                       2, 6,10, 8,&
                       3, 7,11,12,&
-                      4,14,15,16/),(/4,4/)))) call abort
-  if (any (a(:,:,2) .ne. a(:,:,1) + 16)) call abort
+                      4,14,15,16/),(/4,4/)))) STOP 1
+  if (any (a(:,:,2) .ne. a(:,:,1) + 16)) STOP 2
 end

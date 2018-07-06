@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -630,7 +630,9 @@ package body Exp_Ch4 is
 
             --    [Deep_]Finalize (Obj_Ref.all);
 
-            if Needs_Finalization (DesigT) then
+            if Needs_Finalization (DesigT)
+              and then not No_Heap_Finalization (PtrT)
+            then
                Fin_Call :=
                  Make_Final_Call
                    (Obj_Ref =>
@@ -2764,7 +2766,7 @@ package body Exp_Ch4 is
       --  special case of setting the right high bound for a null result.
       --  This is of type Ityp.
 
-      High_Bound : Node_Id;
+      High_Bound : Node_Id := Empty;
       --  A tree node representing the high bound of the result (of type Ityp)
 
       Result : Node_Id;
@@ -4170,10 +4172,10 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Nonbinary_Modular_Op
 
    begin
-      --  No action needed if we are not generating C code for a nonbinary
-      --  modular operand.
+      --  No action needed if front-end expansion is not required or if we
+      --  have a binary modular operand.
 
-      if not Modify_Tree_For_C
+      if not Expand_Nonbinary_Modular_Ops
         or else not Non_Binary_Modulus (Typ)
       then
          return;
@@ -4593,7 +4595,7 @@ package body Exp_Ch4 is
       --  first argument to Init must be converted to the task record type.
 
       declare
-         T         : constant Entity_Id := Entity (Expression (N));
+         T         : constant Entity_Id := Etype (Expression (N));
          Args      : List_Id;
          Decls     : List_Id;
          Decl      : Node_Id;
@@ -4615,6 +4617,81 @@ package body Exp_Ch4 is
                  (N           => N,
                   Is_Allocate => True);
             end if;
+
+         --  Optimize the default allocation of an array object when pragma
+         --  Initialize_Scalars or Normalize_Scalars is in effect. Construct an
+         --  in-place initialization aggregate which may be convert into a fast
+         --  memset by the backend.
+
+         elsif Init_Or_Norm_Scalars
+           and then Is_Array_Type (T)
+
+           --  The array must lack atomic components because they are treated
+           --  as non-static, and as a result the backend will not initialize
+           --  the memory in one go.
+
+           and then not Has_Atomic_Components (T)
+
+           --  The array must not be packed because the invalid values in
+           --  System.Scalar_Values are multiples of Storage_Unit.
+
+           and then not Is_Packed (T)
+
+           --  The array must have static non-empty ranges, otherwise the
+           --  backend cannot initialize the memory in one go.
+
+           and then Has_Static_Non_Empty_Array_Bounds (T)
+
+           --  The optimization is only relevant for arrays of scalar types
+
+           and then Is_Scalar_Type (Component_Type (T))
+
+           --  Similar to regular array initialization using a type init proc,
+           --  predicate checks are not performed because the initialization
+           --  values are intentionally invalid, and may violate the predicate.
+
+           and then not Has_Predicates (Component_Type (T))
+
+           --  The component type must have a single initialization value
+
+           and then Needs_Simple_Initialization
+                      (Typ         => Component_Type (T),
+                       Consider_IS => True)
+         then
+            Set_Analyzed (N);
+            Temp := Make_Temporary (Loc, 'P');
+
+            --  Generate:
+            --    Temp : Ptr_Typ := new ...;
+
+            Insert_Action
+              (Assoc_Node => N,
+               Ins_Action =>
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Object_Definition   => New_Occurrence_Of (PtrT, Loc),
+                   Expression          => Relocate_Node (N)),
+               Suppress   => All_Checks);
+
+            --  Generate:
+            --    Temp.all := (others => ...);
+
+            Insert_Action
+              (Assoc_Node => N,
+               Ins_Action =>
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Explicit_Dereference (Loc,
+                       Prefix => New_Occurrence_Of (Temp, Loc)),
+                   Expression =>
+                     Get_Simple_Init_Val
+                       (Typ  => T,
+                        N    => N,
+                        Size => Esize (Component_Type (T)))),
+               Suppress   => All_Checks);
+
+            Rewrite (N, New_Occurrence_Of (Temp, Loc));
+            Analyze_And_Resolve (N, PtrT);
 
          --  Case of no initialization procedure present
 
@@ -4798,7 +4875,7 @@ package body Exp_Ch4 is
 
                declare
                   Dis : Boolean := False;
-                  Typ : Entity_Id;
+                  Typ : Entity_Id := Empty;
 
                begin
                   if Has_Discriminants (T) then
@@ -5338,7 +5415,7 @@ package body Exp_Ch4 is
            and then Is_Finalizable_Transient (Act, N)
          then
             Process_Transient_In_Expression (Act, N, Acts);
-            return Abandon;
+            return Skip;
 
          --  Avoid processing temporary function results multiple times when
          --  dealing with nested expression_with_actions.
@@ -6013,10 +6090,20 @@ package body Exp_Ch4 is
               --  have a test in the generic that makes sense with some types
               --  and not with other types.
 
-              and then not In_Instance
+              --  Similarly, do not rewrite membership as a validity check if
+              --  within the predicate function for the type.
+
             then
-               Substitute_Valid_Check;
-               goto Leave;
+               if In_Instance
+                 or else (Ekind (Current_Scope) = E_Function
+                           and then Is_Predicate_Function (Current_Scope))
+               then
+                  null;
+
+               else
+                  Substitute_Valid_Check;
+                  goto Leave;
+               end if;
             end if;
 
             --  If we have an explicit range, do a bit of optimization based on
@@ -6897,12 +6984,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular additions into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Add;
 
    ---------------------
@@ -6928,12 +7010,7 @@ package body Exp_Ch4 is
          Expand_Intrinsic_Call (N, Entity (N));
       end if;
 
-      --  When generating C code, convert nonbinary modular operators into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_And;
 
    ------------------------
@@ -7176,12 +7253,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular divisions into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Divide;
 
    --------------------
@@ -8685,12 +8757,7 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Typ);
       end if;
 
-      --  When generating C code, convert nonbinary modular minus into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Minus;
 
    ---------------------
@@ -9168,12 +9235,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular multiplications
-      --  into code that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Multiply;
 
    --------------------
@@ -9485,12 +9547,7 @@ package body Exp_Ch4 is
          Expand_Intrinsic_Call (N, Entity (N));
       end if;
 
-      --  When generating C code, convert nonbinary modular operators into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Or;
 
    ----------------------
@@ -9924,12 +9981,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular subtractions into
-      --  code that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Subtract;
 
    ---------------------
@@ -9953,7 +10005,6 @@ package body Exp_Ch4 is
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
-
       end if;
    end Expand_N_Op_Xor;
 
@@ -10747,6 +10798,8 @@ package body Exp_Ch4 is
 
                      if Present (Stored) then
                         Elmt := First_Elmt (Stored);
+                     else
+                        Elmt := No_Elmt; -- init to avoid warning
                      end if;
 
                      Cons := New_List;
@@ -11277,6 +11330,7 @@ package body Exp_Ch4 is
          elsif In_Instance_Body
            and then Ekind (Operand_Type) = E_Anonymous_Access_Type
            and then Nkind (Operand) = N_Selected_Component
+           and then Ekind (Entity (Selector_Name (Operand))) = E_Discriminant
            and then Object_Access_Level (Operand) >
                       Type_Access_Level (Target_Type)
          then
@@ -13109,10 +13163,10 @@ package body Exp_Ch4 is
       Comp : Node_Id;
       --  Comparison operand, set only if Is_Zero is false
 
-      Ent : Entity_Id;
+      Ent : Entity_Id := Empty;
       --  Entity whose length is being compared
 
-      Index : Node_Id;
+      Index : Node_Id := Empty;
       --  Integer_Literal node for length attribute expression, or Empty
       --  if there is no such expression present.
 

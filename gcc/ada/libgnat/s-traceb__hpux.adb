@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2009-2017, Free Software Foundation, Inc.        --
+--           Copyright (C) 2009-2018, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -395,9 +395,9 @@ package body System.Traceback is
          return True;
       end Pop_Frame;
 
-      ---------------------------------
-      -- Prepare_State_For_Unwind_Of --
-      ---------------------------------
+      ---------------------------
+      -- Prepare_For_Unwind_Of --
+      ---------------------------
 
       function Prepare_For_Unwind_Of
         (Frame : not null access CFD) return Boolean

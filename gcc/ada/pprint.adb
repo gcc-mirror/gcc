@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;   use Atree;
+with Csets;   use Csets;
 with Einfo;   use Einfo;
 with Namet;   use Namet;
 with Nlists;  use Nlists;
@@ -272,11 +273,43 @@ package body Pprint is
             when N_Attribute_Reference =>
                if Take_Prefix then
                   declare
-                     Id     : constant Attribute_Id :=
-                                Get_Attribute_Id (Attribute_Name (Expr));
-                     Str    : constant String :=
-                                Expr_Name (Prefix (Expr)) & "'"
-                                  & Get_Name_String (Attribute_Name (Expr));
+                     function To_Mixed_Case (S : String) return String;
+                     --  Transform given string into the corresponding one in
+                     --  mixed case form.
+
+                     -------------------
+                     -- To_Mixed_Case --
+                     -------------------
+
+                     function To_Mixed_Case (S : String) return String is
+                        Result : String (S'Range);
+                        Ucase  : Boolean := True;
+
+                     begin
+                        for J in S'Range loop
+                           if Ucase then
+                              Result (J) := Fold_Upper (S (J));
+                           else
+                              Result (J) := Fold_Lower (S (J));
+                           end if;
+
+                           Ucase := (S (J) = '_');
+                        end loop;
+
+                        return Result;
+                     end To_Mixed_Case;
+
+                     Id : constant Attribute_Id :=
+                            Get_Attribute_Id (Attribute_Name (Expr));
+
+                     --  Always use mixed case for attributes
+
+                     Str : constant String :=
+                             Expr_Name (Prefix (Expr))
+                               & "'"
+                               & To_Mixed_Case
+                                   (Get_Name_String (Attribute_Name (Expr)));
+
                      N      : Node_Id;
                      Ranges : List_Id;
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fcf-protection -mcet" } */
+/* { dg-options "-O2 -fcf-protection" } */
 /* { dg-final { scan-assembler-times {\mendbr} 1 } } */
 
 static void

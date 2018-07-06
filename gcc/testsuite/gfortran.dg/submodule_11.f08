@@ -32,14 +32,14 @@ submodule (m) sm
   use n
 contains
   module subroutine show_i
-    if (i .ne. 2) call abort
-    if (times_two (i) .ne. 4) call abort
+    if (i .ne. 2) STOP 1
+    if (times_two (i) .ne. 4) STOP 2
   end subroutine show_i
 end submodule sm
 
 program p
   use m
   call show_i
-  if (i .ne. -1) call abort
-  if (times_two (i) .ne. 2) call abort
+  if (i .ne. -1) STOP 3
+  if (times_two (i) .ne. 2) STOP 4
 end program

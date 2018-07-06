@@ -21,11 +21,11 @@ program z
 !  write (*,*) tmp( 1, :)
 
   allocate (d(DIM1_SIZE / 2, 2), source = tmp(1 : DIM1_SIZE / 2, :) , stat=errstat)
-  if (any (d .ne. tmp(1:DIM1_SIZE/2,:))) call abort
+  if (any (d .ne. tmp(1:DIM1_SIZE/2,:))) STOP 1
   deallocate (d)
 
   allocate (d(DIM1_SIZE / 2, 2), source = foo (tmp(1 : DIM1_SIZE / 2, :)) , stat=errstat)
-  if (any (d .ne. tmp(1 : DIM1_SIZE / 2, :))) call abort
+  if (any (d .ne. tmp(1 : DIM1_SIZE / 2, :))) STOP 2
 
   deallocate (tmp , d)
 

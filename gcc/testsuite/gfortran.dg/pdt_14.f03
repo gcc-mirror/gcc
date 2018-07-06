@@ -82,9 +82,9 @@ program ch2701
   current => push_8 (root, 2.0_8)
   current => push_8 (root, 3.0_8)
 
-  if (int (pop_8 (root)) .ne. 3) call abort
-  if (int (pop_8 (root)) .ne. 2) call abort
-  if (int (pop_8 (root)) .ne. 1) call abort
-  if (int (pop_8 (root)) .ne. 0) call abort
+  if (int (pop_8 (root)) .ne. 3) STOP 1
+  if (int (pop_8 (root)) .ne. 2) STOP 2
+  if (int (pop_8 (root)) .ne. 1) STOP 3
+  if (int (pop_8 (root)) .ne. 0) STOP 4
 
 end program ch2701

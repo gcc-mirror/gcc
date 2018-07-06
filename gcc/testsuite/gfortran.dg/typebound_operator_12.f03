@@ -38,6 +38,6 @@ program main
   fireworks%velocity = [4,5,6]
   dt = 5
   fireworks = fireworks + fireworks*dt
-  if (any (fireworks%position .ne. [6, 12, 18])) call abort
-  if (any (fireworks%velocity .ne. [24, 30, 36])) call abort
+  if (any (fireworks%position .ne. [6, 12, 18])) STOP 1
+  if (any (fireworks%velocity .ne. [24, 30, 36])) STOP 2
 end program

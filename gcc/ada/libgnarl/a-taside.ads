@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,9 +38,7 @@ with System.Tasking;
 
 package Ada.Task_Identification with
   SPARK_Mode,
-  Abstract_State => (Tasking_State with Synchronous,
-                                        External => (Async_Readers,
-                                                     Async_Writers)),
+  Abstract_State => (Tasking_State with Synchronous),
   Initializes    => Tasking_State
 is
    pragma Preelaborate;

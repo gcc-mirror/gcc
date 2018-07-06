@@ -19,4 +19,4 @@ testld_cst_vd (long long ll1, vector double vd)
   return vec_ld (16, &vd);
 }
 
-/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvd2x\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvd2x\M|\mlxv\M} 2 } } */

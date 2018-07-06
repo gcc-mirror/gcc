@@ -1,5 +1,5 @@
 ;; GCC machine description for Blackfin synchronization instructions.
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;; Contributed by Analog Devices.
 ;;
 ;; This file is part of GCC.

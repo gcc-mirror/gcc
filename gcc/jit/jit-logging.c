@@ -1,5 +1,5 @@
 /* Internals of libgccjit: logging
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -79,7 +79,7 @@ logger::decref (const char *reason)
   if (m_log_refcount_changes)
     log ("%s: reason: %s refcount now %i",
 	 __PRETTY_FUNCTION__, reason, m_refcount);
-  if (0 == m_refcount)
+  if (m_refcount == 0)
     delete this;
 }
 

@@ -21,6 +21,6 @@ program test
   read(10) a, b
   read(10) a, b
   read(10) a, b
-  if ((a.ne.2).and.( b.ne.1)) call abort()
+  if ((a.ne.2).and.( b.ne.1)) STOP 1
 end program test
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -39,7 +39,9 @@
 #define _THREAD_SAFE
 
 /* Use 64 bit Large File API */
-#ifndef _LARGEFILE_SOURCE
+#if defined (__QNX__)
+#define _LARGEFILE64_SOURCE 1
+#elif !defined(_LARGEFILE_SOURCE)
 #define _LARGEFILE_SOURCE
 #endif
 #define _FILE_OFFSET_BITS 64
@@ -79,6 +81,10 @@
 
 #ifdef __PikeOS__
 #define __BSD_VISIBLE 1
+#endif
+
+#ifdef __QNX__
+#include <sys/syspage.h>
 #endif
 
 #ifdef IN_RTS
@@ -773,7 +779,7 @@ __gnat_rmdir (char *path)
 }
 
 #if defined (_WIN32) || defined (__linux__) || defined (__sun__) \
-  || defined (__FreeBSD__) || defined(__DragonFly__)
+  || defined (__FreeBSD__) || defined(__DragonFly__) || defined (__QNX__)
 #define HAS_TARGET_WCHAR_T
 #endif
 
@@ -1012,7 +1018,7 @@ __gnat_open_new_temp (char *path, int fmode)
 
 #if (defined (__FreeBSD__) || defined (__NetBSD__) || defined (__OpenBSD__) \
   || defined (__linux__) || defined (__GLIBC__) || defined (__ANDROID__) \
-  || defined (__DragonFly__)) && !defined (__vxworks)
+  || defined (__DragonFly__) || defined (__QNX__)) && !defined (__vxworks)
   return mkstemp (path);
 #elif defined (__Lynx__)
   mktemp (path);
@@ -1185,7 +1191,7 @@ __gnat_tmp_name (char *tmp_filename)
 
 #elif defined (__linux__) || defined (__FreeBSD__) || defined (__NetBSD__) \
   || defined (__OpenBSD__) || defined (__GLIBC__) || defined (__ANDROID__) \
-  || defined (__DragonFly__)
+  || defined (__DragonFly__) || defined (__QNX__)
 #define MAX_SAFE_PATH 1000
   char *tmpdir = getenv ("TMPDIR");
 
@@ -1221,7 +1227,7 @@ __gnat_tmp_name (char *tmp_filename)
 
       /* Fill up the name buffer from the last position.  */
       seed++;
-      for (t = seed; 0 <= --index; t >>= 3)
+      for (t = seed; --index >= 0; t >>= 3)
         *--pos = '0' + (t & 07);
 
       /* Check to see if its unique, if not bump the seed and try again.  */
@@ -2349,6 +2355,9 @@ __gnat_number_of_cpus (void)
   || defined (__DragonFly__) || defined (__NetBSD__)
   cores = (int) sysconf (_SC_NPROCESSORS_ONLN);
 
+#elif defined (__QNX__)
+  cores = (int) _syspage_ptr->num_cpu;
+
 #elif defined (__hpux__)
   struct pst_dynamic psd;
   if (pstat_getdynamic (&psd, sizeof (psd), 1, 0) != -1)
@@ -2582,10 +2591,10 @@ win32_wait (int *status)
 #else
   /* Note that index 0 contains the event handle that is signaled when the
      process list has changed */
-  hl = (HANDLE *) xmalloc (sizeof (HANDLE) * hl_len + 1);
+  hl = (HANDLE *) xmalloc (sizeof (HANDLE) * (hl_len + 1));
   hl[0] = ProcListEvt;
   memmove (&hl[1], HANDLES_LIST, sizeof (HANDLE) * hl_len);
-  pidl = (int *) xmalloc (sizeof (int) * hl_len + 1);
+  pidl = (int *) xmalloc (sizeof (int) * (hl_len + 1));
   memmove (&pidl[1], PID_LIST, sizeof (int) * hl_len);
   hl_len++;
 #endif
@@ -2598,6 +2607,8 @@ win32_wait (int *status)
   /* If there was an error, exit now */
   if (res == WAIT_FAILED)
     {
+      free (hl);
+      free (pidl);
       errno = EINVAL;
       return -1;
     }

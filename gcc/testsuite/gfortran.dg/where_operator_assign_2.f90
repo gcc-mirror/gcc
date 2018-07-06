@@ -49,22 +49,22 @@ program test
   l1 = (/t, f, f, t/)
 
   call test_where_1
-  if (any (y .ne. (/a (2, 1),a (2, 2),a (2, 3),a (2, 4)/))) call abort ()
+  if (any (y .ne. (/a (2, 1),a (2, 2),a (2, 3),a (2, 4)/))) STOP 1
 
   call test_where_2
-  if (any (y .ne. (/a (1, 0),a (2, 2),a (2, 3),a (1, 0)/))) call abort ()
-  if (any (z .ne. (/a (3, 4),a (1, 0),a (1, 0),a (3, 1)/))) call abort ()
+  if (any (y .ne. (/a (1, 0),a (2, 2),a (2, 3),a (1, 0)/))) STOP 2
+  if (any (z .ne. (/a (3, 4),a (1, 0),a (1, 0),a (3, 1)/))) STOP 3
 
   call test_where_3
-  if (any (y .ne. (/a (1, 0),a (1, 2),a (1, 3),a (1, 0)/))) call abort ()
+  if (any (y .ne. (/a (1, 0),a (1, 2),a (1, 3),a (1, 0)/))) STOP 4
 
   y = x
   call test_where_forall_1
-  if (any (u(4, :) .ne. (/a (1, 4),a (2, 2),a (2, 3),a (1, 4)/))) call abort ()
+  if (any (u(4, :) .ne. (/a (1, 4),a (2, 2),a (2, 3),a (1, 4)/))) STOP 5
 
   l1 = (/t, f, t, f/)
   call test_where_4
-  if (any (x .ne. (/a (1, 1),a (2, 1),a (1, 3),a (2, 3)/))) call abort ()
+  if (any (x .ne. (/a (1, 1),a (2, 1),a (1, 3),a (2, 3)/))) STOP 6
 
 contains
 !******************************************************************************

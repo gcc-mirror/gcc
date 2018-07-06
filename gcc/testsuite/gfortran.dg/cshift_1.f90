@@ -93,7 +93,7 @@ program testme
    do i=-3,3,2
      call cshift_sp_3_v1 (a, i, k, b)
      c = cshift(a,i,k)
-     if (any (c /= b)) call abort
+     if (any (c /= b)) STOP 1
    end do
   end do
   deallocate (b,c)
@@ -102,7 +102,7 @@ program testme
      do i=-3,3,2
         call cshift_sp_3_v1 (a(1:n-1,1:n-1,1:n-1), i, k, b)
         c = cshift(a(1:n-1,1:n-1,1:n-1), i, k)
-        if (any (c /= b)) call abort
+        if (any (c /= b)) STOP 2
      end do
   end do
 end program testme

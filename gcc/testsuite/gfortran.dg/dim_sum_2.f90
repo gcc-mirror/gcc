@@ -19,11 +19,11 @@ program summation
   r1 = sum(arr,dim=1,mask=arr>23)
   write (unit=c2, fmt=fmt) r1
   call print_sum(1,c1)
-  if (c1 /= c2) call abort
+  if (c1 /= c2) STOP 1
   r2 = sum(arr,dim=2,mask=arr>23)
   write (unit=c2, fmt=fmt) r2
   call print_sum(2,c1)
-  if (c1 /= c2) call abort
+  if (c1 /= c2) STOP 2
   call print_sum(5,c1)
 
 contains

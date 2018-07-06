@@ -1,5 +1,5 @@
 ;;  Machine Description for Renesas RL78 processors
-;;  Copyright (C) 2011-2017 Free Software Foundation, Inc.
+;;  Copyright (C) 2011-2018 Free Software Foundation, Inc.
 ;;  Contributed by Red Hat.
 
 ;; This file is part of GCC.
@@ -62,6 +62,14 @@
 	(match_operand:HI 1 "general_operand"      "viYS, viS, *Wfr, vi"))]
   "rl78_virt_insns_ok ()"
   "v.movw %0, %1"
+  [(set_attr "valloc" "op1")]
+)
+
+(define_insn "*bswaphi2_virt"
+  [(set (match_operand:HI           0 "rl78_nonfar_nonimm_operand" "=vm")
+        (bswap:HI (match_operand:HI 1 "general_operand"  "vim")))]
+  "rl78_virt_insns_ok ()"
+  "v.bswaphi\t%0, %1"
   [(set_attr "valloc" "op1")]
 )
 

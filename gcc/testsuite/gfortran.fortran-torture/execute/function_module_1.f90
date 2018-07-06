@@ -32,5 +32,5 @@ program P1
   implicit none
   p = 0
   call AA ()
-  if (p /= 1) call abort
+  if (p /= 1) STOP 1
 end

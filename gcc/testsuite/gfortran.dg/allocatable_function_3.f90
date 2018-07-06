@@ -20,5 +20,5 @@ end subroutine
       integer, allocatable :: spectral(:)
     end function transform_to_spectral_from
   end interface
-  if (any (transform_to_spectral_from () .ne. (/1,2/))) call abort ()
+  if (any (transform_to_spectral_from () .ne. (/1,2/))) STOP 1
 end

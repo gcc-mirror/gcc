@@ -43,4 +43,4 @@ testuc_3 ()
   return vec_splat_u8 (15);
 }
 
-/* { dg-final { scan-assembler-times "vspltisb" 6 } } */
+/* { dg-final { scan-assembler-times "xxspltib|vspltisb" 6 } } */

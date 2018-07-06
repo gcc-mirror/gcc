@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O0"
+! { dg-options "-O0" }
 ! PR fortran/68318
 ! Original code submitted by Gerhard Steinmetz
 ! <gerhard dot steinmetz dot fortran at t-online dot de>

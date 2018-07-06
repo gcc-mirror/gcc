@@ -6,5 +6,5 @@
       !write(*,'(a)') "123456789012345678901234567890"
       write(output,'(T20,A3,  T1,A4,  T5,A2,  T7,A2,  T9,A4, T17,A2)')
      1 'a', 'b', 'c', 'd', 'e', 'f' 
-      if (output .ne. "   b c d   e     f   a") call abort
+      if (output .ne. "   b c d   e     f   a") STOP 1
       end

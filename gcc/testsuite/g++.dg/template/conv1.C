@@ -16,8 +16,8 @@ template<class T> struct First
 };
 
 template <class T> int First<T>::Foo ()
-{} // This is here to make sure we didn't smash Foo's decl in the
-   // method vector
+{ return 0; } // This is here to make sure we didn't smash Foo's decl in the
+	      // method vector
 
 struct B { };
 struct D { };

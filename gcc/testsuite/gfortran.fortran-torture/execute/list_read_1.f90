@@ -33,7 +33,7 @@
          read(nin, fmt = *) (x(i,j), j=1, n)
          if (debug) write(*, *) (x(i,j), j=1, n)
           do K = 1,n
-              if (x(i,k).ne.y(i,k)) call abort
+              if (x(i,k).ne.y(i,k)) STOP 1
           end do
       end do
       m = 0
@@ -47,7 +47,7 @@
          read(nin, fmt = *) (x(i,j), j=1, n)
          if (debug) write(*, *) (x(i,j), j=1, n)
          do K = 1,n
-              if (x(i,k).ne.y(i,k)) call abort
+              if (x(i,k).ne.y(i,k)) STOP 2
          end do
       end do
       close(nin, status='delete')

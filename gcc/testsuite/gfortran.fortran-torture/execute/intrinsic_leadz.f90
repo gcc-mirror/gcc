@@ -12,35 +12,35 @@ program test_intrinsic_leadz
            integer(kind=4) :: z4, i4, e4
            integer(kind=8) :: z8, i8, e8
 
-           if (leadz(0_1) /=  8) call abort()
-           if (leadz(0_2) /= 16) call abort()
-           if (leadz(0_4) /= 32) call abort()
-           if (leadz(0_8) /= 64) call abort()
+           if (leadz(0_1) /=  8) STOP 1
+           if (leadz(0_2) /= 16) STOP 2
+           if (leadz(0_4) /= 32) STOP 3
+           if (leadz(0_8) /= 64) STOP 4
 
-           if (leadz(1_1) /=  7) call abort()
-           if (leadz(1_2) /= 15) call abort()
-           if (leadz(1_4) /= 31) call abort()
-           if (leadz(1_8) /= 63) call abort()
+           if (leadz(1_1) /=  7) STOP 5
+           if (leadz(1_2) /= 15) STOP 6
+           if (leadz(1_4) /= 31) STOP 7
+           if (leadz(1_8) /= 63) STOP 8
 
-           if (leadz(8_1) /=  4) call abort()
-           if (leadz(8_2) /= 12) call abort()
-           if (leadz(8_4) /= 28) call abort()
-           if (leadz(8_8) /= 60) call abort()
+           if (leadz(8_1) /=  4) STOP 9
+           if (leadz(8_2) /= 12) STOP 10
+           if (leadz(8_4) /= 28) STOP 11
+           if (leadz(8_8) /= 60) STOP 12
 
-           if (leadz(z1) /=  8) call abort()
-           if (leadz(z2) /= 16) call abort()
-           if (leadz(z4) /= 32) call abort()
-           if (leadz(z8) /= 64) call abort()
+           if (leadz(z1) /=  8) STOP 13
+           if (leadz(z2) /= 16) STOP 14
+           if (leadz(z4) /= 32) STOP 15
+           if (leadz(z8) /= 64) STOP 16
 
-           if (leadz(i1) /=  7) call abort()
-           if (leadz(i2) /= 15) call abort()
-           if (leadz(i4) /= 31) call abort()
-           if (leadz(i8) /= 63) call abort()
+           if (leadz(i1) /=  7) STOP 17
+           if (leadz(i2) /= 15) STOP 18
+           if (leadz(i4) /= 31) STOP 19
+           if (leadz(i8) /= 63) STOP 20
 
-           if (leadz(e1) /=  4) call abort()
-           if (leadz(e2) /= 12) call abort()
-           if (leadz(e4) /= 28) call abort()
-           if (leadz(e8) /= 60) call abort()
+           if (leadz(e1) /=  4) STOP 21
+           if (leadz(e2) /= 12) STOP 22
+           if (leadz(e4) /= 28) STOP 23
+           if (leadz(e8) /= 60) STOP 24
         end subroutine test_leadz
 
 end program

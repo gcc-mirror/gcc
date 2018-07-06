@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                   (Dummy body for non-distributed case)                  --
 --                                                                          --
---          Copyright (C) 1995-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,7 +72,7 @@ package body System.Partition_Interface is
    end Check;
 
    -----------------------------
-   -- Get_Active_Partition_Id --
+   -- Get_Active_Partition_ID --
    -----------------------------
 
    function Get_Active_Partition_ID
@@ -103,7 +103,7 @@ package body System.Partition_Interface is
    end Get_Active_Version;
 
    ----------------------------
-   -- Get_Local_Partition_Id --
+   -- Get_Local_Partition_ID --
    ----------------------------
 
    function Get_Local_Partition_ID return System.RPC.Partition_ID is

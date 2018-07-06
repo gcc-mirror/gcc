@@ -14,4 +14,4 @@ subroutine BytesToString(bytes, string)
     character(len=*) :: string
     string = transfer(bytes, string)
   end subroutine
-! { dg-final { scan-tree-dump-times "MIN_EXPR" 2 "original" } }
+! { dg-final { scan-tree-dump-times "MIN_EXPR" 1 "original" } }

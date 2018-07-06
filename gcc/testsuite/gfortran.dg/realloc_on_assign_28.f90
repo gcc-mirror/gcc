@@ -23,10 +23,10 @@
     end if
   end do
 
-  if (sum ([(a(i)%i, i=1,size(a))]) .ne. chksum) call abort
-  if (any([(a(i)%i, i=1,size(a))] /= [(i, i=1,size(a))])) call abort
-  if (size(a) /= size(b)) call abort
-  if (any([(b(i)%i, i=1,size(b))] /= [(i, i=1,size(b))])) call abort
+  if (sum ([(a(i)%i, i=1,size(a))]) .ne. chksum) STOP 1
+  if (any([(a(i)%i, i=1,size(a))] /= [(i, i=1,size(a))])) STOP 2
+  if (size(a) /= size(b)) STOP 3
+  if (any([(b(i)%i, i=1,size(b))] /= [(i, i=1,size(b))])) STOP 4
 contains
   subroutine foo
     b = first_arg([b, e], [a, e])

@@ -1,6 +1,8 @@
 /* Test for ICE in predictive commoning with empty loop header block
    on arm-none-linux-*.  */
 
+#pragma GCC diagnostic ignored "-Wreturn-type"
+
 struct Foo
 {
   double *ptr;

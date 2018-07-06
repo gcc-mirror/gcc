@@ -1,5 +1,5 @@
 /* Scanning of rtl for dataflow analysis.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "dumpfile.h"
+#include "calls.h"
 
 
 /* The set of hard registers in eliminables[i].from. */
@@ -3206,17 +3207,6 @@ df_insn_refs_collect (struct df_collection_rec *collection_rec,
   if (CALL_P (insn_info->insn))
     df_get_call_refs (collection_rec, bb, insn_info, flags);
 
-  if (asm_noperands (PATTERN (insn_info->insn)) >= 0)
-    for (unsigned i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (global_regs[i])
-       {
-         /* As with calls, asm statements reference all global regs. */
-         df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-                        NULL, bb, insn_info, DF_REF_REG_USE, flags);
-         df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-                        NULL, bb, insn_info, DF_REF_REG_DEF, flags);
-       }
-
   /* Record other defs.  These should be mostly for DF_REF_REGULAR, so
      that a qsort on the defs is unnecessary in most cases.  */
   df_defs_record (collection_rec,
@@ -3518,7 +3508,7 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
 
   /* If the function has an incoming STATIC_CHAIN, it has to show up
      in the entry def set.  */
-  r = targetm.calls.static_chain (current_function_decl, true);
+  r = rtx_for_static_chain (current_function_decl, true);
   if (r && REG_P (r))
     bitmap_set_bit (entry_block_defs, REGNO (r));
 

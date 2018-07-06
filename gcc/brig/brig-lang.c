@@ -1,5 +1,5 @@
 /* brig-lang.c -- brig (HSAIL) input gcc interface.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -57,7 +57,7 @@ static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 
-/* This file is based on Go frontent'd go-lang.c and gogo-tree.cc.  */
+/* This file is based on Go frontend's go-lang.c and gogo-tree.cc.  */
 
 /* If -v set.  */
 
@@ -123,7 +123,7 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
   /* If we set this to one, the whole program optimizations internalize
      all global variables, making them invisible to the dyn loader (and
      thus the HSA runtime implementation).  */
-  opts->x_flag_whole_program = 0;
+  opts->x_flag_whole_program = 1;
 
   /* The builtin math functions should not set errno.  */
   opts->x_flag_errno_math = 0;
@@ -136,6 +136,8 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
   opts->x_flag_signed_zeros = 1;
 
   opts->x_optimize = 3;
+
+  flag_no_builtin = 1;
 }
 
 /* Handle Brig specific options.  Return 0 if we didn't do anything.  */
@@ -167,9 +169,15 @@ brig_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
 
-  /* gccbrig casts pointers around like crazy, TBAA produces
-     broken code if not force disabling it.  */
-  flag_strict_aliasing = 0;
+  /* gccbrig casts pointers around like crazy, TBAA might produce broken
+     code if not disabling it by default.  Some PRM conformance tests such
+     as prm/core/memory/ordinary/ld/ld_u16 fail currently with strict
+     aliasing (to fix).  It can be enabled from the command line for cases
+     that are known not to break the C style aliasing requirements.  */
+  if (!global_options_set.x_flag_strict_aliasing)
+    flag_strict_aliasing = 0;
+  else
+    flag_strict_aliasing = global_options.x_flag_strict_aliasing;
 
   /* Returning false means that the backend should be used.  */
   return false;
@@ -447,19 +455,19 @@ brig_localize_identifier (const char *ident)
 /* Table of machine-independent attributes supported in GIMPLE.  */
 const struct attribute_spec brig_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       do_diagnostic } */
-  { "leaf",		      0, 0, true,  false, false,
-			      handle_leaf_attribute, false },
-  { "const",                  0, 0, true,  false, false,
-			      handle_const_attribute, false },
-  { "pure",                   0, 0, true,  false, false,
-			      handle_pure_attribute, false },
-  { "nothrow",                0, 0, true,  false, false,
-			      handle_nothrow_attribute, false },
-  { "returns_twice",          0, 0, true,  false, false,
-			      handle_returns_twice_attribute, false },
-  { NULL,                     0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "leaf",		      0, 0, true,  false, false, false,
+			      handle_leaf_attribute, NULL },
+  { "const",                  0, 0, true,  false, false, false,
+			      handle_const_attribute, NULL },
+  { "pure",                   0, 0, true,  false, false, false,
+			      handle_pure_attribute, NULL },
+  { "nothrow",                0, 0, true,  false, false, false,
+			      handle_nothrow_attribute, NULL },
+  { "returns_twice",          0, 0, true,  false, false, false,
+			      handle_returns_twice_attribute, NULL },
+  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Attribute handlers.  */
@@ -629,9 +637,11 @@ builtin_type_for_size (int size, bool unsignedp)
 
 static void
 def_builtin_1 (enum built_in_function fncode, const char *name,
-	       enum built_in_class fnclass, tree fntype, tree libtype,
-	       bool both_p, bool fallback_p, bool nonansi_p,
-	       tree fnattrs, bool implicit_p)
+	       enum built_in_class fnclass ATTRIBUTE_UNUSED,
+	       tree fntype, tree libtype ATTRIBUTE_UNUSED,
+	       bool both_p ATTRIBUTE_UNUSED, bool fallback_p,
+	       bool nonansi_p ATTRIBUTE_UNUSED, tree fnattrs,
+	       bool implicit_p)
 {
   tree decl;
   const char *libname;
@@ -643,12 +653,6 @@ def_builtin_1 (enum built_in_function fncode, const char *name,
   decl = add_builtin_function (name, fntype, fncode, fnclass,
 			       (fallback_p ? libname : NULL),
 			       fnattrs);
-
-  if (both_p
-      && !flag_no_builtin
-      && !(nonansi_p && flag_no_nonansi_builtin))
-    add_builtin_function (libname, libtype, fncode, fnclass,
-			  NULL, fnattrs);
 
   set_builtin_decl (fncode, decl, implicit_p);
 }

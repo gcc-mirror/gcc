@@ -65,5 +65,5 @@ program spec_test
   character(54) :: chr
 
   c_size = 5
-  if (tricky ('Help me', butt_ugly) .ne. transfer (butt_ugly (1), chr)) call abort ()
+  if (tricky ('Help me', butt_ugly) .ne. transfer (butt_ugly (1), chr)) STOP 1
 end program spec_test

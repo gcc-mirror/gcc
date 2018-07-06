@@ -20,7 +20,7 @@ public:
 }
 class B *b;
 void get_me_lost (void *);
-main()
+int main()
 {
   int c;
   if (c)

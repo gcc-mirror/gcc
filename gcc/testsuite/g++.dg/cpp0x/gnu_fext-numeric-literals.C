@@ -4,7 +4,7 @@
 //  Integer imaginary...
 
 constexpr unsigned long long
-operator"" i(unsigned long long n) // { dg-warning "shadowed by implementation" }
+operator"" i(unsigned long long n) // { dg-warning "shadowed by implementation" "" { target c++11_only } }
 { return 4 * n + 0; }
 
 constexpr unsigned long long
@@ -22,7 +22,7 @@ operator"" J(unsigned long long n) // { dg-warning "shadowed by implementation" 
 //  Floating-point imaginary...
 
 constexpr long double
-operator"" i(long double n) // { dg-warning "shadowed by implementation" }
+operator"" i(long double n) // { dg-warning "shadowed by implementation" "" { target c++11_only } }
 { return 4.0L * n + 0.0L; }
 
 constexpr long double

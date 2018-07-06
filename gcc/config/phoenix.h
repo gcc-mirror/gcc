@@ -1,5 +1,5 @@
 /* Base configuration file for all Phoenix-RTOS targets.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
       builtin_define_std ("unix");         \
       builtin_assert ("system=phoenix");   \
       builtin_assert ("system=unix");      \
-    } while(0);
+    } while (0)
 
 #define STD_LIB_SPEC "%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"
 

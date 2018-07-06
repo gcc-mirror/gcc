@@ -62,7 +62,7 @@ program test
   call test_where_char1
   call test_where_char2
   if (any(y .ne. &
-    (/a(4, "null"), a(8, "non-null"), a(8, "non-null"), a(4, "null")/))) call abort ()
+    (/a(4, "null"), a(8, "non-null"), a(8, "non-null"), a(4, "null")/))) STOP 1
 contains
   subroutine test_where_char1   ! Test a WHERE blocks
     where (l1)

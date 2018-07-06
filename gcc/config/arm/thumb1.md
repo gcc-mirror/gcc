@@ -1,5 +1,5 @@
 ;; ARM Thumb-1 Machine Description
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -1725,19 +1725,18 @@
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB1 && arm_arch5 && !SIBLING_CALL_P (insn)"
+  "TARGET_THUMB1 && arm_arch5t && !SIBLING_CALL_P (insn)"
   "blx\\t%0"
   [(set_attr "length" "2")
    (set_attr "type" "call")]
 )
 
 (define_insn "*nonsecure_call_reg_thumb1_v5"
-  [(call (unspec:SI [(mem:SI (match_operand:SI 0 "register_operand" "l*r"))]
+  [(call (unspec:SI [(mem:SI (reg:SI R4_REGNUM))]
 		    UNSPEC_NONSECURE_MEM)
-	 (match_operand 1 "" ""))
-   (use (match_operand 2 "" ""))
-   (clobber (reg:SI LR_REGNUM))
-   (clobber (match_dup 0))]
+	 (match_operand 0 "" ""))
+   (use (match_operand 1 "" ""))
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB1 && use_cmse && !SIBLING_CALL_P (insn)"
   "bl\\t__gnu_cmse_nonsecure_call"
   [(set_attr "length" "4")
@@ -1749,7 +1748,7 @@
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB1 && !arm_arch5 && !SIBLING_CALL_P (insn)"
+  "TARGET_THUMB1 && !arm_arch5t && !SIBLING_CALL_P (insn)"
   "*
   {
     if (!TARGET_CALLER_INTERWORKING)
@@ -1770,7 +1769,7 @@
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB1 && arm_arch5"
+  "TARGET_THUMB1 && arm_arch5t"
   "blx\\t%1"
   [(set_attr "length" "2")
    (set_attr "type" "call")]
@@ -1779,12 +1778,11 @@
 (define_insn "*nonsecure_call_value_reg_thumb1_v5"
   [(set (match_operand 0 "" "")
 	(call (unspec:SI
-	       [(mem:SI (match_operand:SI 1 "register_operand" "l*r"))]
+	       [(mem:SI (reg:SI R4_REGNUM))]
 	       UNSPEC_NONSECURE_MEM)
-	      (match_operand 2 "" "")))
-   (use (match_operand 3 "" ""))
-   (clobber (reg:SI LR_REGNUM))
-   (clobber (match_dup 1))]
+	      (match_operand 1 "" "")))
+   (use (match_operand 2 "" ""))
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB1 && use_cmse"
   "bl\\t__gnu_cmse_nonsecure_call"
   [(set_attr "length" "4")
@@ -1797,7 +1795,7 @@
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB1 && !arm_arch5"
+  "TARGET_THUMB1 && !arm_arch5t"
   "*
   {
     if (!TARGET_CALLER_INTERWORKING)

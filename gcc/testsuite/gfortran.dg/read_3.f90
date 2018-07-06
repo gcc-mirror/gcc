@@ -9,5 +9,5 @@ program    gfortran_710_io_bug
   write(str,fmt='(a)') i
   i = 0
   read ( unit=str(1:4), fmt='(a)' ) i4
-  if (i4.ne.256) call abort
+  if (i4.ne.256) STOP 1
 end  program  gfortran_710_io_bug 

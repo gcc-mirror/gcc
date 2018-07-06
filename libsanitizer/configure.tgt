@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+#   Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,6 +44,12 @@ case "${target}" in
   s390*-*-linux*)
 	;;
   arm*-*-linux*)
+	;;
+  mips*64*-*-linux*)
+	# This clause is only here to not match the supported mips*-*-linux*.
+	UNSUPPORTED=1
+	;;
+  mips*-*-linux*)
 	;;
   aarch64*-*-linux*)
 	if test x$ac_cv_sizeof_void_p = x8; then

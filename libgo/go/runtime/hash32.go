@@ -6,7 +6,7 @@
 //   xxhash: https://code.google.com/p/xxhash/
 // cityhash: https://code.google.com/p/cityhash/
 
-// +build 386 arm armbe m68k mips mipsle ppc s390 sparc
+// +build 386 arm armbe m68k mips mipsle nios2 ppc s390 sh shbe sparc
 
 package runtime
 
@@ -78,6 +78,32 @@ tail:
 		h = v1 ^ v2 ^ v3 ^ v4
 		goto tail
 	}
+	h ^= h >> 17
+	h *= m3
+	h ^= h >> 13
+	h *= m4
+	h ^= h >> 16
+	return uintptr(h)
+}
+
+func memhash32(p unsafe.Pointer, seed uintptr) uintptr {
+	h := uint32(seed + 4*hashkey[0])
+	h ^= readUnaligned32(p)
+	h = rotl_15(h*m1) * m2
+	h ^= h >> 17
+	h *= m3
+	h ^= h >> 13
+	h *= m4
+	h ^= h >> 16
+	return uintptr(h)
+}
+
+func memhash64(p unsafe.Pointer, seed uintptr) uintptr {
+	h := uint32(seed + 8*hashkey[0])
+	h ^= readUnaligned32(p)
+	h = rotl_15(h*m1) * m2
+	h ^= readUnaligned32(add(p, 4))
+	h = rotl_15(h*m1) * m2
 	h ^= h >> 17
 	h *= m3
 	h ^= h >> 13

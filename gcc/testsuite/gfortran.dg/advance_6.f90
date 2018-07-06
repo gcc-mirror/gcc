@@ -15,7 +15,7 @@ program main
   backspace 95
   c = 'xxx'
   read (95,'(A)') c
-  if (c /= 'ab ') call abort
+  if (c /= 'ab ') STOP 1
   close (95)
   call check_end_record
   
@@ -34,7 +34,7 @@ program main
   rewind 95
   c = 'xxx'
   read (95,'(A)') c
-  if (c /= 'ab ') call abort
+  if (c /= 'ab ') STOP 2
   close (95)
   call check_end_record
 
@@ -42,7 +42,7 @@ program main
   rewind 95
   c = 'xxx'
   read (95,'(A)') c
-  if (c /= 'ab ') call abort
+  if (c /= 'ab ') STOP 3
   close (95)
   call check_end_record
 
@@ -60,15 +60,15 @@ contains
     character(len=1) :: x
     open(2003, file=fname, status="old", access="stream", form="unformatted")
     read(2003) x
-    if (x /= 'a') call abort
+    if (x /= 'a') STOP 4
     read(2003) x
-    if (x /= 'b') call abort
+    if (x /= 'b') STOP 5
     read(2003) x
     if (x /= achar(10)) then
        read(2003) x
        if (x /= achar(13)) then
        else
-          call abort
+          STOP 6
        end if
     end if
     close(2003,status="delete")

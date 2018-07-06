@@ -22,8 +22,8 @@ program namelist
 
   close(unit=23)
 
-  if (tab(1).ne.'in1') call abort
-  if (tab(2).ne.'in2') call abort
-  if (any(tab(3:tabsz).ne.'invalid')) call abort
+  if (tab(1).ne.'in1') STOP 1
+  if (tab(2).ne.'in2') STOP 2
+  if (any(tab(3:tabsz).ne.'invalid')) STOP 3
 
 end program namelist

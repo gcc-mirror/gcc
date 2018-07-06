@@ -1,6 +1,6 @@
 /* Generic streaming support for various data types.
 
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -126,6 +126,17 @@ bp_pack_value (struct bitpack_d *bp, bitpack_word_t val, unsigned nbits)
   bp->pos = pos;
 }
 
+/* Pack VAL into the bit-packing context BP, using NBITS for each
+   coefficient.  */
+static inline void
+bp_pack_poly_value (struct bitpack_d *bp,
+		    const poly_int<NUM_POLY_INT_COEFFS, bitpack_word_t> &val,
+		    unsigned nbits)
+{
+  for (int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    bp_pack_value (bp, val.coeffs[i], nbits);
+}
+
 /* Finishes bit-packing of BP.  */
 static inline void
 streamer_write_bitpack (struct bitpack_d *bp)
@@ -172,6 +183,17 @@ bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
   bp->pos = pos + nbits;
 
   return val & mask;
+}
+
+/* Unpacks a polynomial value from the bit-packing context BP in which each
+   coefficient has NBITS bits.  */
+static inline poly_int<NUM_POLY_INT_COEFFS, bitpack_word_t>
+bp_unpack_poly_value (struct bitpack_d *bp, unsigned nbits)
+{
+  poly_int_pod<NUM_POLY_INT_COEFFS, bitpack_word_t> x;
+  for (int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    x.coeffs[i] = bp_unpack_value (bp, nbits);
+  return x;
 }
 
 

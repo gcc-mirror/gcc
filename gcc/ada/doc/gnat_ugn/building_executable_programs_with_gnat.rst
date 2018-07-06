@@ -4075,19 +4075,27 @@ When no switch :switch:`-gnatw` is used, this is equivalent to:
 
   * :switch:`-gnatwD`
 
+  * :switch:`-gnatw.D`
+
   * :switch:`-gnatwF`
+
+  * :switch:`-gnatw.F`
 
   * :switch:`-gnatwg`
 
   * :switch:`-gnatwH`
 
-  * :switch:`-gnatwi`
+  * :switch:`-gnatw.H`
 
-  * :switch:`-gnatw.I`
+  * :switch:`-gnatwi`
 
   * :switch:`-gnatwJ`
 
+  * :switch:`-gnatw.J`
+
   * :switch:`-gnatwK`
+
+  * :switch:`-gnatw.K`
 
   * :switch:`-gnatwL`
 
@@ -4098,6 +4106,8 @@ When no switch :switch:`-gnatw` is used, this is equivalent to:
   * :switch:`-gnatw.m`
 
   * :switch:`-gnatwn`
+
+  * :switch:`-gnatw.N`
 
   * :switch:`-gnatwo`
 
@@ -4119,11 +4129,15 @@ When no switch :switch:`-gnatw` is used, this is equivalent to:
 
   * :switch:`-gnatwT`
 
-  * :switch:`-gnatw.T`
+  * :switch:`-gnatw.t`
 
   * :switch:`-gnatwU`
 
+  * :switch:`-gnatw.U`
+
   * :switch:`-gnatwv`
+
+  * :switch:`-gnatw.v`
 
   * :switch:`-gnatww`
 
@@ -4135,7 +4149,11 @@ When no switch :switch:`-gnatw` is used, this is equivalent to:
 
   * :switch:`-gnatwy`
 
+  * :switch:`-gnatw.Y`
+
   * :switch:`-gnatwz`
+
+  * :switch:`-gnatw.z`
 
 .. _Debugging_and_Assertion_Control:
 
@@ -7250,14 +7268,6 @@ The following switches are available with the ``gnatlink`` utility:
   executable program. If this switch is omitted, the executable has the same
   name as the main unit. For example, ``gnatlink try.ali`` creates
   an executable called :file:`try`.
-
-
-.. index:: -b  (gnatlink)
-
-:switch:`-b {target}`
-  Compile your program to run on ``target``, which is the name of a
-  system configuration. You must have a GNAT cross-compiler built if
-  ``target`` is not the same as your host system.
 
 
 .. index:: -B  (gnatlink)

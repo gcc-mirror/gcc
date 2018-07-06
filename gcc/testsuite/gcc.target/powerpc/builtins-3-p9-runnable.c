@@ -1,6 +1,6 @@
 /* { dg-do run { target { powerpc64*-*-* && { lp64 && p9vector_hw } } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-mcpu=power9 -O2 -mupper-regs-di" } */
+/* { dg-options "-mcpu=power9 -O2" } */
 
 #include <altivec.h> // vector
 

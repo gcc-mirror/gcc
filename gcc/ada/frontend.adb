@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -440,10 +440,14 @@ begin
                   Collect_Garbage_Entities;
                end if;
 
+               if Legacy_Elaboration_Checks then
+                  Check_Elab_Calls;
+               end if;
+
                --  Examine all top level scenarios collected during analysis
-               --  and resolution. Diagnose conditional and guaranteed ABEs,
-               --  install run-time checks to catch ABEs, and guarantee the
-               --  prior elaboration of external units.
+               --  and resolution. Diagnose conditional ABEs, install run-time
+               --  checks to catch conditional ABEs, and guarantee the prior
+               --  elaboration of external units.
 
                Check_Elaboration_Scenarios;
 
@@ -452,9 +456,9 @@ begin
 
                Remove_Ignored_Ghost_Code;
 
-            --  Otherwise check the access-before-elaboration rules even when
-            --  previous errors were detected or the compilation is verifying
-            --  semantics.
+            --  Examine all top level scenarios collected during analysis and
+            --  resolution in order to diagnose conditional ABEs, even in the
+            --  presence of serious errors.
 
             else
                Check_Elaboration_Scenarios;

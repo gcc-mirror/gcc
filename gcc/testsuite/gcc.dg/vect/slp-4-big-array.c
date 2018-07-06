@@ -4,7 +4,6 @@
 #include "tree-vect.h"
 
 #define N 128
-volatile int y = 0;
 
 int
 main1 ()
@@ -17,8 +16,7 @@ main1 ()
   for (i = 0; i < N*8; i++)
     {
       in[i] = i;
-      if (y) /* Avoid vectorization.  */
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   for (i = 0; i < N; i++)

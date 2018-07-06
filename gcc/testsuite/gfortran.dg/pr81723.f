@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -fno-automatic" }
+! { dg-options "-O3 -fno-automatic -std=legacy" }
 
       FUNCTION WWERF(Z)
 

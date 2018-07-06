@@ -73,7 +73,7 @@ end module
   call AddArray1 (P, Pt)
   select type (x => Pt%p)
     type is (t)
-      if (any (x%i .ne. [1,2])) call abort
+      if (any (x%i .ne. [1,2])) STOP 1
   end select
   deallocate (P)
   deallocate (pt)
@@ -83,7 +83,7 @@ end module
   call AddArray2 (P, Pt)
   select type (x => Pt%p)
     type is (t)
-      if (any (x%i .ne. [3,4,5])) call abort
+      if (any (x%i .ne. [3,4,5])) STOP 2
   end select
   deallocate (P)
   deallocate (pt)
@@ -92,7 +92,7 @@ end module
   call AddArray3 (t(6), Pt)
   select type (x => Pt%p)
     type is (t)
-      if (any (x%i .ne. [6,6,6,6])) call abort
+      if (any (x%i .ne. [6,6,6,6])) STOP 3
   end select
   deallocate (pt)
 
@@ -100,7 +100,7 @@ end module
   call AddArray4 ([t(7), t(8)], Pt)
   select type (x => Pt%p)
     type is (t)
-      if (any (x%i .ne. [7,8])) call abort
+      if (any (x%i .ne. [7,8])) STOP 4
   end select
   deallocate (pt)
  end

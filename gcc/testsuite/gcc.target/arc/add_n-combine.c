@@ -45,4 +45,4 @@ void f() {
   a(at3.bn[bu]);
 }
 
-/* { dg-final { scan-rtl-dump-times "\\*add_n" 3 "combine" } } */
+/* { dg-final { scan-rtl-dump-times "\\*add_n" 2 "combine" } } */

@@ -55,7 +55,7 @@ enum
   GO_NIL = 11
 };
 
-extern void __go_runtime_error () __attribute__ ((noreturn));
+extern void __go_runtime_error (int32) __attribute__ ((noreturn));
 
 void
 __go_runtime_error (int32 i)

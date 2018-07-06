@@ -1,5 +1,5 @@
 /* { dg-do compile { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
-/* { dg-options "-fdump-rtl-final" } */
+/* { dg-options "-fdwarf2-cfi-asm -fdump-rtl-final" } */
 
 /* Lightly-modified dump of test.c.304r.dwarf2 for x86_64 target,
    with various NOTE_INSN_CFI deleted by hand for now.  */

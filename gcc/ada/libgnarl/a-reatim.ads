@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,9 +38,7 @@ pragma Elaborate_All (System.Task_Primitives.Operations);
 
 package Ada.Real_Time with
   SPARK_Mode,
-  Abstract_State => (Clock_Time with Synchronous,
-                                     External => (Async_Readers,
-                                                  Async_Writers)),
+  Abstract_State => (Clock_Time with Synchronous),
   Initializes    => Clock_Time
 is
 

@@ -1,5 +1,5 @@
 /* ANSI and traditional C compatability macros
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
 This program is free software; you can redistribute it and/or modify
@@ -282,6 +282,15 @@ So instead we use the macro below and test it against specific values.  */
 #  define ATTRIBUTE_NO_SANITIZE_UNDEFINED
 # endif /* GNUC >= 4.9 */
 #endif /* ATTRIBUTE_NO_SANITIZE_UNDEFINED */
+
+/* Attribute 'nonstring' was valid as of gcc 8.  */
+#ifndef ATTRIBUTE_NONSTRING
+# if GCC_VERSION >= 8000
+#  define ATTRIBUTE_NONSTRING __attribute__ ((__nonstring__))
+# else
+#  define ATTRIBUTE_NONSTRING
+# endif
+#endif
 
 /* We use __extension__ in some places to suppress -pedantic warnings
    about GCC extensions.  This feature didn't work properly before

@@ -1,6 +1,6 @@
 /* This file contains the definitions for timing variables used to
    measure run-time performance of the compiler.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -184,10 +184,12 @@ DEFTIMEVAR (TV_TREE_LOOP	     , "tree loop optimization")
 DEFTIMEVAR (TV_TREE_NOLOOP           , "loopless fn")
 DEFTIMEVAR (TV_TREE_LOOP_BOUNDS	     , "tree loop bounds")
 DEFTIMEVAR (TV_LIM                   , "tree loop invariant motion")
+DEFTIMEVAR (TV_LINTERCHANGE          , "tree loop interchange")
 DEFTIMEVAR (TV_TREE_LOOP_IVCANON     , "tree canonical iv")
 DEFTIMEVAR (TV_SCEV_CONST            , "scev constant prop")
 DEFTIMEVAR (TV_TREE_LOOP_UNSWITCH    , "tree loop unswitching")
 DEFTIMEVAR (TV_LOOP_SPLIT            , "loop splitting")
+DEFTIMEVAR (TV_LOOP_JAM              , "unroll and jam")
 DEFTIMEVAR (TV_COMPLETE_UNROLL       , "complete unrolling")
 DEFTIMEVAR (TV_TREE_PARALLELIZE_LOOPS, "tree parallelize loops")
 DEFTIMEVAR (TV_TREE_VECTORIZATION    , "tree vectorization")
@@ -209,6 +211,9 @@ DEFTIMEVAR (TV_TREE_SSA_VERIFY       , "tree SSA verifier")
 DEFTIMEVAR (TV_TREE_STMT_VERIFY      , "tree STMT verifier")
 DEFTIMEVAR (TV_TREE_SWITCH_CONVERSION, "tree switch conversion")
 DEFTIMEVAR (TV_TREE_SWITCH_LOWERING,   "tree switch lowering")
+DEFTIMEVAR (TV_TREE_RECIP            , "gimple CSE reciprocals")
+DEFTIMEVAR (TV_TREE_SINCOS           , "gimple CSE sin/cos")
+DEFTIMEVAR (TV_TREE_WIDEN_MUL        , "gimple widening/fma detection")
 DEFTIMEVAR (TV_TRANS_MEM             , "transactional memory")
 DEFTIMEVAR (TV_TREE_STRLEN           , "tree strlen optimization")
 DEFTIMEVAR (TV_CGRAPH_VERIFY         , "callgraph verifier")
@@ -248,6 +253,7 @@ DEFTIMEVAR (TV_MODE_SWITCH           , "mode switching")
 DEFTIMEVAR (TV_SMS		     , "sms modulo scheduling")
 DEFTIMEVAR (TV_LIVE_RANGE_SHRINKAGE  , "live range shrinkage")
 DEFTIMEVAR (TV_SCHED                 , "scheduling")
+DEFTIMEVAR (TV_EARLY_REMAT           , "early rematerialization")
 DEFTIMEVAR (TV_IRA		     , "integrated RA")
 DEFTIMEVAR (TV_LRA		     , "LRA non-specific")
 DEFTIMEVAR (TV_LRA_ELIMINATE	     , "LRA virtuals elimination")

@@ -59,7 +59,7 @@ program testd15
   type(foo2) :: af2
 
   call af2%do()
-  if (af2%i .ne. 2) call abort
-  if (af2%get() .ne. 3) call abort
+  if (af2%i .ne. 2) STOP 1
+  if (af2%get() .ne. 3) STOP 2
 
 end program testd15

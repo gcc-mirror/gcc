@@ -1,7 +1,8 @@
 /* PR tree-optimization/81346 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-final { scan-tree-dump-times "\\(signed int\\) x" 10 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\(signed int\\) x" 10 "optimized" { target int32plus } } } */
+/* { dg-final { scan-tree-dump-times "\\(signed short\\) x" 10 "optimized" { target int16 } } } */
 /* { dg-final { scan-tree-dump-times " <= 0;" 5 "optimized" } } */
 /* { dg-final { scan-tree-dump-times " > 0;" 5 "optimized" } } */
 

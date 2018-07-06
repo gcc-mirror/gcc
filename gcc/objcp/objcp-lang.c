@@ -1,5 +1,5 @@
 /* Language-dependent hooks for Objective-C++.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -87,8 +87,6 @@ objcxx_init_ts (void)
 {
   objc_common_init_ts ();
   cp_common_init_ts ();
-
-  init_shadowed_var_for_decl ();
 }
 
 #include "gtype-objcp.h"

@@ -235,7 +235,7 @@ template <typename, typename, typename> struct basic_string {
   basic_string() : _M_dataplus(0) {}
   basic_string(const basic_string &) : _M_dataplus(0) {}
   size_type size() { return _M_string_length; }
-  char *data() const {}
+  char *data() const { return 0; }
 };
 //template<> basic_string<char, std::char_traits<char>, std::allocator<char>>::
 //_Alloc_hider::_Alloc_hider(char*, std::allocator<char>&&) {}

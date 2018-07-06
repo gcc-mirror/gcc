@@ -26,7 +26,7 @@
                          scalar_vector( 1.2, (/ -1.4, 0.4, 0.8 /) )  /) )
 
     call extract_vec(one_d_field, 1, 2)
-    if (any (abs (vector_comp - [0.0,0.2,0.4]) .gt. 1e-4)) call abort
+    if (any (abs (vector_comp - [0.0,0.2,0.4]) .gt. 1e-4)) STOP 1
     deallocate(one_d_field)   ! v1 becomes undefined
 
     allocate(one_d_field(1), &
@@ -35,9 +35,9 @@
                  (/3, 3/) ) ) /) )
 
     call extract_vec(one_d_field, 2, 1)
-    if (abs (vector_comp(1) + 1.0) > 1e-4) call abort
+    if (abs (vector_comp(1) + 1.0) > 1e-4) STOP 2
     call extract_vec(one_d_field, 2, 3)
-    if (abs (vector_comp(1) - 1.0) > 1e-4) call abort
+    if (abs (vector_comp(1) - 1.0) > 1e-4) STOP 3
     deallocate(one_d_field)   ! v1 becomes undefined
   contains
     subroutine extract_vec(field, tag, ic)

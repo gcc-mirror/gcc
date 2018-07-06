@@ -50,9 +50,9 @@ subroutine four()
   character(len=:), pointer :: pstr
   pstr => str
   str = "abc"
-  if(len(pstr) /= len(str) .or. len(str)/= 3) call abort()
+  if(len(pstr) /= len(str) .or. len(str)/= 3) STOP 1
   str = "abcd"
-  if(len(pstr) /= len(str) .or. len(str)/= 4) call abort()
+  if(len(pstr) /= len(str) .or. len(str)/= 4) STOP 2
 end subroutine four
 
 subroutine five()

@@ -44,10 +44,10 @@ end module mymodule
   use mymodule
   type(t), external :: func
   type(t) :: z
-  if (kind (y ()) .ne. 4) call abort ()
-  if (kind (declared_dp_before_defined ()) .ne. 8) call abort ()
-  if (int (declared_dp_before_defined ()) .ne. 4) call abort ()
-  if (int (another_dp_before_defined ()) .ne. 4) call abort ()
+  if (kind (y ()) .ne. 4) STOP 1
+  if (kind (declared_dp_before_defined ()) .ne. 8) STOP 2
+  if (int (declared_dp_before_defined ()) .ne. 4) STOP 3
+  if (int (another_dp_before_defined ()) .ne. 4) STOP 4
   z = func()
-  if (z%i .ne. 5) call abort ()
+  if (z%i .ne. 5) STOP 5
 end

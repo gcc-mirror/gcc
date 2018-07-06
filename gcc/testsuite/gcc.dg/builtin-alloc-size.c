@@ -8,7 +8,7 @@
 
 void sink (void*);
 
-unsigned size (unsigned n)
+static unsigned size (unsigned n)
 {
   return n;
 }

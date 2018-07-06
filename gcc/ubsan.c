@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -436,10 +436,10 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
 	      && TYPE_MAX_VALUE (dom) != NULL_TREE
 	      && TREE_CODE (TYPE_MAX_VALUE (dom)) == INTEGER_CST)
 	    {
+	      unsigned HOST_WIDE_INT m;
 	      if (tree_fits_uhwi_p (TYPE_MAX_VALUE (dom))
-		  && tree_to_uhwi (TYPE_MAX_VALUE (dom)) + 1 != 0)
-		pp_printf (&pretty_name, HOST_WIDE_INT_PRINT_DEC,
-			    tree_to_uhwi (TYPE_MAX_VALUE (dom)) + 1);
+		  && (m = tree_to_uhwi (TYPE_MAX_VALUE (dom))) + 1 != 0)
+		pp_unsigned_wide_integer (&pretty_name, m + 1);
 	      else
 		pp_wide_int (&pretty_name,
 			     wi::add (wi::to_widest (TYPE_MAX_VALUE (dom)), 1),
@@ -675,12 +675,10 @@ ubsan_create_edge (gimple *stmt)
 {
   gcall *call_stmt = dyn_cast <gcall *> (stmt);
   basic_block bb = gimple_bb (stmt);
-  int freq = compute_call_stmt_bb_frequency (current_function_decl, bb);
   cgraph_node *node = cgraph_node::get (current_function_decl);
   tree decl = gimple_call_fndecl (call_stmt);
   if (decl)
-    node->create_edge (cgraph_node::get_create (decl), call_stmt, bb->count,
-		       freq);
+    node->create_edge (cgraph_node::get_create (decl), call_stmt, bb->count);
 }
 
 /* Expand the UBSAN_BOUNDS special builtin function.  */
@@ -804,6 +802,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
      this edge is unlikely taken, so set up the probability accordingly.  */
   e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
   e->probability = profile_probability::very_unlikely ();
+  then_bb->count = e->count ();
 
   /* Connect 'then block' with the 'else block'.  This is needed
      as the ubsan routines we call in the 'then block' are not noreturn.
@@ -1085,6 +1084,7 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
 	 accordingly.  */
       e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
       e->probability = profile_probability::very_unlikely ();
+      then_bb->count = e->count ();
     }
   else
     {
@@ -1098,12 +1098,14 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
 
       e = make_edge (cond_neg_bb, then_bb, EDGE_TRUE_VALUE);
       e->probability = profile_probability::very_unlikely ();
+      then_bb->count = e->count ();
 
       cond_pos_bb = create_empty_bb (cond_bb);
       add_bb_to_loop (cond_pos_bb, cond_bb->loop_father);
 
       e = make_edge (cond_bb, cond_pos_bb, EDGE_TRUE_VALUE);
       e->probability = profile_probability::even ();
+      cond_pos_bb->count = e->count ();
 
       e = make_edge (cond_pos_bb, then_bb, EDGE_TRUE_VALUE);
       e->probability = profile_probability::very_unlikely ();
@@ -1423,7 +1425,7 @@ maybe_instrument_pointer_overflow (gimple_stmt_iterator *gsi, tree t)
   if (!handled_component_p (t) && TREE_CODE (t) != MEM_REF)
     return;
 
-  HOST_WIDE_INT bitsize, bitpos, bytepos;
+  poly_int64 bitsize, bitpos, bytepos;
   tree offset;
   machine_mode mode;
   int volatilep = 0, reversep, unsignedp = 0;
@@ -1441,14 +1443,14 @@ maybe_instrument_pointer_overflow (gimple_stmt_iterator *gsi, tree t)
       /* If BASE is a fixed size automatic variable or
 	 global variable defined in the current TU and bitpos
 	 fits, don't instrument anything.  */
+      poly_int64 base_size;
       if (offset == NULL_TREE
-	  && bitpos > 0
+	  && maybe_ne (bitpos, 0)
 	  && (VAR_P (base)
 	      || TREE_CODE (base) == PARM_DECL
 	      || TREE_CODE (base) == RESULT_DECL)
-	  && DECL_SIZE (base)
-	  && TREE_CODE (DECL_SIZE (base)) == INTEGER_CST
-	  && compare_tree_int (DECL_SIZE (base), bitpos) >= 0
+	  && poly_int_tree_p (DECL_SIZE (base), &base_size)
+	  && known_ge (base_size, bitpos)
 	  && (!is_global_var (base) || decl_binds_to_current_def_p (base)))
 	return;
     }
@@ -1469,8 +1471,8 @@ maybe_instrument_pointer_overflow (gimple_stmt_iterator *gsi, tree t)
 
   if (!POINTER_TYPE_P (TREE_TYPE (base)) && !DECL_P (base))
     return;
-  bytepos = bitpos / BITS_PER_UNIT;
-  if (offset == NULL_TREE && bytepos == 0 && moff == NULL_TREE)
+  bytepos = bits_to_bytes_round_down (bitpos);
+  if (offset == NULL_TREE && known_eq (bytepos, 0) && moff == NULL_TREE)
     return;
 
   tree base_addr = base;
@@ -1478,7 +1480,7 @@ maybe_instrument_pointer_overflow (gimple_stmt_iterator *gsi, tree t)
     base_addr = build1 (ADDR_EXPR,
 			build_pointer_type (TREE_TYPE (base)), base);
   t = offset;
-  if (bytepos)
+  if (maybe_ne (bytepos, 0))
     {
       if (t)
 	t = fold_build2 (PLUS_EXPR, TREE_TYPE (t), t,
@@ -1577,7 +1579,8 @@ instrument_si_overflow (gimple_stmt_iterator gsi)
      Also punt on bit-fields.  */
   if (!INTEGRAL_TYPE_P (lhsinner)
       || TYPE_OVERFLOW_WRAPS (lhsinner)
-      || GET_MODE_BITSIZE (TYPE_MODE (lhsinner)) != TYPE_PRECISION (lhsinner))
+      || maybe_ne (GET_MODE_BITSIZE (TYPE_MODE (lhsinner)),
+		   TYPE_PRECISION (lhsinner)))
     return;
 
   switch (code)
@@ -1661,7 +1664,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
     return;
 
   int modebitsize = GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (type));
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   tree offset;
   machine_mode mode;
   int volatilep = 0, reversep, unsignedp = 0;
@@ -1670,8 +1673,8 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   tree utype = build_nonstandard_integer_type (modebitsize, 1);
 
   if ((VAR_P (base) && DECL_HARD_REGISTER (base))
-      || (bitpos % modebitsize) != 0
-      || bitsize != modebitsize
+      || !multiple_p (bitpos, modebitsize)
+      || maybe_ne (bitsize, modebitsize)
       || GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (utype)) != modebitsize
       || TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
     return;
@@ -2083,15 +2086,15 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
   if (size_in_bytes <= 0)
     return;
 
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   tree offset;
   machine_mode mode;
   int volatilep = 0, reversep, unsignedp = 0;
   tree inner = get_inner_reference (t, &bitsize, &bitpos, &offset, &mode,
 				    &unsignedp, &reversep, &volatilep);
 
-  if (bitpos % BITS_PER_UNIT != 0
-      || bitsize != size_in_bytes * BITS_PER_UNIT)
+  if (!multiple_p (bitpos, BITS_PER_UNIT)
+      || maybe_ne (bitsize, size_in_bytes * BITS_PER_UNIT))
     return;
 
   bool decl_p = DECL_P (inner);

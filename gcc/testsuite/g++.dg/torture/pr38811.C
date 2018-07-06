@@ -17,7 +17,7 @@ public:
     AbcExtent2d(const AbcA2d & rMin, const AbcA2d & rMax);
     AbcA2d ClampPoint2d(const AbcA2d & rPoint) const;
     AbcA2d GetMax() const { return m_vMax; }
-    AbcA2d GetMin() const { }
+    AbcA2d GetMin() const { return AbcA2d(); }
     AbcA2d Evaluate(double dNormalizedX, double dNormalizedY) const;
 };
 inline AbcExtent2d::AbcExtent2d(const AbcA2d & rMin, const AbcA2d & rMax)
@@ -69,5 +69,7 @@ long AbcAbcdTracer::TestIsoAbcde(AbcZyParamType eZyParam, double dParam,
         if (!DoesPointLieOnAbcde(sUV,0))
           ;
       }
+
+    return 0;
 }
 

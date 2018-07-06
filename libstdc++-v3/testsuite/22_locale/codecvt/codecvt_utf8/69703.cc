@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -68,7 +68,6 @@ test03()
   VERIFY( in[2] == U'c' );
 }
 
-
 void
 test04()
 {
@@ -90,6 +89,6 @@ main()
 {
   test01();
   test02();
-  test01();
-  test02();
+  test03();
+  test04();
 }

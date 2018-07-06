@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,7 +228,7 @@ package body Ada.Exceptions is
       function Allocate_Occurrence return EOA;
       --  Allocate an exception occurrence (as well as the machine occurrence)
 
-      procedure Propagate_Exception (Excep : EOA);
+      procedure Propagate_Exception (Excep : Exception_Occurrence);
       pragma No_Return (Propagate_Exception);
       --  This procedure propagates the exception represented by Excep
 
@@ -432,6 +432,8 @@ package body Ada.Exceptions is
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Bad_Predicated_Generic_Type
      (File : System.Address; Line : Integer);
+   procedure Rcheck_PE_Build_In_Place_Mismatch
+     (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Current_Task_In_Entry_Body
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Duplicated_Entry_Address
@@ -520,6 +522,8 @@ package body Ada.Exceptions is
                   "__gnat_rcheck_PE_All_Guards_Closed");
    pragma Export (C, Rcheck_PE_Bad_Predicated_Generic_Type,
                   "__gnat_rcheck_PE_Bad_Predicated_Generic_Type");
+   pragma Export (C, Rcheck_PE_Build_In_Place_Mismatch,
+                  "__gnat_rcheck_PE_Build_In_Place_Mismatch");
    pragma Export (C, Rcheck_PE_Current_Task_In_Entry_Body,
                   "__gnat_rcheck_PE_Current_Task_In_Entry_Body");
    pragma Export (C, Rcheck_PE_Duplicated_Entry_Address,
@@ -588,6 +592,7 @@ package body Ada.Exceptions is
    pragma No_Return (Rcheck_PE_Aliased_Parameters);
    pragma No_Return (Rcheck_PE_All_Guards_Closed);
    pragma No_Return (Rcheck_PE_Bad_Predicated_Generic_Type);
+   pragma No_Return (Rcheck_PE_Build_In_Place_Mismatch);
    pragma No_Return (Rcheck_PE_Current_Task_In_Entry_Body);
    pragma No_Return (Rcheck_PE_Duplicated_Entry_Address);
    pragma No_Return (Rcheck_PE_Explicit_Raise);
@@ -661,6 +666,7 @@ package body Ada.Exceptions is
    Rmsg_34 : constant String := "infinite recursion"               & NUL;
    Rmsg_35 : constant String := "object too large"                 & NUL;
    Rmsg_36 : constant String := "stream operation not allowed"     & NUL;
+   Rmsg_37 : constant String := "build-in-place mismatch"          & NUL;
 
    -----------------------
    -- Polling Interface --
@@ -934,7 +940,7 @@ package body Ada.Exceptions is
    procedure Complete_And_Propagate_Occurrence (X : EOA) is
    begin
       Complete_Occurrence (X);
-      Exception_Propagation.Propagate_Exception (X);
+      Exception_Propagation.Propagate_Exception (X.all);
    end Complete_And_Propagate_Occurrence;
 
    ---------------------
@@ -1085,7 +1091,7 @@ package body Ada.Exceptions is
    is
    begin
       Exception_Propagation.Propagate_Exception
-        (Create_Occurrence_From_Signal_Handler (E, M));
+        (Create_Occurrence_From_Signal_Handler (E, M).all);
    end Raise_From_Signal_Handler;
 
    -------------------------
@@ -1335,6 +1341,13 @@ package body Ada.Exceptions is
       Raise_Program_Error_Msg (File, Line, Rmsg_19'Address);
    end Rcheck_PE_Bad_Predicated_Generic_Type;
 
+   procedure Rcheck_PE_Build_In_Place_Mismatch
+     (File : System.Address; Line : Integer)
+   is
+   begin
+      Raise_Program_Error_Msg (File, Line, Rmsg_37'Address);
+   end Rcheck_PE_Build_In_Place_Mismatch;
+
    procedure Rcheck_PE_Current_Task_In_Entry_Body
      (File : System.Address; Line : Integer)
    is
@@ -1574,12 +1587,25 @@ package body Ada.Exceptions is
    ---------------------------------
 
    procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence) is
-      Excep    : constant EOA := Exception_Propagation.Allocate_Occurrence;
-      Saved_MO : constant System.Address := Excep.Machine_Occurrence;
    begin
-      Save_Occurrence (Excep.all, X);
-      Excep.Machine_Occurrence := Saved_MO;
-      Complete_And_Propagate_Occurrence (Excep);
+      --  If we have a Machine_Occurrence at hand already, e.g. when we are
+      --  reraising a foreign exception, just repropagate. Otherwise, e.g.
+      --  when reraising a GNAT exception or an occurrence read back from a
+      --  stream, set up a new occurrence with its own Machine block first.
+
+      if X.Machine_Occurrence /= System.Null_Address then
+         Exception_Propagation.Propagate_Exception (X);
+      else
+         declare
+            Excep : constant EOA
+              := Exception_Propagation.Allocate_Occurrence;
+            Saved_MO : constant System.Address := Excep.Machine_Occurrence;
+         begin
+            Save_Occurrence (Excep.all, X);
+            Excep.Machine_Occurrence := Saved_MO;
+            Complete_And_Propagate_Occurrence (Excep);
+         end;
+      end if;
    end Reraise_Occurrence_No_Defer;
 
    ---------------------

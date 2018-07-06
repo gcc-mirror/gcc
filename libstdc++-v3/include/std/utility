@@ -1,6 +1,6 @@
 // <utility> -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -321,7 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct integer_sequence
     {
       typedef _Tp value_type;
-      static constexpr size_t size() { return sizeof...(_Idx); }
+      static constexpr size_t size() noexcept { return sizeof...(_Idx); }
     };
 
   /// Alias template make_integer_sequence

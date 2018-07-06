@@ -14,5 +14,5 @@ program pr19467
   rewind (10)
   READ (10,nml=a, iostat = ier)
   close (10)
-  if ((ier /= 0) .or. (any (ch /= dh))) call abort ()
+  if ((ier /= 0) .or. (any (ch /= dh))) STOP 1
 end program pr19467

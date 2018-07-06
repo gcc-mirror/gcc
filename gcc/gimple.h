@@ -1,6 +1,6 @@
 /* Gimple IR definitions.
 
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -156,13 +156,11 @@ enum gf_mask {
     GF_OMP_FOR_KIND_FOR		= 0,
     GF_OMP_FOR_KIND_DISTRIBUTE	= 1,
     GF_OMP_FOR_KIND_TASKLOOP	= 2,
-    GF_OMP_FOR_KIND_CILKFOR     = 3,
     GF_OMP_FOR_KIND_OACC_LOOP	= 4,
     GF_OMP_FOR_KIND_GRID_LOOP = 5,
     /* Flag for SIMD variants of OMP_FOR kinds.  */
     GF_OMP_FOR_SIMD		= 1 << 3,
     GF_OMP_FOR_KIND_SIMD	= GF_OMP_FOR_SIMD | 0,
-    GF_OMP_FOR_KIND_CILKSIMD	= GF_OMP_FOR_SIMD | 1,
     GF_OMP_FOR_COMBINED		= 1 << 4,
     GF_OMP_FOR_COMBINED_INTO	= 1 << 5,
     /* The following flag must not be used on GF_OMP_FOR_KIND_GRID_LOOP loop
@@ -199,13 +197,13 @@ enum gf_mask {
     GF_PREDICT_TAKEN		= 1 << 15
 };
 
-/* Currently, there are only two types of gimple debug stmt.  Others are
-   envisioned, for example, to enable the generation of is_stmt notes
-   in line number information, to mark sequence points, etc.  This
-   subcode is to be used to tell them apart.  */
+/* This subcode tells apart different kinds of stmts that are not used
+   for codegen, but rather to retain debug information.  */
 enum gimple_debug_subcode {
   GIMPLE_DEBUG_BIND = 0,
-  GIMPLE_DEBUG_SOURCE_BIND = 1
+  GIMPLE_DEBUG_SOURCE_BIND = 1,
+  GIMPLE_DEBUG_BEGIN_STMT = 2,
+  GIMPLE_DEBUG_INLINE_ENTRY = 3
 };
 
 /* Masks for selecting a pass local flag (PLF) to work on.  These
@@ -1456,6 +1454,8 @@ gswitch *gimple_build_switch (tree, tree, vec<tree> );
 geh_dispatch *gimple_build_eh_dispatch (int);
 gdebug *gimple_build_debug_bind (tree, tree, gimple * CXX_MEM_STAT_INFO);
 gdebug *gimple_build_debug_source_bind (tree, tree, gimple * CXX_MEM_STAT_INFO);
+gdebug *gimple_build_debug_begin_stmt (tree, location_t CXX_MEM_STAT_INFO);
+gdebug *gimple_build_debug_inline_entry (tree, location_t CXX_MEM_STAT_INFO);
 gomp_critical *gimple_build_omp_critical (gimple_seq, tree, tree);
 gomp_for *gimple_build_omp_for (gimple_seq, int, tree, size_t, gimple_seq);
 gomp_parallel *gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
@@ -4603,6 +4603,22 @@ is_gimple_debug (const gimple *gs)
   return gimple_code (gs) == GIMPLE_DEBUG;
 }
 
+
+/* Return the last nondebug statement in GIMPLE sequence S.  */
+
+static inline gimple *
+gimple_seq_last_nondebug_stmt (gimple_seq s)
+{
+  gimple_seq_node n;
+  for (n = gimple_seq_last (s);
+       n && is_gimple_debug (n);
+       n = n->prev)
+    if (n->prev == s)
+      return NULL;
+  return n;
+}
+
+
 /* Return true if S is a GIMPLE_DEBUG BIND statement.  */
 
 static inline bool
@@ -4757,6 +4773,40 @@ gimple_debug_source_bind_set_value (gimple *dbg, tree value)
   GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
   gcc_gimple_checking_assert (gimple_debug_source_bind_p (dbg));
   gimple_set_op (dbg, 1, value);
+}
+
+/* Return true if S is a GIMPLE_DEBUG BEGIN_STMT statement.  */
+
+static inline bool
+gimple_debug_begin_stmt_p (const gimple *s)
+{
+  if (is_gimple_debug (s))
+    return s->subcode == GIMPLE_DEBUG_BEGIN_STMT;
+
+  return false;
+}
+
+/* Return true if S is a GIMPLE_DEBUG INLINE_ENTRY statement.  */
+
+static inline bool
+gimple_debug_inline_entry_p (const gimple *s)
+{
+  if (is_gimple_debug (s))
+    return s->subcode == GIMPLE_DEBUG_INLINE_ENTRY;
+
+  return false;
+}
+
+/* Return true if S is a GIMPLE_DEBUG non-binding marker statement.  */
+
+static inline bool
+gimple_debug_nonbind_marker_p (const gimple *s)
+{
+  if (is_gimple_debug (s))
+    return s->subcode == GIMPLE_DEBUG_BEGIN_STMT
+      || s->subcode == GIMPLE_DEBUG_INLINE_ENTRY;
+
+  return false;
 }
 
 /* Return the line number for EXPR, or return -1 if we have no line
@@ -6319,11 +6369,18 @@ gimple_expr_type (const gimple *stmt)
   if (code == GIMPLE_CALL)
     {
       const gcall *call_stmt = as_a <const gcall *> (stmt);
-      if (gimple_call_internal_p (call_stmt)
-          && gimple_call_internal_fn (call_stmt) == IFN_MASK_STORE)
-        return TREE_TYPE (gimple_call_arg (call_stmt, 3));
-      else
-        return gimple_call_return_type (call_stmt);
+      if (gimple_call_internal_p (call_stmt))
+	switch (gimple_call_internal_fn (call_stmt))
+	  {
+	  case IFN_MASK_STORE:
+	  case IFN_SCATTER_STORE:
+	    return TREE_TYPE (gimple_call_arg (call_stmt, 3));
+	  case IFN_MASK_SCATTER_STORE:
+	    return TREE_TYPE (gimple_call_arg (call_stmt, 4));
+	  default:
+	    break;
+	  }
+      return gimple_call_return_type (call_stmt);
     }
   else if (code == GIMPLE_ASSIGN)
     {
@@ -6350,8 +6407,8 @@ enum gimple_alloc_kind
   gimple_alloc_kind_all
 };
 
-extern int gimple_alloc_counts[];
-extern int gimple_alloc_sizes[];
+extern uint64_t gimple_alloc_counts[];
+extern uint64_t gimple_alloc_sizes[];
 
 /* Return the allocation kind for a given stmt CODE.  */
 static inline enum gimple_alloc_kind

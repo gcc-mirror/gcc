@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1431,6 +1431,7 @@ package body Ch4 is
                Aggregate_Node := New_Node (N_Delta_Aggregate, Lparen_Sloc);
                Set_Expression (Aggregate_Node, Expr_Node);
                Expr_Node := Empty;
+
                goto Aggregate;
 
             else
@@ -1665,6 +1666,8 @@ package body Ch4 is
       Assoc_Node : Node_Id;
 
    begin
+      --  A loop indicates an iterated_component_association
+
       if Token = Tok_For then
          return P_Iterated_Component_Association;
       end if;
@@ -3308,10 +3311,13 @@ package body Ch4 is
    function P_Iterated_Component_Association return Node_Id is
       Assoc_Node : Node_Id;
 
+   --  Start of processing for P_Iterated_Component_Association
+
    begin
       Scan;  --  past FOR
       Assoc_Node :=
         New_Node (N_Iterated_Component_Association, Prev_Token_Ptr);
+
       Set_Defining_Identifier (Assoc_Node, P_Defining_Identifier);
       T_In;
       Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);

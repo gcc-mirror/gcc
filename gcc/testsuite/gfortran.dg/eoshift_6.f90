@@ -161,21 +161,21 @@ program main
      b = eoshift(a,shift=sp,dim=dim,boundary=bp)
      call eoshift_3 (a, shift=sp, dim=dim, boundary=bp,res=c)
      if (any (b /= c)) then
-        call abort
+        STOP 1
      end if
      a2 = 42.
      a2(1:2*n1:2,:,:) = a
      b = eoshift(a2(1:2*n1:2,:,:), shift=sp, dim=dim, boundary=bp)
      if (any(b /= c)) then
-        call abort
+        STOP 2
      end if
      c2 = 43.
      c2(1:2*n1:2,:,:) = eoshift(a, shift=sp, dim=dim, boundary=bp)
      if (any(c2(1:2*n1:2,:,:) /= c)) then
-        call abort
+        STOP 3
      end if
      if (any(c2(2:2*n1:2,:,:) /= 43.)) then
-        call abort
+        STOP 4
      end if
   end do
 end program main

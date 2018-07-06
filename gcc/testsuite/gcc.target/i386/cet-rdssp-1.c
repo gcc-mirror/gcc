@@ -1,22 +1,22 @@
 /* { dg-do run { target cet } } */
-/* { dg-options "-O2 -fcf-protection -mcet" } */
+/* { dg-options "-O2 -fcf-protection -mshstk" } */
 
 void _exit(int status) __attribute__ ((__noreturn__));
 
 #ifdef __x86_64__
 # define incssp(x) __builtin_ia32_incsspq (x)
-# define rdssp(x) __builtin_ia32_rdsspq (x)
+# define rdssp() __builtin_ia32_rdsspq ()
 #else
 # define incssp(x) __builtin_ia32_incsspd (x)
-# define rdssp(x) __builtin_ia32_rdsspd (x)
+# define rdssp() __builtin_ia32_rdsspd ()
 #endif
 
 static void
 __attribute__ ((noinline, noclone))
 test (unsigned long frames)
 {
-  unsigned long ssp = 0;
-  ssp = rdssp (ssp);
+  unsigned long ssp;
+  ssp = rdssp ();
   if (ssp != 0)
     {
       unsigned long tmp = frames;

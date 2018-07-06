@@ -1,5 +1,5 @@
-/* { dg-require-effective-target int32plus } */
 /* { dg-do run } */
+/* { dg-require-effective-target int32plus } */
 
 int main ()
 {

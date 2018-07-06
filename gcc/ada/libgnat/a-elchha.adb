@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 pragma Compiler_Unit_Warning;
 
 with System.Standard_Library; use System.Standard_Library;
-with System.Soft_Links;
+with System.Soft_Links; use System;
 
 procedure Ada.Exceptions.Last_Chance_Handler
   (Except : Exception_Occurrence)
@@ -66,6 +66,15 @@ is
    procedure To_Stderr (S : String);
    pragma Import (Ada, To_Stderr, "__gnat_to_stderr");
    --  Little routine to output string to stderr
+
+   Gnat_Argv : System.Address;
+   pragma Import (C, Gnat_Argv, "gnat_argv");
+
+   procedure Fill_Arg (A : System.Address; Arg_Num : Integer);
+   pragma Import (C, Fill_Arg, "__gnat_fill_arg");
+
+   function Len_Arg (Arg_Num : Integer) return Integer;
+   pragma Import (C, Len_Arg, "__gnat_len_arg");
 
    Ptr   : Natural := 0;
    Nobuf : String (1 .. 0);
@@ -131,7 +140,20 @@ begin
 
    else
       To_Stderr (Nline);
-      To_Stderr ("Execution terminated by unhandled exception");
+
+      if Gnat_Argv = System.Null_Address then
+         To_Stderr ("Execution terminated by unhandled exception");
+      else
+         declare
+            Arg : aliased String (1 .. Len_Arg (0));
+         begin
+            Fill_Arg (Arg'Address, 0);
+            To_Stderr ("Execution of ");
+            To_Stderr (Arg);
+            To_Stderr (" terminated by unhandled exception");
+         end;
+      end if;
+
       To_Stderr (Nline);
 
       Append_Info_Untailored_Exception_Information (Except, Nobuf, Ptr);

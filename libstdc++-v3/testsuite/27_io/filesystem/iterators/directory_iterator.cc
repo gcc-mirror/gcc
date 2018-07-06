@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,7 +61,6 @@ test01()
   ec = bad_ec;
   permissions(p, fs::perms::none, ec);
   VERIFY( !ec );
-  ec = bad_ec;
   iter = fs::directory_iterator(p, ec);
   VERIFY( ec );
   VERIFY( iter == end(iter) );

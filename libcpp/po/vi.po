@@ -3,14 +3,14 @@
 # Copyright © 2016 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Clytie Siddall <clytie@riverland.net.au>, 2005-2010.
-# Trần Ngọc Quân <vnwildman@gmail.com>, 2012-2014, 2015, 2016, 2017.
+# Trần Ngọc Quân <vnwildman@gmail.com>, 2012-2014, 2015, 2016, 2017, 2018.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 7.1-b20170101\n"
-"Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2017-01-01 00:51+0000\n"
-"PO-Revision-Date: 2017-01-08 08:43+0700\n"
+"Project-Id-Version: cpplib 8.1-b20180128\n"
+"Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
+"POT-Creation-Date: 2018-01-26 22:47+0000\n"
+"PO-Revision-Date: 2018-01-30 15:12+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
 "Language: vi\n"
@@ -421,186 +421,186 @@ msgstr "“%s” được khẳng định lại"
 msgid "unterminated #%s"
 msgstr "#%s chưa chấm dứt"
 
-#: directives-only.c:221 lex.c:2819 traditional.c:167
+#: directives-only.c:221 lex.c:2851 traditional.c:167
 msgid "unterminated comment"
 msgstr "gặp chú thích chưa được chấm dứt"
 
-#: errors.c:300
+#: errors.c:284
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: errors.c:312
+#: errors.c:296
 msgid "stdout"
 msgstr "thiết bị xuất chuẩn"
 
-#: expr.c:601 expr.c:718
+#: expr.c:628 expr.c:745
 msgid "fixed-point constants are a GCC extension"
 msgstr "hằng số thực dấu chấm tĩnh là phần mở rộng GCC"
 
-#: expr.c:626
+#: expr.c:653
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "gặp tiền tố không hợp lệ “0b” cho hằng dấu chấm động"
 
-#: expr.c:639
-msgid "use of C++1z hexadecimal floating constant"
-msgstr "dùng hằng dấu chấm động thập lục C++1z"
+#: expr.c:666
+msgid "use of C++17 hexadecimal floating constant"
+msgstr "dùng hằng dấu chấm động thập lục C++17"
 
-#: expr.c:642
+#: expr.c:669
 msgid "use of C99 hexadecimal floating constant"
 msgstr "dùng hằng dấu chấm động thập lục C99"
 
-#: expr.c:686
+#: expr.c:713
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "gặp hậu tố không hợp lệ “%.*s” nằm trên hằng dấu chấm động"
 
-#: expr.c:697 expr.c:757
+#: expr.c:724 expr.c:784
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "ngôn ngữ C truyền thống từ chối hậu tố “%.*s”"
 
-#: expr.c:705
+#: expr.c:732
 msgid "suffix for double constant is a GCC extension"
 msgstr "hậu tố cho hằng số đôi là một phần mở rộng GCC"
 
-#: expr.c:711
+#: expr.c:738
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "gặp hậu tố không hợp lệ “%.*s”  có hằng dấu chấm động thập lục"
 
-#: expr.c:722
+#: expr.c:749
 msgid "decimal float constants are a GCC extension"
 msgstr "hằng dấu chấm động thập lục là phần mở rộng GCC"
 
-#: expr.c:740
+#: expr.c:767
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "gặp hậu tố không hợp lệ “%.*s” nằm trên hằng số nguyên"
 
-#: expr.c:765
+#: expr.c:792
 msgid "use of C++11 long long integer constant"
 msgstr "dùng hằng số nguyên dài dài C++11"
 
-#: expr.c:766
+#: expr.c:793
 msgid "use of C99 long long integer constant"
 msgstr "dùng hằng số nguyên dài dài C99"
 
-#: expr.c:782
+#: expr.c:809
 msgid "imaginary constants are a GCC extension"
 msgstr "hằng ảo là phần mở rộng GCC"
 
-#: expr.c:788
+#: expr.c:815
 msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "hằng nhị phân là đặc tính C++14 hoặc phần mở rộng GCC"
 
-#: expr.c:790
+#: expr.c:817
 msgid "binary constants are a GCC extension"
 msgstr "hằng nhị phân là phần mở rộng GCC"
 
-#: expr.c:885
+#: expr.c:912
 msgid "integer constant is too large for its type"
 msgstr "hằng số nguyên quá lớn cho kiểu nó"
 
-#: expr.c:916
+#: expr.c:943
 msgid "integer constant is so large that it is unsigned"
 msgstr "hằng số nguyên quá lớn thì không có dấu"
 
-#: expr.c:1011
+#: expr.c:1038
 msgid "missing ')' after \"defined\""
 msgstr "thiếu “)” nằm sau “defined” (đã định nghĩa)"
 
-#: expr.c:1018
+#: expr.c:1045
 msgid "operator \"defined\" requires an identifier"
 msgstr "toán tử “defined” (đã định nghĩa) cần đến định danh"
 
-#: expr.c:1026
+#: expr.c:1053
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(“%s” là một thẻ bài thay thế cho “%s” trong ngôn ngữ C++)"
 
-#: expr.c:1038
+#: expr.c:1065
 msgid "this use of \"defined\" may not be portable"
 msgstr "khả năng dùng “defined” (đã định nghĩa) có lẽ không khả chuyển"
 
-#: expr.c:1098
+#: expr.c:1125
 msgid "user-defined literal in preprocessor expression"
 msgstr "kiểu do người dùng định nghĩa trong biểu thức tiền xử lý"
 
-#: expr.c:1103
+#: expr.c:1130
 msgid "floating constant in preprocessor expression"
 msgstr "gặp hằng dấu chấm động nằm trong biểu thức tiền xử lý"
 
-#: expr.c:1109
+#: expr.c:1136
 msgid "imaginary number in preprocessor expression"
 msgstr "gặp số ảo nằm trong biểu thức tiền xử lý"
 
-#: expr.c:1162
+#: expr.c:1189
 #, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
 msgstr "chưa định nghĩa “%s”, định giá thành 0"
 
-#: expr.c:1175
+#: expr.c:1202
 msgid "assertions are a GCC extension"
 msgstr "khẳng định là một phần mở rộng GCC"
 
-#: expr.c:1178
+#: expr.c:1205
 msgid "assertions are a deprecated extension"
 msgstr "khẳng định là một phần mở rộng GCC bị phản đối"
 
-#: expr.c:1424
+#: expr.c:1451
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "có ngăn xếp không cân bằng trong %s"
 
-#: expr.c:1444
+#: expr.c:1471
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "toán tử không thể “%u”"
 
-#: expr.c:1545
+#: expr.c:1572
 msgid "missing ')' in expression"
 msgstr "thiếu “)” trong biểu thức"
 
-#: expr.c:1574
+#: expr.c:1601
 msgid "'?' without following ':'"
 msgstr "dấu hỏi “?” mà không có dấu hai chấm “:” đi sau"
 
-#: expr.c:1584
+#: expr.c:1611
 msgid "integer overflow in preprocessor expression"
 msgstr "tràn số nguyên trong biểu thức tiền xử lý"
 
-#: expr.c:1589
+#: expr.c:1616
 msgid "missing '(' in expression"
 msgstr "thiếu “(” trong biểu thức"
 
-#: expr.c:1621
+#: expr.c:1648
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "toán hạng bên trái của “%s” thay đổi dấu (dương/âm) khi được tăng cấp"
 
-#: expr.c:1626
+#: expr.c:1653
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "toán hạng bên phải của “%s” thay đổi dấu (dương/âm) khi đươc tăng cấp"
 
-#: expr.c:1885
+#: expr.c:1912
 msgid "traditional C rejects the unary plus operator"
 msgstr "ngôn ngữ C truyền thống từ chối toán tử cộng chỉ có một toán hạng"
 
-#: expr.c:1983
+#: expr.c:2010
 msgid "comma operator in operand of #if"
 msgstr "toán tử dấu phẩy nằm trong toán hạng của #if (nếu)"
 
-#: expr.c:2119
+#: expr.c:2146
 msgid "division by zero in #if"
 msgstr "chia cho số không trong #if (nếu)"
 
-#: expr.c:2216
+#: expr.c:2243
 msgid "operator \"__has_include__\" requires a header string"
 msgstr "toán tử “__has_include__” (đã bao gồm) cần một chuỗi đầu"
 
-#: expr.c:2232
+#: expr.c:2259
 msgid "missing ')' after \"__has_include__\""
 msgstr "thiếu “)” sau “__has_include__” (đã bao gồm)"
 
@@ -621,36 +621,36 @@ msgstr "không có đường dẫn bao gồm trong đó có thể tìm kiếm %s
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Nhiều bộ bảo vệ bao gồm có lẽ hữu ích cho :\n"
 
-#: init.c:553
+#: init.c:565
 msgid "cppchar_t must be an unsigned type"
 msgstr "“cppchar_t” phải là kiểu không dấu"
 
-#: init.c:557
+#: init.c:569
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "thuật toán của trình tiền xử lý có độ chính xác tối đa là %lu bit còn đích cần đến %lu bit"
 
-#: init.c:564
+#: init.c:576
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "thuật toán CPP phải là ít nhất cùng chính xác với “int” đích"
 
-#: init.c:567
+#: init.c:579
 msgid "target char is less than 8 bits wide"
 msgstr "“char” đích có độ rộng ít hơn 8 bit"
 
-#: init.c:571
+#: init.c:583
 msgid "target wchar_t is narrower than target char"
 msgstr "“wchar_t” đích có độ rộng ít hơn “char” đích"
 
-#: init.c:575
+#: init.c:587
 msgid "target int is narrower than target char"
 msgstr "“int” đích có độ rộng ít hơn “char” đích"
 
-#: init.c:580
+#: init.c:592
 msgid "CPP half-integer narrower than CPP character"
 msgstr "nửa-số-nguyên CPP có độ rộng ít hơn ký tự CPP"
 
-#: init.c:584
+#: init.c:596
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "Trên máy này, CPP không thể xử lý hằng ký tự rộng hơn %lu bit, còn đích lại yêu cầu %lu bit"
@@ -696,226 +696,238 @@ msgstr "“%.*s” không phải nằm trong NFKC"
 msgid "`%.*s' is not in NFC"
 msgstr "“%.*s” không nằm trong NFC"
 
-#: lex.c:1381 lex.c:1470
+#: lex.c:1365
+msgid "__VA_OPT__ is not available until C++2a"
+msgstr "__VA_OPT__ không sẵn có cho đến tận C++2a"
+
+#: lex.c:1372
+msgid "__VA_OPT__ can only appear in the expansion of a C++2a variadic macro"
+msgstr "__VA_OPT__ chỉ có thể xuất hiện trong phần mở rộng của vĩ lệnh biến thiên C++2a"
+
+#: lex.c:1403 lex.c:1495
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "đã cố gắng dùng “%s” bị vô hiệu hóa"
 
-#: lex.c:1391 lex.c:1480
+#: lex.c:1413 lex.c:1505
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgstr "“__VA_ARGS__” chỉ có thể xuất hiện trong sự mở rộng của vĩ lệnh biến thiên C++11"
 
-#: lex.c:1395 lex.c:1484
+#: lex.c:1417 lex.c:1509
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "“__VA_ARGS__” chỉ có thể xuất hiện trong sự mở rộng của vĩ lệnh biến thiên C99"
 
-#: lex.c:1402 lex.c:1491
+#: lex.c:1427 lex.c:1521
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "định danh “%s” là một tên toán tử đặc biệt trong C++"
 
-#: lex.c:1781
+#: lex.c:1811
 msgid "raw string delimiter longer than 16 characters"
 msgstr "gặp dấu giới hạn chuỗi thô dài hơn 16 ký tự"
 
-#: lex.c:1785
+#: lex.c:1815
 msgid "invalid new-line in raw string delimiter"
 msgstr "ký tự dòng-mới không hợp lệ trong dấu giới hạn chuỗi thô"
 
-#: lex.c:1789
+#: lex.c:1819
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "gặp ký tự sai “%c” trong dấu giới hạn chuỗi thô"
 
-#: lex.c:1838 lex.c:1860
+#: lex.c:1868 lex.c:1890
 msgid "unterminated raw string"
 msgstr "chuỗi thô chưa được chấm dứt"
 
-#: lex.c:1881 lex.c:2011
+#: lex.c:1912 lex.c:2043
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgstr "hậu tố ở chuỗi văn bản không hợp lệ; C++11 yêu cầu cần có khoảng trắng giữ chuỗi văn bản và chuỗi vĩ lệnh"
 
-#: lex.c:1993
+#: lex.c:2024
 msgid "null character(s) preserved in literal"
 msgstr "(các) ký tự rỗng được giữ lại trong chuỗi văn học"
 
-#: lex.c:1996
+#: lex.c:2027
 #, c-format
 msgid "missing terminating %c character"
 msgstr "thiếu ký tự “%c” chấm dứt"
 
-#: lex.c:2029
+#: lex.c:2061
 msgid "C++11 requires a space between string literal and macro"
 msgstr "C++11 yêu cầu cần có khoảng trắng giữ chuỗi văn bản và vĩ lệnh"
 
-#: lex.c:2833 lex.c:2867
+#: lex.c:2865 lex.c:2899
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "không cho phép chú thích kiểu C++ nằm trong ISO C90"
 
-#: lex.c:2835 lex.c:2846 lex.c:2869
+#: lex.c:2867 lex.c:2878 lex.c:2901
 msgid "(this will be reported only once per input file)"
 msgstr "(điều này sẽ được thông báo chỉ một lần cho mỗi tập tin đầu vào)"
 
-#: lex.c:2844
+#: lex.c:2876
 msgid "C++ style comments are incompatible with C90"
 msgstr "không cho phép chú thích kiểu C++ nằm trong C90"
 
-#: lex.c:2875
+#: lex.c:2907
 msgid "multi-line comment"
 msgstr "gặp chú thích đa dòng"
 
-#: lex.c:3248
+#: lex.c:3287
 #, c-format
 msgid "unspellable token %s"
 msgstr "gặp thẻ bài không thể chính tả %s"
 
-#: macro.c:203
+#: macro.c:93
+msgid "'##' cannot appear at either end of __VA_OPT__"
+msgstr "không cho phép “##” nằm hoặc trước __VA_OPT__"
+
+#: macro.c:352
 #, c-format
 msgid "macro \"%s\" is not used"
 msgstr "vĩ lệnh “%s” không được dùng"
 
-#: macro.c:242 macro.c:488
+#: macro.c:391 macro.c:639
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "vĩ lệnh dựng-sẵn không hợp lệ “%s”"
 
-#: macro.c:249 macro.c:349
+#: macro.c:398 macro.c:500
 #, c-format
 msgid "macro \"%s\" might prevent reproducible builds"
 msgstr "vĩ lệnh \"%s\" có thể ngăn cản việc dịch tái sinh"
 
-#: macro.c:280
+#: macro.c:429
 msgid "could not determine file timestamp"
 msgstr "không thể xác định nhãn giờ của tập tin"
 
-#: macro.c:395
+#: macro.c:546
 msgid "could not determine date and time"
 msgstr "không thể phân giải ngày và giờ"
 
-#: macro.c:411
+#: macro.c:562
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ đã mở rộng bên trong chỉ thị với “-fdirectives-only”"
 
-#: macro.c:599
+#: macro.c:758
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "chuỗi văn học không hợp lệ nên bỏ qua “\\” cuối cùng"
 
-#: macro.c:661
+#: macro.c:820
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "việc dán “%s” và “%s” không đưa ra thẻ bài tiền xử lý hợp lệ"
 
-#: macro.c:785
+#: macro.c:946
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
-msgstr "ISO C++11 cần ít nhất một đối số cho \"...\" còn lại trong vĩ lệnh biến thiên"
+msgstr "ISO C++11 cần ít nhất một đối số cho \"…\" còn lại trong vĩ lệnh biến thiên"
 
-#: macro.c:789
+#: macro.c:950
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
-msgstr "ISO C99 cần ít nhất một đối số cho \"...\" còn lại trong vĩ lệnh biến thiên"
+msgstr "ISO C99 cần ít nhất một đối số cho \"…\" còn lại trong vĩ lệnh biến thiên"
 
-#: macro.c:796
+#: macro.c:957
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "vĩ lệnh “%s” cần đến %u đối số, nhưng chỉ đưa ra %u thôi"
 
-#: macro.c:801
+#: macro.c:962
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "vĩ lệnh “%s” đã chuyển %u đối số, nhưng chỉ nhận được %u thôi"
 
-#: macro.c:995 traditional.c:819
+#: macro.c:1156 traditional.c:819
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "danh sách đối số không được chấm dứt có gọi vĩ lệnh “%s”"
 
-#: macro.c:1146
+#: macro.c:1307
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "vĩ lệnh giống hàm số “%s” phải được dùng với đối số trong ngôn ngữ C truyền thống"
 
-#: macro.c:1836
+#: macro.c:2003
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "đang gọi vĩ lệnh %s đối số %d: đối số vĩ lệnh trống rỗng là không hợp lệ trong ISO C++98 "
 
-#: macro.c:1844 macro.c:1853
+#: macro.c:2011 macro.c:2020
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "đang gọi vĩ lệnh %s đối số %d: đối số vĩ lệnh trống rỗng là không hợp lệ trong  ISO C90"
 
-#: macro.c:2817
+#: macro.c:2984
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "tham số vĩ lệnh trùng lặp “%s”"
 
-#: macro.c:2866
+#: macro.c:3033
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "không cho phép “%s” xuất hiện trong danh sách tham số vĩ lệnh"
 
-#: macro.c:2874
+#: macro.c:3041
 msgid "macro parameters must be comma-separated"
 msgstr "các tham số bộ đối số phải được ngăn cách bởi dấu phẩy"
 
-#: macro.c:2893
+#: macro.c:3060
 msgid "parameter name missing"
 msgstr "thiếu tên tham số"
 
-#: macro.c:2914
+#: macro.c:3081
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "vĩ lệnh biến thiên vô danh đã được giới thiệu trong C++11"
 
-#: macro.c:2918 macro.c:2923
+#: macro.c:3085 macro.c:3090
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "vĩ lệnh biến thiên vô danh đã được giới thiệu trong C99"
 
-#: macro.c:2930
+#: macro.c:3097
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C++ không cho phép vĩ lệnh biến thiên có tên"
 
-#: macro.c:2933
+#: macro.c:3100
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C không cho phép vĩ lệnh biến thiên có tên"
 
-#: macro.c:2943
+#: macro.c:3110
 msgid "missing ')' in macro parameter list"
 msgstr "thiếu “)” trong danh sách tham số bộ đối số"
 
-#: macro.c:2994
+#: macro.c:3161
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "không cho phép “##” nằm hoặc trước hoặc sau sự mở rộng vĩ lệnh"
 
-#: macro.c:3031
+#: macro.c:3198
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ISO C++11 cần đến khoảng trắng nằm sau tên vĩ lệnh"
 
-#: macro.c:3034
+#: macro.c:3201
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 cần đến khoảng trắng nằm sau tên vĩ lệnh"
 
-#: macro.c:3059
+#: macro.c:3226
 msgid "missing whitespace after the macro name"
 msgstr "thiếu khoảng trắng nằm sau tên vĩ lệnh"
 
-#: macro.c:3093
+#: macro.c:3263
 msgid "'#' is not followed by a macro parameter"
 msgstr "“#” không cho phép đi theo sau một tham số vĩ lệnh"
 
-#: macro.c:3254
+#: macro.c:3430
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "“%s” bị định nghĩa lại"
 
-#: macro.c:3259
+#: macro.c:3435
 msgid "this is the location of the previous definition"
 msgstr "đây là vị trí của lời định nghĩa trước"
 
-#: macro.c:3320
+#: macro.c:3496
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "đối số vĩ lệnh “%s” nên được chuyển đổi thành chuỗi trong ngôn ngữ C truyền thống"
 
-#: macro.c:3356
+#: macro.c:3532
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "gặp kiểu băm không hợp lệ %d trong “cpp_macro_definition” (lời định nghĩa vĩ lệnh)"
@@ -949,7 +961,7 @@ msgstr "%s: không được dùng vì “%s” đã được định nghĩa"
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: không được dùng vì “__COUNTER__” không hợp lệ"
 
-#: pch.c:725 pch.c:902
+#: pch.c:725 pch.c:903
 msgid "while reading precompiled header"
 msgstr "trong khi đọc đầu trang biên dịch sẵn"
 

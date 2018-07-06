@@ -1,5 +1,5 @@
 /* A pass for lowering gimple to HSAIL
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz> and
    Martin Liska <mliska@suse.cz>.
 
@@ -211,7 +211,7 @@ hsa_function_representation::hsa_function_representation
     m_seen_error (false), m_temp_symbol_count (0), m_ssa_map (),
     m_modified_cfg (modified_cfg)
 {
-  int sym_init_len = (vec_safe_length (cfun->local_decls) / 2) + 1;;
+  int sym_init_len = (vec_safe_length (cfun->local_decls) / 2) + 1;
   m_local_symbols = new hash_table <hsa_noop_symbol_hasher> (sym_init_len);
   m_ssa_map.safe_grow_cleared (ssa_names_count);
 }
@@ -691,7 +691,7 @@ mem_type_for_type (BrigType16_t type)
   /* HSA has non-intuitive constraints on load/store types.  If it's
      a bit-type it _must_ be B128, if it's not a bit-type it must be
      64bit max.  So for loading entities of 128 bits (e.g. vectors)
-     we have to to B128, while for loading the rest we have to use the
+     we have to use B128, while for loading the rest we have to use the
      input type (??? or maybe also flattened to a equally sized non-vector
      unsigned type?).  */
   if ((type & BRIG_TYPE_PACK_MASK) == BRIG_TYPE_PACK_128)
@@ -932,9 +932,13 @@ get_symbol_for_decl (tree decl)
 	  else if (lookup_attribute ("hsa_group_segment",
 				     DECL_ATTRIBUTES (decl)))
 	    segment = BRIG_SEGMENT_GROUP;
-	  else if (TREE_STATIC (decl)
-		   || lookup_attribute ("hsa_global_segment",
-					DECL_ATTRIBUTES (decl)))
+	  else if (TREE_STATIC (decl))
+	    {
+	      segment = BRIG_SEGMENT_GLOBAL;
+	      allocation = BRIG_ALLOCATION_PROGRAM;
+	    }
+	  else if (lookup_attribute ("hsa_global_segment",
+				     DECL_ATTRIBUTES (decl)))
 	    segment = BRIG_SEGMENT_GLOBAL;
 	  else
 	    segment = BRIG_SEGMENT_PRIVATE;
@@ -1959,8 +1963,8 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
       goto out;
     }
   else if (TREE_CODE (ref) == BIT_FIELD_REF
-	   && ((tree_to_uhwi (TREE_OPERAND (ref, 1)) % BITS_PER_UNIT) != 0
-	       || (tree_to_uhwi (TREE_OPERAND (ref, 2)) % BITS_PER_UNIT) != 0))
+	   && (!multiple_p (bit_field_size (ref), BITS_PER_UNIT)
+	       || !multiple_p (bit_field_offset (ref), BITS_PER_UNIT)))
     {
       HSA_SORRY_ATV (EXPR_LOCATION (origref),
 		     "support for HSA does not implement "
@@ -1972,12 +1976,22 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
     {
       machine_mode mode;
       int unsignedp, volatilep, preversep;
+      poly_int64 pbitsize, pbitpos;
+      tree new_ref;
 
-      ref = get_inner_reference (ref, &bitsize, &bitpos, &varoffset, &mode,
-				 &unsignedp, &preversep, &volatilep);
-
-      offset = bitpos;
-      offset = wi::rshift (offset, LOG2_BITS_PER_UNIT, SIGNED);
+      new_ref = get_inner_reference (ref, &pbitsize, &pbitpos, &varoffset,
+				     &mode, &unsignedp, &preversep,
+				     &volatilep);
+      /* When this isn't true, the switch below will report an
+	 appropriate error.  */
+      if (pbitsize.is_constant () && pbitpos.is_constant ())
+	{
+	  bitsize = pbitsize.to_constant ();
+	  bitpos = pbitpos.to_constant ();
+	  ref = new_ref;
+	  offset = bitpos;
+	  offset = wi::rshift (offset, LOG2_BITS_PER_UNIT, SIGNED);
+	}
     }
 
   switch (TREE_CODE (ref))
@@ -3163,23 +3177,6 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
       return;
     case NEGATE_EXPR:
       opcode = BRIG_OPCODE_NEG;
-      break;
-    case FMA_EXPR:
-      /* There is a native HSA instruction for scalar FMAs but not for vector
-	 ones.  */
-      if (TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE)
-	{
-	  hsa_op_reg *dest
-	    = hsa_cfun->reg_for_gimple_ssa (gimple_assign_lhs (assign));
-	  hsa_op_with_type *op1 = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
-	  hsa_op_with_type *op2 = hsa_reg_or_immed_for_gimple_op (rhs2, hbb);
-	  hsa_op_with_type *op3 = hsa_reg_or_immed_for_gimple_op (rhs3, hbb);
-	  hsa_op_reg *tmp = new hsa_op_reg (dest->m_type);
-	  gen_hsa_binary_operation (BRIG_OPCODE_MUL, tmp, op1, op2, hbb);
-	  gen_hsa_binary_operation (BRIG_OPCODE_ADD, dest, tmp, op3, hbb);
-	  return;
-	}
-      opcode = BRIG_OPCODE_MAD;
       break;
     case MIN_EXPR:
       opcode = BRIG_OPCODE_MIN;
@@ -4476,6 +4473,57 @@ gen_hsa_divmod (gcall *call, hsa_bb *hbb)
   insn->set_output_in_type (dest, 0, hbb);
 }
 
+/* Emit instructions that implement FMA, FMS, FNMA or FNMS call STMT.
+   Instructions are appended to basic block HBB.  NEGATE1 is true for
+   FNMA and FNMS.  NEGATE3 is true for FMS and FNMS.  */
+
+static void
+gen_hsa_fma (gcall *call, hsa_bb *hbb, bool negate1, bool negate3)
+{
+  tree lhs = gimple_call_lhs (call);
+  if (lhs == NULL_TREE)
+    return;
+
+  tree rhs1 = gimple_call_arg (call, 0);
+  tree rhs2 = gimple_call_arg (call, 1);
+  tree rhs3 = gimple_call_arg (call, 2);
+
+  hsa_op_reg *dest = hsa_cfun->reg_for_gimple_ssa (lhs);
+  hsa_op_with_type *op1 = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
+  hsa_op_with_type *op2 = hsa_reg_or_immed_for_gimple_op (rhs2, hbb);
+  hsa_op_with_type *op3 = hsa_reg_or_immed_for_gimple_op (rhs3, hbb);
+
+  if (negate1)
+    {
+      hsa_op_reg *tmp = new hsa_op_reg (dest->m_type);
+      gen_hsa_unary_operation (BRIG_OPCODE_NEG, tmp, op1, hbb);
+      op1 = tmp;
+    }
+
+  /* There is a native HSA instruction for scalar FMAs but not for vector
+     ones.  */
+  if (TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE)
+    {
+      hsa_op_reg *tmp = new hsa_op_reg (dest->m_type);
+      gen_hsa_binary_operation (BRIG_OPCODE_MUL, tmp, op1, op2, hbb);
+      gen_hsa_binary_operation (negate3 ? BRIG_OPCODE_SUB : BRIG_OPCODE_ADD,
+				dest, tmp, op3, hbb);
+    }
+  else
+    {
+      if (negate3)
+	{
+	  hsa_op_reg *tmp = new hsa_op_reg (dest->m_type);
+	  gen_hsa_unary_operation (BRIG_OPCODE_NEG, tmp, op3, hbb);
+	  op3 = tmp;
+	}
+      hsa_insn_basic *insn = new hsa_insn_basic (4, BRIG_OPCODE_MAD,
+						 dest->m_type, dest,
+						 op1, op2, op3);
+      hbb->append_insn (insn);
+    }
+}
+
 /* Set VALUE to a shadow kernel debug argument and append a new instruction
    to HBB basic block.  */
 
@@ -5208,6 +5256,22 @@ gen_hsa_insn_for_internal_fn_call (gcall *stmt, hsa_bb *hbb)
     case IFN_FMIN:
     case IFN_FMAX:
       gen_hsa_insns_for_call_of_internal_fn (stmt, hbb);
+      break;
+
+    case IFN_FMA:
+      gen_hsa_fma (stmt, hbb, false, false);
+      break;
+
+    case IFN_FMS:
+      gen_hsa_fma (stmt, hbb, false, true);
+      break;
+
+    case IFN_FNMA:
+      gen_hsa_fma (stmt, hbb, true, false);
+      break;
+
+    case IFN_FNMS:
+      gen_hsa_fma (stmt, hbb, true, true);
       break;
 
     default:
@@ -6374,7 +6438,7 @@ convert_switch_statements (void)
 
 		edge next_edge = make_edge (cur_bb, next_bb, EDGE_FALSE_VALUE);
 		next_edge->probability = new_edge->probability.invert ();
-		next_bb->frequency = EDGE_FREQUENCY (next_edge);
+		next_bb->count = next_edge->count ();
 		cur_bb = next_bb;
 	      }
 	    else /* Link last IF statement and default label

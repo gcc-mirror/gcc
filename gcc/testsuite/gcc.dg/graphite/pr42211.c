@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -floop-interchange" } */
+/* { dg-options "-O3 -floop-nest-optimize" } */
 
 typedef unsigned char uint8_t;
 

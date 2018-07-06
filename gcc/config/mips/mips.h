@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -2289,7 +2289,8 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 
-#define FRAME_GROWS_DOWNWARD flag_stack_protect
+#define FRAME_GROWS_DOWNWARD (flag_stack_protect != 0			\
+			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
 
 /* Size of the area allocated in the frame to save the GP.  */
 
@@ -2566,12 +2567,15 @@ typedef struct mips_args {
 /* This handles the magic '..CURRENT_FUNCTION' symbol, which means
    'the start of the function that this code is output in'.  */
 
-#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
-  if (strcmp (NAME, "..CURRENT_FUNCTION") == 0)				\
-    asm_fprintf ((FILE), "%U%s",					\
-		 XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));	\
-  else									\
-    asm_fprintf ((FILE), "%U%s", (NAME))
+#define ASM_OUTPUT_LABELREF(FILE,NAME)					\
+  do {									\
+    if (strcmp (NAME, "..CURRENT_FUNCTION") == 0)			\
+      asm_fprintf ((FILE), "%U%s",					\
+		   XSTR (XEXP (DECL_RTL (current_function_decl),	\
+			       0), 0));					\
+    else								\
+      asm_fprintf ((FILE), "%U%s", (NAME));				\
+  } while (0)
 
 /* Flag to mark a function decl symbol that requires a long call.  */
 #define SYMBOL_FLAG_LONG_CALL	(SYMBOL_FLAG_MACH_DEP << 0)
@@ -2953,7 +2957,7 @@ do {									\
       if (JUMP_TABLES_IN_TEXT_SECTION)					\
 	mips_set_text_contents_type (STREAM, "__jump_", NUM, FALSE);	\
     }									\
-  while (0);
+  while (0)
 
 /* Reset text marking to code after an inline jump table.  Like with
    the beginning of a jump table use the label number to keep symbols
@@ -2963,7 +2967,7 @@ do {									\
   do									\
     if (JUMP_TABLES_IN_TEXT_SECTION)					\
       mips_set_text_contents_type (STREAM, "__jend_", NUM, TRUE);	\
-  while (0);
+  while (0)
 
 /* This is how to output an assembler line
    that says to advance the location counter

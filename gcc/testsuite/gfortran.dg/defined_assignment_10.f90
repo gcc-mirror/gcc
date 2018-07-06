@@ -31,5 +31,5 @@ program main
 !  print *, right%foo
   left = right
 !  print *, left%foo
-  if (left%foo%i /= 20) call abort()
+  if (left%foo%i /= 20) STOP 1
 end

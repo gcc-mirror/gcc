@@ -63,6 +63,7 @@ OFILE="$2"
 OBASE=`basename "$2"`
 NFILE="$3"
 NBASE=`basename "$3"`
+TMPDIR=${TMPDIR:-/tmp}
 
 echo "dg-cmp-results.sh: Verbosity is ${verbose}, Variant is \"${VARIANT}\""
 echo
@@ -97,7 +98,7 @@ sed $E -e "/$header/,/^[[:space:]]+===.*Summary ===/!d" \
   -e 's/^/O:/' \
   $OFILE |
   sort -s -t : -k 3b - \
-  >/tmp/o$$-$OBASE
+  >$TMPDIR/o$$-$OBASE
 
 # Create a temporary file from the new file's interesting section.
 sed $E -e "/$header/,/^[[:space:]]+===.*Summary ===/!d" \
@@ -107,7 +108,7 @@ sed $E -e "/$header/,/^[[:space:]]+===.*Summary ===/!d" \
   -e 's/^/N:/' \
   $NFILE |
   sort -s -t : -k 3b - \
-  >/tmp/n$$-$NBASE
+  >$TMPDIR/n$$-$NBASE
 
 # Merge the two files, then compare adjacent lines.
 # Comparison is complicated by tests that may be run multiple times.
@@ -200,10 +201,10 @@ END {
     while (old = peek()) compare("", "")
 }
 EOF
-sort -m -s -t : -k 3b /tmp/o$$-$OBASE /tmp/n$$-$NBASE |
+sort -m -s -t : -k 3b $TMPDIR/o$$-$OBASE $TMPDIR/n$$-$NBASE |
  awk -v verbose=$verbose -f compare-$$.awk /dev/stdin
 
 # Delete the temporary files.
-rm -f compare-$$.awk /tmp/o$$-$OBASE /tmp/n$$-$NBASE
+rm -f compare-$$.awk $TMPDIR/o$$-$OBASE $TMPDIR/n$$-$NBASE
 
 exit 0

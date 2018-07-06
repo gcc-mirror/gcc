@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -394,7 +394,7 @@ package body System.Fat_Gen is
 
    function Model (X : T) return T is
    begin
-      return Machine (X);
+      return T'Machine (X);
    end Model;
 
    ----------
@@ -739,10 +739,11 @@ package body System.Fat_Gen is
       Result := abs X;
 
       if Result >= Radix_To_M_Minus_1 then
-         return Machine (X);
+         return T'Machine (X);
 
       else
-         Result := Machine (Radix_To_M_Minus_1 + Result) - Radix_To_M_Minus_1;
+         Result :=
+           T'Machine (Radix_To_M_Minus_1 + Result) - Radix_To_M_Minus_1;
 
          if Result > abs X then
             Result := Result - 1.0;

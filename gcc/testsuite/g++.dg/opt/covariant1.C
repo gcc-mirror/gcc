@@ -9,7 +9,7 @@ bar (int x)
 }
 
 struct S { S () {}; virtual ~S () {}; };
-struct T { virtual T *foo (int) {}; };
+struct T { virtual T *foo (int) { return 0; }; };
 struct V : virtual S, virtual T {};
 struct V v;
 struct U : public S, public T

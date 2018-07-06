@@ -1,4 +1,4 @@
-/* Copyright (C) 1998-2017 Free Software Foundation, Inc.
+/* Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Contributed by Joern Rennecke
 
    This file is part of GCC.
@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 
@@ -53,7 +55,7 @@
 static bool
 str_prefix_p (const char *str, const char *prefix)
 {
-  return 0 == strncmp (str, prefix, strlen (prefix));
+  return strncmp (str, prefix, strlen (prefix)) == 0;
 }
 
 
@@ -131,12 +133,12 @@ print_mcu (const avr_mcu_t *mcu)
 
   FILE *f = fopen (name ,"w");
 
-  bool absdata = 0 != (mcu->dev_attribute & AVR_ISA_LDS);
-  bool errata_skip = 0 != (mcu->dev_attribute & AVR_ERRATA_SKIP);
-  bool rmw = 0 != (mcu->dev_attribute & AVR_ISA_RMW);
-  bool sp8 = 0 != (mcu->dev_attribute & AVR_SHORT_SP);
+  bool absdata = (mcu->dev_attribute & AVR_ISA_LDS) != 0;
+  bool errata_skip = (mcu->dev_attribute & AVR_ERRATA_SKIP) != 0;
+  bool rmw = (mcu->dev_attribute & AVR_ISA_RMW) != 0;
+  bool sp8 = (mcu->dev_attribute & AVR_SHORT_SP) != 0;
   bool rcall = (mcu->dev_attribute & AVR_ISA_RCALL);
-  bool is_arch = NULL == mcu->macro;
+  bool is_arch = mcu->macro == NULL;
   bool is_device = ! is_arch;
 
   if (is_arch

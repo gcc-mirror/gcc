@@ -1,5 +1,5 @@
 /* Selftests for typed-splay-tree.h.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

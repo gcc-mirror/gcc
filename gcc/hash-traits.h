@@ -1,5 +1,5 @@
 /* Traits for hashable types.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -235,6 +235,13 @@ struct ggc_remove
     gt_ggc_mx (p);
   }
 
+  /* Overridden in ggc_cache_remove.  */
+  static void
+  ggc_maybe_mx (T &p)
+  {
+    ggc_mx (p);
+  }
+
   static void
   pch_nx (T &p)
   {
@@ -256,7 +263,7 @@ template<typename T>
 struct ggc_cache_remove : ggc_remove<T>
 {
   /* Entries are weakly held because this is for caches.  */
-  static void ggc_mx (T &) {}
+  static void ggc_maybe_mx (T &) {}
 
   static int
   keep_cache_entry (T &e)

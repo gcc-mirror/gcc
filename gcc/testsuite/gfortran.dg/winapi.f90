@@ -18,6 +18,6 @@ PROGRAM winapi
      END FUNCTION lstrlen
   END INTERFACE
   
-  IF (lstrlen(C_CHAR_"winapi"//C_NULL_CHAR) /= 6) CALL abort()
+  IF (lstrlen(C_CHAR_"winapi"//C_NULL_CHAR) /= 6) STOP 1
 
 END PROGRAM winapi

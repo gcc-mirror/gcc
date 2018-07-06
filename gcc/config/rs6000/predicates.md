@@ -1,5 +1,5 @@
 ;; Predicate definitions for POWER and PowerPC.
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -611,9 +611,7 @@
     return 0;
 
   /* Consider all constants with -msoft-float to be easy.  */
-  if ((TARGET_SOFT_FLOAT
-      || (TARGET_HARD_FLOAT && (TARGET_SINGLE_FLOAT && ! TARGET_DOUBLE_FLOAT)))
-      && mode != DImode)
+  if (TARGET_SOFT_FLOAT && mode != DImode)
     return 1;
 
   /* 0.0D is not all zero bits.  */
@@ -690,11 +688,6 @@
 (define_predicate "easy_vector_constant"
   (match_code "const_vector")
 {
-  /* As the paired vectors are actually FPRs it seems that there is
-     no easy way to load a CONST_VECTOR without using memory.  */
-  if (TARGET_PAIRED_FLOAT)
-    return false;
-
   /* Because IEEE 128-bit floating point is considered a vector type
      in order to pass it in VSX registers, it might use this function
      instead of easy_fp_constant.  */
@@ -1220,85 +1213,6 @@
   (and (match_operand 0 "branch_comparison_operator")
        (match_code "eq,lt,gt,ltu,gtu,unordered")))
 
-;; Return 1 if OP is a load multiple operation, known to be a PARALLEL.
-(define_predicate "load_multiple_operation"
-  (match_code "parallel")
-{
-  int count = XVECLEN (op, 0);
-  unsigned int dest_regno;
-  rtx src_addr;
-  int i;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != REG
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != MEM)
-    return 0;
-
-  dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
-  src_addr = XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0);
-
-  for (i = 1; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i);
-
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != SImode
-	  || REGNO (SET_DEST (elt)) != dest_regno + i
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || GET_MODE (SET_SRC (elt)) != SImode
-	  || GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
-	  || ! rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
-	  || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
-	  || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1)) != i * 4)
-	return 0;
-    }
-
-  return 1;
-})
-
-;; Return 1 if OP is a store multiple operation, known to be a PARALLEL.
-;; The second vector element is a CLOBBER.
-(define_predicate "store_multiple_operation"
-  (match_code "parallel")
-{
-  int count = XVECLEN (op, 0) - 1;
-  unsigned int src_regno;
-  rtx dest_addr;
-  int i;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != MEM
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != REG)
-    return 0;
-
-  src_regno = REGNO (SET_SRC (XVECEXP (op, 0, 0)));
-  dest_addr = XEXP (SET_DEST (XVECEXP (op, 0, 0)), 0);
-
-  for (i = 1; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i + 1);
-
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != REG
-	  || GET_MODE (SET_SRC (elt)) != SImode
-	  || REGNO (SET_SRC (elt)) != src_regno + i
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || GET_MODE (SET_DEST (elt)) != SImode
-	  || GET_CODE (XEXP (SET_DEST (elt), 0)) != PLUS
-	  || ! rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_addr)
-	  || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
-	  || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1)) != i * 4)
-	return 0;
-    }
-
-  return 1;
-})
-
 ;; Return 1 if OP is valid for a save_world call in prologue, known to be
 ;; a PARLLEL.
 (define_predicate "save_world_operation"
@@ -1374,12 +1288,11 @@
   rtx elt;
   int count = XVECLEN (op, 0);
 
-  if (count != 59)
+  if (count != 58)
     return 0;
 
   index = 0;
   if (GET_CODE (XVECEXP (op, 0, index++)) != RETURN
-      || GET_CODE (XVECEXP (op, 0, index++)) != USE
       || GET_CODE (XVECEXP (op, 0, index++)) != USE
       || GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER)
     return 0;
@@ -1920,7 +1833,7 @@
        DFmode in 32-bit if -msoft-float since it splits into two separate
        instructions.  */
     case E_DFmode:
-      if ((!TARGET_POWERPC64 && !TARGET_DF_FPR) || !TARGET_P9_FUSION)
+      if ((!TARGET_POWERPC64 && !TARGET_HARD_FLOAT) || !TARGET_P9_FUSION)
 	return 0;
       break;
 
@@ -1980,7 +1893,7 @@
        into two separate instructions.  Do allow fusion if we have hardware
        floating point.  */
     case E_DFmode:
-      if (!TARGET_POWERPC64 && !TARGET_DF_FPR)
+      if (!TARGET_POWERPC64 && !TARGET_HARD_FLOAT)
 	return 0;
       break;
 

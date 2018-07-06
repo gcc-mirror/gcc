@@ -1,5 +1,5 @@
 /* brig-copy-move-inst-handler.cc -- brig copy/move instruction handling
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -53,12 +53,12 @@ brig_copy_move_inst_handler::operator () (const BrigBase *base)
 
   tree input = build_tree_operand_from_brig (brig_inst, source_type, 1);
   tree output = build_tree_operand_from_brig (brig_inst, dest_type, 0);
+
   if (brig_inst->opcode == BRIG_OPCODE_COMBINE)
     {
       /* For combine, a simple reinterpret cast from the array constructor
 	 works.  */
-
-      tree casted = build_reinterpret_cast (dest_type, input);
+      tree casted = build_resize_convert_view (TREE_TYPE (output), input);
       tree assign = build2 (MODIFY_EXPR, TREE_TYPE (output), output, casted);
       m_parent.m_cf->append_statement (assign);
     }

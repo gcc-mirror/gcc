@@ -3,6 +3,10 @@
 
 #include <stdlib.h>
 
+#ifndef __FLASH
+#define __flash /* empty */
+#endif
+
 const __flash __int24 vals[] =
   {
     0, 1, 2, 3, -1, -2, -3, 0xff, 0x100, 0x101,

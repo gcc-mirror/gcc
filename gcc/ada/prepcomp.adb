@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,9 +193,9 @@ package body Prepcomp is
       end if;
    end Check_Symbols;
 
-   ------------------------------
-   -- Parse_Preprocessing_Data --
-   ------------------------------
+   -----------------------------------
+   -- Parse_Preprocessing_Data_File --
+   -----------------------------------
 
    procedure Parse_Preprocessing_Data_File (N : File_Name_Type) is
       OK            : Boolean := False;

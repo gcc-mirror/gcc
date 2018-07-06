@@ -20,7 +20,7 @@
         do I = 1, N
           do J = I, M
             if (A(J,2) /= B(J)) then
-              call abort ()
+              STOP 1
               endif
           end do
         end do

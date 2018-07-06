@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -71,7 +71,8 @@
    `emit-rtl.c').  */
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-   RS6000_ALIGN (crtl->outgoing_args_size + STACK_POINTER_OFFSET, 16)
+  RS6000_ALIGN (crtl->outgoing_args_size.to_constant () \
+		+ STACK_POINTER_OFFSET, 16)
 
 #undef  TARGET_IEEEQUAD
 #define TARGET_IEEEQUAD 0

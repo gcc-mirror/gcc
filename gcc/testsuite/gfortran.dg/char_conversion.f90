@@ -6,5 +6,5 @@
 
 program p
    character, parameter :: c = char(256,4) ! { dg-error "cannot be converted" }
-   if (rank(c) /= 0) call abort
+   if (rank(c) /= 0) STOP 1
 end

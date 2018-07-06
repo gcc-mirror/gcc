@@ -13,18 +13,18 @@ open(10, file='mydata_f2003_io_1', asynchronous="yes", blank="null")
 write(10,'(10f8.3)', asynchronous="yes", decimal="comma", id=j) a
 rewind(10)
 read(10,'(10f8.3)', asynchronous="yes", decimal="comma", blank="zero") b
-if (any(b.ne.23.45)) call abort
+if (any(b.ne.23.45)) STOP 1
 
 c = 3.14
 write(msg, *, decimal="comma") c
-if (msg(1:7).ne."   3,14") call abort
+if (msg(1:7).ne."   3,14") STOP 2
 
 b = 0.0
 rewind(10)
 write(10,'(10f8.3)', asynchronous="yes", decimal="point") a
 rewind(10)
 read(10,'(10f8.3)', asynchronous="yes", decimal="point") b
-if (any(b.ne.23.45)) call abort
+if (any(b.ne.23.45)) STOP 3
 
 wait(unit=10, err=25, iostat=istat, iomsg=msg, end=35, id=j)
 

@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
 This file is part of GCC.
@@ -89,15 +89,15 @@ gfc_handle_omp_declare_target_attribute (tree *, tree, tree, int, bool *)
 /* Table of valid Fortran attributes.  */
 static const struct attribute_spec gfc_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "omp declare target", 0, 0, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false },
-  { "omp declare target link", 0, 0, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false },
-  { "oacc function", 0, -1, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false },
-  { NULL,		  0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "omp declare target", 0, 0, true,  false, false, false,
+    gfc_handle_omp_declare_target_attribute, NULL },
+  { "omp declare target link", 0, 0, true,  false, false, false,
+    gfc_handle_omp_declare_target_attribute, NULL },
+  { "oacc function", 0, -1, true,  false, false, false,
+    gfc_handle_omp_declare_target_attribute, NULL },
+  { NULL,		  0, 0, false, false, false, false, NULL, NULL }
 };
 
 #undef LANG_HOOKS_NAME
@@ -1202,6 +1202,10 @@ gfc_init_builtin_functions (void)
 #undef DEF_GOACC_BUILTIN_COMPILER
 #define DEF_GOACC_BUILTIN_COMPILER(code, name, type, attr) \
       gfc_define_builtin (name, builtin_types[type], code, name, attr);
+#undef DEF_GOACC_BUILTIN_ONLY
+#define DEF_GOACC_BUILTIN_ONLY(code, name, type, attr) \
+      gfc_define_builtin ("__builtin_" name, builtin_types[type], code, NULL, \
+			  attr);
 #undef DEF_GOMP_BUILTIN
 #define DEF_GOMP_BUILTIN(code, name, type, attr) /* ignore */
 #include "../omp-builtins.def"

@@ -105,9 +105,11 @@ namespace std
     public:
       size_type size ()const noexcept
       {
+	return 0;
       }
       const _CharT *data () const noexcept
       {
+	return 0;
       }
     };
   }
@@ -127,9 +129,14 @@ class CLIParameterType
 {
   const std::string & getSwitchOption (unsigned int i) const
   {
-  } unsigned int getSwitchOptionCount () const
+    static std::string a;
+    return a;
+  }
+  unsigned int getSwitchOptionCount () const
   {
-  } int checkSwitched (const std::string & value) const;
+    return 0;
+  }
+  int checkSwitched (const std::string & value) const;
 };
 
 int
@@ -138,4 +145,6 @@ CLIParameterType::checkSwitched (const std::string & value) const
   int contains = false;
   for (unsigned int i = 0; !contains && i < getSwitchOptionCount () ;)
     contains = getSwitchOption (i) == value;
+
+  return 0;
 }

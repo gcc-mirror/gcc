@@ -1,5 +1,5 @@
 /* Miscellaneous SSA utility functions.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -220,7 +220,7 @@ flush_pending_stmts (edge e)
 void
 gimple_replace_ssa_lhs (gimple *stmt, tree nlhs)
 {
-  if (MAY_HAVE_DEBUG_STMTS)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     {
       tree lhs = gimple_get_lhs (stmt);
 
@@ -242,7 +242,7 @@ gimple_replace_ssa_lhs (gimple *stmt, tree nlhs)
 tree
 target_for_debug_bind (tree var)
 {
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
     return NULL_TREE;
 
   if (TREE_CODE (var) == SSA_NAME)
@@ -307,7 +307,7 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
   int usecount = 0;
   tree value = NULL;
 
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
     return;
 
   /* If this name has already been registered for replacement, do nothing
@@ -495,7 +495,7 @@ insert_debug_temps_for_defs (gimple_stmt_iterator *gsi)
   ssa_op_iter op_iter;
   def_operand_p def_p;
 
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
     return;
 
   stmt = gsi_stmt (*gsi);
@@ -521,7 +521,7 @@ reset_debug_uses (gimple *stmt)
   imm_use_iterator imm_iter;
   gimple *use_stmt;
 
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
     return;
 
   FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, op_iter, SSA_OP_DEF)
@@ -1379,10 +1379,10 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
 	}
       else if (DECL_SIZE (sym)
 	       && TREE_CODE (DECL_SIZE (sym)) == INTEGER_CST
-	       && mem_ref_offset (*tp) >= 0
-	       && wi::leu_p (mem_ref_offset (*tp)
-			     + wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (*tp))),
-			     wi::to_offset (DECL_SIZE_UNIT (sym)))
+	       && (known_subrange_p
+		   (mem_ref_offset (*tp),
+		    wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (*tp))),
+		    0, wi::to_offset (DECL_SIZE_UNIT (sym))))
 	       && (! INTEGRAL_TYPE_P (TREE_TYPE (*tp)) 
 		   || (wi::to_offset (TYPE_SIZE (TREE_TYPE (*tp)))
 		       == TYPE_PRECISION (TREE_TYPE (*tp))))
@@ -1427,15 +1427,16 @@ non_rewritable_mem_ref_base (tree ref)
       if (! DECL_P (decl))
 	return NULL_TREE;
       if (! is_gimple_reg_type (TREE_TYPE (base))
-	  || VOID_TYPE_P (TREE_TYPE (base)))
+	  || VOID_TYPE_P (TREE_TYPE (base))
+	  || TREE_THIS_VOLATILE (decl) != TREE_THIS_VOLATILE (base))
 	return decl;
       if ((TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE
 	   || TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
 	  && useless_type_conversion_p (TREE_TYPE (base),
 					TREE_TYPE (TREE_TYPE (decl)))
-	  && wi::fits_uhwi_p (mem_ref_offset (base))
-	  && wi::gtu_p (wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
-			mem_ref_offset (base))
+	  && known_ge (mem_ref_offset (base), 0)
+	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
+		       mem_ref_offset (base))
 	  && multiple_of_p (sizetype, TREE_OPERAND (base, 1),
 			    TYPE_SIZE_UNIT (TREE_TYPE (base))))
 	return NULL_TREE;
@@ -1445,11 +1446,10 @@ non_rewritable_mem_ref_base (tree ref)
 	return NULL_TREE;
       /* For integral typed extracts we can use a BIT_FIELD_REF.  */
       if (DECL_SIZE (decl)
-	  && TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST
-	  && mem_ref_offset (base) >= 0
-	  && wi::leu_p (mem_ref_offset (base)
-			+ wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (base))),
-			wi::to_offset (DECL_SIZE_UNIT (decl)))
+	  && (known_subrange_p
+	      (mem_ref_offset (base),
+	       wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (base))),
+	       0, wi::to_poly_offset (DECL_SIZE_UNIT (decl))))
 	  /* ???  We can't handle bitfield precision extracts without
 	     either using an alternate type for the BIT_FIELD_REF and
 	     then doing a conversion or possibly adjusting the offset
@@ -1517,11 +1517,11 @@ non_rewritable_lvalue_p (tree lhs)
 	  && TYPE_MODE (TREE_TYPE (decl)) != BLKmode
 	  && operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (lhs)),
 			      TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))), 0)
-	  && tree_fits_uhwi_p (TREE_OPERAND (lhs, 1))
-	  && tree_int_cst_lt (TREE_OPERAND (lhs, 1),
-			      TYPE_SIZE_UNIT (TREE_TYPE (decl)))
-	  && (tree_to_uhwi (TREE_OPERAND (lhs, 1))
-	      % tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (lhs)))) == 0)
+	  && known_ge (mem_ref_offset (lhs), 0)
+	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
+		       mem_ref_offset (lhs))
+	  && multiple_of_p (sizetype, TREE_OPERAND (lhs, 1),
+			    TYPE_SIZE_UNIT (TREE_TYPE (lhs))))
 	return false;
     }
 

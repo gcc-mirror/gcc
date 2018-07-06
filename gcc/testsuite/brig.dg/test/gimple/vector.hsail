@@ -32,18 +32,18 @@ prog kernel &Kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
 /* { dg-final { scan-tree-dump " = MEM\\\[\\\(vector\\\(2\\\) <float:32> \\\*\\\)" "original"} } */
 
 /* The v3 load is scalarized (at the moment) due to gcc requiring 2's exponent wide vectors. */
-/* { dg-final { scan-tree-dump "s0 = VIEW_CONVERT_EXPR<unsigned int>\\\(BIT_FIELD_REF <mem_read.\[0-9\]+, 32, 0>\\\);\[\n ]+s1 = VIEW_CONVERT_EXPR<unsigned int>\\\(BIT_FIELD_REF <mem_read.\[0-9\]+, 32, 32>\\\);" "original"} } */
+/* { dg-final { scan-tree-dump "s0 = .*BIT_FIELD_REF <mem_read.\[0-9\]+, 32, 0>\\\)?;\[\n ]+s1 = .*BIT_FIELD_REF <mem_read.\[0-9\]+, 32, 32>\\\)?;" "original"} } */
 
 /* The v4 load is done via casting to a vector datatype ptr. */
 /* { dg-final { scan-tree-dump " = MEM\\\[\\\(vector\\\(4\\\) <float:32> \\\*\\\)" "original"} } */
 
 /* The combines are generated to vector constructors. */
-/* { dg-final { scan-tree-dump "{s1, s0}" "original"} } */
-/* { dg-final { scan-tree-dump "{s2, s3}" "original"} } */
+/* { dg-final { scan-tree-dump "{.*s1\\\)?, .*s0\\\)?}" "original"} } */
+/* { dg-final { scan-tree-dump "{.*s2\\\)?, .*s3\\\)?}" "original"} } */
 
 /* Expands to BIT_FIELD_REFs. */
-/* { dg-final { scan-tree-dump "s0 = BIT_FIELD_REF <d4, 32, 0>;" "original"} } */
-/* { dg-final { scan-tree-dump "s3 = BIT_FIELD_REF <d4, 32, 32>;" "original"} } */
+/* { dg-final { scan-tree-dump "s0 = \(VIEW_CONVERT_EXPR.*\\\(\)?BIT_FIELD_REF <d4, 32, 0>\\\)?;" "original"} } */
+/* { dg-final { scan-tree-dump "s3 = \(VIEW_CONVERT_EXPR.*\\\(\)?BIT_FIELD_REF <d4, 32, 32>\\\)?;" "original"} } */
 
 /* The v1 store is done via casting to a vector datatype ptr and constructing a vector from the inputs. */
 /* { dg-final { scan-tree-dump "MEM\\\[\\\(vector\\\(2\\\) <float:32> \\\*\\\)\\\(<float:32> \\\*\\\) d1\\\] = " "original"} } */

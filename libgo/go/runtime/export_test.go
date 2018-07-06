@@ -123,15 +123,15 @@ func RunSchedLocalQueueEmptyTest(iters int) {
 	// can lead to underutilization (both runnable Gs and idle Ps coexist
 	// for arbitrary long time).
 	done := make(chan bool, 1)
-	p := new(p)
+	_p_ := new(p)
 	gs := make([]g, 2)
 	ready := new(uint32)
 	for i := 0; i < iters; i++ {
 		*ready = 0
 		next0 := (i & 1) == 0
 		next1 := (i & 2) == 0
-		runqput(p, &gs[0], next0)
-		go func() {
+		runqput(_p_, &gs[0], next0)
+		go func(done chan bool, p *p, ready *uint32, next0, next1 bool) {
 			for atomic.Xadd(ready, 1); atomic.Load(ready) != 2; {
 			}
 			if runqempty(p) {
@@ -139,22 +139,29 @@ func RunSchedLocalQueueEmptyTest(iters int) {
 				throw("queue is empty")
 			}
 			done <- true
-		}()
+		}(done, _p_, ready, next0, next1)
 		for atomic.Xadd(ready, 1); atomic.Load(ready) != 2; {
 		}
-		runqput(p, &gs[1], next1)
-		runqget(p)
+		runqput(_p_, &gs[1], next1)
+		runqget(_p_)
 		<-done
-		runqget(p)
+		runqget(_p_)
 	}
 }
 
-var StringHash = stringHash
-var BytesHash = bytesHash
-var Int32Hash = int32Hash
-var Int64Hash = int64Hash
-var EfaceHash = efaceHash
-var IfaceHash = ifaceHash
+var (
+	StringHash = stringHash
+	BytesHash  = bytesHash
+	Int32Hash  = int32Hash
+	Int64Hash  = int64Hash
+	MemHash    = memhash
+	MemHash32  = memhash32
+	MemHash64  = memhash64
+	EfaceHash  = efaceHash
+	IfaceHash  = ifaceHash
+)
+
+var UseAeshash = &useAeshash
 
 func MemclrBytes(b []byte) {
 	s := (*slice)(unsafe.Pointer(&b))
@@ -363,4 +370,28 @@ func (rw *RWMutex) Lock() {
 
 func (rw *RWMutex) Unlock() {
 	rw.rw.unlock()
+}
+
+func MapBucketsCount(m map[int]int) int {
+	h := *(**hmap)(unsafe.Pointer(&m))
+	return 1 << h.B
+}
+
+func MapBucketsPointerIsNil(m map[int]int) bool {
+	h := *(**hmap)(unsafe.Pointer(&m))
+	return h.buckets == nil
+}
+
+func LockOSCounts() (external, internal uint32) {
+	g := getg()
+	if g.m.lockedExt+g.m.lockedInt == 0 {
+		if g.lockedm != 0 {
+			panic("lockedm on non-locked goroutine")
+		}
+	} else {
+		if g.lockedm == 0 {
+			panic("nil lockedm on locked goroutine")
+		}
+	}
+	return g.m.lockedExt, g.m.lockedInt
 }

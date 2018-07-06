@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -2656,20 +2656,24 @@ gomp_target_init (void)
     do
       {
 	struct gomp_device_descr current_device;
+	size_t prefix_len, suffix_len, cur_len;
 
 	next = strchr (cur, ',');
 
-	plugin_name = (char *) malloc (1 + (next ? next - cur : strlen (cur))
-				       + strlen (prefix) + strlen (suffix));
+	prefix_len = strlen (prefix);
+	cur_len = next ? next - cur : strlen (cur);
+	suffix_len = strlen (suffix);
+
+	plugin_name = (char *) malloc (prefix_len + cur_len + suffix_len + 1);
 	if (!plugin_name)
 	  {
 	    num_devices = 0;
 	    break;
 	  }
 
-	strcpy (plugin_name, prefix);
-	strncat (plugin_name, cur, next ? next - cur : strlen (cur));
-	strcat (plugin_name, suffix);
+	memcpy (plugin_name, prefix, prefix_len);
+	memcpy (plugin_name + prefix_len, cur, cur_len);
+	memcpy (plugin_name + prefix_len + cur_len, suffix, suffix_len + 1);
 
 	if (gomp_load_plugin_for_device (&current_device, plugin_name))
 	  {

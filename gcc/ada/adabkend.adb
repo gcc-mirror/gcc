@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2017, AdaCore                     --
+--                     Copyright (C) 2001-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,9 +67,9 @@ package body Adabkend is
       Driver (Lib.Cunit (Types.Main_Unit));
    end Call_Back_End;
 
-   ------------------------
-   -- Scan_Compiler_Args --
-   ------------------------
+   -----------------------------
+   -- Scan_Compiler_Arguments --
+   -----------------------------
 
    procedure Scan_Compiler_Arguments is
       Output_File_Name_Seen : Boolean := False;

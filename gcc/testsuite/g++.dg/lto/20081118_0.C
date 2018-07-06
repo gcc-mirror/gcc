@@ -18,4 +18,5 @@ class foo : public object
 int
 foo::method(void)
 {
+  return 0;
 }

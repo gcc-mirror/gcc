@@ -1,6 +1,8 @@
 /* { dg-do assemble } */
 /* { dg-options "-O2 --save-temps -ftree-vectorize" } */
 
+#pragma GCC target "+nosve"
+
 /* Each function uses the correspoding 'CLASS' in
    Marco CHECK (aarch64_simd_valid_immediate).  */
 

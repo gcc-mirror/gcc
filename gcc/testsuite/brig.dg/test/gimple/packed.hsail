@@ -42,7 +42,7 @@ prog kernel &Kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
         ret;
 };
 
-/* The b128 load is done using uint128_t*.
+/* The b128 load is done using uint128_t*. */
 /* { dg-final { scan-tree-dump "q0 = VIEW_CONVERT_EXPR<uint128_t>\\\(mem_read.\[0-9\]+\\\);" "original"} } */
 
 /* Before arithmetics, the uint128_t is casted to a vector datatype. */
@@ -52,27 +52,25 @@ prog kernel &Kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
 /* in comparison to the HSAIL syntax. */
 /* { dg-final { scan-tree-dump "\\\+ { 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 }" "original"} } */
 
-/* After arithmetics, the vector DT is casted back to a uint128_t. */
-/* { dg-final { scan-tree-dump "q1 = VIEW_CONVERT_EXPR<uint128_t>" "original"} } */
-
 /* Broadcasted the constant vector's lowest element and summed it up in the next line. */
-/* { dg-final { scan-tree-dump "= { 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15 };\[\n \]+_\[0-9\]+ = _\[0-9\]+ \\\+ _\[0-9\]+;" "gimple"} } */
+/* { dg-final { scan-tree-dump "= { 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15 };\[\n \]+\[a-z0-9_\]+ = \[a-z0-9_\]+ \\\+ \[a-z0-9_\]+;" "gimple"} } */
 
 /* Broadcasted the registers lowest element via a VEC_PERM_EXPR that has an all-zeros mask. */
-/* { dg-final { scan-tree-dump "VEC_PERM_EXPR <_\[0-9\]+, _\[0-9\]+, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }>;" "gimple" } } */
+/* { dg-final { scan-tree-dump "VEC_PERM_EXPR <\[a-z0-9_\]+, \[a-z0-9_\]+, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }>;" "gimple" } } */
 
 /* For the add_ss we assume performing the computation over the whole vector is cheaper than */
 /* extracting the scalar and performing a scalar operation. This aims to stay in the vector
 /* datapath as long as possible. */
-/* { dg-final { scan-tree-dump "_\[0-9\]+ = VIEW_CONVERT_EXPR<vector\\\(16\\\) unsigned char>\\\(q2\\\);\[\n \]+_\[0-9\]+ = VIEW_CONVERT_EXPR<vector\\\(16\\\) unsigned char>\\\(q3\\\);\[\n \]+_\[0-9\]+ = _\[0-9\]+ \\\+ _\[0-9\]+;" "gimple" } } */
+/* { dg-final { scan-tree-dump "_\[0-9\]+ = q2 \\\+ q3;" "gimple" } } */
 
 /* Insert the lowest element of the result to the lowest element of the result register. */
-/* { dg-final { scan-tree-dump "= VEC_PERM_EXPR <_\[0-9\]+, new_output.\[0-9\]+_\[0-9\]+, { 16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }>;" "gimple" } } */
+/* { dg-final { scan-tree-dump "= VEC_PERM_EXPR <\[a-z0-9_\]+, new_output.\[0-9\]+_\[0-9\]+, { 16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }>;" "gimple" } } */
 
-/* { dg-final { scan-tree-dump "q4 = VIEW_CONVERT_EXPR<uint128_t>\\\(s_output.\[0-9\]+_\[0-9\]+\\\);" "gimple" } } */
+/* FIXME */
+/* { dg-final { scan-tree-dump "q4 = \(VIEW_CONVERT_EXPR<uint128_t>\\\()?s_output.\[0-9\]+\(_\[0-9\]+\)*\\\)?;" "gimple" } } */
 
 /* The saturating arithmetics are (curently) implemented using scalar builtin calls. */
 /* { dg-final { scan-tree-dump-times "= __builtin___hsail_sat_add_u8" 64 "gimple" } } */
 
 /* A single operand vector instr (neg.) */
-/* { dg-final { scan-tree-dump " = VIEW_CONVERT_EXPR<vector\\\(8\\\) signed short>\\\(q8\\\);\[\n \]+_\[0-9\]+ = -_\[0-9\]+;\[\n \]+" "gimple" } } */
+/* { dg-final { scan-tree-dump "= VIEW_CONVERT_EXPR<vector\\\(8\\\) signed short>\\\(\(s_output.\[0-9\]+_\[0-9\]+|q8\)\\\);\[\n \]+q9 = -_\[0-9\]+;\[\n \]+" "gimple" } } */

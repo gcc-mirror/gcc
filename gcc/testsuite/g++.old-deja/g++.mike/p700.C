@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-Wno-deprecated -Wno-register -Wno-builtin-declaration-mismatch" }
+// { dg-options "-Wno-deprecated -Wno-register -Wno-builtin-declaration-mismatch -Wno-return-type" }
 // { dg-error "limited range of data type" "16-bit target" { target xstormy16-*-* } 0 }
 // prms-id: 700
 
@@ -2111,6 +2111,7 @@ char mystrcmp(String30 s, String30 t)
 
 
 
+int
 main()
 {
 	Proc0();

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2012-2017, AdaCore                     --
+--                     Copyright (C) 2012-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,6 @@
 
 --  This is the GNU/Linux specific version of this package
 with Interfaces.C;              use Interfaces.C;
-
-with System.Address_Operations; use System.Address_Operations;
 
 separate (System.Traceback.Symbolic)
 
@@ -124,7 +122,7 @@ package body Module_Name is
       while lm /= null loop
          if Big_String_Conv.To_Pointer (lm.l_name) (1) /= ASCII.NUL then
             --  Discard non-file (like the executable itself or the gate).
-            Add_Module_To_Cache (Value (lm.l_name));
+            Add_Module_To_Cache (Value (lm.l_name), lm.l_addr);
          end if;
          lm := lm.l_next;
       end loop;
@@ -134,7 +132,10 @@ package body Module_Name is
    -- Get --
    ---------
 
-   function Get (Addr : access System.Address) return String is
+   function Get (Addr : System.Address;
+                 Load_Addr : access System.Address)
+     return String
+   is
 
       --  Dl_info record for Linux, used to get sym reloc offset
 
@@ -154,13 +155,15 @@ package body Module_Name is
       info : aliased Dl_info;
 
    begin
-      if dladdr (Addr.all, info'Access) /= 0 then
+      Load_Addr.all := System.Null_Address;
+
+      if dladdr (Addr, info'Access) /= 0 then
 
          --  If we have a shared library we need to adjust the address to
          --  be relative to the base address of the library.
 
          if Is_Shared_Lib (info.dli_fbase) then
-            Addr.all := SubA (Addr.all, info.dli_fbase);
+            Load_Addr.all := info.dli_fbase;
          end if;
 
          return Value (info.dli_fname);

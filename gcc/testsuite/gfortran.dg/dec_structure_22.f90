@@ -32,7 +32,7 @@
       ! r.c16_1 and r.c16_2 are in a union, thus share the same memory
       ! and the first 16 bytes of instr are overwritten
       if ( r.c16_1 .ne. instr(17:32) .or. r.c16_2 .ne. instr(17:32) ) then
-        call abort()
+        STOP 1
       endif
 
       end

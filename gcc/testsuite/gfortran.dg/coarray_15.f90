@@ -26,17 +26,17 @@ program ex2
       str = repeat('X', len(str))
       write(str,*) 'z=',z(:),' on image',this_image()
       if (str /= " z=   1.20000005       1.20000005       1.20000005      on image           1") &
-        call abort
+        STOP 1
 
       str = repeat('X', len(str))
       write(str,*) 'z=',z,' on image',this_image()
       if (str /= " z=   1.20000005       1.20000005       1.20000005      on image           1") &
-        call abort
+        STOP 2
 
       str = repeat('X', len(str))
       write(str,*) 'z=',z(1:3)[this_image()],' on image',this_image()
       if (str /= " z=   1.20000005       1.20000005       1.20000005      on image           1") &
-        call abort
+        STOP 3
 
       call ex2a()
       call ex5()
@@ -63,12 +63,12 @@ subroutine ex2a()
       str = repeat('X', len(str))
       write(str,*) 'z=',z(:,:),' on image',this_image()
       if (str /= " z=   1.20000005       1.20000005       1.20000005       1.20000005      on image           1") &
-        call abort
+        STOP 4
 
       str = repeat('X', len(str))
       write(str,*) 'z=',z,' on image',this_image()
       if (str /= " z=   1.20000005       1.20000005       1.20000005       1.20000005      on image           1") &
-        call abort
+        STOP 5
 end subroutine ex2a
 
 subroutine ex5
@@ -83,17 +83,17 @@ subroutine ex5
    str = repeat('X', len(str))
    write(str,*) 'In main on image',this_image(), 'w= ',w 
    if (str /= " In main on image           1 w=    1.00000000       1.00000000       1.00000000       1.00000000") &
-        call abort
+        STOP 6
 
    str = repeat('X', len(str))
    write(str,*) 'In main on image',this_image(), 'w= ',w(1:4) 
    if (str /= " In main on image           1 w=    1.00000000       1.00000000       1.00000000       1.00000000") &
-        call abort
+        STOP 7
 
    str = repeat('X', len(str))
    write(str,*) 'In main on image',this_image(), 'w= ',w(:)[1]
    if (str /= " In main on image           1 w=    1.00000000       1.00000000       1.00000000       1.00000000") &
-        call abort
+        STOP 8
 
    sync all
    call ex5_sub(me,w)
@@ -108,5 +108,5 @@ subroutine ex5_sub(n,w)
    str = repeat('X', len(str))
    write(str,*) 'In sub on image',this_image(), 'w= ',w 
    if (str /= " In sub on image           1 w=    1.00000000") &
-        call abort
+        STOP 9
 end subroutine ex5_sub

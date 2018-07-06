@@ -13,7 +13,7 @@ program read_list_eof_1
   read (20, fmt=*) s
   close (20, status='delete')
   if (trim(s) /= "a") then
-     call abort ()
+     STOP 1
   end if
 
   call genfil ('1')
@@ -22,7 +22,7 @@ program read_list_eof_1
   read (20, fmt=*) ii
   close (20, status='delete')
   if (ii /= 1) then
-     call abort ()
+     STOP 2
   end if
 
   call genfil ('1.5')
@@ -31,7 +31,7 @@ program read_list_eof_1
   read (20, fmt=*) rr
   close (20, status='delete')
   if (rr /= 1.5) then
-     call abort ()
+     STOP 3
   end if
 
   call genfil ('T')
@@ -40,7 +40,7 @@ program read_list_eof_1
   read (20, fmt=*) ll
   close (20, status='delete')
   if (.not. ll) then
-     call abort ()
+     STOP 4
   end if
 
 contains

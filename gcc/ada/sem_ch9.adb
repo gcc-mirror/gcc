@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1210,13 +1210,13 @@ package body Sem_Ch9 is
       Entry_Name : Entity_Id;
 
    begin
-      --  An entry body "freezes" the contract of the nearest enclosing package
+      --  An entry body freezes the contract of the nearest enclosing package
       --  body and all other contracts encountered in the same declarative part
       --  up to and excluding the entry body. This ensures that any annotations
       --  referenced by the contract of an entry or subprogram body declared
       --  within the current protected body are available.
 
-      Analyze_Previous_Contracts (N);
+      Freeze_Previous_Contracts (N);
 
       Tasking_Used := True;
 
@@ -1246,7 +1246,7 @@ package body Sem_Ch9 is
       --  Analyze any aspect specifications that appear on the entry body
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
+         Analyze_Aspects_On_Subprogram_Body_Or_Stub (N);
       end if;
 
       E := First_Entity (P_Type);
@@ -1662,8 +1662,9 @@ package body Sem_Ch9 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => Def_Id,
-         Checks => True);
+        (N_Id     => Def_Id,
+         Checks   => True,
+         Warnings => True);
 
       --  Process formals
 
@@ -1794,14 +1795,14 @@ package body Sem_Ch9 is
    --  Start of processing for Analyze_Protected_Body
 
    begin
-      --  A protected body "freezes" the contract of the nearest enclosing
+      --  A protected body freezes the contract of the nearest enclosing
       --  package body and all other contracts encountered in the same
-      --  declarative part up to and excluding the protected body. This ensures
-      --  that any annotations referenced by the contract of an entry or
-      --  subprogram body declared within the current protected body are
-      --  available.
+      --  declarative part up to and excluding the protected body. This
+      --  ensures that any annotations referenced by the contract of an
+      --  entry or subprogram body declared within the current protected
+      --  body are available.
 
-      Analyze_Previous_Contracts (N);
+      Freeze_Previous_Contracts (N);
 
       Tasking_Used := True;
       Set_Ekind (Body_Id, E_Protected_Body);
@@ -2287,7 +2288,7 @@ package body Sem_Ch9 is
       Target_Obj  : Node_Id := Empty;
       Req_Scope   : Entity_Id;
       Outer_Ent   : Entity_Id;
-      Synch_Type  : Entity_Id;
+      Synch_Type  : Entity_Id := Empty;
 
    begin
       --  Preserve relevant elaboration-related attributes of the context which
@@ -2295,9 +2296,10 @@ package body Sem_Ch9 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Modes    => True,
+         Warnings => True);
 
       Tasking_Used := True;
       Check_SPARK_05_Restriction ("requeue statement is not allowed", N);
@@ -2865,8 +2867,9 @@ package body Sem_Ch9 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => Obj_Id,
-         Checks => True);
+        (N_Id     => Obj_Id,
+         Checks   => True,
+         Warnings => True);
 
       --  Instead of calling Analyze on the new node, call the proper analysis
       --  procedure directly. Otherwise the node would be expanded twice, with
@@ -2900,13 +2903,13 @@ package body Sem_Ch9 is
       --  a single task, since Spec_Id is set to the task type).
 
    begin
-      --  A task body "freezes" the contract of the nearest enclosing package
+      --  A task body freezes the contract of the nearest enclosing package
       --  body and all other contracts encountered in the same declarative part
       --  up to and excluding the task body. This ensures that annotations
       --  referenced by the contract of an entry or subprogram body declared
       --  within the current protected body are available.
 
-      Analyze_Previous_Contracts (N);
+      Freeze_Previous_Contracts (N);
 
       Tasking_Used := True;
       Set_Scope (Body_Id, Current_Scope);
@@ -3136,8 +3139,9 @@ package body Sem_Ch9 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => T,
-         Checks => True);
+        (N_Id     => T,
+         Checks   => True,
+         Warnings => True);
 
       Push_Scope (T);
 
@@ -3513,10 +3517,10 @@ package body Sem_Ch9 is
       --  declarations. Search for the private type declaration.
 
       declare
-         Full_T_Ifaces : Elist_Id;
+         Full_T_Ifaces : Elist_Id := No_Elist;
          Iface         : Node_Id;
          Priv_T        : Entity_Id;
-         Priv_T_Ifaces : Elist_Id;
+         Priv_T_Ifaces : Elist_Id := No_Elist;
 
       begin
          Priv_T := First_Entity (Scope (T));

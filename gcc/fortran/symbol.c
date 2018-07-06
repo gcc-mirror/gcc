@@ -1,5 +1,5 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -809,7 +809,9 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	    conf2 (threadprivate);
 	}
 
-      if (!attr->proc_pointer)
+      /* Procedure pointers in COMMON blocks are allowed in F03,
+       * but forbidden per F08:C5100.  */
+      if (!attr->proc_pointer || (gfc_option.allow_std & GFC_STD_F2008))
 	conf2 (in_common);
 
       conf2 (omp_declare_target_link);
@@ -2719,9 +2721,9 @@ gfc_define_st_label (gfc_st_label *lp, gfc_sl_type type, locus *label_locus)
 	    lp->defined = type;
 
 	  if (lp->referenced == ST_LABEL_DO_TARGET && type != ST_LABEL_DO_TARGET
-      	      && !gfc_notify_std (GFC_STD_F95_OBS, "DO termination statement "
-				  "which is not END DO or CONTINUE with "
-				  "label %d at %C", labelno))
+      	      && !gfc_notify_std (GFC_STD_F95_OBS | GFC_STD_F2018_DEL,
+				  "DO termination statement which is not END DO"
+				  " or CONTINUE with label %d at %C", labelno))
 	    return;
 	  break;
 
@@ -2776,8 +2778,8 @@ gfc_reference_st_label (gfc_st_label *lp, gfc_sl_type type)
     }
 
   if (lp->referenced == ST_LABEL_DO_TARGET && type == ST_LABEL_DO_TARGET
-      && !gfc_notify_std (GFC_STD_F95_OBS, "Shared DO termination label %d "
-			  "at %C", labelno))
+      && !gfc_notify_std (GFC_STD_F95_OBS | GFC_STD_F2018_DEL,
+			  "Shared DO termination label %d at %C", labelno))
     return false;
 
   if (lp->referenced != ST_LABEL_DO_TARGET)
@@ -3482,22 +3484,6 @@ find_common_symtree (gfc_symtree *st, gfc_common_head *head)
 }
 
 
-/* Clear the given storage, and make it the current change set for registering
-   changed symbols.  Its contents are freed after a call to
-   gfc_restore_last_undo_checkpoint or gfc_drop_last_undo_checkpoint, but
-   it is up to the caller to free the storage itself.  It is usually a local
-   variable, so there is nothing to do anyway.  */
-
-void
-gfc_new_undo_checkpoint (gfc_undo_change_set &chg_syms)
-{
-  chg_syms.syms = vNULL;
-  chg_syms.tbps = vNULL;
-  chg_syms.previous = latest_undo_chgset;
-  latest_undo_chgset = &chg_syms;
-}
-
-
 /* Restore previous state of symbol.  Just copy simple stuff.  */
 
 static void
@@ -4086,8 +4072,14 @@ gfc_symbol_init_2 (void)
 void
 gfc_symbol_done_2 (void)
 {
-  gfc_free_namespace (gfc_current_ns);
-  gfc_current_ns = NULL;
+  if (gfc_current_ns != NULL)
+    {
+      /* free everything from the root.  */
+      while (gfc_current_ns->parent != NULL)
+	gfc_current_ns = gfc_current_ns->parent;
+      gfc_free_namespace (gfc_current_ns);
+      gfc_current_ns = NULL;
+    }
   gfc_free_dt_list ();
 
   enforce_single_undo_checkpoint ();
@@ -4281,6 +4273,29 @@ gfc_find_gsymbol (gfc_gsymbol *symbol, const char *name)
   while (symbol)
     {
       c = strcmp (name, symbol->name);
+      if (!c)
+	return symbol;
+
+      symbol = (c < 0) ? symbol->left : symbol->right;
+    }
+
+  return NULL;
+}
+
+
+/* Case insensitive search a tree for the global symbol.  */
+
+gfc_gsymbol *
+gfc_find_case_gsymbol (gfc_gsymbol *symbol, const char *name)
+{
+  int c;
+
+  if (symbol == NULL)
+    return NULL;
+
+  while (symbol)
+    {
+      c = strcasecmp (name, symbol->name);
       if (!c)
 	return symbol;
 
@@ -4833,7 +4848,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	tmp_sym->value->value.character.string[0]
 	  = (gfc_char_t) c_interop_kinds_table[s].value;
 	tmp_sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-	tmp_sym->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+	tmp_sym->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						     NULL, 1);
 
 	/* May not need this in both attr and ts, but do need in

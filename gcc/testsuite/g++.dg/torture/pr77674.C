@@ -3,6 +3,7 @@ typedef struct { } __fsid_t;
 typedef unsigned long int pthread_t;
 extern "C" {
   extern __inline __attribute__ ((__gnu_inline__)) int pthread_equal (pthread_t __thread1, pthread_t __thread2) throw ()   {
+      return 0;
   }
 }
 typedef pthread_t __gthread_t;

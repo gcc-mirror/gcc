@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler Collection
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -51,8 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Prototypes.  */
 static bool diagnostic_impl (rich_location *, int, const char *,
 			     va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(3,0);
-static bool diagnostic_n_impl (rich_location *, int, int, const char *,
-			       const char *, va_list *,
+static bool diagnostic_n_impl (rich_location *, int, unsigned HOST_WIDE_INT,
+			       const char *, const char *, va_list *,
 			       diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
 
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
@@ -291,6 +291,25 @@ diagnostic_get_color_for_kind (diagnostic_t kind)
   return diagnostic_kind_color[kind];
 }
 
+/* Return a formatted line and column ':%line:%column'.  Elided if
+   zero.  The result is a statically allocated buffer.  */
+
+static const char *
+maybe_line_and_column (int line, int col)
+{
+  static char result[32];
+
+  if (line)
+    {
+      size_t l = snprintf (result, sizeof (result),
+			   col ? ":%d:%d" : ":%d", line, col);
+      gcc_checking_assert (l < sizeof (result));
+    }
+  else
+    result[0] = 0;
+  return result;
+}
+
 /* Return a malloc'd string describing a location e.g. "foo.c:42:10".
    The caller is responsible for freeing the memory.  */
 
@@ -301,19 +320,13 @@ diagnostic_get_location_text (diagnostic_context *context,
   pretty_printer *pp = context->printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
+  const char *file = s.file ? s.file : progname;
+  int line = strcmp (file, N_("<built-in>")) ? s.line : 0;
+  int col = context->show_column ? s.column : 0;
 
-  if (s.file == NULL)
-    return build_message_string ("%s%s:%s", locus_cs, progname, locus_ce);
-
-  if (!strcmp (s.file, N_("<built-in>")))
-    return build_message_string ("%s%s:%s", locus_cs, s.file, locus_ce);
-
-  if (context->show_column)
-    return build_message_string ("%s%s:%d:%d:%s", locus_cs, s.file, s.line,
-				 s.column, locus_ce);
-  else
-    return build_message_string ("%s%s:%d:%s", locus_cs, s.file, s.line,
-				 locus_ce);
+  const char *line_col = maybe_line_and_column (line, col);
+  return build_message_string ("%s%s%s:%s", locus_cs, file,
+			       line_col, locus_ce);
 }
 
 /* Return a malloc'd string describing a location and the severity of the
@@ -575,21 +588,20 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
       if (! MAIN_FILE_P (map))
 	{
 	  map = INCLUDED_FROM (line_table, map);
-	  if (context->show_column)
-	    pp_verbatim (context->printer,
-			 "In file included from %r%s:%d:%d%R", "locus",
-			 LINEMAP_FILE (map),
-			 LAST_SOURCE_LINE (map), LAST_SOURCE_COLUMN (map));
-	  else
-	    pp_verbatim (context->printer,
-			 "In file included from %r%s:%d%R", "locus",
-			 LINEMAP_FILE (map), LAST_SOURCE_LINE (map));
+	  const char *line_col
+	    = maybe_line_and_column (LAST_SOURCE_LINE (map),
+				     context->show_column
+				     ? LAST_SOURCE_COLUMN (map) : 0);
+	  pp_verbatim (context->printer,
+		       "In file included from %r%s%s%R", "locus",
+		       LINEMAP_FILE (map), line_col);
 	  while (! MAIN_FILE_P (map))
 	    {
 	      map = INCLUDED_FROM (line_table, map);
+	      line_col = maybe_line_and_column (LAST_SOURCE_LINE (map), 0);
 	      pp_verbatim (context->printer,
-			   ",\n                 from %r%s:%d%R", "locus",
-			   LINEMAP_FILE (map), LAST_SOURCE_LINE (map));
+			   ",\n                 from %r%s%s%R", "locus",
+			   LINEMAP_FILE (map), line_col);
 	    }
 	  pp_verbatim (context->printer, ":");
 	  pp_newline (context->printer);
@@ -1099,15 +1111,24 @@ diagnostic_impl (rich_location *richloc, int opt,
 /* Implement inform_n, warning_n, and error_n, as documented and
    defined below.  */
 static bool
-diagnostic_n_impl (rich_location *richloc, int opt, int n,
+diagnostic_n_impl (rich_location *richloc, int opt, unsigned HOST_WIDE_INT n,
 		   const char *singular_gmsgid,
 		   const char *plural_gmsgid,
 		   va_list *ap, diagnostic_t kind)
 {
   diagnostic_info diagnostic;
-  diagnostic_set_info_translated (&diagnostic,
-                                  ngettext (singular_gmsgid, plural_gmsgid, n),
-                                  ap, richloc, kind);
+  unsigned long gtn;
+
+  if (sizeof n <= sizeof gtn)
+    gtn = n;
+  else
+    /* Use the largest number ngettext can handle, otherwise
+       preserve the six least significant decimal digits for
+       languages where the plural form depends on them.  */
+    gtn = n <= ULONG_MAX ? n : n % 1000000LU + 1000000LU;
+
+  const char *text = ngettext (singular_gmsgid, plural_gmsgid, gtn);
+  diagnostic_set_info_translated (&diagnostic, text, ap, richloc, kind);
   if (kind == DK_WARNING)
     diagnostic.option_index = opt;
   return diagnostic_report_diagnostic (global_dc, &diagnostic);
@@ -1164,8 +1185,8 @@ inform (rich_location *richloc, const char *gmsgid, ...)
 /* An informative note at LOCATION.  Use this for additional details on an
    error message.  */
 void
-inform_n (location_t location, int n, const char *singular_gmsgid,
-          const char *plural_gmsgid, ...)
+inform_n (location_t location, unsigned HOST_WIDE_INT n,
+	  const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
@@ -1221,7 +1242,7 @@ warning_at (rich_location *richloc, int opt, const char *gmsgid, ...)
 /* Same as warning_n plural variant below, but using RICHLOC.  */
 
 bool
-warning_n (rich_location *richloc, int opt, int n,
+warning_n (rich_location *richloc, int opt, unsigned HOST_WIDE_INT n,
 	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
   gcc_assert (richloc);
@@ -1240,8 +1261,8 @@ warning_n (rich_location *richloc, int opt, int n,
    Returns true if the warning was printed, false if it was inhibited.  */
 
 bool
-warning_n (location_t location, int opt, int n, const char *singular_gmsgid,
-	   const char *plural_gmsgid, ...)
+warning_n (location_t location, int opt, unsigned HOST_WIDE_INT n,
+	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
@@ -1338,8 +1359,8 @@ error (const char *gmsgid, ...)
 /* A hard error: the code is definitely ill-formed, and an object file
    will not be produced.  */
 void
-error_n (location_t location, int n, const char *singular_gmsgid,
-         const char *plural_gmsgid, ...)
+error_n (location_t location, unsigned HOST_WIDE_INT n,
+	 const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
@@ -1663,7 +1684,14 @@ test_diagnostic_get_location_text ()
   assert_location_text ("PROGNAME:", NULL, 0, 0, true);
   assert_location_text ("<built-in>:", "<built-in>", 42, 10, true);
   assert_location_text ("foo.c:42:10:", "foo.c", 42, 10, true);
+  assert_location_text ("foo.c:42:", "foo.c", 42, 0, true);
+  assert_location_text ("foo.c:", "foo.c", 0, 10, true);
   assert_location_text ("foo.c:42:", "foo.c", 42, 10, false);
+  assert_location_text ("foo.c:", "foo.c", 0, 10, false);
+
+  maybe_line_and_column (INT_MAX, INT_MAX);
+  maybe_line_and_column (INT_MIN, INT_MIN);
+
   progname = old_progname;
 }
 

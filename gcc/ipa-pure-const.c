@@ -1,5 +1,5 @@
 /* Callgraph based analysis of static variables.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -213,9 +213,13 @@ suggest_attribute (int option, tree decl, bool known_finite,
 static void
 warn_function_pure (tree decl, bool known_finite)
 {
-  static hash_set<tree> *warned_about;
+  /* Declaring a void function pure makes no sense and is diagnosed
+     by -Wattributes because calling it would have no effect.  */
+  if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
+    return;
 
-  warned_about 
+  static hash_set<tree> *warned_about;
+  warned_about
     = suggest_attribute (OPT_Wsuggest_attribute_pure, decl,
 			 known_finite, warned_about, "pure");
 }
@@ -226,8 +230,13 @@ warn_function_pure (tree decl, bool known_finite)
 static void
 warn_function_const (tree decl, bool known_finite)
 {
+  /* Declaring a void function const makes no sense is diagnosed
+     by -Wattributes because calling it would have no effect.  */
+  if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
+    return;
+
   static hash_set<tree> *warned_about;
-  warned_about 
+  warned_about
     = suggest_attribute (OPT_Wsuggest_attribute_const, decl,
 			 known_finite, warned_about, "const");
 }
@@ -240,7 +249,7 @@ warn_function_malloc (tree decl)
   static hash_set<tree> *warned_about;
   warned_about
     = suggest_attribute (OPT_Wsuggest_attribute_malloc, decl,
-			 false, warned_about, "malloc");
+			 true, warned_about, "malloc");
 }
 
 /* Emit suggestion about __attribute__((noreturn)) for DECL.  */
@@ -332,7 +341,7 @@ check_decl (funct_state local,
     {
       local->pure_const_state = IPA_NEITHER;
       if (dump_file)
-        fprintf (dump_file, "    Volatile operand is not const/pure");
+        fprintf (dump_file, "    Volatile operand is not const/pure\n");
       return;
     }
 
@@ -446,7 +455,7 @@ state_from_flags (enum pure_const_state_e *state, bool *looping,
     {
       *looping = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " looping");
+	fprintf (dump_file, " looping\n");
     }
   if (flags & ECF_CONST)
     {
@@ -910,11 +919,13 @@ malloc_candidate_p (function *fun, bool ipa)
 #define DUMP_AND_RETURN(reason)  \
 {  \
   if (dump_file && (dump_flags & TDF_DETAILS))  \
-    fprintf (dump_file, "%s", (reason));  \
+    fprintf (dump_file, "\n%s is not a malloc candidate, reason: %s\n", \
+	     (node->name()), (reason));  \
   return false;  \
 }
 
-  if (EDGE_COUNT (exit_block->preds) == 0)
+  if (EDGE_COUNT (exit_block->preds) == 0
+      || !flag_delete_null_pointer_checks)
     return false;
 
   FOR_EACH_EDGE (e, ei, exit_block->preds)
@@ -958,34 +969,44 @@ malloc_candidate_p (function *fun, bool ipa)
 	}
 
       else if (gphi *phi = dyn_cast<gphi *> (def))
-	for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
-	  {
-	    tree arg = gimple_phi_arg_def (phi, i);
-	    if (TREE_CODE (arg) != SSA_NAME)
-	      DUMP_AND_RETURN("phi arg is not SSA_NAME.")
-	    if (!(arg == null_pointer_node || check_retval_uses (arg, phi)))
-	      DUMP_AND_RETURN("phi arg has uses outside phi"
-			      " and comparisons against 0.")
+	{
+	  bool all_args_zero = true;
+	  for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	    {
+	      tree arg = gimple_phi_arg_def (phi, i);
+	      if (integer_zerop (arg))
+		continue;
 
-	    gimple *arg_def = SSA_NAME_DEF_STMT (arg);
-	    gcall *call_stmt = dyn_cast<gcall *> (arg_def);
-	    if (!call_stmt)
-	      return false;
-	    tree callee_decl = gimple_call_fndecl (call_stmt);
-	    if (!callee_decl)
-	      return false;
-	    if (!ipa && !DECL_IS_MALLOC (callee_decl))
-	      DUMP_AND_RETURN("callee_decl does not have malloc attribute for"
-			      " non-ipa mode.")
+	      all_args_zero = false;
+	      if (TREE_CODE (arg) != SSA_NAME)
+		DUMP_AND_RETURN ("phi arg is not SSA_NAME.");
+	      if (!check_retval_uses (arg, phi))
+		DUMP_AND_RETURN ("phi arg has uses outside phi"
+				 " and comparisons against 0.")
 
-	    cgraph_edge *cs = node->get_edge (call_stmt);
-	    if (cs)
-	      {
-		ipa_call_summary *es = ipa_call_summaries->get (cs);
-		gcc_assert (es);
-		es->is_return_callee_uncaptured = true;
-	      }
-	  }
+	      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
+	      gcall *call_stmt = dyn_cast<gcall *> (arg_def);
+	      if (!call_stmt)
+		return false;
+	      tree callee_decl = gimple_call_fndecl (call_stmt);
+	      if (!callee_decl)
+		return false;
+	      if (!ipa && !DECL_IS_MALLOC (callee_decl))
+		DUMP_AND_RETURN("callee_decl does not have malloc attribute"
+				" for non-ipa mode.")
+
+	      cgraph_edge *cs = node->get_edge (call_stmt);
+	      if (cs)
+		{
+		  ipa_call_summary *es = ipa_call_summaries->get (cs);
+		  gcc_assert (es);
+		  es->is_return_callee_uncaptured = true;
+		}
+	    }
+
+	  if (all_args_zero)
+	    DUMP_AND_RETURN ("Return value is a phi with all args equal to 0.");
+	}
 
       else
 	DUMP_AND_RETURN("def_stmt of return value is not a call or phi-stmt.")
@@ -2013,10 +2034,6 @@ execute (function *)
     if (has_function_state (node))
       free (get_function_state (node));
   funct_state_vec.release ();
-
-  /* In WPA we use inline summaries for partitioning process.  */
-  if (!flag_wpa)
-    ipa_free_fn_summary ();
   return remove_p ? TODO_remove_functions : 0;
 }
 

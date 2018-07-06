@@ -79,8 +79,10 @@ test01 ()
     __builtin_abort ();
 }
 
+int
 main ()
 {
   test01 ();
+  return 0;
 }
 

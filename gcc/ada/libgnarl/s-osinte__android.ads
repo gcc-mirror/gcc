@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1995-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -313,7 +313,7 @@ package System.OS_Interface is
    Stack_Base_Available : constant Boolean := False;
    --  Indicates whether the stack base is available on this target
 
-   function Get_Stack_Base (thread : pthread_t)
+   function Get_Stack_Base (ignored_thread : pthread_t)
      return Address is (Null_Address);
    --  This is a dummy procedure to share some GNULLI files
 
@@ -425,12 +425,12 @@ package System.OS_Interface is
    PTHREAD_PRIO_INHERIT : constant := 1;
 
    function pthread_mutexattr_setprotocol
-     (attr     : access pthread_mutexattr_t;
-      protocol : int) return int is (0);
+     (ignored_attr     : access pthread_mutexattr_t;
+      ignored_protocol : int) return int is (0);
 
    function pthread_mutexattr_setprioceiling
-     (attr        : access pthread_mutexattr_t;
-      prioceiling : int) return int is (0);
+     (ignored_attr        : access pthread_mutexattr_t;
+      ignored_prioceiling : int) return int is (0);
 
    type struct_sched_param is record
       sched_priority : int;  --  scheduling priority

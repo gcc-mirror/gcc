@@ -113,11 +113,19 @@ type ptrtype struct {
 }
 
 type structfield struct {
-	name    *string // nil for embedded fields
-	pkgPath *string // nil for exported Names; otherwise import path
-	typ     *_type  // type of field
-	tag     *string // nil if no tag
-	offset  uintptr // byte offset of field within struct
+	name       *string // nil for embedded fields
+	pkgPath    *string // nil for exported Names; otherwise import path
+	typ        *_type  // type of field
+	tag        *string // nil if no tag
+	offsetAnon uintptr // byte offset of field<<1 | isAnonymous
+}
+
+func (f *structfield) offset() uintptr {
+	return f.offsetAnon >> 1
+}
+
+func (f *structfield) anon() bool {
+	return f.offsetAnon&1 != 0
 }
 
 type structtype struct {

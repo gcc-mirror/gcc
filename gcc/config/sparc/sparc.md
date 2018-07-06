@@ -1,5 +1,5 @@
 ;; Machine description for SPARC.
-;; Copyright (C) 1987-2017 Free Software Foundation, Inc.
+;; Copyright (C) 1987-2018 Free Software Foundation, Inc.
 ;; Contributed by Michael Tiemann (tiemann@cygnus.com)
 ;; 64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
 ;; at Cygnus Support.
@@ -430,6 +430,14 @@
    (symbol_ref "(sparc_fix_b2bst != 0
 		 ? FIX_B2BST_TRUE : FIX_B2BST_FALSE)"))
 
+(define_attr "fix_lost_divsqrt" "false,true"
+   (symbol_ref "(sparc_fix_lost_divsqrt != 0
+		 ? FIX_LOST_DIVSQRT_TRUE : FIX_LOST_DIVSQRT_FALSE)"))
+
+(define_attr "fix_gr712rc" "false,true"
+   (symbol_ref "(sparc_fix_gr712rc != 0
+		 ? FIX_GR712RC_TRUE : FIX_GR712RC_FALSE)"))
+
 ;; Length (in # of insns).
 ;; Beware that setting a length greater or equal to 3 for conditional branches
 ;; has a side-effect (see output_cbranch and output_v9branch).
@@ -577,6 +585,9 @@
 (define_attr "in_branch_delay" "false,true"
   (cond [(eq_attr "type" "uncond_branch,branch,cbcond,uncond_cbcond,call,sibcall,call_no_delay_slot,multi")
 	   (const_string "false")
+	 (and (eq_attr "fix_lost_divsqrt" "true")
+	      (eq_attr "type" "fpdivs,fpsqrts,fpdivd,fpsqrtd"))
+	   (const_string "false")
 	 (and (eq_attr "fix_b2bst" "true") (eq_attr "type" "store,fpstore"))
 	   (const_string "false")
 	 (and (eq_attr "fix_ut699" "true") (eq_attr "type" "load,sload"))
@@ -590,6 +601,15 @@
 	   (const_string "true")
 	] (const_string "false")))
 
+(define_attr "in_integer_branch_annul_delay" "false,true"
+  (cond [(and (eq_attr "fix_gr712rc" "true")
+	      (eq_attr "type" "fp,fpcmp,fpmove,fpcmove,fpmul,
+			       fpdivs,fpsqrts,fpdivd,fpsqrtd"))
+	   (const_string "false")
+	 (eq_attr "in_branch_delay" "true")
+	   (const_string "true")
+	] (const_string "false")))
+
 (define_delay (eq_attr "type" "call")
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
@@ -599,8 +619,14 @@
 (define_delay (eq_attr "type" "return")
   [(eq_attr "in_return_delay" "true") (nil) (nil)])
 
-(define_delay (eq_attr "type" "branch")
+(define_delay (and (eq_attr "type" "branch")
+	      (not (eq_attr "branch_type" "icc")))
   [(eq_attr "in_branch_delay" "true") (nil) (eq_attr "in_branch_delay" "true")])
+
+(define_delay (and (eq_attr "type" "branch")
+	      (eq_attr "branch_type" "icc"))
+  [(eq_attr "in_branch_delay" "true") (nil)
+  (eq_attr "in_integer_branch_annul_delay" "true")])
 
 (define_delay (eq_attr "type" "uncond_branch")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
@@ -1732,7 +1758,7 @@
 
 (define_expand "movsi_pic_label_ref"
   [(set (match_dup 3) (high:SI
-     (unspec:SI [(match_operand:SI 1 "label_ref_operand" "")
+     (unspec:SI [(match_operand:SI 1 "symbolic_operand" "")
 		 (match_dup 2)] UNSPEC_MOVE_PIC_LABEL)))
    (set (match_dup 4) (lo_sum:SI (match_dup 3)
      (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_MOVE_PIC_LABEL)))
@@ -1758,7 +1784,7 @@
 (define_insn "*movsi_high_pic_label_ref"
   [(set (match_operand:SI 0 "register_operand" "=r")
       (high:SI
-        (unspec:SI [(match_operand:SI 1 "label_ref_operand" "")
+        (unspec:SI [(match_operand:SI 1 "symbolic_operand" "")
 		    (match_operand:SI 2 "" "")] UNSPEC_MOVE_PIC_LABEL)))]
   "flag_pic"
   "sethi\t%%hi(%a2-(%a1-.)), %0")
@@ -1766,7 +1792,7 @@
 (define_insn "*movsi_lo_sum_pic_label_ref"
   [(set (match_operand:SI 0 "register_operand" "=r")
       (lo_sum:SI (match_operand:SI 1 "register_operand" "r")
-        (unspec:SI [(match_operand:SI 2 "label_ref_operand" "")
+        (unspec:SI [(match_operand:SI 2 "symbolic_operand" "")
 		    (match_operand:SI 3 "" "")] UNSPEC_MOVE_PIC_LABEL)))]
   "flag_pic"
   "or\t%1, %%lo(%a3-(%a2-.)), %0")
@@ -1870,7 +1896,7 @@ visl")
 
 (define_expand "movdi_pic_label_ref"
   [(set (match_dup 3) (high:DI
-     (unspec:DI [(match_operand:DI 1 "label_ref_operand" "")
+     (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")
                  (match_dup 2)] UNSPEC_MOVE_PIC_LABEL)))
    (set (match_dup 4) (lo_sum:DI (match_dup 3)
      (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_MOVE_PIC_LABEL)))
@@ -1896,7 +1922,7 @@ visl")
 (define_insn "*movdi_high_pic_label_ref"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI
-          (unspec:DI [(match_operand:DI 1 "label_ref_operand" "")
+          (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")
                       (match_operand:DI 2 "" "")] UNSPEC_MOVE_PIC_LABEL)))]
   "TARGET_ARCH64 && flag_pic"
   "sethi\t%%hi(%a2-(%a1-.)), %0")
@@ -1904,7 +1930,7 @@ visl")
 (define_insn "*movdi_lo_sum_pic_label_ref"
   [(set (match_operand:DI 0 "register_operand" "=r")
       (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
-        (unspec:DI [(match_operand:DI 2 "label_ref_operand" "")
+        (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")
                     (match_operand:DI 3 "" "")] UNSPEC_MOVE_PIC_LABEL)))]
   "TARGET_ARCH64 && flag_pic"
   "or\t%1, %%lo(%a3-(%a2-.)), %0")
@@ -7449,7 +7475,7 @@ visl")
 
 (define_expand "builtin_setjmp_receiver"
   [(label_ref (match_operand 0 "" ""))]
-  "flag_pic"
+  "TARGET_VXWORKS_RTP && flag_pic"
 {
   load_got_register ();
   DONE;
@@ -9300,28 +9326,6 @@ visl")
   [(set_attr "type" "fga")
    (set_attr "subtype" "other")
    (set_attr "fptype" "double")])
-
-;; The rtl expanders will happily convert constant permutations on other
-;; modes down to V8QI.  Rely on this to avoid the complexity of the byte
-;; order of the permutation.
-(define_expand "vec_perm_constv8qi"
-  [(match_operand:V8QI 0 "register_operand" "")
-   (match_operand:V8QI 1 "register_operand" "")
-   (match_operand:V8QI 2 "register_operand" "")
-   (match_operand:V8QI 3 "" "")]
-  "TARGET_VIS2"
-{
-  unsigned int i, mask;
-  rtx sel = operands[3];
-
-  for (i = mask = 0; i < 8; ++i)
-    mask |= (INTVAL (XVECEXP (sel, 0, i)) & 0xf) << (28 - i*4);
-  sel = force_reg (SImode, gen_int_mode (mask, SImode));
-
-  emit_insn (gen_bmasksi_vis (gen_reg_rtx (SImode), sel, const0_rtx));
-  emit_insn (gen_bshufflev8qi_vis (operands[0], operands[1], operands[2]));
-  DONE;
-})
 
 ;; Unlike constant permutation, we can vastly simplify the compression of
 ;; the 64-bit selector input to the 32-bit %gsr value by knowing what the

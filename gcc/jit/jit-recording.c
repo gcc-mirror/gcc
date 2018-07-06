@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -2987,7 +2987,7 @@ recording::compound_type::set_fields (location *loc,
 				      field **field_array)
 {
   m_loc = loc;
-  gcc_assert (NULL == m_fields);
+  gcc_assert (m_fields == NULL);
 
   m_fields = new fields (this, num_fields, field_array);
   m_ctxt->record (m_fields);
@@ -3182,7 +3182,7 @@ void
 recording::fields::write_reproducer (reproducer &r)
 {
   if (m_struct_or_union)
-    if (NULL == m_struct_or_union->dyn_cast_struct ())
+    if (m_struct_or_union->dyn_cast_struct () == NULL)
       /* We have a union; the fields have already been written by
 	 union::write_reproducer.  */
       return;
@@ -3370,7 +3370,7 @@ void
 recording::rvalue::set_scope (function *scope)
 {
   gcc_assert (scope);
-  gcc_assert (NULL == m_scope);
+  gcc_assert (m_scope == NULL);
   m_scope = scope;
 }
 
@@ -3750,7 +3750,7 @@ recording::function::validate ()
   /* Complain about empty functions with non-void return type.  */
   if (m_kind != GCC_JIT_FUNCTION_IMPORTED
       && m_return_type != m_ctxt->get_type (GCC_JIT_TYPE_VOID))
-    if (0 == m_blocks.length ())
+    if (m_blocks.length () == 0)
       m_ctxt->add_error (m_loc,
 			 "function %s returns non-void (type: %s)"
 			 " but has no blocks",
@@ -3771,7 +3771,7 @@ recording::function::validate ()
   /* Check that all blocks are reachable.  */
   if (!m_ctxt->get_inner_bool_option
         (INNER_BOOL_OPTION_ALLOW_UNREACHABLE_BLOCKS)
-      && m_blocks.length () > 0 && 0 == num_invalid_blocks)
+      && m_blocks.length () > 0 && num_invalid_blocks == 0)
     {
       /* Iteratively walk the graph of blocks, marking their "m_is_reachable"
 	 flag, starting at the initial block.  */
@@ -4487,7 +4487,7 @@ recording::memento_of_new_rvalue_from_const <long>::write_reproducer (reproducer
 	       id,
 	       r.get_identifier (get_context ()),
 	       r.get_identifier_as_type (m_type),
-	       m_value + 1);;
+	       m_value + 1);
       return;
     }
 

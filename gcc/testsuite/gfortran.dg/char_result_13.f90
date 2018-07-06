@@ -38,7 +38,7 @@ contains
   subroutine foo(cc, teststr)
     character (len=*), intent(in) :: cc(:)
     character (len=*), intent(in) :: teststr
-    if (any (cc .ne. teststr)) call abort
+    if (any (cc .ne. teststr)) STOP 1
   end subroutine foo
 end module abc
 

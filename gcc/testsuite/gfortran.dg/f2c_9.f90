@@ -47,6 +47,6 @@ program test
 contains
   subroutine check (a, b)
     real(8), intent(in) :: a, b
-    if (abs(a - b) > 1.e-10_8) call abort
+    if (abs(a - b) > 1.e-10_8) STOP 1
   end subroutine check
 end program test

@@ -39,16 +39,16 @@ program thistest
 
 
     test_vary%string = str
-    if (test_vary%string .ne. str) call abort
+    if (test_vary%string .ne. str) STOP 1
 
 ! This previously gave a blank string.
     my_stuff%string = test_vary
-    if (my_stuff%string .ne. str) call abort
+    if (my_stuff%string .ne. str) STOP 2
 
     test_char = test_vary
-    if (test_char .ne. str) call abort
+    if (test_char .ne. str) STOP 3
 
     my_stuff = test_vary
-    if (my_stuff%string .ne. str) call abort
+    if (my_stuff%string .ne. str) STOP 4
 
 end program thistest

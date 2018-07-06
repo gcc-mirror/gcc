@@ -22,13 +22,13 @@ void foo (int invariant, struct bah invariant2)
 /* { dg-final { scan-ipa-dump-not "op0 change"  "inline"  } } */
 /* { dg-final { scan-ipa-dump "op1 is compile time invariant"  "inline"  } } */
 /* op2 is invariant within loop (we make assumption that function call does not afect it.). */
-/* { dg-final { scan-ipa-dump "op2 change 10.000000. of time"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "op2 change 9.990000. of time"  "inline"  } } */
 /* op3 is invariant within loop (we make assumption that function call does not afect it.). */
-/* { dg-final { scan-ipa-dump "op3 change 10.000000. of time"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "op3 change 9.990000. of time"  "inline"  } } */
 /* op4 is invariant within loop.  */
-/* { dg-final { scan-ipa-dump "op4 change 10.000000. of time"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "op4 change 9.990000. of time"  "inline"  } } */
 /* op5 is invariant within loop.  */
-/* { dg-final { scan-ipa-dump "op5 change 10.000000. of time"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "op5 change 9.990000. of time"  "inline"  } } */
 /* op6 is compile time invariant.  */
 /* { dg-final { scan-ipa-dump "op6 is compile time invariant"  "inline"  } } */
 /* op7 change.  */

@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
 This file is part of GCC.
@@ -90,7 +90,7 @@ void __sfp_handle_exceptions (int);
   do {						\
     if (__builtin_expect (_fex, 0))		\
       __sfp_handle_exceptions (_fex);		\
-  } while (0);
+  } while (0)
 
 #define FP_TRAPPING_EXCEPTIONS ((_fpcr >> FP_EX_SHIFT) & FP_EX_ALL)
 

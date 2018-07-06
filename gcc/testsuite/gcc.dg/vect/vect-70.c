@@ -4,11 +4,24 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 24
+#if VECTOR_BITS > 128
+#define NINTS (VECTOR_BITS / 32)
+#else
+#define NINTS 4
+#endif
+
+#define N (NINTS * 6)
+
+/* Keep execution time down.  */
+#if N <= 24
+#define OUTERN N
+#else
+#define OUTERN NINTS
+#endif
 
 struct s{
   int m;
-  int n[N/6][N/6][N];
+  int n[4][4][N];
 };
 
 struct test1{
@@ -18,36 +31,43 @@ struct test1{
   struct s e[N]; /* array e.n is aligned */
 };
 
+/* Avoid big local temporaries.  */
+#if NINTS > 8
+struct test1 tmp1;
+#endif
+
 __attribute__ ((noinline))
 int main1 ()
 {
   int i,j;
+#if NINTS <= 8
   struct test1 tmp1;
+#endif
 
-  for (i = 0; i < N; i++)
-    for (j = 3; j < N-3; j++)
+  for (i = 0; i < OUTERN; i++)
+    for (j = NINTS - 1; j < N - NINTS + 1; j++)
       {
         tmp1.e[i].n[1][2][j] = 8;
       }
 
   /* check results:  */
-  for (i = 0; i < N; i++)
-    for (j = 3; j < N-3; j++)
+  for (i = 0; i < OUTERN; i++)
+    for (j = NINTS - 1; j < N - NINTS + 1; j++)
     {
       if (tmp1.e[i].n[1][2][j] != 8)
           abort ();
     }
   
   /* not consecutive, will use strided stores */
-  for (i = 0; i < N; i++)
-    for (j = 3; j < N-3; j++)
+  for (i = 0; i < OUTERN; i++)
+    for (j = NINTS - 1; j < N - NINTS + 1; j++)
       { 
         tmp1.e[j].n[1][2][j] = 8;
       }
   
   /* check results:  */
-  for (i = 0; i < N; i++)
-    for (j = 3; j < N-3; j++)
+  for (i = 0; i < OUTERN; i++)
+    for (j = NINTS - 1; j < N - NINTS + 1; j++)
     {
       if (tmp1.e[j].n[1][2][j] != 8)
           abort ();

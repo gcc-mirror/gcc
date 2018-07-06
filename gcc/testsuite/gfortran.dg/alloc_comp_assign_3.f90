@@ -25,12 +25,12 @@
   y(2) = y(1)
   forall (j=1:2,k=1:4, y(1)%at(j)%i(k) .ne. y(2)%at(j)%i(k)) &
                              y(1)%at(j)%i(k) = 999
-  if (any ((/((y(1)%at(j)%i(k), k=1,4),j=1,2)/) .eq. 999)) call abort ()
+  if (any ((/((y(1)%at(j)%i(k), k=1,4),j=1,2)/) .eq. 999)) STOP 1
 
 
   z = y
   forall (i=1:2,j=1:2,k=1:4, z(i)%at(j)%i(k) .ne. y(i)%at(j)%i(k)) &
                              z(i)%at(j)%i(k) = 999
-  if (any ((/(((z(i)%at(j)%i(k), k=1,4),j=1,2),i=1,2)/) .eq. 999)) call abort ()
+  if (any ((/(((z(i)%at(j)%i(k), k=1,4),j=1,2),i=1,2)/) .eq. 999)) STOP 2
 
 end

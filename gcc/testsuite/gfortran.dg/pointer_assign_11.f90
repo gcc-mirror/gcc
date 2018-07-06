@@ -33,19 +33,19 @@ program test
   type(t2) :: my_t2
 
   allocate (t2 :: p1, p2(1), p3(1,1))
-  if (.not. same_type_as (p1, my_t2)) call abort()
-  if (.not. same_type_as (p2, my_t2)) call abort()
-  if (.not. same_type_as (p3, my_t2)) call abort()
+  if (.not. same_type_as (p1, my_t2)) STOP 1
+  if (.not. same_type_as (p2, my_t2)) STOP 2
+  if (.not. same_type_as (p3, my_t2)) STOP 3
 
   p1 => f1()
-  if (p1%ii /= 123) call abort ()
-  if (.not. same_type_as (p1, my_t)) call abort()
+  if (p1%ii /= 123) STOP 4
+  if (.not. same_type_as (p1, my_t)) STOP 5
 
   p2 => f2()
-  if (any (p2%ii /= [-11,-22,-33])) call abort ()
-  if (.not. same_type_as (p2, my_t)) call abort()
+  if (any (p2%ii /= [-11,-22,-33])) STOP 6
+  if (.not. same_type_as (p2, my_t)) STOP 7
 
   p3(2:2,1:3) => f2()
-  if (any (p3(2,:)%ii /= [-11,-22,-33])) call abort ()
-  if (.not. same_type_as (p3, my_t)) call abort()
+  if (any (p3(2,:)%ii /= [-11,-22,-33])) STOP 8
+  if (.not. same_type_as (p3, my_t)) STOP 9
 end program test

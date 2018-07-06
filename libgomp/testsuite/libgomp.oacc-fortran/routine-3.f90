@@ -12,7 +12,7 @@
   end do
   !$acc end parallel
   do i = 1, n
-     if (a(i) .ne. fact(i)) call abort
+     if (a(i) .ne. fact(i)) STOP 1
   end do
 end
 recursive function fact (x) result (res)

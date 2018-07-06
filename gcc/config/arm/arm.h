@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -155,7 +155,7 @@ extern tree arm_fp16_type_node;
 /* Thumb-1 only.  */
 #define TARGET_THUMB1_ONLY		(TARGET_THUMB1 && !arm_arch_notm)
 
-#define TARGET_LDRD			(arm_arch5e && ARM_DOUBLEWORD_ALIGN \
+#define TARGET_LDRD			(arm_arch5te && ARM_DOUBLEWORD_ALIGN \
                                          && !TARGET_THUMB1)
 
 #define TARGET_CRC32			(arm_arch_crc)
@@ -210,27 +210,36 @@ extern tree arm_fp16_type_node;
 /* FPU supports ARMv8.1 Adv.SIMD extensions.  */
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
 
-/* Supports for Dot Product AdvSIMD extensions.  */
+/* Supports the Dot Product AdvSIMD extensions.  */
 #define TARGET_DOTPROD (TARGET_NEON					\
 			&& bitmap_bit_p (arm_active_target.isa,		\
-					isa_bit_dotprod))
+					isa_bit_dotprod)		\
+			&& arm_arch8_2)
 
-/* FPU supports the floating point FP16 instructions for ARMv8.2 and later.  */
+/* FPU supports the floating point FP16 instructions for ARMv8.2-A
+   and later.  */
 #define TARGET_VFP_FP16INST \
   (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP5 && arm_fp16_inst)
+
+/* Target supports the floating point FP16 instructions from ARMv8.2-A
+   and later.  */
+#define TARGET_FP16FML (TARGET_NEON					\
+			&& bitmap_bit_p (arm_active_target.isa,	\
+					isa_bit_fp16fml)		\
+			&& arm_arch8_2)
 
 /* FPU supports the AdvSIMD FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_NEON_FP16INST (TARGET_VFP_FP16INST && TARGET_NEON_RDMA)
 
 /* Q-bit is present.  */
 #define TARGET_ARM_QBIT \
-  (TARGET_32BIT && arm_arch5e && (arm_arch_notm || arm_arch7))
+  (TARGET_32BIT && arm_arch5te && (arm_arch_notm || arm_arch7))
 /* Saturation operation, e.g. SSAT.  */
 #define TARGET_ARM_SAT \
   (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7))
 /* "DSP" multiply instructions, eg. SMULxy.  */
 #define TARGET_DSP_MULTIPLY \
-  (TARGET_32BIT && arm_arch5e && (arm_arch_notm || arm_arch7em))
+  (TARGET_32BIT && arm_arch5te && (arm_arch_notm || arm_arch7em))
 /* Integer SIMD instructions, and extend-accumulate instructions.  */
 #define TARGET_INT_SIMD \
   (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7em))
@@ -366,8 +375,6 @@ enum base_architecture
   BASE_ARCH_3M = 3,
   BASE_ARCH_4 = 4,
   BASE_ARCH_4T = 4,
-  BASE_ARCH_5 = 5,
-  BASE_ARCH_5E = 5,
   BASE_ARCH_5T = 5,
   BASE_ARCH_5TE = 5,
   BASE_ARCH_5TEJ = 5,
@@ -392,20 +399,17 @@ enum base_architecture
 /* The major revision number of the ARM Architecture implemented by the target.  */
 extern enum base_architecture arm_base_arch;
 
-/* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
-extern int arm_arch3m;
-
 /* Nonzero if this chip supports the ARM Architecture 4 extensions.  */
 extern int arm_arch4;
 
 /* Nonzero if this chip supports the ARM Architecture 4T extensions.  */
 extern int arm_arch4t;
 
-/* Nonzero if this chip supports the ARM Architecture 5 extensions.  */
-extern int arm_arch5;
+/* Nonzero if this chip supports the ARM Architecture 5T extensions.  */
+extern int arm_arch5t;
 
-/* Nonzero if this chip supports the ARM Architecture 5E extensions.  */
-extern int arm_arch5e;
+/* Nonzero if this chip supports the ARM Architecture 5TE extensions.  */
+extern int arm_arch5te;
 
 /* Nonzero if this chip supports the ARM Architecture 6 extensions.  */
 extern int arm_arch6;
@@ -1253,7 +1257,7 @@ enum reg_class
    couldn't convert a direct call into an indirect one.  */
 #define CALLER_INTERWORKING_SLOT_SIZE			\
   (TARGET_CALLER_INTERWORKING				\
-   && crtl->outgoing_args_size != 0		\
+   && maybe_ne (crtl->outgoing_args_size, 0)		\
    ? UNITS_PER_WORD : 0)
 
 /* If we generate an insn to push BYTES bytes,
@@ -1375,6 +1379,9 @@ typedef struct GTY(()) machine_function
   machine_mode thumb1_cc_mode;
   /* Set to 1 after arm_reorg has started.  */
   int after_arm_reorg;
+  /* The number of bytes used to store the static chain register on the
+     stack, above the stack frame.  */
+  int static_chain_stack_bytes;
 }
 machine_function;
 #endif
@@ -1614,12 +1621,10 @@ enum arm_auto_incmodes
 
 /* These assume that REGNO is a hard or pseudo reg number.
    They give nonzero only if REGNO is a hard reg of the suitable class
-   or a pseudo reg currently allocated to a suitable hard reg.
-   Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
-   allocation.  */
+   or a pseudo reg currently allocated to a suitable hard reg.  */
 #define TEST_REGNO(R, TEST, VALUE) \
-  ((R TEST VALUE) || ((unsigned) reg_renumber[R] TEST VALUE))
+  ((R TEST VALUE)	\
+    || (reg_renumber && ((unsigned) reg_renumber[R] TEST VALUE)))
 
 /* Don't allow the pc to be used.  */
 #define ARM_REGNO_OK_FOR_BASE_P(REGNO)			\
@@ -1900,8 +1905,9 @@ enum arm_auto_incmodes
 
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions.  */
-#define BRANCH_COST(speed_p, predictable_p) \
-  (current_tune->branch_cost (speed_p, predictable_p))
+#define BRANCH_COST(speed_p, predictable_p)			\
+  ((arm_branch_cost != -1) ? arm_branch_cost :			\
+   (current_tune->branch_cost (speed_p, predictable_p)))
 
 /* False if short circuit operation is preferred.  */
 #define LOGICAL_OP_NON_SHORT_CIRCUIT					\
@@ -2165,13 +2171,16 @@ extern int making_const_table;
 
 extern const char *arm_rewrite_mcpu (int argc, const char **argv);
 extern const char *arm_rewrite_march (int argc, const char **argv);
+extern const char *arm_asm_auto_mfpu (int argc, const char **argv);
 #define ASM_CPU_SPEC_FUNCTIONS			\
   { "rewrite_mcpu", arm_rewrite_mcpu },	\
-  { "rewrite_march", arm_rewrite_march },
+  { "rewrite_march", arm_rewrite_march },	\
+  { "asm_auto_mfpu", arm_asm_auto_mfpu },
 
 #define ASM_CPU_SPEC							\
+  " %{mfpu=auto:%<mfpu=auto %:asm_auto_mfpu(%{march=*: arch %*})}"	\
   " %{mcpu=generic-*:-march=%:rewrite_march(%{mcpu=generic-*:%*});"	\
-  "   march=*:-march=%:rewrite_march(%{march=*:%*});"		\
+  "   march=*:-march=%:rewrite_march(%{march=*:%*});"			\
   "   mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})"			\
   " }"
 
@@ -2183,6 +2192,7 @@ extern const char *arm_target_thumb_only (int argc, const char **argv);
    an ARM chip.  */
 #if defined(__arm__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
+#define HAVE_LOCAL_CPU_DETECT
 # define MCPU_MTUNE_NATIVE_FUNCTIONS			\
   { "local_cpu_detect", host_detect_local_cpu },
 # define MCPU_MTUNE_NATIVE_SPECS				\

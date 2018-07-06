@@ -1,5 +1,5 @@
 /* Definitions for the data structures and codes used in VMS debugging.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

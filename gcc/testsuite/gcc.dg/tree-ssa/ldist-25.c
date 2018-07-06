@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target size32plus } } */
 /* { dg-options "-O3 -ftree-loop-distribute-patterns -fdump-tree-ldist-details" } */
 
 #define k 1335

@@ -75,6 +75,6 @@ end module
   class (vector_iter_t), pointer :: x
 
   call factory (x)
-  if (x%get_vector_value() .ne. 99) call abort
-  if (x%get_pointer_value() .ne. 99) call abort
+  if (x%get_vector_value() .ne. 99) STOP 1
+  if (x%get_pointer_value() .ne. 99) STOP 2
 end

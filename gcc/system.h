@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -824,6 +824,12 @@ extern void fancy_abort (const char *, int, const char *)
 /* Some compilers do not allow the use of unsigned char in bitfields.  */
 #define BOOL_BITFIELD unsigned int
 
+/* GCC older than 4.4 have broken C++ value initialization handling, see
+   PR11309, PR30111, PR33916, PR82939 and PR84405 for more details.  */
+#if GCC_VERSION > 0 && GCC_VERSION < 4004 && !defined(__clang__)
+# define BROKEN_VALUE_INITIALIZATION
+#endif
+
 /* As the last action in this file, we poison the identifiers that
    shouldn't be used.  Note, luckily gcc-3.0's token-based integrated
    preprocessor won't trip on poisoned identifiers that arrive from
@@ -1196,11 +1202,14 @@ helper_const_non_const_cast (const char *p)
 /* qsort comparator consistency checking: except in release-checking compilers,
    redirect 4-argument qsort calls to qsort_chk; keep 1-argument invocations
    corresponding to vec::qsort (cmp): they use C qsort internally anyway.  */
-#if CHECKING_P
+void qsort_chk (void *, size_t, size_t, int (*)(const void *, const void *));
+void gcc_qsort (void *, size_t, size_t, int (*)(const void *, const void *));
 #define PP_5th(a1, a2, a3, a4, a5, ...) a5
 #undef qsort
+#if CHECKING_P
 #define qsort(...) PP_5th (__VA_ARGS__, qsort_chk, 3, 2, qsort, 0) (__VA_ARGS__)
-void qsort_chk (void *, size_t, size_t, int (*)(const void *, const void *));
+#else
+#define qsort(...) PP_5th (__VA_ARGS__, gcc_qsort, 3, 2, qsort, 0) (__VA_ARGS__)
 #endif
 
 #endif /* ! GCC_SYSTEM_H */

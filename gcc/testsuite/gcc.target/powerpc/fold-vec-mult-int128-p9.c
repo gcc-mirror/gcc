@@ -22,5 +22,5 @@ test2 (vector unsigned __int128 x, vector unsigned __int128 y)
   return vec_mul (x, y);
 }
 
-/* { dg-final { scan-assembler-times {\mmulld\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mmulld\M|\mmaddld\M} 6 } } */
 /* { dg-final { scan-assembler-times {\mmulhdu\M} 2 } } */

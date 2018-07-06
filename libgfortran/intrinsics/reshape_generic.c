@@ -1,5 +1,5 @@
 /* Generic implementation of the RESHAPE intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -26,8 +26,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <string.h>
 
-typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
-typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) parray;
+typedef GFC_FULL_ARRAY_DESCRIPTOR(1, index_type) shape_type;
+typedef GFC_FULL_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) parray;
 
 static void
 reshape_internal (parray *ret, parray *source, shape_type *shape,
@@ -107,7 +107,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
 
       ret->base_addr = xmallocarray (alloc_size, size);
 
-      ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
+      GFC_DTYPE_COPY_SETRANK(ret,source,rdim);
     }
 
   if (shape_empty)

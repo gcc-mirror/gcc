@@ -24,6 +24,6 @@ int main()
   // expression.
   auto two = monoid(2);
   if (!(two() == 2)) __builtin_abort(); // OK, not a constant expression.
-  static_assert(add(one)(one)() == two()); // { dg-error "" } two() is not a constant expression
+  static_assert(add(one)(one)() == two()); // { dg-error "|in .constexpr. expansion of " } two() is not a constant expression
   static_assert(add(one)(one)() == monoid(2)()); // OK
 }

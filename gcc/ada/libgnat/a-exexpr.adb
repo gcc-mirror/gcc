@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -349,7 +349,7 @@ package body Exception_Propagation is
    -- Propagate_Exception --
    -------------------------
 
-   procedure Propagate_Exception (Excep : EOA) is
+   procedure Propagate_Exception (Excep : Exception_Occurrence) is
    begin
       Propagate_GCC_Exception (To_GCC_Exception (Excep.Machine_Occurrence));
    end Propagate_Exception;

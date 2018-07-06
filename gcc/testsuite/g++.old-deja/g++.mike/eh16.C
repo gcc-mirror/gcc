@@ -16,6 +16,7 @@ struct B {
   }
 };
 
+int
 main() {
   try {
     B b;

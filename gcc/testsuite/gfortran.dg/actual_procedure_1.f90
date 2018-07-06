@@ -32,11 +32,11 @@ program procPtrTest
   end interface
 ! Check the passing of a module function
   call foo (proc4, chr)
-  if (trim (chr) .ne. "proc4") call abort
+  if (trim (chr) .ne. "proc4") STOP 1
 ! Check the passing of an external function
   call foo (proc_ext, chr)
 ! Check the passing of a character function
-  if (trim (chr) .ne. "proc_ext") call abort
+  if (trim (chr) .ne. "proc_ext") STOP 2
   call bar (chr_proc)
 contains
   subroutine foo (p, chr)
@@ -50,7 +50,7 @@ contains
       end function
     end interface
     i = p (99, chr)
-    if (any(i .ne. 99)) call abort
+    if (any(i .ne. 99)) STOP 3
   end subroutine
   subroutine bar (p)
     interface
@@ -58,7 +58,7 @@ contains
         character(8):: p
       end function
     end interface
-    if (p () .ne. "chr_proc") call abort
+    if (p () .ne. "chr_proc") STOP 4
   end subroutine
 end program 
 

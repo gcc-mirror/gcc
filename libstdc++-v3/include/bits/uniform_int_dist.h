@@ -1,6 +1,6 @@
 // Class template uniform_int_distribution -*- C++ -*-
 
-// Copyright (C) 2009-2017 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Power_of_2(_Tp __x)
       {
 	return ((__x - 1) & __x) == 0;
-      };
+      }
   }
 
   /**

@@ -1,5 +1,5 @@
 /* Tree based points-to analysis
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -3191,9 +3191,9 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
 				  bool address_p, bool lhs_p)
 {
   tree orig_t = t;
-  HOST_WIDE_INT bitsize = -1;
-  HOST_WIDE_INT bitmaxsize = -1;
-  HOST_WIDE_INT bitpos;
+  poly_int64 bitsize = -1;
+  poly_int64 bitmaxsize = -1;
+  poly_int64 bitpos;
   bool reverse;
   tree forzero;
 
@@ -3255,8 +3255,8 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
 	 ignore this constraint. When we handle pointer subtraction,
 	 we may have to do something cute here.  */
 
-      if ((unsigned HOST_WIDE_INT)bitpos < get_varinfo (result.var)->fullsize
-	  && bitmaxsize != 0)
+      if (maybe_lt (poly_uint64 (bitpos), get_varinfo (result.var)->fullsize)
+	  && maybe_ne (bitmaxsize, 0))
 	{
 	  /* It's also not true that the constraint will actually start at the
 	     right offset, it may start in some padding.  We only care about
@@ -3268,8 +3268,8 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
 	  cexpr.offset = 0;
 	  for (curr = get_varinfo (cexpr.var); curr; curr = vi_next (curr))
 	    {
-	      if (ranges_overlap_p (curr->offset, curr->size,
-				    bitpos, bitmaxsize))
+	      if (ranges_maybe_overlap_p (poly_int64 (curr->offset),
+					  curr->size, bitpos, bitmaxsize))
 		{
 		  cexpr.var = curr->id;
 		  results->safe_push (cexpr);
@@ -3302,7 +3302,7 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
 	      results->safe_push (cexpr);
 	    }
 	}
-      else if (bitmaxsize == 0)
+      else if (known_eq (bitmaxsize, 0))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Access to zero-sized part of variable, "
@@ -3317,13 +3317,15 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
       /* If we do not know exactly where the access goes say so.  Note
 	 that only for non-structure accesses we know that we access
 	 at most one subfiled of any variable.  */
-      if (bitpos == -1
-	  || bitsize != bitmaxsize
+      HOST_WIDE_INT const_bitpos;
+      if (!bitpos.is_constant (&const_bitpos)
+	  || const_bitpos == -1
+	  || maybe_ne (bitsize, bitmaxsize)
 	  || AGGREGATE_TYPE_P (TREE_TYPE (orig_t))
 	  || result.offset == UNKNOWN_OFFSET)
 	result.offset = UNKNOWN_OFFSET;
       else
-	result.offset += bitpos;
+	result.offset += const_bitpos;
     }
   else if (result.type == ADDRESSOF)
     {
@@ -3660,14 +3662,17 @@ do_structure_copy (tree lhsop, tree rhsop)
 	   && (rhsp->type == SCALAR
 	       || rhsp->type == ADDRESSOF))
     {
-      HOST_WIDE_INT lhssize, lhsmaxsize, lhsoffset;
-      HOST_WIDE_INT rhssize, rhsmaxsize, rhsoffset;
+      HOST_WIDE_INT lhssize, lhsoffset;
+      HOST_WIDE_INT rhssize, rhsoffset;
       bool reverse;
       unsigned k = 0;
-      get_ref_base_and_extent (lhsop, &lhsoffset, &lhssize, &lhsmaxsize,
-			       &reverse);
-      get_ref_base_and_extent (rhsop, &rhsoffset, &rhssize, &rhsmaxsize,
-			       &reverse);
+      if (!get_ref_base_and_extent_hwi (lhsop, &lhsoffset, &lhssize, &reverse)
+	  || !get_ref_base_and_extent_hwi (rhsop, &rhsoffset, &rhssize,
+					   &reverse))
+	{
+	  process_all_all_constraints (lhsc, rhsc);
+	  return;
+	}
       for (j = 0; lhsc.iterate (j, &lhsp);)
 	{
 	  varinfo_t lhsv, rhsv;
@@ -5930,11 +5935,14 @@ check_for_overlaps (vec<fieldoff_s> fieldstack)
    This will also create any varinfo structures necessary for fields
    of DECL.  DECL is a function parameter if HANDLE_PARAM is set.
    HANDLED_STRUCT_TYPE is used to register struct types reached by following
-   restrict pointers.  This is needed to prevent infinite recursion.  */
+   restrict pointers.  This is needed to prevent infinite recursion.
+   If ADD_RESTRICT, pretend that the pointer NAME is restrict even if DECL
+   does not advertise it.  */
 
 static varinfo_t
 create_variable_info_for_1 (tree decl, const char *name, bool add_id,
-			    bool handle_param, bitmap handled_struct_type)
+			    bool handle_param, bitmap handled_struct_type,
+			    bool add_restrict = false)
 {
   varinfo_t vi, newvi;
   tree decl_type = TREE_TYPE (decl);
@@ -6008,7 +6016,7 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
       vi->size = vi->fullsize;
       vi->is_full_var = true;
       if (POINTER_TYPE_P (decl_type)
-	  && TYPE_RESTRICT (decl_type))
+	  && (TYPE_RESTRICT (decl_type) || add_restrict))
 	vi->only_restrict_pointers = 1;
       if (vi->only_restrict_pointers
 	  && !type_contains_placeholder_p (TREE_TYPE (decl_type))
@@ -6237,6 +6245,7 @@ intra_create_variable_infos (struct function *fn)
 {
   tree t;
   bitmap handled_struct_type = NULL;
+  bool this_parm_in_ctor = DECL_CXX_CONSTRUCTOR_P (fn->decl);
 
   /* For each incoming pointer argument arg, create the constraint ARG
      = NONLOCAL or a dummy variable if it is a restrict qualified
@@ -6248,10 +6257,12 @@ intra_create_variable_infos (struct function *fn)
 
       varinfo_t p
 	= create_variable_info_for_1 (t, alias_get_name (t), false, true,
-				      handled_struct_type);
+				      handled_struct_type, this_parm_in_ctor);
       insert_vi_for_tree (t, p);
 
       make_param_constraints (p);
+
+      this_parm_in_ctor = false;
     }
 
   if (handled_struct_type != NULL)

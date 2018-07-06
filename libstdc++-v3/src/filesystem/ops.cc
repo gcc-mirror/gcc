@@ -1,6 +1,6 @@
 // Filesystem TS operations -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -463,10 +463,8 @@ namespace
     if (::mkdir(p.c_str(), mode))
       {
 	const int err = errno;
-	if (err != EEXIST || !is_directory(p))
+	if (err != EEXIST || !is_directory(p, ec))
 	  ec.assign(err, std::generic_category());
-	else
-	  ec.clear();
       }
     else
       {
@@ -1009,7 +1007,7 @@ fs::remove(const path& p)
 {
   error_code ec;
   bool result = fs::remove(p, ec);
-  if (ec.value())
+  if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove", p, ec));
   return result;
 }
@@ -1017,16 +1015,15 @@ fs::remove(const path& p)
 bool
 fs::remove(const path& p, error_code& ec) noexcept
 {
-  if (exists(symlink_status(p, ec)))
+  if (::remove(p.c_str()) == 0)
     {
-      if (::remove(p.c_str()) == 0)
-	{
-	  ec.clear();
-	  return true;
-	}
-      else
-	ec.assign(errno, std::generic_category());
+      ec.clear();
+      return true;
     }
+  else if (errno == ENOENT)
+    ec.clear();
+  else
+    ec.assign(errno, std::generic_category());
   return false;
 }
 
@@ -1035,8 +1032,8 @@ std::uintmax_t
 fs::remove_all(const path& p)
 {
   error_code ec;
-  bool result = remove_all(p, ec);
-  if (ec.value())
+  const auto result = remove_all(p, ec);
+  if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove all", p, ec));
   return result;
 }
@@ -1044,14 +1041,28 @@ fs::remove_all(const path& p)
 std::uintmax_t
 fs::remove_all(const path& p, error_code& ec) noexcept
 {
-  auto fs = symlink_status(p, ec);
-  uintmax_t count = 0;
-  if (ec.value() == 0 && fs.type() == file_type::directory)
-    for (directory_iterator d(p, ec), end; ec.value() == 0 && d != end; ++d)
-      count += fs::remove_all(d->path(), ec);
-  if (ec.value())
+  const auto s = symlink_status(p, ec);
+  if (!status_known(s))
     return -1;
-  return fs::remove(p, ec) ? ++count : -1;  // fs:remove() calls ec.clear()
+
+  ec.clear();
+  if (s.type() == file_type::not_found)
+    return 0;
+
+  uintmax_t count = 0;
+  if (s.type() == file_type::directory)
+    {
+      for (directory_iterator d(p, ec), end; !ec && d != end; d.increment(ec))
+	count += fs::remove_all(d->path(), ec);
+      if (ec.value() == ENOENT)
+	ec.clear();
+      else if (ec)
+	return -1;
+    }
+
+  if (fs::remove(p, ec))
+    ++count;
+  return ec ? -1 : count;
 }
 
 void
@@ -1121,10 +1132,11 @@ fs::space(const path& p, error_code& ec) noexcept
       ec.assign(errno, std::generic_category());
   else
     {
+      uintmax_t fragment_size = f.f_frsize;
       info = space_info{
-	f.f_blocks * f.f_frsize,
-	f.f_bfree * f.f_frsize,
-	f.f_bavail * f.f_frsize
+	f.f_blocks * fragment_size,
+	f.f_bfree * fragment_size,
+	f.f_bavail * fragment_size
       };
       ec.clear();
     }

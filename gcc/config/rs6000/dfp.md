@@ -1,5 +1,5 @@
 ;; Decimal Floating Point (DFP) patterns.
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;; Contributed by Ben Elliston (bje@au.ibm.com) and Peter Bergner
 ;; (bergner@vnet.ibm.com).
 
@@ -344,11 +344,11 @@
   [(set (match_dup 3)
 	(compare:CCFP
          (unspec:D64_D128
-	  [(match_operand:SI 1 "const_int_operand" "n")
-	   (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
+	  [(match_operand:SI 1 "const_int_operand")
+	   (match_operand:D64_D128 2 "gpc_reg_operand")]
 	  UNSPEC_DTSTSFI)
 	 (match_dup 4)))
-   (set (match_operand:SI 0 "register_operand" "")
+   (set (match_operand:SI 0 "register_operand")
    	(DFP_TEST:SI (match_dup 3)
 		     (const_int 0)))
   ]

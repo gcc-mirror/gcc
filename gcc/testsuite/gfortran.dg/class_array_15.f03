@@ -68,7 +68,7 @@ subroutine pr53876
 CONTAINS
   SUBROUTINE display_indv(self)
     CLASS(individual),  INTENT(IN) :: self
-    if (any(self%genes .ne. [999,9999]) )call abort
+    if (any(self%genes .ne. [999,9999]) )STOP 1
   END SUBROUTINE
 END
 
@@ -89,9 +89,9 @@ subroutine pr54990
   allocate (a%cBh(2), source = [(ncBhStde(i*99, [1,2]), i = 1,2)])
   select type (q => a%cBh(2)) ! Similarly, reference 2nd element to test offset
     type is (ncBhStd)
-      call abort
+      STOP 2
     type is (ncBhStde)
-      if (q%i .ne. 198) call abort ! This tests that the component really gets the
+      if (q%i .ne. 198) STOP 3! This tests that the component really gets the
   end select                       ! language specific flag denoting a class type
 end
 
@@ -104,15 +104,15 @@ subroutine pr54992  ! This test remains as the original.
   allocate(b%cBh(1),source=defaultBhC)
   b%cBh(1)%hostNode => b
 ! #1 this worked
-  if (loc(b) .ne. loc(b%cBh(1)%hostNode)) call abort
+  if (loc(b) .ne. loc(b%cBh(1)%hostNode)) STOP 4
   call Node_C_Bh_Move(b)
 ! #2 this worked
-  if (loc(b) .ne. loc(b%cBh(1)%hostNode)) call abort
-  if (loc(b) .ne. loc(b%cBh(2)%hostNode)) call abort
+  if (loc(b) .ne. loc(b%cBh(1)%hostNode)) STOP 5
+  if (loc(b) .ne. loc(b%cBh(2)%hostNode)) STOP 6
 ! #3 this did not
   bh => bhGet(b,instance=1)
-  if (loc (b) .ne. loc(bh%hostNode)) call abort
+  if (loc (b) .ne. loc(bh%hostNode)) STOP 7
   bh => bhGet(b,instance=2)
-  if (loc (b) .ne. loc(bh%hostNode)) call abort
+  if (loc (b) .ne. loc(bh%hostNode)) STOP 8
 end
 ! { dg-final { scan-tree-dump-times "builtin_free" 12 "original" } }

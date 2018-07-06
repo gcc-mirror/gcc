@@ -1,5 +1,5 @@
 /* 128-bit long double support routines for Darwin.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -56,6 +56,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define nonfinite(a) unlikely (! isless (fabs (a), inf ()))
 
+/* If we have __float128/_Float128, use __ibm128 instead of long double.  On
+   other systems, use long double, because __ibm128 might not have been
+   created.  */
+#ifdef __FLOAT128__
+#define IBM128_TYPE __ibm128
+#else
+#define IBM128_TYPE long double
+#endif
+
 /* Define ALIASNAME as a strong alias for NAME.  */
 # define strong_alias(name, aliasname) _strong_alias(name, aliasname)
 # define _strong_alias(name, aliasname) \
@@ -65,10 +74,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    but GCC currently generates poor code when a union is used to turn
    a long double into a pair of doubles.  */
 
-long double __gcc_qadd (double, double, double, double);
-long double __gcc_qsub (double, double, double, double);
-long double __gcc_qmul (double, double, double, double);
-long double __gcc_qdiv (double, double, double, double);
+IBM128_TYPE __gcc_qadd (double, double, double, double);
+IBM128_TYPE __gcc_qsub (double, double, double, double);
+IBM128_TYPE __gcc_qmul (double, double, double, double);
+IBM128_TYPE __gcc_qdiv (double, double, double, double);
 
 #if defined __ELF__ && defined SHARED \
     && (defined __powerpc64__ || !(defined __linux__ || defined __gnu_hurd__))
@@ -88,17 +97,17 @@ __asm__ (".symver __gcc_qadd,_xlqadd@GCC_3.4\n\t"
 	 ".symver .__gcc_qdiv,._xlqdiv@GCC_3.4");
 #endif
 
-/* Combine two 'double' values into one 'long double' and return the result.  */
-static inline long double
+/* Combine two 'double' values into one 'IBM128_TYPE' and return the result.  */
+static inline IBM128_TYPE
 pack_ldouble (double dh, double dl)
 {
-#if defined (__LONG_DOUBLE_128__) \
+#if defined (__LONG_DOUBLE_128__) && defined (__LONG_DOUBLE_IBM128__)	\
     && !(defined (_SOFT_FLOAT) || defined (__NO_FPRS__))
   return __builtin_pack_longdouble (dh, dl);
 #else
   union
   {
-    long double ldval;
+    IBM128_TYPE ldval;
     double dval[2];
   } x;
   x.dval[0] = dh;
@@ -107,8 +116,8 @@ pack_ldouble (double dh, double dl)
 #endif
 }
 
-/* Add two 'long double' values and return the result.	*/
-long double
+/* Add two 'IBM128_TYPE' values and return the result.	*/
+IBM128_TYPE
 __gcc_qadd (double a, double aa, double c, double cc)
 {
   double xh, xl, z, q, zz;
@@ -147,7 +156,7 @@ __gcc_qadd (double a, double aa, double c, double cc)
   return pack_ldouble (xh, xl);
 }
 
-long double
+IBM128_TYPE
 __gcc_qsub (double a, double b, double c, double d)
 {
   return __gcc_qadd (a, b, -c, -d);
@@ -157,7 +166,7 @@ __gcc_qsub (double a, double b, double c, double d)
 static double fmsub (double, double, double);
 #endif
 
-long double
+IBM128_TYPE
 __gcc_qmul (double a, double b, double c, double d)
 {
   double xh, xl, t, tau, u, v, w;
@@ -181,7 +190,7 @@ __gcc_qmul (double a, double b, double c, double d)
   tau += v + w;	    /* Add in other second-order terms.	 */
   u = t + tau;
 
-  /* Construct long double result.  */
+  /* Construct IBM128_TYPE result.  */
   if (nonfinite (u))
     return u;
   xh = u;
@@ -189,7 +198,7 @@ __gcc_qmul (double a, double b, double c, double d)
   return pack_ldouble (xh, xl);
 }
 
-long double
+IBM128_TYPE
 __gcc_qdiv (double a, double b, double c, double d)
 {
   double xh, xl, s, sigma, t, tau, u, v, w;
@@ -226,7 +235,7 @@ __gcc_qdiv (double a, double b, double c, double d)
   tau = ((v-sigma)+w)/c;   /* Correction to t.  */
   u = t + tau;
 
-  /* Construct long double result.  */
+  /* Construct IBM128_TYPE result.  */
   if (nonfinite (u))
     return u;
   xh = u;
@@ -236,32 +245,32 @@ __gcc_qdiv (double a, double b, double c, double d)
 
 #if defined (_SOFT_DOUBLE) && defined (__LONG_DOUBLE_128__)
 
-long double __gcc_qneg (double, double);
+IBM128_TYPE __gcc_qneg (double, double);
 int __gcc_qeq (double, double, double, double);
 int __gcc_qne (double, double, double, double);
 int __gcc_qge (double, double, double, double);
 int __gcc_qle (double, double, double, double);
-long double __gcc_stoq (float);
-long double __gcc_dtoq (double);
+IBM128_TYPE __gcc_stoq (float);
+IBM128_TYPE __gcc_dtoq (double);
 float __gcc_qtos (double, double);
 double __gcc_qtod (double, double);
 int __gcc_qtoi (double, double);
 unsigned int __gcc_qtou (double, double);
-long double __gcc_itoq (int);
-long double __gcc_utoq (unsigned int);
+IBM128_TYPE __gcc_itoq (int);
+IBM128_TYPE __gcc_utoq (unsigned int);
 
 extern int __eqdf2 (double, double);
 extern int __ledf2 (double, double);
 extern int __gedf2 (double, double);
 
-/* Negate 'long double' value and return the result.	*/
-long double
+/* Negate 'IBM128_TYPE' value and return the result.	*/
+IBM128_TYPE
 __gcc_qneg (double a, double aa)
 {
   return pack_ldouble (-a, -aa);
 }
 
-/* Compare two 'long double' values for equality.  */
+/* Compare two 'IBM128_TYPE' values for equality.  */
 int
 __gcc_qeq (double a, double aa, double c, double cc)
 {
@@ -272,7 +281,7 @@ __gcc_qeq (double a, double aa, double c, double cc)
 
 strong_alias (__gcc_qeq, __gcc_qne);
 
-/* Compare two 'long double' values for less than or equal.  */
+/* Compare two 'IBM128_TYPE' values for less than or equal.  */
 int
 __gcc_qle (double a, double aa, double c, double cc)
 {
@@ -283,7 +292,7 @@ __gcc_qle (double a, double aa, double c, double cc)
 
 strong_alias (__gcc_qle, __gcc_qlt);
 
-/* Compare two 'long double' values for greater than or equal.  */
+/* Compare two 'IBM128_TYPE' values for greater than or equal.  */
 int
 __gcc_qge (double a, double aa, double c, double cc)
 {
@@ -294,35 +303,35 @@ __gcc_qge (double a, double aa, double c, double cc)
 
 strong_alias (__gcc_qge, __gcc_qgt);
 
-/* Convert single to long double.  */
-long double
+/* Convert single to IBM128_TYPE.  */
+IBM128_TYPE
 __gcc_stoq (float a)
 {
   return pack_ldouble ((double) a, 0.0);
 }
 
-/* Convert double to long double.  */
-long double
+/* Convert double to IBM128_TYPE.  */
+IBM128_TYPE
 __gcc_dtoq (double a)
 {
   return pack_ldouble (a, 0.0);
 }
 
-/* Convert long double to single.  */
+/* Convert IBM128_TYPE to single.  */
 float
 __gcc_qtos (double a, double aa __attribute__ ((__unused__)))
 {
   return (float) a;
 }
 
-/* Convert long double to double.  */
+/* Convert IBM128_TYPE to double.  */
 double
 __gcc_qtod (double a, double aa __attribute__ ((__unused__)))
 {
   return a;
 }
 
-/* Convert long double to int.  */
+/* Convert IBM128_TYPE to int.  */
 int
 __gcc_qtoi (double a, double aa)
 {
@@ -330,7 +339,7 @@ __gcc_qtoi (double a, double aa)
   return (int) z;
 }
 
-/* Convert long double to unsigned int.  */
+/* Convert IBM128_TYPE to unsigned int.  */
 unsigned int
 __gcc_qtou (double a, double aa)
 {
@@ -338,15 +347,15 @@ __gcc_qtou (double a, double aa)
   return (unsigned int) z;
 }
 
-/* Convert int to long double.  */
-long double
+/* Convert int to IBM128_TYPE.  */
+IBM128_TYPE
 __gcc_itoq (int a)
 {
   return __gcc_dtoq ((double) a);
 }
 
-/* Convert unsigned int to long double.  */
-long double
+/* Convert unsigned int to IBM128_TYPE.  */
+IBM128_TYPE
 __gcc_utoq (unsigned int a)
 {
   return __gcc_dtoq ((double) a);
@@ -361,7 +370,7 @@ int __gcc_qunord (double, double, double, double);
 extern int __eqdf2 (double, double);
 extern int __unorddf2 (double, double);
 
-/* Compare two 'long double' values for unordered.  */
+/* Compare two 'IBM128_TYPE' values for unordered.  */
 int
 __gcc_qunord (double a, double aa, double c, double cc)
 {
@@ -389,7 +398,7 @@ fmsub (double a, double b, double c)
     FP_DECL_Q(V);
     FP_DECL_D(R);
     double r;
-    long double u, x, y, z;
+    IBM128_TYPE u, x, y, z;
 
     FP_INIT_ROUNDMODE;
     FP_UNPACK_RAW_D (A, a);

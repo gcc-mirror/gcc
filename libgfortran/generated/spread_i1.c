@@ -1,5 +1,5 @@
 /* Special implementation of the SPREAD intrinsic
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Thomas Koenig <tkoenig@gcc.gnu.org>, based on
    spread_generic.c written by Paul Brook <paul@nowt.org>
 
@@ -72,7 +72,7 @@ spread_i1 (gfc_array_i1 *ret, const gfc_array_i1 *source,
 
       /* The front end has signalled that we need to populate the
 	 return array descriptor.  */
-      ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rrank;
+      GFC_DTYPE_COPY_SETRANK(ret,source,rrank);
       dim = 0;
       rs = 1;
       for (n = 0; n < rrank; n++)
@@ -227,10 +227,8 @@ spread_i1 (gfc_array_i1 *ret, const gfc_array_i1 *source,
 
 void
 spread_scalar_i1 (gfc_array_i1 *ret, const GFC_INTEGER_1 *source,
-			const index_type along, const index_type pncopies)
+			const index_type along, const index_type ncopies)
 {
-  int n;
-  int ncopies = pncopies;
   GFC_INTEGER_1 * restrict dest;
   index_type stride;
 
@@ -256,7 +254,7 @@ spread_scalar_i1 (gfc_array_i1 *ret, const GFC_INTEGER_1 *source,
   dest = ret->base_addr;
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
-  for (n = 0; n < ncopies; n++)
+  for (index_type n = 0; n < ncopies; n++)
     {
       *dest = *source;
       dest += stride;

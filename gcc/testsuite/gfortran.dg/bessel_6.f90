@@ -43,7 +43,7 @@ do i = 0, mymax
 !        rec(i) == lib(i), abs((rec(i)-lib(i))/rec(i)) < myeps
 if (rec(i) == lib(i)) CYCLE
 if (abs((rec(i)-lib(i))/rec(i)) > myeps) &
-  call abort()
+  STOP 1
 end do
 
 end

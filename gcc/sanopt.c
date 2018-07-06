@@ -1,5 +1,5 @@
 /* Optimize and expand sanitizer functions.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -459,7 +459,7 @@ record_ubsan_ptr_check_stmt (sanopt_ctx *ctx, gimple *stmt, tree ptr,
 static bool
 maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
 {
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, pbitpos;
   machine_mode mode;
   int volatilep = 0, reversep, unsignedp = 0;
   tree offset;
@@ -483,12 +483,20 @@ maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
     {
       base = TREE_OPERAND (base, 0);
 
-      base = get_inner_reference (base, &bitsize, &bitpos, &offset, &mode,
+      HOST_WIDE_INT bitpos;
+      base = get_inner_reference (base, &bitsize, &pbitpos, &offset, &mode,
 				  &unsignedp, &reversep, &volatilep);
-      if (offset == NULL_TREE && DECL_P (base))
+      if ((offset == NULL_TREE || TREE_CODE (offset) == INTEGER_CST)
+	  && DECL_P (base)
+	  && !DECL_REGISTER (base)
+	  && pbitpos.is_constant (&bitpos))
 	{
-	  gcc_assert (!DECL_REGISTER (base));
-	  offset_int expr_offset = bitpos / BITS_PER_UNIT;
+	  offset_int expr_offset;
+	  if (offset)
+	    expr_offset = wi::to_offset (offset) + bitpos / BITS_PER_UNIT;
+	  else
+	    expr_offset = bitpos / BITS_PER_UNIT;
+	  expr_offset = wi::sext (expr_offset, POINTER_SIZE);
 	  offset_int total_offset = expr_offset + cur_offset;
 	  if (total_offset != wi::sext (total_offset, POINTER_SIZE))
 	    {
@@ -508,7 +516,7 @@ maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
 	      && (!is_global_var (base) || decl_binds_to_current_def_p (base)))
 	    {
 	      offset_int base_size = wi::to_offset (DECL_SIZE_UNIT (base));
-	      if (bitpos >= 0
+	      if (!wi::neg_p (expr_offset)
 		  && wi::les_p (total_offset, base_size))
 		{
 		  if (!wi::neg_p (total_offset)
@@ -529,7 +537,7 @@ maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
 	     */
 
 	  bool sign_cur_offset = !wi::neg_p (cur_offset);
-	  bool sign_expr_offset = bitpos >= 0;
+	  bool sign_expr_offset = !wi::neg_p (expr_offset);
 
 	  tree base_addr
 	    = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (base)), base);
@@ -1140,7 +1148,9 @@ sanitize_rewrite_addressable_params (function *fun)
        arg; arg = DECL_CHAIN (arg))
     {
       tree type = TREE_TYPE (arg);
-      if (TREE_ADDRESSABLE (arg) && !TREE_ADDRESSABLE (type)
+      if (TREE_ADDRESSABLE (arg)
+	  && !TREE_ADDRESSABLE (type)
+	  && !TREE_THIS_VOLATILE (arg)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	{
 	  TREE_ADDRESSABLE (arg) = 0;

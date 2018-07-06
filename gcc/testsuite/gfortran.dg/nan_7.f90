@@ -12,5 +12,5 @@ r = 1.0
 str = 'NAN' ; read(str,*) r
 k2 = transfer(r,k2)
 k2 = iand(k2, z'fff80000000000000000000000000000')
-if (k2.ne.quietnan) call abort
+if (k2.ne.quietnan) STOP 1
 end

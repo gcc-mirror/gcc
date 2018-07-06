@@ -29,5 +29,5 @@ program main
   type(show_producer) :: executive_producer
 
   allocate(kernel,source=executive_producer%create_show ())
-  if (kernel%variable .ne. 99) call abort
+  if (kernel%variable .ne. 99) STOP 1
 end program

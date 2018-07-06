@@ -1,7 +1,7 @@
 // PR c++/35878
 // { dg-do compile }
 // { dg-options "-O2 -std=gnu++11 -fdump-tree-optimized" }
-// { dg-final { scan-tree-dump-times "v_\[0-9]+\\(D\\) \[=!]= 0" 1 "optimized" } }
+// { dg-final { scan-tree-dump-not "v_\[0-9]+\\(D\\) \[=!]= 0" "optimized" } }
 
 #include <new>
 #include <utility>

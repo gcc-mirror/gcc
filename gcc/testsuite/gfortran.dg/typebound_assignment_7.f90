@@ -56,9 +56,9 @@ program test_assign
 
   select type (item2)
     type is (myItem)
-      if (item2%name /= 'abc') call abort()
+      if (item2%name /= 'abc') STOP 1
     class default
-      call abort()
+      STOP 2
   end select
 
 end

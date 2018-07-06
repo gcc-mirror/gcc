@@ -98,6 +98,11 @@ import "errors"
 // change the instant in time being denoted and therefore does not affect the
 // computations described in earlier paragraphs.
 //
+// In addition to the required “wall clock” reading, a Time may contain an optional
+// reading of the current process's monotonic clock, to provide additional precision
+// for comparison or subtraction.
+// See the “Monotonic Clocks” section in the package documentation for details.
+//
 // Note that the Go == operator compares not just the time instant but also the
 // Location and the monotonic clock reading. Therefore, Time values should not
 // be used as map or database keys without first guaranteeing that the
@@ -107,11 +112,6 @@ import "errors"
 // to t == u, since t.Equal uses the most accurate comparison available and
 // correctly handles the case when only one of its arguments has a monotonic
 // clock reading.
-//
-// In addition to the required “wall clock” reading, a Time may contain an optional
-// reading of the current process's monotonic clock, to provide additional precision
-// for comparison or subtraction.
-// See the “Monotonic Clocks” section in the package documentation for details.
 //
 type Time struct {
 	// wall and ext encode the wall time seconds, wall time nanoseconds,
@@ -722,7 +722,7 @@ func (d Duration) String() string {
 }
 
 // fmtFrac formats the fraction of v/10**prec (e.g., ".12345") into the
-// tail of buf, omitting trailing zeros. it omits the decimal
+// tail of buf, omitting trailing zeros. It omits the decimal
 // point too when the fraction is 0. It returns the index where the
 // output bytes begin and the value v/10**prec.
 func fmtFrac(buf []byte, v uint64, prec int) (nw int, nv uint64) {
@@ -1383,7 +1383,7 @@ func Date(year int, month Month, day, hour, min, sec, nsec int, loc *Location) T
 }
 
 // Truncate returns the result of rounding t down to a multiple of d (since the zero time).
-// If d <= 0, Truncate returns t unchanged.
+// If d <= 0, Truncate returns t stripped of any monotonic clock reading but otherwise unchanged.
 //
 // Truncate operates on the time as an absolute duration since the
 // zero time; it does not operate on the presentation form of the
@@ -1400,7 +1400,7 @@ func (t Time) Truncate(d Duration) Time {
 
 // Round returns the result of rounding t to the nearest multiple of d (since the zero time).
 // The rounding behavior for halfway values is to round up.
-// If d <= 0, Round returns t unchanged.
+// If d <= 0, Round returns t stripped of any monotonic clock reading but otherwise unchanged.
 //
 // Round operates on the time as an absolute duration since the
 // zero time; it does not operate on the presentation form of the

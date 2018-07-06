@@ -1,5 +1,5 @@
 /* elf.c -- Get debug data from an ELF file for backtraces.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -165,9 +165,12 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
 #undef ELFDATA2MSB
 #undef EV_CURRENT
 #undef ET_DYN
+#undef EM_PPC64
+#undef EF_PPC64_ABI
 #undef SHN_LORESERVE
 #undef SHN_XINDEX
 #undef SHN_UNDEF
+#undef SHT_PROGBITS
 #undef SHT_SYMTAB
 #undef SHT_STRTAB
 #undef SHT_DYNSYM
@@ -245,6 +248,9 @@ typedef struct {
 
 #define ET_DYN 3
 
+#define EM_PPC64 21
+#define EF_PPC64_ABI 3
+
 typedef struct {
   b_elf_word	sh_name;		/* Section name, index in string tbl */
   b_elf_word	sh_type;		/* Type of section */
@@ -262,6 +268,7 @@ typedef struct {
 #define SHN_LORESERVE	0xFF00		/* Begin range of reserved indices */
 #define SHN_XINDEX	0xFFFF		/* Section index is held elsewhere */
 
+#define SHT_PROGBITS 1
 #define SHT_SYMTAB 2
 #define SHT_STRTAB 3
 #define SHT_DYNSYM 11
@@ -403,6 +410,20 @@ struct elf_syminfo_data
   struct elf_symbol *symbols;
   /* The number of symbols.  */
   size_t count;
+};
+
+/* Information about PowerPC64 ELFv1 .opd section.  */
+
+struct elf_ppc64_opd_data
+{
+  /* Address of the .opd section.  */
+  b_elf_addr addr;
+  /* Section data.  */
+  const char *data;
+  /* Size of the .opd section.  */
+  size_t size;
+  /* Corresponding section view.  */
+  struct backtrace_view view;
 };
 
 /* Compute the CRC-32 of BUF/LEN.  This uses the CRC used for
@@ -569,7 +590,8 @@ elf_initialize_syminfo (struct backtrace_state *state,
 			const unsigned char *symtab_data, size_t symtab_size,
 			const unsigned char *strtab, size_t strtab_size,
 			backtrace_error_callback error_callback,
-			void *data, struct elf_syminfo_data *sdata)
+			void *data, struct elf_syminfo_data *sdata,
+			struct elf_ppc64_opd_data *opd)
 {
   size_t sym_count;
   const b_elf_sym *sym;
@@ -620,7 +642,17 @@ elf_initialize_syminfo (struct backtrace_state *state,
 	  return 0;
 	}
       elf_symbols[j].name = (const char *) strtab + sym->st_name;
-      elf_symbols[j].address = sym->st_value + base_address;
+      /* Special case PowerPC64 ELFv1 symbols in .opd section, if the symbol
+	 is a function descriptor, read the actual code address from the
+	 descriptor.  */
+      if (opd
+	  && sym->st_value >= opd->addr
+	  && sym->st_value < opd->addr + opd->size)
+	elf_symbols[j].address
+	  = *(const b_elf_addr *) (opd->data + (sym->st_value - opd->addr));
+      else
+	elf_symbols[j].address = sym->st_value;
+      elf_symbols[j].address += base_address;
       elf_symbols[j].size = sym->st_size;
       ++j;
     }
@@ -997,7 +1029,6 @@ elf_open_debugfile_by_debuglink (struct backtrace_state *state,
 				 void *data)
 {
   int ddescriptor;
-  uint32_t got_crc;
 
   ddescriptor = elf_find_debugfile_by_debuglink (state, filename,
 						 debuglink_name,
@@ -1005,11 +1036,16 @@ elf_open_debugfile_by_debuglink (struct backtrace_state *state,
   if (ddescriptor < 0)
     return -1;
 
-  got_crc = elf_crc32_file (state, ddescriptor, error_callback, data);
-  if (got_crc != debuglink_crc)
+  if (debuglink_crc != 0)
     {
-      backtrace_close (ddescriptor, error_callback, data);
-      return -1;
+      uint32_t got_crc;
+
+      got_crc = elf_crc32_file (state, ddescriptor, error_callback, data);
+      if (got_crc != debuglink_crc)
+	{
+	  backtrace_close (ddescriptor, error_callback, data);
+	  return -1;
+	}
     }
 
   return ddescriptor;
@@ -1050,11 +1086,18 @@ elf_zlib_fetch (const unsigned char **ppin, const unsigned char *pinend,
       return 0;
     }
 
+#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) \
+    && defined(__ORDER_BIG_ENDIAN__) \
+    && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ \
+        || __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
   /* We've ensured that PIN is aligned.  */
   next = *(const uint32_t *)pin;
 
-#if __BYTE_ORDER == __ORDER_BIG_ENDIAN
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
   next = __builtin_bswap32 (next);
+#endif
+#else
+  next = pin[0] | (pin[1] << 8) | (pin[2] << 16) | (pin[3] << 24);
 #endif
 
   val |= (uint64_t)next << bits;
@@ -1461,7 +1504,7 @@ elf_zlib_inflate_table (unsigned char *codes, size_t codes_len,
 #include <stdio.h>
 
 static uint16_t table[ZDEBUG_TABLE_SIZE];
-static unsigned char codes[287];
+static unsigned char codes[288];
 
 int
 main ()
@@ -1476,7 +1519,7 @@ main ()
     codes[i] = 7;
   for (i = 280; i <= 287; ++i)
     codes[i] = 8;
-  if (!elf_zlib_inflate_table (&codes[0], 287, &table[0], &table[0]))
+  if (!elf_zlib_inflate_table (&codes[0], 288, &table[0], &table[0]))
     {
       fprintf (stderr, "elf_zlib_inflate_table failed\n");
       exit (EXIT_FAILURE);
@@ -1495,48 +1538,72 @@ main ()
       printf ("\n");
     }
   printf ("};\n");
+  printf ("\n");
+
+  for (i = 0; i < 32; ++i)
+    codes[i] = 5;
+  if (!elf_zlib_inflate_table (&codes[0], 32, &table[0], &table[0]))
+    {
+      fprintf (stderr, "elf_zlib_inflate_table failed\n");
+      exit (EXIT_FAILURE);
+    }
+
+  printf ("static const uint16_t elf_zlib_default_dist_table[%#zx] =\n",
+	  final_next_secondary + 0x100);
+  printf ("{\n");
+  for (i = 0; i < final_next_secondary + 0x100; i += 8)
+    {
+      size_t j;
+
+      printf (" ");
+      for (j = i; j < final_next_secondary + 0x100 && j < i + 8; ++j)
+	printf (" %#x,", table[j]);
+      printf ("\n");
+    }
+  printf ("};\n");
+
   return 0;
 }
 
 #endif
 
-/* The fixed table generated by the #ifdef'ed out main function
+/* The fixed tables generated by the #ifdef'ed out main function
    above.  */
 
 static const uint16_t elf_zlib_default_table[0x170] =
 {
-  0xd00, 0xe50, 0xe10, 0xf18, 0xd10, 0xe70, 0xe30, 0x1232,
-  0xd08, 0xe60, 0xe20, 0x1212, 0xe00, 0xe80, 0xe40, 0x1252,
-  0xd04, 0xe58, 0xe18, 0x1202, 0xd14, 0xe78, 0xe38, 0x1242,
-  0xd0c, 0xe68, 0xe28, 0x1222, 0xe08, 0xe88, 0xe48, 0x1262,
-  0xd02, 0xe54, 0xe14, 0xf1c, 0xd12, 0xe74, 0xe34, 0x123a,
-  0xd0a, 0xe64, 0xe24, 0x121a, 0xe04, 0xe84, 0xe44, 0x125a,
-  0xd06, 0xe5c, 0xe1c, 0x120a, 0xd16, 0xe7c, 0xe3c, 0x124a,
-  0xd0e, 0xe6c, 0xe2c, 0x122a, 0xe0c, 0xe8c, 0xe4c, 0x126a,
-  0xd01, 0xe52, 0xe12, 0xf1a, 0xd11, 0xe72, 0xe32, 0x1236,
-  0xd09, 0xe62, 0xe22, 0x1216, 0xe02, 0xe82, 0xe42, 0x1256,
-  0xd05, 0xe5a, 0xe1a, 0x1206, 0xd15, 0xe7a, 0xe3a, 0x1246,
-  0xd0d, 0xe6a, 0xe2a, 0x1226, 0xe0a, 0xe8a, 0xe4a, 0x1266,
-  0xd03, 0xe56, 0xe16, 0xf1e, 0xd13, 0xe76, 0xe36, 0x123e,
-  0xd0b, 0xe66, 0xe26, 0x121e, 0xe06, 0xe86, 0xe46, 0x125e,
-  0xd07, 0xe5e, 0xe1e, 0x120e, 0xd17, 0xe7e, 0xe3e, 0x124e,
-  0xd0f, 0xe6e, 0xe2e, 0x122e, 0xe0e, 0xe8e, 0xe4e, 0x126e,
-  0xd00, 0xe51, 0xe11, 0xf19, 0xd10, 0xe71, 0xe31, 0x1234,
-  0xd08, 0xe61, 0xe21, 0x1214, 0xe01, 0xe81, 0xe41, 0x1254,
-  0xd04, 0xe59, 0xe19, 0x1204, 0xd14, 0xe79, 0xe39, 0x1244,
-  0xd0c, 0xe69, 0xe29, 0x1224, 0xe09, 0xe89, 0xe49, 0x1264,
-  0xd02, 0xe55, 0xe15, 0xf1d, 0xd12, 0xe75, 0xe35, 0x123c,
-  0xd0a, 0xe65, 0xe25, 0x121c, 0xe05, 0xe85, 0xe45, 0x125c,
-  0xd06, 0xe5d, 0xe1d, 0x120c, 0xd16, 0xe7d, 0xe3d, 0x124c,
-  0xd0e, 0xe6d, 0xe2d, 0x122c, 0xe0d, 0xe8d, 0xe4d, 0x126c,
-  0xd01, 0xe53, 0xe13, 0xf1b, 0xd11, 0xe73, 0xe33, 0x1238,
-  0xd09, 0xe63, 0xe23, 0x1218, 0xe03, 0xe83, 0xe43, 0x1258,
-  0xd05, 0xe5b, 0xe1b, 0x1208, 0xd15, 0xe7b, 0xe3b, 0x1248,
-  0xd0d, 0xe6b, 0xe2b, 0x1228, 0xe0b, 0xe8b, 0xe4b, 0x1268,
-  0xd03, 0xe57, 0xe17, 0x1200, 0xd13, 0xe77, 0xe37, 0x1240,
-  0xd0b, 0xe67, 0xe27, 0x1220, 0xe07, 0xe87, 0xe47, 0x1260,
-  0xd07, 0xe5f, 0xe1f, 0x1210, 0xd17, 0xe7f, 0xe3f, 0x1250,
-  0xd0f, 0xe6f, 0xe2f, 0x1230, 0xe0f, 0xe8f, 0xe4f, 0,
+  0xd00, 0xe50, 0xe10, 0xf18, 0xd10, 0xe70, 0xe30, 0x1230,
+  0xd08, 0xe60, 0xe20, 0x1210, 0xe00, 0xe80, 0xe40, 0x1250,
+  0xd04, 0xe58, 0xe18, 0x1200, 0xd14, 0xe78, 0xe38, 0x1240,
+  0xd0c, 0xe68, 0xe28, 0x1220, 0xe08, 0xe88, 0xe48, 0x1260,
+  0xd02, 0xe54, 0xe14, 0xf1c, 0xd12, 0xe74, 0xe34, 0x1238,
+  0xd0a, 0xe64, 0xe24, 0x1218, 0xe04, 0xe84, 0xe44, 0x1258,
+  0xd06, 0xe5c, 0xe1c, 0x1208, 0xd16, 0xe7c, 0xe3c, 0x1248,
+  0xd0e, 0xe6c, 0xe2c, 0x1228, 0xe0c, 0xe8c, 0xe4c, 0x1268,
+  0xd01, 0xe52, 0xe12, 0xf1a, 0xd11, 0xe72, 0xe32, 0x1234,
+  0xd09, 0xe62, 0xe22, 0x1214, 0xe02, 0xe82, 0xe42, 0x1254,
+  0xd05, 0xe5a, 0xe1a, 0x1204, 0xd15, 0xe7a, 0xe3a, 0x1244,
+  0xd0d, 0xe6a, 0xe2a, 0x1224, 0xe0a, 0xe8a, 0xe4a, 0x1264,
+  0xd03, 0xe56, 0xe16, 0xf1e, 0xd13, 0xe76, 0xe36, 0x123c,
+  0xd0b, 0xe66, 0xe26, 0x121c, 0xe06, 0xe86, 0xe46, 0x125c,
+  0xd07, 0xe5e, 0xe1e, 0x120c, 0xd17, 0xe7e, 0xe3e, 0x124c,
+  0xd0f, 0xe6e, 0xe2e, 0x122c, 0xe0e, 0xe8e, 0xe4e, 0x126c,
+  0xd00, 0xe51, 0xe11, 0xf19, 0xd10, 0xe71, 0xe31, 0x1232,
+  0xd08, 0xe61, 0xe21, 0x1212, 0xe01, 0xe81, 0xe41, 0x1252,
+  0xd04, 0xe59, 0xe19, 0x1202, 0xd14, 0xe79, 0xe39, 0x1242,
+  0xd0c, 0xe69, 0xe29, 0x1222, 0xe09, 0xe89, 0xe49, 0x1262,
+  0xd02, 0xe55, 0xe15, 0xf1d, 0xd12, 0xe75, 0xe35, 0x123a,
+  0xd0a, 0xe65, 0xe25, 0x121a, 0xe05, 0xe85, 0xe45, 0x125a,
+  0xd06, 0xe5d, 0xe1d, 0x120a, 0xd16, 0xe7d, 0xe3d, 0x124a,
+  0xd0e, 0xe6d, 0xe2d, 0x122a, 0xe0d, 0xe8d, 0xe4d, 0x126a,
+  0xd01, 0xe53, 0xe13, 0xf1b, 0xd11, 0xe73, 0xe33, 0x1236,
+  0xd09, 0xe63, 0xe23, 0x1216, 0xe03, 0xe83, 0xe43, 0x1256,
+  0xd05, 0xe5b, 0xe1b, 0x1206, 0xd15, 0xe7b, 0xe3b, 0x1246,
+  0xd0d, 0xe6b, 0xe2b, 0x1226, 0xe0b, 0xe8b, 0xe4b, 0x1266,
+  0xd03, 0xe57, 0xe17, 0xf1f, 0xd13, 0xe77, 0xe37, 0x123e,
+  0xd0b, 0xe67, 0xe27, 0x121e, 0xe07, 0xe87, 0xe47, 0x125e,
+  0xd07, 0xe5f, 0xe1f, 0x120e, 0xd17, 0xe7f, 0xe3f, 0x124e,
+  0xd0f, 0xe6f, 0xe2f, 0x122e, 0xe0f, 0xe8f, 0xe4f, 0x126e,
   0x290, 0x291, 0x292, 0x293, 0x294, 0x295, 0x296, 0x297,
   0x298, 0x299, 0x29a, 0x29b, 0x29c, 0x29d, 0x29e, 0x29f,
   0x2a0, 0x2a1, 0x2a2, 0x2a3, 0x2a4, 0x2a5, 0x2a6, 0x2a7,
@@ -1551,6 +1618,42 @@ static const uint16_t elf_zlib_default_table[0x170] =
   0x2e8, 0x2e9, 0x2ea, 0x2eb, 0x2ec, 0x2ed, 0x2ee, 0x2ef,
   0x2f0, 0x2f1, 0x2f2, 0x2f3, 0x2f4, 0x2f5, 0x2f6, 0x2f7,
   0x2f8, 0x2f9, 0x2fa, 0x2fb, 0x2fc, 0x2fd, 0x2fe, 0x2ff,
+};
+
+static const uint16_t elf_zlib_default_dist_table[0x100] =
+{
+  0x800, 0x810, 0x808, 0x818, 0x804, 0x814, 0x80c, 0x81c,
+  0x802, 0x812, 0x80a, 0x81a, 0x806, 0x816, 0x80e, 0x81e,
+  0x801, 0x811, 0x809, 0x819, 0x805, 0x815, 0x80d, 0x81d,
+  0x803, 0x813, 0x80b, 0x81b, 0x807, 0x817, 0x80f, 0x81f,
+  0x800, 0x810, 0x808, 0x818, 0x804, 0x814, 0x80c, 0x81c,
+  0x802, 0x812, 0x80a, 0x81a, 0x806, 0x816, 0x80e, 0x81e,
+  0x801, 0x811, 0x809, 0x819, 0x805, 0x815, 0x80d, 0x81d,
+  0x803, 0x813, 0x80b, 0x81b, 0x807, 0x817, 0x80f, 0x81f,
+  0x800, 0x810, 0x808, 0x818, 0x804, 0x814, 0x80c, 0x81c,
+  0x802, 0x812, 0x80a, 0x81a, 0x806, 0x816, 0x80e, 0x81e,
+  0x801, 0x811, 0x809, 0x819, 0x805, 0x815, 0x80d, 0x81d,
+  0x803, 0x813, 0x80b, 0x81b, 0x807, 0x817, 0x80f, 0x81f,
+  0x800, 0x810, 0x808, 0x818, 0x804, 0x814, 0x80c, 0x81c,
+  0x802, 0x812, 0x80a, 0x81a, 0x806, 0x816, 0x80e, 0x81e,
+  0x801, 0x811, 0x809, 0x819, 0x805, 0x815, 0x80d, 0x81d,
+  0x803, 0x813, 0x80b, 0x81b, 0x807, 0x817, 0x80f, 0x81f,
+  0x800, 0x810, 0x808, 0x818, 0x804, 0x814, 0x80c, 0x81c,
+  0x802, 0x812, 0x80a, 0x81a, 0x806, 0x816, 0x80e, 0x81e,
+  0x801, 0x811, 0x809, 0x819, 0x805, 0x815, 0x80d, 0x81d,
+  0x803, 0x813, 0x80b, 0x81b, 0x807, 0x817, 0x80f, 0x81f,
+  0x800, 0x810, 0x808, 0x818, 0x804, 0x814, 0x80c, 0x81c,
+  0x802, 0x812, 0x80a, 0x81a, 0x806, 0x816, 0x80e, 0x81e,
+  0x801, 0x811, 0x809, 0x819, 0x805, 0x815, 0x80d, 0x81d,
+  0x803, 0x813, 0x80b, 0x81b, 0x807, 0x817, 0x80f, 0x81f,
+  0x800, 0x810, 0x808, 0x818, 0x804, 0x814, 0x80c, 0x81c,
+  0x802, 0x812, 0x80a, 0x81a, 0x806, 0x816, 0x80e, 0x81e,
+  0x801, 0x811, 0x809, 0x819, 0x805, 0x815, 0x80d, 0x81d,
+  0x803, 0x813, 0x80b, 0x81b, 0x807, 0x817, 0x80f, 0x81f,
+  0x800, 0x810, 0x808, 0x818, 0x804, 0x814, 0x80c, 0x81c,
+  0x802, 0x812, 0x80a, 0x81a, 0x806, 0x816, 0x80e, 0x81e,
+  0x801, 0x811, 0x809, 0x819, 0x805, 0x815, 0x80d, 0x81d,
+  0x803, 0x813, 0x80b, 0x81b, 0x807, 0x817, 0x80f, 0x81f,
 };
 
 /* Inflate a zlib stream from PIN/SIN to POUT/SOUT.  Return 1 on
@@ -1701,7 +1804,7 @@ elf_zlib_inflate (const unsigned char *pin, size_t sin, uint16_t *zdebug_table,
 	  if (type == 1)
 	    {
 	      tlit = elf_zlib_default_table;
-	      tdist = elf_zlib_default_table;
+	      tdist = elf_zlib_default_dist_table;
 	    }
 	  else
 	    {
@@ -2573,9 +2676,13 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   int debug_view_valid;
   unsigned int using_debug_view;
   uint16_t *zdebug_table;
+  struct elf_ppc64_opd_data opd_data, *opd;
 
-  *found_sym = 0;
-  *found_dwarf = 0;
+  if (!debuginfo)
+    {
+      *found_sym = 0;
+      *found_dwarf = 0;
+    }
 
   shdrs_view_valid = 0;
   names_view_valid = 0;
@@ -2588,6 +2695,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   debuglink_name = NULL;
   debuglink_crc = 0;
   debug_view_valid = 0;
+  opd = NULL;
 
   if (!backtrace_get_view (state, descriptor, 0, sizeof ehdr, error_callback,
 			   data, &ehdr_view))
@@ -2790,6 +2898,23 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	      debuglink_crc = *(const uint32_t*)(debuglink_data + crc_offset);
 	    }
 	}
+
+      /* Read the .opd section on PowerPC64 ELFv1.  */
+      if (ehdr.e_machine == EM_PPC64
+	  && (ehdr.e_flags & EF_PPC64_ABI) < 2
+	  && shdr->sh_type == SHT_PROGBITS
+	  && strcmp (name, ".opd") == 0)
+	{
+	  if (!backtrace_get_view (state, descriptor, shdr->sh_offset,
+				   shdr->sh_size, error_callback, data,
+				   &opd_data.view))
+	    goto fail;
+
+	  opd = &opd_data;
+	  opd->addr = shdr->sh_addr;
+	  opd->data = (const char *) opd_data.view.data;
+	  opd->size = shdr->sh_size;
+	}
     }
 
   if (symtab_shndx == 0)
@@ -2831,7 +2956,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
       if (!elf_initialize_syminfo (state, base_address,
 				   symtab_view.data, symtab_shdr->sh_size,
 				   strtab_view.data, strtab_shdr->sh_size,
-				   error_callback, data, sdata))
+				   error_callback, data, sdata, opd))
 	{
 	  backtrace_free (state, sdata, sizeof *sdata, error_callback, data);
 	  goto fail;
@@ -2862,12 +2987,19 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 					 error_callback, data);
       if (d >= 0)
 	{
+	  int ret;
+
 	  backtrace_release_view (state, &buildid_view, error_callback, data);
 	  if (debuglink_view_valid)
 	    backtrace_release_view (state, &debuglink_view, error_callback,
 				    data);
-	  return elf_add (state, NULL, d, base_address, error_callback, data,
-			  fileline_fn, found_sym, found_dwarf, 0, 1);
+	  ret = elf_add (state, NULL, d, base_address, error_callback, data,
+			 fileline_fn, found_sym, found_dwarf, 0, 1);
+	  if (ret < 0)
+	    backtrace_close (d, error_callback, data);
+	  else
+	    backtrace_close (descriptor, error_callback, data);
+	  return ret;
 	}
     }
 
@@ -2875,6 +3007,12 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
     {
       backtrace_release_view (state, &buildid_view, error_callback, data);
       buildid_view_valid = 0;
+    }
+
+  if (opd)
+    {
+      backtrace_release_view (state, &opd->view, error_callback, data);
+      opd = NULL;
     }
 
   if (debuglink_name != NULL)
@@ -2886,10 +3024,17 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 					   data);
       if (d >= 0)
 	{
+	  int ret;
+
 	  backtrace_release_view (state, &debuglink_view, error_callback,
 				  data);
-	  return elf_add (state, NULL, d, base_address, error_callback, data,
-			  fileline_fn, found_sym, found_dwarf, 0, 1);
+	  ret = elf_add (state, NULL, d, base_address, error_callback, data,
+			 fileline_fn, found_sym, found_dwarf, 0, 1);
+	  if (ret < 0)
+	    backtrace_close (d, error_callback, data);
+	  else
+	    backtrace_close(descriptor, error_callback, data);
+	  return ret;
 	}
     }
 
@@ -3058,6 +3203,8 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
     backtrace_release_view (state, &buildid_view, error_callback, data);
   if (debug_view_valid)
     backtrace_release_view (state, &debug_view, error_callback, data);
+  if (opd)
+    backtrace_release_view (state, &opd->view, error_callback, data);
   if (descriptor != -1)
     backtrace_close (descriptor, error_callback, data);
   return 0;

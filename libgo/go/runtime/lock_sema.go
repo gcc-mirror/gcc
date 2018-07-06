@@ -83,7 +83,7 @@ Loop:
 			// for this lock, chained through m->nextwaitm.
 			// Queue this M.
 			for {
-				gp.m.nextwaitm = v &^ mutex_locked
+				gp.m.nextwaitm = muintptr(v &^ mutex_locked)
 				if atomic.Casuintptr(&l.key, v, uintptr(unsafe.Pointer(gp.m))|mutex_locked) {
 					break
 				}
@@ -115,8 +115,8 @@ func unlock(l *mutex) {
 		} else {
 			// Other M's are waiting for the lock.
 			// Dequeue an M.
-			mp = (*m)(unsafe.Pointer(v &^ mutex_locked))
-			if atomic.Casuintptr(&l.key, v, mp.nextwaitm) {
+			mp = muintptr(v &^ mutex_locked).ptr()
+			if atomic.Casuintptr(&l.key, v, uintptr(mp.nextwaitm)) {
 				// Dequeued an M.  Wake it.
 				semawakeup(mp)
 				break
@@ -152,7 +152,7 @@ func notewakeup(n *note) {
 	case v == 0:
 		// Nothing was waiting. Done.
 	case v == mutex_locked:
-		// Two notewakeups!  Not allowed.
+		// Two notewakeups! Not allowed.
 		throw("notewakeup - double wakeup")
 	default:
 		// Must be the waiting m. Wake it up.

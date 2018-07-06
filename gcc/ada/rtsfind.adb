@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1124,15 +1124,15 @@ package body Rtsfind is
          end loop;
 
          Withn :=
-            Make_With_Clause (Standard_Location,
-              Name =>
-                Make_Unit_Name
-                  (U, Defining_Unit_Name (Specification (LibUnit))));
+           Make_With_Clause (Standard_Location,
+             Name =>
+               Make_Unit_Name
+                 (U, Defining_Unit_Name (Specification (LibUnit))));
 
-         Set_Library_Unit        (Withn, Cunit (U.Unum));
          Set_Corresponding_Spec  (Withn, U.Entity);
-         Set_First_Name          (Withn, True);
-         Set_Implicit_With       (Withn, True);
+         Set_First_Name          (Withn);
+         Set_Implicit_With       (Withn);
+         Set_Library_Unit        (Withn, Cunit (U.Unum));
          Set_Next_Implicit_With  (Withn, U.First_Implicit_With);
 
          U.First_Implicit_With := Withn;

@@ -139,7 +139,9 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/math.m4 \
 	$(top_srcdir)/../config/ax_check_define.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/enable.m4 \
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -315,7 +317,23 @@ am__objects_36 = cshift1_4_i1.lo cshift1_4_i2.lo cshift1_4_i4.lo \
 	cshift1_16_i16.lo cshift1_16_r4.lo cshift1_16_r8.lo \
 	cshift1_16_r10.lo cshift1_16_r16.lo cshift1_16_c4.lo \
 	cshift1_16_c8.lo cshift1_16_c10.lo cshift1_16_c16.lo
-am__objects_37 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
+am__objects_37 = maxloc0_4_s1.lo maxloc0_4_s4.lo maxloc0_8_s1.lo \
+	maxloc0_8_s4.lo maxloc0_16_s1.lo maxloc0_16_s4.lo
+am__objects_38 = minloc0_4_s1.lo minloc0_4_s4.lo minloc0_8_s1.lo \
+	minloc0_8_s4.lo minloc0_16_s1.lo minloc0_16_s4.lo
+am__objects_39 = maxloc1_4_s1.lo maxloc1_4_s4.lo maxloc1_8_s1.lo \
+	maxloc1_8_s4.lo maxloc1_16_s1.lo maxloc1_16_s4.lo
+am__objects_40 = minloc1_4_s1.lo minloc1_4_s4.lo minloc1_8_s1.lo \
+	minloc1_8_s4.lo minloc1_16_s1.lo minloc1_16_s4.lo
+am__objects_41 = maxloc2_4_s1.lo maxloc2_4_s4.lo maxloc2_8_s1.lo \
+	maxloc2_8_s4.lo maxloc2_16_s1.lo maxloc2_16_s4.lo
+am__objects_42 = minloc2_4_s1.lo minloc2_4_s4.lo minloc2_8_s1.lo \
+	minloc2_8_s4.lo minloc2_16_s1.lo minloc2_16_s4.lo
+am__objects_43 = maxval0_s1.lo maxval0_s4.lo
+am__objects_44 = minval0_s1.lo minval0_s4.lo
+am__objects_45 = maxval1_s1.lo maxval1_s4.lo
+am__objects_46 = minval1_s1.lo minval1_s4.lo
+am__objects_47 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
 	$(am__objects_13) $(am__objects_14) $(am__objects_15) \
@@ -325,14 +343,18 @@ am__objects_37 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_25) $(am__objects_26) $(am__objects_27) \
 	$(am__objects_28) $(am__objects_29) $(am__objects_30) \
 	$(am__objects_31) $(am__objects_32) $(am__objects_33) \
-	$(am__objects_34) $(am__objects_35) $(am__objects_36)
-@LIBGFOR_MINIMAL_FALSE@am__objects_38 = close.lo file_pos.lo format.lo \
+	$(am__objects_34) $(am__objects_35) $(am__objects_36) \
+	$(am__objects_37) $(am__objects_38) $(am__objects_39) \
+	$(am__objects_40) $(am__objects_41) $(am__objects_42) \
+	$(am__objects_43) $(am__objects_44) $(am__objects_45) \
+	$(am__objects_46)
+@LIBGFOR_MINIMAL_FALSE@am__objects_48 = close.lo file_pos.lo format.lo \
 @LIBGFOR_MINIMAL_FALSE@	inquire.lo intrinsics.lo list_read.lo \
 @LIBGFOR_MINIMAL_FALSE@	lock.lo open.lo read.lo transfer.lo \
 @LIBGFOR_MINIMAL_FALSE@	transfer128.lo unit.lo unix.lo write.lo \
 @LIBGFOR_MINIMAL_FALSE@	fbuf.lo
-am__objects_39 = size_from_kind.lo $(am__objects_38)
-@LIBGFOR_MINIMAL_FALSE@am__objects_40 = access.lo c99_functions.lo \
+am__objects_49 = size_from_kind.lo $(am__objects_48)
+@LIBGFOR_MINIMAL_FALSE@am__objects_50 = access.lo c99_functions.lo \
 @LIBGFOR_MINIMAL_FALSE@	chdir.lo chmod.lo clock.lo cpu_time.lo \
 @LIBGFOR_MINIMAL_FALSE@	ctime.lo date_and_time.lo dtime.lo \
 @LIBGFOR_MINIMAL_FALSE@	env.lo etime.lo execute_command_line.lo \
@@ -342,19 +364,19 @@ am__objects_39 = size_from_kind.lo $(am__objects_38)
 @LIBGFOR_MINIMAL_FALSE@	rename.lo stat.lo symlnk.lo \
 @LIBGFOR_MINIMAL_FALSE@	system_clock.lo time.lo umask.lo \
 @LIBGFOR_MINIMAL_FALSE@	unlink.lo
-@IEEE_SUPPORT_TRUE@am__objects_41 = ieee_helper.lo
-am__objects_42 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
+@IEEE_SUPPORT_TRUE@am__objects_51 = ieee_helper.lo
+am__objects_52 = associated.lo abort.lo args.lo cshift0.lo eoshift0.lo \
 	eoshift2.lo erfc_scaled.lo extends_type_of.lo fnum.lo \
 	ierrno.lo ishftc.lo mvbits.lo move_alloc.lo pack_generic.lo \
 	selected_char_kind.lo size.lo spread_generic.lo \
 	string_intrinsics.lo rand.lo random.lo reshape_generic.lo \
 	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
 	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
-	$(am__objects_40) $(am__objects_41)
-@IEEE_SUPPORT_TRUE@am__objects_43 = ieee_arithmetic.lo \
+	$(am__objects_50) $(am__objects_51)
+@IEEE_SUPPORT_TRUE@am__objects_53 = ieee_arithmetic.lo \
 @IEEE_SUPPORT_TRUE@	ieee_exceptions.lo ieee_features.lo
-am__objects_44 =
-am__objects_45 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+am__objects_54 =
+am__objects_55 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
 	_abs_r10.lo _abs_r16.lo _aimag_c4.lo _aimag_c8.lo \
 	_aimag_c10.lo _aimag_c16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
@@ -378,19 +400,19 @@ am__objects_45 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
 	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
 	_anint_r8.lo _anint_r10.lo _anint_r16.lo
-am__objects_46 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+am__objects_56 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
 	_mod_r10.lo _mod_r16.lo
-am__objects_47 = misc_specifics.lo
-am__objects_48 = $(am__objects_45) $(am__objects_46) $(am__objects_47) \
+am__objects_57 = misc_specifics.lo
+am__objects_58 = $(am__objects_55) $(am__objects_56) $(am__objects_57) \
 	dprod_r8.lo f2c_specifics.lo
-am__objects_49 = $(am__objects_3) $(am__objects_37) $(am__objects_39) \
-	$(am__objects_42) $(am__objects_43) $(am__objects_44) \
-	$(am__objects_48)
-@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_49)
+am__objects_59 = $(am__objects_3) $(am__objects_47) $(am__objects_49) \
+	$(am__objects_52) $(am__objects_53) $(am__objects_54) \
+	$(am__objects_58)
+@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_59)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -730,6 +752,14 @@ $(srcdir)/generated/maxloc0_4_r16.c \
 $(srcdir)/generated/maxloc0_8_r16.c \
 $(srcdir)/generated/maxloc0_16_r16.c
 
+i_maxloc0s_c = \
+$(srcdir)/generated/maxloc0_4_s1.c \
+$(srcdir)/generated/maxloc0_4_s4.c \
+$(srcdir)/generated/maxloc0_8_s1.c \
+$(srcdir)/generated/maxloc0_8_s4.c \
+$(srcdir)/generated/maxloc0_16_s1.c \
+$(srcdir)/generated/maxloc0_16_s4.c
+
 i_maxloc1_c = \
 $(srcdir)/generated/maxloc1_4_i1.c \
 $(srcdir)/generated/maxloc1_8_i1.c \
@@ -759,6 +789,22 @@ $(srcdir)/generated/maxloc1_4_r16.c \
 $(srcdir)/generated/maxloc1_8_r16.c \
 $(srcdir)/generated/maxloc1_16_r16.c
 
+i_maxloc1s_c = \
+$(srcdir)/generated/maxloc1_4_s1.c \
+$(srcdir)/generated/maxloc1_4_s4.c \
+$(srcdir)/generated/maxloc1_8_s1.c \
+$(srcdir)/generated/maxloc1_8_s4.c \
+$(srcdir)/generated/maxloc1_16_s1.c \
+$(srcdir)/generated/maxloc1_16_s4.c
+
+i_maxloc2s_c = \
+$(srcdir)/generated/maxloc2_4_s1.c \
+$(srcdir)/generated/maxloc2_4_s4.c \
+$(srcdir)/generated/maxloc2_8_s1.c \
+$(srcdir)/generated/maxloc2_8_s4.c \
+$(srcdir)/generated/maxloc2_16_s1.c \
+$(srcdir)/generated/maxloc2_16_s4.c
+
 i_maxval_c = \
 $(srcdir)/generated/maxval_i1.c \
 $(srcdir)/generated/maxval_i2.c \
@@ -769,6 +815,14 @@ $(srcdir)/generated/maxval_r4.c \
 $(srcdir)/generated/maxval_r8.c \
 $(srcdir)/generated/maxval_r10.c \
 $(srcdir)/generated/maxval_r16.c
+
+i_maxval0s_c = \
+$(srcdir)/generated/maxval0_s1.c \
+$(srcdir)/generated/maxval0_s4.c
+
+i_maxval1s_c = \
+$(srcdir)/generated/maxval1_s1.c \
+$(srcdir)/generated/maxval1_s4.c
 
 i_minloc0_c = \
 $(srcdir)/generated/minloc0_4_i1.c \
@@ -799,6 +853,14 @@ $(srcdir)/generated/minloc0_4_r16.c \
 $(srcdir)/generated/minloc0_8_r16.c \
 $(srcdir)/generated/minloc0_16_r16.c
 
+i_minloc0s_c = \
+$(srcdir)/generated/minloc0_4_s1.c \
+$(srcdir)/generated/minloc0_4_s4.c \
+$(srcdir)/generated/minloc0_8_s1.c \
+$(srcdir)/generated/minloc0_8_s4.c \
+$(srcdir)/generated/minloc0_16_s1.c \
+$(srcdir)/generated/minloc0_16_s4.c
+
 i_minloc1_c = \
 $(srcdir)/generated/minloc1_4_i1.c \
 $(srcdir)/generated/minloc1_8_i1.c \
@@ -828,6 +890,22 @@ $(srcdir)/generated/minloc1_4_r16.c \
 $(srcdir)/generated/minloc1_8_r16.c \
 $(srcdir)/generated/minloc1_16_r16.c
 
+i_minloc1s_c = \
+$(srcdir)/generated/minloc1_4_s1.c \
+$(srcdir)/generated/minloc1_4_s4.c \
+$(srcdir)/generated/minloc1_8_s1.c \
+$(srcdir)/generated/minloc1_8_s4.c \
+$(srcdir)/generated/minloc1_16_s1.c \
+$(srcdir)/generated/minloc1_16_s4.c
+
+i_minloc2s_c = \
+$(srcdir)/generated/minloc2_4_s1.c \
+$(srcdir)/generated/minloc2_4_s4.c \
+$(srcdir)/generated/minloc2_8_s1.c \
+$(srcdir)/generated/minloc2_8_s4.c \
+$(srcdir)/generated/minloc2_16_s1.c \
+$(srcdir)/generated/minloc2_16_s4.c
+
 i_minval_c = \
 $(srcdir)/generated/minval_i1.c \
 $(srcdir)/generated/minval_i2.c \
@@ -838,6 +916,14 @@ $(srcdir)/generated/minval_r4.c \
 $(srcdir)/generated/minval_r8.c \
 $(srcdir)/generated/minval_r10.c \
 $(srcdir)/generated/minval_r16.c
+
+i_minval0s_c = \
+$(srcdir)/generated/minval0_s1.c \
+$(srcdir)/generated/minval0_s4.c
+
+i_minval1s_c = \
+$(srcdir)/generated/minval1_s1.c \
+$(srcdir)/generated/minval1_s4.c
 
 i_norm2_c = \
 $(srcdir)/generated/norm2_r4.c \
@@ -1125,7 +1211,7 @@ m4_files = m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/pow.m4 \
     m4/misc_specifics.m4 m4/pack.m4 \
     m4/unpack.m4 m4/spread.m4 m4/bessel.m4 m4/norm2.m4 m4/parity.m4 \
-    m4/iall.m4 m4/iany.m4 m4/iparity.m4
+    m4/iall.m4 m4/iany.m4 m4/iparity.m4 m4/iforeach-s.m4
 
 gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
@@ -1136,7 +1222,9 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_pow_c) $(i_pack_c) $(i_unpack_c) $(i_matmulavx128_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
     $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc \
-    $(i_cshift1a_c)
+    $(i_cshift1a_c) $(i_maxloc0s_c) $(i_minloc0s_c) $(i_maxloc1s_c) \
+    $(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
+    $(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c)
 
 
 # Machine generated specifics
@@ -1312,6 +1400,10 @@ I_M4_DEPS = m4/iparm.m4
 I_M4_DEPS0 = $(I_M4_DEPS) m4/iforeach.m4
 I_M4_DEPS1 = $(I_M4_DEPS) m4/ifunction.m4
 I_M4_DEPS2 = $(I_M4_DEPS) m4/ifunction_logical.m4
+I_M4_DEPS3 = $(I_M4_DEPS) m4/iforeach-s.m4
+I_M4_DEPS4 = $(I_M4_DEPS) m4/ifunction-s.m4
+I_M4_DEPS5 = $(I_M4_DEPS) m4/iforeach-s2.m4
+I_M4_DEPS6 = $(I_M4_DEPS) m4/ifunction-s2.m4
 EXTRA_DIST = $(m4_files)
 all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -1654,6 +1746,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_16_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_16_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_16_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_16_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_16_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_4_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_4_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_4_i2.Plo@am__quote@
@@ -1663,6 +1757,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_4_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_4_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_4_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_4_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_4_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_8_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_8_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_8_i2.Plo@am__quote@
@@ -1672,6 +1768,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_8_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_8_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_8_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_8_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc0_8_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_16_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_16_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_16_i2.Plo@am__quote@
@@ -1681,6 +1779,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_16_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_16_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_16_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_16_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_16_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_4_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_4_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_4_i2.Plo@am__quote@
@@ -1690,6 +1790,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_4_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_4_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_4_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_4_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_4_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_8_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_8_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_8_i2.Plo@am__quote@
@@ -1699,6 +1801,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_8_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_8_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_8_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_8_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc1_8_s4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc2_16_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc2_16_s4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc2_4_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc2_4_s4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc2_8_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxloc2_8_s4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxval0_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxval0_s4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxval1_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxval1_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxval_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxval_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maxval_i2.Plo@am__quote@
@@ -1719,6 +1833,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_16_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_16_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_16_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_16_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_16_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_4_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_4_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_4_i2.Plo@am__quote@
@@ -1728,6 +1844,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_4_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_4_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_4_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_4_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_4_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_8_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_8_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_8_i2.Plo@am__quote@
@@ -1737,6 +1855,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_8_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_8_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_8_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_8_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc0_8_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_16_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_16_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_16_i2.Plo@am__quote@
@@ -1746,6 +1866,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_16_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_16_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_16_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_16_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_16_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_4_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_4_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_4_i2.Plo@am__quote@
@@ -1755,6 +1877,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_4_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_4_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_4_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_4_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_4_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_8_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_8_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_8_i2.Plo@am__quote@
@@ -1764,6 +1888,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_8_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_8_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_8_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_8_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc1_8_s4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc2_16_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc2_16_s4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc2_4_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc2_4_s4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc2_8_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minloc2_8_s4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minval0_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minval0_s4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minval1_s1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minval1_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minval_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minval_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minval_i2.Plo@am__quote@
@@ -5257,6 +5393,314 @@ cshift1_16_c16.lo: $(srcdir)/generated/cshift1_16_c16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16_c16.lo `test -f '$(srcdir)/generated/cshift1_16_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/cshift1_16_c16.c
 
+maxloc0_4_s1.lo: $(srcdir)/generated/maxloc0_4_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc0_4_s1.lo -MD -MP -MF $(DEPDIR)/maxloc0_4_s1.Tpo -c -o maxloc0_4_s1.lo `test -f '$(srcdir)/generated/maxloc0_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_4_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc0_4_s1.Tpo $(DEPDIR)/maxloc0_4_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc0_4_s1.c' object='maxloc0_4_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_4_s1.lo `test -f '$(srcdir)/generated/maxloc0_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_4_s1.c
+
+maxloc0_4_s4.lo: $(srcdir)/generated/maxloc0_4_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc0_4_s4.lo -MD -MP -MF $(DEPDIR)/maxloc0_4_s4.Tpo -c -o maxloc0_4_s4.lo `test -f '$(srcdir)/generated/maxloc0_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_4_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc0_4_s4.Tpo $(DEPDIR)/maxloc0_4_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc0_4_s4.c' object='maxloc0_4_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_4_s4.lo `test -f '$(srcdir)/generated/maxloc0_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_4_s4.c
+
+maxloc0_8_s1.lo: $(srcdir)/generated/maxloc0_8_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc0_8_s1.lo -MD -MP -MF $(DEPDIR)/maxloc0_8_s1.Tpo -c -o maxloc0_8_s1.lo `test -f '$(srcdir)/generated/maxloc0_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_8_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc0_8_s1.Tpo $(DEPDIR)/maxloc0_8_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc0_8_s1.c' object='maxloc0_8_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_8_s1.lo `test -f '$(srcdir)/generated/maxloc0_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_8_s1.c
+
+maxloc0_8_s4.lo: $(srcdir)/generated/maxloc0_8_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc0_8_s4.lo -MD -MP -MF $(DEPDIR)/maxloc0_8_s4.Tpo -c -o maxloc0_8_s4.lo `test -f '$(srcdir)/generated/maxloc0_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_8_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc0_8_s4.Tpo $(DEPDIR)/maxloc0_8_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc0_8_s4.c' object='maxloc0_8_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_8_s4.lo `test -f '$(srcdir)/generated/maxloc0_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_8_s4.c
+
+maxloc0_16_s1.lo: $(srcdir)/generated/maxloc0_16_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc0_16_s1.lo -MD -MP -MF $(DEPDIR)/maxloc0_16_s1.Tpo -c -o maxloc0_16_s1.lo `test -f '$(srcdir)/generated/maxloc0_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_16_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc0_16_s1.Tpo $(DEPDIR)/maxloc0_16_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc0_16_s1.c' object='maxloc0_16_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_16_s1.lo `test -f '$(srcdir)/generated/maxloc0_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_16_s1.c
+
+maxloc0_16_s4.lo: $(srcdir)/generated/maxloc0_16_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc0_16_s4.lo -MD -MP -MF $(DEPDIR)/maxloc0_16_s4.Tpo -c -o maxloc0_16_s4.lo `test -f '$(srcdir)/generated/maxloc0_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_16_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc0_16_s4.Tpo $(DEPDIR)/maxloc0_16_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc0_16_s4.c' object='maxloc0_16_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_16_s4.lo `test -f '$(srcdir)/generated/maxloc0_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_16_s4.c
+
+minloc0_4_s1.lo: $(srcdir)/generated/minloc0_4_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc0_4_s1.lo -MD -MP -MF $(DEPDIR)/minloc0_4_s1.Tpo -c -o minloc0_4_s1.lo `test -f '$(srcdir)/generated/minloc0_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_4_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc0_4_s1.Tpo $(DEPDIR)/minloc0_4_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc0_4_s1.c' object='minloc0_4_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_4_s1.lo `test -f '$(srcdir)/generated/minloc0_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_4_s1.c
+
+minloc0_4_s4.lo: $(srcdir)/generated/minloc0_4_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc0_4_s4.lo -MD -MP -MF $(DEPDIR)/minloc0_4_s4.Tpo -c -o minloc0_4_s4.lo `test -f '$(srcdir)/generated/minloc0_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_4_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc0_4_s4.Tpo $(DEPDIR)/minloc0_4_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc0_4_s4.c' object='minloc0_4_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_4_s4.lo `test -f '$(srcdir)/generated/minloc0_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_4_s4.c
+
+minloc0_8_s1.lo: $(srcdir)/generated/minloc0_8_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc0_8_s1.lo -MD -MP -MF $(DEPDIR)/minloc0_8_s1.Tpo -c -o minloc0_8_s1.lo `test -f '$(srcdir)/generated/minloc0_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_8_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc0_8_s1.Tpo $(DEPDIR)/minloc0_8_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc0_8_s1.c' object='minloc0_8_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_8_s1.lo `test -f '$(srcdir)/generated/minloc0_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_8_s1.c
+
+minloc0_8_s4.lo: $(srcdir)/generated/minloc0_8_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc0_8_s4.lo -MD -MP -MF $(DEPDIR)/minloc0_8_s4.Tpo -c -o minloc0_8_s4.lo `test -f '$(srcdir)/generated/minloc0_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_8_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc0_8_s4.Tpo $(DEPDIR)/minloc0_8_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc0_8_s4.c' object='minloc0_8_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_8_s4.lo `test -f '$(srcdir)/generated/minloc0_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_8_s4.c
+
+minloc0_16_s1.lo: $(srcdir)/generated/minloc0_16_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc0_16_s1.lo -MD -MP -MF $(DEPDIR)/minloc0_16_s1.Tpo -c -o minloc0_16_s1.lo `test -f '$(srcdir)/generated/minloc0_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_16_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc0_16_s1.Tpo $(DEPDIR)/minloc0_16_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc0_16_s1.c' object='minloc0_16_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_16_s1.lo `test -f '$(srcdir)/generated/minloc0_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_16_s1.c
+
+minloc0_16_s4.lo: $(srcdir)/generated/minloc0_16_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc0_16_s4.lo -MD -MP -MF $(DEPDIR)/minloc0_16_s4.Tpo -c -o minloc0_16_s4.lo `test -f '$(srcdir)/generated/minloc0_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_16_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc0_16_s4.Tpo $(DEPDIR)/minloc0_16_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc0_16_s4.c' object='minloc0_16_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_16_s4.lo `test -f '$(srcdir)/generated/minloc0_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc0_16_s4.c
+
+maxloc1_4_s1.lo: $(srcdir)/generated/maxloc1_4_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc1_4_s1.lo -MD -MP -MF $(DEPDIR)/maxloc1_4_s1.Tpo -c -o maxloc1_4_s1.lo `test -f '$(srcdir)/generated/maxloc1_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_4_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc1_4_s1.Tpo $(DEPDIR)/maxloc1_4_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc1_4_s1.c' object='maxloc1_4_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_4_s1.lo `test -f '$(srcdir)/generated/maxloc1_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_4_s1.c
+
+maxloc1_4_s4.lo: $(srcdir)/generated/maxloc1_4_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc1_4_s4.lo -MD -MP -MF $(DEPDIR)/maxloc1_4_s4.Tpo -c -o maxloc1_4_s4.lo `test -f '$(srcdir)/generated/maxloc1_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_4_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc1_4_s4.Tpo $(DEPDIR)/maxloc1_4_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc1_4_s4.c' object='maxloc1_4_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_4_s4.lo `test -f '$(srcdir)/generated/maxloc1_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_4_s4.c
+
+maxloc1_8_s1.lo: $(srcdir)/generated/maxloc1_8_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc1_8_s1.lo -MD -MP -MF $(DEPDIR)/maxloc1_8_s1.Tpo -c -o maxloc1_8_s1.lo `test -f '$(srcdir)/generated/maxloc1_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_8_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc1_8_s1.Tpo $(DEPDIR)/maxloc1_8_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc1_8_s1.c' object='maxloc1_8_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_8_s1.lo `test -f '$(srcdir)/generated/maxloc1_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_8_s1.c
+
+maxloc1_8_s4.lo: $(srcdir)/generated/maxloc1_8_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc1_8_s4.lo -MD -MP -MF $(DEPDIR)/maxloc1_8_s4.Tpo -c -o maxloc1_8_s4.lo `test -f '$(srcdir)/generated/maxloc1_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_8_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc1_8_s4.Tpo $(DEPDIR)/maxloc1_8_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc1_8_s4.c' object='maxloc1_8_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_8_s4.lo `test -f '$(srcdir)/generated/maxloc1_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_8_s4.c
+
+maxloc1_16_s1.lo: $(srcdir)/generated/maxloc1_16_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc1_16_s1.lo -MD -MP -MF $(DEPDIR)/maxloc1_16_s1.Tpo -c -o maxloc1_16_s1.lo `test -f '$(srcdir)/generated/maxloc1_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_16_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc1_16_s1.Tpo $(DEPDIR)/maxloc1_16_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc1_16_s1.c' object='maxloc1_16_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_16_s1.lo `test -f '$(srcdir)/generated/maxloc1_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_16_s1.c
+
+maxloc1_16_s4.lo: $(srcdir)/generated/maxloc1_16_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc1_16_s4.lo -MD -MP -MF $(DEPDIR)/maxloc1_16_s4.Tpo -c -o maxloc1_16_s4.lo `test -f '$(srcdir)/generated/maxloc1_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_16_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc1_16_s4.Tpo $(DEPDIR)/maxloc1_16_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc1_16_s4.c' object='maxloc1_16_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_16_s4.lo `test -f '$(srcdir)/generated/maxloc1_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc1_16_s4.c
+
+minloc1_4_s1.lo: $(srcdir)/generated/minloc1_4_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc1_4_s1.lo -MD -MP -MF $(DEPDIR)/minloc1_4_s1.Tpo -c -o minloc1_4_s1.lo `test -f '$(srcdir)/generated/minloc1_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_4_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc1_4_s1.Tpo $(DEPDIR)/minloc1_4_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc1_4_s1.c' object='minloc1_4_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_4_s1.lo `test -f '$(srcdir)/generated/minloc1_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_4_s1.c
+
+minloc1_4_s4.lo: $(srcdir)/generated/minloc1_4_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc1_4_s4.lo -MD -MP -MF $(DEPDIR)/minloc1_4_s4.Tpo -c -o minloc1_4_s4.lo `test -f '$(srcdir)/generated/minloc1_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_4_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc1_4_s4.Tpo $(DEPDIR)/minloc1_4_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc1_4_s4.c' object='minloc1_4_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_4_s4.lo `test -f '$(srcdir)/generated/minloc1_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_4_s4.c
+
+minloc1_8_s1.lo: $(srcdir)/generated/minloc1_8_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc1_8_s1.lo -MD -MP -MF $(DEPDIR)/minloc1_8_s1.Tpo -c -o minloc1_8_s1.lo `test -f '$(srcdir)/generated/minloc1_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_8_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc1_8_s1.Tpo $(DEPDIR)/minloc1_8_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc1_8_s1.c' object='minloc1_8_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_8_s1.lo `test -f '$(srcdir)/generated/minloc1_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_8_s1.c
+
+minloc1_8_s4.lo: $(srcdir)/generated/minloc1_8_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc1_8_s4.lo -MD -MP -MF $(DEPDIR)/minloc1_8_s4.Tpo -c -o minloc1_8_s4.lo `test -f '$(srcdir)/generated/minloc1_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_8_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc1_8_s4.Tpo $(DEPDIR)/minloc1_8_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc1_8_s4.c' object='minloc1_8_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_8_s4.lo `test -f '$(srcdir)/generated/minloc1_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_8_s4.c
+
+minloc1_16_s1.lo: $(srcdir)/generated/minloc1_16_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc1_16_s1.lo -MD -MP -MF $(DEPDIR)/minloc1_16_s1.Tpo -c -o minloc1_16_s1.lo `test -f '$(srcdir)/generated/minloc1_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_16_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc1_16_s1.Tpo $(DEPDIR)/minloc1_16_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc1_16_s1.c' object='minloc1_16_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_16_s1.lo `test -f '$(srcdir)/generated/minloc1_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_16_s1.c
+
+minloc1_16_s4.lo: $(srcdir)/generated/minloc1_16_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc1_16_s4.lo -MD -MP -MF $(DEPDIR)/minloc1_16_s4.Tpo -c -o minloc1_16_s4.lo `test -f '$(srcdir)/generated/minloc1_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_16_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc1_16_s4.Tpo $(DEPDIR)/minloc1_16_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc1_16_s4.c' object='minloc1_16_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_16_s4.lo `test -f '$(srcdir)/generated/minloc1_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc1_16_s4.c
+
+maxloc2_4_s1.lo: $(srcdir)/generated/maxloc2_4_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc2_4_s1.lo -MD -MP -MF $(DEPDIR)/maxloc2_4_s1.Tpo -c -o maxloc2_4_s1.lo `test -f '$(srcdir)/generated/maxloc2_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_4_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc2_4_s1.Tpo $(DEPDIR)/maxloc2_4_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc2_4_s1.c' object='maxloc2_4_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc2_4_s1.lo `test -f '$(srcdir)/generated/maxloc2_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_4_s1.c
+
+maxloc2_4_s4.lo: $(srcdir)/generated/maxloc2_4_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc2_4_s4.lo -MD -MP -MF $(DEPDIR)/maxloc2_4_s4.Tpo -c -o maxloc2_4_s4.lo `test -f '$(srcdir)/generated/maxloc2_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_4_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc2_4_s4.Tpo $(DEPDIR)/maxloc2_4_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc2_4_s4.c' object='maxloc2_4_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc2_4_s4.lo `test -f '$(srcdir)/generated/maxloc2_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_4_s4.c
+
+maxloc2_8_s1.lo: $(srcdir)/generated/maxloc2_8_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc2_8_s1.lo -MD -MP -MF $(DEPDIR)/maxloc2_8_s1.Tpo -c -o maxloc2_8_s1.lo `test -f '$(srcdir)/generated/maxloc2_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_8_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc2_8_s1.Tpo $(DEPDIR)/maxloc2_8_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc2_8_s1.c' object='maxloc2_8_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc2_8_s1.lo `test -f '$(srcdir)/generated/maxloc2_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_8_s1.c
+
+maxloc2_8_s4.lo: $(srcdir)/generated/maxloc2_8_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc2_8_s4.lo -MD -MP -MF $(DEPDIR)/maxloc2_8_s4.Tpo -c -o maxloc2_8_s4.lo `test -f '$(srcdir)/generated/maxloc2_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_8_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc2_8_s4.Tpo $(DEPDIR)/maxloc2_8_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc2_8_s4.c' object='maxloc2_8_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc2_8_s4.lo `test -f '$(srcdir)/generated/maxloc2_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_8_s4.c
+
+maxloc2_16_s1.lo: $(srcdir)/generated/maxloc2_16_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc2_16_s1.lo -MD -MP -MF $(DEPDIR)/maxloc2_16_s1.Tpo -c -o maxloc2_16_s1.lo `test -f '$(srcdir)/generated/maxloc2_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_16_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc2_16_s1.Tpo $(DEPDIR)/maxloc2_16_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc2_16_s1.c' object='maxloc2_16_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc2_16_s1.lo `test -f '$(srcdir)/generated/maxloc2_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_16_s1.c
+
+maxloc2_16_s4.lo: $(srcdir)/generated/maxloc2_16_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc2_16_s4.lo -MD -MP -MF $(DEPDIR)/maxloc2_16_s4.Tpo -c -o maxloc2_16_s4.lo `test -f '$(srcdir)/generated/maxloc2_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_16_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxloc2_16_s4.Tpo $(DEPDIR)/maxloc2_16_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxloc2_16_s4.c' object='maxloc2_16_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc2_16_s4.lo `test -f '$(srcdir)/generated/maxloc2_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc2_16_s4.c
+
+minloc2_4_s1.lo: $(srcdir)/generated/minloc2_4_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc2_4_s1.lo -MD -MP -MF $(DEPDIR)/minloc2_4_s1.Tpo -c -o minloc2_4_s1.lo `test -f '$(srcdir)/generated/minloc2_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_4_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc2_4_s1.Tpo $(DEPDIR)/minloc2_4_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc2_4_s1.c' object='minloc2_4_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc2_4_s1.lo `test -f '$(srcdir)/generated/minloc2_4_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_4_s1.c
+
+minloc2_4_s4.lo: $(srcdir)/generated/minloc2_4_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc2_4_s4.lo -MD -MP -MF $(DEPDIR)/minloc2_4_s4.Tpo -c -o minloc2_4_s4.lo `test -f '$(srcdir)/generated/minloc2_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_4_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc2_4_s4.Tpo $(DEPDIR)/minloc2_4_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc2_4_s4.c' object='minloc2_4_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc2_4_s4.lo `test -f '$(srcdir)/generated/minloc2_4_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_4_s4.c
+
+minloc2_8_s1.lo: $(srcdir)/generated/minloc2_8_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc2_8_s1.lo -MD -MP -MF $(DEPDIR)/minloc2_8_s1.Tpo -c -o minloc2_8_s1.lo `test -f '$(srcdir)/generated/minloc2_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_8_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc2_8_s1.Tpo $(DEPDIR)/minloc2_8_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc2_8_s1.c' object='minloc2_8_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc2_8_s1.lo `test -f '$(srcdir)/generated/minloc2_8_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_8_s1.c
+
+minloc2_8_s4.lo: $(srcdir)/generated/minloc2_8_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc2_8_s4.lo -MD -MP -MF $(DEPDIR)/minloc2_8_s4.Tpo -c -o minloc2_8_s4.lo `test -f '$(srcdir)/generated/minloc2_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_8_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc2_8_s4.Tpo $(DEPDIR)/minloc2_8_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc2_8_s4.c' object='minloc2_8_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc2_8_s4.lo `test -f '$(srcdir)/generated/minloc2_8_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_8_s4.c
+
+minloc2_16_s1.lo: $(srcdir)/generated/minloc2_16_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc2_16_s1.lo -MD -MP -MF $(DEPDIR)/minloc2_16_s1.Tpo -c -o minloc2_16_s1.lo `test -f '$(srcdir)/generated/minloc2_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_16_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc2_16_s1.Tpo $(DEPDIR)/minloc2_16_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc2_16_s1.c' object='minloc2_16_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc2_16_s1.lo `test -f '$(srcdir)/generated/minloc2_16_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_16_s1.c
+
+minloc2_16_s4.lo: $(srcdir)/generated/minloc2_16_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minloc2_16_s4.lo -MD -MP -MF $(DEPDIR)/minloc2_16_s4.Tpo -c -o minloc2_16_s4.lo `test -f '$(srcdir)/generated/minloc2_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_16_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minloc2_16_s4.Tpo $(DEPDIR)/minloc2_16_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minloc2_16_s4.c' object='minloc2_16_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc2_16_s4.lo `test -f '$(srcdir)/generated/minloc2_16_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minloc2_16_s4.c
+
+maxval0_s1.lo: $(srcdir)/generated/maxval0_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxval0_s1.lo -MD -MP -MF $(DEPDIR)/maxval0_s1.Tpo -c -o maxval0_s1.lo `test -f '$(srcdir)/generated/maxval0_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxval0_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxval0_s1.Tpo $(DEPDIR)/maxval0_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxval0_s1.c' object='maxval0_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval0_s1.lo `test -f '$(srcdir)/generated/maxval0_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxval0_s1.c
+
+maxval0_s4.lo: $(srcdir)/generated/maxval0_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxval0_s4.lo -MD -MP -MF $(DEPDIR)/maxval0_s4.Tpo -c -o maxval0_s4.lo `test -f '$(srcdir)/generated/maxval0_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxval0_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxval0_s4.Tpo $(DEPDIR)/maxval0_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxval0_s4.c' object='maxval0_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval0_s4.lo `test -f '$(srcdir)/generated/maxval0_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxval0_s4.c
+
+minval0_s1.lo: $(srcdir)/generated/minval0_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minval0_s1.lo -MD -MP -MF $(DEPDIR)/minval0_s1.Tpo -c -o minval0_s1.lo `test -f '$(srcdir)/generated/minval0_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minval0_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minval0_s1.Tpo $(DEPDIR)/minval0_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minval0_s1.c' object='minval0_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval0_s1.lo `test -f '$(srcdir)/generated/minval0_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minval0_s1.c
+
+minval0_s4.lo: $(srcdir)/generated/minval0_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minval0_s4.lo -MD -MP -MF $(DEPDIR)/minval0_s4.Tpo -c -o minval0_s4.lo `test -f '$(srcdir)/generated/minval0_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minval0_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minval0_s4.Tpo $(DEPDIR)/minval0_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minval0_s4.c' object='minval0_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval0_s4.lo `test -f '$(srcdir)/generated/minval0_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minval0_s4.c
+
+maxval1_s1.lo: $(srcdir)/generated/maxval1_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxval1_s1.lo -MD -MP -MF $(DEPDIR)/maxval1_s1.Tpo -c -o maxval1_s1.lo `test -f '$(srcdir)/generated/maxval1_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxval1_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxval1_s1.Tpo $(DEPDIR)/maxval1_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxval1_s1.c' object='maxval1_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval1_s1.lo `test -f '$(srcdir)/generated/maxval1_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxval1_s1.c
+
+maxval1_s4.lo: $(srcdir)/generated/maxval1_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxval1_s4.lo -MD -MP -MF $(DEPDIR)/maxval1_s4.Tpo -c -o maxval1_s4.lo `test -f '$(srcdir)/generated/maxval1_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxval1_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/maxval1_s4.Tpo $(DEPDIR)/maxval1_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/maxval1_s4.c' object='maxval1_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval1_s4.lo `test -f '$(srcdir)/generated/maxval1_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxval1_s4.c
+
+minval1_s1.lo: $(srcdir)/generated/minval1_s1.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minval1_s1.lo -MD -MP -MF $(DEPDIR)/minval1_s1.Tpo -c -o minval1_s1.lo `test -f '$(srcdir)/generated/minval1_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minval1_s1.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minval1_s1.Tpo $(DEPDIR)/minval1_s1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minval1_s1.c' object='minval1_s1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval1_s1.lo `test -f '$(srcdir)/generated/minval1_s1.c' || echo '$(srcdir)/'`$(srcdir)/generated/minval1_s1.c
+
+minval1_s4.lo: $(srcdir)/generated/minval1_s4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT minval1_s4.lo -MD -MP -MF $(DEPDIR)/minval1_s4.Tpo -c -o minval1_s4.lo `test -f '$(srcdir)/generated/minval1_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minval1_s4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/minval1_s4.Tpo $(DEPDIR)/minval1_s4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/minval1_s4.c' object='minval1_s4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval1_s4.lo `test -f '$(srcdir)/generated/minval1_s4.c' || echo '$(srcdir)/'`$(srcdir)/generated/minval1_s4.c
+
 size_from_kind.lo: io/size_from_kind.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT size_from_kind.lo -MD -MP -MF $(DEPDIR)/size_from_kind.Tpo -c -o size_from_kind.lo `test -f 'io/size_from_kind.c' || echo '$(srcdir)/'`io/size_from_kind.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/size_from_kind.Tpo $(DEPDIR)/size_from_kind.Plo
@@ -6137,20 +6581,50 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 @MAINTAINER_MODE_TRUE@$(i_maxloc0_c): m4/maxloc0.m4 $(I_M4_DEPS0)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc0.m4 > $@
 
+@MAINTAINER_MODE_TRUE@$(i_maxloc0s_c) : m4/maxloc0s.m4 $(I_M4_DEPS3)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc0s.m4 > $@
+
 @MAINTAINER_MODE_TRUE@$(i_maxloc1_c): m4/maxloc1.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc1.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_maxloc1s_c): m4/maxloc1s.m4 $(I_M4_DEPS4)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc1s.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_maxloc2s_c): m4/maxloc2s.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc2s.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_maxval_c): m4/maxval.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxval.m4 > $@
 
+@MAINTAINER_MODE_TRUE@$(i_maxval0s_c): m4/maxval0s.m4 $(I_M4_DEPS5)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxval0s.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_maxval1s_c): m4/maxval1s.m4 $(I_M4_DEPS6)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxval1s.m4 > $@
+
 @MAINTAINER_MODE_TRUE@$(i_minloc0_c): m4/minloc0.m4 $(I_M4_DEPS0)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc0.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_minloc0s_c) : m4/minloc0s.m4 $(I_M4_DEPS3)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc0s.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_minloc1_c): m4/minloc1.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc1.m4 > $@
 
+@MAINTAINER_MODE_TRUE@$(i_minloc1s_c): m4/minloc1s.m4 $(I_M4_DEPS4)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc1s.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_minloc2s_c): m4/minloc2s.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc2s.m4 > $@
+
 @MAINTAINER_MODE_TRUE@$(i_minval_c): m4/minval.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minval.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_minval0s_c): m4/minval0s.m4 $(I_M4_DEPS5)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minval0s.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_minval1s_c): m4/minval1s.m4 $(I_M4_DEPS6)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minval1s.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_product_c): m4/product.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 product.m4 > $@

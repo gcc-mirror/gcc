@@ -47,7 +47,7 @@ force=0
 OS=$(uname)
 
 case $OS in
-  "Darwin")
+  "Darwin"|"FreeBSD"|"DragonFly")
     chksum='shasum -a 512 --check'
   ;;
   *)

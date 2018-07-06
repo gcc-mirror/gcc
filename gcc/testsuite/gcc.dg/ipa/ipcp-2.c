@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fipa-cp -fipa-cp-clone -fdump-ipa-cp -fno-early-inlining --param ipa-cp-eval-threshold=100"  } */
+/* { dg-options "-O3 -fipa-cp -fipa-cp-clone -fdump-ipa-cp -fno-early-inlining --param ipa-cp-eval-threshold=80"  } */
 /* { dg-add-options bind_pic_locally } */
 
 extern int get_stuff (int);

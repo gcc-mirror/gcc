@@ -64,6 +64,21 @@ void test_mutually_exclusive_suggestions (void)
 #endif
 }
 
+/* Unit tests for add_fixit_insert_formatted.  */
+
+void test_add_fixit_insert_formatted_single_line (void)
+{
+  {}
+}
+
+void test_add_fixit_insert_formatted_multiline (void)
+{
+  if (1)
+    {
+    }
+}
+
+
 /* Verify the output from -fdiagnostics-generate-patch.
    We expect a header, containing the filename.  This is the absolute path,
    so we can only capture it via regexps.  */
@@ -108,4 +123,21 @@ void test_mutually_exclusive_suggestions (void)
      case 'b':
        x = b;
      }
+@@ -68,7 +69,7 @@
+ 
+ void test_add_fixit_insert_formatted_single_line (void)
+ {
+-  {}
++  {INSERTED-CONTENT}
+ }
+ 
+ void test_add_fixit_insert_formatted_multiline (void)
+@@ -76,6 +77,7 @@
+   if (1)
+     {
+     }
++  INSERTED-CONTENT
+ }
+ 
+ 
    { dg-end-multiline-output "" } */

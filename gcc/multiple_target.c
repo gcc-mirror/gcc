@@ -2,7 +2,7 @@
 
    Contributed by Evgeny Stupachenko <evstupac@gmail.com>
 
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
+#include "tree-inline.h"
+#include "intl.h"
 
 /* Walker callback that replaces all FUNCTION_DECL of a function that's
    going to be versioned.  */
@@ -86,7 +88,7 @@ create_dispatcher_calls (struct cgraph_node *node)
   if (!idecl)
     {
       error_at (DECL_SOURCE_LOCATION (node->decl),
-		"default target_clones attribute was not set");
+		"default %<target_clones%> attribute was not set");
       return;
     }
 
@@ -142,16 +144,42 @@ create_dispatcher_calls (struct cgraph_node *node)
 		  if (ref->referring->decl != resolver_decl)
 		    walk_gimple_stmt (&it, NULL, replace_function_decl, &wi);
 		}
+
+	      symtab_node *source = ref->referring;
+	      ref->remove_reference ();
+	      source->create_reference (inode, IPA_REF_ADDR);
+	    }
+	  else if (ref->use == IPA_REF_ALIAS)
+	    {
+	      symtab_node *source = ref->referring;
+	      ref->remove_reference ();
+	      source->create_reference (inode, IPA_REF_ALIAS);
+	      source->add_to_same_comdat_group (inode);
 	    }
 	  else
 	    gcc_unreachable ();
 	}
     }
 
-  TREE_PUBLIC (node->decl) = 0;
   symtab->change_decl_assembler_name (node->decl,
 				      clone_function_name (node->decl,
 							   "default"));
+
+  /* FIXME: copy of cgraph_node::make_local that should be cleaned up
+	    in next stage1.  */
+  node->make_decl_local ();
+  node->set_section (NULL);
+  node->set_comdat_group (NULL);
+  node->externally_visible = false;
+  node->forced_by_abi = false;
+  node->set_section (NULL);
+  node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
+			|| node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+		       && !flag_incremental_link);
+  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
+
+  DECL_ARTIFICIAL (node->decl) = 1;
+  node->force_output = true;
 }
 
 /* Return length of attribute names string,
@@ -203,26 +231,30 @@ get_attr_str (tree arglist, char *attr_str)
 }
 
 /* Return number of attributes separated by comma and put them into ARGS.
-   If there is no DEFAULT attribute return -1.  */
+   If there is no DEFAULT attribute return -1.  If there is an empty
+   string in attribute return -2.  */
 
 static int
-separate_attrs (char *attr_str, char **attrs)
+separate_attrs (char *attr_str, char **attrs, int attrnum)
 {
   int i = 0;
-  bool has_default = false;
+  int default_count = 0;
 
   for (char *attr = strtok (attr_str, ",");
        attr != NULL; attr = strtok (NULL, ","))
     {
       if (strcmp (attr, "default") == 0)
 	{
-	  has_default = true;
+	  default_count++;
 	  continue;
 	}
       attrs[i++] = attr;
     }
-  if (!has_default)
+  if (default_count == 0)
     return -1;
+  else if (i + default_count < attrnum)
+    return -2;
+
   return i;
 }
 
@@ -308,7 +340,23 @@ expand_target_clones (struct cgraph_node *node, bool definition)
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl),
 		  0,
-		  "single target_clones attribute is ignored");
+		  "single %<target_clones%> attribute is ignored");
+      return false;
+    }
+
+  if (node->definition
+      && !tree_versionable_function_p (node->decl))
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"clones for %<target_clones%> attribute cannot be created");
+      const char *reason = NULL;
+      if (lookup_attribute ("noclone", DECL_ATTRIBUTES (node->decl)))
+	reason = G_("function %q+F can never be copied "
+		    "because it has %<noclone%> attribute");
+      else
+	reason = copy_forbidden (DECL_STRUCT_FUNCTION (node->decl));
+      if (reason)
+	inform (DECL_SOURCE_LOCATION (node->decl), reason, node->decl);
       return false;
     }
 
@@ -316,11 +364,19 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   int attrnum = get_attr_str (arglist, attr_str);
   char **attrs = XNEWVEC (char *, attrnum);
 
-  attrnum = separate_attrs (attr_str, attrs);
+  attrnum = separate_attrs (attr_str, attrs, attrnum);
   if (attrnum == -1)
     {
       error_at (DECL_SOURCE_LOCATION (node->decl),
 		"default target was not set");
+      XDELETEVEC (attrs);
+      XDELETEVEC (attr_str);
+      return false;
+    }
+  else if (attrnum == -2)
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"an empty string cannot be in %<target_clones%> attribute");
       XDELETEVEC (attrs);
       XDELETEVEC (attr_str);
       return false;
@@ -398,14 +454,14 @@ static unsigned int
 ipa_target_clone (void)
 {
   struct cgraph_node *node;
+  auto_vec<cgraph_node *> to_dispatch;
 
-  bool target_clone_pass = false;
   FOR_EACH_FUNCTION (node)
-    target_clone_pass |= expand_target_clones (node, node->definition);
+    if (expand_target_clones (node, node->definition))
+      to_dispatch.safe_push (node);
 
-  if (target_clone_pass)
-    FOR_EACH_FUNCTION (node)
-      create_dispatcher_calls (node);
+  for (unsigned i = 0; i < to_dispatch.length (); i++)
+    create_dispatcher_calls (to_dispatch[i]);
 
   return 0;
 }

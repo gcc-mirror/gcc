@@ -9,7 +9,7 @@ struct S;
 
 struct B
 {
-  virtual T *Foo (); // { dg-error "overriding" }
+  virtual T *Foo (); // { dg-message "overridden" }
 };
 
 struct D : B

@@ -9,7 +9,7 @@ MODULE m
   REAL :: x(3) = (/ 1.5, 2.5, 3.5 /)
 CONTAINS
   SUBROUTINE s
-    if (x(2) .eq. 2.5) call abort ()
+    if (x(2) .eq. 2.5) STOP 1
   CONTAINS
     FUNCTION x(n, m)
       integer, optional :: m

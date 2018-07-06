@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,9 +180,9 @@ package body System.OS_Interface is
       null;
    end pthread_init;
 
-   ----------------
-   -- Stack_Base --
-   ----------------
+   --------------------
+   -- Get_Stack_Base --
+   --------------------
 
    function Get_Stack_Base (thread : pthread_t) return Address is
       pragma Unreferenced (thread);

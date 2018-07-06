@@ -1,5 +1,10 @@
 /* { dg-options "-Os -fdump-tree-pre-details" } */
 
+#if __SIZEOF_INT__ == 2
+#define unsigned __UINT32_TYPE__
+#define int __INT32_TYPE__
+#endif
+
 unsigned a;
 int b, c;
 

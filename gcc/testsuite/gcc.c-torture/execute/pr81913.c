@@ -1,7 +1,7 @@
 /* PR tree-optimization/81913 */
 
-typedef unsigned char u8;
-typedef unsigned int u32;
+typedef __UINT8_TYPE__ u8;
+typedef __UINT32_TYPE__ u32;
 
 static u32
 b (u8 d, u32 e, u32 g)

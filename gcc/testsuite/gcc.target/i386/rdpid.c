@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mrdpid" } */
-/* { dg-final { scan-assembler "rdpid\[ \t]+(%|)eax" } } */
+/* { dg-final { scan-assembler "rdpid" } } */
 
 #include <x86intrin.h>
 

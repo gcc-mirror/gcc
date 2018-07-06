@@ -8,5 +8,5 @@ close(99)
 open(99, access='sequential', form='formatted')
 read(99, *, iostat=ios) i
 close(99, status="delete")
-if (ios /= 0) call abort
+if (ios /= 0) STOP 1
 end

@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2017 Free Software Foundation, Inc.
+// Copyright (C) 2004-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,19 +26,12 @@ int main()
   wistringstream stream;
   stream.exceptions(ios_base::eofbit);
 
-  // The library throws the new definition of std::ios::failure
-#if _GLIBCXX_USE_CXX11_ABI
-    typedef std::ios_base::failure exception_type;
-#else
-    typedef std::exception exception_type;
-#endif
-
   try
     {
       wistream::sentry sentry(stream, false);
       VERIFY( false );
     }
-  catch (exception_type&)
+  catch (std::ios_base::failure&)
     {
       VERIFY( stream.rdstate() == (ios_base::eofbit | ios_base::failbit) );
     }

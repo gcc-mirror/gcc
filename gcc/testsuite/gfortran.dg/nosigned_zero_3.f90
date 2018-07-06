@@ -9,7 +9,7 @@ program nosigned_zero_3
   real(4) :: x = -1.2e-3
   real(8) :: y = -1.2e-3
   write(s,'(7f10.3)') x
-  if (trim(adjustl(s)) /= "-0.001") call abort
+  if (trim(adjustl(s)) /= "-0.001") STOP 1
   write(s, '(7f10.3)') y
-  if (trim(adjustl(s)) /= "-0.001") call abort
+  if (trim(adjustl(s)) /= "-0.001") STOP 2
 end program nosigned_zero_3

@@ -29,15 +29,15 @@ contains
     do i = 1, order
       do j = 1, prefix
         last = last + 1
-        if (values (last) .ne. 1.5) call abort
+        if (values (last) .ne. 1.5) STOP 1
       end do
       do j = 1, i + 1
         do k = 1, i
           last = last + 1
-          if (values (last) .ne. j + k * k) call abort
+          if (values (last) .ne. j + k * k) STOP 2
         end do
       end do
     end do
-    if (size (values, dim = 1) .ne. last) call abort
+    if (size (values, dim = 1) .ne. last) STOP 3
   end subroutine test
 end program main

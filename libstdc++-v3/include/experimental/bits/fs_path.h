@@ -1,6 +1,6 @@
 // Class filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -368,7 +368,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     bool has_filename() const;
     bool has_stem() const;
     bool has_extension() const;
-    bool is_absolute() const;
+    bool is_absolute() const { return has_root_directory(); }
     bool is_relative() const { return !is_absolute(); }
 
     // iterators
@@ -510,7 +510,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /// Append one path to another
   inline path operator/(const path& __lhs, const path& __rhs)
-  { return path(__lhs) /= __rhs; }
+  {
+    path __result(__lhs);
+    __result /= __rhs;
+    return __result;
+  }
 
   /// Write a path to a stream
   template<typename _CharT, typename _Traits>
@@ -993,16 +997,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   {
     auto ext = _M_find_extension();
     return ext.first && ext.second != string_type::npos;
-  }
-
-  inline bool
-  path::is_absolute() const
-  {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    return has_root_name();
-#else
-    return has_root_directory();
-#endif
   }
 
   inline path::iterator

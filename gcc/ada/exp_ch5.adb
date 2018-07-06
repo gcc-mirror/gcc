@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -164,7 +164,7 @@ package body Exp_Ch5 is
    --  is the original Assignment node.
 
    --------------------------------------
-   -- Build_Formal_Container_iteration --
+   -- Build_Formal_Container_Iteration --
    --------------------------------------
 
    procedure Build_Formal_Container_Iteration
@@ -237,6 +237,15 @@ package body Exp_Ch5 is
                     New_Occurrence_Of (Cursor, Loc)))),
           Statements => Stats,
           End_Label  => Empty);
+
+      --  If the contruct has a specified loop name, preserve it in the new
+      --  loop, for possible use in exit statements.
+
+      if Present (Identifier (N))
+        and then Comes_From_Source (Identifier (N))
+      then
+         Set_Identifier (New_Loop, Identifier (N));
+      end if;
    end Build_Formal_Container_Iteration;
 
    ------------------------------
@@ -3135,6 +3144,7 @@ package body Exp_Ch5 is
 
       Advance   : Node_Id;
       Init_Decl : Node_Id;
+      Init_Name : Entity_Id;
       New_Loop  : Node_Id;
 
    begin
@@ -3169,7 +3179,8 @@ package body Exp_Ch5 is
       --  the loop.
 
       Analyze (Init_Decl);
-      Set_Ekind (Defining_Identifier (Init_Decl), E_Loop_Parameter);
+      Init_Name := Defining_Identifier (Init_Decl);
+      Set_Ekind (Init_Name, E_Loop_Parameter);
 
       --  The cursor was marked as a loop parameter to prevent user assignments
       --  to it, however this renders the advancement step illegal as it is not
@@ -3182,9 +3193,11 @@ package body Exp_Ch5 is
       --  Because we have to analyze the initial declaration of the loop
       --  parameter multiple times its scope is incorrectly set at this point
       --  to the one surrounding the block statement - so set the scope
-      --  manually to be the actual block statement.
+      --  manually to be the actual block statement, and indicate that it is
+      --  not visible after the block has been analyzed.
 
-      Set_Scope (Defining_Identifier (Init_Decl), Entity (Identifier (N)));
+      Set_Scope (Init_Name, Entity (Identifier (N)));
+      Set_Is_Immediately_Visible (Init_Name, False);
    end Expand_Formal_Container_Loop;
 
    ------------------------------------------
@@ -3669,7 +3682,7 @@ package body Exp_Ch5 is
       Array_Typ  : constant Entity_Id  := Base_Type (Etype (Array_Node));
       Array_Dim  : constant Pos        := Number_Dimensions (Array_Typ);
       Id         : constant Entity_Id  := Defining_Identifier (I_Spec);
-      Loc        : constant Source_Ptr := Sloc (N);
+      Loc        : constant Source_Ptr := Sloc (Isc);
       Stats      : constant List_Id    := Statements (N);
       Core_Loop  : Node_Id;
       Dim1       : Int;
@@ -3730,7 +3743,7 @@ package body Exp_Ch5 is
       end if;
 
       Core_Loop :=
-        Make_Loop_Statement (Loc,
+        Make_Loop_Statement (Sloc (N),
           Iteration_Scheme =>
             Make_Iteration_Scheme (Loc,
               Loop_Parameter_Specification =>
@@ -3767,7 +3780,7 @@ package body Exp_Ch5 is
             --    end loop;
 
             Core_Loop :=
-              Make_Loop_Statement (Loc,
+              Make_Loop_Statement (Sloc (N),
                 Iteration_Scheme =>
                   Make_Iteration_Scheme (Loc,
                     Loop_Parameter_Specification =>
@@ -4769,8 +4782,8 @@ package body Exp_Ch5 is
 
             --  If the domain is an itype, note the bounds of its range.
 
-            L_Hi  : Node_Id;
-            L_Lo  : Node_Id;
+            L_Hi  : Node_Id := Empty;
+            L_Lo  : Node_Id := Empty;
 
             function Lo_Val (N : Node_Id) return Node_Id;
             --  Given static expression or static range, returns an identifier

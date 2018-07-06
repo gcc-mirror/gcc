@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-all -fno-unroll-loops --save-temps -fno-inline" } */
 
+#pragma GCC target "+nosve"
+
 #define FTYPE float
 #define ITYPE int
 #define OP ==

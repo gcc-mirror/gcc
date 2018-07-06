@@ -10,7 +10,7 @@ program main
   read(unit=c,fmt='(A)') i
   select case(i)
      case(1)
-        call abort
+        STOP 1
         call abort_should_be_noreturn
      case(2)
         stop 65

@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -170,8 +170,6 @@ evolution_function_is_constant_p (const_tree chrec)
   if (chrec == NULL_TREE)
     return false;
 
-  if (CONSTANT_CLASS_P (chrec))
-    return true;
   return is_gimple_min_invariant (chrec);
 }
 

@@ -6,5 +6,5 @@
 !
   integer :: n
   real, dimension(2) :: a = (/ ( (float(n))**(1.0), n=1,2) /)
-  if (any (a .ne. (/ ( (float(n))**(1.0), n=1,2) /))) call abort
+  if (any (a .ne. (/ ( (float(n))**(1.0), n=1,2) /))) STOP 1
 end

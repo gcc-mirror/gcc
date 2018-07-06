@@ -16,12 +16,12 @@ program trf_test
       ia = TRANSFER (s1, (/ 0_4 /))
       s2 = TRANSFER(ba + 32_1, s2)
 
-      if (s2 .ne. 'abcdefghijk') call abort ()
+      if (s2 .ne. 'abcdefghijk') STOP 1
 
       s1 = 'AB'
       ba = TRANSFER (trim (s1)//'       JK' , (/ 0_1 /))
       s2 = TRANSFER(ia, s2)
 
-      if (trim (s1)//'       JK' .ne. s2) call abort ()
+      if (trim (s1)//'       JK' .ne. s2) STOP 2
 
 end program trf_test

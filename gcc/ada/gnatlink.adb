@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -425,36 +425,6 @@ procedure Gnatlink is
 
                elsif Arg'Length = 2 then
                   case Arg (2) is
-                     when 'b' =>
-                        Linker_Options.Increment_Last;
-                        Linker_Options.Table (Linker_Options.Last) :=
-                          new String'(Arg);
-
-                        Binder_Options.Increment_Last;
-                        Binder_Options.Table (Binder_Options.Last) :=
-                          Linker_Options.Table (Linker_Options.Last);
-
-                        Next_Arg := Next_Arg + 1;
-
-                        if Next_Arg > Argument_Count then
-                           Exit_With_Error ("Missing argument for -b");
-                        end if;
-
-                        Get_Machine_Name : declare
-                           Name_Arg : constant String_Access :=
-                                        new String'(Argument (Next_Arg));
-
-                        begin
-                           Linker_Options.Increment_Last;
-                           Linker_Options.Table (Linker_Options.Last) :=
-                             Name_Arg;
-
-                           Binder_Options.Increment_Last;
-                           Binder_Options.Table (Binder_Options.Last) :=
-                             Name_Arg;
-
-                        end Get_Machine_Name;
-
                      when 'f' =>
                         if Object_List_File_Supported then
                            Object_List_File_Required := True;
@@ -529,15 +499,40 @@ procedure Gnatlink is
                      Exit_With_Error ("Missing argument for --LINK=");
                   end if;
 
-                  Linker_Path :=
-                    System.OS_Lib.Locate_Exec_On_Path (Arg (8 .. Arg'Last));
+                  declare
+                     L_Args : constant Argument_List_Access :=
+                               Argument_String_To_List (Arg (8 .. Arg'Last));
+                  begin
+                     --  The linker program is the first argument
 
-                  if Linker_Path = null then
-                     Exit_With_Error
-                       ("Could not locate linker: " & Arg (8 .. Arg'Last));
+                     Linker_Path :=
+                      System.OS_Lib.Locate_Exec_On_Path (L_Args.all (1).all);
+
+                     if Linker_Path = null then
+                        Exit_With_Error
+                          ("Could not locate linker: " & L_Args.all (1).all);
+                     end if;
+
+                     --  The other arguments are passed as-is to the linker
+                     --  and override those coming from --GCC= if any.
+
+                     if L_Args.all'Last >= 2 then
+                        Gcc_Linker_Options.Set_Last (0);
+                     end if;
+
+                     for J in 2 .. L_Args.all'Last loop
+                        Gcc_Linker_Options.Increment_Last;
+                        Gcc_Linker_Options.Table
+                          (Gcc_Linker_Options.Last) :=
+                                             new String'(L_Args.all (J).all);
+                     end loop;
+                  end;
+
+               elsif Arg'Length >= 6 and then Arg (1 .. 6) = "--GCC=" then
+                  if Arg'Length = 6 then
+                     Exit_With_Error ("Missing argument for --GCC=");
                   end if;
 
-               elsif Arg'Length > 6 and then Arg (1 .. 6) = "--GCC=" then
                   declare
                      Program_Args : constant Argument_List_Access :=
                                       Argument_String_To_List
@@ -1405,7 +1400,6 @@ procedure Gnatlink is
       Write_Line ("  -v -v Very verbose mode");
       Write_Eol;
       Write_Line ("  -o nam     Use 'nam' as the name of the executable");
-      Write_Line ("  -b target  Compile the binder source to run on target");
       Write_Line ("  -Bdir      Load compiler executables from dir");
 
       if Is_Supported (Map_File) then
@@ -1413,8 +1407,8 @@ procedure Gnatlink is
          Write_Line ("  -M         Create map file mainprog.map");
       end if;
 
-      Write_Line ("  --GCC=comp Use comp as the compiler");
-      Write_Line ("  --LINK=nam Use 'nam' for the linking rather than 'gcc'");
+      Write_Line ("  --GCC=comp Use 'comp' as the compiler rather than 'gcc'");
+      Write_Line ("  --LINK=lnk Use 'lnk' as the linker rather than 'gcc'");
       Write_Eol;
       Write_Line ("  [non-Ada-objects]  list of non Ada object files");
       Write_Line ("  [linker-options]   other options for the linker");

@@ -1,5 +1,5 @@
 /* Communication between reload.c, reload1.c and the rest of compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -97,7 +97,7 @@ struct reload
   /* Positive amount to increment or decrement by if
      reload_in is a PRE_DEC, PRE_INC, POST_DEC, POST_INC.
      Ignored otherwise (don't assume it is zero).  */
-  int inc;
+  poly_int64_pod inc;
   /* A reg for which reload_in is the equivalent.
      If reload_in is a symbol_ref which came from
      reg_equiv_constant, then this is the pseudo

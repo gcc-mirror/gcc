@@ -12,7 +12,7 @@
       a1 = c1 > c2;
       call setval(c1, c2)
       a2 = c1 > c2
-      if (a1 .neqv. a2) call abort
+      if (a1 .neqv. a2) STOP 1
       end
 
       subroutine setval(c1, c2)

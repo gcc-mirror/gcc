@@ -1,8 +1,9 @@
-// PR c++/81247 confused error
+// PR c++/81247 rejected well-formed
 
-namespace N { // { dg-message "previous declaration" }
+namespace N {
   template < typename T > class A
-  { // { dg-error "conflicts with a previous" }
+  {
+    // injects a hidden class N::N at instantiation time
     template < T > friend class N;
   };
 }

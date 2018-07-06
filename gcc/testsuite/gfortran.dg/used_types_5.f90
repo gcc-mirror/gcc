@@ -53,6 +53,6 @@ end module global
   common /c/ cam
   x = -42.0
   call foo(x)
-  if (any (x .ne. (/42.0, 42.0, -42.0, -42.0/))) call abort ()
-  if (cam%i .ne. 99) call abort ()
+  if (any (x .ne. (/42.0, 42.0, -42.0, -42.0/))) STOP 1
+  if (cam%i .ne. 99) STOP 2
 end

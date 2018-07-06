@@ -9,7 +9,7 @@ r = 1.0
 write(c1,"(e9.2)") r
 write(c2,"(d9.2)") r
 
-if (trim(adjustl(c1)) .ne. "0.10E+01") call abort()
-if (trim(adjustl(c2)) .ne. "0.10D+01") call abort()
+if (trim(adjustl(c1)) .ne. "0.10E+01") STOP 1
+if (trim(adjustl(c2)) .ne. "0.10D+01") STOP 2
 
 END

@@ -35,7 +35,8 @@ contains
   end function
 
   subroutine check(p,a)
-    integer a(:)
+    use ISO_C_BINDING
+    integer(C_INT) a(:)
     procedure(abs_fun) :: p
     character(size(my_message),C_CHAR) :: c(size(a))
     integer k,l,m
@@ -43,7 +44,7 @@ contains
     m=iachar('a')
     do k=1,size(a)
       do l=1,size(my_message)
-        if (c(k)(l:l) /= achar(m)) call abort()
+        if (c(k)(l:l) /= achar(m)) STOP 1
         m = m + 1
       end do
     end do
@@ -55,7 +56,7 @@ program prog
 
 use m
 
-integer :: i(4) = (/0,6,12,18/)
+integer(C_INT) :: i(4) = (/0,6,12,18/)
 
 allocate(my_message(1:6))
 

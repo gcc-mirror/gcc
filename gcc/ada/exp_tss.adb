@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -173,9 +173,9 @@ package body Exp_Tss is
       return Proc;
    end Find_Inherited_TSS;
 
-   -----------------------
-   -- Get_TSS_Name_Type --
-   -----------------------
+   ------------------
+   -- Get_TSS_Name --
+   ------------------
 
    function Get_TSS_Name (E : Entity_Id) return TSS_Name_Type is
       C1 : Character;

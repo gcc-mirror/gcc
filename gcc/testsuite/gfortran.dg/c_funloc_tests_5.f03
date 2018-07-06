@@ -8,9 +8,9 @@ contains
   subroutine sub0() bind(c)
     type(c_funptr) :: my_c_funptr
 
-    my_c_funptr = c_funloc(sub1) ! { dg-error "TS 29113/TS 18508: Noninteroperable procedure at .1. to C_FUNLOC" }
+    my_c_funptr = c_funloc(sub1) ! { dg-error "Fortran 2018: Noninteroperable procedure at .1. to C_FUNLOC" }
 
-    my_c_funptr = c_funloc(func0) ! { dg-error "TS 29113/TS 18508: Noninteroperable procedure at .1. to C_FUNLOC" }
+    my_c_funptr = c_funloc(func0) ! { dg-error "Fortran 2018: Noninteroperable procedure at .1. to C_FUNLOC" }
   end subroutine sub0
 
   subroutine sub1() 

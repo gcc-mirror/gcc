@@ -6,7 +6,7 @@
       type(t) :: tc, td
       equivalence (tc, td)
       tc%c='abcdefgh'
-      if (tc%c.ne.'abcdefgh'.or.td%c(1:1).ne.'a') call abort
+      if (tc%c.ne.'abcdefgh'.or.td%c(1:1).ne.'a') STOP 1
       end subroutine test1
       program main
       call test1

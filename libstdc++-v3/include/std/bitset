@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,6 +49,10 @@
                                 // overflow_error
 #include <iosfwd>
 #include <bits/cxxabi_forced.h>
+
+#if __cplusplus >= 201103L
+# include <bits/functional_hash.h>
+#endif
 
 #define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * __SIZEOF_LONG__)
 #define _GLIBCXX_BITSET_WORDS(__n) \
@@ -561,7 +565,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       _GLIBCXX_CONSTEXPR _WordT
-      _M_getword(size_t __pos) const _GLIBCXX_NOEXCEPT
+      _M_getword(size_t) const _GLIBCXX_NOEXCEPT
       { return 0; }
 
       _GLIBCXX_CONSTEXPR _WordT
@@ -779,7 +783,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
 #if __cplusplus >= 201103L
-      template<typename> friend struct hash;
+      friend struct std::hash<bitset>;
 #endif
 
     public:
@@ -1548,8 +1552,6 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #undef _GLIBCXX_BITSET_BITS_PER_ULL
 
 #if __cplusplus >= 201103L
-
-#include <bits/functional_hash.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

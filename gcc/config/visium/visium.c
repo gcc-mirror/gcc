@@ -1,5 +1,5 @@
 /* Output routines for Visium.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -17,6 +17,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -145,10 +147,11 @@ static inline bool current_function_has_lr_slot (void);
    interrupt -- specifies this function is an interrupt handler.   */
 static const struct attribute_spec visium_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  {"interrupt", 0, 0, true, false, false, visium_handle_interrupt_attr, false},
-  {NULL, 0, 0, false, false, false, NULL, false}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, true, false, false, false, visium_handle_interrupt_attr,
+    NULL},
+  { NULL, 0, 0, false, false, false, false, NULL, NULL },
 };
 
 static struct machine_function *visium_init_machine_status (void);
@@ -1919,7 +1922,7 @@ visium_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       int offset_base = offset & ~mask;
 
       /* Check that all of the words can be accessed.  */
-      if (4 < size && 0x80 < size + offset - offset_base)
+      if (size > 4 && size + offset - offset_base > 0x80)
 	offset_base = offset & ~0x3f;
       if (offset_base != 0 && offset_base != offset && (offset & mask1) == 0)
 	{
@@ -1965,7 +1968,7 @@ visium_legitimize_reload_address (rtx x, machine_mode mode, int opnum,
       int offset_base = offset & ~mask;
 
       /* Check that all of the words can be accessed.  */
-      if (4 < size && 0x80 < size + offset - offset_base)
+      if (size > 4 && size + offset - offset_base > 0x80)
 	offset_base = offset & ~0x3f;
 
       if (offset_base && (offset & mask1) == 0)
@@ -3091,10 +3094,9 @@ output_branch (rtx label, const char *cond, rtx_insn *insn)
 	  if (final_sequence)
 	    {
 	      rtx_insn *delay = NEXT_INSN (insn);
-	      int seen;
 	      gcc_assert (delay);
 
-	      final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	      final_scan_insn (delay, asm_out_file, optimize, 0, NULL);
 	      PATTERN (delay) = gen_blockage ();
 	      INSN_CODE (delay) = -1;
 	    }

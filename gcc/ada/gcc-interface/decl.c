@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -659,7 +659,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* Get the type after elaborating the renamed object.  */
 	if (Has_Foreign_Convention (gnat_entity)
-	    && Is_Descendant_Of_Address (gnat_type))
+	    && Is_Descendant_Of_Address (Underlying_Type (gnat_type)))
 	  gnu_type = ptr_type_node;
 	else
 	  {
@@ -713,48 +713,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* If an alignment is specified, use it if valid.  Note that exceptions
-	   are objects but don't have an alignment.  We must do this before we
-	   validate the size, since the alignment can affect the size.  */
-	if (kind != E_Exception && Known_Alignment (gnat_entity))
-	  {
-	    gcc_assert (Present (Alignment (gnat_entity)));
+	   are objects but don't have an alignment and there is also no point in
+	   setting it for an address clause, since the final type of the object
+	   will be a reference type.  */
+	if (Known_Alignment (gnat_entity)
+	    && kind != E_Exception
+	    && No (Address_Clause (gnat_entity)))
+	  align = validate_alignment (Alignment (gnat_entity), gnat_entity,
+				      TYPE_ALIGN (gnu_type));
 
-	    align = validate_alignment (Alignment (gnat_entity), gnat_entity,
-					TYPE_ALIGN (gnu_type));
-
-	    /* No point in changing the type if there is an address clause
-	       as the final type of the object will be a reference type.  */
-	    if (Present (Address_Clause (gnat_entity)))
-	      align = 0;
-	    else
-	      {
-		tree orig_type = gnu_type;
-
-		gnu_type
-		  = maybe_pad_type (gnu_type, NULL_TREE, align, gnat_entity,
-				    false, false, definition, true);
-
-		/* If a padding record was made, declare it now since it will
-		   never be declared otherwise.  This is necessary to ensure
-		   that its subtrees are properly marked.  */
-		if (gnu_type != orig_type && !DECL_P (TYPE_NAME (gnu_type)))
-		  create_type_decl (TYPE_NAME (gnu_type), gnu_type, true,
-				    debug_info_p, gnat_entity);
-	      }
-	  }
-
-	/* If we are defining the object, see if it has a Size and validate it
-	   if so.  If we are not defining the object and a Size clause applies,
-	   simply retrieve the value.  We don't want to ignore the clause and
-	   it is expected to have been validated already.  Then get the new
-	   type, if any.  */
-	if (definition)
-	  gnu_size = validate_size (Esize (gnat_entity), gnu_type,
-				    gnat_entity, VAR_DECL, false,
-				    Has_Size_Clause (gnat_entity));
-	else if (Has_Size_Clause (gnat_entity))
-	  gnu_size = UI_To_gnu (Esize (gnat_entity), bitsizetype);
-
+	/* Likewise, if a size is specified, use it if valid.  */
+	if (Known_Esize (gnat_entity))
+	  gnu_size
+	    = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
+			     VAR_DECL, false, Has_Size_Clause (gnat_entity));
 	if (gnu_size)
 	  {
 	    gnu_type
@@ -2139,7 +2111,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   index to the template.  */
 	for (index = (convention_fortran_p ? ndim - 1 : 0),
 	     gnat_index = First_Index (gnat_entity);
-	     0 <= index && index < ndim;
+	     IN_RANGE (index, 0, ndim - 1);
 	     index += (convention_fortran_p ? - 1 : 1),
 	     gnat_index = Next_Index (gnat_index))
 	  {
@@ -2390,7 +2362,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	       gnat_index = First_Index (gnat_entity),
 	       gnat_base_index
 		 = First_Index (Implementation_Base_Type (gnat_entity));
-	       0 <= index && index < ndim;
+	       IN_RANGE (index, 0, ndim - 1);
 	       index += (convention_fortran_p ? - 1 : 1),
 	       gnat_index = Next_Index (gnat_index),
 	       gnat_base_index = Next_Index (gnat_base_index))
@@ -4568,7 +4540,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			     ? ALIAS_SET_COPY : ALIAS_SET_SUPERSET);
 	}
 
-      if (Treat_As_Volatile (gnat_entity))
+      /* Finally get to the appropriate variant, except for the implementation
+	 type of a packed array because the GNU type might be further adjusted
+	 when the original array type is itself processed.  */
+      if (Treat_As_Volatile (gnat_entity)
+	  && !Is_Packed_Array_Impl_Type (gnat_entity))
 	{
 	  const int quals
 	    = TYPE_QUAL_VOLATILE
@@ -4576,15 +4552,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  gnu_type = change_qualified_type (gnu_type, quals);
 	}
 
-      if (!gnu_decl)
-	gnu_decl = create_type_decl (gnu_entity_name, gnu_type,
-				     artificial_p, debug_info_p,
-				     gnat_entity);
-      else
+      /* If we already made a decl, just set the type, otherwise create it.  */
+      if (gnu_decl)
 	{
 	  TREE_TYPE (gnu_decl) = gnu_type;
 	  TYPE_STUB_DECL (gnu_type) = gnu_decl;
 	}
+      else
+	gnu_decl = create_type_decl (gnu_entity_name, gnu_type, artificial_p,
+				     debug_info_p, gnat_entity);
     }
 
   /* If we got a type that is not dummy, back-annotate the alignment of the
@@ -5046,9 +5022,6 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type)))
     gnu_type = make_packable_type (gnu_type, false, max_align);
 
-  if (Has_Atomic_Components (gnat_array))
-    check_ok_for_atomic_type (gnu_type, gnat_array, true);
-
   /* Get and validate any specified Component_Size.  */
   gnu_comp_size
     = validate_size (Component_Size (gnat_array), gnu_type, gnat_array,
@@ -5094,6 +5067,9 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 	create_type_decl (TYPE_NAME (gnu_type), gnu_type, true, debug_info_p,
 			  gnat_array);
     }
+
+  if (Has_Atomic_Components (gnat_array) || Is_Atomic_Or_VFA (gnat_type))
+    check_ok_for_atomic_type (gnu_type, gnat_array, true);
 
   /* If the component type is a padded type made for a non-bit-packed array
      of scalars with reverse storage order, we need to propagate the reverse
@@ -5590,7 +5566,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
       /* For foreign convention subprograms, return System.Address as void *
 	 or equivalent.  Note that this comprises GCC builtins.  */
       if (Has_Foreign_Convention (gnat_subprog)
-	  && Is_Descendant_Of_Address (gnat_return_type))
+	  && Is_Descendant_Of_Address (Underlying_Type (gnat_return_type)))
 	gnu_return_type = ptr_type_node;
       else
 	gnu_return_type = gnat_to_gnu_profile_type (gnat_return_type);
@@ -5757,7 +5733,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	  /* For foreign convention subprograms, pass System.Address as void *
 	     or equivalent.  Note that this comprises GCC builtins.  */
 	  if (Has_Foreign_Convention (gnat_subprog)
-	      && Is_Descendant_Of_Address (gnat_param_type))
+	      && Is_Descendant_Of_Address (Underlying_Type (gnat_param_type)))
 	    gnu_param_type = ptr_type_node;
 	  else
 	    gnu_param_type = gnat_to_gnu_profile_type (gnat_param_type);
@@ -6136,6 +6112,11 @@ array_type_has_nonaliased_component (tree gnu_type, Entity_Id gnat_type)
 	gnu_parent_type = TREE_TYPE (gnu_parent_type);
       return TYPE_NONALIASED_COMPONENT (gnu_parent_type);
     }
+
+  /* Consider that an array of pointers has an aliased component, which is
+     sort of logical and helps with Taft Amendment types in LTO mode.  */
+  if (POINTER_TYPE_P (TREE_TYPE (gnu_type)))
+    return false;
 
   /* Otherwise, rely exclusively on properties of the element type.  */
   return type_for_nonaliased_component_p (TREE_TYPE (gnu_type));
@@ -6914,7 +6895,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	{
 	  const unsigned int type_align = TYPE_ALIGN (gnu_field_type);
 
-	  if (TYPE_ALIGN (gnu_record_type) < type_align)
+	  if (TYPE_ALIGN (gnu_record_type)
+	      && TYPE_ALIGN (gnu_record_type) < type_align)
 	    SET_TYPE_ALIGN (gnu_record_type, type_align);
 
 	  /* If the position is not a multiple of the alignment of the type,

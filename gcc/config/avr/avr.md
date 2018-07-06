@@ -1,6 +1,6 @@
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (chertykov@gmail.com)
 
 ;; This file is part of GCC.
@@ -3368,6 +3368,8 @@
         (match_operand:HI 1 "reg_or_0_operand"))]
   "optimize
    && reload_completed
+   && GENERAL_REG_P (operands[0])
+   && (operands[1] == const0_rtx || GENERAL_REG_P (operands[1]))
    && (!AVR_HAVE_MOVW
        || const0_rtx == operands[1])"
   [(set (match_dup 2) (match_dup 3))

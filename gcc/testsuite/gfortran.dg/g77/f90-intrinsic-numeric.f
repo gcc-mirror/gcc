@@ -200,7 +200,7 @@ c     SIGN - Section 13.13.96
       call c_r(SIGN(-3.0,2.),3.,'SIGN(real,real)')
       call c_d(SIGN(-3.d0,2.d0),3.d0,'SIGN(double,double)')
  
-      if ( fail ) call abort()
+      if ( fail ) STOP 1
       end
 
       subroutine failure(label)

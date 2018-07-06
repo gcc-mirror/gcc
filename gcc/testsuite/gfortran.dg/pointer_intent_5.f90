@@ -12,7 +12,7 @@ program bots_sparselu_pointer_intent_in
   allocate(array(4))
   array = 0
   call sub(array)
-  if (sum(array)/=1) call abort
+  if (sum(array)/=1) STOP 1
 
 contains
 

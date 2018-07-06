@@ -31,7 +31,31 @@ test6_max (vector unsigned int x, vector unsigned int y)
   return vec_max (x, y);
 }
 
-/* { dg-final { scan-assembler-times "vminsw" 1 } } */
+vector signed int
+test4_min (vector bool int x, vector signed int y)
+{
+  return vec_min (x, y);
+}
+
+vector signed int
+test5_min (vector signed int x, vector bool int y)
+{
+  return vec_min (x, y);
+}
+
+vector unsigned int
+test7_min (vector bool int x, vector unsigned int y)
+{
+  return vec_min (x, y);
+}
+
+vector unsigned int
+test8_min (vector unsigned int x, vector bool int y)
+{
+  return vec_min (x, y);
+}
+
+/* { dg-final { scan-assembler-times "vminsw" 3 } } */
 /* { dg-final { scan-assembler-times "vmaxsw" 1 } } */
-/* { dg-final { scan-assembler-times "vminuw" 1 } } */
+/* { dg-final { scan-assembler-times "vminuw" 3 } } */
 /* { dg-final { scan-assembler-times "vmaxuw" 1 } } */

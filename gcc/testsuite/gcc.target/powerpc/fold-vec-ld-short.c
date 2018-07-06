@@ -67,5 +67,5 @@ testld_cst_vbs (vector bool short vbs2)
   return vec_ld (80, &vbs2);
 }
 
-/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvd2x\M|\mlxvw4x\M} 10 } } */
+/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvd2x\M|\mlxvw4x\M|\mlxv\M} 10 } } */
 

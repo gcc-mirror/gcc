@@ -19,7 +19,7 @@ module m
 contains
   subroutine fini(x)
      type(t) :: x
-     if (cnt == -1) call abort ()
+     if (cnt == -1) STOP 1
      cnt = cnt + 1
   end subroutine fini
 end module m

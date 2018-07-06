@@ -52,6 +52,6 @@ program udr5
   r4 = r4 + 1.0
   call dp_add (dp, 1.0d0)
 !$omp end parallel
-  if (xdt%r .ne. r) call abort
-  if (i4.ne.r.or.i8.ne.r.or.r4.ne.r.or.dp.ne.r) call abort
+  if (xdt%r .ne. r) STOP 1
+  if (i4.ne.r.or.i8.ne.r.or.r4.ne.r.or.dp.ne.r) STOP 2
 end program udr5

@@ -1,5 +1,5 @@
 /* params.h - Run-time parameters.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -196,6 +196,10 @@ extern void init_param_values (int *params);
   PARAM_VALUE (PARAM_L1_CACHE_LINE_SIZE)
 #define L2_CACHE_SIZE \
   PARAM_VALUE (PARAM_L2_CACHE_SIZE)
+#define PREFETCH_DYNAMIC_STRIDES \
+  PARAM_VALUE (PARAM_PREFETCH_DYNAMIC_STRIDES)
+#define PREFETCH_MINIMUM_STRIDE \
+  PARAM_VALUE (PARAM_PREFETCH_MINIMUM_STRIDE)
 #define USE_CANONICAL_TYPES \
   PARAM_VALUE (PARAM_USE_CANONICAL_TYPES)
 #define IRA_MAX_LOOPS_NUM \

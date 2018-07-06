@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -431,7 +431,12 @@ GTM::gtm_transaction_cp::save(gtm_thread* tx)
   // Save everything that we might have to restore on restarts or aborts.
   jb = tx->jb;
   undolog_size = tx->undolog.size();
+
+  /* FIXME!  Assignment of an aatree like alloc_actions is unsafe; if either
+   *this or *tx is destroyed, the other ends up pointing to a freed node.  */
+#pragma GCC diagnostic warning "-Wdeprecated-copy"
   alloc_actions = tx->alloc_actions;
+
   user_actions_size = tx->user_actions.size();
   id = tx->id;
   prop = tx->prop;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,6 +90,19 @@ package body GNAT.Exception_Actions is
    ---------------
 
    procedure Core_Dump (Occurrence : Exception_Occurrence) is separate;
+
+   --------------------------
+   -- Is_Foreign_Exception --
+   --------------------------
+
+   function Is_Foreign_Exception (E : Exception_Occurrence) return Boolean is
+      Foreign_Exception : aliased Exception_Data;
+      pragma Import
+        (Ada, Foreign_Exception, "system__exceptions__foreign_exception");
+   begin
+      return (To_Data (Exception_Identity (E))
+                = Foreign_Exception'Unchecked_Access);
+   end Is_Foreign_Exception;
 
    ----------------
    -- Name_To_Id --

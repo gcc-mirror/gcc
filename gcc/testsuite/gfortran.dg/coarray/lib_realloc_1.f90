@@ -16,14 +16,14 @@ integer, pointer :: ptr
 allocate(x%caf[*], y%caf[*])
 ptr => y%caf
 ptr = 6
-if (.not.allocated(x%caf)) call abort()
-if (.not.allocated(y%caf)) call abort()
-if (y%caf /= 6) call abort ()
+if (.not.allocated(x%caf)) STOP 1
+if (.not.allocated(y%caf)) STOP 2
+if (y%caf /= 6) STOP 3
 x = y
-if (x%caf /= 6) call abort ()
-if (.not. associated (ptr,y%caf)) call abort()
-if (associated (ptr,x%caf)) call abort()
+if (x%caf /= 6) STOP 4
+if (.not. associated (ptr,y%caf)) STOP 5
+if (associated (ptr,x%caf)) STOP 6
 ptr = 123
-if (y%caf /= 123) call abort ()
-if (x%caf /= 6) call abort ()
+if (y%caf /= 123) STOP 7
+if (x%caf /= 6) STOP 8
 end program main

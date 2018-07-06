@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2017 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2018 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #

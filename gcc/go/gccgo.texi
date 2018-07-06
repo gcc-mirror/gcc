@@ -12,7 +12,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-go 2010-2017
+@set copyrights-go 2010-2018
 
 @copying
 @c man begin COPYRIGHT
@@ -229,15 +229,22 @@ may be used.  Or the checks may be removed via
 by default, but in the future may be off by default on systems that do
 not require it.
 
-@item -fgo-optimize-allocs
-@cindex @option{-fgo-optimize-allocs}
-Use escape analysis to allocate objects on the stack rather than the
-heap when possible.  In the future this may be the default.
+@item -fno-go-optimize-allocs
+@cindex @option{-fno-go-optimize-allocs}
+Disable escape analysis, which tries to allocate objects on the stack
+rather than the heap.
 
 @item -fgo-debug-escape@var{n}
 @cindex @option{-fgo-debug-escape}
 Output escape analysis debugging information.  Larger values of
 @var{n} generate more information.
+
+@item -fgo-debug-escape-hash=@var{n}
+@cindex @option{-fgo-debug-escape-hash}
+A hash value to debug escape analysis.  @var{n} is a binary string.
+This runs escape analysis only on functions whose names hash to values
+that match the given suffix @var{n}.  This can be used to binary
+search across functions to uncover escape analysis bugs.
 
 @item -fgo-c-header=@var{file}
 @cindex @option{-fgo-c-header}

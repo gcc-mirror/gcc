@@ -1,5 +1,5 @@
 /* Common VxWorks AE target definitions for GNU compiler.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -75,3 +75,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef VXWORKS_OVERRIDE_OPTIONS
 #define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
 extern void vxworks_override_options (void);
+
+/* Default dwarf control values, for non-gdb debuggers that come with
+   VxWorks.  */
+
+#undef VXWORKS_DWARF_VERSION_DEFAULT
+#define VXWORKS_DWARF_VERSION_DEFAULT 2
+
+#undef DWARF_GNAT_ENCODINGS_DEFAULT
+#define DWARF_GNAT_ENCODINGS_DEFAULT DWARF_GNAT_ENCODINGS_ALL

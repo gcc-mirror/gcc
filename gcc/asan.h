@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -26,7 +26,7 @@ extern void asan_finish_file (void);
 extern rtx_insn *asan_emit_stack_protection (rtx, rtx, unsigned int,
 					     HOST_WIDE_INT *, tree *, int);
 extern rtx_insn *asan_emit_allocas_unpoison (rtx, rtx, rtx_insn *);
-extern bool asan_protect_global (tree);
+extern bool asan_protect_global (tree, bool ignore_decl_rtl_set_p = false);
 extern void initialize_sanitizer_builtins (void);
 extern tree asan_dynamic_init_call (bool);
 extern bool asan_expand_check_ifn (gimple_stmt_iterator *, bool);

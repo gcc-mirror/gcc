@@ -1,5 +1,5 @@
 /* Library interface to C++ front end.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.  As it interacts with GDB through libcc1,
    they all become a single program as regards the GNU GPL's requirements.
@@ -3045,7 +3045,8 @@ plugin_build_unary_type_expr (cc1_plugin::connection *self,
       break;
 
     default:
-      result = cxx_sizeof_or_alignof_type (type, opcode, true);
+      /* Use the C++11 alignof semantics.  */
+      result = cxx_sizeof_or_alignof_type (type, opcode, true, true);
     }
 
   if (template_dependent_p)

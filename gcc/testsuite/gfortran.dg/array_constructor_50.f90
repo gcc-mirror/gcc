@@ -15,7 +15,7 @@
      a = 2
 
      ra = (/ (any(a(i).eq.(/1,2,3/)) ,i=1,n) /)
-     if (.not. all(ra)) call abort
+     if (.not. all(ra)) STOP 1
      rs = any ( (/ (any(a(i).eq.(/1,2,3/)) ,i=1,n) /) )
-     if (.not. rs) call abort
+     if (.not. rs) STOP 2
    end program test

@@ -16,11 +16,11 @@ program reduction
   !$acc end parallel
 
   if (acc_get_device_type () .ne. acc_device_host) then
-     if (s1 .ne. n) call abort
-     if (s2 .ne. n) call abort
+     if (s1 .ne. n) STOP 1
+     if (s2 .ne. n) STOP 2
   else
-     if (s1 .ne. 1) call abort
-     if (s2 .ne. 1) call abort
+     if (s1 .ne. 1) STOP 3
+     if (s2 .ne. 1) STOP 4
   end if
 
   ! Test reductions inside subroutines
@@ -30,9 +30,9 @@ program reduction
   call redsub (s1, s2, n)
 
   if (acc_get_device_type () .ne. acc_device_host) then
-     if (s1 .ne. n) call abort
+     if (s1 .ne. n) STOP 5
   else
-     if (s2 .ne. 1) call abort
+     if (s2 .ne. 1) STOP 6
   end if
 end program reduction
 

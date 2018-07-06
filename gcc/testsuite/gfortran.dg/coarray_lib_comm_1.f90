@@ -12,19 +12,19 @@ A = [1,2,3,4,5,6,7,8,9,10]
 B = [1,2,3,4,5,6,7,8,9,10]
 A(10:2:-1) = A(9:1:-1)[1] ! 0
 B(10:2:-1) = B(9:1:-1)
-if (any (A-B /= 0)) call abort
+if (any (A-B /= 0)) STOP 1
 
 A = [1,2,3,4,5,6,7,8,9,10]
 B = [1,2,3,4,5,6,7,8,9,10]
 A(9:1:-1) = A(10:2:-1)[1] ! 1
 B(9:1:-1) = B(10:2:-1)
-if (any (A-B /= 0)) call abort
+if (any (A-B /= 0)) STOP 2
 
 A = [1,2,3,4,5,6,7,8,9,10]
 B = [1,2,3,4,5,6,7,8,9,10]
 allocate(P(10))
 P(:) = A(:)[1] ! 1
-if (any (A-B /= 0)) call abort
+if (any (A-B /= 0)) STOP 3
 
 A = [1,2,3,4,5,6,7,8,9,10]
 B = [1,2,3,4,5,6,7,8,9,10]
@@ -35,12 +35,11 @@ A = [1,2,3,4,5,6,7,8,9,10]
 B = [1,2,3,4,5,6,7,8,9,10]
 A(1:5)[1] = A(3:7)[1] ! 1
 B(1:5) = B(3:7)
-if (any (A-B /= 0)) call abort
+if (any (A-B /= 0)) STOP 4
 end
 
-! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, &parm.\[0-9\]+, 4, 4, 0, 0B\\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, &parm.\[0-9\]+, 4, 4, 1, 0B\\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, &parm.\[0-9\]+, 4, 4, 1, 0B\\\);" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, &p, 4, 4, 1, 0B\\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_get \\\(caf_token.1, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) b, 1, &parm.\[0-9\]+, 0B, &p, 4, 4, 0, 0B\\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_sendget \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, 4, 4, 0, 0B\\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_sendget \\\(caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, caf_token.0, \\\(integer\\\(kind=\[48\]\\\)\\\) parm.\[0-9\]+.data - \\\(integer\\\(kind=\[48\]\\\)\\\) a, 1, &parm.\[0-9\]+, 0B, 4, 4, 1, 0B\\\);" 1 "original" } }
 

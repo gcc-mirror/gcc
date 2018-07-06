@@ -1,6 +1,6 @@
 // Filesystem operation utilities -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -113,8 +113,10 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       return file_type::fifo;
     else if (S_ISLNK(st.st_mode))
       return file_type::symlink;
+#ifdef S_ISSOCK // not present until POSIX:2001
     else if (S_ISSOCK(st.st_mode))
       return file_type::socket;
+#endif
 #endif
     return file_type::unknown;
   }

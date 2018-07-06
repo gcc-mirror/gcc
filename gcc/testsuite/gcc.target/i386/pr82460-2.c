@@ -1,6 +1,6 @@
 /* PR target/82460 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -mavx512vbmi -mno-prefer-avx256" } */
+/* { dg-options "-O2 -ftree-vectorize -mavx512vbmi -mprefer-vector-width=none" } */
 /* We want to reuse the permutation mask in the loop, so use vpermt2b rather
    than vpermi2b.  */
 /* { dg-final { scan-assembler-not {\mvpermi2b\M} } } */

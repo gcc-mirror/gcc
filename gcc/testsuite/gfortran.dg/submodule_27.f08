@@ -40,5 +40,5 @@ end submodule m3clvg_sm3
   external hello
   greeting = "goodbye"
   call cgca_clvgp (hello)
-  if (trim (greeting) .ne. "hello") call abort
+  if (trim (greeting) .ne. "hello") STOP 1
 end

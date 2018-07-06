@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Precompiled header reading/writing.)
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -835,6 +835,7 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
     s->n_true		= cpp_lookup (r, DSC("true"));
     s->n_false		= cpp_lookup (r, DSC("false"));
     s->n__VA_ARGS__     = cpp_lookup (r, DSC("__VA_ARGS__"));
+    s->n__VA_OPT__      = cpp_lookup (r, DSC("__VA_OPT__"));
     s->n__has_include__ = cpp_lookup (r, DSC("__has_include__"));
     s->n__has_include_next__ = cpp_lookup (r, DSC("__has_include_next__"));
   }

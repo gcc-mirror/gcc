@@ -1,7 +1,7 @@
 /* phsa-rt.h -- Data structures and functions of the PHSA device side runtime
    scheduler, and HSAIL built-ins.
 
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -54,7 +54,6 @@ typedef void (*gccbrigKernelFunc) (unsigned char *, void *, void *, uint32_t,
 */
 typedef struct
 {
-
   /* Data set by the HSA Runtime's kernel launcher.  */
   hsa_kernel_dispatch_packet_t *dp;
 

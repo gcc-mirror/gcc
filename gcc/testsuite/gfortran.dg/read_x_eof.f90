@@ -12,5 +12,5 @@ rewind(23)
 do i=1,10
   read(23,'(1x)',end=12)
 enddo
-12 if (i.ne.4) call abort
+12 if (i.ne.4) STOP 1
 end

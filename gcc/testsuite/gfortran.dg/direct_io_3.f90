@@ -9,12 +9,12 @@
        C = (120.0,240.0)
        WRITE(9,REC=1)C
        READ(9,REC=1)D
-       if (c /= d) call abort()
+       if (c /= d) STOP 1
 
        E = (120.0,240.0)
        WRITE(9,REC=1)E
        READ(9,REC=1)F
-       if (E /= F) call abort()
+       if (E /= F) STOP 2
 
        CLOSE(UNIT=9,STATUS='DELETE')
        END

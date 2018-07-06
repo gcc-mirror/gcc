@@ -15,5 +15,5 @@ f1 (struct s *a, struct s *b)
 }
 
 /* { dg-final { scan-tree-dump-times "consider run-time aliasing" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "improved number of alias checks from 1 to 0" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "improved number of alias checks from 1 to 0" 1 "vect" { xfail vect_variable_length } } } */
 /* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 1 "vect" } } */

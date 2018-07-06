@@ -10,9 +10,9 @@ subroutine f1 (a)
    implicit none
    integer, dimension (5, 8) :: a
 
-   if (a(1, 1) .ne. 42) call abort
+   if (a(1, 1) .ne. 42) STOP 1
 
-   if (a(5, 8) .ne. 43) call abort
+   if (a(5, 8) .ne. 43) STOP 2
 end subroutine
 
 
@@ -67,8 +67,8 @@ subroutine test (parm)
    v2 (3, 1::2) = v1 (5:1:-1)
    v1 = v1 + 1
 
-   if (v1(1) .ne. 2) call abort
-   if (v2(3, 3) .ne. 4) call abort
+   if (v1(1) .ne. 2) STOP 3
+   if (v2(3, 3) .ne. 4) STOP 4
 
    ! Passing whole arrays
    call f1 (a)
@@ -137,9 +137,9 @@ end subroutine
 subroutine f2 (a)
    integer, dimension (1:, 1:) :: a
 
-   if (a(1, 1) .ne. 42) call abort
+   if (a(1, 1) .ne. 42) STOP 5
 
-   if (a(5, 8) .ne. 43) call abort
+   if (a(5, 8) .ne. 43) STOP 6
 end subroutine
 end program
 

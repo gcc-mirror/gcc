@@ -44,7 +44,7 @@
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
 
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -69,7 +69,7 @@
 
 @c Part 2 Summary Description and Copyright
 @copying
-Copyright @copyright{} 1988-2017 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2018 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -324,7 +324,7 @@ Necessary (only on some platforms) to untar the source code.  Many
 systems' @command{tar} programs will also work, only try GNU
 @command{tar} if you have problems.
 
-@item Perl version 5.6.1 (or later)
+@item Perl version between 5.6.1 and 5.6.24
 
 Necessary when targeting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
@@ -337,6 +337,8 @@ Necessary when regenerating @file{libiberty/functions.texi}.
 Necessary when generating manpages from Texinfo manuals.
 Used by various scripts to generate some files included in SVN (mainly
 Unicode-related and rarely changing) from source tables.
+
+Used by @command{automake}.
 
 @end table
 
@@ -419,6 +421,9 @@ For directories that use automake, GCC requires the latest release in
 the 1.11 series, which is currently 1.11.6.  When regenerating a directory
 to a newer version, please update all the directories using an older 1.11
 to the latest released version.
+
+Note that @command{automake} 1.11.6 is incompatible with
+@command{perl} version 5.6.26.
 
 @item gettext version 0.14.5 (or later)
 
@@ -1067,8 +1072,8 @@ sysv, aix.
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for arm*-*-*, sh*-*-* and x86-64-*-linux*.  The accepted values and meaning
-for each target is given below.
+for arm*-*-*, riscv*-*-*, sh*-*-* and x86-64-*-linux*.  The accepted
+values and meaning for each target is given below.
 
 @table @code
 @item arm*-*-*
@@ -1122,6 +1127,13 @@ and @code{rmprofile}.
 @code{-mfloat-abi=softfp}@*
 @code{-mfloat-abi=hard}
 @end multitable
+
+@item riscv*-*-*
+@var{list} is a single ABI name.  The target architecture must be either
+@code{rv32gc} or @code{rv64gc}.  This will build a single multilib for the
+specified architecture and ABI pair.  If @code{--with-multilib-list} is not
+given, then a default set of multilibs is selected based on the value of
+@option{--target}.  This is usually a large set of multilibs.
 
 @item sh*-*-*
 @var{list} is a comma separated list of CPU names.  These must be of the
@@ -1872,6 +1884,35 @@ When neither of these configure options are used, the default will be
 128-bit @code{long double} when built against GNU C Library 2.4 and later,
 64-bit @code{long double} otherwise.
 
+@item --with-long-double-format=ibm
+@itemx --with-long-double-format=ieee
+Specify whether @code{long double} uses the IBM extended double format
+or the IEEE 128-bit floating point format on PowerPC Linux systems.
+This configuration switch will only work on little endian PowerPC
+Linux systems and on big endian 64-bit systems where the default cpu
+is at least power7 (i.e. @option{--with-cpu=power7},
+@option{--with-cpu=power8}, or @option{--with-cpu=power9} is used).
+
+If you use the @option{--with-long-double-64} configuration option,
+the @option{--with-long-double-format=ibm} and
+@option{--with-long-double-format=ieee} options are ignored.
+
+The default @code{long double} format is to use IBM extended double.
+Until all of the libraries are converted to use IEEE 128-bit floating
+point, it is not recommended to use
+@option{--with-long-double-format=ieee}.
+
+On little endian PowerPC Linux systems, if you explicitly set the
+@code{long double} type, it will build multilibs to allow you to
+select either @code{long double} format, unless you disable multilibs
+with the @code{--disable-multilib} option.  At present,
+@code{long double} multilibs are not built on big endian PowerPC Linux
+systems.  If you are building multilibs, you will need to configure
+the compiler using the @option{--with-system-zlib} option.
+
+If you do not set the @code{long double} type explicitly, no multilibs
+will be generated.
+
 @item --enable-fdpic
 On SH Linux systems, generate ELF FDPIC code.
 
@@ -2060,6 +2101,20 @@ explicitly specify the directory where they are installed.  The
 shorthand for
 @option{--with-hsa-runtime-lib=@/@var{hsainstalldir}/lib} and
 @option{--with-hsa-runtime-include=@/@var{hsainstalldir}/include}.
+
+@item --enable-cet
+@itemx --disable-cet
+Enable building target run-time libraries with control-flow
+instrumentation, see @option{-fcf-protection} option.  When
+@code{--enable-cet} is specified target libraries are configured
+to add @option{-fcf-protection} and, if needed, other target
+specific options to a set of building options.
+
+The option is disabled by default.  When @code{--enable-cet=auto}
+is used, it is enabled on Linux/x86 if target binutils
+supports @code{Intel CET} instructions and disabled otherwise.
+In this case the target libraries are configured to get additional
+@option{-fcf-protection} option.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -2471,7 +2526,7 @@ must be used along with @code{bootstrap-debug-lean} and
 @item @samp{bootstrap-cet}
 This option enables Intel CET for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-cet} is equivalent to adding
-@option{-fcf-protection -mcet} to @samp{BOOT_CFLAGS}.  This option
+@option{-fcf-protection} to @samp{BOOT_CFLAGS}.  This option
 assumes that the host supports Intel CET (e.g. GNU assembler version
 2.30 or later).
 
@@ -4158,11 +4213,11 @@ Instead of GNU binutils, you will need to install
 Tell GCC where to find it:
 @option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
 
-A nvptx port of newlib is available at
-@uref{https://github.com/MentorEmbedded/nvptx-newlib/,,nvptx-newlib}.
-It can be automatically built together with GCC@.  For this, add a
-symbolic link to nvptx-newlib's @file{newlib} directory to the
-directory containing the GCC sources.
+You will need newlib 3.0 git revision
+cd31fbb2aea25f94d7ecedc9db16dfc87ab0c316 or later.  It can be
+automatically built together with GCC@.  For this, add a symbolic link
+to nvptx-newlib's @file{newlib} directory to the directory containing
+the GCC sources.
 
 Use the @option{--disable-sjlj-exceptions} and
 @option{--enable-newlib-io-long-long} options when configuring.
@@ -4662,7 +4717,7 @@ Linux API emulation layer in the Win32 subsystem.
 @item MinGW @uref{#x-x-mingw32,,*-*-mingw32}: MinGW is a native GCC port for
 the Win32 subsystem that provides a subset of POSIX.
 @item MKS i386-pc-mks: NuTCracker from MKS.  See
-@uref{http://www.mkssoftware.com/} for more information.
+@uref{https://www.mkssoftware.com} for more information.
 @end itemize
 
 @subheading Intel 64-bit versions

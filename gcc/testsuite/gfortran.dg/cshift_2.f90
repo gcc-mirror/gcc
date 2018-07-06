@@ -117,36 +117,36 @@ program main
   if (any(b /= c)) then
      print *,b
      print *,c
-     call abort
+     STOP 1
   end if
   tb = cshift(ta,sh1,1)
-  if (any(tb%i1 /= c)) call abort
+  if (any(tb%i1 /= c)) STOP 2
   
   b = cshift(a,sh2,2)
   call emul_cshift(a,sh2,2,c)
-  if (any(b /= c)) call abort
+  if (any(b /= c)) STOP 3
   tb = cshift(ta,sh2,2)
-  if (any (tb%i2 /= c*2)) call abort
+  if (any (tb%i2 /= c*2)) STOP 4
 
   b = cshift(a,sh3,3)
   call emul_cshift(a,sh3,3,c)
-  if (any(b /= c)) call abort
+  if (any(b /= c)) STOP 5
   tb = cshift(ta,sh3,3)
-  if (any(tb%i3 /= c*3)) call abort
+  if (any(tb%i3 /= c*3)) STOP 6
 
   b = -42
   c = -42
   b(1:n1:2,:,:) = cshift(a(1:n1/2,:,:),sh1,1)
   call emul_cshift(a(1:n1/2,:,:), sh1, 1, c(1:n1:2,:,:))
-  if (any(b /= c)) call abort
+  if (any(b /= c)) STOP 7
 
   tb%i1 = -42
   tb%i2 = -2*42
   tb%i3 = -3*42
   tb(1:n1:2,:,:) = cshift(ta(1:n1/2,:,:),sh1,1)
-  if (any(tb%i1 /= b)) call abort
-  if (any(tb%i2 /= 2*b)) call abort
-  if (any(tb%i3 /= 3*b)) call abort
+  if (any(tb%i1 /= b)) STOP 8
+  if (any(tb%i2 /= 2*b)) STOP 9
+  if (any(tb%i3 /= 3*b)) STOP 10
   
 9000 format (99(3(I3,1X),2X))
 end program main

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2017, Free Software Foundation, Inc.          --
+--              Copyright (C) 2017-2018, Free Software Foundation, Inc.     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,10 +27,10 @@
 --  rules that are enforced are defined in the anti-aliasing section of the
 --  SPARK RM 6.4.2
 --
---  Analyze_SPARK is called by Gnat1drv, when GNATprove mode is activated. It
---  does an analysis of the source code, looking for code that is considered
---  as SPARK and launches another function called Analyze_Node that will do
---  the whole analysis.
+--  Check_Safe_Pointers is called by Gnat1drv, when GNATprove mode is
+--  activated. It does an analysis of the source code, looking for code that is
+--  considered as SPARK and launches another function called Analyze_Node that
+--  will do the whole analysis.
 --
 --  A path is an abstraction of a name, of which all indices, slices (for
 --  indexed components) and function calls have been abstracted and all

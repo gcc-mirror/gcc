@@ -10,30 +10,30 @@ program ret_array_1
   ! Using the return value as an actual argument
   b = 0;
   b = sum (transpose (a), 1);
-  if (any (b .ne. (/9, 12/))) call abort ()
+  if (any (b .ne. (/9, 12/))) STOP 1
 
   ! Using the return value in an expression
   b = 0;
   b = sum (transpose (a) + 1, 1);
-  if (any (b .ne. (/12, 15/))) call abort ()
+  if (any (b .ne. (/12, 15/))) STOP 2
 
   ! Same again testing a user function
 ! TODO: enable these once this is implemented
 !  b = 0;
 !  b = sum (my_transpose (a), 1);
-!  if (any (b .ne. (/9, 12/))) call abort ()
+!  if (any (b .ne. (/9, 12/))) STOP 3
 !
 !  ! Using the return value in an expression
 !  b = 0;
 !  b = sum (my_transpose (a) + 1, 1);
-!  if (any (b .ne. (/12, 15/))) call abort ()
+!  if (any (b .ne. (/12, 15/))) STOP 4
 contains
 subroutine test(x, n)
   integer, dimension (:, :) :: x
   integer n
 
-  if (any (shape (x) .ne. (/3, 2/))) call abort
-  if (any (x .ne. (n + reshape((/1, 4, 2, 5, 3, 6/), (/3, 2/))))) call abort
+  if (any (shape (x) .ne. (/3, 2/))) STOP 1
+  if (any (x .ne. (n + reshape((/1, 4, 2, 5, 3, 6/), (/3, 2/))))) STOP 2
 end subroutine
 
 function my_transpose (x) result (r)

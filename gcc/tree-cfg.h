@@ -1,5 +1,5 @@
 /* Data and Control Flow Analysis for Trees.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -77,6 +77,7 @@ extern void gather_blocks_in_sese_region (basic_block entry, basic_block exit,
 					  vec<basic_block> *bbs_p);
 extern void verify_sese (basic_block, basic_block, vec<basic_block> *);
 extern bool gather_ssa_name_hash_map_from (tree const &, tree const &, void *);
+extern void fold_loop_internal_call (gimple *, tree);
 extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 				           basic_block, tree);
 extern void dump_function_to_file (tree, FILE *, dump_flags_t);

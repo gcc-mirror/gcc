@@ -1,6 +1,6 @@
 // Deque implementation -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -149,9 +149,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _Deque_iterator() _GLIBCXX_NOEXCEPT
       : _M_cur(), _M_first(), _M_last(), _M_node() { }
 
+#if __cplusplus < 201103L
+      // Conversion from iterator to const_iterator.
       _Deque_iterator(const iterator& __x) _GLIBCXX_NOEXCEPT
       : _M_cur(__x._M_cur), _M_first(__x._M_first),
 	_M_last(__x._M_last), _M_node(__x._M_node) { }
+#else
+      // Conversion from iterator to const_iterator.
+      template<typename _Iter,
+              typename = _Require<is_same<_Self, const_iterator>,
+                                  is_same<_Iter, iterator>>>
+       _Deque_iterator(const _Iter& __x) noexcept
+       : _M_cur(__x._M_cur), _M_first(__x._M_first),
+         _M_last(__x._M_last), _M_node(__x._M_node) { }
+
+      _Deque_iterator(const _Deque_iterator&) = default;
+      _Deque_iterator& operator=(const _Deque_iterator&) = default;
+#endif
 
       iterator
       _M_const_cast() const _GLIBCXX_NOEXCEPT
@@ -838,6 +852,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
 # endif
       __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
+#endif
+
+#if __cplusplus >= 201103L
+      static_assert(is_same<typename remove_cv<_Tp>::type, _Tp>::value,
+	  "std::deque must have a non-const, non-volatile value_type");
+# ifdef __STRICT_ANSI__
+      static_assert(is_same<typename _Alloc::value_type, _Tp>::value,
+	  "std::deque must have the same value_type as its allocator");
+# endif
 #endif
 
       typedef _Deque_base<_Tp, _Alloc>			_Base;

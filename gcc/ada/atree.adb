@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1866,6 +1866,42 @@ package body Atree is
       return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9);
    end Nkind_In;
 
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind) return Boolean
+   is
+   begin
+      return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9, V10);
+   end Nkind_In;
+
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind;
+      V11 : Node_Kind) return Boolean
+   is
+   begin
+      return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9, V10,
+                                  V11);
+   end Nkind_In;
+
    --------
    -- No --
    --------
@@ -3371,6 +3407,17 @@ package body Atree is
             return Elist_Id (Value);
          end if;
       end Elist29;
+
+      function Elist30 (N : Node_Id) return Elist_Id is
+         pragma Assert (Nkind (N) in N_Entity);
+         Value : constant Union_Id := Nodes.Table (N + 5).Field6;
+      begin
+         if Value = 0 then
+            return No_Elist;
+         else
+            return Elist_Id (Value);
+         end if;
+      end Elist30;
 
       function Elist36 (N : Node_Id) return Elist_Id is
          pragma Assert (Nkind (N) in N_Entity);
@@ -6281,6 +6328,13 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 4).Field11 := Union_Id (Val);
       end Set_Elist29;
+
+      procedure Set_Elist30 (N : Node_Id; Val : Elist_Id) is
+      begin
+         pragma Assert (not Locked);
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field6 := Union_Id (Val);
+      end Set_Elist30;
 
       procedure Set_Elist36 (N : Node_Id; Val : Elist_Id) is
       begin

@@ -14,5 +14,5 @@
   end forall
 !  print *, l1
 !  print '(4i2)', it
-  if (any (it .ne. reshape ((/1, 0, 0, 4/), (/2, 2/)))) call abort ()
+  if (any (it .ne. reshape ((/1, 0, 0, 4/), (/2, 2/)))) STOP 1
 end

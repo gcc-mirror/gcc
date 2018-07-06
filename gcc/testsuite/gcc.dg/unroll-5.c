@@ -28,4 +28,4 @@ int foo2(void)
   return 1;
 }
 
-/* { dg-final { scan-tree-dump-times "loop with 3 iterations completely unrolled" 1 "cunrolli" } } */
+/* { dg-final { scan-tree-dump-times "loop with 2 iterations completely unrolled" 1 "cunrolli" } } */

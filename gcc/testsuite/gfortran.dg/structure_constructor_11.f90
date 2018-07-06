@@ -57,7 +57,7 @@ program ala
    call bar%a%init()
 
    ! They should be called once
-   if (count1 /= 23 .or. count2 /= 42) call abort ()
+   if (count1 /= 23 .or. count2 /= 42) STOP 1
 
 contains
 

@@ -4,15 +4,15 @@ program intrinsic_trim
   character(len=4) b,work
   a='1234    '
   b=work(8,a)
-  if (llt(b,"1234")) call abort()
+  if (llt(b,"1234")) STOP 1
   a='     '
   b=trim(a)
-  if (b .gt. "") call abort()
+  if (b .gt. "") STOP 2
   b='12'
   a=repeat(b,0)
-  if (a .gt. "") call abort()
+  if (a .gt. "") STOP 3
   a=repeat(b,2)
-  if (a .ne. "12  12  ") call abort()
+  if (a .ne. "12  12  ") STOP 4
 end
 
 function work(i,a)

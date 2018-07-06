@@ -1,5 +1,5 @@
 /* Implementation of the MATMUL intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Thomas Koenig <tkoenig@gcc.gnu.org>.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -283,7 +283,7 @@ matmul_c10_avx128_fma3 (gfc_array_c10 * const restrict retarray,
 
       /* Adjust size of t1 to what is needed.  */
       index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      t1_dim = (a_dim1 - (ycount > 1)) * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
@@ -836,7 +836,7 @@ matmul_c10_avx128_fma4 (gfc_array_c10 * const restrict retarray,
 
       /* Adjust size of t1 to what is needed.  */
       index_type t1_dim;
-      t1_dim = (a_dim1-1) * 256 + b_dim1;
+      t1_dim = (a_dim1 - (ycount > 1)) * 256 + b_dim1;
       if (t1_dim > 65536)
 	t1_dim = 65536;
 

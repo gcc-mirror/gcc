@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Argonaut EPIPHANY cpu.
-   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -879,7 +879,7 @@ enum
 };
 
 extern int epiphany_normal_fp_rounding;
-#ifndef IN_LIBGCC2
+#ifndef USED_FOR_TARGET
 extern rtl_opt_pass *make_pass_mode_switch_use (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_resolve_sw_modes (gcc::context *ctxt);
 #endif

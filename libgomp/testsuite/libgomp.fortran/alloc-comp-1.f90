@@ -22,19 +22,19 @@ contains
     type (dl), intent (in) :: obj
     integer, intent (in) :: val, cl1, cu1, cl2, cu2
     logical, intent (in) :: c, f
-    if ((c .neqv. allocated (obj%c)) .or. (f .neqv. allocated (obj%f))) call abort
+    if ((c .neqv. allocated (obj%c)) .or. (f .neqv. allocated (obj%f))) STOP 1
     if (c) then
-      if (lbound (obj%c, 1) /= cl1 .or. ubound (obj%c, 1) /= cu1) call abort
-      if (lbound (obj%c, 2) /= cl2 .or. ubound (obj%c, 2) /= cu2) call abort
+      if (lbound (obj%c, 1) /= cl1 .or. ubound (obj%c, 1) /= cu1) STOP 2
+      if (lbound (obj%c, 2) /= cl2 .or. ubound (obj%c, 2) /= cu2) STOP 3
     end if
     if (val /= 0) then
-      if (obj%a /= val .or. obj%b /= val) call abort
-      if (obj%d /= val .or. obj%e /= val) call abort
+      if (obj%a /= val .or. obj%b /= val) STOP 4
+      if (obj%d /= val .or. obj%e /= val) STOP 5
       if (c) then
-        if (any (obj%c /= val)) call abort
+        if (any (obj%c /= val)) STOP 6
       end if
       if (f) then
-        if (obj%f /= val) call abort
+        if (obj%f /= val) STOP 7
       end if
     end if
   end subroutine ver_dl
@@ -43,9 +43,9 @@ contains
     integer, intent (in) :: val, hl, hu, cl1, cu1, cl2, cu2
     logical, intent (in) :: h, k, c, f
     integer :: i, j
-    if ((h .neqv. allocated (obj%h)) .or. (k .neqv. allocated (obj%k))) call abort
+    if ((h .neqv. allocated (obj%h)) .or. (k .neqv. allocated (obj%k))) STOP 8
     if (h) then
-      if (lbound (obj%h, 1) /= hl .or. ubound (obj%h, 1) /= hu) call abort
+      if (lbound (obj%h, 1) /= hl .or. ubound (obj%h, 1) /= hu) STOP 9
       do i = hl, hu
         call ver_dl (obj%h(i), val, c, cl1, cu1, cl2, cu2, f)
       end do
@@ -57,7 +57,7 @@ contains
     end do
     if (k) call ver_dl (obj%k, val, c, cl1, cu1, cl2, cu2, f)
     if (val /= 0) then
-      if (obj%g /= val .or. obj%i /= val) call abort
+      if (obj%g /= val .or. obj%i /= val) STOP 10
     end if
   end subroutine ver_dt
   subroutine alloc_dl (obj, val, c, cl1, cu1, cl2, cu2, f)

@@ -1,5 +1,5 @@
 /* Implementation of the RESHAPE intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -28,7 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined (HAVE_GFC_COMPLEX_10)
 
-typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
+typedef GFC_FULL_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 
 
 extern void reshape_c10 (gfc_array_c10 * const restrict, 
@@ -72,8 +72,6 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
   const GFC_COMPLEX_10 *pptr;
 
   const GFC_COMPLEX_10 *src;
-  int n;
-  int dim;
   int sempty, pempty, shape_empty;
   index_type shape_data[GFC_MAX_DIMENSIONS];
 
@@ -87,7 +85,7 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
 
   shape_empty = 0;
 
-  for (n = 0; n < rdim; n++)
+  for (index_type n = 0; n < rdim; n++)
     {
       shape_data[n] = shape->base_addr[n * GFC_DESCRIPTOR_STRIDE(shape,0)];
       if (shape_data[n] <= 0)
@@ -102,7 +100,7 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
       index_type alloc_size;
 
       rs = 1;
-      for (n = 0; n < rdim; n++)
+      for (index_type n = 0; n < rdim; n++)
 	{
 	  rex = shape_data[n];
 
@@ -118,7 +116,7 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
         alloc_size = rs;
 
       ret->base_addr = xmallocarray (alloc_size, sizeof (GFC_COMPLEX_10));
-      ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
+      GFC_DTYPE_COPY_SETRANK(ret,source,rdim);
     }
 
   if (shape_empty)
@@ -129,7 +127,7 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
       pdim = GFC_DESCRIPTOR_RANK (pad);
       psize = 1;
       pempty = 0;
-      for (n = 0; n < pdim; n++)
+      for (index_type n = 0; n < pdim; n++)
         {
           pcount[n] = 0;
           pstride[n] = GFC_DESCRIPTOR_STRIDE(pad,n);
@@ -160,7 +158,7 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
       index_type ret_extent, source_extent;
 
       rs = 1;
-      for (n = 0; n < rdim; n++)
+      for (index_type n = 0; n < rdim; n++)
 	{
 	  rs *= shape_data[n];
 	  ret_extent = GFC_DESCRIPTOR_EXTENT(ret,n);
@@ -173,7 +171,7 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
 
       source_extent = 1;
       sdim = GFC_DESCRIPTOR_RANK (source);
-      for (n = 0; n < sdim; n++)
+      for (index_type n = 0; n < sdim; n++)
 	{
 	  index_type se;
 	  se = GFC_DESCRIPTOR_EXTENT(source,n);
@@ -190,10 +188,10 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
 	  int seen[GFC_MAX_DIMENSIONS];
 	  index_type v;
 
-	  for (n = 0; n < rdim; n++)
+	  for (index_type n = 0; n < rdim; n++)
 	    seen[n] = 0;
 
-	  for (n = 0; n < rdim; n++)
+	  for (index_type n = 0; n < rdim; n++)
 	    {
 	      v = order->base_addr[n * GFC_DESCRIPTOR_STRIDE(order,0)] - 1;
 
@@ -211,8 +209,9 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
     }
 
   rsize = 1;
-  for (n = 0; n < rdim; n++)
+  for (index_type n = 0; n < rdim; n++)
     {
+      index_type dim;
       if (order)
         dim = order->base_addr[n * GFC_DESCRIPTOR_STRIDE(order,0)] - 1;
       else
@@ -243,7 +242,7 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
 
   ssize = 1;
   sempty = 0;
-  for (n = 0; n < sdim; n++)
+  for (index_type n = 0; n < sdim; n++)
     {
       scount[n] = 0;
       sstride[n] = GFC_DESCRIPTOR_STRIDE(source,n);
@@ -283,7 +282,7 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
       src = pptr;
       sptr = pptr;
       sdim = pdim;
-      for (dim = 0; dim < pdim; dim++)
+      for (index_type dim = 0; dim < pdim; dim++)
 	{
 	  scount[dim] = pcount[dim];
 	  sextent[dim] = pextent[dim];
@@ -303,7 +302,7 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
       scount[0]++;
 
       /* Advance to the next destination element.  */
-      n = 0;
+      index_type n = 0;
       while (rcount[n] == rextent[n])
         {
           /* When we get to the end of a dimension, reset it and increment
@@ -343,7 +342,7 @@ reshape_c10 (gfc_array_c10 * const restrict ret,
                   /* Switch to the pad array.  */
                   sptr = NULL;
                   sdim = pdim;
-                  for (dim = 0; dim < pdim; dim++)
+                  for (index_type dim = 0; dim < pdim; dim++)
                     {
                       scount[dim] = pcount[dim];
                       sextent[dim] = pextent[dim];

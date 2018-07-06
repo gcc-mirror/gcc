@@ -13,7 +13,7 @@ program bug
   tmp(:) = 0.d0
 
   call buggy(2.d0,asize,ave,old,tmp)
-  if (any (tmp(:) .ne. 3.5)) call abort
+  if (any (tmp(:) .ne. 3.5)) STOP 1
 end
 
 subroutine buggy(scale_factor, asize, ave, old, tmp)

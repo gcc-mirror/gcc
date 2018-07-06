@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2009-2017, Free Software Foundation, Inc.        --
+--           Copyright (C) 2009-2018, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,9 +158,9 @@ package body System.Stack_Usage.Tasking is
 
    end Report_Impl;
 
-   ---------------------
-   -- Report_All_Task --
-   ---------------------
+   ----------------------
+   -- Report_All_Tasks --
+   ----------------------
 
    procedure Report_All_Tasks is
    begin

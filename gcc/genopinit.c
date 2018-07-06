@@ -1,5 +1,5 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -234,6 +234,13 @@ main (int argc, const char **argv)
 	   "struct target_optabs {\n"
 	   "  /* Patterns that are used by optabs that are enabled for this target.  */\n"
 	   "  bool pat_enable[NUM_OPTAB_PATTERNS];\n"
+	   "\n"
+	   "  /* Cache if the target supports vec_gather_load for at least one vector\n"
+	   "     mode.  */\n"
+	   "  bool supports_vec_gather_load;\n"
+	   "  bool supports_vec_gather_load_cached;\n"
+	   "  bool supports_vec_scatter_store;\n"
+	   "  bool supports_vec_scatter_store_cached;\n"
 	   "};\n"
 	   "extern void init_all_optabs (struct target_optabs *);\n"
 	   "\n"
@@ -246,6 +253,7 @@ main (int argc, const char **argv)
 	   "#endif\n");
 
   fprintf (s_file,
+	   "#define IN_TARGET_CODE 1\n"
 	   "#include \"config.h\"\n"
 	   "#include \"system.h\"\n"
 	   "#include \"coretypes.h\"\n"

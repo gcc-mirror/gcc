@@ -1,5 +1,5 @@
 /* Implementation of the RANDOM intrinsics
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Lars Segerlund <seger@linuxmail.org>,
    Steve Kargl and Janne Blomqvist.
 
@@ -259,7 +259,7 @@ jump (xorshift1024star_state* rs)
   };
 
   uint64_t t[16] = { 0 };
-  for(unsigned int i = 0; i < sizeof JUMP / sizeof *JUMP; i++)
+  for(size_t i = 0; i < sizeof JUMP / sizeof *JUMP; i++)
     for(int b = 0; b < 64; b++)
       {
 	if (JUMP[i] & 1ULL << b)
@@ -306,7 +306,7 @@ getosrandom (void *buf, size_t buflen)
   /* rand_s is available in MinGW-w64 but not plain MinGW.  */
 #if defined(__MINGW64_VERSION_MAJOR)
   unsigned int* b = buf;
-  for (unsigned i = 0; i < buflen / sizeof (unsigned int); i++)
+  for (size_t i = 0; i < buflen / sizeof (unsigned int); i++)
     rand_s (&b[i]);
   return buflen;
 #else
@@ -462,14 +462,12 @@ arandom_r4 (gfc_array_r4 *x)
   index_type dim;
   GFC_REAL_4 *dest;
   xorshift1024star_state* rs = get_rand_state();
-  int n;
-
 
   dest = x->base_addr;
 
   dim = GFC_DESCRIPTOR_RANK (x);
 
-  for (n = 0; n < dim; n++)
+  for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
       stride[n] = GFC_DESCRIPTOR_STRIDE(x,n);
@@ -494,7 +492,7 @@ arandom_r4 (gfc_array_r4 *x)
       dest += stride0;
       count[0]++;
       /* Advance to the next source element.  */
-      n = 0;
+      index_type n = 0;
       while (count[n] == extent[n])
         {
           /* When we get to the end of a dimension, reset it and increment
@@ -531,13 +529,12 @@ arandom_r8 (gfc_array_r8 *x)
   index_type dim;
   GFC_REAL_8 *dest;
   xorshift1024star_state* rs = get_rand_state();
-  int n;
 
   dest = x->base_addr;
 
   dim = GFC_DESCRIPTOR_RANK (x);
 
-  for (n = 0; n < dim; n++)
+  for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
       stride[n] = GFC_DESCRIPTOR_STRIDE(x,n);
@@ -561,7 +558,7 @@ arandom_r8 (gfc_array_r8 *x)
       dest += stride0;
       count[0]++;
       /* Advance to the next source element.  */
-      n = 0;
+      index_type n = 0;
       while (count[n] == extent[n])
         {
           /* When we get to the end of a dimension, reset it and increment
@@ -600,13 +597,12 @@ arandom_r10 (gfc_array_r10 *x)
   index_type dim;
   GFC_REAL_10 *dest;
   xorshift1024star_state* rs = get_rand_state();
-  int n;
 
   dest = x->base_addr;
 
   dim = GFC_DESCRIPTOR_RANK (x);
 
-  for (n = 0; n < dim; n++)
+  for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
       stride[n] = GFC_DESCRIPTOR_STRIDE(x,n);
@@ -630,7 +626,7 @@ arandom_r10 (gfc_array_r10 *x)
       dest += stride0;
       count[0]++;
       /* Advance to the next source element.  */
-      n = 0;
+      index_type n = 0;
       while (count[n] == extent[n])
         {
           /* When we get to the end of a dimension, reset it and increment
@@ -671,13 +667,12 @@ arandom_r16 (gfc_array_r16 *x)
   index_type dim;
   GFC_REAL_16 *dest;
   xorshift1024star_state* rs = get_rand_state();
-  int n;
 
   dest = x->base_addr;
 
   dim = GFC_DESCRIPTOR_RANK (x);
 
-  for (n = 0; n < dim; n++)
+  for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
       stride[n] = GFC_DESCRIPTOR_STRIDE(x,n);
@@ -702,7 +697,7 @@ arandom_r16 (gfc_array_r16 *x)
       dest += stride0;
       count[0]++;
       /* Advance to the next source element.  */
-      n = 0;
+      index_type n = 0;
       while (count[n] == extent[n])
         {
           /* When we get to the end of a dimension, reset it and increment
@@ -751,7 +746,7 @@ static const uint64_t xor_keys[] = {
 static void
 scramble_seed (uint64_t *dest, const uint64_t *src)
 {
-  for (int i = 0; i < (int) SZU64; i++)
+  for (size_t i = 0; i < SZU64; i++)
     dest[i] = src[i] ^ xor_keys[i];
 }
 

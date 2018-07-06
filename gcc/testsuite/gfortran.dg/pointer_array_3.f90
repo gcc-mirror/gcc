@@ -44,7 +44,7 @@
    program test_prog
    use test_mod
    call as_set_alias(1)
-   if (any (p .ne. ["abcdefgh","ijklmnop"])) call abort
+   if (any (p .ne. ["abcdefgh","ijklmnop"])) STOP 1
    deallocate (as_typ(1)%as%fp)
    deallocate (as_typ(1)%as)
    deallocate (as_typ)

@@ -1,4 +1,6 @@
 ! { dg-do run }
+! { dg-options "-std=legacy" }
+
   real, dimension (20) :: r
   integer, dimension (20) :: d
   integer :: i, j, k, n
@@ -11,28 +13,28 @@
   n = 20
   call foo (r, d, n)
 
-  if (n .ne. 22) call abort
-  if (any (r .ne. 33)) call abort
+  if (n .ne. 22) STOP 1
+  if (any (r .ne. 33)) STOP 2
 
   i = 1
   j = 18
   k = 23
 !$omp atomic
   i = min (i, j, k, n)
-  if (i .ne. 1) call abort
+  if (i .ne. 1) STOP 3
 !$omp atomic
   i = max (j, n, k, i)
-  if (i .ne. 23) call abort
+  if (i .ne. 23) STOP 4
 
   a = 1
   b = 18
   c = 23
 !$omp atomic
   a = min (a, b, c)
-  if (a .ne. 1) call abort
+  if (a .ne. 1) STOP 5
 !$omp atomic
   a = max (a, b, c)
-  if (a .ne. 23) call abort
+  if (a .ne. 23) STOP 6
 
 contains
   function bar (i)

@@ -1,3 +1,59 @@
+2018-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR jit/84288
+	* Make-lang.in ($(LIBGCCJIT_FILENAME)): Add $(EXTRA_GCC_LIBS).
+
+2018-03-09  David Malcolm  <dmalcolm@redhat.com>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR jit/64089
+	PR jit/84288
+	* Make-lang.in (COMMA): New.
+	(LIBGCCJIT_VERSION_SCRIPT_OPTION): New.
+	(LIBGCCJIT_SONAME_OPTION): New.
+	(jit): Move --version-script and -soname linker options to the
+	above.
+
+2018-01-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/81672
+	* jit-recording.h (gcc::jit::recording::union_): Remove fields
+	"m_loc" and "m_name".
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-playback.c (get_type, playback::compile_to_file::copy_file,
+	playback::context::acquire_mutex): Replace Yoda conditions with
+	typical order conditions.
+	* libgccjit.c (gcc_jit_context_new_struct_type,
+	gcc_jit_struct_set_fields, gcc_jit_context_new_union_type,
+	gcc_jit_context_new_function, gcc_jit_timer_pop): Likewise.
+	* jit-builtins.c (matches_builtin): Likewise.
+	* jit-recording.c (recording::compound_type::set_fields,
+	recording::fields::write_reproducer, recording::rvalue::set_scope,
+	recording::function::validate): Likewise.
+	* jit-logging.c (logger::decref): Likewise.
+
+2017-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-recording.c
+	(recording::memento_of_new_rvalue_from_const <long>::write_reproducer):
+	Use ; instead of ;;.
+
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-playback.c (add_switch): Build SWITCH_EXPR using build2 instead
+	of build3.  Formatting fixes.  Adjust funciton comment.
+
+2017-11-23  Tom de Vries  <tom@codesourcery.com>
+
+	* libgccjit.c (RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE): Wrap in
+	JIT_{BEGIN,END}_STMT.
+
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/internals/index.rst (Running the test suite): Document
@@ -2535,7 +2591,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2017 Free Software Foundation, Inc.
+Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

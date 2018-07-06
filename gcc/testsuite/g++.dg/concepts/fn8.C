@@ -12,7 +12,7 @@ void (*p2)(int) = &f<int>; // { dg-error "no matches" }
 void (*p3)(int) = &f; // { dg-error "no matches" }
 
 struct S {
-  template<Class T> int f(T) { }
+  template<Class T> int f(T) { return 0; }
 };
 
 auto p4 = &S::template f<int>; // { dg-error "no matches" }

@@ -11,8 +11,8 @@
 #include "runtime.h"
 #include "go-type.h"
 
-extern void *makemap (const struct __go_map_type *, int64_t hint,
-		      void *, void *)
+extern void *makemap (const struct __go_map_type *, intgo hint,
+		      void *)
   __asm__ (GOSYM_PREFIX "runtime.makemap");
 
 extern void *mapassign (const struct __go_map_type *, void *hmap,
@@ -29,7 +29,7 @@ __go_construct_map (const struct __go_map_type *type,
   uintptr_t i;
   void *p;
 
-  ret = makemap(type, (int64_t) count, NULL, NULL);
+  ret = makemap(type, (intgo) count, NULL);
 
   entries = (const unsigned char *) ventries;
   for (i = 0; i < count; ++i)

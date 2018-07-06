@@ -1,5 +1,5 @@
 /* Wrapper to call lto.  Used by collect2 and the linker plugin.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
    Factored out of collect2 by Rafael Espindola <espindola@google.com>
 
@@ -65,6 +65,7 @@ static enum lto_mode_d lto_mode = LTO_MODE_NONE;
 static char *ltrans_output_file;
 static char *flto_out;
 static unsigned int nr;
+static int *ltrans_priorities;
 static char **input_names;
 static char **output_names;
 static char **offload_names;
@@ -282,7 +283,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
 	case OPT_fopenmp:
 	case OPT_fopenacc:
-	case OPT_fcilkplus:
 	case OPT_fcheck_pointer_bounds:
 	  /* For selected options we can merge conservatively.  */
 	  for (j = 0; j < *decoded_options_count; ++j)
@@ -292,7 +292,6 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    append_option (decoded_options, decoded_options_count, foption);
 	  /* -fopenmp > -fno-openmp,
 	     -fopenacc > -fno-openacc,
-	     -fcilkplus > -fno-cilkplus,
 	     -fcheck_pointer_bounds > -fcheck_pointer_bounds  */
 	  else if (foption->value > (*decoded_options)[j].value)
 	    (*decoded_options)[j] = *foption;
@@ -549,7 +548,6 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_fopenmp:
 	case OPT_fopenacc:
 	case OPT_fopenacc_dim_:
-	case OPT_fcilkplus:
 	case OPT_foffload_abi_:
 	case OPT_O:
 	case OPT_Ofast:
@@ -626,7 +624,6 @@ append_linker_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 
 	case OPT_fopenmp:
 	case OPT_fopenacc:
-	case OPT_fcilkplus:
 	  /* Ignore -fno-XXX form of these options, as otherwise
 	     corresponding builtins will not be enabled.  */
 	  if (option->value == 0)
@@ -752,42 +749,44 @@ compile_offload_image (const char *target, const char *compiler_path,
 	break;
       }
 
-  if (compiler)
-    {
-      /* Generate temporary output file name.  */
-      filename = make_temp_file (".target.o");
+  if (!compiler)
+    fatal_error (input_location,
+		 "could not find %s in %s (consider using '-B')\n", suffix + 1,
+		 compiler_path);
 
-      struct obstack argv_obstack;
-      obstack_init (&argv_obstack);
-      obstack_ptr_grow (&argv_obstack, compiler);
-      if (save_temps)
-	obstack_ptr_grow (&argv_obstack, "-save-temps");
-      if (verbose)
-	obstack_ptr_grow (&argv_obstack, "-v");
-      obstack_ptr_grow (&argv_obstack, "-o");
-      obstack_ptr_grow (&argv_obstack, filename);
+  /* Generate temporary output file name.  */
+  filename = make_temp_file (".target.o");
 
-      /* Append names of input object files.  */
-      for (unsigned i = 0; i < in_argc; i++)
-	obstack_ptr_grow (&argv_obstack, in_argv[i]);
+  struct obstack argv_obstack;
+  obstack_init (&argv_obstack);
+  obstack_ptr_grow (&argv_obstack, compiler);
+  if (save_temps)
+    obstack_ptr_grow (&argv_obstack, "-save-temps");
+  if (verbose)
+    obstack_ptr_grow (&argv_obstack, "-v");
+  obstack_ptr_grow (&argv_obstack, "-o");
+  obstack_ptr_grow (&argv_obstack, filename);
 
-      /* Append options from offload_lto sections.  */
-      append_compiler_options (&argv_obstack, compiler_opts,
-			       compiler_opt_count);
-      append_diag_options (&argv_obstack, linker_opts, linker_opt_count);
+  /* Append names of input object files.  */
+  for (unsigned i = 0; i < in_argc; i++)
+    obstack_ptr_grow (&argv_obstack, in_argv[i]);
 
-      /* Append options specified by -foffload last.  In case of conflicting
-	 options we expect offload compiler to choose the latest.  */
-      append_offload_options (&argv_obstack, target, compiler_opts,
-			      compiler_opt_count);
-      append_offload_options (&argv_obstack, target, linker_opts,
-			      linker_opt_count);
+  /* Append options from offload_lto sections.  */
+  append_compiler_options (&argv_obstack, compiler_opts,
+			   compiler_opt_count);
+  append_diag_options (&argv_obstack, linker_opts, linker_opt_count);
 
-      obstack_ptr_grow (&argv_obstack, NULL);
-      argv = XOBFINISH (&argv_obstack, char **);
-      fork_execute (argv[0], argv, true);
-      obstack_free (&argv_obstack, NULL);
-    }
+  /* Append options specified by -foffload last.  In case of conflicting
+     options we expect offload compiler to choose the latest.  */
+  append_offload_options (&argv_obstack, target, compiler_opts,
+			  compiler_opt_count);
+  append_offload_options (&argv_obstack, target, linker_opts,
+			  linker_opt_count);
+
+  obstack_ptr_grow (&argv_obstack, NULL);
+  argv = XOBFINISH (&argv_obstack, char **);
+  fork_execute (argv[0], argv, true);
+  obstack_free (&argv_obstack, NULL);
 
   free_array_of_ptrs ((void **) paths, n_paths);
   return filename;
@@ -987,7 +986,7 @@ debug_objcopy (const char *infile)
       infile = fname;
       inoff = (off_t) loffset;
     }
-  int infd = open (infile, O_RDONLY);
+  int infd = open (infile, O_RDONLY | O_BINARY);
   if (infd == -1)
     return NULL;
   simple_object_read *inobj = simple_object_start_read (infd, inoff,
@@ -1022,6 +1021,13 @@ debug_objcopy (const char *infile)
   return outfile;
 }
 
+/* Helper for qsort: compare priorities for parallel compilation.  */
+
+int
+cmp_priority (const void *a, const void *b)
+{
+  return *((const int *)b)-*((const int *)a);
+}
 
 
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
@@ -1481,6 +1487,7 @@ cont1:
       FILE *stream = fopen (ltrans_output_file, "r");
       FILE *mstream = NULL;
       struct obstack env_obstack;
+      int priority;
 
       if (!stream)
 	fatal_error (input_location, "fopen: %s: %m", ltrans_output_file);
@@ -1496,6 +1503,14 @@ cont1:
 	  size_t len;
 
 	  buf = input_name;
+          if (fscanf (stream, "%i\n", &priority) != 1)
+	    {
+	      if (!feof (stream))
+	        fatal_error (input_location,
+		             "Corrupted ltrans output file %s",
+			     ltrans_output_file);
+	      break;
+	    }
 cont:
 	  if (!fgets (buf, piece, stream))
 	    break;
@@ -1512,8 +1527,12 @@ cont:
 	    output_name = &input_name[1];
 
 	  nr++;
+	  ltrans_priorities
+	     = (int *)xrealloc (ltrans_priorities, nr * sizeof (int) * 2);
 	  input_names = (char **)xrealloc (input_names, nr * sizeof (char *));
 	  output_names = (char **)xrealloc (output_names, nr * sizeof (char *));
+	  ltrans_priorities[(nr-1)*2] = priority;
+	  ltrans_priorities[(nr-1)*2+1] = nr-1;
 	  input_names[nr-1] = input_name;
 	  output_names[nr-1] = output_name;
 	}
@@ -1525,6 +1544,7 @@ cont:
 	{
 	  makefile = make_temp_file (".mk");
 	  mstream = fopen (makefile, "w");
+	  qsort (ltrans_priorities, nr, sizeof (int) * 2, cmp_priority);
 	}
 
       /* Execute the LTRANS stage for each input file (or prepare a
@@ -1590,7 +1610,10 @@ cont:
 
 	  fprintf (mstream, "all:");
 	  for (i = 0; i < nr; ++i)
-	    fprintf (mstream, " \\\n\t%s", output_names[i]);
+	    {
+	      int j = ltrans_priorities[i*2 + 1];
+	      fprintf (mstream, " \\\n\t%s", output_names[j]);
+	    }
 	  fprintf (mstream, "\n");
 	  fclose (mstream);
 	  if (!jobserver)
@@ -1634,6 +1657,7 @@ cont:
 	  free (input_names[i]);
 	}
       nr = 0;
+      free (ltrans_priorities);
       free (output_names);
       free (input_names);
       free (list_option_full);

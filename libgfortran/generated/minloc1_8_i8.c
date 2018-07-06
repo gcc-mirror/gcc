@@ -1,5 +1,5 @@
 /* Implementation of the MINLOC intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -24,19 +24,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
+#include <assert.h>
 
 
 #if defined (HAVE_GFC_INTEGER_8) && defined (HAVE_GFC_INTEGER_8)
 
+#define HAVE_BACK_ARG 1
+
 
 extern void minloc1_8_i8 (gfc_array_i8 * const restrict, 
-	gfc_array_i8 * const restrict, const index_type * const restrict);
+	gfc_array_i8 * const restrict, const index_type * const restrict, GFC_LOGICAL_4 back);
 export_proto(minloc1_8_i8);
 
 void
 minloc1_8_i8 (gfc_array_i8 * const restrict retarray, 
 	gfc_array_i8 * const restrict array, 
-	const index_type * const restrict pdim)
+	const index_type * const restrict pdim, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -100,7 +103,7 @@ minloc1_8_i8 (gfc_array_i8 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
@@ -156,10 +159,14 @@ minloc1_8_i8 (gfc_array_i8 * const restrict retarray,
 	  *dest = 0;
 	else
 	  {
+#if ! defined HAVE_BACK_ARG
 	    for (n = 0; n < len; n++, src += delta)
 	      {
+#endif
 
 #if defined (GFC_INTEGER_8_QUIET_NAN)
+     	   for (n = 0; n < len; n++, src += delta)
+	     {
 		if (*src <= minval)
 		  {
 		    minval = *src;
@@ -167,14 +174,26 @@ minloc1_8_i8 (gfc_array_i8 * const restrict retarray,
 		    break;
 		  }
 	      }
-	    for (; n < len; n++, src += delta)
-	      {
+#else
+	    n = 0;
 #endif
-		if (*src < minval)
-		  {
-		    minval = *src;
-		    result = (GFC_INTEGER_8)n + 1;
-		  }
+	    if (back)
+	      for (; n < len; n++, src += delta)
+	        {
+		  if (unlikely (*src <= minval))
+		    {
+		      minval = *src;
+		      result = (GFC_INTEGER_8)n + 1;
+		    }
+		}
+	    else
+	      for (; n < len; n++, src += delta)
+	        {
+		  if (unlikely (*src < minval))
+		    {
+		      minval = *src;
+		      result = (GFC_INTEGER_8) n + 1;
+		    }
 	      }
 	    
 	    *dest = result;
@@ -214,14 +233,14 @@ minloc1_8_i8 (gfc_array_i8 * const restrict retarray,
 
 extern void mminloc1_8_i8 (gfc_array_i8 * const restrict, 
 	gfc_array_i8 * const restrict, const index_type * const restrict,
-	gfc_array_l1 * const restrict);
+	gfc_array_l1 * const restrict, GFC_LOGICAL_4 back);
 export_proto(mminloc1_8_i8);
 
 void
 mminloc1_8_i8 (gfc_array_i8 * const restrict retarray, 
 	gfc_array_i8 * const restrict array, 
 	const index_type * const restrict pdim, 
-	gfc_array_l1 * const restrict mask)
+	gfc_array_l1 * const restrict mask, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -308,7 +327,7 @@ mminloc1_8_i8 (gfc_array_i8 * const restrict retarray,
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       if (alloc_size == 0)
 	{
@@ -386,13 +405,23 @@ mminloc1_8_i8 (gfc_array_i8 * const restrict retarray,
 	      result = result2;
 	    else
 #endif
-	    for (; n < len; n++, src += delta, msrc += mdelta)
-	      {
-		if (*msrc && *src < minval)
+	    if (back)
+	      for (; n < len; n++, src += delta, msrc += mdelta)
+	      	{
+		  if (*msrc && unlikely (*src <= minval))
+		    {
+		      minval = *src;
+		      result = (GFC_INTEGER_8)n + 1;
+		    }
+		}
+	      else
+	        for (; n < len; n++, src += delta, msrc += mdelta)
 		  {
-		    minval = *src;
-		    result = (GFC_INTEGER_8)n + 1;
-		  }
+		    if (*msrc && unlikely (*src < minval))
+		      {
+		        minval = *src;
+			result = (GFC_INTEGER_8) n + 1;
+		      }
 	  }
 	*dest = result;
       }
@@ -433,14 +462,14 @@ mminloc1_8_i8 (gfc_array_i8 * const restrict retarray,
 
 extern void sminloc1_8_i8 (gfc_array_i8 * const restrict, 
 	gfc_array_i8 * const restrict, const index_type * const restrict,
-	GFC_LOGICAL_4 *);
+	GFC_LOGICAL_4 *, GFC_LOGICAL_4 back);
 export_proto(sminloc1_8_i8);
 
 void
 sminloc1_8_i8 (gfc_array_i8 * const restrict retarray, 
 	gfc_array_i8 * const restrict array, 
 	const index_type * const restrict pdim, 
-	GFC_LOGICAL_4 * mask)
+	GFC_LOGICAL_4 * mask, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -453,7 +482,11 @@ sminloc1_8_i8 (gfc_array_i8 * const restrict retarray,
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG
+      minloc1_8_i8 (retarray, array, pdim, back);
+#else
       minloc1_8_i8 (retarray, array, pdim);
+#endif
       return;
     }
   /* Make dim zero based to avoid confusion.  */
@@ -500,7 +533,7 @@ sminloc1_8_i8 (gfc_array_i8 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 

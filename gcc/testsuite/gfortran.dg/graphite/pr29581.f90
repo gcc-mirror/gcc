@@ -22,7 +22,7 @@
         INTEGER A(5,5)
         COMMON A
         CALL FOO (2)
-        IF (A(1,1).NE.8) CALL ABORT
+        IF (A(1,1).NE.8) STOP 1
         A(1,1) = 0
-        IF (ANY(A.NE.0)) CALL ABORT
+        IF (ANY(A.NE.0)) STOP 2
       END

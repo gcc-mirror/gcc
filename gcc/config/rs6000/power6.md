@@ -1,5 +1,5 @@
 ;; Scheduling description for IBM POWER6 processor.
-;;   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 ;;   Contributed by Peter Steinmetz (steinmtz@us.ibm.com)
 ;;
 ;; This file is part of GCC.
@@ -474,11 +474,6 @@
   "BRU_power6")
 
 (define_bypass 3 "power6-crlogical" "power6-branch")
-
-(define_insn_reservation "power6-delayedcr" 3
-  (and (eq_attr "type" "delayed_cr")
-       (eq_attr "cpu" "power6"))
-  "BRU_power6")
 
 (define_insn_reservation "power6-mfcr" 6 ; N/A
   (and (eq_attr "type" "mfcr")

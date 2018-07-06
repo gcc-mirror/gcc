@@ -1,5 +1,5 @@
 /* Definitions of various defaults for tm.h macros.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
 This file is part of GCC.
@@ -170,7 +170,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   do {							\
     fputs (user_label_prefix, (FILE));			\
     fputs ((NAME), (FILE));				\
-  } while (0);
+  } while (0)
 #endif
 
 /* Allow target to print debug info labels specially.  This is useful for

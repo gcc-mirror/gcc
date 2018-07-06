@@ -1,5 +1,5 @@
 /* Definitions for the shared dumpfile.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -93,6 +93,7 @@ enum dump_kind
 #define MSG_NOTE		 (1 << 24)  /* general optimization info */
 #define MSG_ALL		(MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
 			 | MSG_NOTE)
+#define TDF_COMPARE_DEBUG (1 << 25)	/* Dumping for -fcompare-debug.  */
 
 
 /* Value of TDF_NONE is used just for bits filtered by TDF_KIND_MASK.  */
@@ -173,6 +174,9 @@ extern void dump_gimple_stmt_loc (dump_flags_t, source_location, dump_flags_t,
 extern void dump_gimple_stmt (dump_flags_t, dump_flags_t, gimple *, int);
 extern void print_combine_total_stats (void);
 extern bool enable_rtl_dump_file (void);
+
+template<unsigned int N, typename C>
+void dump_dec (int, const poly_int<N, C> &);
 
 /* In tree-dump.c  */
 extern void dump_node (const_tree, dump_flags_t, FILE *);

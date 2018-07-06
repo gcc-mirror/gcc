@@ -13,5 +13,5 @@ program bug3
    integer, parameter :: kind_if_real = &
       (1-is_int)*k2+is_int*kind(1.0)
    complex :: z = cmplx(0,1,kind_if_real) ! FAILS
-   if (kind_if_real /= kind(Qarg1)) call abort ()
+   if (kind_if_real /= kind(Qarg1)) STOP 1
 end program bug3

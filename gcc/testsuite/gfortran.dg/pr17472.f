@@ -7,6 +7,6 @@ c Based on example provided by thomas.koenig@online.de
        data a / 1,2,3,4,5,6,7,8,9,10 /
        namelist /ints/ a
        do ctr = 1,10
-         if (a(ctr).ne.ctr) call abort ()
+         if (a(ctr).ne.ctr) STOP 1
        end do
        end

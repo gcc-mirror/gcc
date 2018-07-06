@@ -1,6 +1,6 @@
 // Class filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -265,20 +265,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     template <class _Source>
       _Path<_Source>&
       operator/=(_Source const& __source)
-      { return append(__source); }
+      { return _M_append(path(__source)); }
 
     template<typename _Source>
       _Path<_Source>&
       append(_Source const& __source)
-      {
-	return _M_append(_S_convert(_S_range_begin(__source),
-				    _S_range_end(__source)));
-      }
+      { return _M_append(path(__source)); }
 
     template<typename _InputIterator>
       _Path<_InputIterator, _InputIterator>&
       append(_InputIterator __first, _InputIterator __last)
-      { return _M_append(_S_convert(__first, __last)); }
+      { return _M_append(path(__first, __last)); }
 
     // concatenation
 
@@ -370,7 +367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     // query
 
-    bool empty() const noexcept { return _M_pathname.empty(); }
+    [[nodiscard]] bool empty() const noexcept { return _M_pathname.empty(); }
     bool has_root_name() const;
     bool has_root_directory() const;
     bool has_root_path() const;
@@ -379,7 +376,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     bool has_filename() const;
     bool has_stem() const;
     bool has_extension() const;
-    bool is_absolute() const;
+    bool is_absolute() const { return has_root_directory(); }
     bool is_relative() const { return !is_absolute(); }
 
     // generation
@@ -406,17 +403,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     enum class _Split { _Stem, _Extension };
 
-    path& _M_append(string_type&& __str)
+    path&
+    _M_append(path __p)
     {
+      if (__p.is_absolute())
+	operator=(std::move(__p));
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      operator/=(path(std::move(__str)));
-#else
-      if (!_M_pathname.empty() && !_S_is_dir_sep(_M_pathname.back())
-	  && (__str.empty() || !_S_is_dir_sep(__str.front())))
-	_M_pathname += preferred_separator;
-      _M_pathname += __str;
-      _M_split_cmpts();
+      else if (__p.has_root_name() && __p.root_name() != root_name())
+	operator=(std::move(__p));
 #endif
+      else
+	operator/=(const_cast<const path&>(__p));
       return *this;
     }
 
@@ -500,7 +497,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     struct _Cmpt;
     using _List = _GLIBCXX_STD_C::vector<_Cmpt>;
     _List _M_cmpts; // empty unless _M_type == _Type::_Multi
-    _Type _M_type = _Type::_Multi;
+    _Type _M_type = _Type::_Filename;
   };
 
   template<>
@@ -552,7 +549,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /// Append one path to another
   inline path operator/(const path& __lhs, const path& __rhs)
-  { return path(__lhs) /= __rhs; }
+  {
+    path __result(__lhs);
+    __result /= __rhs;
+    return __result;
+  }
 
   /// Write a path to a stream
   template<typename _CharT, typename _Traits>
@@ -1070,22 +1071,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return ext.first && ext.second != string_type::npos;
   }
 
-  inline bool
-  path::is_absolute() const
-  {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    return has_root_name();
-#else
-    return has_root_directory();
-#endif
-  }
-
   inline path::iterator
   path::begin() const
   {
     if (_M_type == _Type::_Multi)
       return iterator(this, _M_cmpts.begin());
-    return iterator(this, false);
+    return iterator(this, empty());
   }
 
   inline path::iterator

@@ -12,7 +12,7 @@ contains
   end subroutine test
   subroutine test2(a) bind(c)
     character(kind=c_char), value :: a
-    if(a /= c_char_'a') call abort ()
+    if(a /= c_char_'a') STOP 1
     print *, 'a=',a
   end subroutine test2
 end module pr32732

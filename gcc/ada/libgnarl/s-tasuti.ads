@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,9 +54,9 @@ package System.Tasking.Utilities is
    --
    --  This is a dangerous operation, and should never be used on nested tasks
    --  or tasks that depend on any objects that might be finalized earlier than
-   --  the termination of the environment task. It is for internal use by the
-   --  GNARL, to prevent such internal server tasks from preventing a partition
-   --  from terminating.
+   --  the termination of the environment task. It is primarily for internal
+   --  use by the GNARL, to prevent such internal server tasks from preventing
+   --  a partition from terminating.
    --
    --  Also note that the run time assumes that the parent of an independent
    --  task is the environment task. If this is not the case, Make_Independent

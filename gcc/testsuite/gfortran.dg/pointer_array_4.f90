@@ -34,7 +34,7 @@ program prog_rtti_ptr
   if (size(v) == 2 .and. all (v == [2.0, 3.0])) then
      deallocate(o)
   else
-     call abort
+     STOP 1
   end if
 
   allocate(o(3), source=[foo(1.0, 1), foo(4.0, 4), foo(5.0, 5)])
@@ -42,13 +42,13 @@ program prog_rtti_ptr
   if (size(v) == 2 .and. all (v == [4.0, 5.0])) then
      deallocate(o)
   else
-     call abort
+     STOP 2
   end if
 
 ! The rest tests the case in comment 2 <janus@gcc.gnu.org>
 
   call extract1 (v, 1)
-  if (any (v /= [1.0, 2.0])) call abort
+  if (any (v /= [1.0, 2.0])) STOP 3
   call extract1 (v, 2)  ! Call to deallocate pointer.
 
 contains

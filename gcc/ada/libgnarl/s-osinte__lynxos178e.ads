@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -453,8 +453,8 @@ package System.OS_Interface is
    pragma Import (C, pthread_setschedparam, "pthread_setschedparam");
 
    function pthread_attr_setscope
-     (attr            : access pthread_attr_t;
-      contentionscope : int) return int is (0);
+     (Unused_attr            : access pthread_attr_t;
+      Unused_contentionscope : int) return int is (0);
    --  pthread_attr_setscope is not implemented in production mode
 
    function pthread_attr_setinheritsched

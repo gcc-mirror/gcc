@@ -1,5 +1,5 @@
 /* Perform branch target register load optimizations.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -185,7 +185,7 @@ static int first_btr, last_btr;
 static int
 basic_block_freq (const_basic_block bb)
 {
-  return bb->frequency;
+  return bb->count.to_frequency (cfun);
 }
 
 /* If the rtx at *XP references (sets or reads) any branch target

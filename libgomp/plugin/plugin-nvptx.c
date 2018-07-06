@@ -1,6 +1,6 @@
 /* Plugin for NVPTX execution.
 
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -31,6 +31,7 @@
    is not clear as to what that state might be.  Or how one might
    propagate it from one thread to another.  */
 
+#define _GNU_SOURCE
 #include "openacc.h"
 #include "config.h"
 #include "libgomp-plugin.h"
@@ -137,6 +138,8 @@ init_cuda_lib (void)
 # define CUDA_CALL_PREFIX
 # define init_cuda_lib() true
 #endif
+
+#include "secure_getenv.h"
 
 /* Convenience macros for the frequently used CUDA library call and
    error handling sequence as well as CUDA library calls that
@@ -876,12 +879,42 @@ notify_var (const char *var_name, const char *env_var)
     GOMP_PLUGIN_debug (0, "%s: '%s'\n", var_name, env_var);
 }
 
+static void
+process_GOMP_NVPTX_JIT (intptr_t *gomp_nvptx_o)
+{
+  const char *var_name = "GOMP_NVPTX_JIT";
+  const char *env_var = secure_getenv (var_name);
+  notify_var (var_name, env_var);
+
+  if (env_var == NULL)
+    return;
+
+  const char *c = env_var;
+  while (*c != '\0')
+    {
+      while (*c == ' ')
+	c++;
+
+      if (c[0] == '-' && c[1] == 'O'
+	  && '0' <= c[2] && c[2] <= '4'
+	  && (c[3] == '\0' || c[3] == ' '))
+	{
+	  *gomp_nvptx_o = c[2] - '0';
+	  c += 3;
+	  continue;
+	}
+
+      GOMP_PLUGIN_error ("Error parsing %s", var_name);
+      break;
+    }
+}
+
 static bool
 link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
 	  unsigned num_objs)
 {
-  CUjit_option opts[6];
-  void *optvals[6];
+  CUjit_option opts[7];
+  void *optvals[7];
   float elapsed = 0.0;
   char elog[1024];
   char ilog[16384];
@@ -908,7 +941,24 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
   opts[5] = CU_JIT_LOG_VERBOSE;
   optvals[5] = (void *) 1;
 
-  CUDA_CALL (cuLinkCreate, 6, opts, optvals, &linkstate);
+  static intptr_t gomp_nvptx_o = -1;
+
+  static bool init_done = false;
+  if (!init_done)
+    {
+      process_GOMP_NVPTX_JIT (&gomp_nvptx_o);
+      init_done = true;
+  }
+
+  int nopts = 6;
+  if (gomp_nvptx_o != -1)
+    {
+      opts[nopts] = CU_JIT_OPTIMIZATION_LEVEL;
+      optvals[nopts] = (void *) gomp_nvptx_o;
+      nopts++;
+    }
+
+  CUDA_CALL (cuLinkCreate, nopts, opts, optvals, &linkstate);
 
   for (; num_objs--; ptx_objs++)
     {
@@ -1097,33 +1147,8 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
       pthread_mutex_lock (&ptx_dev_lock);
       if (!default_dims[0])
 	{
-	  const char *var_name = "GOMP_OPENACC_DIM";
-	  /* We only read the environment variable once.  You can't
-	     change it in the middle of execution.  The syntax  is
-	     the same as for the -fopenacc-dim compilation option.  */
-	  const char *env_var = getenv (var_name);
-	  notify_var (var_name, env_var);
-	  if (env_var)
-	    {
-	      const char *pos = env_var;
-
-	      for (i = 0; *pos && i != GOMP_DIM_MAX; i++)
-		{
-		  if (i && *pos++ != ':')
-		    break;
-		  if (*pos != ':')
-		    {
-		      const char *eptr;
-
-		      errno = 0;
-		      long val = strtol (pos, (char **)&eptr, 10);
-		      if (errno || val < 0 || (unsigned)val != val)
-			break;
-		      default_dims[i] = (int)val;
-		      pos = eptr;
-		    }
-		}
-	    }
+	  for (int i = 0; i < GOMP_DIM_MAX; ++i)
+	    default_dims[i] = GOMP_PLUGIN_acc_default_dim (i);
 
 	  int warp_size, block_size, dev_size, cpu_size;
 	  CUdevice dev = nvptx_thread()->ptx_dev->dev;

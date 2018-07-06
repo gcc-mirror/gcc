@@ -6,5 +6,5 @@ program p
    integer, parameter :: n(3) = [1,2,3]
    integer, parameter :: x(1) = 7
    integer, parameter :: z(n(2):*) = x
-   if (lbound(z,1) /= 2) call abort
+   if (lbound(z,1) /= 2) STOP 1
 end

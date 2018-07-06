@@ -22,6 +22,6 @@ program test1
 
   read (10, fmt='(dt)', advance='no', size=thesize, iostat=ios, &
             & iomsg=errormsg) i, udt1
-  if (ios.ne.5006) call abort
-  if (errormsg(27:47).ne."intrinsic type passed") call abort
+  if (ios.ne.5006) STOP 1
+  if (errormsg(27:47).ne."intrinsic type passed") STOP 2
 end program test1

@@ -18,5 +18,3 @@ foo (int *p)
 /* Target disabling -fdelete-null-pointer-checks should not fold checks */
 /* { dg-final { scan-tree-dump "Folding predicate " "vrp1" { target { ! keeps_null_pointer_checks } } } } */
 /* { dg-final { scan-tree-dump-times "Folding predicate " 0 "vrp1" { target {   keeps_null_pointer_checks } } } } */
-/* { dg-final { scan-tree-dump-not "b_. =" "dce2" { target { ! avr-*-* } } } } */
-/* { dg-final { scan-tree-dump "b_. =" "dce2" { target { avr-*-* } } } } */

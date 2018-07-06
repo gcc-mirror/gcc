@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004-2017 Free Software Foundation, Inc.
+// Copyright (C) 2004-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,6 +47,9 @@
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 
 #define _IsUnused __attribute__ ((__unused__))
 
@@ -783,6 +786,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
+#pragma GCC diagnostic pop
 #undef _IsUnused
 
 #endif // _GLIBCXX_BOOST_CONCEPT_CHECK

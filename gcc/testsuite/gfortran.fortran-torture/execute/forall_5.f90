@@ -20,9 +20,9 @@ program forall_5
       t(i) = i
    enddo
 
-   if (any(q(1)%p .ne. (/1,2,3,4,5/))) call abort
-   if (any(q(2)%p .ne. (/1,2,3,4,5/))) call abort
-   if (any(q(3)%p .ne. (/6,7,8,9,10/))) call abort
-   if (any(q(4)%p .ne. (/11,12,13,14,15/))) call abort
-   if (any(q(5)%p .ne. (/16,17,18,19,20/))) call abort
+   if (any(q(1)%p .ne. (/1,2,3,4,5/))) STOP 1
+   if (any(q(2)%p .ne. (/1,2,3,4,5/))) STOP 2
+   if (any(q(3)%p .ne. (/6,7,8,9,10/))) STOP 3
+   if (any(q(4)%p .ne. (/11,12,13,14,15/))) STOP 4
+   if (any(q(5)%p .ne. (/16,17,18,19,20/))) STOP 5
 end

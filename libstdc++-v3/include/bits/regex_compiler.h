@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2017 Free Software Foundation, Inc.
+// Copyright (C) 2010-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -527,14 +527,12 @@ namespace __detail
       typedef typename std::is_same<_CharT, char>::type _UseCache;
 
       static constexpr size_t
-      _S_cache_size()
-      {
-	return 1ul << (sizeof(_CharT) * __CHAR_BIT__ * int(_UseCache::value));
-      }
+      _S_cache_size =
+	1ul << (sizeof(_CharT) * __CHAR_BIT__ * int(_UseCache::value));
 
       struct _Dummy { };
       typedef typename std::conditional<_UseCache::value,
-					std::bitset<_S_cache_size()>,
+					std::bitset<_S_cache_size>,
 					_Dummy>::type _CacheT;
       typedef typename std::make_unsigned<_CharT>::type _UnsignedCharT;
 

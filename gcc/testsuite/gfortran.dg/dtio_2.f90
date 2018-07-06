@@ -49,23 +49,23 @@ program test
   chairman%name="boggle"
   chairman%age=1234
   read (71) tmpstr1, chairman, tmpstr2
-  if (tmpstr1.ne."abc") call abort
-  if (tmpstr2.ne."efg") call abort
-  if (chairman%name.ne."charlie") call abort
-  if (chairman%age.ne.62) call abort
+  if (tmpstr1.ne."abc") STOP 1
+  if (tmpstr2.ne."efg") STOP 2
+  if (chairman%name.ne."charlie") STOP 3
+  if (chairman%age.ne.62) STOP 4
   chairman%name="boggle"
   chairman%age=1234
   read (71) tmpstr1, chairman, tmpstr2
-  if (tmpstr1.ne."hij") call abort
-  if (tmpstr2.ne."klm") call abort
-  if (chairman%name.ne."charlie") call abort
-  if (chairman%age.ne.62) call abort
+  if (tmpstr1.ne."hij") STOP 5
+  if (tmpstr2.ne."klm") STOP 6
+  if (chairman%name.ne."charlie") STOP 7
+  if (chairman%age.ne.62) STOP 8
   chairman%name="boggle"
   chairman%age=1234
   read (71) tmpstr1, chairman, tmpstr2
-  if (tmpstr1.ne."nop") call abort
-  if (tmpstr2.ne."qrs") call abort
-  if (chairman%name.ne."charlie") call abort
-  if (chairman%age.ne.62) call abort
+  if (tmpstr1.ne."nop") STOP 9
+  if (tmpstr2.ne."qrs") STOP 10
+  if (chairman%name.ne."charlie") STOP 11
+  if (chairman%age.ne.62) STOP 12
   close (unit = 71, status='delete')
 end program test

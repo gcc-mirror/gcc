@@ -8,10 +8,12 @@
 
 vector bool     long long vbla, vblb, vblc;
 vector signed   long long vsla;
-vector unsigned long long vula, vulc;
+vector unsigned long long vula, vulb, vulc;
+vector double vda, vdb;
+vector float vfa, vfb;
 
 void foo (vector bool long long *vblr,
-	  vector double *vdr)
+	  vector double *vdr, vector unsigned long long *vulz, vector double *vdz)
 {
   *vblr++ = vec_andc (vbla, vblb);
   *vdr++  = vec_double (vsla);
@@ -23,6 +25,10 @@ void foo (vector bool long long *vblr,
   *vblr++ = vec_sel (vbla, vblb, vblc);
   *vblr++ = vec_sel (vbla, vblb, vulc);
   *vblr++ = vec_xor (vbla, vblb);
+
+  *vulz++ = vec_sel (vula, vulb, vblc);
+
+  *vdz++ = vec_sel(vda, vdb, vulc);
 }
 
 /* { dg-final { scan-assembler-times "xxlandc" 1 } } */
@@ -32,5 +38,5 @@ void foo (vector bool long long *vblr,
 /* { dg-final { scan-assembler-times "xxpermdi .*,.*,.*,0" 1 } } */
 /* { dg-final { scan-assembler-times "xxlnor" 1 } } */
 /* { dg-final { scan-assembler-times "xxlor" 1 } } */
-/* { dg-final { scan-assembler-times "xxsel" 2 } } */
+/* { dg-final { scan-assembler-times "xxsel" 4 } } */
 /* { dg-final { scan-assembler-times "xxlxor" 1 } } */

@@ -1,5 +1,5 @@
 /* SSA name expresssons routines
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -89,8 +89,7 @@ extern bool get_ptr_info_alignment (struct ptr_info_def *, unsigned int *,
 extern void mark_ptr_info_alignment_unknown (struct ptr_info_def *);
 extern void set_ptr_info_alignment (struct ptr_info_def *, unsigned int,
 				    unsigned int);
-extern void adjust_ptr_info_misalignment (struct ptr_info_def *,
-					  unsigned int);
+extern void adjust_ptr_info_misalignment (struct ptr_info_def *, poly_uint64);
 extern struct ptr_info_def *get_ptr_info (tree);
 extern void set_ptr_nonnull (tree);
 extern bool get_ptr_nonnull (const_tree);

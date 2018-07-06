@@ -630,6 +630,21 @@ elaboration order and to diagnose elaboration problems.
   region subject to SPARK_Mode On, otherwise the dynamic or static model is in
   effect.
 
+.. index:: Legacy elaboration model
+
+* *Legacy elaboration model*
+
+  In addition to the three elaboration models outlined above, GNAT provides the
+  elaboration model of pre-18.x versions referred to as `legacy elaboration
+  model`. The legacy elaboration model is enabled with compiler switch
+  :switch:`-gnatH`.
+
+.. index:: Relaxed elaboration mode
+
+The dynamic, legacy, and static models can be relaxed using compiler switch
+:switch:`-gnatJ`, making them more permissive. Note that in this mode, GNAT
+may not diagnose certain elaboration issues or install run-time checks.
+
 .. _Common_Elaboration_Model_Traits":
 
 Common Elaboration-model Traits
@@ -690,8 +705,8 @@ dispatching calls and a particular kind of ABE referred to as *guaranteed ABE*.
 Note that GNAT emits warnings rather than hard errors whenever it encounters an
 elaboration problem. This is because the elaboration model in effect may be too
 conservative, or a particular scenario may not be elaborated or executed due to
-data and control flow. The warnings can be suppressed with compiler switch
-:switch:`-gnatws`.
+data and control flow. The warnings can be suppressed selectively with ``pragma
+Warnigns (Off)`` or globally with compiler switch :switch:`-gnatwL`.
 
 .. _Dynamic_Elaboration_Model_in_GNAT:
 
@@ -764,8 +779,8 @@ run-time checks based on the nature of the target.
 
   The static model performs extensive diagnostics on scenarios which elaborate
   or execute internal targets. The warnings resulting from these diagnostics
-  are enabled by default, but can be suppressed using compiler switch
-  :switch:`-gnatws`.
+  are enabled by default, but can be suppressed selectively with ``pragma
+  Warnings (Off)`` or globally with compiler switch :switch:`-gnatwL`.
 
   ::
 
@@ -910,6 +925,15 @@ external, and compiler switch :switch:`-gnatd.v` is in effect.
 
    4. end SPARK_Model;
 
+Legacy Elaboration Model in GNAT
+================================
+
+The legacy elaboration model is provided for compatibility with code bases
+developed with pre-18.x versions of GNAT. It is similar in functionality to
+the dynamic and static models of post-18.x version of GNAT, but may differ
+in terms of diagnostics and run-time checks. The legacy elaboration model is
+enabled with compiler switch :switch:`-gnatH`.
+
 .. _Mixing_Elaboration_Models:
 
 Mixing Elaboration Models
@@ -1028,6 +1052,21 @@ available.
   generate an executable program that may or may not raise ``Program_Error``,
   and it is the programmer's responsibility to ensure that it does not raise
   ``Program_Error``.
+
+  If the compilation was performed using a post-18.x version of GNAT, consider
+  using the legacy elaboration model, in the following order:
+
+  - Use the legacy static elaboration model, with compiler switch
+    :switch:`-gnatH`.
+
+  - Use the legacy dynamic elaboration model, with compiler switches
+    :switch:`-gnatH` :switch:`-gnatE`.
+
+  - Use the relaxed legacy static elaboration model, with compiler switches
+    :switch:`-gnatH` :switch:`-gnatJ`.
+
+  - Use the relaxed legacy dynamic elaboration model, with compiler switches
+    :switch:`-gnatH` :switch:`-gnatJ` :switch:`-gnatE`.
 
 * *Suppress all elaboration checks*
 
@@ -1421,160 +1460,6 @@ Elaboration-related Compiler Switches
 GNAT has several switches that affect the elaboration model and consequently
 the elaboration order chosen by the binder.
 
-.. index:: -gnatdE  (gnat)
-
-:switch:`-gnatdE`
-  Elaboration checks on predefined units
-
-  When this switch is in effect, GNAT will consider scenarios and targets that
-  come from the Ada, GNAT, Interfaces, and System hierarchies. This switch is
-  useful when a programmer has defined a custom grandchild of those packages.
-
-.. index:: -gnatd.G  (gnat)
-
-:switch:`-gnatd.G`
-  Ignore calls through generic formal parameters for elaboration
-
-  When this switch is in effect, GNAT will ignore calls that invoke generic
-  actual entries, operators, or subprograms via generic formal subprograms. As
-  a result, GNAT will not generate implicit ``Elaborate`` and ``Elaborate_All``
-  pragmas, and run-time checks for such calls. Note that this switch does not
-  overlap with :switch:`-gnatdL`.
-
-  ::
-
-     package body Ignore_Calls is
-        function ABE return Integer;
-
-        generic
-           with function Gen_Formal return Integer;
-        package Gen is
-           Val : constant Integer := Gen_Formal;
-        end Gen;
-
-        package Inst is new Gen (ABE);
-
-        function ABE return Integer is
-        begin
-           ...
-        end ABE;
-     end Ignore_Calls;
-
-  In the example above, the call to function ``ABE`` will be ignored because it
-  occurs during the elaboration of instance ``Inst``, through a call to generic
-  formal subprogram ``Gen_Formal``.
-
-.. index:: -gnatdL  (gnat)
-
-:switch:`-gnatdL`
-  Ignore external calls from instances for elaboration
-
-  When this switch is in effect, GNAT will ignore calls that originate from
-  within an instance and directly target an entry, operator, or subprogram
-  defined outside the instance. As a result, GNAT will not generate implicit
-  ``Elaborate`` and ``Elaborate_All`` pragmas, and run-time checks for such
-  calls.  Note that this switch does not overlap with :switch:`-gnatd.G`.
-
-  ::
-
-     package body Ignore_Calls is
-        function ABE return Integer;
-
-        generic
-        package Gen is
-           Val : constant Integer := ABE;
-        end Gen;
-
-        package Inst is new Gen;
-
-        function ABE return Integer is
-        begin
-           ...
-        end ABE;
-     end Ignore_Calls;
-
-  In the example above, the call to function ``ABE`` will be ignored because it
-  originates from within an instance and targets a subprogram defined outside
-  the instance.
-
-.. index:: -gnatd.o  (gnat)
-
-:switch:`-gnatd.o`
-  Conservative elaboration order for indirect calls
-
-  When this switch is in effect, GNAT will treat ``'Access`` of an entry,
-  operator, or subprogram as an immediate call to that target. As a result,
-  GNAT will generate implicit ``Elaborate`` and ``Elaborate_All`` pragmas as
-  well as run-time checks for such attribute references.
-
-  ::
-
-     1. package body Attribute_Call is
-     2.    function Func return Integer;
-     3.    type Func_Ptr is access function return Integer;
-     4.
-     5.    Ptr : constant Func_Ptr := Func'Access;
-                                          |
-        >>> warning: cannot call "Func" before body seen
-        >>> warning: Program_Error may be raised at run time
-        >>> warning:   body of unit "Attribute_Call" elaborated
-        >>> warning:   "Access" of "Func" taken at line 5
-        >>> warning:   function "Func" called at line 5
-
-     6.
-     7.    function Func return Integer is
-     8.    begin
-     9.       ...
-    10.    end Func;
-    11. end Attribute_Call;
-
-  In the example above, the elaboration of declaration ``Ptr`` is assigned
-  ``Func'Access`` before the body of ``Func`` has been elaborated.
-
-.. index:: -gnatd.U  (gnat)
-
-:switch:`-gnatd.U`
-  Ignore indirect calls for static elaboration
-
-  When this switch is in effect, GNAT will ignore ``'Access`` of an entry,
-  operator, or subprogram when the static model is in effect.
-
-.. index:: -gnatd.v  (gnat)
-
-:switch:`-gnatd.v`
-  Enforce SPARK elaboration rules in SPARK code
-
-  When this switch is in effect, GNAT will enforce the SPARK rules of
-  elaboration as defined in the SPARK Reference Manual, section 7.7. As a
-  result, constructs which violate the SPARK elaboration rules are no longer
-  accepted, even if GNAT is able to statically ensure that these constructs
-  will not lead to ABE problems.
-
-.. index:: -gnatd.y  (gnat)
-
-:switch:`-gnatd.y`
-  Disable implicit pragma Elaborate[_All] on task bodies
-
-  When this switch is in effect, GNAT will not generate ``Elaborate`` and
-  ``Elaborate_All`` pragmas if the need for the pragma came directly or
-  indirectly from a task body.
-
-  ::
-
-     with Server;
-     package body Disable_Task is
-        task T;
-
-        task body T is
-        begin
-           Server.Proc;
-        end T;
-     end Disable_Task;
-
-  In the example above, the activation of single task ``T`` invokes
-  ``Server.Proc``, which implies that ``Server`` requires ``Elaborate_All``,
-  however GNAT will not generate the pragma.
-
 .. index:: -gnatE  (gnat)
 
 :switch:`-gnatE`
@@ -1617,6 +1502,23 @@ the elaboration order chosen by the binder.
 
        4. end Client;
 
+.. index:: -gnatH  (gnat)
+
+:switch:`-gnatH`
+  Legacy elaboration checking mode enabled
+
+  When this switch is in effect, GNAT will utilize the pre-18.x elaboration
+  model.
+
+.. index:: -gnatJ  (gnat)
+
+:switch:`-gnatJ`
+  Relaxed elaboration checking mode enabled
+
+  When this switch is in effect, GNAT will not process certain scenarios,
+  resulting in a more permissive elaboration model. Note that this may
+  eliminate some diagnostics and run-time checks.
+
 .. index:: -gnatw.f  (gnat)
 
 :switch:`-gnatw.f`
@@ -1648,6 +1550,47 @@ the elaboration order chosen by the binder.
   In the example above, the elaboration of declaration ``Ptr`` is assigned
   ``Func'Access`` before the body of ``Func`` has been elaborated.
 
+.. index:: -gnatwl  (gnat)
+
+:switch:`-gnatwl`
+  Turn on warnings for elaboration problems
+
+  When this switch is in effect, GNAT emits diagnostics in the form of warnings
+  concerning various elaboration problems. The warnings are enabled by default.
+  The switch is provided in case all warnings are suppressed, but elaboration
+  warnings are still desired.
+
+:switch:`-gnatwL`
+  Turn off warnings for elaboration problems
+
+  When this switch is in effect, GNAT no longer emits any diagnostics in the
+  form of warnings. Selective suppression of elaboration problems is possible
+  using ``pragma Warnings (Off)``.
+
+  ::
+
+     1. package body Selective_Suppression is
+     2.    function ABE return Integer;
+     3.
+     4.    Val_1 : constant Integer := ABE;
+                                       |
+        >>> warning: cannot call "ABE" before body seen
+        >>> warning: Program_Error will be raised at run time
+
+     5.
+     6.    pragma Warnings (Off);
+     7.    Val_2 : constant Integer := ABE;
+     8.    pragma Warnings (On);
+     9.
+    10.    function ABE return Integer is
+    11.    begin
+    12.       ...
+    13.    end ABE;
+    14. end Selective_Suppression;
+
+  Note that suppressing elaboration warnings does not eliminate run-time
+  checks. The example above will still fail at run time with an ABE.
+
 .. _Summary_of_Procedures_for_Elaboration_Control:
 
 Summary of Procedures for Elaboration Control
@@ -1657,6 +1600,7 @@ A programmer should first compile the program with the default options, using
 none of the binder or compiler switches. If the binder succeeds in finding an
 elaboration order, then apart from possible cases involing dispatching calls
 and access-to-subprogram types, the program is free of elaboration errors.
+
 If it is important for the program to be portable to compilers other than GNAT,
 then the programmer should use compiler switch :switch:`-gnatel` and consider
 the messages about missing or implicitly created ``Elaborate`` and
@@ -1665,24 +1609,35 @@ the messages about missing or implicitly created ``Elaborate`` and
 If the binder reports an elaboration circularity, the programmer has several
 options:
 
-* Ensure that warnings are enabled. This will allow the static model to output
-  trace information of elaboration issues. The trace information could shed
-  light on previously unforeseen dependencies, as well as their origins.
+* Ensure that elaboration warnings are enabled. This will allow the static
+  model to output trace information of elaboration issues. The trace
+  information could shed light on previously unforeseen dependencies, as well
+  as their origins. Elaboration warnings are enabled with compiler switch
+  :switch:`-gnatwl`.
 
 * Use switch :switch:`-gnatel` to obtain messages on generated implicit
   ``Elaborate`` and ``Elaborate_All`` pragmas. The trace information could
   indicate why a server unit must be elaborated prior to a client unit.
 
 * If the warnings produced by the static model indicate that a task is
-  involved, consider the options in the section on resolving task issues as
-  well as compiler switch :switch:`-gnatd.y`.
+  involved, consider the options in section `Resolving Task Issues`_.
 
-* If the warnings produced by the static model indicate that an generic
-  instantiations are involved, consider using compiler switches
-  :switch:`-gnatd.G` and :switch:`-gnatdL`.
+* If none of the steps outlined above resolve the circularity, use a more
+  permissive elaboration model, in the following order:
 
-* If none of the steps outlined above resolve the circularity, recompile the
-  program using the dynamic model by using compiler switch :switch:`-gnatE`.
+  - Use the dynamic elaboration model, with compiler switch :switch:`-gnatE`.
+
+  - Use the legacy static elaboration model, with compiler switch
+    :switch:`-gnatH`.
+
+  - Use the legacy dynamic elaboration model, with compiler switches
+    :switch:`-gnatH` :switch:`-gnatE`.
+
+  - Use the relaxed legacy static elaboration model, with compiler switches
+    :switch:`-gnatH` :switch:`-gnatJ`.
+
+  - Use the relaxed legacy dynamic elaboration model, with compiler switches
+    :switch:`-gnatH` :switch:`-gnatJ` :switch:`-gnatE`.
 
 .. _Inspecting_the_Chosen_Elaboration_Order:
 

@@ -1,5 +1,5 @@
 ;; Machine description for Xilinx MicroBlaze synchronization instructions.
-;; Copyright (C) 2011-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

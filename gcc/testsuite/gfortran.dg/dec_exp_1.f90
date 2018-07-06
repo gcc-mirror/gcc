@@ -10,7 +10,7 @@ subroutine asserteq (rexp, ract, msg)
   character(*), intent(in) :: msg
   if (rexp .ne. ract) then
     write (*, '(A,F12.6,F12.6)') msg, rexp, ract
-    call abort()
+    STOP 1
   endif
 end subroutine
 

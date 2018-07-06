@@ -22,7 +22,6 @@
           two = 2.0d0
           x = two * pi_1 * f_1 * t
           y = two * pi_2 * f_2 * t
-          z = two * pi_3 * f_3 * t
           return
         end subroutine
 
@@ -58,7 +57,7 @@
         if (x1 .ne. x2 .or. y1 .ne. y2
      &      .or. x1 .ne. y1 .or. x2 .ne. y2
      &      .or. y2 .ne. z2) then
-          call abort()
+          STOP 1
         endif
 
         end

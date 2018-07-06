@@ -29,6 +29,6 @@ program test5
       .or. int(z'6E74656C') /= result%ecx  &
       .or. int(z'61626364') /= result%bbb)) then
     write(*,'(5(z8.8:1x))') result
-    call abort()
+    STOP 1
   end if
 end program test5 

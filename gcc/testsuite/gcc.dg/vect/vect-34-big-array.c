@@ -10,8 +10,6 @@ struct {
 } s;
 char cb[N];
 
-volatile int y = 0;
-
 __attribute__ ((noinline))
 int main1 ()
 {
@@ -20,9 +18,7 @@ int main1 ()
   for (i = 0; i < N; i++)
     {
       cb[i] = i*3;
-      /* To avoid vectorization.  */
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
   for (i = 0; i < N; i++)
     {

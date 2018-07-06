@@ -9,6 +9,6 @@
 !
          IF (A10VK.NE.'') THEN
 !          PRINT*,A10VK 
-           CALL ABORT
+           STOP 1
          ENDIF
          END

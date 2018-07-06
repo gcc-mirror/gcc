@@ -3,5 +3,5 @@
 
 struct base { };
 struct derived : base {
-  constexpr derived& operator=(derived const&) = default; // { dg-error "defaulted declaration" "" { target { ! c++14 } } }
+  constexpr derived& operator=(derived const&) = default; // { dg-error "defaulted" "" { target { ! c++14 } } }
 };

@@ -13,8 +13,8 @@ INTEGER :: J
 COMMON /X/J
 j = 1
 i = 2
-if (j.ne.i) call abort()
-if (j.ne.2) call abort()
+if (j.ne.i) STOP 1
+if (j.ne.2) STOP 2
 call set_i()
-if (j.ne.5) call abort()
+if (j.ne.5) STOP 3
 END

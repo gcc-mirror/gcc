@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -107,6 +107,11 @@ package body Sem_Ch5 is
       --  N is the node for the left hand side of an assignment, and it is not
       --  a variable. This routine issues an appropriate diagnostic.
 
+      function Is_Protected_Part_Of_Constituent
+        (Nod : Node_Id) return Boolean;
+      --  Determine whether arbitrary node Nod denotes a Part_Of constituent of
+      --  a single protected type.
+
       procedure Kill_Lhs;
       --  This is called to kill current value settings of a simple variable
       --  on the left hand side. We call it if we find any error in analyzing
@@ -141,6 +146,10 @@ package body Sem_Ch5 is
       --  assignment statements that are really initializations. These are
       --  marked No_Ctrl_Actions.
 
+      function Within_Function return Boolean;
+      --  Determine whether the current scope is a function or appears within
+      --  one.
+
       -------------------------------
       -- Diagnose_Non_Variable_Lhs --
       -------------------------------
@@ -170,11 +179,7 @@ package body Sem_Ch5 is
                --  of single protected types, the private component appears
                --  directly.
 
-               elsif (Is_Prival (Ent)
-                       and then
-                         (Ekind (Current_Scope) = E_Function
-                           or else Ekind (Enclosing_Dynamic_Scope
-                                            (Current_Scope)) = E_Function))
+               elsif (Is_Prival (Ent) and then Within_Function)
                    or else
                      (Ekind (Ent) = E_Component
                        and then Is_Protected_Type (Scope (Ent)))
@@ -221,6 +226,39 @@ package body Sem_Ch5 is
 
          Error_Msg_N ("left hand side of assignment must be a variable", N);
       end Diagnose_Non_Variable_Lhs;
+
+      --------------------------------------
+      -- Is_Protected_Part_Of_Constituent --
+      --------------------------------------
+
+      function Is_Protected_Part_Of_Constituent
+        (Nod : Node_Id) return Boolean
+      is
+         Encap_Id : Entity_Id;
+         Var_Id   : Entity_Id;
+
+      begin
+         --  Abstract states and variables may act as Part_Of constituents of
+         --  single protected types, however only variables can be modified by
+         --  an assignment.
+
+         if Is_Entity_Name (Nod) then
+            Var_Id := Entity (Nod);
+
+            if Present (Var_Id) and then Ekind (Var_Id) = E_Variable then
+               Encap_Id := Encapsulating_State (Var_Id);
+
+               --  To qualify, the node must denote a reference to a variable
+               --  whose encapsulating state is a single protected object.
+
+               return
+                 Present (Encap_Id)
+                   and then Is_Single_Protected_Object (Encap_Id);
+            end if;
+         end if;
+
+         return False;
+      end Is_Protected_Part_Of_Constituent;
 
       --------------
       -- Kill_Lhs --
@@ -386,12 +424,31 @@ package body Sem_Ch5 is
          Insert_Action (N, Obj_Decl);
       end Transform_BIP_Assignment;
 
+      ---------------------
+      -- Within_Function --
+      ---------------------
+
+      function Within_Function return Boolean is
+         Scop_Id : constant Entity_Id := Current_Scope;
+
+      begin
+         if Ekind (Scop_Id) = E_Function then
+            return True;
+
+         elsif Ekind (Enclosing_Dynamic_Scope (Scop_Id)) = E_Function then
+            return True;
+         end if;
+
+         return False;
+      end Within_Function;
+
       --  Local variables
 
       T1 : Entity_Id;
       T2 : Entity_Id;
 
-      Save_Full_Analysis : Boolean;
+      Save_Full_Analysis : Boolean := False;
+      --  Force initialization to facilitate static analysis
 
       Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
       --  Save the Ghost mode to restore on exit
@@ -551,6 +608,46 @@ package body Sem_Ch5 is
       --  in-place.
 
       if Should_Transform_BIP_Assignment (Typ => T1) then
+
+         --  In certain cases involving user-defined concatenation operators,
+         --  we need to resolve the right-hand side before transforming the
+         --  assignment.
+
+         case Nkind (Unqual_Conv (Rhs)) is
+            when N_Function_Call =>
+               declare
+                  Actual     : Node_Id :=
+                    First (Parameter_Associations (Unqual_Conv (Rhs)));
+                  Actual_Exp : Node_Id;
+
+               begin
+                  while Present (Actual) loop
+                     if Nkind (Actual) = N_Parameter_Association then
+                        Actual_Exp := Explicit_Actual_Parameter (Actual);
+                     else
+                        Actual_Exp := Actual;
+                     end if;
+
+                     if Nkind (Actual_Exp) = N_Op_Concat then
+                        Resolve (Rhs, T1);
+                        exit;
+                     end if;
+
+                     Next (Actual);
+                  end loop;
+               end;
+
+            when N_Attribute_Reference
+               | N_Expanded_Name
+               | N_Identifier
+               | N_Op
+            =>
+               null;
+
+            when others =>
+               raise Program_Error;
+         end case;
+
          Transform_BIP_Assignment (Typ => T1);
       end if;
 
@@ -670,6 +767,15 @@ package body Sem_Ch5 is
       elsif Is_Abstract_Type (T1) and then Comes_From_Source (N) then
          Error_Msg_N
            ("target of assignment operation must not be abstract", Lhs);
+      end if;
+
+      --  Variables which are Part_Of constituents of single protected types
+      --  behave in similar fashion to protected components. Such variables
+      --  cannot be modified by protected functions.
+
+      if Is_Protected_Part_Of_Constituent (Lhs) and then Within_Function then
+         Error_Msg_N
+           ("protected function cannot modify protected object", Lhs);
       end if;
 
       --  Resolution may have updated the subtype, in case the left-hand side
@@ -945,6 +1051,14 @@ package body Sem_Ch5 is
         and then (not Has_Size_Clause (T1) or else Esize (T1) > 64)
       then
          Error_Msg_CRT ("composite assignment", N);
+      end if;
+
+      --  Check elaboration warning for left side if not in elab code
+
+      if Legacy_Elaboration_Checks
+        and not In_Subprogram_Or_Concurrent_Unit
+      then
+         Check_Elab_Assign (Lhs);
       end if;
 
       --  Save the scenario for later examination by the ABE Processing phase
@@ -1944,10 +2058,22 @@ package body Sem_Ch5 is
    ------------------------------------
 
    procedure Analyze_Iterator_Specification (N : Node_Id) is
+      Def_Id    : constant Node_Id    := Defining_Identifier (N);
+      Iter_Name : constant Node_Id    := Name (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Subt      : constant Node_Id    := Subtype_Indication (N);
+
+      Bas : Entity_Id := Empty;  -- initialize to prevent warning
+      Typ : Entity_Id;
+
       procedure Check_Reverse_Iteration (Typ : Entity_Id);
       --  For an iteration over a container, if the loop carries the Reverse
       --  indicator, verify that the container type has an Iterate aspect that
       --  implements the reversible iterator interface.
+
+      procedure Check_Subtype_Indication (Comp_Type : Entity_Id);
+      --  If a subtype indication is present, verify that it is consistent
+      --  with the component type of the array or container name.
 
       function Get_Cursor_Type (Typ : Entity_Id) return Entity_Id;
       --  For containers with Iterator and related aspects, the cursor is
@@ -1976,6 +2102,26 @@ package body Sem_Ch5 is
             end if;
          end if;
       end Check_Reverse_Iteration;
+
+      -------------------------------
+      --  Check_Subtype_Indication --
+      -------------------------------
+
+      procedure Check_Subtype_Indication (Comp_Type : Entity_Id) is
+      begin
+         if Present (Subt)
+           and then (not Covers (Base_Type ((Bas)), Comp_Type)
+                      or else not Subtypes_Statically_Match (Bas, Comp_Type))
+         then
+            if Is_Array_Type (Typ) then
+               Error_Msg_N
+                 ("subtype indication does not match component type", Subt);
+            else
+               Error_Msg_N
+                 ("subtype indication does not match element type", Subt);
+            end if;
+         end if;
+      end Check_Subtype_Indication;
 
       ---------------------
       -- Get_Cursor_Type --
@@ -2012,16 +2158,6 @@ package body Sem_Ch5 is
 
          return Etype (Ent);
       end Get_Cursor_Type;
-
-      --  Local variables
-
-      Def_Id    : constant Node_Id    := Defining_Identifier (N);
-      Iter_Name : constant Node_Id    := Name (N);
-      Loc       : constant Source_Ptr := Sloc (N);
-      Subt      : constant Node_Id    := Subtype_Indication (N);
-
-      Bas : Entity_Id := Empty;  -- initialize to prevent warning
-      Typ : Entity_Id;
 
    --   Start of processing for Analyze_Iterator_Specification
 
@@ -2280,15 +2416,7 @@ package body Sem_Ch5 is
                   & "component of a mutable object", N);
             end if;
 
-            if Present (Subt)
-              and then
-                (Base_Type (Bas) /= Base_Type (Component_Type (Typ))
-                  or else
-                    not Subtypes_Statically_Match (Bas, Component_Type (Typ)))
-            then
-               Error_Msg_N
-                 ("subtype indication does not match component type", Subt);
-            end if;
+            Check_Subtype_Indication (Component_Type (Typ));
 
          --  Here we have a missing Range attribute
 
@@ -2338,6 +2466,8 @@ package body Sem_Ch5 is
                   end if;
                end;
 
+               Check_Subtype_Indication (Etype (Def_Id));
+
             --  For a predefined container, The type of the loop variable is
             --  the Iterator_Element aspect of the container type.
 
@@ -2363,18 +2493,7 @@ package body Sem_Ch5 is
                      Cursor_Type := Get_Cursor_Type (Typ);
                      pragma Assert (Present (Cursor_Type));
 
-                     --  If subtype indication was given, verify that it covers
-                     --  the element type of the container.
-
-                     if Present (Subt)
-                       and then (not Covers (Bas, Etype (Def_Id))
-                                  or else not Subtypes_Statically_Match
-                                                (Bas, Etype (Def_Id)))
-                     then
-                        Error_Msg_N
-                          ("subtype indication does not match element type",
-                           Subt);
-                     end if;
+                     Check_Subtype_Indication (Etype (Def_Id));
 
                      --  If the container has a variable indexing aspect, the
                      --  element is a variable and is modifiable in the loop.
@@ -2665,7 +2784,6 @@ package body Sem_Ch5 is
       ------------------------------------
 
       function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean is
-
          function Check_Call (N : Node_Id) return Traverse_Result;
          --  Check if N is a function call which uses the secondary stack
 
@@ -2674,36 +2792,32 @@ package body Sem_Ch5 is
          ----------------
 
          function Check_Call (N : Node_Id) return Traverse_Result is
-            Nam        : Node_Id;
-            Subp       : Entity_Id;
-            Return_Typ : Entity_Id;
+            Nam  : Node_Id;
+            Subp : Entity_Id;
+            Typ  : Entity_Id;
 
          begin
             if Nkind (N) = N_Function_Call then
                Nam := Name (N);
 
-               --  Call using access to subprogram with explicit dereference
+               --  Obtain the subprogram being invoked
 
-               if Nkind (Nam) = N_Explicit_Dereference then
-                  Subp := Etype (Nam);
+               loop
+                  if Nkind (Nam) = N_Explicit_Dereference then
+                     Nam := Prefix (Nam);
 
-               --  Call using a selected component notation or Ada 2005 object
-               --  operation notation
+                  elsif Nkind (Nam) = N_Selected_Component then
+                     Nam := Selector_Name (Nam);
 
-               elsif Nkind (Nam) = N_Selected_Component then
-                  Subp := Entity (Selector_Name (Nam));
+                  else
+                     exit;
+                  end if;
+               end loop;
 
-               --  Common case
+               Subp := Entity (Nam);
+               Typ  := Etype (Subp);
 
-               else
-                  Subp := Entity (Nam);
-               end if;
-
-               Return_Typ := Etype (Subp);
-
-               if Is_Composite_Type (Return_Typ)
-                 and then not Is_Constrained (Return_Typ)
-               then
+               if Requires_Transient_Scope (Typ) then
                   return Abandon;
 
                elsif Sec_Stack_Needed_For_Return (Subp) then
@@ -3966,6 +4080,17 @@ package body Sem_Ch5 is
    begin
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
+
+      --  In addition to the above we must ecplicity suppress the
+      --  generation of freeze nodes which might otherwise be generated
+      --  during resolution of the range (e.g. if given by an attribute
+      --  that will freeze its prefix).
+
+      Set_Must_Not_Freeze (R_Copy);
+
+      if Nkind (R_Copy) = N_Attribute_Reference then
+         Set_Must_Not_Freeze (Prefix (R_Copy));
+      end if;
 
       Analyze (R_Copy);
 

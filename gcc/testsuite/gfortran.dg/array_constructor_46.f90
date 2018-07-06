@@ -9,6 +9,6 @@ program main
 
   data a /2._dp,3._dp,5._dp,7._dp/
   thirteen = 13._dp
-  if (abs (product([[11._dp, thirteen], a]) - 30030._dp) > 1e-8) call abort
+  if (abs (product([[11._dp, thirteen], a]) - 30030._dp) > 1e-8) STOP 1
 end program main
 ! { dg-final { scan-tree-dump-times "while" 2 "original" } }

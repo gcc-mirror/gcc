@@ -3,7 +3,7 @@
 
 struct A
 {
-  virtual A* foo();    // { dg-error "overriding" }
+  virtual A* foo();    // { dg-message "overridden" }
 };
 
 struct B : virtual A;  // { dg-error "before" }

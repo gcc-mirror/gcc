@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2017, AdaCore                     --
+--                     Copyright (C) 1999-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -123,7 +123,8 @@ package body System.Traceback.Symbolic is
    --  Return the String contained in Item, up until the first NUL character
 
    pragma Warnings (Off, "*Add_Module_To_Cache*");
-   procedure Add_Module_To_Cache (Module_Name : String);
+   procedure Add_Module_To_Cache (Module_Name : String;
+                                  Load_Address : System.Address);
    --  To be called by Build_Cache_For_All_Modules to add a new module to the
    --  list. May not be referenced.
 
@@ -132,10 +133,12 @@ package body System.Traceback.Symbolic is
       procedure Build_Cache_For_All_Modules;
       --  Create the cache for all current modules
 
-      function Get (Addr : access System.Address) return String;
-      --  Returns the module name for the given address, Addr may be updated
-      --  to be set relative to a shared library. This depends on the platform.
-      --  Returns an empty string for the main executable.
+      function Get (Addr : System.Address;
+                    Load_Addr : access System.Address) return String;
+      --  Returns the module name for the given address Addr, or an empty
+      --  string for the main executable.  Load_Addr is set to the shared
+      --  library load address if this information is available, or to
+      --  System.Null_Address otherwise.
 
       function Is_Supported return Boolean;
       pragma Inline (Is_Supported);
@@ -148,8 +151,8 @@ package body System.Traceback.Symbolic is
 
    function Executable_Name return String;
    --  Returns the executable name as reported by argv[0]. If gnat_argv not
-   --  initialized or if argv[0] executable not found in path, function returns
-   --  an empty string.
+   --  initialized, return an empty string. If the argv[0] executable is not
+   --  found in the PATH, return it unresolved.
 
    function Get_Executable_Load_Address return System.Address;
    pragma Import
@@ -215,12 +218,14 @@ package body System.Traceback.Symbolic is
    -- Add_Module_To_Cache --
    -------------------------
 
-   procedure Add_Module_To_Cache (Module_Name : String) is
+   procedure Add_Module_To_Cache (Module_Name : String;
+                                  Load_Address : System.Address)
+   is
       Module  : Module_Cache_Acc;
       Success : Boolean;
    begin
       Module := new Module_Cache;
-      Init_Module (Module.all, Success, Module_Name);
+      Init_Module (Module.all, Success, Module_Name, Load_Address);
       if not Success then
          Free (Module);
          return;
@@ -258,7 +263,7 @@ package body System.Traceback.Symbolic is
 
    function Lt (Left, Right : Module_Cache_Acc) return Boolean is
    begin
-      return Low (Left.C) < Low (Right.C);
+      return Low_Address (Left.C) < Low_Address (Right.C);
    end Lt;
 
    -----------------------------
@@ -284,6 +289,12 @@ package body System.Traceback.Symbolic is
 
       --  Add all modules
       Init_Exec_Module;
+
+      if Exec_Module_State = Failed then
+         raise Program_Error with
+           "cannot enable cache, executable state initialization failed.";
+      end if;
+
       Cache_Chain := Exec_Module'Access;
 
       if Include_Modules then
@@ -342,17 +353,33 @@ package body System.Traceback.Symbolic is
          return "";
       end if;
 
+      --  See if we can resolve argv[0] to a full path (to a file that we will
+      --  be able to open). If the resolution fails, we were probably spawned
+      --  by an imprecise exec call, typically passing a mere file name as
+      --  argv[0] for a program in the current directory with '.' not on PATH.
+      --  Best we can do is fallback to argv[0] unchanged in this case. If we
+      --  fail opening that downstream, we'll just bail out.
+
       declare
-         Addr : constant System.Address :=
-           locate_exec_on_path (Conv.To_Pointer (Gnat_Argv) (0));
-         Result : constant String := Value (Addr);
+         Argv0 : constant System.Address
+           := Conv.To_Pointer (Gnat_Argv) (0);
+
+         Resolved_Argv0 : constant System.Address
+           := locate_exec_on_path (Argv0);
+
+         Exe_Argv : constant System.Address
+           := (if Resolved_Argv0 /= System.Null_Address
+               then Resolved_Argv0
+               else Argv0);
+
+         Result : constant String := Value (Exe_Argv);
 
       begin
          --  The buffer returned by locate_exec_on_path was allocated using
-         --  malloc, so we should use free to release the memory.
+         --  malloc and we should release this memory.
 
-         if Addr /= Null_Address then
-            System.CRTL.free (Addr);
+         if Resolved_Argv0 /= Null_Address then
+            System.CRTL.free (Resolved_Argv0);
          end if;
 
          return Result;
@@ -464,7 +491,7 @@ package body System.Traceback.Symbolic is
             Hi := Modules_Cache'Last;
             while Lo <= Hi loop
                Mid := (Lo + Hi) / 2;
-               if Addr < Low (Modules_Cache (Mid).C) then
+               if Addr < Low_Address (Modules_Cache (Mid).C) then
                   Hi := Mid - 1;
                elsif Is_Inside (Modules_Cache (Mid).C, Addr) then
                   Multi_Module_Symbolic_Traceback
@@ -499,12 +526,14 @@ package body System.Traceback.Symbolic is
 
          --  Otherwise, try a shared library
          declare
-            Addr    : aliased System.Address := Traceback (F);
-            M_Name  : constant String        := Module_Name.Get (Addr'Access);
+            Load_Addr : aliased System.Address;
+            M_Name  : constant String :=
+              Module_Name.Get (Addr => Traceback (F),
+                               Load_Addr => Load_Addr'Access);
             Module  : Module_Cache;
             Success : Boolean;
          begin
-            Init_Module (Module, Success, M_Name, System.Null_Address);
+            Init_Module (Module, Success, M_Name, Load_Addr);
             if Success then
                Multi_Module_Symbolic_Traceback
                  (Traceback,

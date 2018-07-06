@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -295,8 +295,23 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	  return chrec_fold_plus_poly_poly (code, type, op0, op1);
 
 	CASE_CONVERT:
-	  if (tree_contains_chrecs (op1, NULL))
-	    return chrec_dont_know;
+	  {
+	    /* We can strip sign-conversions to signed by performing the
+	       operation in unsigned.  */
+	    tree optype = TREE_TYPE (TREE_OPERAND (op1, 0));
+	    if (INTEGRAL_TYPE_P (type)
+		&& INTEGRAL_TYPE_P (optype)
+		&& tree_nop_conversion_p (type, optype)
+		&& TYPE_UNSIGNED (optype))
+	      return chrec_convert (type,
+				    chrec_fold_plus_1 (code, optype,
+						       chrec_convert (optype,
+								      op0, NULL),
+						       TREE_OPERAND (op1, 0)),
+				    NULL);
+	    if (tree_contains_chrecs (op1, NULL))
+	      return chrec_dont_know;
+	  }
 	  /* FALLTHRU */
 
 	default:
@@ -313,8 +328,23 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	}
 
     CASE_CONVERT:
-      if (tree_contains_chrecs (op0, NULL))
-	return chrec_dont_know;
+      {
+	/* We can strip sign-conversions to signed by performing the
+	   operation in unsigned.  */
+	tree optype = TREE_TYPE (TREE_OPERAND (op0, 0));
+	if (INTEGRAL_TYPE_P (type)
+	    && INTEGRAL_TYPE_P (optype)
+	    && tree_nop_conversion_p (type, optype)
+	    && TYPE_UNSIGNED (optype))
+	  return chrec_convert (type,
+				chrec_fold_plus_1 (code, optype,
+						   TREE_OPERAND (op0, 0),
+						   chrec_convert (optype,
+								  op1, NULL)),
+				NULL);
+	if (tree_contains_chrecs (op0, NULL))
+	  return chrec_dont_know;
+      }
       /* FALLTHRU */
 
     default:
@@ -345,12 +375,10 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 
 	default:
 	  {
-	    int size = 0;
-	    if ((tree_contains_chrecs (op0, &size)
-		 || tree_contains_chrecs (op1, &size))
-		&& size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+	    if (tree_contains_chrecs (op0, NULL)
+		|| tree_contains_chrecs (op1, NULL))
 	      return build2 (code, type, op0, op1);
-	    else if (size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+	    else
 	      {
 		if (code == POINTER_PLUS_EXPR)
 		  return fold_build_pointer_plus (fold_convert (type, op0),
@@ -360,8 +388,6 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 				      fold_convert (type, op0),
 				      fold_convert (type, op1));
 	      }
-	    else
-	      return chrec_dont_know;
 	  }
 	}
     }
@@ -961,6 +987,7 @@ chrec_contains_symbols (const_tree chrec)
 
   if (TREE_CODE (chrec) == SSA_NAME
       || VAR_P (chrec)
+      || TREE_CODE (chrec) == POLY_INT_CST
       || TREE_CODE (chrec) == PARM_DECL
       || TREE_CODE (chrec) == FUNCTION_DECL
       || TREE_CODE (chrec) == LABEL_DECL
@@ -1161,6 +1188,7 @@ evolution_function_is_univariate_p (const_tree chrec)
 	    return false;
 	  break;
 	}
+      return true;
 
     default:
       return true;

@@ -30,7 +30,7 @@ program allocate_assign
       x = x2
       s = s+x(2)%headers(2)%parts(2)
    end do
-   if (s .ne. 40000) call abort
+   if (s .ne. 40000) STOP 1
 contains
 !
 ! TODO - these assignments lose 1872 bytes on x86_64/FC17

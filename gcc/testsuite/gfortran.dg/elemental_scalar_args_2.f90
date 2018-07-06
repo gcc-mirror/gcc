@@ -10,12 +10,12 @@
   integer :: j = 64
   character (len = 2) :: chr1 = "lm"
   character (len = 1), dimension (2) :: chr2 = ["r", "s"]
-  if (any (foo (i, bar()) .ne. ["a", "b"])) call abort    ! This would fail
-  if (any (foo (i, "xy") .ne. ["x", "y"])) call abort     ! OK - not a function
-  if (any (foo (i, chr1) .ne. ["l", "m"])) call abort     ! ditto
-  if (any (foo (i, char (j)) .ne. ["A", "B"])) call abort ! This would fail
-  if (any (foo (i, chr2) .ne. ["s", "u"])) call abort     ! OK - not a scalar
-  if (any (foo (i, bar2()) .ne. ["e", "g"])) call abort   ! OK - not a scalar function
+  if (any (foo (i, bar()) .ne. ["a", "b"])) STOP 1! This would fail
+  if (any (foo (i, "xy") .ne. ["x", "y"])) STOP 2! OK - not a function
+  if (any (foo (i, chr1) .ne. ["l", "m"])) STOP 3! ditto
+  if (any (foo (i, char (j)) .ne. ["A", "B"])) STOP 4! This would fail
+  if (any (foo (i, chr2) .ne. ["s", "u"])) STOP 5! OK - not a scalar
+  if (any (foo (i, bar2()) .ne. ["e", "g"])) STOP 6! OK - not a scalar function
 contains
   elemental character(len = 1) function foo (arg1, arg2)
     integer, intent (in) :: arg1

@@ -13,7 +13,7 @@ subroutine assert(expected, actual, str)
   do i=1,9
     if (expected .ne. actual(i)) then
       write (*, '(A,I8,I8)') str, expected, actual(i)
-      call abort()
+      STOP 1
     endif
   enddo
 end subroutine

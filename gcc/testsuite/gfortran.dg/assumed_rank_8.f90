@@ -24,20 +24,20 @@ program main
   call f ()
   call f (null())
   call f (kk)
-  if (j /= 2) call abort()
+  if (j /= 2) STOP 1
 
   j = 0
   nullify (ll)
   call g (null())
   call g (ll)
   call g (ii)
-  if (j /= 1) call abort()
+  if (j /= 1) STOP 2
 
   j = 0
   call h (kk)
   kk = 489
   call h (kk)
-  if (j /= 1) call abort()
+  if (j /= 1) STOP 3
 
 contains
 
@@ -45,7 +45,7 @@ contains
     integer, optional :: x(..)
 
     if (.not. present (x)) return
-    if (rank (x) /= 0) call abort
+    if (rank (x) /= 0) STOP 1
     call check (x)
     j = j + 1
   end subroutine
@@ -54,7 +54,7 @@ contains
     integer, pointer, intent(in) :: x(..)
 
     if (.not. associated (x)) return
-    if (rank (x) /= 0) call abort ()
+    if (rank (x) /= 0) STOP 4
     call check (x)
     j = j + 1
   end subroutine
@@ -63,7 +63,7 @@ contains
     integer, allocatable :: x(..)
 
     if (.not. allocated (x)) return
-    if (rank (x) /= 0) call abort
+    if (rank (x) /= 0) STOP 2
     call check (x)
     j = j + 1
   end subroutine

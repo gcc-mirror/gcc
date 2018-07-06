@@ -12,5 +12,5 @@ program test2
 1 format(i0,a,i0,a,i0,a)
   rewind(10)
   read(10,'(a)') string
-  if (string /= ucs4_"2008\u5e748\u670810\u65e5") call abort
+  if (string /= ucs4_"2008\u5e748\u670810\u65e5") STOP 1
 end program test2

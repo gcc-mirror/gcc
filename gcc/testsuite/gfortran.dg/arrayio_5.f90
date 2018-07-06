@@ -8,6 +8,6 @@ program arrayio_5
   character(12)  :: r(10) = '0123456789AB'
 
   write(r,'(i12)',iostat=ierr) 1,2,3,4,5,6,7,8,9,10,11
-  if (ierr.ne.-1) call abort()
+  if (ierr.ne.-1) STOP 1
  end program arrayio_5
 

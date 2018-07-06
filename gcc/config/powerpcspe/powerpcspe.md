@@ -1,5 +1,5 @@
 ;; Machine description for IBM RISC System 6000 (POWER) for GNU C compiler
-;; Copyright (C) 1990-2017 Free Software Foundation, Inc.
+;; Copyright (C) 1990-2018 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GCC.
@@ -8113,7 +8113,7 @@
     RTVEC_ELT (v, i) = const0_rtx;
 
   high = (BYTES_BIG_ENDIAN) ? 0 : 15;
-  RTVEC_ELT (v, high) = GEN_INT (0x80);
+  RTVEC_ELT (v, high) = gen_int_mode (0x80, QImode);
 
   rs6000_expand_vector_init (operands[0], gen_rtx_PARALLEL (V16QImode, v));
   DONE;

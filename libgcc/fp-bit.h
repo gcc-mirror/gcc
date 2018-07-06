@@ -1,5 +1,5 @@
 /* Header file for fp-bit.c.  */
-/* Copyright (C) 2000-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

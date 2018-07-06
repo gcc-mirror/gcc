@@ -1,5 +1,5 @@
 /* brig-branch-inst-handler.cc -- brig branch instruction handling
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -119,10 +119,11 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	 memory.  */
 
       tree group_local_offset
-	= add_temp_var ("group_local_offset",
-			build_int_cst
-			(uint32_type_node,
-			 m_parent.m_cf->m_local_group_variables.size()));
+	= m_parent.m_cf->add_temp_var ("group_local_offset",
+				       build_int_cst
+				       (uint32_type_node,
+					m_parent.m_cf->
+					m_local_group_variables.size()));
 
       /* TODO: ensure the callee's frame is aligned!  */
 
@@ -150,6 +151,9 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	}
 
       m_parent.m_cf->m_called_functions.push_back (func_ref);
+      if (DECL_EXTERNAL (func_ref))
+	m_parent.add_decl_call (call);
+      m_parent.m_cf->start_new_bb ();
 
       return base->byteCount;
     }
@@ -167,8 +171,8 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
       tree select = operands[0];
       tree cases = operands[1];
 
-      tree switch_expr = build3 (SWITCH_EXPR, TREE_TYPE (select), select,
-				 NULL_TREE, NULL_TREE);
+      tree switch_expr = build2 (SWITCH_EXPR, TREE_TYPE (select), select,
+				 NULL_TREE);
 
       tree default_case
 	= build_case_label (NULL_TREE, NULL_TREE,
@@ -214,18 +218,21 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	 ensure the barrier won't be duplicated or moved out of loops etc.
 	 Like the 'noduplicate' of LLVM.  Same goes for fbarriers.  */
       m_parent.m_cf->append_statement
-	(expand_or_call_builtin (brig_inst->opcode, BRIG_TYPE_NONE, NULL_TREE,
-				 call_operands));
+	(m_parent.m_cf->expand_or_call_builtin (brig_inst->opcode,
+						BRIG_TYPE_NONE, NULL_TREE,
+						call_operands));
     }
   else if (brig_inst->opcode >= BRIG_OPCODE_ARRIVEFBAR
 	   && brig_inst->opcode <= BRIG_OPCODE_WAITFBAR)
     {
       m_parent.m_cf->m_has_barriers = true;
       m_parent.m_cf->append_statement
-	(expand_or_call_builtin (brig_inst->opcode, BRIG_TYPE_NONE,
-				 uint32_type_node, operands));
+	(m_parent.m_cf->expand_or_call_builtin (brig_inst->opcode,
+						BRIG_TYPE_NONE,
+						uint32_type_node, operands));
     }
   else
     gcc_unreachable ();
+  m_parent.m_cf->start_new_bb ();
   return base->byteCount;
 }

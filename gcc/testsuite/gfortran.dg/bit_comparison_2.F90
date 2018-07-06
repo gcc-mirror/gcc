@@ -5,14 +5,14 @@
 ! { dg-require-effective-target fortran_integer_16 }
 
 #define CHECK(I,J,RES) \
-  if (bge(I,J) .neqv. RES) call abort ; \
-  if (run_bge(I,J) .neqv. RES) call abort ; \
-  if (bgt(I,J) .neqv. (RES .and. (I/=J))) call abort ; \
-  if (run_bgt(I,J) .neqv. (RES .and. (I/=J))) call abort ; \
-  if (ble(J,I) .neqv. RES) call abort ; \
-  if (run_ble(J,I) .neqv. RES) call abort ; \
-  if (blt(J,I) .neqv. (RES .and. (I/=J))) call abort ; \
-  if (run_blt(J,I) .neqv. (RES .and. (I/=J))) call abort
+  if (bge(I,J) .neqv. RES) STOP 1; \
+  if (run_bge(I,J) .neqv. RES) STOP 2; \
+  if (bgt(I,J) .neqv. (RES .and. (I/=J))) STOP 3; \
+  if (run_bgt(I,J) .neqv. (RES .and. (I/=J))) STOP 4; \
+  if (ble(J,I) .neqv. RES) STOP 5; \
+  if (run_ble(J,I) .neqv. RES) STOP 6; \
+  if (blt(J,I) .neqv. (RES .and. (I/=J))) STOP 7; \
+  if (run_blt(J,I) .neqv. (RES .and. (I/=J))) STOP 8
 
 #define T .true.
 #define F .false.

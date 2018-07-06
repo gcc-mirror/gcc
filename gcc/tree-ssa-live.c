@@ -1,5 +1,5 @@
 /* Liveness for SSA trees.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -548,10 +548,10 @@ remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
      }
    else if (BLOCK_VARS (scope) || BLOCK_NUM_NONLOCALIZED_VARS (scope))
      unused = false;
-   /* See if this block is important for representation of inlined function.
-      Inlined functions are always represented by block with
-      block_ultimate_origin being set to FUNCTION_DECL and DECL_SOURCE_LOCATION
-      set...  */
+   /* See if this block is important for representation of inlined
+      function.  Inlined functions are always represented by block
+      with block_ultimate_origin being set to FUNCTION_DECL and
+      DECL_SOURCE_LOCATION set, unless they expand to nothing...  */
    else if (inlined_function_outer_scope_p (scope))
      unused = false;
    else
@@ -640,6 +640,16 @@ dump_scope_block (FILE *file, int indent, tree scope, dump_flags_t flags)
 	    fprintf (file, "#%i", BLOCK_NUMBER (origin));
 	}
     }
+  if (BLOCK_FRAGMENT_ORIGIN (scope))
+    fprintf (file, " Fragment of : #%i",
+	     BLOCK_NUMBER (BLOCK_FRAGMENT_ORIGIN (scope)));
+  else if (BLOCK_FRAGMENT_CHAIN (scope))
+    {
+      fprintf (file, " Fragment chain :");
+      for (t = BLOCK_FRAGMENT_CHAIN (scope); t ;
+	   t = BLOCK_FRAGMENT_CHAIN (t))
+	fprintf (file, " #%i", BLOCK_NUMBER (t));
+    }
   fprintf (file, " \n");
   for (var = BLOCK_VARS (scope); var; var = DECL_CHAIN (var))
     {
@@ -724,6 +734,10 @@ remove_unused_locals (void)
 	  gimple *stmt = gsi_stmt (gsi);
 	  tree b = gimple_block (stmt);
 
+	  /* If we wanted to mark the block referenced by the inline
+	     entry point marker as used, this would be a good spot to
+	     do it.  If the block is not otherwise used, the stmt will
+	     be cleaned up in clean_unused_block_pointer.  */
 	  if (is_gimple_debug (stmt))
 	    continue;
 

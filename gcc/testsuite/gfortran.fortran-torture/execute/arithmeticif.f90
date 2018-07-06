@@ -19,7 +19,7 @@ program testwrite
    integer i
    integer testif
 
-   if (testif (-10) .ne. -1) call abort
-   if (testif (0) .ne. 0) call abort
-   if (testif (10) .ne. 1) call abort
+   if (testif (-10) .ne. -1) STOP 1
+   if (testif (0) .ne. 0) STOP 2
+   if (testif (10) .ne. 1) STOP 3
 end program

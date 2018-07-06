@@ -262,55 +262,55 @@ contains
 
  subroutine s2(x)
    class(t), intent(in), optional :: x
-   if (present (x)) call abort ()
+   if (present (x)) STOP 1
    !print *, present(x)
  end subroutine s2
  subroutine s2p(x,psnt)
    class(t), intent(in), pointer, optional :: x
    logical psnt
-   if (present (x).neqv. psnt) call abort ()
+   if (present (x).neqv. psnt) STOP 2
    !print *, present(x)
  end subroutine s2p
  subroutine s2caf(x)
    class(t), intent(in), optional :: x[*]
-   if (present (x)) call abort ()
+   if (present (x)) STOP 3
    !print *, present(x)
  end subroutine s2caf
  subroutine s2t(x)
    type(t), intent(in), optional :: x
-   if (present (x)) call abort ()
+   if (present (x)) STOP 4
    !print *, present(x)
  end subroutine s2t
  subroutine s2t2(x)
    type(t2), intent(in), optional :: x
-   if (present (x)) call abort ()
+   if (present (x)) STOP 5
    !print *, present(x)
  end subroutine s2t2
  subroutine s2tp(x, psnt)
    type(t), pointer, intent(in), optional :: x
    logical psnt
-   if (present (x).neqv. psnt) call abort ()
+   if (present (x).neqv. psnt) STOP 6
    !print *, present(x)
  end subroutine s2tp
  subroutine s2t2p(x, psnt)
    type(t2), pointer, intent(in), optional :: x
    logical psnt
-   if (present (x).neqv. psnt) call abort ()
+   if (present (x).neqv. psnt) STOP 7
    !print *, present(x)
  end subroutine s2t2p
  impure elemental subroutine s2elem(x)
    class(t), intent(in), optional :: x
-   if (present (x)) call abort ()
+   if (present (x)) STOP 8
    !print *, present(x)
  end subroutine s2elem
  impure elemental subroutine s2elem_t(x)
    type(t), intent(in), optional :: x
-   if (present (x)) call abort ()
+   if (present (x)) STOP 9
    !print *, present(x)
  end subroutine s2elem_t
  impure elemental subroutine s2elem_t2(x)
    type(t2), intent(in), optional :: x
-   if (present (x)) call abort ()
+   if (present (x)) STOP 10
    !print *, present(x)
  end subroutine s2elem_t2
 
@@ -486,18 +486,18 @@ contains
 
  subroutine a2(x)
    class(t), intent(in), optional :: x(:)
-   if (present (x)) call abort ()
+   if (present (x)) STOP 11
    ! print *, present(x)
  end subroutine a2
  subroutine a2p(x, psnt)
    class(t), pointer, intent(in), optional :: x(:)
    logical psnt
-   if (present (x).neqv. psnt) call abort ()
+   if (present (x).neqv. psnt) STOP 12
    ! print *, present(x)
  end subroutine a2p
  subroutine a2caf(x)
    class(t), intent(in), optional :: x(:)[*]
-   if (present (x)) call abort ()
+   if (present (x)) STOP 13
    ! print *, present(x)
  end subroutine a2caf
 
@@ -687,67 +687,67 @@ contains
 
  subroutine a4(x)
    class(t), intent(in), optional :: x(4)
-   if (present (x)) call abort ()
+   if (present (x)) STOP 14
    !print *, present(x)
  end subroutine a4
  subroutine a4p(x, psnt)
    class(t), pointer, intent(in), optional :: x(:)
    logical psnt
-   if (present (x).neqv. psnt) call abort ()
+   if (present (x).neqv. psnt) STOP 15
    !print *, present(x)
  end subroutine a4p
  subroutine a4caf(x)
    class(t), intent(in), optional :: x(4)[*]
-   if (present (x)) call abort ()
+   if (present (x)) STOP 16
    !print *, present(x)
  end subroutine a4caf
  subroutine a4t(x)
    type(t), intent(in), optional :: x(4)
-   if (present (x)) call abort ()
+   if (present (x)) STOP 17
    !print *, present(x)
  end subroutine a4t
  subroutine a4t2(x)
    type(t2), intent(in), optional :: x(4)
-   if (present (x)) call abort ()
+   if (present (x)) STOP 18
    !print *, present(x)
  end subroutine a4t2
  subroutine a4tp(x, psnt)
    type(t), pointer, intent(in), optional :: x(:)
    logical psnt
-   if (present (x).neqv. psnt) call abort ()
+   if (present (x).neqv. psnt) STOP 19
    !print *, present(x)
  end subroutine a4tp
  subroutine a4t2p(x, psnt)
    type(t2), pointer, intent(in), optional :: x(:)
    logical psnt
-   if (present (x).neqv. psnt) call abort ()
+   if (present (x).neqv. psnt) STOP 20
    !print *, present(x)
  end subroutine a4t2p
 
 
  subroutine ar(x)
    class(t), intent(in), optional :: x(..)
-   if (present (x)) call abort ()
+   if (present (x)) STOP 21
    !print *, present(x)
  end subroutine ar
 
  subroutine art(x)
    type(t), intent(in), optional :: x(..)
-   if (present (x)) call abort ()
+   if (present (x)) STOP 22
    !print *, present(x)
  end subroutine art
 
  subroutine arp(x, psnt)
    class(t), pointer, intent(in), optional :: x(..)
    logical psnt
-   if (present (x).neqv. psnt) call abort ()
+   if (present (x).neqv. psnt) STOP 23
    !print *, present(x)
  end subroutine arp
 
  subroutine artp(x, psnt)
    type(t), intent(in), pointer, optional :: x(..)
    logical psnt
-   if (present (x).neqv. psnt) call abort ()
+   if (present (x).neqv. psnt) STOP 24
    !print *, present(x)
  end subroutine artp
 

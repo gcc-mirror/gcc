@@ -28,15 +28,15 @@ integer, pointer :: dp2 => vec(2)
 integer, pointer :: dp3 => u%i
 
 dp = 5
-if (i0/=5) call abort()
+if (i0/=5) STOP 1
 
 u%dpc = 6
-if (i0/=6) call abort()
+if (i0/=6) STOP 2
 
 dp2 = 3
-if (vec(2)/=3) call abort()
+if (vec(2)/=3) STOP 3
 
 dp3 = 4
-if (u%i/=4) call abort()
+if (u%i/=4) STOP 4
 
 end 

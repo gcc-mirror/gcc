@@ -40,7 +40,7 @@ foo ()
   D *d7 = new D { 9 };	// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target c++14_down } }
   E *e5 = new E { -4 };	// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
 			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char' inside" "" { target c++17 } .-1 }
-  bar ({ 10 });		// { dg-error "cannot convert \[^\n\r]* to 'E' for argument" }
+  bar ({ 10 });		// { dg-error "cannot convert \[^\n\r]* to 'E'" }
   bar (E { 9 });	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   V v1 = { { 11 } };	// { dg-error "braces around scalar initializer for type 'E'" }
   V v2 = { E { 12 } };	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
@@ -106,7 +106,7 @@ foo2 ()
   D *d7 = new D { 9 };	// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target c++14_down } }
   E *e5 = new E { -4 };	// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
 			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char' inside" "" { target c++17 } .-1 }
-  bar ({ 10 });		// { dg-error "cannot convert \[^\n\r]* to 'E' for argument" }
+  bar ({ 10 });		// { dg-error "cannot convert \[^\n\r]* to 'E'" }
   bar (E { 9 });	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   V v1 = { { 11 } };	// { dg-error "braces around scalar initializer for type 'E'" }
   V v2 = { E { 12 } };	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
@@ -174,7 +174,7 @@ foo3 ()
   K *d7 = new K { 9 };	// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target c++14_down } }
   L *e5 = new L { -4 };	// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
 			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char' inside" "" { target c++17 } .-1 }
-  bar3 ({ 10 });	// { dg-error "cannot convert \[^\n\r]* to 'E' for argument" }
+  bar3 ({ 10 });	// { dg-error "cannot convert \[^\n\r]* to 'E'" }
   bar3 (E { 9 });	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   M v1 = { { 11 } };	// { dg-error "braces around scalar initializer for type 'E'" }
   M v2 = { L { 12 } };	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }

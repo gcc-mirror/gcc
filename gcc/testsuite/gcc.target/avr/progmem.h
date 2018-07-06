@@ -13,6 +13,10 @@
             __asm__ ("lpm %0, %a1"                          \
                      : "=r" (__result) : "z" (__addr16));   \
             __result; }))
+#elif defined (__AVR_TINY__)
+/* PR71948 auto-adds 0x4000 as needed, hance just a plain read. */
+#define pgm_read_char(addr)                                 \
+  (*(addr))
 #else
 #define pgm_read_char(addr)                                 \
     (__extension__({                                        \

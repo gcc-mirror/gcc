@@ -1,5 +1,5 @@
 /* Implement classes and message passing for Objective C.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GCC.
@@ -8003,7 +8003,7 @@ finish_class (tree klass)
 		    char *setter_name = (char *) alloca (length);
 		    tree ret_type, selector, arg_type, arg_name;
 
-		    strcpy (setter_name, full_setter_name);
+		    memcpy (setter_name, full_setter_name, length - 1);
 		    setter_name[length - 1] = '\0';
 		    ret_type = build_tree_list (NULL_TREE, void_type_node);
 		    arg_type = build_tree_list (NULL_TREE, TREE_TYPE (x));

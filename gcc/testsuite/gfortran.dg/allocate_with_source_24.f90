@@ -117,16 +117,16 @@ contains
     type(field_data_t), intent(in) :: prt_src
     integer :: i
     if (allocated (prt_src%name)) then
-       if (prt_src%name(1) /= "foo") call abort()
-       if (prt_src%name(2) /= "bar") call abort()
+       if (prt_src%name(1) /= "foo") STOP 1
+       if (prt_src%name(2) /= "bar") STOP 2
 
        if (allocated (prt%name))  deallocate (prt%name)
        allocate (prt%name (size (prt_src%name)), source = prt_src%name)
        ! The issue was, that prt_src was empty after sourced-allocate.
-       if (prt_src%name(1) /= "foo") call abort()
-       if (prt_src%name(2) /= "bar") call abort()
-       if (prt%name(1) /= "foo") call abort()
-       if (prt%name(2) /= "bar") call abort()
+       if (prt_src%name(1) /= "foo") STOP 3
+       if (prt_src%name(2) /= "bar") STOP 4
+       if (prt%name(1) /= "foo") STOP 5
+       if (prt%name(2) /= "bar") STOP 6
     end if
   end subroutine copy
 

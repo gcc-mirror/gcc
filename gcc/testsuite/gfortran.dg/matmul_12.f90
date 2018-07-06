@@ -18,5 +18,5 @@ program main
   r(1:su,1:su) = matmul(a(l:u,l:u),b(l:u,l:u))
   if (any(reshape(r,[sz*sz]) /= [30, 36, 42, -1, -1, 66, 81, 96, -1, -1,&
        & 102, 126, 150, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1])) &
-       call abort
+       STOP 1
 end program main

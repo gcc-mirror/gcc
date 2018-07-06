@@ -7,13 +7,13 @@ program select_3
   do i = 1, 4
      select case(i)
      case (1)
-       if (i /= 1) call abort
+       if (i /= 1) STOP 1
      case (3:2)
-       call abort
+       STOP 2
      case (4)
-       if (i /= 4) call abort
+       if (i /= 4) STOP 3
      case default
-       if (i /= 2 .and. i /= 3) call abort
+       if (i /= 2 .and. i /= 3) STOP 4
      end select
   end do
 end program select_3

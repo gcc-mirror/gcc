@@ -41,7 +41,7 @@ use y, operator(.my.) => operator(.addfive.)
 use z
  integer :: i
  i = 2
- if ((.bar. i) /= 2+25) call abort ()
- if ((.my. i) /= 2+15) call abort ()
- if ((.addfive. i) /= 2+5) call abort ()
+ if ((.bar. i) /= 2+25) STOP 1
+ if ((.my. i) /= 2+15) STOP 2
+ if ((.addfive. i) /= 2+5) STOP 3
 end

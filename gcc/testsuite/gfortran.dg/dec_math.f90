@@ -10,7 +10,7 @@
     character(len=*), intent(in) :: str
     if ( abs(f2 - f1) .gt. tolerance ) then
       write (*, '(A,F12.6,F12.6)') str, f1, f2
-      call abort()
+      STOP 1
     endif
   endsubroutine
 
@@ -20,7 +20,7 @@
     character(len=*), intent(in) :: str
     if ( dabs(d2 - d1) .gt. tolerance ) then
       write (*, '(A,F12.6,F12.6)') str, d1, d2
-      call abort()
+      STOP 2
     endif
   endsubroutine
 

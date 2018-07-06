@@ -37,7 +37,7 @@ CONTAINS
      REAL :: a(3)
      REAL :: b(3) = [1, 2, 3]
      a=MATMUL(cell%h,b)
-     if (ANY (INT (a) .ne. [30, 36, 42])) call abort
+     if (ANY (INT (a) .ne. [30, 36, 42])) STOP 1
   END SUBROUTINE S1
 END MODULE M1
 

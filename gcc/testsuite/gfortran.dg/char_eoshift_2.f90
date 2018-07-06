@@ -46,9 +46,9 @@ contains
         do i1 = 1, n1
           i2p = i2 + shift1 (i1, i3)
           if (i2p .gt. n2) then
-            if (b (i1, i2, i3) .ne. filler) call abort
+            if (b (i1, i2, i3) .ne. filler) STOP 1
           else
-            if (b (i1, i2, i3) .ne. a (i1, i2p, i3)) call abort
+            if (b (i1, i2, i3) .ne. a (i1, i2p, i3)) STOP 2
           end if
         end do
       end do

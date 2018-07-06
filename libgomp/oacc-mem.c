@@ -1,6 +1,6 @@
 /* OpenACC Runtime initialization routines
 
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -723,7 +723,7 @@ gomp_acc_remove_pointer (void *h, bool force_copyfrom, int async, int mapnum)
   gomp_mutex_unlock (&acc_dev->lock);
 
   /* If running synchronously, unmap immediately.  */
-  if (async < acc_async_noval)
+  if (async_synchronous_p (async))
     gomp_unmap_vars (t, true);
   else
     t->device_descr->openacc.register_async_cleanup_func (t, async);

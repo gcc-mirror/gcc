@@ -4,8 +4,6 @@
 
 #define N 128
 
-volatile int y = 0;
-
 static inline void
 vfoo64 (unsigned long long* a)
 {
@@ -27,8 +25,7 @@ main (void)
     {
       arr[i] = i;
       expect[i] = __builtin_bswap64 (i);
-      if (y) /* Avoid vectorisation.  */
-        abort ();
+      asm volatile ("" ::: "memory");
     }
 
   vfoo64 (arr);

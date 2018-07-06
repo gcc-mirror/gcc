@@ -28,7 +28,10 @@ int main ()
   check_vect ();
 
   for (i = 0; i < N; i++)
-    a[i] = i;
+    {
+      a[i] = i;
+      asm volatile ("" ::: "memory");
+    }
 
   foo (a, 4);
 
@@ -42,10 +45,6 @@ int main ()
   return 0;
 }
 
-/* Basic blocks of if-converted loops are vectorized from within the loop
-   vectorizer pass.  In this case it is really a deficiency in loop
-   vectorization data dependence analysis that causes us to require
-   basic block vectorization in the first place.  */
-
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "vect" { target vect_element_align } } } */
+/* { dg-final { scan-tree-dump {(no need for alias check [^\n]* when VF is 1|no alias between [^\n]* when [^\n]* is outside \(-16, 16\))} "vect" { target vect_element_align } } } */
+/* { dg-final { scan-tree-dump-times "loop vectorized" 1 "vect" { target vect_element_align } } } */
 

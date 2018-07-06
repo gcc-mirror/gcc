@@ -24,6 +24,9 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+
+	"cmd/internal/edit"
+	"cmd/internal/objabi"
 )
 
 // A Package collects information about the package we're going to write.
@@ -54,6 +57,12 @@ type File struct {
 	Calls    []*Call             // all calls to C.xxx in AST
 	ExpFunc  []*ExpFunc          // exported functions for this file
 	Name     map[string]*Name    // map from Go name to Name
+	NamePos  map[*Name]token.Pos // map from Name to position of the first reference
+	Edit     *edit.Buffer
+}
+
+func (f *File) offset(p token.Pos) int {
+	return fset.Position(p).Offset
 }
 
 func nameKeys(m map[string]*Name) []string {
@@ -75,7 +84,7 @@ type Call struct {
 type Ref struct {
 	Name    *Name
 	Expr    *ast.Expr
-	Context string // "type", "expr", "call", or "call2"
+	Context astContext
 }
 
 func (r *Ref) Pos() token.Pos {
@@ -88,7 +97,7 @@ type Name struct {
 	Mangle   string // name used in generated Go
 	C        string // name used in C
 	Define   string // #define expansion
-	Kind     string // "iconst", "uconst", "fconst", "sconst", "type", "var", "fpvar", "func", "not-type"
+	Kind     string // "iconst", "fconst", "sconst", "type", "var", "fpvar", "func", "macro", "not-type"
 	Type     *Type  // the type of xxx
 	FuncType *FuncType
 	AddError bool
@@ -100,12 +109,12 @@ func (n *Name) IsVar() bool {
 	return n.Kind == "var" || n.Kind == "fpvar"
 }
 
-// IsConst reports whether Kind is either "iconst", "uconst", "fconst" or "sconst"
+// IsConst reports whether Kind is either "iconst", "fconst" or "sconst"
 func (n *Name) IsConst() bool {
 	return strings.HasSuffix(n.Kind, "const")
 }
 
-// A ExpFunc is an exported function, callable from C.
+// An ExpFunc is an exported function, callable from C.
 // Such functions are identified in the Go input file
 // by doc comments containing the line //export ExpName
 type ExpFunc struct {
@@ -156,11 +165,15 @@ var ptrSizeMap = map[string]int64{
 	"mips64le":    8,
 	"mips64p32":   4,
 	"mips64p32le": 4,
+	"nios2":       4,
 	"ppc":         4,
 	"ppc64":       8,
 	"ppc64le":     8,
+	"riscv64":     8,
 	"s390":        4,
 	"s390x":       8,
+	"sh":          4,
+	"shbe":        4,
 	"sparc":       4,
 	"sparc64":     8,
 }
@@ -178,11 +191,15 @@ var intSizeMap = map[string]int64{
 	"mips64le":    8,
 	"mips64p32":   8,
 	"mips64p32le": 8,
+	"nios2":       4,
 	"ppc":         4,
 	"ppc64":       8,
 	"ppc64le":     8,
+	"riscv64":     8,
 	"s390":        4,
 	"s390x":       8,
+	"sh":          4,
+	"shbe":        4,
 	"sparc":       4,
 	"sparc64":     8,
 }
@@ -214,6 +231,7 @@ var importSyscall = flag.Bool("import_syscall", true, "import syscall in generat
 var goarch, goos string
 
 func main() {
+	objabi.AddVersionFlag() // -V
 	flag.Usage = usage
 	flag.Parse()
 
@@ -294,6 +312,7 @@ func main() {
 		}
 
 		f := new(File)
+		f.Edit = edit.NewBuffer(b)
 		f.ParseGo(input, b)
 		f.DiscardCgoDirectives()
 		fs[i] = f
@@ -314,11 +333,13 @@ func main() {
 		p.Translate(f)
 		for _, cref := range f.Ref {
 			switch cref.Context {
-			case "call", "call2":
+			case ctxCall, ctxCall2:
 				if cref.Name.Kind != "type" {
 					break
 				}
+				old := *cref.Expr
 				*cref.Expr = cref.Name.Type.Go
+				f.Edit.Replace(f.offset(old.Pos()), f.offset(old.End()), gofmt(cref.Name.Type.Go))
 			}
 		}
 		if nerrors > 0 {

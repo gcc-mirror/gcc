@@ -1,6 +1,6 @@
 // hashtable.h header -*- C++ -*-
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       =  __not_<__and_<// Do not cache for fast hasher.
 		       __is_fast_hash<_Hash>,
 		       // Mandatory to have erase not throwing.
-		       __detail::__is_noexcept_hash<_Tp, _Hash>>>;
+		       __is_nothrow_invocable<const _Hash&, const _Tp&>>>;
 
   /**
    *  Primary class template _Hashtable.
@@ -186,6 +186,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       __detail::_Hash_node<_Value,
 					    _Traits::__hash_cached::value>>>
     {
+      static_assert(is_same<typename remove_cv<_Value>::type, _Value>::value,
+	  "unordered container must have a non-const, non-volatile value_type");
+#ifdef __STRICT_ANSI__
+      static_assert(is_same<typename _Alloc::value_type, _Value>{},
+	  "unordered container must have the same value_type as its allocator");
+#endif
+      static_assert(__is_invocable<const _H1&, const _Key&>{},
+	  "hash function must be invocable with an argument of key type");
+      static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
+	  "key equality predicate must be invocable with two arguments of "
+	  "key type");
+
       using __traits_type = _Traits;
       using __hash_cached = typename __traits_type::__hash_cached;
       using __node_type = __detail::_Hash_node<_Value, __hash_cached::value>;
@@ -475,7 +487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__reuse_or_alloc_node_type __roan(_M_begin(), *this);
 	_M_before_begin._M_nxt = nullptr;
 	clear();
-	this->_M_insert_range(__l.begin(), __l.end(), __roan);
+	this->_M_insert_range(__l.begin(), __l.end(), __roan, __unique_keys());
 	return *this;
       }
 
@@ -663,7 +675,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // deallocate it on exception.
       iterator
       _M_insert_unique_node(size_type __bkt, __hash_code __code,
-			    __node_type* __n);
+			    __node_type* __n, size_type __n_elt = 1);
 
       // Insert node with hash code __code. Take ownership of the node,
       // deallocate it on exception.
@@ -692,12 +704,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
-	_M_insert(_Arg&&, const _NodeGenerator&, std::true_type);
+	_M_insert(_Arg&&, const _NodeGenerator&, true_type, size_type = 1);
 
       template<typename _Arg, typename _NodeGenerator>
 	iterator
 	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
-		  std::false_type __uk)
+		  false_type __uk)
 	{
 	  return _M_insert(cend(), std::forward<_Arg>(__arg), __node_gen,
 			   __uk);
@@ -707,7 +719,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Arg, typename _NodeGenerator>
 	iterator
 	_M_insert(const_iterator, _Arg&& __arg,
-		  const _NodeGenerator& __node_gen, std::true_type __uk)
+		  const _NodeGenerator& __node_gen, true_type __uk)
 	{
 	  return
 	    _M_insert(std::forward<_Arg>(__arg), __node_gen, __uk).first;
@@ -717,7 +729,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Arg, typename _NodeGenerator>
 	iterator
 	_M_insert(const_iterator, _Arg&&,
-		  const _NodeGenerator&, std::false_type);
+		  const _NodeGenerator&, false_type);
 
       size_type
       _M_erase(std::true_type, const key_type&);
@@ -869,6 +881,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      node_type>, "Node types are compatible");
 	  __glibcxx_assert(get_allocator() == __src.get_allocator());
 
+	  auto __n_elt = __src.size();
 	  for (auto __i = __src.begin(), __end = __src.end(); __i != __end;)
 	    {
 	      auto __pos = __i++;
@@ -878,9 +891,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (_M_find_node(__bkt, __k, __code) == nullptr)
 		{
 		  auto __nh = __src.extract(__pos);
-		  _M_insert_unique_node(__bkt, __code, __nh._M_ptr);
+		  _M_insert_unique_node(__bkt, __code, __nh._M_ptr, __n_elt);
 		  __nh._M_ptr = nullptr;
+		  __n_elt = 1;
 		}
+	      else if (__n_elt != 1)
+		--__n_elt;
 	    }
 	}
 
@@ -1701,12 +1717,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     _M_insert_unique_node(size_type __bkt, __hash_code __code,
-			  __node_type* __node)
+			  __node_type* __node, size_type __n_elt)
     -> iterator
     {
       const __rehash_state& __saved_state = _M_rehash_policy._M_state();
       std::pair<bool, std::size_t> __do_rehash
-	= _M_rehash_policy._M_need_rehash(_M_bucket_count, _M_element_count, 1);
+	= _M_rehash_policy._M_need_rehash(_M_bucket_count, _M_element_count,
+					  __n_elt);
 
       __try
 	{
@@ -1804,7 +1821,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-      _M_insert(_Arg&& __v, const _NodeGenerator& __node_gen, std::true_type)
+      _M_insert(_Arg&& __v, const _NodeGenerator& __node_gen, true_type,
+		size_type __n_elt)
       -> pair<iterator, bool>
       {
 	const key_type& __k = this->_M_extract()(__v);
@@ -1816,7 +1834,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return std::make_pair(iterator(__n), false);
 
 	__n = __node_gen(std::forward<_Arg>(__v));
-	return std::make_pair(_M_insert_unique_node(__bkt, __code, __n), true);
+	return { _M_insert_unique_node(__bkt, __code, __n, __n_elt), true };
       }
 
   // Insert v unconditionally.
@@ -1829,7 +1847,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
       _M_insert(const_iterator __hint, _Arg&& __v,
-		const _NodeGenerator& __node_gen, std::false_type)
+		const _NodeGenerator& __node_gen, false_type)
       -> iterator
       {
 	// First compute the hash code so that we don't do anything if it

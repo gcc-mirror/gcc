@@ -6,7 +6,6 @@
 #define N 96
 
 unsigned short in[N*8];
-volatile int y = 0;
 
 int
 main1 ()
@@ -17,8 +16,7 @@ main1 ()
   for (i = 0; i < N*8; i++)
     {
       in[i] = i&63;
-      if (y) /* Avoid vectorization.  */
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   for (i = 0; i < N; i++)

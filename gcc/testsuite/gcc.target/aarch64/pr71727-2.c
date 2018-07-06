@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-mstrict-align -O3" } */
 
+#pragma GCC target "+nosve"
+
 unsigned char foo(const unsigned char *buffer, unsigned int length)
 {
   unsigned char sum;

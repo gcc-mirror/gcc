@@ -7,19 +7,19 @@
 struct c2 { int i; };
 
 struct c1 {
-  virtual c2& f8() {}
+  virtual c2& f8() { static c2 a; return a; }
 };
 
 struct c3 : c1, c2 {
-  virtual c2& f8() {}
+  virtual c2& f8() { static c2 a; return a; }
 };
 
 struct c11 : public c1 {
-  virtual c3& f8() {}
+  virtual c3& f8() { static c3 a; return a; }
 };
 
 struct c15 : virtual c3 {
-  virtual c2& f8() {}
+  virtual c2& f8() { static c3 a; return a; }
 };
 
 struct c18 : virtual c11 {

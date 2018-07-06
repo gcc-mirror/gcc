@@ -1,5 +1,5 @@
 /* Mainly the interface between cpplib and the C front ends.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "c-pragma.h"
 #include "debug.h"
+#include "file-prefix-map.h" /* remap_macro_filename()  */
 
 #include "attribs.h"
 
@@ -82,6 +83,7 @@ init_c_lex (void)
   cb->has_attribute = c_common_has_attribute;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
   cb->get_suggestion = cb_get_suggestion;
+  cb->remap_filename = remap_macro_filename;
 
   /* Set the debug callbacks if we can use them.  */
   if ((debug_info_level == DINFO_LEVEL_VERBOSE
@@ -101,9 +103,11 @@ get_fileinfo (const char *name)
   struct c_fileinfo *fi;
 
   if (!file_info_tree)
-    file_info_tree = splay_tree_new ((splay_tree_compare_fn) strcmp,
+    file_info_tree = splay_tree_new ((splay_tree_compare_fn)
+				     (void (*) (void)) strcmp,
 				     0,
-				     (splay_tree_delete_value_fn) free);
+				     (splay_tree_delete_value_fn)
+				     (void (*) (void)) free);
 
   n = splay_tree_lookup (file_info_tree, (splay_tree_key) name);
   if (n)

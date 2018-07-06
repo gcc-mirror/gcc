@@ -8,7 +8,7 @@ struct A
   virtual void foo () {}
 };
 
-static inline int __attribute__ ((always_inline)) call_foo (A *a)
+static inline void __attribute__ ((always_inline)) call_foo (A *a)
 {
   a->foo ();
 }

@@ -24,23 +24,23 @@ main ()
 				/* { dg-final { gdb-test 25 "*p" "13" } } */
   asm volatile (NOP);		/* { dg-final { gdb-test 25 "*q" "12" } } */
   __builtin_memcpy (&a, (int [3]) { 4, 5, 6 }, sizeof (a));
-				/* { dg-final { gdb-test 31 "a\[0\]" "4" } } */
+				/* { dg-final { gdb-test 31 "a\[0\]" "4" { xfail { *-*-* } } } } */
 				/* { dg-final { gdb-test 31 "a\[1\]" "5" } } */
 				/* { dg-final { gdb-test 31 "a\[2\]" "6" } } */
 				/* { dg-final { gdb-test 31 "*p" "6" } } */
   asm volatile (NOP);		/* { dg-final { gdb-test 31 "*q" "5" } } */
-  *p += 20;			/* { dg-final { gdb-test 36 "a\[0\]" "4" } } */
+  *p += 20;			/* { dg-final { gdb-test 36 "a\[0\]" "4" { xfail { *-*-* } } } } */
 				/* { dg-final { gdb-test 36 "a\[1\]" "5" } } */
 				/* { dg-final { gdb-test 36 "a\[2\]" "26" } } */
 				/* { dg-final { gdb-test 36 "*p" "26" } } */
   asm volatile (NOP);		/* { dg-final { gdb-test 36 "*q" "5" } } */
-  *q += 20;			/* { dg-final { gdb-test 45 "a\[0\]" "4" } } */
+  *q += 20;			/* { dg-final { gdb-test 45 "a\[0\]" "4" { xfail { *-*-* } } } } */
 				/* { dg-final { gdb-test 45 "a\[1\]" "25" } } */
 				/* { dg-final { gdb-test 45 "a\[2\]" "26" } } */
 				/* { dg-final { gdb-test 45 "*p" "26" } } */
 				/* { dg-final { gdb-test 45 "p\[-1\]" "25" } } */
-				/* { dg-final { gdb-test 45 "p\[-2\]" "4" } } */
-				/* { dg-final { gdb-test 45 "q\[-1\]" "4" } } */
+				/* { dg-final { gdb-test 45 "p\[-2\]" "4" { xfail { *-*-* } } } } */
+				/* { dg-final { gdb-test 45 "q\[-1\]" "4" { xfail { *-*-* } } } } */
 				/* { dg-final { gdb-test 45 "q\[1\]" "26" } } */
   asm volatile (NOP);		/* { dg-final { gdb-test 45 "*q" "25" } } */
   return 0;

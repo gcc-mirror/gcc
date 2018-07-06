@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995-2017 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -478,6 +478,9 @@ struct cpp_options
   /* Nonzero for C++ 2014 Standard digit separators.  */
   unsigned char digit_separators;
 
+  /* Nonzero for C++2a __VA_OPT__ feature.  */
+  unsigned char va_opt;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 
@@ -619,6 +622,10 @@ struct cpp_callbacks
      C++-style comments it does not include the terminating newline.  */
   void (*comment) (cpp_reader *, source_location, const unsigned char *,
 		   size_t);
+
+  /* Callback for filename remapping in __FILE__ and __BASE_FILE__ macro
+     expansions.  */
+  const char *(*remap_filename) (const char*);
 };
 
 #ifdef VMS
@@ -712,7 +719,7 @@ enum cpp_builtin_type
   BT_COUNTER,			/* `__COUNTER__' */
   BT_HAS_ATTRIBUTE,		/* `__has_attribute__(x)' */
   BT_FIRST_USER,		/* User defined builtin macros.  */
-  BT_LAST_USER = BT_FIRST_USER + 31
+  BT_LAST_USER = BT_FIRST_USER + 63
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
@@ -886,6 +893,7 @@ extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 extern bool cpp_fun_like_macro_p (cpp_hashnode *);
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);
+extern source_location cpp_macro_definition_location (cpp_hashnode *);
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
 

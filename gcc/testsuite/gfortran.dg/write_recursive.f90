@@ -6,10 +6,10 @@ program pr26766
   implicit none
   character (len=8) :: str, tmp
   write (str, '(a)')  bar (1234)
-  if (str.ne."abcd") call abort()
+  if (str.ne."abcd") STOP 1
   str = "wxyz"
   write (str, '(2a4)') foo (1), bar (1)
-  if (str.ne."abcdabcd") call abort()
+  if (str.ne."abcdabcd") STOP 2
 
 contains
 

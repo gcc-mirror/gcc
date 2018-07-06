@@ -4,4 +4,4 @@
 /* { dg-do compile } */
 /* { dg-options "-pedantic-errors" } */
 
-/* { dg-error "ISO C forbids an empty translation unit" "empty" } */
+/* { dg-error "-:ISO C forbids an empty translation unit" "empty" } */

@@ -11,9 +11,9 @@ DATA b(2:6), c /'AAA', '12345'/
 DATA d /2*'1234'/
 DATA e(4:4), e(1:3) /'45', '123A'/
 
-IF (a.NE.'aab ') CALL abort()
-IF (b.NE.' AAA   ') CALL abort()
-IF (c.NE.'12') CALL abort()
-IF (d(1).NE.d(2) .OR. d(1).NE.'1234') CALL abort()
-IF (e.NE.'1234') CALL abort()
+IF (a.NE.'aab ') STOP 1
+IF (b.NE.' AAA   ') STOP 2
+IF (c.NE.'12') STOP 3
+IF (d(1).NE.d(2) .OR. d(1).NE.'1234') STOP 4
+IF (e.NE.'1234') STOP 5
 END

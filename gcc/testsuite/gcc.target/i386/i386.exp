@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2017 Free Software Foundation, Inc.
+# Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -207,17 +207,6 @@ proc check_effective_target_bmi { } {
     } "-mbmi" ]
 }
 
-# Return 1 if bmi2 instructions can be compiled.
-proc check_effective_target_bmi2 { } {
-    return [check_no_compiler_messages bmi2 object {
-	unsigned int
-	_bzhi_u32 (unsigned int __X, unsigned int __Y)
-	{
-	    return __builtin_ia32_bzhi_si (__X, __Y);
-	}
-    } "-mbmi2" ]
-}
-
 # Return 1 if ADX instructions can be compiled.
 proc check_effective_target_adx { } {
     return [check_no_compiler_messages adx object {
@@ -239,18 +228,6 @@ proc check_effective_target_rtm { } {
 	    return __builtin_ia32_xend ();
 	}
     } "-mrtm" ]
-}
-
-# Return 1 if avx512f instructions can be compiled.
-proc check_effective_target_avx512f { } {
-    return [check_no_compiler_messages avx512f object {
-	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
-	__v8di
-	mm512_and_epi64  (__v8di __X, __v8di __Y)
-	{
-            return __builtin_ia32_pandq512_mask (__X, __Y, __X, -1);
-	}
-    } "-mavx512f" ]
 }
 
 # Return 1 if avx512vl instructions can be compiled.
@@ -421,6 +398,19 @@ proc check_effective_target_avx512vpopcntdq { } {
     } "-mavx512vpopcntdq" ]
 }
 
+# Return 1 if 128 or 256-bit avx512_vpopcntdq instructions can be compiled.
+proc check_effective_target_avx512vpopcntdqvl { } {
+    return [check_no_compiler_messages avx512vpopcntdqvl object {
+        typedef int __v8si __attribute__ ((__vector_size__ (32)));
+
+        __v8si
+        _mm256_popcnt_epi32 (__v8si __A)
+        {
+            return (__v8si) __builtin_ia32_vpopcountd_v8si ((__v8si) __A);
+        }
+    } "-mavx512vpopcntdq -mavx512vl" ]
+}
+
 # Return 1 if gfni instructions can be compiled.
 proc check_effective_target_gfni { } {
     return [check_no_compiler_messages gfni object {
@@ -434,6 +424,77 @@ proc check_effective_target_gfni { } {
 								      0);
         }
     } "-mgfni" ]
+}
+
+# Return 1 if avx512vbmi2 instructions can be compiled.
+proc check_effective_target_avx512vbmi2 { } {
+    return [check_no_compiler_messages avx512vbmi2 object {
+        typedef char __v16qi __attribute__ ((__vector_size__ (16)));
+	typedef unsigned long long __mmask16;
+
+	__v16qi
+	_mm_mask_compress_epi8 (__v16qi __A, __mmask16 __B, __v16qi __C)
+	{
+  		return (__v16qi) __builtin_ia32_compressqi128_mask((__v16qi)__C,
+								   (__v16qi)__A,
+								   (__mmask16)__B);
+	}
+    } "-mavx512vbmi2 -mavx512vl" ]
+}
+
+# Return 1 if avx512vbmi2 instructions can be compiled.
+proc check_effective_target_avx512vnni { } {
+    return [check_no_compiler_messages avx512vnni object {
+        typedef int __v16si __attribute__ ((__vector_size__ (64)));
+
+	__v16si
+	_mm_mask_compress_epi8 (__v16si __A, __v16si __B, __v16si __C)
+	{
+  		return (__v16si) __builtin_ia32_vpdpbusd_v16si ((__v16si)__A,
+								(__v16si)__B,
+								(__v16si)__C);
+	}
+    } "-mavx512vnni -mavx512f" ]
+}
+
+# Return 1 if vaes instructions can be compiled.
+proc check_effective_target_avx512vaes { } {
+    return [check_no_compiler_messages avx512vaes object {
+
+        typedef int __v16si __attribute__ ((__vector_size__ (64)));
+
+	__v32qi
+	_mm256_aesdec_epi128 (__v32qi __A, __v32qi __B)
+	{
+	  return (__v32qi)__builtin_ia32_vaesdec_v32qi ((__v32qi) __A, (__v32qi) __B);
+	}
+    } "-mvaes" ]
+}
+
+# Return 1 if vpclmulqdq instructions can be compiled.
+proc check_effective_target_vpclmulqdq { } {
+    return [check_no_compiler_messages vpclmulqdq object {
+        typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+
+        __v4di
+        _mm256_clmulepi64_epi128 (__v4di __A, __v4di __B)
+        {
+            return (__v4di) __builtin_ia32_vpclmulqdq_v4di (__A, __B, 0);
+        }
+    } "-mvpclmulqdq -mavx512vl" ]
+}
+
+# Return 1 if avx512_bitalg instructions can be compiled.
+proc check_effective_target_avx512bitalg { } {
+    return [check_no_compiler_messages avx512bitalg object {
+        typedef short int __v32hi __attribute__ ((__vector_size__ (64)));
+
+        __v32hi
+        _mm512_popcnt_epi16 (__v32hi __A)
+        {
+            return (__v32hi) __builtin_ia32_vpopcountw_v32hi ((__v32hi) __A);
+        }
+    } "-mavx512bitalg" ]
 }
 
 # If a testcase doesn't have special options, use these.

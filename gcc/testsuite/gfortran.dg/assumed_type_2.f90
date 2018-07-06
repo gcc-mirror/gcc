@@ -26,7 +26,7 @@ contains
      type(*), target, optional :: arg1
      logical :: presnt
      type(c_ptr) :: cpt
-     if (presnt .neqv. present (arg1)) call abort ()
+     if (presnt .neqv. present (arg1)) STOP 1
      cpt = c_loc (arg1)
   end subroutine sub_scalar
 
@@ -34,12 +34,12 @@ contains
      type(*), target :: arg2(:,:)
      type(c_ptr) :: cpt
      integer :: lbounds(2), ubounds(2)
-     if (any (lbound(arg2) /= lbounds)) call abort ()
-     if (any (ubound(arg2) /= ubounds)) call abort ()
-     if (any (shape(arg2) /= ubounds-lbounds+1)) call abort ()
-     if (size(arg2) /= product (ubounds-lbounds+1)) call abort ()
-     if (rank (arg2) /= 2) call abort ()
-!     if (.not. is_continuous (arg2)) call abort () !<< Not yet implemented
+     if (any (lbound(arg2) /= lbounds)) STOP 2
+     if (any (ubound(arg2) /= ubounds)) STOP 3
+     if (any (shape(arg2) /= ubounds-lbounds+1)) STOP 4
+     if (size(arg2) /= product (ubounds-lbounds+1)) STOP 5
+     if (rank (arg2) /= 2) STOP 6
+!     if (.not. is_continuous (arg2)) STOP 7 !<< Not yet implemented
 !     cpt = c_loc (arg2) ! << FIXME: Valid since TS29113
      call sub_array_assumed (arg2)
   end subroutine sub_array_shape

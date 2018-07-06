@@ -10,11 +10,13 @@ void fsc (signed char sc);
 void fuc (unsigned char uc);
 unsigned fui (unsigned int  ui);
 void fsi (signed int ui);
+void fsi32 (__INT32_TYPE__ ui);
 
 void h (int x)
 {
   unsigned int ui = 3;
   int   si = 3;
+  __INT32_TYPE__ si32 = 3;
   unsigned char uc = 3;
   signed char   sc = 3;
 
@@ -60,8 +62,8 @@ void h (int x)
   uc = '\xa0'; /* { dg-warning "unsigned conversion" } */
   fui ('\xa0');/* { dg-warning "unsigned conversion" } */
   ui = '\xa0'; /* { dg-warning "unsigned conversion" } */
-  fsi (0x80000000); /* { dg-warning "signed conversion" } */
-  si = 0x80000000;  /* { dg-warning "signed conversion" } */
+  fsi32 (0x80000000); /* { dg-warning "signed conversion" } */
+  si32 = 0x80000000;  /* { dg-warning "signed conversion" } */
 
 
   fsi (UINT_MAX - 1);  /* { dg-warning "conversion" } */

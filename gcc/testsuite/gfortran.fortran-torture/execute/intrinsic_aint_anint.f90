@@ -6,7 +6,7 @@ subroutine real4test (op, res1, res2)
    real(kind=4) :: res1, res2
 
    if (diff(aint(op), res1) .or. &
-       diff(anint(op), res2)) call abort
+       diff(anint(op), res2)) STOP 1
 contains
 function diff(a, b)
   real(kind=4) :: a, b
@@ -22,7 +22,7 @@ subroutine real8test (op, res1, res2)
    real(kind=8) :: res1, res2
 
    if (diff(aint(op), res1) .or. &
-       diff(anint(op), res2)) call abort
+       diff(anint(op), res2)) STOP 2
 contains
 function diff(a, b)
   real(kind=8) :: a, b

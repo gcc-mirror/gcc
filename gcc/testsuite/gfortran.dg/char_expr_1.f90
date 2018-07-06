@@ -9,7 +9,7 @@ program main
   character (len=10), allocatable :: str(:)
   allocate (str(1))
   str(1)      = "dog"
-  if (size(str) /= 1 .or. str(1) /= "dog") call abort()
+  if (size(str) /= 1 .or. str(1) /= "dog") STOP 1
 contains
   subroutine foo(xx,yy)
     character (len=*), intent(in)               :: xx(:)

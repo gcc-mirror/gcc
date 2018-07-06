@@ -8,7 +8,7 @@
 /* Optimize x = vec_insert (vec_extract (v2, N), v1, M) for SFmode if N is the default
    scalar position.  */
 
-#if __ORDER_LITTLE_ENDIAN__
+#if __LITTLE_ENDIAN__
 #define ELE 2
 #else
 #define ELE 1

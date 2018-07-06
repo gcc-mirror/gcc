@@ -1,5 +1,5 @@
 /* IRA conflict builder.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -226,8 +226,11 @@ go_through_subreg (rtx x, int *offset)
   if (REGNO (reg) < FIRST_PSEUDO_REGISTER)
     *offset = subreg_regno_offset (REGNO (reg), GET_MODE (reg),
 				   SUBREG_BYTE (x), GET_MODE (x));
-  else
-    *offset = (SUBREG_BYTE (x) / REGMODE_NATURAL_SIZE (GET_MODE (x)));
+  else if (!can_div_trunc_p (SUBREG_BYTE (x),
+			     REGMODE_NATURAL_SIZE (GET_MODE (x)), offset))
+    /* Checked by validate_subreg.  We must know at compile time which
+       inner hard registers are being accessed.  */
+    gcc_unreachable ();
   return reg;
 }
 

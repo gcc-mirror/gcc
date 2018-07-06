@@ -13,42 +13,42 @@ program test_l
   l1 = .true.
   write (str,"(L)") l1 ! { dg-warning "Extension: Missing positive width after L descriptor" }
   read (str,"(L)") l1 ! { dg-warning "Extension: Missing positive width after L descriptor" }
-  if (l1 .neqv. .true.) call abort
+  if (l1 .neqv. .true.) STOP 1
 
   l2 = .true.
   write (str,"(L)") l2 ! { dg-warning "Extension: Missing positive width after L descriptor" }
   read (str,"(L)") l2 ! { dg-warning "Extension: Missing positive width after L descriptor" }
-  if (l2 .neqv. .true.) call abort
+  if (l2 .neqv. .true.) STOP 2
 
   l4 = .true.
   write (str,"(L)") l4 ! { dg-warning "Extension: Missing positive width after L descriptor" }
   read (str,"(L)") l4 ! { dg-warning "Extension: Missing positive width after L descriptor" }
-  if (l4 .neqv. .true.) call abort
+  if (l4 .neqv. .true.) STOP 3
 
   l8 = .true.
   write (str,"(L)") l8 ! { dg-warning "Extension: Missing positive width after L descriptor" }
   read (str,"(L)") l8 ! { dg-warning "Extension: Missing positive width after L descriptor" }
-  if (l8 .neqv. .true.) call abort
+  if (l8 .neqv. .true.) STOP 4
 
   l1 = .false.
   write (str,"(L)") l1 ! { dg-warning "Extension: Missing positive width after L descriptor" }
   read (str,"(L)") l1 ! { dg-warning "Extension: Missing positive width after L descriptor" }
-  if (l1 .neqv. .false.) call abort
+  if (l1 .neqv. .false.) STOP 5
 
   l2 = .false.
   write (str,"(L)") l2 ! { dg-warning "Extension: Missing positive width after L descriptor" }
   read (str,"(L)") l2 ! { dg-warning "Extension: Missing positive width after L descriptor" }
-  if (l2 .neqv. .false.) call abort
+  if (l2 .neqv. .false.) STOP 6
 
   l4 = .false.
   write (str,"(L)") l4 ! { dg-warning "Extension: Missing positive width after L descriptor" }
   read (str,"(L)") l4 ! { dg-warning "Extension: Missing positive width after L descriptor" }
-  if (l4 .neqv. .false.) call abort
+  if (l4 .neqv. .false.) STOP 7
 
   l8 = .false.
   write (str,"(L)") l8 ! { dg-warning "Extension: Missing positive width after L descriptor" }
   read (str,"(L)") l8 ! { dg-warning "Extension: Missing positive width after L descriptor" }
-  if (l8 .neqv. .false.) call abort
+  if (l8 .neqv. .false.) STOP 8
 
 end program test_l
 ! { dg-output "At line 14 of file.*" }

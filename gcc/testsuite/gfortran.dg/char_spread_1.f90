@@ -17,14 +17,14 @@ contains
   subroutine test (b)
     character (len = slen), dimension (:, :, :) :: b
 
-    if (size (b, 1) .ne. n1) call abort
-    if (size (b, 2) .ne. n2) call abort
-    if (size (b, 3) .ne. n3) call abort
+    if (size (b, 1) .ne. n1) STOP 1
+    if (size (b, 2) .ne. n2) STOP 2
+    if (size (b, 3) .ne. n3) STOP 3
 
     do i3 = 1, n3
       do i2 = 1, n2
         do i1 = 1, n1
-          if (b (i1, i2, i3) .ne. a (i1, i3)) call abort
+          if (b (i1, i2, i3) .ne. a (i1, i3)) STOP 4
         end do
       end do
     end do

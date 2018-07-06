@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -87,10 +87,13 @@ namespace __gnu_debug
   template<typename _InputIterator>
     inline _InputIterator
     __check_valid_range(const _InputIterator& __first,
-			const _InputIterator& __last
-			__attribute__((__unused__)))
+			const _InputIterator& __last,
+			const char* __file,
+			unsigned int __line,
+			const char* __function)
     {
-      __glibcxx_check_valid_range(__first, __last);
+      __glibcxx_check_valid_range_at(__first, __last,
+				     __file, __line, __function);
       return __first;
     }
 

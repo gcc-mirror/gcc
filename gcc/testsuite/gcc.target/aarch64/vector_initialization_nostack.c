@@ -49,5 +49,6 @@ f12 (void)
   return sum;
 }
 
-
-/* { dg-final { scan-assembler-not "sp" } } */
+/* Fails for fixed-length SVE because we lack a vec_init pattern.
+   A later patch fixes this in generic code.  */
+/* { dg-final { scan-assembler-not "sp" { xfail { aarch64_sve && { ! vect_variable_length } } } } } */

@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-fsanitize=undefined" }
+// { dg-options "-fsanitize=undefined -Wno-return-type" }
 // { dg-shouldfail "ubsan" }
 
 struct S { S (); ~S (); };

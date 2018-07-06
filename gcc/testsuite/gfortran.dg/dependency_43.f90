@@ -9,6 +9,6 @@ program main
   i1 = [ 1, 2, 3 ]
   i2 = [ 3, 2, 1 ]
   a (i1,1) = a (i2,2)
-  if (a(1,1) /= 6.0 .or. a(2,1) /= 5.0 .or. a(3,1) /= 4.0) call abort
-  if (a(1,2) /= 4.0 .or. a(2,2) /= 5.0 .or. a(3,2) /= 6.0) call abort
+  if (a(1,1) /= 6.0 .or. a(2,1) /= 5.0 .or. a(3,1) /= 4.0) STOP 1
+  if (a(1,2) /= 4.0 .or. a(2,2) /= 5.0 .or. a(3,2) /= 6.0) STOP 2
 end program main

@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -795,6 +795,30 @@ pp_clear_state (pretty_printer *pp)
   pp_indentation (pp) = 0;
 }
 
+/* Print X to PP in decimal.  */
+template<unsigned int N, typename T>
+void
+pp_wide_integer (pretty_printer *pp, const poly_int_pod<N, T> &x)
+{
+  if (x.is_constant ())
+    pp_wide_integer (pp, x.coeffs[0]);
+  else
+    {
+      pp_left_bracket (pp);
+      for (unsigned int i = 0; i < N; ++i)
+	{
+	  if (i != 0)
+	    pp_comma (pp);
+	  pp_wide_integer (pp, x.coeffs[i]);
+	}
+      pp_right_bracket (pp);
+    }
+}
+
+template void pp_wide_integer (pretty_printer *, const poly_uint16_pod &);
+template void pp_wide_integer (pretty_printer *, const poly_int64_pod &);
+template void pp_wide_integer (pretty_printer *, const poly_uint64_pod &);
+
 /* Flush the formatted text of PRETTY-PRINTER onto the attached stream.  */
 void
 pp_write_text_to_stream (pretty_printer *pp)
@@ -1209,10 +1233,7 @@ pp_format (pretty_printer *pp, text_info *text)
       gcc_assert (!wide || precision == 0);
 
       if (quote)
-	{
-	  pp_string (pp, open_quote);
-	  pp_string (pp, colorize_start (pp_show_color (pp), "quote"));
-	}
+	pp_begin_quote (pp, pp_show_color (pp));
 
       switch (*p)
 	{
@@ -1345,19 +1366,21 @@ pp_format (pretty_printer *pp, text_info *text)
 	  {
 	    bool ok;
 
+	    /* Call the format decoder.
+	       Pass the address of "quote" so that format decoders can
+	       potentially disable printing of the closing quote
+	       (e.g. when printing "'TYPEDEF' aka 'TYPE'" in the C family
+	       of frontends).  */
 	    gcc_assert (pp_format_decoder (pp));
 	    ok = pp_format_decoder (pp) (pp, text, p,
-					 precision, wide, plus, hash, quote,
+					 precision, wide, plus, hash, &quote,
 					 formatters[argno]);
 	    gcc_assert (ok);
 	  }
 	}
 
       if (quote)
-	{
-	  pp_string (pp, colorize_stop (pp_show_color (pp)));
-	  pp_string (pp, close_quote);
-	}
+	pp_end_quote (pp, pp_show_color (pp));
 
       obstack_1grow (&buffer->chunk_obstack, '\0');
       *formatters[argno] = XOBFINISH (&buffer->chunk_obstack, const char *);
@@ -1729,6 +1752,26 @@ pp_separate_with (pretty_printer *pp, char c)
 {
   pp_character (pp, c);
   pp_space (pp);
+}
+
+/* Add a localized open quote, and if SHOW_COLOR is true, begin colorizing
+   using the "quote" color.  */
+
+void
+pp_begin_quote (pretty_printer *pp, bool show_color)
+{
+  pp_string (pp, open_quote);
+  pp_string (pp, colorize_start (show_color, "quote"));
+}
+
+/* If SHOW_COLOR is true, stop colorizing.
+   Add a localized close quote.  */
+
+void
+pp_end_quote (pretty_printer *pp, bool show_color)
+{
+  pp_string (pp, colorize_stop (show_color));
+  pp_string (pp, close_quote);
 }
 
 

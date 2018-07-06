@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -166,7 +166,7 @@ package body Style is
                   Error_Msg_Node_1 := Def;
                   Error_Msg_Sloc := Sloc (Def);
                   Error_Msg -- CODEFIX
-                    ("(style) bad casing of & declared#", Sref);
+                    ("(style) bad casing of & declared#", Sref, Ref);
                   return;
 
                --  Else end of identifiers, and they match

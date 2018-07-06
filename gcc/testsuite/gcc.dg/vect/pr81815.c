@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 int __attribute__ ((noinline, noclone))
 f (int *x, int n)
 {

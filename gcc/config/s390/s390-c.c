@@ -1,6 +1,6 @@
 /* Language specific subroutines used for code generation on IBM S/390
    and zSeries
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
 
@@ -26,6 +26,8 @@
    compiled with -DIN_GCC_FRONTEND.  With that rtl.h cannot be
    included anymore - a mechanism supposed to avoid adding frontend -
    backend dependencies.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"

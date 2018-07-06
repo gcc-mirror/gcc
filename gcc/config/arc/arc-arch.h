@@ -1,6 +1,6 @@
 /* Definitions of types that are used to store ARC architecture and
    device information.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Claudiu Zissulescu (claziss@synopsys.com)
 
 This file is part of GCC.
@@ -72,7 +72,8 @@ enum arc_tune_attr
     ARC_TUNE_NONE,
     ARC_TUNE_ARC600,
     ARC_TUNE_ARC700_4_2_STD,
-    ARC_TUNE_ARC700_4_2_XMAC
+    ARC_TUNE_ARC700_4_2_XMAC,
+    ARC_TUNE_CORE_3
   };
 
 /* CPU specific properties.  */

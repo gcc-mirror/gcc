@@ -97,7 +97,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/enable.m4 \
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
@@ -174,6 +175,9 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+EXTRA_ASFLAGS = @EXTRA_ASFLAGS@
+EXTRA_CFLAGS = @EXTRA_CFLAGS@
+EXTRA_CXXFLAGS = @EXTRA_CXXFLAGS@
 FGREP = @FGREP@
 FORMAT_FILE = @FORMAT_FILE@
 GREP = @GREP@
@@ -295,8 +299,9 @@ WARN_FLAGS = -W -Wall -Wwrite-strings -Wmissing-format-attribute \
 
 C_WARN_FLAGS = $(WARN_FLAGS) -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition
 CXX_WARN_FLAGS = $(WARN_FLAGS) -Wno-unused-parameter
-AM_CFLAGS = $(C_WARN_FLAGS)
-AM_CXXFLAGS = $(CXX_WARN_FLAGS) -fno-rtti -fno-exceptions -std=gnu++11
+AM_CFLAGS = $(C_WARN_FLAGS) $(EXTRA_CFLAGS)
+AM_CXXFLAGS = $(CXX_WARN_FLAGS) -fno-rtti -fno-exceptions -std=gnu++11 \
+	$(EXTRA_CXXFLAGS)
 noinst_LTLIBRARIES = libsanitizer_libbacktrace.la
 libsanitizer_libbacktrace_la_SOURCES = \
 	../../libbacktrace/backtrace.h \

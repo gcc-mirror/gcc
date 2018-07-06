@@ -7,7 +7,7 @@ class Temp
   public:
   operator T&(void)  { return Val; }
 
-  virtual T& operator=(T a ) // { dg-error "overriding" }
+  virtual T& operator=(T a ) // { dg-message "overridden" }
   {
     Val = a;
     return Val;

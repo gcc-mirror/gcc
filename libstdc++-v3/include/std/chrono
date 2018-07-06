@@ -1,6 +1,6 @@
 // <chrono> -*- C++ -*-
 
-// Copyright (C) 2008-2017 Free Software Foundation, Inc.
+// Copyright (C) 2008-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -884,6 +884,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   inline namespace chrono_literals
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wliteral-suffix"
     template<typename _Rep, unsigned long long _Val>
       struct _Checked_integral_constant
       : integral_constant<_Rep, static_cast<_Rep>(_Val)>
@@ -958,6 +960,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator""ns()
       { return __check_overflow<chrono::nanoseconds, _Digits...>(); }
 
+#pragma GCC diagnostic pop
   } // inline namespace chrono_literals
   } // inline namespace literals
 
@@ -966,7 +969,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using namespace literals::chrono_literals;
   } // namespace chrono
 
-#endif // __cplusplus > 201103L
+#endif // C++14
 
   // @} group chrono
 

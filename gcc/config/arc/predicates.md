@@ -1,5 +1,5 @@
 ;; Predicate definitions for Synopsys DesignWare ARC.
-;; Copyright (C) 2007-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -217,6 +217,10 @@
   if (MEM_VOLATILE_P (op) && !TARGET_VOLATILE_CACHE_SET)
      return 0;
 
+  /* likewise for uncached types.  */
+  if (arc_is_uncached_mem_p (op))
+     return 0;
+
   size = GET_MODE_SIZE (mode);
 
   /* dword operations really put out 2 instructions, so eliminate them.  */
@@ -412,7 +416,8 @@
 ;; and only the standard movXX patterns are set up to handle them.
 (define_predicate "nonvol_nonimm_operand"
   (and (match_code "subreg, reg, mem")
-       (match_test "(GET_CODE (op) != MEM || !MEM_VOLATILE_P (op)) && nonimmediate_operand (op, mode)"))
+       (match_test "(GET_CODE (op) != MEM || !MEM_VOLATILE_P (op)) && nonimmediate_operand (op, mode)")
+       (match_test "!arc_is_uncached_mem_p (op)"))
 )
 
 ;; Return 1 if OP is a comparison operator valid for the mode of CC.
@@ -517,7 +522,7 @@
 	return FALSE;
     }
 
-  if (REGNO (op) != 61)
+  if (REGNO (op) != CC_REG)
     return FALSE;
   if (mode == rmode
       || (mode == CC_ZNmode && rmode == CC_Zmode)
@@ -604,7 +609,9 @@
 )
 
 (define_predicate "noncommutative_operator"
-  (ior (match_code "minus,ashift,ashiftrt,lshiftrt,rotatert")
+  (ior (and (match_code "ashift,ashiftrt,lshiftrt,rotatert")
+	    (match_test "TARGET_BARREL_SHIFTER"))
+       (match_code "minus")
        (and (match_code "ss_minus")
 	    (match_test "TARGET_ARC700 || TARGET_EA_SET")))
 )

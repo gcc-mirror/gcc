@@ -1,6 +1,6 @@
 ;;   This file contains instructions that support fixed-point operations
 ;;   for Atmel AVR micro controllers.
-;;   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;;
 ;;   Contributed by Sean D'Epagnier  (sean@depagnier.com)
 ;;                  Georg-Johann Lay (avr@gjlay.de)

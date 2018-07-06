@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---            Copyright (C) 2008-2017, Free Software Foundation, Inc.       --
+--            Copyright (C) 2008-2018, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software;  you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,9 +85,9 @@ package body System.VxWorks.Ext is
       return ERROR;
    end taskMaskAffinitySet;
 
-   --------------
-   -- taskCont --
-   --------------
+   ---------------
+   -- Task_Cont --
+   ---------------
 
    function Task_Cont (tid : t_id) return int is
       function taskCont (tid : t_id) return int;
@@ -96,9 +96,9 @@ package body System.VxWorks.Ext is
       return taskCont (tid);
    end Task_Cont;
 
-   --------------
-   -- taskStop --
-   --------------
+   ---------------
+   -- Task_Stop --
+   ---------------
 
    function Task_Stop (tid : t_id) return int is
       function taskStop (tid : t_id) return int;

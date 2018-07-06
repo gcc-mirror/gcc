@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -183,7 +183,7 @@ GOACC_parallel_keyed (int device, void (*fn) (void *),
 			      async, dims, tgt);
 
   /* If running synchronously, unmap immediately.  */
-  if (async < acc_async_noval)
+  if (async_synchronous_p (async))
     gomp_unmap_vars (tgt, true);
   else
     tgt->device_descr->openacc.register_async_cleanup_func (tgt, async);
@@ -524,7 +524,7 @@ GOACC_declare (int device, size_t mapnum,
 	  case GOMP_MAP_POINTER:
 	  case GOMP_MAP_DELETE:
 	    GOACC_enter_exit_data (device, 1, &hostaddrs[i], &sizes[i],
-				   &kinds[i], 0, 0);
+				   &kinds[i], GOMP_ASYNC_SYNC, 0);
 	    break;
 
 	  case GOMP_MAP_FORCE_DEVICEPTR:
@@ -533,19 +533,19 @@ GOACC_declare (int device, size_t mapnum,
 	  case GOMP_MAP_ALLOC:
 	    if (!acc_is_present (hostaddrs[i], sizes[i]))
 	      GOACC_enter_exit_data (device, 1, &hostaddrs[i], &sizes[i],
-				     &kinds[i], 0, 0);
+				     &kinds[i], GOMP_ASYNC_SYNC, 0);
 	    break;
 
 	  case GOMP_MAP_TO:
 	    GOACC_enter_exit_data (device, 1, &hostaddrs[i], &sizes[i],
-				   &kinds[i], 0, 0);
+				   &kinds[i], GOMP_ASYNC_SYNC, 0);
 
 	    break;
 
 	  case GOMP_MAP_FROM:
 	    kinds[i] = GOMP_MAP_FORCE_FROM;
 	    GOACC_enter_exit_data (device, 1, &hostaddrs[i], &sizes[i],
-				   &kinds[i], 0, 0);
+				   &kinds[i], GOMP_ASYNC_SYNC, 0);
 	    break;
 
 	  case GOMP_MAP_FORCE_PRESENT:

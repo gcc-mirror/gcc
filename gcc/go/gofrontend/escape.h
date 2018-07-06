@@ -51,7 +51,7 @@ public:
   suffix_value() const
   { return this->suffix_value_; }
 
-  // Increase the level because a node is referenced.
+  // Increase the level because a node is dereferenced.
   Level
   increase() const
   {
@@ -61,7 +61,7 @@ public:
     return Level(this->value_ + 1, this->suffix_value_ + 1);
   }
 
-  // Decrease the level because a node is dereferenced.
+  // Decrease the level because a node is referenced.
   Level
   decrease() const
   {
@@ -104,9 +104,9 @@ public:
   }
 
 private:
-  // The sum of all indirects (-1) and references (+1) applied to a Node.
+  // The sum of all references (-1) and indirects (+1) applied to a Node.
   int value_;
-  // The sum of all indirects (-1) abd references (+1) applied to a copied Node.
+  // The sum of all references (-1) abd indirects (+1) applied to a copied Node.
   int suffix_value_;
 };
 
@@ -123,7 +123,10 @@ class Node
     {
       NODE_OBJECT,
       NODE_EXPRESSION,
-      NODE_STATEMENT
+      NODE_STATEMENT,
+      // A "fake" node that models the indirection of its child node.
+      // This node does not correspond to an AST node.
+      NODE_INDIRECT
     };
 
   // The state necessary to keep track of how a node escapes.
@@ -161,11 +164,6 @@ class Node
     ESCAPE_NONE,
     // Is returned or reachable from a return statement.
     ESCAPE_RETURN,
-    // Allocated in an inner loop, assigned to an outer loop,
-    // which allows construction of non-escaping but arbitrarily large linked
-    // data structures (i.e., not eligible for allocation in a fixed-size stack
-    // stack frame).
-    ESCAPE_SCOPE,
     // Reachable from the heap.
     ESCAPE_HEAP,
     // By construction will not escape.
@@ -174,16 +172,26 @@ class Node
 
   // Multiple constructors for each classification.
   Node(Named_object* no)
-    : classification_(NODE_OBJECT), state_(NULL), encoding_(ESCAPE_UNKNOWN)
+    : classification_(NODE_OBJECT), state_(NULL), encoding_(ESCAPE_UNKNOWN),
+      child_(NULL)
   { this->u_.object_val = no; }
 
   Node(Expression* e)
-    : classification_(NODE_EXPRESSION), state_(NULL), encoding_(ESCAPE_UNKNOWN)
+    : classification_(NODE_EXPRESSION), state_(NULL), encoding_(ESCAPE_UNKNOWN),
+      child_(NULL)
   { this->u_.expression_val = e; }
 
   Node(Statement* s)
-    : classification_(NODE_STATEMENT), state_(NULL), encoding_(ESCAPE_UNKNOWN)
+    : classification_(NODE_STATEMENT), state_(NULL), encoding_(ESCAPE_UNKNOWN),
+      child_(NULL)
   { this->u_.statement_val = s; }
+
+  Node(Node *n)
+    : classification_(NODE_INDIRECT), state_(NULL), encoding_(ESCAPE_UNKNOWN),
+      child_(n)
+  {}
+
+  ~Node();
 
   // Return this node's type.
   Type*
@@ -193,13 +201,17 @@ class Node
   Location
   location() const;
 
+  // Return the location where the node's underlying object is defined.
+  Location
+  definition_location() const;
+
   // Return this node's AST formatted string.
   std::string
   ast_format(Gogo*) const;
 
   // Return this node's detailed format string.
   std::string
-  details() const;
+  details();
 
   std::string
   op_format() const;
@@ -210,8 +222,7 @@ class Node
 
   // Return this node's escape encoding.
   int
-  encoding() const
-  { return this->encoding_; }
+  encoding();
 
   // Set the node's escape encoding.
   void
@@ -248,6 +259,22 @@ class Node
             : NULL);
   }
 
+  bool
+  is_indirect() const
+  { return this->classification_ == NODE_INDIRECT; }
+
+  // Return its child node.
+  // Child node is used only in indirect node, and in expression node
+  // representing slicing an array.
+  Node*
+  child() const
+  { return this->child_; }
+
+  // Set the child node.
+  void
+  set_child(Node* n)
+  { this->child_ = n; }
+
   // Static creation methods for each value supported in the union.
   static Node*
   make_node(Named_object*);
@@ -258,6 +285,9 @@ class Node
   static Node*
   make_node(Statement*);
 
+  static Node*
+  make_indirect_node(Node*);
+
   // Return the maximum of an existing escape encoding E and a new
   // escape type.
   static int
@@ -267,6 +297,10 @@ class Node
   // output parameter.
   static int
   note_inout_flows(int e, int index, Level level);
+
+  // Reclaim nodes.
+  static void
+  reclaim_nodes();
 
  private:
   // The classification of this Node.
@@ -290,10 +324,18 @@ class Node
   // | Escapement_encoding: ESCAPE_BITS |
   int encoding_;
 
+  // Child node, used only in indirect node, and expression node representing
+  // slicing an array.
+  Node* child_;
+
   // Cache all the Nodes created via Node::make_node to make the API simpler.
   static std::map<Named_object*, Node*> objects;
   static std::map<Expression*, Node*> expressions;
   static std::map<Statement*, Node*> statements;
+
+  // Collection of all NODE_INDIRECT Nodes, used for reclaiming memory. This
+  // is not a cache -- each make_indirect_node will make a fresh Node.
+  static std::vector<Node*> indirects;
 };
 
 // The amount of bits used for the escapement encoding.

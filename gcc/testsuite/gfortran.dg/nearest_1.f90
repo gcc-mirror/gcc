@@ -15,6 +15,6 @@ program chop
   y = nearest(tiny(o),-1.0)/2.0
   ix = transfer(x,ix)
   iy = transfer(y,iy)
-  if (ix /= iy) call abort
+  if (ix /= iy) STOP 1
 end program chop
 

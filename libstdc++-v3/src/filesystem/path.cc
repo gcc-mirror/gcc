@@ -1,6 +1,6 @@
 // Class experimental::filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,7 @@ using fs::path;
 
 fs::filesystem_error::~filesystem_error() = default;
 
-constexpr path::value_type path::preferred_separator;
+constexpr path::value_type path::preferred_separator [[gnu::used]];
 
 path&
 path::remove_filename()

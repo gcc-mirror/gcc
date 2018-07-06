@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,9 +68,7 @@ package body Sem_Ch2 is
       --  this is the result of some kind of previous error generating a
       --  junk identifier.
 
-      if Chars (N) in Error_Name_Or_No_Name
-        and then Total_Errors_Detected /= 0
-      then
+      if not Is_Valid_Name (Chars (N)) and then Total_Errors_Detected /= 0 then
          return;
       else
          Find_Direct_Name (N);

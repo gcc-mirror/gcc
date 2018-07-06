@@ -1,5 +1,5 @@
 ;; Pipeline description for the AppliedMicro Titan core.
-;;   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 2010-2018 Free Software Foundation, Inc.
 ;;   Contributed by Theobroma Systems Design und Consulting GmbH
 ;;
 ;; This file is part of GCC.
@@ -85,7 +85,7 @@
 (define_cpu_unit "titan_bpu_sh" "titan_bpu")
 
 (define_insn_reservation "titan_bpu" 2
-  (and (eq_attr "type" "branch,jmpreg,cr_logical,delayed_cr")
+  (and (eq_attr "type" "branch,jmpreg,cr_logical")
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_bpu_sh")
 
@@ -147,11 +147,6 @@
   (and (eq_attr "type" "sdiv")
        (eq_attr "cpu" "titan"))
   "titan_issue,titan_fpdiv*46,titan_fpwb")
-
-(define_insn_reservation "titan_fp_single" 12
-  (and (eq_attr "fp_type" "fp_addsub_s,fp_mul_s,fp_maddsub_s")       
-       (eq_attr "cpu" "titan"))
-  "titan_issue,titan_fp0*2,nothing*10,titan_fpwb")
 
 ;; Make sure the "titan_fp" rule stays last, as it's a catch all for
 ;; double-precision and unclassified (e.g. fsel) FP-instructions

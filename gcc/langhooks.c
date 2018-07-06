@@ -1,5 +1,5 @@
 /* Default language-specific hooks.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -171,8 +171,15 @@ lhd_set_decl_assembler_name (tree decl)
       ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
       id = get_identifier (label);
     }
-  SET_DECL_ASSEMBLER_NAME (decl, id);
 
+  SET_DECL_ASSEMBLER_NAME (decl, id);
+}
+
+/* Forcibly overwrite the DECL_ASSEMBLER_NAME for DECL to NAME.  */
+void
+lhd_overwrite_decl_assembler_name (tree decl, tree name)
+{
+  DECL_ASSEMBLER_NAME_RAW (decl) = name;
 }
 
 /* Type promotion for variable arguments.  */

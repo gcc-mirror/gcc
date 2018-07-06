@@ -1,5 +1,5 @@
 /* Character scanner.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2057,7 +2057,7 @@ preprocessor_line (gfc_char_t *c)
       c++;
       i = wide_atoi (c);
 
-      if (1 <= i && i <= 4)
+      if (i >= 1 && i <= 4)
 	flag[i] = true;
     }
 
@@ -2107,6 +2107,10 @@ preprocessor_line (gfc_char_t *c)
           in the linemap.  Alternative could be using GC or updating linemap to
           point to the new name, but there is no API for that currently.  */
       current_file->filename = xstrdup (filename);
+
+      /* We need to tell the linemap API that the filename changed.  Just
+	 changing current_file is insufficient.  */
+      linemap_add (line_table, LC_RENAME, false, current_file->filename, line);
     }
 
   /* Set new line number.  */

@@ -36,8 +36,7 @@ int main() {
    unsigned char *address;
    vector unsigned char *datap;
    
-   vector unsigned char vec_uc_expected1, vec_uc_expected2,
-      vec_uc_result1, vec_uc_result2;
+   vector unsigned char vec_uc_expected1, vec_uc_result1;
    vector int data_int;
    
    for (i=0; i<100; i++)
@@ -77,26 +76,26 @@ int main() {
 
    /* VEC_XL_LEN_R */
    size = 8;
-   vec_uc_result2 = vec_xl_len_r(data_uc, size);
+   vec_uc_result1 = vec_xl_len_r(data_uc, size);
 
-   vec_uc_expected2 = (vector unsigned char){8, 7, 6, 5, 4, 3, 2, 1,
+   vec_uc_expected1 = (vector unsigned char){8, 7, 6, 5, 4, 3, 2, 1,
 					     0, 0, 0, 0, 0, 0, 0, 0,};
    
-   if (result_wrong (vec_uc_expected2, vec_uc_result2))
+   if (result_wrong (vec_uc_expected1, vec_uc_result1))
      {
 #ifdef DEBUG
        printf("Error: result does not match expected result\n");
-       printf("vec_xl_len_r(%d): vec_uc_expected2[0] to vec_uc_expected2[15]\n",
+       printf("vec_xl_len_r(%d): vec_uc_expected1[0] to vec_uc_expected1[15]\n",
 	  size);
    
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_expected2[i]);
+	 printf(" %d,", vec_uc_expected1[i]);
 
-       printf("\nvec_xl_len_r(%d): vec_uc_result2[0] to vec_uc_result2[15]\n",
+       printf("\nvec_xl_len_r(%d): vec_uc_result1[0] to vec_uc_result1[15]\n",
 	      size);
    
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_result2[i]);
+	 printf(" %d,", vec_uc_result1[i]);
 
        printf("\n\n");
 #else
@@ -106,26 +105,26 @@ int main() {
        
 
    size = 4;
-   vec_uc_result2 = vec_xl_len_r(data_uc, size);
+   vec_uc_result1 = vec_xl_len_r(data_uc, size);
 
-   vec_uc_expected2 = (vector unsigned char){ 4, 3, 2, 1, 0, 0, 0, 0,
+   vec_uc_expected1 = (vector unsigned char){ 4, 3, 2, 1, 0, 0, 0, 0,
                                               0, 0, 0, 0, 0, 0, 0, 0 };
    
-   if (result_wrong (vec_uc_expected2, vec_uc_result2))
+   if (result_wrong (vec_uc_expected1, vec_uc_result1))
      {
 #ifdef DEBUG
        printf("Error: result does not match expected result\n");
-       printf("vec_xl_len_r(%d): vec_uc_expected2[0] to vec_uc_expected2[15]\n",
+       printf("vec_xl_len_r(%d): vec_uc_expected1[0] to vec_uc_expected1[15]\n",
 	    size);
    
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_expected2[i]);
+	 printf(" %d,", vec_uc_expected1[i]);
 
-       printf("\nvec_xl_len_r(%d): vec_uc_result2[0] to vec_uc_result2[15]\n",
+       printf("\nvec_xl_len_r(%d): vec_uc_result1[0] to vec_uc_result1[15]\n",
 	      size);
    
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_result2[i]);
+	 printf(" %d,", vec_uc_result1[i]);
 
        printf("\n\n");
 #else
@@ -134,25 +133,25 @@ int main() {
      }
 
    size = 2;
-   vec_uc_result2 = vec_xl_len_r(data_uc, size);
+   vec_uc_result1 = vec_xl_len_r(data_uc, size);
 
-   vec_uc_expected2 = (vector unsigned char){ 2, 1, 0, 0, 0, 0, 0, 0,
+   vec_uc_expected1 = (vector unsigned char){ 2, 1, 0, 0, 0, 0, 0, 0,
                                               0, 0, 0, 0, 0, 0, 0, 0 };
    
-   if (result_wrong (vec_uc_expected2, vec_uc_result2))
+   if (result_wrong (vec_uc_expected1, vec_uc_result1))
      {
 #ifdef DEBUG
        printf("Error: result does not match expected result\n");
-       printf("vec_xl_len_r(%d): vec_uc_expected2[0] to vec_uc_expected2[15]\n",
+       printf("vec_xl_len_r(%d): vec_uc_expected1[0] to vec_uc_expected1[15]\n",
 	      size);
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_expected2[i]);
+	 printf(" %d,", vec_uc_expected1[i]);
 
-       printf("\nvec_xl_len_r(%d) vec_uc_result2[0] to vec_uc_result2[15]\n",
+       printf("\nvec_xl_len_r(%d) vec_uc_result1[0] to vec_uc_result1[15]\n",
 	      size);
    
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_result2[i]);
+	 printf(" %d,", vec_uc_result1[i]);
 
        printf("\n\n");
 #else
@@ -162,33 +161,33 @@ int main() {
 
 
    /* VEC_XST_LEN */
-   vec_uc_expected2 = (vector unsigned char){ 1, 2, 0, 0, 0, 0, 0, 0,
+   vec_uc_expected1 = (vector unsigned char){ 1, 2, 0, 0, 0, 0, 0, 0,
                                               0, 0, 0, 0, 0, 0, 0, 0 };
    store_data_uc = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
 					   9, 10, 11, 12, 13, 14, 15, 16 };
    size = 2;
 
    for (i=0; i<16; i++)
-     vec_uc_result2[i] = 0;
+     vec_uc_result1[i] = 0;
    
-   address = &vec_uc_result2[0];
+   address = &vec_uc_result1[0];
    vec_xst_len (store_data_uc, address, size);
 
-   if (result_wrong (vec_uc_expected2, vec_uc_result2))
+   if (result_wrong (vec_uc_expected1, vec_uc_result1))
      {
 #ifdef DEBUG
        printf("Error: result does not match expected result\n");
-       printf("vec_xst_len (%d) vec_uc_result2[0] to vec_uc_result2[15]\n",
+       printf("vec_xst_len (%d) vec_uc_result1[0] to vec_uc_result1[15]\n",
 	      size);
 
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_expected2[i]);
+	 printf(" %d,", vec_uc_expected1[i]);
 
        printf("\nvec_xst_len (%d) store_data_uc[0] to store_data_uc[15]\n",
 	      size);
 
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_result2[i]);
+	 printf(" %d,", vec_uc_result1[i]);
 
        printf("\n\n");
 #else
@@ -196,34 +195,34 @@ int main() {
 #endif
      }
 
-   vec_uc_expected2 = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
+   vec_uc_expected1 = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
                                               9, 10, 11, 12, 13, 14, 0, 0 };
    store_data_uc = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
 					   9, 10, 11, 12, 13, 14, 15, 16 };
    size = 14;
 
    for (i=0; i<16; i++)
-     vec_uc_result2[i] = 0;
+     vec_uc_result1[i] = 0;
 
-   address = &vec_uc_result2[0];
+   address = &vec_uc_result1[0];
 
    vec_xst_len (store_data_uc, address, size);
    
-   if (result_wrong (vec_uc_expected2, vec_uc_result2))
+   if (result_wrong (vec_uc_expected1, vec_uc_result1))
      {
 #ifdef DEBUG
        printf("Error: result does not match expected result\n");
-       printf("vec_xst_len (%d) vec_uc_result2[0] to vec_uc_result2[15]\n",
+       printf("vec_xst_len (%d) vec_uc_result1[0] to vec_uc_result1[15]\n",
 	      size);
 
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_expected2[i]);
+	 printf(" %d,", vec_uc_expected1[i]);
 
        printf("\nvec_xst_len (%d) store_data_uc[0] to store_data_uc[15]\n",
 	      size);
 
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_result2[i]);
+	 printf(" %d,", vec_uc_result1[i]);
 
        printf("\n\n");
 #else
@@ -232,6 +231,40 @@ int main() {
      }
 
    /* VEC_XST_LEN_R */
+   vec_uc_expected1 = (vector unsigned char){ 16, 15, 14, 13, 12, 11, 10, 9,
+					      8, 7, 6, 5, 4, 3, 2, 1 };
+   store_data_uc = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
+					   9, 10, 11, 12, 13, 14, 15, 16 };
+   vec_uc_result1 = (vector unsigned char){ 0, 0, 0, 0, 0, 0, 0, 0,
+					    0, 0, 0, 0, 0, 0, 0, 0 };
+
+   size = 16;
+
+   address = &vec_uc_result1[0];
+
+   vec_xst_len_r(store_data_uc, address, size);
+
+   if (result_wrong (vec_uc_expected1, vec_uc_result1))
+     {
+#ifdef DEBUG
+       printf("Error: result does not match expected result\n");
+       printf("vec_xst_len_r(%d) vec_uc_expected1[0] to vec_uc_expected1[15]\n",
+	      size);
+
+       for (i=0; i<16; i++)
+	 printf(" %d,", vec_uc_expected1[i]);
+
+       printf("\nvec_xst_len_r(%d) result[0] to result[15]\n", size);
+
+       for (i=0; i<16; i++)
+	 printf(" %d,", vec_uc_result1[i]);
+
+       printf("\n\n");
+#else
+       abort();
+#endif
+     }
+
    vec_uc_expected1 = (vector unsigned char){ 2, 1, 0, 0, 0, 0, 0, 0,
                                               0, 0, 0, 0, 0, 0, 0, 0 };
    store_data_uc = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
@@ -240,9 +273,6 @@ int main() {
 					    0, 0, 0, 0, 0, 0, 0, 0 };
 
    size = 2;
-
-   for (i=0; i<16; i++)
-     vec_uc_result1[i] = 0;
 
    address = &vec_uc_result1[0];
 
@@ -269,6 +299,39 @@ int main() {
 #endif
      }
 
+   vec_uc_expected1 = (vector unsigned char){ 16, 15, 14, 13, 12, 11, 10, 9,
+                                              8, 7, 6, 5, 4, 3, 2, 1 };
+   store_data_uc = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
+					   9, 10, 11, 12, 13, 14, 15, 16 };
+   vec_uc_result1 = (vector unsigned char){ 0, 0, 0, 0, 0, 0, 0, 0, 
+					    0, 0, 0, 0, 0, 0, 0, 0 };
+
+   size = 16;
+
+   address = &vec_uc_result1[0];
+
+   vec_xst_len_r(store_data_uc, address, size);
+
+   if (result_wrong (vec_uc_expected1, vec_uc_result1))
+     {
+#ifdef DEBUG
+       printf("Error: result does not match expected result\n");
+       printf("vec_xst_len_r(%d) vec_uc_expected1[0] to vec_uc_expected1[15]\n",
+	  size);
+   
+       for (i=0; i<16; i++)
+	 printf(" %d,", vec_uc_expected1[i]);
+
+       printf("\nvec_xst_len_r(%d) result[0] to result[15]\n", size);
+
+       for (i=0; i<16; i++)
+	 printf(" %d,", vec_uc_result1[i]);
+
+       printf("\n\n");
+#else
+       abort();
+#endif
+     }
 
    vec_uc_expected1 = (vector unsigned char){ 14, 13, 12, 11, 10, 9, 8, 7,
                                               6, 5, 4, 3, 2, 1, 0, 0 };
@@ -279,9 +342,6 @@ int main() {
 
    size = 14;
 
-   for (i=0; i<16; i++)
-     vec_uc_result1[i] = 0;
-
    address = &vec_uc_result1[0];
 
    vec_xst_len_r(store_data_uc, address, size);
@@ -290,11 +350,11 @@ int main() {
      {
 #ifdef DEBUG
        printf("Error: result does not match expected result\n");
-       printf("vec_xst_len_r(%d) vec_uc_expected2[0] to vec_uc_expected2[15]\n",
+       printf("vec_xst_len_r(%d) vec_uc_expected1[0] to vec_uc_expected1[15]\n",
 	  size);
    
        for (i=0; i<16; i++)
-	 printf(" %d,", vec_uc_expected2[i]);
+	 printf(" %d,", vec_uc_expected1[i]);
 
        printf("\nvec_xst_len_r(%d) result[0] to result[15]\n", size);
 

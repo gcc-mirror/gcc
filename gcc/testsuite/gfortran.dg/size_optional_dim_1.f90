@@ -7,9 +7,9 @@ program main
   integer :: ires
 
   call checkv (ires, a)
-  if (ires /= 6) call abort
+  if (ires /= 6) STOP 1
   call checkv (ires, a, 1)
-  if (ires /= 2) call abort
+  if (ires /= 2) STOP 2
 contains
   subroutine checkv(ires,a1,opt1)
     integer, intent(out) :: ires

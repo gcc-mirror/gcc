@@ -96,33 +96,33 @@ program nml_test
   read(str,nml=nml)
 
   ! Check result
-  if (any (a /= ['aa01','aa02'])) call abort()
-  if (any (ap /= ['98', '99'])) call abort()
-  if (b /= '7') call abort()
-  if (bp /= '101') call abort()
-  if (c /= '8') call abort()
-  if (any (d /= ['-1', '-2', '-3'])) call abort()
+  if (any (a /= ['aa01','aa02'])) STOP 1
+  if (any (ap /= ['98', '99'])) STOP 2
+  if (b /= '7') STOP 3
+  if (bp /= '101') STOP 4
+  if (c /= '8') STOP 5
+  if (any (d /= ['-1', '-2', '-3'])) STOP 6
 
-  if (e%c1 /= '-701') call abort()
-  if (any (e%c2 /= ['-702','-703','-704'])) call abort()
-  if (f(1)%c1 /= '33001') call abort()
-  if (f(2)%c1 /= '33002') call abort()
-  if (any (f(1)%c2 /= ['44001','44002','44003'])) call abort()
-  if (any (f(2)%c2 /= ['44011','44012','44013'])) call abort()
+  if (e%c1 /= '-701') STOP 7
+  if (any (e%c2 /= ['-702','-703','-704'])) STOP 8
+  if (f(1)%c1 /= '33001') STOP 9
+  if (f(2)%c1 /= '33002') STOP 10
+  if (any (f(1)%c2 /= ['44001','44002','44003'])) STOP 11
+  if (any (f(2)%c2 /= ['44011','44012','44013'])) STOP 12
 
-  if (g%c1 /= '-601') call abort()
-  if (any(g%c2 /= ['-602','6703','-604'])) call abort()
-  if (h(1)%c1 /= '35001') call abort()
-  if (h(2)%c1 /= '35002') call abort()
-  if (any (h(1)%c2 /= ['45001','45002','45003'])) call abort()
-  if (any (h(2)%c2 /= ['45011','45012','45013'])) call abort()
+  if (g%c1 /= '-601') STOP 13
+  if (any(g%c2 /= ['-602','6703','-604'])) STOP 14
+  if (h(1)%c1 /= '35001') STOP 15
+  if (h(2)%c1 /= '35002') STOP 16
+  if (any (h(1)%c2 /= ['45001','45002','45003'])) STOP 17
+  if (any (h(2)%c2 /= ['45011','45012','45013'])) STOP 18
 
-  if (i%c1 /= '-501') call abort()
-  if (any (i%c2 /= ['-502','-503','-504'])) call abort()
-  if (j(1)%c1 /= '36001') call abort()
-  if (j(2)%c1 /= '36002') call abort()
-  if (any (j(1)%c2 /= ['46001','46002','46003'])) call abort()
-  if (any (j(2)%c2 /= ['46011','46012','46013'])) call abort()
+  if (i%c1 /= '-501') STOP 19
+  if (any (i%c2 /= ['-502','-503','-504'])) STOP 20
+  if (j(1)%c1 /= '36001') STOP 21
+  if (j(2)%c1 /= '36002') STOP 22
+  if (any (j(1)%c2 /= ['46001','46002','46003'])) STOP 23
+  if (any (j(2)%c2 /= ['46011','46012','46013'])) STOP 24
 
   ! Check argument passing (dummy processing)
   call test2(a,b,c,d,ap,bp,e,f,g,h,i,j,2) 
@@ -197,40 +197,40 @@ contains
     read(str,nml=nml2)
 
     ! Check result
-    if (any (x1 /= ['aa01','aa02'])) call abort()
-    if (any (x1p /= ['98', '99'])) call abort()
-    if (x2 /= '7') call abort()
-    if (x2p /= '101') call abort()
-    if (x3 /= '8') call abort()
-    if (any (x4 /= ['-1', '-2', '-3'])) call abort()
+    if (any (x1 /= ['aa01','aa02'])) STOP 25
+    if (any (x1p /= ['98', '99'])) STOP 26
+    if (x2 /= '7') STOP 27
+    if (x2p /= '101') STOP 28
+    if (x3 /= '8') STOP 29
+    if (any (x4 /= ['-1', '-2', '-3'])) STOP 30
 
-    if (x6%c1 /= '-701') call abort()
-    if (any (x6%c2 /= ['-702','-703','-704'])) call abort()
-    if (x7(1)%c1 /= '33001') call abort()
-    if (x7(2)%c1 /= '33002') call abort()
-    if (any (x7(1)%c2 /= ['44001','44002','44003'])) call abort()
-    if (any (x7(2)%c2 /= ['44011','44012','44013'])) call abort()
+    if (x6%c1 /= '-701') STOP 31
+    if (any (x6%c2 /= ['-702','-703','-704'])) STOP 32
+    if (x7(1)%c1 /= '33001') STOP 33
+    if (x7(2)%c1 /= '33002') STOP 34
+    if (any (x7(1)%c2 /= ['44001','44002','44003'])) STOP 35
+    if (any (x7(2)%c2 /= ['44011','44012','44013'])) STOP 36
 
-    if (x8%c1 /= '-601') call abort()
-    if (any(x8%c2 /= ['-602','6703','-604'])) call abort()
-    if (x9(1)%c1 /= '35001') call abort()
-    if (x9(2)%c1 /= '35002') call abort()
-    if (any (x9(1)%c2 /= ['45001','45002','45003'])) call abort()
-    if (any (x9(2)%c2 /= ['45011','45012','45013'])) call abort()
+    if (x8%c1 /= '-601') STOP 37
+    if (any(x8%c2 /= ['-602','6703','-604'])) STOP 38
+    if (x9(1)%c1 /= '35001') STOP 39
+    if (x9(2)%c1 /= '35002') STOP 40
+    if (any (x9(1)%c2 /= ['45001','45002','45003'])) STOP 41
+    if (any (x9(2)%c2 /= ['45011','45012','45013'])) STOP 42
  
-    if (x10%c1 /= '-501') call abort()
-    if (any (x10%c2 /= ['-502','-503','-504'])) call abort()
-    if (x11(1)%c1 /= '36001') call abort()
-    if (x11(2)%c1 /= '36002') call abort()
-    if (any (x11(1)%c2 /= ['46001','46002','46003'])) call abort()
-    if (any (x11(2)%c2 /= ['46011','46012','46013'])) call abort()
+    if (x10%c1 /= '-501') STOP 43
+    if (any (x10%c2 /= ['-502','-503','-504'])) STOP 44
+    if (x11(1)%c1 /= '36001') STOP 45
+    if (x11(2)%c1 /= '36002') STOP 46
+    if (any (x11(1)%c2 /= ['46001','46002','46003'])) STOP 47
+    if (any (x11(2)%c2 /= ['46011','46012','46013'])) STOP 48
 
-    if (any (x5 /= [ 'x5-42', 'x5-53' ])) call abort()
+    if (any (x5 /= [ 'x5-42', 'x5-53' ])) STOP 49
 
-    if (x12(1)%c1 /= '37001') call abort()
-    if (x12(2)%c1 /= '37002') call abort()
-    if (any (x12(1)%c2 /= ['47001','47002','47003'])) call abort()
-    if (any (x12(2)%c2 /= ['47011','47012','47013'])) call abort()
+    if (x12(1)%c1 /= '37001') STOP 50
+    if (x12(2)%c1 /= '37002') STOP 51
+    if (any (x12(1)%c2 /= ['47001','47002','47003'])) STOP 52
+    if (any (x12(2)%c2 /= ['47011','47012','47013'])) STOP 53
   end subroutine test2
 
   subroutine test3(x1,x2,x3,x4,x1p,x2p,x6,x7,x8,x9,x10,x11,n,ll)
@@ -301,40 +301,40 @@ contains
     read(str,nml=nml2)
 
     ! Check result
-    if (any (x1 /= ['aa01','aa02'])) call abort()
-    if (any (x1p /= ['98', '99'])) call abort()
-    if (x2 /= '7') call abort()
-    if (x2p /= '101') call abort()
-    if (x3 /= '8') call abort()
-    if (any (x4 /= ['-1', '-2', '-3'])) call abort()
+    if (any (x1 /= ['aa01','aa02'])) STOP 54
+    if (any (x1p /= ['98', '99'])) STOP 55
+    if (x2 /= '7') STOP 56
+    if (x2p /= '101') STOP 57
+    if (x3 /= '8') STOP 58
+    if (any (x4 /= ['-1', '-2', '-3'])) STOP 59
 
-    if (x6%c1 /= '-701') call abort()
-    if (any (x6%c2 /= ['-702','-703','-704'])) call abort()
-    if (x7(1)%c1 /= '33001') call abort()
-    if (x7(2)%c1 /= '33002') call abort()
-    if (any (x7(1)%c2 /= ['44001','44002','44003'])) call abort()
-    if (any (x7(2)%c2 /= ['44011','44012','44013'])) call abort()
+    if (x6%c1 /= '-701') STOP 60
+    if (any (x6%c2 /= ['-702','-703','-704'])) STOP 61
+    if (x7(1)%c1 /= '33001') STOP 62
+    if (x7(2)%c1 /= '33002') STOP 63
+    if (any (x7(1)%c2 /= ['44001','44002','44003'])) STOP 64
+    if (any (x7(2)%c2 /= ['44011','44012','44013'])) STOP 65
 
-    if (x8%c1 /= '-601') call abort()
-    if (any(x8%c2 /= ['-602','6703','-604'])) call abort()
-    if (x9(1)%c1 /= '35001') call abort()
-    if (x9(2)%c1 /= '35002') call abort()
-    if (any (x9(1)%c2 /= ['45001','45002','45003'])) call abort()
-    if (any (x9(2)%c2 /= ['45011','45012','45013'])) call abort()
+    if (x8%c1 /= '-601') STOP 66
+    if (any(x8%c2 /= ['-602','6703','-604'])) STOP 67
+    if (x9(1)%c1 /= '35001') STOP 68
+    if (x9(2)%c1 /= '35002') STOP 69
+    if (any (x9(1)%c2 /= ['45001','45002','45003'])) STOP 70
+    if (any (x9(2)%c2 /= ['45011','45012','45013'])) STOP 71
  
-    if (x10%c1 /= '-501') call abort()
-    if (any (x10%c2 /= ['-502','-503','-504'])) call abort()
-    if (x11(1)%c1 /= '36001') call abort()
-    if (x11(2)%c1 /= '36002') call abort()
-    if (any (x11(1)%c2 /= ['46001','46002','46003'])) call abort()
-    if (any (x11(2)%c2 /= ['46011','46012','46013'])) call abort()
+    if (x10%c1 /= '-501') STOP 72
+    if (any (x10%c2 /= ['-502','-503','-504'])) STOP 73
+    if (x11(1)%c1 /= '36001') STOP 74
+    if (x11(2)%c1 /= '36002') STOP 75
+    if (any (x11(1)%c2 /= ['46001','46002','46003'])) STOP 76
+    if (any (x11(2)%c2 /= ['46011','46012','46013'])) STOP 77
 
-    if (any (x5 /= [ 'x5-42', 'x5-53' ])) call abort()
+    if (any (x5 /= [ 'x5-42', 'x5-53' ])) STOP 78
 
-    if (x12(1)%c1 /= '37001') call abort()
-    if (x12(2)%c1 /= '37002') call abort()
-    if (any (x12(1)%c2 /= ['47001','47002','47003'])) call abort()
-    if (any (x12(2)%c2 /= ['47011','47012','47013'])) call abort()
+    if (x12(1)%c1 /= '37001') STOP 79
+    if (x12(2)%c1 /= '37002') STOP 80
+    if (any (x12(1)%c2 /= ['47001','47002','47003'])) STOP 81
+    if (any (x12(2)%c2 /= ['47011','47012','47013'])) STOP 82
   end subroutine test3
 
   subroutine test4(x1,x2,x3,x4,x1p,x2p,x6,x7,x8,x9,x10,x11,n)
@@ -404,39 +404,39 @@ contains
     read(str,nml=nml2)
 
     ! Check result
-    if (any (x1 /= ['aa01','aa02'])) call abort()
-    if (any (x1p /= ['98', '99'])) call abort()
-    if (x2 /= '7') call abort()
-    if (x2p /= '101') call abort()
-    if (x3 /= '8') call abort()
-    if (any (x4 /= ['-1', '-2', '-3'])) call abort()
+    if (any (x1 /= ['aa01','aa02'])) STOP 83
+    if (any (x1p /= ['98', '99'])) STOP 84
+    if (x2 /= '7') STOP 85
+    if (x2p /= '101') STOP 86
+    if (x3 /= '8') STOP 87
+    if (any (x4 /= ['-1', '-2', '-3'])) STOP 88
 
-    if (x6%c1 /= '-701') call abort()
-    if (any (x6%c2 /= ['-702','-703','-704'])) call abort()
-    if (x7(1)%c1 /= '33001') call abort()
-    if (x7(2)%c1 /= '33002') call abort()
-    if (any (x7(1)%c2 /= ['44001','44002','44003'])) call abort()
-    if (any (x7(2)%c2 /= ['44011','44012','44013'])) call abort()
+    if (x6%c1 /= '-701') STOP 89
+    if (any (x6%c2 /= ['-702','-703','-704'])) STOP 90
+    if (x7(1)%c1 /= '33001') STOP 91
+    if (x7(2)%c1 /= '33002') STOP 92
+    if (any (x7(1)%c2 /= ['44001','44002','44003'])) STOP 93
+    if (any (x7(2)%c2 /= ['44011','44012','44013'])) STOP 94
 
-    if (x8%c1 /= '-601') call abort()
-    if (any(x8%c2 /= ['-602','6703','-604'])) call abort()
-    if (x9(1)%c1 /= '35001') call abort()
-    if (x9(2)%c1 /= '35002') call abort()
-    if (any (x9(1)%c2 /= ['45001','45002','45003'])) call abort()
-    if (any (x9(2)%c2 /= ['45011','45012','45013'])) call abort()
+    if (x8%c1 /= '-601') STOP 95
+    if (any(x8%c2 /= ['-602','6703','-604'])) STOP 96
+    if (x9(1)%c1 /= '35001') STOP 97
+    if (x9(2)%c1 /= '35002') STOP 98
+    if (any (x9(1)%c2 /= ['45001','45002','45003'])) STOP 99
+    if (any (x9(2)%c2 /= ['45011','45012','45013'])) STOP 100
  
-    if (x10%c1 /= '-501') call abort()
-    if (any (x10%c2 /= ['-502','-503','-504'])) call abort()
-    if (x11(1)%c1 /= '36001') call abort()
-    if (x11(2)%c1 /= '36002') call abort()
-    if (any (x11(1)%c2 /= ['46001','46002','46003'])) call abort()
-    if (any (x11(2)%c2 /= ['46011','46012','46013'])) call abort()
+    if (x10%c1 /= '-501') STOP 101
+    if (any (x10%c2 /= ['-502','-503','-504'])) STOP 102
+    if (x11(1)%c1 /= '36001') STOP 103
+    if (x11(2)%c1 /= '36002') STOP 104
+    if (any (x11(1)%c2 /= ['46001','46002','46003'])) STOP 105
+    if (any (x11(2)%c2 /= ['46011','46012','46013'])) STOP 106
 
-    if (any (x5 /= [ 'x5-42', 'x5-53' ])) call abort()
+    if (any (x5 /= [ 'x5-42', 'x5-53' ])) STOP 107
 
-    if (x12(1)%c1 /= '37001') call abort()
-    if (x12(2)%c1 /= '37002') call abort()
-    if (any (x12(1)%c2 /= ['47001','47002','47003'])) call abort()
-    if (any (x12(2)%c2 /= ['47011','47012','47013'])) call abort()
+    if (x12(1)%c1 /= '37001') STOP 108
+    if (x12(2)%c1 /= '37002') STOP 109
+    if (any (x12(1)%c2 /= ['47001','47002','47003'])) STOP 110
+    if (any (x12(2)%c2 /= ['47011','47012','47013'])) STOP 111
   end subroutine test4
 end program nml_test

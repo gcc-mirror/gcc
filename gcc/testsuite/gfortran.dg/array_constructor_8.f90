@@ -35,12 +35,12 @@ contains
     integer, dimension (:) :: values
     integer :: order, repeat, trail, i
 
-    if (size (values, dim = 1) .ne. order * repeat + trail) call abort
+    if (size (values, dim = 1) .ne. order * repeat + trail) STOP 1
     do i = 1, order * repeat
-      if (values (i) .ne. mod (i - 1, repeat) + 1) call abort
+      if (values (i) .ne. mod (i - 1, repeat) + 1) STOP 2
     end do
     do i = 1, trail
-      if (values (i + order * repeat) .ne. i * 100) call abort
+      if (values (i + order * repeat) .ne. i * 100) STOP 3
     end do
   end subroutine test
 end program main

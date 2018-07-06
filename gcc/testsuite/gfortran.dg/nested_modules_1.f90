@@ -26,10 +26,10 @@
        contains
          subroutine tigger (w)
            complex(kind=8) w
-           if (FOO.ne.(1.0d0, 1.0d0)) call abort ()
-           if (KANGA.ne.(-1.0d0, -1.0d0)) call abort ()
-           if (ROBIN.ne.(99.0d0, 99.0d0)) CALL abort ()
-           if (w.ne.cmplx(re,im)) call abort ()
+           if (FOO.ne.(1.0d0, 1.0d0)) STOP 1
+           if (KANGA.ne.(-1.0d0, -1.0d0)) STOP 2
+           if (ROBIN.ne.(99.0d0, 99.0d0)) STOP 3
+           if (w.ne.cmplx(re,im)) STOP 4
          end subroutine tigger
        end module mod2
 

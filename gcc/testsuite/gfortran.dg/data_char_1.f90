@@ -9,6 +9,6 @@ program data_char_1
   data b(:)(1:4), b(1)(5:5), b(2)(5:5) &
       /'abcdefg', 'hi', 'j', 'k'/ ! { dg-warning "truncated" }
   
-  if ((a(1) .ne. 'Hello') .or. (a(2) .ne. 'orld ')) call abort
-  if ((b(1) .ne. 'abcdj') .or. (b(2) .ne. 'hi  k')) call abort
+  if ((a(1) .ne. 'Hello') .or. (a(2) .ne. 'orld ')) STOP 1
+  if ((b(1) .ne. 'abcdj') .or. (b(2) .ne. 'hi  k')) STOP 2
 end program

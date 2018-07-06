@@ -9,6 +9,6 @@ program main
   write (10,'(A)') ' 1 2 3 4*5 /'
   rewind 10
   read (10,*) i1
-  if (any(i1 /= i2)) call abort
+  if (any(i1 /= i2)) STOP 1
   close (10,status="delete")
 end program main

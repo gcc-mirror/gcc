@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -31,22 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "toplev.h"
 #include "common/common-target.h"
-
-/* Various flags to control the mangling process.  */
-
-enum mangling_flags
-{
-  /* No flags.  */
-  mf_none = 0,
-  /* The thing we are presently mangling is part of a template type,
-     rather than a fully instantiated type.  Therefore, we may see
-     complex expressions where we would normally expect to see a
-     simple integer constant.  */
-  mf_maybe_uninstantiated = 1,
-  /* When mangling a numeric value, use the form `_XX_' (instead of
-     just `XX') if the value has more than one digit.  */
-  mf_use_underscores_around_value = 2
-};
 
 static void do_build_copy_assign (tree);
 static void do_build_copy_constructor (tree);
@@ -206,7 +190,7 @@ make_alias_for (tree target, tree newid)
 			   TREE_CODE (target), newid, TREE_TYPE (target));
   DECL_LANG_SPECIFIC (alias) = DECL_LANG_SPECIFIC (target);
   cxx_dup_lang_specific_decl (alias);
-  DECL_CONTEXT (alias) = NULL;
+  DECL_CONTEXT (alias) = DECL_CONTEXT (target);
   TREE_READONLY (alias) = TREE_READONLY (target);
   TREE_THIS_VOLATILE (alias) = TREE_THIS_VOLATILE (target);
   TREE_PUBLIC (alias) = 0;
@@ -484,7 +468,7 @@ forward_parm (tree parm)
   tree type = TREE_TYPE (parm);
   if (DECL_PACK_P (parm))
     type = PACK_EXPANSION_PATTERN (type);
-  if (TREE_CODE (type) != REFERENCE_TYPE)
+  if (!TYPE_REF_P (type))
     type = cp_build_reference_type (type, /*rval=*/true);
   warning_sentinel w (warn_useless_cast);
   exp = build_static_cast (type, exp, tf_warning_or_error);
@@ -747,7 +731,7 @@ do_build_copy_constructor (tree fndecl)
 	     the field is "T", then the type will usually be "const
 	     T".  (There are no cv-qualified variants of reference
 	     types.)  */
-	  if (TREE_CODE (expr_type) != REFERENCE_TYPE)
+	  if (!TYPE_REF_P (expr_type))
 	    {
 	      int quals = cvquals;
 
@@ -758,7 +742,7 @@ do_build_copy_constructor (tree fndecl)
 	    }
 
 	  init = build3 (COMPONENT_REF, expr_type, parm, field, NULL_TREE);
-	  if (move_p && TREE_CODE (expr_type) != REFERENCE_TYPE
+	  if (move_p && !TYPE_REF_P (expr_type)
 	      /* 'move' breaks bit-fields, and has no effect for scalars.  */
 	      && !scalarish_type_p (expr_type))
 	    init = move (init);
@@ -845,7 +829,7 @@ do_build_copy_assign (tree fndecl)
 		     "assignment operator", field);
 	      continue;
 	    }
-	  else if (TREE_CODE (expr_type) == REFERENCE_TYPE)
+	  else if (TYPE_REF_P (expr_type))
 	    {
 	      error ("non-static reference member %q#D, can%'t use "
 		     "default assignment operator", field);
@@ -874,7 +858,7 @@ do_build_copy_assign (tree fndecl)
 	  expr_type = cp_build_qualified_type (expr_type, quals);
 
 	  init = build3 (COMPONENT_REF, expr_type, init, field, NULL_TREE);
-	  if (move_p && TREE_CODE (expr_type) != REFERENCE_TYPE
+	  if (move_p && !TYPE_REF_P (expr_type)
 	      /* 'move' breaks bit-fields, and has no effect for scalars.  */
 	      && !scalarish_type_p (expr_type))
 	    init = move (init);
@@ -966,7 +950,7 @@ synthesize_method (tree fndecl)
   pop_deferring_access_checks ();
 
   if (error_count != errorcount || warning_count != warningcount + werrorcount)
-    inform (input_location, "synthesized method %qD first required here ",
+    inform (input_location, "synthesized method %qD first required here",
 	    fndecl);
 }
 
@@ -986,7 +970,7 @@ build_stub_type (tree type, int quals, bool rvalue)
 static tree
 build_stub_object (tree reftype)
 {
-  if (TREE_CODE (reftype) != REFERENCE_TYPE)
+  if (!TYPE_REF_P (reftype))
     reftype = cp_build_reference_type (reftype, /*rval*/true);
   tree stub = build1 (CONVERT_EXPR, reftype, integer_one_node);
   return convert_from_reference (stub);
@@ -1165,7 +1149,7 @@ constructible_expr (tree to, tree from)
       tree ctype = to;
       vec<tree, va_gc> *args = NULL;
       cp_unevaluated cp_uneval_guard;
-      if (TREE_CODE (to) != REFERENCE_TYPE)
+      if (!TYPE_REF_P (to))
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
       for (; from; from = TREE_CHAIN (from))
@@ -1293,7 +1277,7 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
       if (diag)
 	{
 	  inform (DECL_SOURCE_LOCATION (fn),
-		  "defaulted constructor calls non-constexpr %qD", fn);
+		  "defaulted constructor calls non-%<constexpr%> %qD", fn);
 	  explain_invalid_constexpr_fn (fn);
 	}
     }
@@ -1321,6 +1305,15 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	  || DECL_ARTIFICIAL (field))
 	continue;
 
+      /* Variant members only affect deletedness.  In particular, they don't
+	 affect the exception-specification of a user-provided destructor,
+	 which we're figuring out via get_defaulted_eh_spec.  So if we aren't
+	 asking if this is deleted, don't even look up the function; we don't
+	 want an error about a deleted function we aren't actually calling.  */
+      if (sfk == sfk_destructor && deleted_p == NULL
+	  && TREE_CODE (DECL_CONTEXT (field)) == UNION_TYPE)
+	break;
+
       mem_type = strip_array_types (TREE_TYPE (field));
       if (assign_p)
 	{
@@ -1331,7 +1324,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 		error ("non-static const member %q#D, can%'t use default "
 		       "assignment operator", field);
 	    }
-	  else if (TREE_CODE (mem_type) == REFERENCE_TYPE)
+	  else if (TYPE_REF_P (mem_type))
 	    {
 	      if (diag)
 		error ("non-static reference member %q#D, can%'t use "
@@ -1379,7 +1372,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 		}
 	      bad = true;
 	    }
-	  else if (TREE_CODE (mem_type) == REFERENCE_TYPE)
+	  else if (TYPE_REF_P (mem_type))
 	    {
 	      if (diag)
 		{
@@ -1410,7 +1403,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
       else if (sfk == sfk_copy_constructor)
 	{
 	  /* 12.8p11b5 */
-	  if (TREE_CODE (mem_type) == REFERENCE_TYPE
+	  if (TYPE_REF_P (mem_type)
 	      && TYPE_REF_IS_RVALUE (mem_type))
 	    {
 	      if (diag)
@@ -1866,7 +1859,7 @@ maybe_explain_implicit_delete (tree decl)
 		      "%q#D is implicitly deleted because the default "
 		      "definition would be ill-formed:", decl);
 	      synthesized_method_walk (ctype, sfk, const_p,
-				       NULL, NULL, NULL, NULL, true,
+				       NULL, NULL, &deleted_p, NULL, true,
 				       &inh, parms);
 	    }
 	  else if (!comp_except_specs
@@ -2196,7 +2189,6 @@ defaulted_late_check (tree fn)
 	     "expected signature", fn);
       inform (DECL_SOURCE_LOCATION (fn),
 	      "expected signature: %qD", implicit_fn);
-      return;
     }
 
   if (DECL_DELETED_FN (implicit_fn))
@@ -2257,8 +2249,8 @@ defaulted_late_check (tree fn)
       if (!CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	{
 	  error ("explicitly defaulted function %q+D cannot be declared "
-		 "as constexpr because the implicit declaration is not "
-		 "constexpr:", fn);
+		 "as %<constexpr%> because the implicit declaration is not "
+		 "%<constexpr%>:", fn);
 	  explain_implicit_non_constexpr (fn);
 	}
       DECL_DECLARED_CONSTEXPR_P (fn) = false;
@@ -2402,8 +2394,19 @@ lazily_declare_fn (special_function_kind sfk, tree type)
      move assignment operator, the implicitly declared copy constructor is
      defined as deleted.... */
   if ((sfk == sfk_copy_assignment || sfk == sfk_copy_constructor)
-      && classtype_has_move_assign_or_move_ctor_p (type, true))
-    DECL_DELETED_FN (fn) = true;
+      && cxx_dialect >= cxx11)
+    {
+      if (classtype_has_move_assign_or_move_ctor_p (type, true))
+	DECL_DELETED_FN (fn) = true;
+      else if (classtype_has_user_copy_or_dtor (type))
+	/* The implicit definition of a copy constructor as defaulted is
+	   deprecated if the class has a user-declared copy assignment operator
+	   or a user-declared destructor. The implicit definition of a copy
+	   assignment operator as defaulted is deprecated if the class has a
+	   user-declared copy constructor or a user-declared destructor (15.4,
+	   15.8).  */
+	TREE_DEPRECATED (fn) = true;
+    }
 
   /* Destructors and assignment operators may be virtual.  */
   if (sfk == sfk_destructor
@@ -2430,8 +2433,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   fixup_type_variants (type);
 
   maybe_add_class_template_decl_list (type, fn, /*friend_p=*/0);
-  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
-      || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn))
+  if (DECL_MAYBE_IN_CHARGE_CDTOR_P (fn))
     /* Create appropriate clones.  */
     clone_function_decl (fn, /*update_methods=*/true);
 

@@ -1,3 +1,12 @@
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2017-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/80921
@@ -396,7 +405,7 @@
 
 	* New directory, new ChangeLog.
 
-Copyright (C) 2003-2017 Free Software Foundation, Inc.
+Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This ChangeLog is free software; the Free Software Foundation gives
 unlimited permission to copy, distribute, and modify it.

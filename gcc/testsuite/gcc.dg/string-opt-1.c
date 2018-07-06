@@ -1,4 +1,3 @@
-/* Ensure mempcpy is "optimized" into memcpy followed by addition.  */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
@@ -48,5 +47,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler-not "\<mempcpy\>" } } */
+/* { dg-final { scan-assembler "mempcpy" } } */
 /* { dg-final { scan-assembler "memcpy" } } */

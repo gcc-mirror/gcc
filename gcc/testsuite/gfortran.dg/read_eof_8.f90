@@ -18,10 +18,10 @@ program test
    read(25,'(a)',end=100,err=101) line
    k = k+1
   enddo
-  call abort
-100 if (k /= 5) call abort
+  STOP 1
+100 if (k /= 5) STOP 2
   close(25, status="delete")
   stop
-101 call abort
+101 STOP 3
 end program test
 

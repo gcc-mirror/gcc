@@ -988,27 +988,43 @@ appear, and that no wide or wide wide string or character literals
 appear in the program (that is literals representing characters not in
 type ``Character``).
 
+Static_Dispatch_Tables
+----------------------
+.. index:: Static_Dispatch_Tables
+
+[GNAT] This restriction checks at compile time that all the artifacts
+associated with dispatch tables can be placed in read-only memory.
+
 SPARK_05
 --------
 .. index:: SPARK_05
 
-[GNAT] This restriction checks at compile time that some constructs
-forbidden in SPARK 2005 are not present. Error messages related to
-SPARK restriction have the form:
+[GNAT] This restriction checks at compile time that some constructs forbidden
+in SPARK 2005 are not present. Note that SPARK 2005 has been superseded by
+SPARK 2014, whose restrictions are checked by the tool GNATprove. To check that
+a codebase respects SPARK 2014 restrictions, mark the code with pragma or
+aspect ``SPARK_Mode``, and run the tool GNATprove at Stone assurance level, as
+follows::
 
+  gnatprove -P project.gpr --mode=stone
+
+or equivalently::
+
+  gnatprove -P project.gpr --mode=check_all
+
+With restriction ``SPARK_05``, error messages related to SPARK 2005 restriction
+have the form:
 
 ::
 
   violation of restriction "SPARK_05" at <source-location>
    <error message>
 
-
 .. index:: SPARK
 
-The restriction ``SPARK`` is recognized as a
-synonym for ``SPARK_05``. This is retained for historical
-compatibility purposes (and an unconditional warning will be generated
-for its use, advising replacement by ``SPARK``).
+The restriction ``SPARK`` is recognized as a synonym for ``SPARK_05``. This is
+retained for historical compatibility purposes (and an unconditional warning
+will be generated for its use, advising replacement by ``SPARK_05``).
 
 This is not a replacement for the semantic checks performed by the
 SPARK Examiner tool, as the compiler currently only deals with code,
@@ -1016,13 +1032,13 @@ not SPARK 2005 annotations, and does not guarantee catching all
 cases of constructs forbidden by SPARK 2005.
 
 Thus it may well be the case that code which passes the compiler with
-the SPARK restriction is rejected by the SPARK Examiner, e.g. due to
+the SPARK 2005 restriction is rejected by the SPARK Examiner, e.g. due to
 the different visibility rules of the Examiner based on SPARK 2005
 ``inherit`` annotations.
 
 This restriction can be useful in providing an initial filter for code
 developed using SPARK 2005, or in examining legacy code to see how far
-it is from meeting SPARK restrictions.
+it is from meeting SPARK 2005 restrictions.
 
 The list below summarizes the checks that are performed when this
 restriction is in force:
@@ -1077,7 +1093,7 @@ restriction is in force:
 * Subprogram declaration only allowed in package spec (unless followed by import)
 * Access types not allowed
 * Incomplete type declaration not allowed
-* Object and subtype declarations must respect SPARK restrictions
+* Object and subtype declarations must respect SPARK 2005 restrictions
 * Digits or delta constraint not allowed
 * Decimal fixed point type not allowed
 * Aliasing of objects not allowed
@@ -1086,7 +1102,7 @@ restriction is in force:
 * Unary operators not allowed on modular types (except not)
 * Untagged record cannot be null
 * No class-wide operations
-* Initialization expressions must respect SPARK restrictions
+* Initialization expressions must respect SPARK 2005 restrictions
 * Nonstatic ranges not allowed except in iteration schemes
 * String subtypes must have lower bound of 1
 * Subtype of Boolean cannot have constraint
@@ -1110,7 +1126,7 @@ strict that the latest SPARK 2005 language definition:
 This list summarises the main SPARK 2005 language rules that are not
 currently checked by the SPARK_05 restriction:
 
-* SPARK annotations are treated as comments so are not checked at all
+* SPARK 2005 annotations are treated as comments so are not checked at all
 * Based real literals not allowed
 * Objects cannot be initialized at declaration by calls to user-defined functions
 * Objects cannot be initialized at declaration by assignments from variables
@@ -1135,6 +1151,6 @@ currently checked by the SPARK_05 restriction:
 * Pragma import must be immediately after entity it names
 * No mutual recursion between multiple units (this can be checked with gnatcheck)
 
-Note that if a unit is compiled in Ada 95 mode with the SPARK restriction,
+Note that if a unit is compiled in Ada 95 mode with the SPARK 2005 restriction,
 violations will be reported for constructs forbidden in SPARK 95,
 instead of SPARK 2005.

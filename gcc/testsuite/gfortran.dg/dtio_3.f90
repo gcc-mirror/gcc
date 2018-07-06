@@ -46,7 +46,7 @@ CONTAINS
       if (iostat.ne.0) iomsg = "Fail PWF DTzeroth"
     endif
     if (iotype.eq."DTtwo") then
-      if (size(vlist).ne.2) call abort
+      if (size(vlist).ne.2) STOP 1
       WRITE(udfmt,'(A,A,I1,A,I1,A)') '(', 'A', vlist(1),',I', vlist(2), ')'
       WRITE(unit, FMT='(A8,I2)') dtv%name, dtv%age
       if (iostat.ne.0) iomsg = "Fail PWF DTtwo"
@@ -100,7 +100,7 @@ CONTAINS
       if (iostat.ne.0) iomsg = "Fail PWF DTzeroth"
     endif
     if (iotype.eq."DTtwo") then
-      if (size(vlist).ne.2) call abort
+      if (size(vlist).ne.2) STOP 1
       WRITE(udfmt,'(A,A,I1,A,I1,A)') '(', 'A', vlist(1),',I', vlist(2), ')'
       READ(unit, FMT='(A8,I2)') dtv%name, dtv%age
       if (iostat.ne.0) iomsg = "Fail PWF DTtwo"
@@ -147,10 +147,10 @@ PROGRAM test
   member%age=66
   read (10, *, iostat=myiostat, iomsg=astring) member, chairman
   if (astring.ne."SUCCESS") print *, astring
-  if (member%name.ne."George") call abort
-  if (chairman%name.ne."Charlie") call abort
-  if (member%age.ne.42) call abort
-  if (chairman%age.ne.62) call abort
+  if (member%name.ne."George") STOP 1
+  if (chairman%name.ne."Charlie") STOP 1
+  if (member%age.ne.42) STOP 1
+  if (chairman%age.ne.62) STOP 1
   close(10, status='delete')
   ! Now we set next to point to member. This changes the code path
   ! in the pwf and prf procedures.
@@ -164,9 +164,9 @@ PROGRAM test
   member%age=66
   read (10,"(DT)", iomsg=astring) chairman
   !print *, trim(astring)
-  if (member%name.ne."George") call abort
-  if (chairman%name.ne."Charlie") call abort
-  if (member%age.ne.42) call abort
-  if (chairman%age.ne.62) call abort
+  if (member%name.ne."George") STOP 1
+  if (chairman%name.ne."Charlie") STOP 1
+  if (member%age.ne.42) STOP 1
+  if (chairman%age.ne.62) STOP 1
   close(10)
 END PROGRAM test

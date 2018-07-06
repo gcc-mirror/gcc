@@ -1,6 +1,6 @@
 /* PR tree-optimization/80669 - Bad -Wstringop-overflow warnings for stpncpy
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds -Wno-restrict -Wno-stringop-truncation" } */
 
 #define SIZE_MAX __SIZE_MAX__
 
@@ -12,13 +12,15 @@ void sink (char*);
 
 size_t value (void);
 
-size_t range (size_t min, size_t max)
+static size_t range (size_t min, size_t max)
 {
   size_t val = value ();
   return val < min || max < val ? min : val;
 }
 
-/* Verify that no warning is issued for stpncpy with constant size.  */
+/* Verify that no -Wstringop-overflow warning is issued for stpncpy
+   with constant size.  (Some tests cause -Wstringop-truncation and
+   that's expected).  */
 void test_cst (char *d)
 {
   __builtin_stpncpy (d, "123", 0);
@@ -37,7 +39,8 @@ void test_cst (char *d)
 }
 
 
-/* Verify that no warning is issued for stpncpy with size in some range.  */
+/* Verify that no -Wstringop-overflow warning is issued for stpncpy
+   with size in some range.  */
 void test_rng (char *d)
 {
 #define R(min, max) range (min, max)

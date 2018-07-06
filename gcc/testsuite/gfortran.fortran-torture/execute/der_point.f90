@@ -34,12 +34,12 @@ program nest_derived
    e1%rp%value = 44
    e1%rp%rp%value = 55
 
-   if (r1%r1p%value .ne. 22) call abort
-   if (r2%r2p%value .ne. 11) call abort
-   if (e1%value .ne. 33) call abort
-   if (e2%value .ne. 44) call abort
-   if (e3%value .ne. 55) call abort
-   if (r1%value .ne. 11) call abort
-   if (r2%value .ne. 22) call abort
+   if (r1%r1p%value .ne. 22) STOP 1
+   if (r2%r2p%value .ne. 11) STOP 2
+   if (e1%value .ne. 33) STOP 3
+   if (e2%value .ne. 44) STOP 4
+   if (e3%value .ne. 55) STOP 5
+   if (r1%value .ne. 11) STOP 6
+   if (r2%value .ne. 22) STOP 7
 
 end

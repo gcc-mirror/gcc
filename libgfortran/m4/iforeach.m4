@@ -5,12 +5,12 @@ dnl Distributed under the GNU GPL with exception.  See COPYING for details.
 define(START_FOREACH_FUNCTION,
 `
 extern void name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array);
+	atype * const restrict array, GFC_LOGICAL_4);
 export_proto(name`'rtype_qual`_'atype_code);
 
 void
 name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array)
+	atype * const restrict array, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -28,7 +28,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
-      retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
+      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (rtype_name));
     }
@@ -65,8 +65,6 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 define(START_FOREACH_BLOCK,
 `  while (base)
     {
-      do
-	{
 	  /* Implementation start.  */
 ')dnl
 define(FINISH_FOREACH_FUNCTION,
@@ -104,13 +102,14 @@ define(FINISH_FOREACH_FUNCTION,
 define(START_MASKED_FOREACH_FUNCTION,
 `
 extern void `m'name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, gfc_array_l1 * const restrict);
+	atype * const restrict, gfc_array_l1 * const restrict,
+	GFC_LOGICAL_4);
 export_proto(`m'name`'rtype_qual`_'atype_code);
 
 void
 `m'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
 	atype * const restrict array,
-	gfc_array_l1 * const restrict mask)
+	gfc_array_l1 * const restrict mask, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -131,7 +130,7 @@ void
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank - 1, 1);
-      retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
+      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (rtype_name));
     }
@@ -235,13 +234,13 @@ FINISH_MASKED_FOREACH_FUNCTION')dnl
 define(SCALAR_FOREACH_FUNCTION,
 `
 extern void `s'name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, GFC_LOGICAL_4 *);
+	atype * const restrict, GFC_LOGICAL_4 *, GFC_LOGICAL_4);
 export_proto(`s'name`'rtype_qual`_'atype_code);
 
 void
 `s'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
 	atype * const restrict array,
-	GFC_LOGICAL_4 * mask)
+	GFC_LOGICAL_4 * mask, GFC_LOGICAL_4 back)
 {
   index_type rank;
   index_type dstride;
@@ -250,7 +249,7 @@ void
 
   if (*mask)
     {
-      name`'rtype_qual`_'atype_code (retarray, array);
+      name`'rtype_qual`_'atype_code (retarray, array, back);
       return;
     }
 
@@ -262,7 +261,7 @@ void
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
-      retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
+      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (rtype_name));
     }

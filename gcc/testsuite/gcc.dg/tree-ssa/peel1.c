@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-cunroll-details" } */
+/* { dg-options "-O3 -fno-tree-vectorize -fdump-tree-cunroll-details" } */
 struct foo {int b; int a[3];} foo;
 void add(struct foo *a,int l)
 {

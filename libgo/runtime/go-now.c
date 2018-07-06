@@ -16,11 +16,11 @@ struct walltime_ret
   int32_t nsec;
 };
 
-struct walltime_ret now() __asm__ (GOSYM_PREFIX "runtime.walltime")
+struct walltime_ret now(void) __asm__ (GOSYM_PREFIX "runtime.walltime")
   __attribute__ ((no_split_stack));
 
 struct walltime_ret
-now()
+now(void)
 {
   struct timespec ts;
   struct walltime_ret ret;

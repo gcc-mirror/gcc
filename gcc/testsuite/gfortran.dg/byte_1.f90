@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fall-intrinsics -std=f95" }
+! { dg-options " -std=f95" }
 program testbyte
   integer(1) :: ii = 7
   call foo(ii)
@@ -17,6 +17,6 @@ subroutine bar(ii,b)
   byte b          ! { dg-error "BYTE type" }
   if (b.ne.ii) then
 !     print *,"Failed"
-     call abort
+     STOP 1
   end if
 end subroutine bar

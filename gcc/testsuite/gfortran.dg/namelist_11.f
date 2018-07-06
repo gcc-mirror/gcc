@@ -31,25 +31,25 @@ c provided by Paul Thomas - pault@gcc.gnu.org
       rewind (10)
 
       read (10, nml=mynml, IOSTAT=ier)
-      if (ier.ne.0) call abort
+      if (ier.ne.0) STOP 1
       rewind (10)
 
       do i = 1 , 10
-        if ( abs( x(i) - real(i) ) .gt. 1e-8 ) call abort
+        if ( abs( x(i) - real(i) ) .gt. 1e-8 ) STOP 2
       end do
-      if ( abs( xx - 10d0 ) .gt. 1e-8 ) call abort
+      if ( abs( xx - 10d0 ) .gt. 1e-8 ) STOP 3
 
       write (10, nml=mynml, iostat=ier)
-      if (ier.ne.0) call abort
+      if (ier.ne.0) STOP 4
       rewind (10)
 
       read (10, NML=mynml, IOSTAT=ier)
-      if (ier.ne.0) call abort
+      if (ier.ne.0) STOP 5
       close (10)
 
       do i = 1 , 10
-        if ( abs( x(i) - real(i) ) .gt. 1e-8 ) call abort
+        if ( abs( x(i) - real(i) ) .gt. 1e-8 ) STOP 6
       end do
-      if ( abs( xx - 10d0 ) .gt. 1e-8 ) call abort
+      if ( abs( xx - 10d0 ) .gt. 1e-8 ) STOP 7
 
       end program

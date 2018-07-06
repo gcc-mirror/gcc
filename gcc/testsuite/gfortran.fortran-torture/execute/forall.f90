@@ -11,7 +11,7 @@ program testforall
       b(i) = sum (a(:, i))
    end forall
 
-   if (b(1) .ne. 6) call abort
-   if (b(2) .ne. 15) call abort
-   if (b(3) .ne. 24) call abort
+   if (b(1) .ne. 6) STOP 1
+   if (b(2) .ne. 15) STOP 2
+   if (b(3) .ne. 24) STOP 3
 end program

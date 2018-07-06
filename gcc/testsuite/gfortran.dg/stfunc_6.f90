@@ -15,8 +15,8 @@
   st3 (i) = i * v(i)
   FORALL(i=1:4) a(i) = st1 (i) 
   FORALL(i=1:4) a(i) = u (a(i)) - a(i)** 2 
-  if (any (a .ne. 0)) call abort ()
-  if (i .ne. 99) call abort ()
+  if (any (a .ne. 0)) STOP 1
+  if (i .ne. 99) STOP 2
   FORALL (i=1:4) a(i) = st3 (i) ! { dg-error "impure function" "impure reference in FORALL" { xfail *-*-*} }
   FORALL (i=1:4) a(i) = v(i) ! { dg-error "impure function" }
 contains

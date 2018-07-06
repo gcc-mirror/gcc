@@ -8,7 +8,7 @@
 subroutine moobar (a)
     integer, intent(in) :: a(:)
 
-    if (.not.all(a == [ 1, 2, 3 ])) call abort()
+    if (.not.all(a == [ 1, 2, 3 ])) STOP 1
 end subroutine moobar
 
 function foo2 (n)
@@ -55,21 +55,21 @@ program alloc_fun
     end interface
 
 ! 2 _gfortran_internal_free's
-    if (.not.all(foo1(3) == [ 1, 2, 3 ])) call abort()
+    if (.not.all(foo1(3) == [ 1, 2, 3 ])) STOP 2
     a = foo1(size(a))
 
 ! 1 _gfortran_internal_free
-    if (.not.all(a == [ 1, 2, 3 ])) call abort()
+    if (.not.all(a == [ 1, 2, 3 ])) STOP 3
     call foobar(foo1(3))
 
 ! 1 _gfortran_internal_free
-    if (.not.all(2*bar(size(a)) + 5 == [ 7, 9, 11 ])) call abort()
+    if (.not.all(2*bar(size(a)) + 5 == [ 7, 9, 11 ])) STOP 4
 
 ! Although the rhs determines the loop size, the lhs reference is
 ! evaluated, in case it has side-effects or is needed for bounds checking.
 ! 3 _gfortran_internal_free's
     a(1:size (bar (3))) = 2*bar(size(a)) + 2 + a(size (bar (3)))
-    if (.not.all(a == [ 7, 9, 11 ])) call abort()
+    if (.not.all(a == [ 7, 9, 11 ])) STOP 5
 
 ! 3 _gfortran_internal_free's
     call moobar(foo1(3))   ! internal function
@@ -82,7 +82,7 @@ contains
     subroutine foobar (a)
         integer, intent(in) :: a(:)
 
-        if (.not.all(a == [ 1, 2, 3 ])) call abort()
+        if (.not.all(a == [ 1, 2, 3 ])) STOP 6
     end subroutine foobar
 
     function foo1 (n)

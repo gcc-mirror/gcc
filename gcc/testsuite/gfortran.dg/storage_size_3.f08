@@ -13,15 +13,15 @@ end type
 class(t), pointer :: x => null()
 class(t), allocatable :: y
 
-if (storage_size(x)/=32) call abort()
-if (storage_size(y)/=32) call abort()
+if (storage_size(x)/=32) STOP 1
+if (storage_size(y)/=32) STOP 2
 
 allocate(y)
 
-if (storage_size(y)/=32) call abort()
+if (storage_size(y)/=32) STOP 3
 
 deallocate(y)
 
-if (storage_size(y)/=32) call abort()
+if (storage_size(y)/=32) STOP 4
 
 end 

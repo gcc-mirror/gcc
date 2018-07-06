@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for IA-64.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -62,7 +62,6 @@ extern const char *get_bundle_name (int);
 extern const char *output_probe_stack_range (rtx, rtx);
 
 extern void ia64_expand_vec_perm_even_odd (rtx, rtx, rtx, int);
-extern bool ia64_expand_vec_perm_const (rtx op[4]);
 extern void ia64_expand_vec_setv2sf (rtx op[3]);
 #endif /* RTX_CODE */
 

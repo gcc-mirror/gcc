@@ -19,4 +19,4 @@ test3u (unsigned int x)
   return vec_splats (x);
 }
 
-/* { dg-final { scan-assembler-times {\mvspltw\M|\mxxspltw\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mvspltw\M|\mxxspltw\M|\mmtvsrws\M} 2 } } */

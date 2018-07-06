@@ -1,5 +1,5 @@
 /* Coalesce SSA_NAMES together for the out-of-ssa pass.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -164,7 +164,8 @@ coalesce_cost (int frequency, bool optimize_for_size)
 static inline int
 coalesce_cost_bb (basic_block bb)
 {
-  return coalesce_cost (bb->frequency, optimize_bb_for_size_p (bb));
+  return coalesce_cost (bb->count.to_frequency (cfun),
+			optimize_bb_for_size_p (bb));
 }
 
 

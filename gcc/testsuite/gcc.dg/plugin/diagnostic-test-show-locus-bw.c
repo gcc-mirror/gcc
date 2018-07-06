@@ -122,6 +122,7 @@ void test_very_wide_line (void)
  6789012345678901234567890123456789012345678901234567890123456789012345
                                               float f = foo * bar;
                                                         ~~~~^~~~~
+                                                        bar * foo
    { dg-end-multiline-output "" } */
 #endif
 }

@@ -1,8 +1,7 @@
 ! { dg-do compile }
-! { dg-options "-std=gnu" }
+! { dg-options "-std=f2018" }
 !
-! F2015 permits ERROR STOP in PURE procedures
-! FIXME: Change to -std=f2015, when available
+! F2018 permits ERROR STOP in PURE procedures
 !
 pure subroutine foo()
   error stop "failed"

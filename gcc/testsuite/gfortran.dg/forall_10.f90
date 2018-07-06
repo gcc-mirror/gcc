@@ -17,9 +17,9 @@ program pr30400_1
       a (i, j, k, l) = i - j + k - l
     end forall
   end forall
-  if (sum (a) .ne. 2625.0) call abort ()
+  if (sum (a) .ne. 2625.0) STOP 1
 
  ! Check that the fix has not broken the treatment of the '=='
   forall (i = 1:5, i == 3) a(i, i, i, i) = -5
-  if (sum (a) .ne. 2616.0) call abort ()
+  if (sum (a) .ne. 2616.0) STOP 2
 end

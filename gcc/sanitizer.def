@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    Address Sanitizer and Thread Sanitizer builtins used in the GNU compiler.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -174,6 +174,10 @@ DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_UNPOISON_STACK_MEMORY,
 DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_ALLOCA_POISON, "__asan_alloca_poison",
 		      BT_FN_VOID_PTR_PTRMODE, ATTR_NOTHROW_LEAF_LIST)
 DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_ALLOCAS_UNPOISON, "__asan_allocas_unpoison",
+		      BT_FN_VOID_PTR_PTRMODE, ATTR_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_POINTER_COMPARE, "__sanitizer_ptr_cmp",
+		      BT_FN_VOID_PTR_PTRMODE, ATTR_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_POINTER_SUBTRACT, "__sanitizer_ptr_sub",
 		      BT_FN_VOID_PTR_PTRMODE, ATTR_NOTHROW_LEAF_LIST)
 
 /* Thread Sanitizer */

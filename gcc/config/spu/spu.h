@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -213,7 +213,7 @@ enum reg_class {
 #define REGISTER_TARGET_PRAGMAS() do {					\
 c_register_addr_space ("__ea", ADDR_SPACE_EA);				\
 targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
-}while (0);
+}while (0)
 
 
 /* Frame Layout */

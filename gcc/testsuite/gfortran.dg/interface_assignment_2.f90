@@ -43,6 +43,6 @@ PROGRAM VST_2
   char_arb(1)= "Hello"
   char_arb(2)= "World"
   str_ara = char_arb
-  if (any (str_ara(1)%chars(1:5) .ne. char_elm(1:5))) call abort
-  if (any (str_ara(2)%chars(1:5) .ne. char_elm(6:10))) call abort
+  if (any (str_ara(1)%chars(1:5) .ne. char_elm(1:5))) STOP 1
+  if (any (str_ara(2)%chars(1:5) .ne. char_elm(6:10))) STOP 2
 END PROGRAM VST_2

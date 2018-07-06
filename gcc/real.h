@@ -1,5 +1,5 @@
 /* Definitions of floating-point access for GNU compiler.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -506,6 +506,10 @@ extern void real_copysign (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 /* Check whether the real constant value given is an integer.  */
 extern bool real_isinteger (const REAL_VALUE_TYPE *, format_helper);
 extern bool real_isinteger (const REAL_VALUE_TYPE *, HOST_WIDE_INT *);
+
+/* Calculate nextafter (X, Y) in format FMT.  */
+extern bool real_nextafter (REAL_VALUE_TYPE *, format_helper,
+			    const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 
 /* Write into BUF the maximum representable finite floating-point
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex

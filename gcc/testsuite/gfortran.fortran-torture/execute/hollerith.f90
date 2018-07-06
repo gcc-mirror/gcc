@@ -4,6 +4,6 @@ program hollerith
   CHARACTER*4 LINE
 100 FORMAT (4H12H4)
   WRITE(LINE,100)
-  IF (LINE .NE. '12H4') call abort ()
+  IF (LINE .NE. '12H4') STOP 1
 end
 

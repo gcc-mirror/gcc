@@ -39,6 +39,7 @@ class Unary_expression;
 class Binary_expression;
 class String_concat_expression;
 class Call_expression;
+class Builtin_call_expression;
 class Call_result_expression;
 class Func_expression;
 class Func_descriptor_expression;
@@ -505,6 +506,23 @@ class Expression
   // Make a backend expression.
   static Expression*
   make_backend(Bexpression*, Type*, Location);
+
+  enum Nil_check_classification
+    {
+      // Use the default policy for deciding if this deref needs a check.
+      NIL_CHECK_DEFAULT,
+      // An explicit check is required for this dereference operation.
+      NIL_CHECK_NEEDED,
+      // No check needed for this dereference operation.
+      NIL_CHECK_NOT_NEEDED,
+      // A type error or error construct was encountered when determining
+      // whether this deref needs an explicit check.
+      NIL_CHECK_ERROR_ENCOUNTERED
+    };
+
+  // Make a dereference expression.
+  static Expression*
+  make_dereference(Expression*, Nil_check_classification, Location);
 
   // Return the expression classification.
   Expression_classification
@@ -1298,23 +1316,13 @@ class Var_expression : public Expression
  public:
   Var_expression(Named_object* variable, Location location)
     : Expression(EXPRESSION_VAR_REFERENCE, location),
-      variable_(variable), in_lvalue_pos_(VE_rvalue)
+      variable_(variable)
   { }
 
   // Return the variable.
   Named_object*
   named_object() const
   { return this->variable_; }
-
-  // Does this var expression appear in an lvalue (assigned-to) context?
-  bool
-  in_lvalue_pos() const
-  { return this->in_lvalue_pos_ == VE_lvalue; }
-
-  // Mark a var_expression as appearing in an lvalue context.
-  void
-  set_in_lvalue_pos()
-  { this->in_lvalue_pos_ = VE_lvalue; }
 
  protected:
   Expression*
@@ -1346,8 +1354,6 @@ class Var_expression : public Expression
  private:
   // The variable we are referencing.
   Named_object* variable_;
-  // Set to TRUE if var expression appears in lvalue context
-  Varexpr_context in_lvalue_pos_;
 };
 
 // A reference to a variable within an enclosing function.
@@ -1658,11 +1664,7 @@ class Type_conversion_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return new Type_conversion_expression(this->type_, this->expr_->copy(),
-					  this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context* context);
@@ -1714,12 +1716,7 @@ class Unsafe_type_conversion_expression : public Expression
   { this->expr_->determine_type_no_context(); }
 
   Expression*
-  do_copy()
-  {
-    return new Unsafe_type_conversion_expression(this->type_,
-						 this->expr_->copy(),
-						 this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -1742,7 +1739,8 @@ class Unary_expression : public Expression
   Unary_expression(Operator op, Expression* expr, Location location)
     : Expression(EXPRESSION_UNARY, location),
       op_(op), escapes_(true), create_temp_(false), is_gc_root_(false),
-      is_slice_init_(false), expr_(expr), issue_nil_check_(false)
+      is_slice_init_(false), expr_(expr),
+      issue_nil_check_(NIL_CHECK_DEFAULT)
   { }
 
   // Return the operator.
@@ -1804,6 +1802,17 @@ class Unary_expression : public Expression
   static Expression*
   do_import(Import*);
 
+  // Declare that this deref does or does not require an explicit nil check.
+  void
+  set_requires_nil_check(bool needed)
+  {
+    go_assert(this->op_ == OPERATOR_MULT);
+    if (needed)
+      this->issue_nil_check_ = NIL_CHECK_NEEDED;
+    else
+      this->issue_nil_check_ = NIL_CHECK_NOT_NEEDED;
+  }
+
  protected:
   int
   do_traverse(Traverse* traverse)
@@ -1859,11 +1868,19 @@ class Unary_expression : public Expression
 
   void
   do_issue_nil_check()
-  { this->issue_nil_check_ = (this->op_ == OPERATOR_MULT); }
+  {
+    if (this->op_ == OPERATOR_MULT)
+      this->set_requires_nil_check(true);
+  }
 
  private:
   static bool
   base_is_static_initializer(Expression*);
+
+  // Return a determination as to whether this dereference expression
+  // requires a nil check.
+  Nil_check_classification
+  requires_nil_check(Gogo*);
 
   // The unary operator to apply.
   Operator op_;
@@ -1886,7 +1903,7 @@ class Unary_expression : public Expression
   Expression* expr_;
   // Whether or not to issue a nil check for this expression if its address
   // is being taken.
-  bool issue_nil_check_;
+  Nil_check_classification issue_nil_check_;
 };
 
 // A binary expression.
@@ -2221,6 +2238,15 @@ class Call_expression : public Expression
   set_is_multi_value_arg()
   { this->is_multi_value_arg_ = true; }
 
+  // Whether this is a call to builtin function.
+  virtual bool
+  is_builtin()
+  { return false; }
+
+  // Convert to a Builtin_call_expression, or return NULL.
+  inline Builtin_call_expression*
+  builtin_call_expression();
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2325,6 +2351,138 @@ class Call_expression : public Expression
   // True if this expression has already been flattened.
   bool is_flattened_;
 };
+
+// A call expression to a builtin function.
+
+class Builtin_call_expression : public Call_expression
+{
+ public:
+  Builtin_call_expression(Gogo* gogo, Expression* fn, Expression_list* args,
+			  bool is_varargs, Location location);
+
+  // The builtin functions.
+  enum Builtin_function_code
+    {
+      BUILTIN_INVALID,
+
+      // Predeclared builtin functions.
+      BUILTIN_APPEND,
+      BUILTIN_CAP,
+      BUILTIN_CLOSE,
+      BUILTIN_COMPLEX,
+      BUILTIN_COPY,
+      BUILTIN_DELETE,
+      BUILTIN_IMAG,
+      BUILTIN_LEN,
+      BUILTIN_MAKE,
+      BUILTIN_NEW,
+      BUILTIN_PANIC,
+      BUILTIN_PRINT,
+      BUILTIN_PRINTLN,
+      BUILTIN_REAL,
+      BUILTIN_RECOVER,
+
+      // Builtin functions from the unsafe package.
+      BUILTIN_ALIGNOF,
+      BUILTIN_OFFSETOF,
+      BUILTIN_SIZEOF
+    };
+
+  Builtin_function_code
+  code()
+  { return this->code_; }
+
+  // This overrides Call_expression::is_builtin.
+  bool
+  is_builtin()
+  { return true; }
+
+  // Return whether EXPR, of array type, is a constant if passed to
+  // len or cap.
+  static bool
+  array_len_is_constant(Expression* expr);
+
+ protected:
+  // This overrides Call_expression::do_lower.
+  Expression*
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
+
+  bool
+  do_is_constant() const;
+
+  bool
+  do_numeric_constant_value(Numeric_constant*) const;
+
+  bool
+  do_discarding_value();
+
+  Type*
+  do_type();
+
+  void
+  do_determine_type(const Type_context*);
+
+  void
+  do_check_types(Gogo*);
+
+  Expression*
+  do_copy();
+
+  Bexpression*
+  do_get_backend(Translate_context*);
+
+  void
+  do_export(Export*) const;
+
+  virtual bool
+  do_is_recover_call() const;
+
+  virtual void
+  do_set_recover_arg(Expression*);
+
+ private:
+  Expression*
+  one_arg() const;
+
+  bool
+  check_one_arg();
+
+  static Type*
+  real_imag_type(Type*);
+
+  static Type*
+  complex_type(Type*);
+
+  Expression*
+  lower_make(Statement_inserter*);
+
+  Expression* flatten_append(Gogo*, Named_object*, Statement_inserter*);
+
+  bool
+  check_int_value(Expression*, bool is_length, bool* small);
+
+  // A pointer back to the general IR structure.  This avoids a global
+  // variable, or passing it around everywhere.
+  Gogo* gogo_;
+  // The builtin function being called.
+  Builtin_function_code code_;
+  // Used to stop endless loops when the length of an array uses len
+  // or cap of the array itself.
+  mutable bool seen_;
+  // Whether the argument is set for calls to BUILTIN_RECOVER.
+  bool recover_arg_is_set_;
+};
+
+inline Builtin_call_expression*
+Call_expression::builtin_call_expression()
+{
+  return (this->is_builtin()
+          ? static_cast<Builtin_call_expression*>(this)
+          : NULL);
+}
 
 // A single result from a call which returns multiple results.
 
@@ -2734,8 +2892,7 @@ class Array_index_expression : public Expression
   do_is_addressable() const;
 
   void
-  do_address_taken(bool escapes)
-  { this->array_->address_taken(escapes); }
+  do_address_taken(bool escapes);
 
   void
   do_issue_nil_check()
@@ -3264,19 +3421,7 @@ class Composite_literal_expression : public Parser_expression
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   Expression*
-  do_copy()
-  {
-    Composite_literal_expression *ret =
-      new Composite_literal_expression(this->type_, this->depth_,
-				       this->has_keys_,
-				       (this->vals_ == NULL
-					? NULL
-					: this->vals_->copy()),
-				       this->all_are_names_,
-				       this->location());
-    ret->key_path_ = this->key_path_;
-    return ret;
-  }
+  do_copy();
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -3390,18 +3535,7 @@ class Struct_construction_expression : public Expression,
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    Struct_construction_expression* ret =
-      new Struct_construction_expression(this->type_,
-					 (this->vals() == NULL
-					  ? NULL
-					  : this->vals()->copy()),
-					 this->location());
-    if (this->traverse_order() != NULL)
-      ret->set_traverse_order(this->traverse_order());
-    return ret;
-  }
+  do_copy();
 
   Expression*
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
@@ -3505,15 +3639,7 @@ class Fixed_array_construction_expression :
 
  protected:
   Expression*
-  do_copy()
-  {
-    return new Fixed_array_construction_expression(this->type(),
-						   this->indexes(),
-						   (this->vals() == NULL
-						    ? NULL
-						    : this->vals()->copy()),
-						   this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3546,14 +3672,7 @@ class Slice_construction_expression : public Array_construction_expression
   do_traverse(Traverse* traverse);
 
   Expression*
-  do_copy()
-  {
-    return new Slice_construction_expression(this->type(), this->indexes(),
-					     (this->vals() == NULL
-					      ? NULL
-					      : this->vals()->copy()),
-					     this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3612,14 +3731,7 @@ class Map_construction_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return new Map_construction_expression(this->type_,
-					   (this->vals_ == NULL
-					    ? NULL
-					    : this->vals_->copy()),
-					   this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3680,11 +3792,7 @@ class Type_guard_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return new Type_guard_expression(this->expr_->copy(), this->type_,
-				     this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3709,12 +3817,16 @@ class Heap_expression : public Expression
  public:
   Heap_expression(Expression* expr, Location location)
     : Expression(EXPRESSION_HEAP, location),
-      expr_(expr)
+      expr_(expr), allocate_on_stack_(false)
   { }
 
   Expression*
   expr() const
   { return this->expr_; }
+
+  void
+  set_allocate_on_stack()
+  { this->allocate_on_stack_ = true; }
 
  protected:
   int
@@ -3749,6 +3861,8 @@ class Heap_expression : public Expression
  private:
   // The expression which is being put on the heap.
   Expression* expr_;
+  // Whether or not this is a stack allocation.
+  bool allocate_on_stack_;
 };
 
 // A receive expression.
@@ -3930,10 +4044,7 @@ class Backend_expression : public Expression
   { }
 
   Expression*
-  do_copy()
-  {
-    return new Backend_expression(this->bexpr_, this->type_, this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*)
@@ -4108,6 +4219,9 @@ class Numeric_constant
 
   bool
   check_complex_type(Complex_type*, bool, Location);
+
+  static bool
+  is_float_neg_zero(const mpfr_t, int bits);
 
   // The kinds of constants.
   enum Classification

@@ -84,11 +84,11 @@ end module a_bar_mod
   class(foo), pointer :: a
   a => b
   call a%doit
-  if (a%getit () .ne. 1) call abort
+  if (a%getit () .ne. 1) STOP 1
   a => c
   call a%doit
-  if (a%getit () .ne. 2) call abort
+  if (a%getit () .ne. 2) STOP 2
   a => d
   call a%doit
-  if (a%getit () .ne. 3) call abort
+  if (a%getit () .ne. 3) STOP 3
 end

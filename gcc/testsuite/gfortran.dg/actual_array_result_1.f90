@@ -60,11 +60,11 @@ program main
   use one
   integer :: n
   n = 3
-  if(any (foo1(n) /= [ 1,2,3 ])) call abort()
-  if(any (foo2(n) /= [ 1,2,3 ])) call abort()
+  if(any (foo1(n) /= [ 1,2,3 ])) STOP 1
+  if(any (foo2(n) /= [ 1,2,3 ])) STOP 2
   flag = 1
-  if(any (foo1(n) /= [ 1,2,3 ])) call abort()
-  if(any (foo2(n) /= [ 1,2,3 ])) call abort()
+  if(any (foo1(n) /= [ 1,2,3 ])) STOP 3
+  if(any (foo2(n) /= [ 1,2,3 ])) STOP 4
   n = 5
-  if(any (foo3(n) /= [ 0,1,2,3,0 ])) call abort()
+  if(any (foo3(n) /= [ 0,1,2,3,0 ])) STOP 5
 end program

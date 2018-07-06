@@ -21,7 +21,7 @@ SUBROUTINE mass_matrix
                             0.d0,      1.d0/3.d0, 0.d0,  &
                             0.d0,      0.d0,      0.d0], &
                            [3,3])) > epsilon(1.0d0))) &
-    call abort ()
+    STOP 1
 END SUBROUTINE mass_matrix
 
 program name
@@ -32,13 +32,13 @@ program name
   integer, parameter :: m1 = 1
 
 !  print *, matmul(B,C)
-   if (any (matmul(B,C) /= [-1079, -1793])) call abort()
+   if (any (matmul(B,C) /= [-1079, -1793])) STOP 2
 !  print *, matmul(C,A)
-   if (any (matmul(C,A) /= [-82, -181])) call abort()
+   if (any (matmul(C,A) /= [-82, -181])) STOP 3
 !  print '(3i5)', m1*matmul(A,B)
   if (any (m1*matmul(A,B) /= reshape([71,91,111, 147,201,255, 327,441,555],&
                                      [3,3]))) &
-     call abort()
+     STOP 4
   call mass_matrix
 end program name
 

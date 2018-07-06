@@ -12,5 +12,5 @@ program pr24489
   character*8 :: a
   equivalence (buf,abuf)
   read(buf, '(a8)') a
-  if (a.ne.'0123') call abort()
+  if (a.ne.'0123') STOP 1
 end program pr24489

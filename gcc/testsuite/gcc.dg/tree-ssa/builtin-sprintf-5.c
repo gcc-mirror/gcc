@@ -28,7 +28,7 @@
     ASSERT (n, expect);					\
   } while (0)
 
-int ival (int i) { return i; }
+static int ival (int i) { return i; }
 
 /* Generate a signed int value in the specified range.  */
 

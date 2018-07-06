@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2017 Free Software Foundation, Inc.
+// Copyright (C) 2006-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -685,8 +685,8 @@ namespace tr1
           const _Tp __kk = __k * __k;
 
           return __ellint_rf(_Tp(0), _Tp(1) - __kk, _Tp(1))
-               - __nu
-               * __ellint_rj(_Tp(0), _Tp(1) - __kk, _Tp(1), _Tp(1) + __nu)
+               + __nu
+               * __ellint_rj(_Tp(0), _Tp(1) - __kk, _Tp(1), _Tp(1) - __nu)
                / _Tp(3);
         }
     }
@@ -735,9 +735,9 @@ namespace tr1
 
           const _Tp __Pi = __s
                          * __ellint_rf(__cc, _Tp(1) - __kk * __ss, _Tp(1))
-                         - __nu * __sss
+                         + __nu * __sss
                          * __ellint_rj(__cc, _Tp(1) - __kk * __ss, _Tp(1),
-                                       _Tp(1) + __nu * __ss) / _Tp(3);
+                                       _Tp(1) - __nu * __ss) / _Tp(3);
 
           if (__n == 0)
             return __Pi;

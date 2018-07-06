@@ -1,6 +1,6 @@
 # General rules that all rs6000/ targets must have.
 #
-# Copyright (C) 1995-2017 Free Software Foundation, Inc.
+# Copyright (C) 1995-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -61,7 +61,6 @@ MD_INCLUDES = $(srcdir)/config/rs6000/rs64.md \
 	$(srcdir)/config/rs6000/power8.md \
 	$(srcdir)/config/rs6000/power9.md \
 	$(srcdir)/config/rs6000/cell.md \
-	$(srcdir)/config/rs6000/xfpu.md \
 	$(srcdir)/config/rs6000/a2.md \
 	$(srcdir)/config/rs6000/predicates.md \
 	$(srcdir)/config/rs6000/constraints.md \
@@ -72,5 +71,4 @@ MD_INCLUDES = $(srcdir)/config/rs6000/rs64.md \
 	$(srcdir)/config/rs6000/altivec.md \
 	$(srcdir)/config/rs6000/crypto.md \
 	$(srcdir)/config/rs6000/htm.md \
-	$(srcdir)/config/rs6000/dfp.md \
-	$(srcdir)/config/rs6000/paired.md
+	$(srcdir)/config/rs6000/dfp.md

@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 -*- C++ -*- ABI.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -1247,6 +1247,51 @@ write_template_prefix (const tree node)
   add_substitution (substitution);
 }
 
+/* As the list of identifiers for the structured binding declaration
+   DECL is likely gone, try to recover the DC <source-name>+ E portion
+   from its mangled name.  Return pointer to the DC and set len to
+   the length up to and including the terminating E.  On failure
+   return NULL.  */
+
+static const char *
+find_decomp_unqualified_name (tree decl, size_t *len)
+{
+  const char *p = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  const char *end = p + IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl));
+  bool nested = false;
+  if (strncmp (p, "_Z", 2))
+    return NULL;
+  p += 2;
+  if (!strncmp (p, "St", 2))
+    p += 2;
+  else if (*p == 'N')
+    {
+      nested = true;
+      ++p;
+      while (ISDIGIT (p[0]))
+	{
+	  char *e;
+	  long num = strtol (p, &e, 10);
+	  if (num >= 1 && num < end - e)
+	    p = e + num;
+	  else
+	    break;
+	}
+    }
+  if (strncmp (p, "DC", 2))
+    return NULL;
+  if (nested)
+    {
+      if (end[-1] != 'E')
+	return NULL;
+      --end;
+    }
+  if (end[-1] != 'E')
+    return NULL;
+  *len = end - p;
+  return p;
+}
+
 /* We don't need to handle thunks, vtables, or VTTs here.  Those are
    mangled through special entry points.
 
@@ -1291,7 +1336,17 @@ write_unqualified_name (tree decl)
     {
       found = true;
       gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
-      write_source_name (DECL_ASSEMBLER_NAME (decl));
+      const char *decomp_str = NULL;
+      size_t decomp_len = 0;
+      if (VAR_P (decl)
+	  && DECL_DECOMPOSITION_P (decl)
+	  && DECL_NAME (decl) == NULL_TREE
+	  && DECL_NAMESPACE_SCOPE_P (decl))
+	decomp_str = find_decomp_unqualified_name (decl, &decomp_len);
+      if (decomp_str)
+	write_chars (decomp_str, decomp_len);
+      else
+	write_source_name (DECL_ASSEMBLER_NAME (decl));
     }
   else if (DECL_DECLARES_FUNCTION_P (decl))
     {
@@ -1500,6 +1555,10 @@ struct releasing_vec
   releasing_vec (vec_t *v): v(v) { }
   releasing_vec (): v(make_tree_vector ()) { }
 
+  /* Copy constructor is deliberately declared but not defined,
+     copies must always be elided.  */
+  releasing_vec (const releasing_vec &);
+
   vec_t &operator* () const { return *v; }
   vec_t *operator-> () const { return v; }
   vec_t *get () const { return v; }
@@ -1567,6 +1626,9 @@ nested_anon_class_index (tree type)
 	else if (TYPE_UNNAMED_P (memtype))
 	  ++index;
       }
+
+  if (seen_error ())
+    return -1;
 
   gcc_unreachable ();
 }
@@ -2097,11 +2159,7 @@ write_type (tree type)
       type = TYPE_MAIN_VARIANT (type);
       if (TREE_CODE (type) == FUNCTION_TYPE
 	  || TREE_CODE (type) == METHOD_TYPE)
-	{
-	  type = build_ref_qualified_type (type, type_memfn_rqual (type_orig));
-	  type = build_exception_variant (type,
-					  TYPE_RAISES_EXCEPTIONS (type_orig));
-	}
+	type = cxx_copy_lang_qualifiers (type, type_orig);
 
       /* According to the C++ ABI, some library classes are passed the
 	 same as the scalar type of their single member and use the same
@@ -2232,7 +2290,8 @@ write_type (tree type)
 		  write_string ("Dv");
 		  /* Non-constant vector size would be encoded with
 		     _ expression, but we don't support that yet.  */
-		  write_unsigned_number (TYPE_VECTOR_SUBPARTS (type));
+		  write_unsigned_number (TYPE_VECTOR_SUBPARTS (type)
+					 .to_constant ());
 		  write_char ('_');
 		}
 	      else
@@ -2834,9 +2893,10 @@ write_expression (tree expr)
   /* Skip NOP_EXPR and CONVERT_EXPR.  They can occur when (say) a pointer
      argument is converted (via qualification conversions) to another type.  */
   while (CONVERT_EXPR_CODE_P (code)
+	 || location_wrapper_p (expr)
 	 /* Parentheses aren't mangled.  */
 	 || code == PAREN_EXPR
-	 || TREE_CODE (expr) == NON_LVALUE_EXPR)
+	 || code == NON_LVALUE_EXPR)
     {
       expr = TREE_OPERAND (expr, 0);
       code = TREE_CODE (expr);
@@ -3011,7 +3071,7 @@ write_expression (tree expr)
     }
   else if (INDIRECT_REF_P (expr)
 	   && TREE_TYPE (TREE_OPERAND (expr, 0))
-	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == REFERENCE_TYPE)
+	   && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (expr, 0))))
     {
       write_expression (TREE_OPERAND (expr, 0));
     }
@@ -3149,7 +3209,7 @@ write_expression (tree expr)
 	 don't actually want to output a mangling code for the `&'.  */
       if (TREE_CODE (expr) == ADDR_EXPR
 	  && TREE_TYPE (expr)
-	  && TREE_CODE (TREE_TYPE (expr)) == REFERENCE_TYPE)
+	  && TYPE_REF_P (TREE_TYPE (expr)))
 	{
 	  expr = TREE_OPERAND (expr, 0);
 	  if (DECL_P (expr))
@@ -3407,10 +3467,13 @@ write_template_arg (tree node)
 	}
     }
 
+  /* Strip a conversion added by convert_nontype_argument.  */
+  if (TREE_CODE (node) == IMPLICIT_CONV_EXPR)
+    node = TREE_OPERAND (node, 0);
   if (REFERENCE_REF_P (node))
     node = TREE_OPERAND (node, 0);
   if (TREE_CODE (node) == NOP_EXPR
-      && TREE_CODE (TREE_TYPE (node)) == REFERENCE_TYPE)
+      && TYPE_REF_P (TREE_TYPE (node)))
     {
       /* Template parameters can be of reference type. To maintain
 	 internal consistency, such arguments use a conversion from
@@ -3714,7 +3777,7 @@ mangle_decl_string (const tree decl)
   if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
     {
       struct tinst_level *tl = current_instantiation ();
-      if ((!tl || tl->decl != decl)
+      if ((!tl || tl->maybe_get_node () != decl)
 	  && push_tinst_level (decl))
 	{
 	  template_p = true;
@@ -3803,8 +3866,7 @@ mangle_decl (const tree decl)
   if (id != DECL_NAME (decl)
       /* Don't do this for a fake symbol we aren't going to emit anyway.  */
       && TREE_CODE (decl) != TYPE_DECL
-      && !DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
-      && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
+      && !DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
     {
       int save_ver = flag_abi_version;
       tree id2 = NULL_TREE;

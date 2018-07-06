@@ -13,13 +13,14 @@
 // already part of the program are called. The main function is not run.
 // A plugin is only initialized once, and cannot be closed.
 //
-// The plugin support is currently incomplete, only supports Linux,
-// and has known bugs. Please report any issues.
+// Currently plugins are only supported on Linux and macOS.
+// Please report any issues.
 package plugin
 
 // Plugin is a loaded Go plugin.
 type Plugin struct {
 	pluginpath string
+	err        string        // set if plugin failed to load
 	loaded     chan struct{} // closed when loaded
 	syms       map[string]interface{}
 }

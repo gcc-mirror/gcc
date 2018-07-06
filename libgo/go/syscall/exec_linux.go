@@ -208,14 +208,6 @@ func forkAndExecInChild1(argv0 *byte, argv, envv []*byte, chroot, dir *byte, att
 		}
 	}
 
-	// Enable tracing if requested.
-	if sys.Ptrace {
-		err1 = raw_ptrace(_PTRACE_TRACEME, 0, nil, nil)
-		if err1 != 0 {
-			goto childerror
-		}
-	}
-
 	// Session ID
 	if sys.Setsid {
 		err1 = raw_setsid()
@@ -401,6 +393,16 @@ func forkAndExecInChild1(argv0 *byte, argv, envv []*byte, chroot, dir *byte, att
 	// Set the controlling TTY to Ctty
 	if sys.Setctty {
 		_, err1 = raw_ioctl(sys.Ctty, TIOCSCTTY, sys.Ctty)
+		if err1 != 0 {
+			goto childerror
+		}
+	}
+
+	// Enable tracing if requested.
+	// Do this right before exec so that we don't unnecessarily trace the runtime
+	// setting up after the fork. See issue #21428.
+	if sys.Ptrace {
+		err1 = raw_ptrace(_PTRACE_TRACEME, 0, nil, nil)
 		if err1 != 0 {
 			goto childerror
 		}

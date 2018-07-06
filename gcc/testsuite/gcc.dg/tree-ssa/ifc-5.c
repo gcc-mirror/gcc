@@ -27,4 +27,4 @@ dct_unquantize_h263_inter_c (short *block, int n, int qscale, int nCoeffs)
    which is folded by vectorizer.  Both outgoing edges must have probability
    100% so the resulting profile match after folding.  */
 /* { dg-final { scan-tree-dump-times "Invalid sum of outgoing probabilities 200.0" 1 "ifcvt" } } */
-/* { dg-final { scan-tree-dump-times "Invalid sum of incoming frequencies" 1 "ifcvt" } } */
+/* { dg-final { scan-tree-dump-times "Invalid sum of incoming counts" 1 "ifcvt" } } */

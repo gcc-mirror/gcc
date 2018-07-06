@@ -1,5 +1,5 @@
 # General rules that all nds32/ targets must have.
-# Copyright (C) 2012-2017 Free Software Foundation, Inc.
+# Copyright (C) 2012-2018 Free Software Foundation, Inc.
 # Contributed by Andes Technology Corporation.
 #
 # This file is part of GCC.
@@ -18,34 +18,129 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-nds32-cost.o: $(srcdir)/config/nds32/nds32-cost.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
 
-nds32-intrinsic.o: $(srcdir)/config/nds32/nds32-intrinsic.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
+nds32-md-auxiliary.o: $(srcdir)/config/nds32/nds32-md-auxiliary.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h dumpfile.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/nds32/nds32-md-auxiliary.c
 
-nds32-isr.o: $(srcdir)/config/nds32/nds32-isr.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
+nds32-memory-manipulation.o: $(srcdir)/config/nds32/nds32-memory-manipulation.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h dumpfile.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/nds32/nds32-memory-manipulation.c
 
-nds32-md-auxiliary.o: $(srcdir)/config/nds32/nds32-md-auxiliary.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
+nds32-predicates.o: $(srcdir)/config/nds32/nds32-predicates.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h dumpfile.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/nds32/nds32-predicates.c
 
-nds32-pipelines-auxiliary.o: $(srcdir)/config/nds32/nds32-pipelines-auxiliary.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
+nds32-intrinsic.o: $(srcdir)/config/nds32/nds32-intrinsic.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h dumpfile.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/nds32/nds32-intrinsic.c
 
-nds32-predicates.o: $(srcdir)/config/nds32/nds32-predicates.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
+nds32-pipelines-auxiliary.o: \
+  $(srcdir)/config/nds32/nds32-pipelines-auxiliary.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h dumpfile.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/nds32/nds32-pipelines-auxiliary.c
 
-nds32-memory-manipulation.o: $(srcdir)/config/nds32/nds32-memory-manipulation.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
+nds32-isr.o: \
+  $(srcdir)/config/nds32/nds32-isr.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h dumpfile.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/nds32/nds32-isr.c
 
-nds32-fp-as-gp.o: $(srcdir)/config/nds32/nds32-fp-as-gp.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
+nds32-cost.o: \
+  $(srcdir)/config/nds32/nds32-cost.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h dumpfile.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/nds32/nds32-cost.c
+
+nds32-fp-as-gp.o: \
+  $(srcdir)/config/nds32/nds32-fp-as-gp.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h dumpfile.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/nds32/nds32-fp-as-gp.c
+
+nds32-relax-opt.o: \
+  $(srcdir)/config/nds32/nds32-relax-opt.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h dumpfile.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/nds32/nds32-relax-opt.c
+
+nds32-utils.o: \
+  $(srcdir)/config/nds32/nds32-utils.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h dumpfile.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H) $(OPTS_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/nds32/nds32-utils.c

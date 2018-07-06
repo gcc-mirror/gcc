@@ -2,7 +2,7 @@
 /* { dg-skip-if "" { powerpc-ibm-aix* } } */
 /* { dg-skip-if "no TFmode" { powerpc-*-eabi* } } */
 /* { dg-require-effective-target longdouble128 } */
-/* { dg-options "-O2 -fno-align-functions -mtraceback=no -save-temps" } */
+/* { dg-options "-O2 -fno-align-functions -fno-asynchronous-unwind-tables -mtraceback=no -save-temps" } */
 
 typedef float TFmode __attribute__ ((mode (TF)));
 

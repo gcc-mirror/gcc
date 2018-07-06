@@ -2,7 +2,7 @@
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,7 @@ using std::filesystem::path;
 void
 test01()
 {
+  // [fs.path.decompose] p7
   VERIFY( path("/foo/bar.txt").filename() == "bar.txt" );
   VERIFY( path("/foo/bar").filename()     == "bar"     );
   VERIFY( path("/foo/bar/").filename()    == ""        );

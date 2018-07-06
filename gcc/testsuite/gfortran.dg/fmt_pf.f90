@@ -190,7 +190,7 @@ use ISO_FORTRAN_ENV
     call checkfmt("(rp, 0pf18.3)", -643.125, "          -643.125")
 
     ! print *, n_tst, n_cnt, n_skip
-    if (n_cnt /= 0) call abort
+    if (n_cnt /= 0) STOP 1
     if (all(.not. l_skip)) print *, "All kinds rounded to nearest"
 
 contains

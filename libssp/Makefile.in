@@ -69,7 +69,9 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/../config/enable.m4 \
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -210,6 +212,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+XCFLAGS = @XCFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -286,7 +289,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @LIBSSP_USE_SYMVER_FALSE@version_dep = 
 @LIBSSP_USE_SYMVER_GNU_TRUE@@LIBSSP_USE_SYMVER_TRUE@version_dep = $(srcdir)/ssp.map
 @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@version_dep = ssp.map-sun
-AM_CFLAGS = -Wall
+AM_CFLAGS = -Wall $(XCFLAGS)
 toolexeclib_LTLIBRARIES = libssp.la libssp_nonshared.la
 libsubincludedir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/include
 nobase_libsubinclude_HEADERS = ssp/ssp.h ssp/string.h ssp/stdio.h ssp/unistd.h
@@ -304,7 +307,7 @@ libssp_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 libssp_nonshared_la_SOURCES = \
 	ssp-local.c
 
-libssp_nonshared_la_CFLAGS = -prefer-pic
+libssp_nonshared_la_CFLAGS = -prefer-pic $(XCFLAGS)
 libssp_nonshared_la_LIBADD = 
 libssp_nonshared_la_DEPENDENCIES = $(libssp_nonshared_la_LIBADD)
 libssp_nonshared_la_LDFLAGS = -static

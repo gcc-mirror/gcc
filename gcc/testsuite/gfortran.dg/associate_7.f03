@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2003 -fall-intrinsics" }
+! { dg-options "-std=f2003 " }
 
 ! PR fortran/38936
 ! Check association and pointers.
@@ -14,8 +14,8 @@ PROGRAM main
   tgt = 1
   ASSOCIATE (x => tgt)
     ptr => x
-    IF (ptr /= 1) CALL abort ()
+    IF (ptr /= 1) STOP 1
     ptr = 2
   END ASSOCIATE
-  IF (tgt /= 2) CALL abort ()
+  IF (tgt /= 2) STOP 2
 END PROGRAM main

@@ -62,14 +62,14 @@ program test
 
   i_p => o%arr
   call o%P(i_p)
-  if (any(o%arr%i /= reshape([9,42,42,42],[2,2]))) call abort()
+  if (any(o%arr%i /= reshape([9,42,42,42],[2,2]))) STOP 1
   do l= 1, 10
     do i= 1, 2
       do j= 1,2
         if ((i == 1 .and. j == 1 .and. l == 5 .and. &
              o%arr(i,j)%a(5) /= 1) &
             .or. (.not. (i == 1 .and. j == 1 .and. l == 5) &
-              .and. o%arr(i,j)%a(l) /= 72)) call abort()
+              .and. o%arr(i,j)%a(l) /= 72)) STOP 2
       end do
     end do
   end do
@@ -83,7 +83,7 @@ program test
             if ((i == 1 .and. j == 1 .and. l == 5 .and. &
                  i_a(i,j)%a(5) /= 1) &
                 .or. (.not. (i == 1 .and. j == 1 .and. l == 5) &
-                  .and. i_a(i,j)%a(l) /= 72)) call abort()
+                  .and. i_a(i,j)%a(l) /= 72)) STOP 3
           end do
         end do
       end do
@@ -91,7 +91,7 @@ program test
 
   i_p%i = 4
   call indir(o, i_p)
-  if (any(o%arr%i /= reshape([9,42,42,42],[2,2]))) call abort()
+  if (any(o%arr%i /= reshape([9,42,42,42],[2,2]))) STOP 4
 end program test
 
 ! vim:ts=2:sts=2:cindent:sw=2:tw=80:

@@ -1,6 +1,6 @@
 /* Communication between registering jump thread requests and
    updating the SSA/CFG for jump threading.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,6 +47,7 @@ extern void remove_jump_threads_including (edge);
 extern void delete_jump_thread_path (vec <class jump_thread_edge *> *);
 extern void remove_ctrl_stmt_and_useless_edges (basic_block, basic_block);
 extern void free_dom_edge_info (edge);
+extern unsigned int estimate_threading_killed_stmts (basic_block);
 
 enum bb_dom_status
 {

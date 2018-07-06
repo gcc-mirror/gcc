@@ -1,5 +1,5 @@
 /* simple-object.c -- simple routines to read and write object files.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 This program is free software; you can redistribute it and/or modify it
@@ -253,30 +253,43 @@ simple_object_find_section (simple_object_read *sobj, const char *name,
 /* Callback to identify and rename LTO debug sections by name.
    Returns 1 if NAME is a LTO debug section, 0 if not.  */
 
-static int
-handle_lto_debug_sections (const char **name)
+static char *
+handle_lto_debug_sections (const char *name)
 {
+  char *newname = XCNEWVEC (char, strlen (name) + 1);
+
   /* ???  So we can't use .gnu.lto_ prefixed sections as the assembler
      complains about bogus section flags.  Which means we need to arrange
      for that to be fixed or .gnu.debuglto_ marked as SHF_EXCLUDE (to make
      fat lto object tooling work for the fat part).  */
+  /* Also include corresponding reloc sections.  */
+  if (strncmp (name, ".rela", sizeof (".rela") - 1) == 0)
+    {
+      strncpy (newname, name, sizeof (".rela") - 1);
+      name += sizeof (".rela") - 1;
+    }
+  else if (strncmp (name, ".rel", sizeof (".rel") - 1) == 0)
+    {
+      strncpy (newname, name, sizeof (".rel") - 1);
+      name += sizeof (".rel") - 1;
+    }
   /* ???  For now this handles both .gnu.lto_ and .gnu.debuglto_ prefixed
      sections.  */
   /* Copy LTO debug sections and rename them to their non-LTO name.  */
-  if (strncmp (*name, ".gnu.debuglto_", sizeof (".gnu.debuglto_") - 1) == 0)
-    {
-      *name = *name + sizeof (".gnu.debuglto_") - 1;
-      return 1;
-    }
-  else if (strncmp (*name, ".gnu.lto_.debug_", sizeof (".gnu.lto_.debug_") -1) == 0)
-    {
-      *name = *name + sizeof (".gnu.lto_") - 1;
-      return 1;
-    }
+  if (strncmp (name, ".gnu.debuglto_", sizeof (".gnu.debuglto_") - 1) == 0)
+    return strcat (newname, name + sizeof (".gnu.debuglto_") - 1);
+  else if (strncmp (name, ".gnu.lto_.debug_",
+		    sizeof (".gnu.lto_.debug_") -1) == 0)
+    return strcat (newname, name + sizeof (".gnu.lto_") - 1);
   /* Copy over .note.GNU-stack section under the same name if present.  */
-  else if (strcmp (*name, ".note.GNU-stack") == 0)
-    return 1;
-  return 0;
+  else if (strcmp (name, ".note.GNU-stack") == 0)
+    return strcpy (newname, name);
+  /* Copy over .comment section under the same name if present.  Solaris
+     ld uses them to relax its checking of ELF gABI access rules for
+     COMDAT sections in objects produced by GCC.  */
+  else if (strcmp (name, ".comment") == 0)
+    return strcpy (newname, name);
+  return NULL;
 }
 
 /* Copy LTO debug sections.  */

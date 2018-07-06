@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -336,6 +336,7 @@ package body Ch6 is
       end if;
 
       Scope.Table (Scope.Last).Labl := Name_Node;
+      Current_Node := Name_Node;
       Ignore (Tok_Colon);
 
       --  Deal with generic instantiation, the one case in which we do not
@@ -872,7 +873,27 @@ package body Ch6 is
                     New_Node
                       (N_Expression_Function, Sloc (Specification_Node));
                   Set_Specification (Body_Node, Specification_Node);
-                  Set_Expression (Body_Node, P_Expression);
+
+                  declare
+                     Expr : constant Node_Id := P_Expression;
+                  begin
+                     Set_Expression (Body_Node, Expr);
+
+                     --  Check that the full expression is properly
+                     --  parenthesized since we may have a left-operand that is
+                     --  parenthesized but that is not one of the allowed cases
+                     --  with syntactic parentheses.
+
+                     if not (Paren_Count (Expr) /= 0
+                              or else Nkind_In (Expr, N_Aggregate,
+                                                      N_Extension_Aggregate,
+                                                      N_Quantified_Expression))
+                     then
+                        Error_Msg
+                          ("expression function must be enclosed in "
+                           & "parentheses", Sloc (Expr));
+                     end if;
+                  end;
 
                   --  Expression functions can carry pre/postconditions
 

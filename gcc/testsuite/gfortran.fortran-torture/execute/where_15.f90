@@ -10,6 +10,6 @@ program where_15
      b = 2
    endwhere
    if (any (b .ne. (/0, 2, 2, 2, 2/))) &
-     call abort
+     STOP 1
 end program
 

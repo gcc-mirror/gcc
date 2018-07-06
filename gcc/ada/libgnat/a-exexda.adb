@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -489,9 +489,9 @@ package body Exception_Data is
       Append_Info_NL (Info, Ptr);
    end Append_Info_Untailored_Exception_Traceback;
 
-   -------------------------------------------
-   -- Basic_Exception_Information_Maxlength --
-   -------------------------------------------
+   ------------------------------------
+   -- Basic_Exception_Info_Maxlength --
+   ------------------------------------
 
    function Basic_Exception_Info_Maxlength
      (X : Exception_Occurrence) return Natural

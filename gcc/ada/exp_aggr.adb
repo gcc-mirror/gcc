@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -240,7 +240,7 @@ package body Exp_Aggr is
    --  calling Flatten.
    --
    --  This function also detects and warns about one-component aggregates that
-   --  appear in a non-static context. Even if the component value is static,
+   --  appear in a nonstatic context. Even if the component value is static,
    --  such an aggregate must be expanded into an assignment.
 
    function Backend_Processing_Possible (N : Node_Id) return Boolean;
@@ -428,7 +428,7 @@ package body Exp_Aggr is
    --  Start of processing for Aggr_Size_OK
 
    begin
-      --  The normal aggregate limit is 50000, but we increase this limit to
+      --  The normal aggregate limit is 500000, but we increase this limit to
       --  2**24 (about 16 million) if Restrictions (No_Elaboration_Code) or
       --  Restrictions (No_Implicit_Loops) is specified, since in either case
       --  we are at risk of declaring the program illegal because of this
@@ -448,7 +448,7 @@ package body Exp_Aggr is
       --  Finally, we use a small limit in CodePeer mode where we favor loops
       --  instead of thousands of single assignments (from large aggregates).
 
-      Max_Aggr_Size := 50000;
+      Max_Aggr_Size := 500000;
 
       if CodePeer_Mode then
          Max_Aggr_Size := 100;
@@ -492,7 +492,7 @@ package body Exp_Aggr is
          end if;
 
          --  One-component aggregates are suspicious, and if the context type
-         --  is an object declaration with non-static bounds it will trip gcc;
+         --  is an object declaration with nonstatic bounds it will trip gcc;
          --  such an aggregate must be expanded into a single assignment.
 
          if Hiv = Lov and then Nkind (Parent (N)) = N_Object_Declaration then
@@ -674,7 +674,7 @@ package body Exp_Aggr is
 
          --  Recurse to check subaggregates, which may appear in qualified
          --  expressions. If delayed, the front-end will have to expand.
-         --  If the component is a discriminated record, treat as non-static,
+         --  If the component is a discriminated record, treat as nonstatic,
          --  as the back-end cannot handle this properly.
 
          Expr := First (Expressions (N));
@@ -1533,8 +1533,19 @@ package body Exp_Aggr is
             --  the analysis of non-array aggregates now in order to get the
             --  value of Expansion_Delayed flag for the inner aggregate ???
 
+            --  In the case of an iterated component association, the analysis
+            --  of the generated loop will analyze the expression in the
+            --  proper context, in which the loop parameter is visible.
+
             if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ) then
-               Analyze_And_Resolve (Expr_Q, Comp_Typ);
+               if Nkind (Parent (Expr_Q)) = N_Iterated_Component_Association
+                 or else Nkind (Parent (Parent ((Expr_Q)))) =
+                           N_Iterated_Component_Association
+               then
+                  null;
+               else
+                  Analyze_And_Resolve (Expr_Q, Comp_Typ);
+               end if;
             end if;
 
             if Is_Delayed_Aggregate (Expr_Q) then
@@ -2835,7 +2846,7 @@ package body Exp_Aggr is
 
          In_Place_Expansion :=
            Nkind (Init_Expr) = N_Function_Call
-                and then not Is_Build_In_Place_Result_Type (Comp_Typ);
+             and then not Is_Build_In_Place_Result_Type (Comp_Typ);
 
          --  The initialization expression is a controlled function call.
          --  Perform in-place removal of side effects to avoid creating a
@@ -2854,7 +2865,11 @@ package body Exp_Aggr is
             Set_No_Side_Effect_Removal (Init_Expr);
 
             --  Install all hook-related declarations and prepare the clean up
-            --  statements.
+            --  statements. The generated code follows the initialization order
+            --  of individual components and discriminants, rather than being
+            --  inserted prior to the aggregate. This ensures that a transient
+            --  component which mentions a discriminant has proper visibility
+            --  of the discriminant.
 
             Process_Transient_Component
               (Loc        => Loc,
@@ -2862,7 +2877,7 @@ package body Exp_Aggr is
                Init_Expr  => Init_Expr,
                Fin_Call   => Fin_Call,
                Hook_Clear => Hook_Clear,
-               Aggr       => N);
+               Stmts      => Stmts);
          end if;
 
          --  Use the noncontrolled component initialization circuitry to
@@ -4038,7 +4053,7 @@ package body Exp_Aggr is
             Next_Elmt (Disc2);
          end loop;
 
-         --  If any discriminant constraint is non-static, emit a check
+         --  If any discriminant constraint is nonstatic, emit a check
 
          if Present (Cond) then
             Insert_Action (N,
@@ -4081,15 +4096,16 @@ package body Exp_Aggr is
         and then Ekind (Current_Scope) /= E_Return_Statement
         and then not Is_Limited_Type (Typ)
       then
-         Establish_Transient_Scope (Aggr, Sec_Stack => False);
+         Establish_Transient_Scope (Aggr, Manage_Sec_Stack => False);
       end if;
 
       declare
-         Node_After   : constant Node_Id := Next (N);
+         Node_After : constant Node_Id := Next (N);
       begin
          Insert_Actions_After (N, Late_Expansion (Aggr, Typ, Occ));
          Collect_Initialization_Statements (Obj, N, Node_After);
       end;
+
       Set_No_Initialization (N);
       Initialize_Discriminants (N, Typ);
    end Convert_Aggr_In_Object_Decl;
@@ -4217,7 +4233,7 @@ package body Exp_Aggr is
       --  Should the condition be more restrictive ???
 
       if Requires_Transient_Scope (Typ) and then not Inside_Init_Proc then
-         Establish_Transient_Scope (N, Sec_Stack => False);
+         Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
       --  If the aggregate is nonlimited, create a temporary. If it is limited
@@ -4291,7 +4307,7 @@ package body Exp_Aggr is
       --  Check whether all components of the aggregate are compile-time known
       --  values, and can be passed as is to the back-end without further
       --  expansion.
-      --  An Iterated_Component_Association is treated as non-static, but there
+      --  An Iterated_Component_Association is treated as nonstatic, but there
       --  are possibilities for optimization here.
 
       function Flatten
@@ -4888,14 +4904,14 @@ package body Exp_Aggr is
 
       --    1. N consists of a single OTHERS choice, possibly recursively
 
-      --    2. The array type is not packed
+      --    2. The array type has no null ranges (the purpose of this is to
+      --       avoid a bogus warning for an out-of-range value).
 
       --    3. The array type has no atomic components
 
-      --    4. The array type has no null ranges (the purpose of this is to
-      --       avoid a bogus warning for an out-of-range value).
+      --    4. The component type is elementary
 
-      --    5. The component type is elementary
+      --    5. The component size is a multiple of Storage_Unit
 
       --    6. The component size is Storage_Unit or the value is of the form
       --       M * (1 + A**1 + A**2 + .. A**(K-1)) where A = 2**(Storage_Unit)
@@ -4906,31 +4922,25 @@ package body Exp_Aggr is
       --  specifically optimized for the target.
 
       function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
+         Csiz      : Uint;
          Ctyp      : Entity_Id;
-         Index     : Entity_Id;
-         Expr      : Node_Id := N;
-         Low       : Node_Id;
+         Expr      : Node_Id;
          High      : Node_Id;
+         Index     : Entity_Id;
+         Low       : Node_Id;
+         Nunits    : Int;
          Remainder : Uint;
          Value     : Uint;
-         Nunits    : Nat;
 
       begin
          --  Recurse as far as possible to find the innermost component type
 
          Ctyp := Etype (N);
+         Expr := N;
          while Is_Array_Type (Ctyp) loop
             if Nkind (Expr) /= N_Aggregate
               or else not Is_Others_Aggregate (Expr)
             then
-               return False;
-            end if;
-
-            if Present (Packed_Array_Impl_Type (Ctyp)) then
-               return False;
-            end if;
-
-            if Has_Atomic_Components (Ctyp) then
                return False;
             end if;
 
@@ -4957,6 +4967,11 @@ package body Exp_Aggr is
                Expr := Expression (First (Component_Associations (Expr)));
             end loop;
 
+            if Has_Atomic_Components (Ctyp) then
+               return False;
+            end if;
+
+            Csiz := Component_Size (Ctyp);
             Ctyp := Component_Type (Ctyp);
 
             if Is_Atomic_Or_VFA (Ctyp) then
@@ -4971,20 +4986,19 @@ package body Exp_Aggr is
             return False;
          end if;
 
-         --  All elementary types are supported
-
-         if not Is_Elementary_Type (Ctyp) then
-            return False;
-         end if;
-
-         --  However access types need to be dealt with specially
+         --  Access types need to be dealt with specially
 
          if Is_Access_Type (Ctyp) then
+
+            --  Component_Size is not set by Layout_Type if the component
+            --  type is an access type ???
+
+            Csiz := Esize (Ctyp);
 
             --  Fat pointers are rejected as they are not really elementary
             --  for the backend.
 
-            if Esize (Ctyp) /= System_Address_Size then
+            if Csiz /= System_Address_Size then
                return False;
             end if;
 
@@ -4995,15 +5009,34 @@ package body Exp_Aggr is
             if Nkind (Expr) /= N_Null and then not Is_Entity_Name (Expr) then
                return False;
             end if;
+
+         --  Scalar types are OK if their size is a multiple of Storage_Unit
+
+         elsif Is_Scalar_Type (Ctyp) then
+            if Csiz mod System_Storage_Unit /= 0 then
+               return False;
+            end if;
+
+         --  Composite types are rejected
+
+         else
+            return False;
          end if;
 
          --  The expression needs to be analyzed if True is returned
 
          Analyze_And_Resolve (Expr, Ctyp);
 
-         --  The back end uses the Esize as the precision of the type
+         --  Strip away any conversions from the expression as they simply
+         --  qualify the real expression.
 
-         Nunits := UI_To_Int (Esize (Ctyp)) / System_Storage_Unit;
+         while Nkind_In (Expr, N_Unchecked_Type_Conversion,
+                               N_Type_Conversion)
+         loop
+            Expr := Expression (Expr);
+         end loop;
+
+         Nunits := UI_To_Int (Csiz) / System_Storage_Unit;
 
          if Nunits = 1 then
             return True;
@@ -5366,6 +5399,10 @@ package body Exp_Aggr is
             Expr : Node_Id;
 
          begin
+            if Nkind (Parent (Aggr)) = N_Iterated_Component_Association then
+               return False;
+            end if;
+
             if Present (Expressions (Aggr)) then
                Expr := First (Expressions (Aggr));
                while Present (Expr) loop
@@ -5474,6 +5511,15 @@ package body Exp_Aggr is
                   --  For now, too complex to analyze
 
                   return False;
+
+               elsif Nkind (Parent (Expr)) =
+                       N_Iterated_Component_Association
+               then
+                  --  Ditto for iterated component associations, which in
+                  --  general require an enclosing loop and involve nonstatic
+                  --  expressions.
+
+                  return False;
                end if;
 
                Comp := New_Copy_Tree (Expr);
@@ -5526,13 +5572,29 @@ package body Exp_Aggr is
                Get_Index_Bounds (Obj_In, Obj_Lo, Obj_Hi);
 
                if not Compile_Time_Known_Value (Aggr_Lo)
-                 or else not Compile_Time_Known_Value (Aggr_Hi)
                  or else not Compile_Time_Known_Value (Obj_Lo)
                  or else not Compile_Time_Known_Value (Obj_Hi)
                  or else Expr_Value (Aggr_Lo) /= Expr_Value (Obj_Lo)
-                 or else Expr_Value (Aggr_Hi) /= Expr_Value (Obj_Hi)
                then
                   return False;
+
+               --  For an assignment statement we require static matching of
+               --  bounds. Ditto for an allocator whose qualified expression
+               --  is a constrained type. If the expression in the allocator
+               --  is an unconstrained array, we accept an upper bound that
+               --  is not static, to allow for nonstatic expressions of the
+               --  base type. Clearly there are further possibilities (with
+               --  diminishing returns) for safely building arrays in place
+               --  here.
+
+               elsif Nkind (Parent (N)) = N_Assignment_Statement
+                 or else Is_Constrained (Etype (Parent (N)))
+               then
+                  if not Compile_Time_Known_Value (Aggr_Hi)
+                    or else Expr_Value (Aggr_Hi) /= Expr_Value (Obj_Hi)
+                  then
+                     return False;
+                  end if;
                end if;
 
                Next_Index (Aggr_In);
@@ -6114,7 +6176,7 @@ package body Exp_Aggr is
       --  for default initialization, e.g. with Initialize_Scalars.
 
       if Requires_Transient_Scope (Typ) then
-         Establish_Transient_Scope (N, Sec_Stack => False);
+         Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
       if Has_Default_Init_Comps (N) then
@@ -6245,15 +6307,15 @@ package body Exp_Aggr is
          Set_No_Initialization (Tmp_Decl, True);
 
          --  If we are within a loop, the temporary will be pushed on the
-         --  stack at each iteration. If the aggregate is the expression for an
-         --  allocator, it will be immediately copied to the heap and can
-         --  be reclaimed at once. We create a transient scope around the
-         --  aggregate for this purpose.
+         --  stack at each iteration. If the aggregate is the expression
+         --  for an allocator, it will be immediately copied to the heap
+         --  and can be reclaimed at once. We create a transient scope
+         --  around the aggregate for this purpose.
 
          if Ekind (Current_Scope) = E_Loop
            and then Nkind (Parent (Parent (N))) = N_Allocator
          then
-            Establish_Transient_Scope (N, Sec_Stack => False);
+            Establish_Transient_Scope (N, Manage_Sec_Stack => False);
          end if;
 
          Insert_Action (N, Tmp_Decl);
@@ -7533,7 +7595,7 @@ package body Exp_Aggr is
       Typ : constant Entity_Id := Base_Type (Etype (N));
 
    begin
-      return Static_Dispatch_Tables
+      return Building_Static_Dispatch_Tables
         and then Tagged_Type_Expansion
         and then RTU_Loaded (Ada_Tags)
 
@@ -7724,7 +7786,7 @@ package body Exp_Aggr is
          function Get_Component_Val (N : Node_Id) return Uint;
          --  Given a expression value N of the component type Ctyp, returns a
          --  value of Csiz (component size) bits representing this value. If
-         --  the value is non-static or any other reason exists why the value
+         --  the value is nonstatic or any other reason exists why the value
          --  cannot be returned, then Not_Handled is raised.
 
          -----------------------

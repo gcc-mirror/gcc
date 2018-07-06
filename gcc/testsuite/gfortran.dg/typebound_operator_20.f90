@@ -44,8 +44,8 @@ program drive
   type(child)  :: h1, h2
   class(parent), pointer :: hres
 
-  if (m1 + m2 /= 0) call abort()
-  if (h1 + m2 /= 1) call abort()
-  if (h1%sum(h2) /= 1) call abort()
+  if (m1 + m2 /= 0) STOP 1
+  if (h1 + m2 /= 1) STOP 2
+  if (h1%sum(h2) /= 1) STOP 3
 
 end

@@ -1,7 +1,5 @@
 /* { dg-do compile { target lp64 } } */
 /* { dg-options "-Ofast -mstackrealign -mabi=ms -mcall-ms2sysv-xlogues" } */
-/* { dg-xfail-if "" { *-*-* }  } */
-/* { dg-xfail-run-if "" { *-*-* }  } */
 
 void __attribute__((sysv_abi)) a (char *);
 void

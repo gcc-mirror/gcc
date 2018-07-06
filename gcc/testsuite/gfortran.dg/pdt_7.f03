@@ -15,6 +15,6 @@ end type
 type(param_matrix(8,3,2)) :: mat
 real(kind=mat%k) :: m    ! Corrected error: Parameter ‘mat’ at (1) has not been declared or ...
 
-if (kind(m) .ne. 8) call abort
+if (kind(m) .ne. 8) STOP 1
 
 end

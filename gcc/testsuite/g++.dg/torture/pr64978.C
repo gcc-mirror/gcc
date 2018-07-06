@@ -27,4 +27,4 @@ void C::m_fn3(A, unsigned, const int *, int &) {
     1 ? VTables.m_fn2() : 0;
 }
 void B::m_fn1(bool, const int *, int &) { C(); }
-unsigned B::m_fn2() { m_fn1(0, 0, a); }
+unsigned B::m_fn2() { m_fn1(0, 0, a); return 0; }

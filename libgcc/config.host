@@ -1,5 +1,5 @@
 # libgcc host-specific configuration file.
-# Copyright (C) 1997-2017 Free Software Foundation, Inc.
+# Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -277,7 +277,7 @@ case ${host} in
   tmake_file="$tmake_file $cpu_type/t-sol2"
   extra_parts="gmon.o crtbegin.o crtend.o"
   if test "${libgcc_cv_solaris_crts}" = yes; then
-    # Solaris 11.x and 12 provide crt1.o, crti.o, and crtn.o as part of the
+    # Solaris 11.4 provides crt1.o, crti.o, and crtn.o as part of the
     # base system.  crtp.o and crtpg.o implement the compiler-dependent parts.
     extra_parts="$extra_parts crtp.o crtpg.o"
     # If the Solaris CRTs are present, both ld and gld will have PIE support.
@@ -507,8 +507,8 @@ cris-*-elf)
 cris-*-linux* | crisv32-*-linux*)
 	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-linux"
 	;;
-epiphany-*-elf*)
-	tmake_file="epiphany/t-epiphany t-fdpbit epiphany/t-custom-eqsf"
+epiphany-*-elf* | epiphany-*-rtems*)
+	tmake_file="$tmake_file epiphany/t-epiphany t-fdpbit epiphany/t-custom-eqsf"
 	extra_parts="$extra_parts crti.o crtint.o crtrunc.o crtm1reg-r43.o crtm1reg-r63.o crtn.o"
 	;;
 fr30-*-elf)
@@ -611,6 +611,11 @@ i[34567]86-*-elf*)
 	;;
 x86_64-*-elf* | x86_64-*-rtems*)
 	tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
+	case ${host} in
+	  x86_64-*-rtems*)
+	    extra_parts="$extra_parts crti.o crtn.o"
+	    ;;
+	esac
 	;;
 x86_64-*-fuchsia*)
 	tmake_file="$tmake_file t-libgcc-pic"
@@ -1127,6 +1132,10 @@ riscv*-*-linux*)
 	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 	md_unwind_header=riscv/linux-unwind.h
+	;;
+riscv*-*-freebsd*)
+	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
+	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
 	;;
 riscv*-*-*)
 	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"

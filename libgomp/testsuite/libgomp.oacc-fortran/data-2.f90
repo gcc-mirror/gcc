@@ -24,8 +24,8 @@ program test
 
   do i = 1, n
     do j = 1, n
-      if (a(j,i) .ne. 3.0) call abort
-      if (b(j,i) .ne. 3.0) call abort
+      if (a(j,i) .ne. 3.0) STOP 1
+      if (b(j,i) .ne. 3.0) STOP 2
     end do
   end do
 end program test

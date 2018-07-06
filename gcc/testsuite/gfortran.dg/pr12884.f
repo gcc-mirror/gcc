@@ -21,5 +21,5 @@ c Based on example provided by jean-pierre.flament@univ-lille1.fr
       rewind (10)
       read (10, cntrl)
       if ((ispher.ne.1).or.(nosym.ne.2).or.(runflg.ne.3).or.
-     &  (noprop.ne.4)) call abort ()
+     &  (noprop.ne.4)) STOP 1
       end

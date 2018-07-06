@@ -11,7 +11,8 @@ public:
 };
 }
 class A a, *b=&a;
-main()
+
+int main()
 {
   return b->foo();
 }

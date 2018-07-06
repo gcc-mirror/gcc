@@ -18,7 +18,7 @@ program bug20
   select type(aa => a)
   type is (d_base_sparse_mat)
     write(0,*) 'NV = ',size(aa%v)
-    if (size(aa%v) /= 10) call abort ()
+    if (size(aa%v) /= 10) STOP 1
   class default 
     write(0,*) 'Not implemented yet '
   end select

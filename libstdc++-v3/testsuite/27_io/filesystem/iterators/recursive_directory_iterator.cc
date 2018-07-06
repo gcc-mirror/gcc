@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2017 Free Software Foundation, Inc.
+// Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -87,6 +87,7 @@ test01()
   VERIFY( iter != end(iter) );
   VERIFY( iter->path() == p/"d1" );
   ++iter;              // should recurse into d1
+  VERIFY( iter != end(iter) );
   VERIFY( iter->path() == p/"d1/d2" );
   iter.increment(ec);  // should fail to recurse into p/d1/d2
   VERIFY( ec );
@@ -99,6 +100,7 @@ test01()
   VERIFY( iter != end(iter) );
   VERIFY( iter->path() == p/"d1" );
   ++iter;              // should recurse into d1
+  VERIFY( iter != end(iter) );
   VERIFY( iter->path() == p/"d1/d2" );
   ec = bad_ec;
   iter.increment(ec);  // should fail to recurse into p/d1/d2, so skip it

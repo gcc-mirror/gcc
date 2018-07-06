@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -60,15 +60,6 @@ struct vec_usage: public mem_usage
     : mem_usage (allocated, times, peak),
     m_items (items), m_items_peak (items_peak) {}
 
-  /* Comparison operator.  */
-  inline bool
-  operator< (const vec_usage &second) const
-  {
-    return (m_allocated == second.m_allocated ?
-	    (m_peak == second.m_peak ? m_times < second.m_times
-	     : m_peak < second.m_peak) : m_allocated < second.m_allocated);
-  }
-
   /* Sum the usage with SECOND usage.  */
   vec_usage
   operator+ (const vec_usage &second)
@@ -113,18 +104,6 @@ struct vec_usage: public mem_usage
     fprintf (stderr, "%-48s %11s%15s%10s%17s%11s\n", name, "Leak", "Peak",
 	     "Times", "Leak items", "Peak items");
     print_dash_line ();
-  }
-
-  /* Compare wrapper used by qsort method.  */
-  static int
-  compare (const void *first, const void *second)
-  {
-    typedef std::pair<mem_location *, vec_usage *> mem_pair_t;
-
-    const mem_pair_t f = *(const mem_pair_t *)first;
-    const mem_pair_t s = *(const mem_pair_t *)second;
-
-    return (*f.second) < (*s.second);
   }
 
   /* Current number of items allocated.  */
@@ -236,7 +215,7 @@ void
 qsort_chk (void *base, size_t n, size_t size,
 	   int (*cmp)(const void *, const void *))
 {
-  (qsort) (base, n, size, cmp);
+  gcc_qsort (base, n, size, cmp);
 #if 0
 #define LIM(n) (n)
 #else
@@ -403,6 +382,51 @@ test_ordered_remove ()
   ASSERT_EQ (9, v.length ());
 }
 
+/* Verify that vec::ordered_remove_if works correctly.  */
+
+static void
+test_ordered_remove_if (void)
+{
+  auto_vec <int> v;
+  safe_push_range (v, 0, 10);
+  unsigned ix, ix2;
+  int *elem_ptr;
+  VEC_ORDERED_REMOVE_IF (v, ix, ix2, elem_ptr,
+			 *elem_ptr == 5 || *elem_ptr == 7);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (6, v[5]);
+  ASSERT_EQ (8, v[6]);
+  ASSERT_EQ (8, v.length ());
+
+  v.truncate (0);
+  safe_push_range (v, 0, 10);
+  VEC_ORDERED_REMOVE_IF_FROM_TO (v, ix, ix2, elem_ptr, 0, 6,
+				 *elem_ptr == 5 || *elem_ptr == 7);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (6, v[5]);
+  ASSERT_EQ (7, v[6]);
+  ASSERT_EQ (9, v.length ());
+
+  v.truncate (0);
+  safe_push_range (v, 0, 10);
+  VEC_ORDERED_REMOVE_IF_FROM_TO (v, ix, ix2, elem_ptr, 0, 5,
+				 *elem_ptr == 5 || *elem_ptr == 7);
+  VEC_ORDERED_REMOVE_IF_FROM_TO (v, ix, ix2, elem_ptr, 8, 10,
+				 *elem_ptr == 5 || *elem_ptr == 7);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (5, v[5]);
+  ASSERT_EQ (6, v[6]);
+  ASSERT_EQ (10, v.length ());
+
+  v.truncate (0);
+  safe_push_range (v, 0, 10);
+  VEC_ORDERED_REMOVE_IF (v, ix, ix2, elem_ptr, *elem_ptr == 5);
+  ASSERT_EQ (4, v[4]);
+  ASSERT_EQ (6, v[5]);
+  ASSERT_EQ (7, v[6]);
+  ASSERT_EQ (9, v.length ());
+}
+
 /* Verify that vec::unordered_remove works correctly.  */
 
 static void
@@ -464,6 +488,7 @@ vec_c_tests ()
   test_pop ();
   test_safe_insert ();
   test_ordered_remove ();
+  test_ordered_remove_if ();
   test_unordered_remove ();
   test_block_remove ();
   test_qsort ();

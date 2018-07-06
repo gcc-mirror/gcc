@@ -7,5 +7,5 @@ program main
   buffer = 4_"123"
   read(buffer,*) i 
   write (a,'(I3)') i
-  if (a /= 4_"123") call abort
+  if (a /= 4_"123") STOP 1
 end program main

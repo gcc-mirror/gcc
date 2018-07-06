@@ -1,5 +1,5 @@
 /* Control flow graph analysis header file.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -77,5 +77,8 @@ extern void bitmap_intersection_of_preds (sbitmap, sbitmap *, basic_block);
 extern void bitmap_union_of_succs (sbitmap, sbitmap *, basic_block);
 extern void bitmap_union_of_preds (sbitmap, sbitmap *, basic_block);
 extern basic_block * single_pred_before_succ_order (void);
+extern edge single_incoming_edge_ignoring_loop_edges (basic_block, bool);
+extern edge single_pred_edge_ignoring_loop_edges (basic_block, bool);
+
 
 #endif /* GCC_CFGANAL_H */

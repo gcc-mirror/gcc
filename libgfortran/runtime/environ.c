@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -207,10 +207,6 @@ static variable variable_table[] = {
 
   /* Print optional plus signs in numbers where permitted */
   { "GFORTRAN_OPTIONAL_PLUS", 0, &options.optional_plus, init_boolean },
-
-  /* Default maximum record length for sequential files */
-  { "GFORTRAN_DEFAULT_RECL", DEFAULT_RECL, &options.default_recl,
-    init_unsigned_integer },
 
   /* Separator to use when writing list output */
   { "GFORTRAN_LIST_SEPARATOR", 0, NULL, init_sep },

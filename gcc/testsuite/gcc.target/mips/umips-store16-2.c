@@ -17,6 +17,6 @@ f3 (unsigned int *ptr)
 {
   *ptr = 0;
 }
-/* { dg-final { scan-assembler "\tsb\t\\\$0,0\\(\\\$\[0-9\]+\\)\[^\n\]*length = 2" } } */
-/* { dg-final { scan-assembler "\tsh\t\\\$0,0\\(\\\$\[0-9\]+\\)\[^\n\]*length = 2" } } */
-/* { dg-final { scan-assembler "\tsw\t\\\$0,0\\(\\\$\[0-9\]+\\)\[^\n\]*length = 2" } } */
+/* { dg-final { scan-assembler "\tsb\t\\\$0,0\\(\\\$\[0-9\]+\\)\[^\n\]*l=2" } } */
+/* { dg-final { scan-assembler "\tsh\t\\\$0,0\\(\\\$\[0-9\]+\\)\[^\n\]*l=2" } } */
+/* { dg-final { scan-assembler "\tsw\t\\\$0,0\\(\\\$\[0-9\]+\\)\[^\n\]*l=2" } } */

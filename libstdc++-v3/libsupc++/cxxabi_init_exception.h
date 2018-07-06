@@ -1,6 +1,6 @@
 // ABI Support -*- C++ -*-
 
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -61,6 +61,9 @@ namespace __cxxabiv1
       // Allocate memory for the primary exception plus the thrown object.
       void*
       __cxa_allocate_exception(size_t) _GLIBCXX_NOTHROW;
+
+      void
+      __cxa_free_exception(void*) _GLIBCXX_NOTHROW;
 
       // Initialize exception (this is a GNU extension)
       __cxa_refcounted_exception*

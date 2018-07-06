@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2301,7 +2301,7 @@ package body Sem_Eval is
          Left_Str   : constant Node_Id := Get_String_Val (Left);
          Left_Len   : Nat;
          Right_Str  : constant Node_Id := Get_String_Val (Right);
-         Folded_Val : String_Id;
+         Folded_Val : String_Id        := No_String;
 
       begin
          --  Establish new string literal, and store left operand. We make
@@ -3402,6 +3402,13 @@ package body Sem_Eval is
 
          if Nkind (Expr) = N_String_Literal then
             return UI_From_Int (String_Length (Strval (Expr)));
+
+         --  With frontend inlining as performed in GNATprove mode, a variable
+         --  may be inserted that has a string literal subtype. Deal with this
+         --  specially as for the previous case.
+
+         elsif Ekind (Etype (Expr)) = E_String_Literal_Subtype then
+            return String_Literal_Length (Etype (Expr));
 
          --  Second easy case, not constrained subtype, so no length
 
@@ -4755,19 +4762,34 @@ package body Sem_Eval is
    -------------------
 
    function Is_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean is
-      Typ : constant Entity_Id := Etype (Lo);
-
    begin
-      if not Compile_Time_Known_Value (Lo)
-        or else not Compile_Time_Known_Value (Hi)
+      if Compile_Time_Known_Value (Lo)
+        and then Compile_Time_Known_Value (Hi)
       then
-         return False;
-      end if;
+         declare
+            Typ : Entity_Id := Etype (Lo);
+         begin
+            --  When called from the frontend, as part of the analysis of
+            --  potentially static expressions, Typ will be the full view of a
+            --  type with all the info needed to answer this query. When called
+            --  from the backend, for example to know whether a range of a loop
+            --  is null, Typ might be a private type and we need to explicitly
+            --  switch to its corresponding full view to access the same info.
 
-      if Is_Discrete_Type (Typ) then
-         return Expr_Value (Lo) > Expr_Value (Hi);
-      else pragma Assert (Is_Real_Type (Typ));
-         return Expr_Value_R (Lo) > Expr_Value_R (Hi);
+            if Is_Incomplete_Or_Private_Type (Typ)
+              and then Present (Full_View (Typ))
+            then
+               Typ := Full_View (Typ);
+            end if;
+
+            if Is_Discrete_Type (Typ) then
+               return Expr_Value (Lo) > Expr_Value (Hi);
+            else pragma Assert (Is_Real_Type (Typ));
+               return Expr_Value_R (Lo) > Expr_Value_R (Hi);
+            end if;
+         end;
+      else
+         return False;
       end if;
    end Is_Null_Range;
 
@@ -5330,20 +5352,36 @@ package body Sem_Eval is
    --------------------
 
    function Not_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean is
-      Typ : constant Entity_Id := Etype (Lo);
-
    begin
-      if not Compile_Time_Known_Value (Lo)
-        or else not Compile_Time_Known_Value (Hi)
+      if Compile_Time_Known_Value (Lo)
+        and then Compile_Time_Known_Value (Hi)
       then
+         declare
+            Typ : Entity_Id := Etype (Lo);
+         begin
+            --  When called from the frontend, as part of the analysis of
+            --  potentially static expressions, Typ will be the full view of a
+            --  type with all the info needed to answer this query. When called
+            --  from the backend, for example to know whether a range of a loop
+            --  is null, Typ might be a private type and we need to explicitly
+            --  switch to its corresponding full view to access the same info.
+
+            if Is_Incomplete_Or_Private_Type (Typ)
+              and then Present (Full_View (Typ))
+            then
+               Typ := Full_View (Typ);
+            end if;
+
+            if Is_Discrete_Type (Typ) then
+               return Expr_Value (Lo) <= Expr_Value (Hi);
+            else pragma Assert (Is_Real_Type (Typ));
+               return Expr_Value_R (Lo) <= Expr_Value_R (Hi);
+            end if;
+         end;
+      else
          return False;
       end if;
 
-      if Is_Discrete_Type (Typ) then
-         return Expr_Value (Lo) <= Expr_Value (Hi);
-      else pragma Assert (Is_Real_Type (Typ));
-         return Expr_Value_R (Lo) <= Expr_Value_R (Hi);
-      end if;
    end Not_Null_Range;
 
    -------------

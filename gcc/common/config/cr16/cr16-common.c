@@ -1,5 +1,5 @@
 /* Common hooks for CR16.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -23,15 +23,5 @@
 #include "tm.h"
 #include "common/common-target.h"
 #include "common/common-target-def.h"
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options cr16_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE cr16_option_optimization_table
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

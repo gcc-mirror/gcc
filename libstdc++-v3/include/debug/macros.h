@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2017 Free Software Foundation, Inc.
+// Copyright (C) 2003-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,16 +38,20 @@
  * the user error and where the error is reported.
  *
  */
-#define _GLIBCXX_DEBUG_VERIFY_AT(_Condition,_ErrorMessage,_File,_Line)	\
+#define _GLIBCXX_DEBUG_VERIFY_AT_F(_Cond,_ErrMsg,_File,_Line,_Func)	\
   do									\
   {									\
-    if (! (_Condition))							\
-      __gnu_debug::_Error_formatter::_M_at(_File, _Line)		\
-	  ._ErrorMessage._M_error();					\
+    if (! (_Cond))							\
+      __gnu_debug::_Error_formatter::_S_at(_File, _Line, _Func)		\
+	._ErrMsg._M_error();						\
   } while (false)
 
-#define _GLIBCXX_DEBUG_VERIFY(_Condition,_ErrorMessage)			\
-  _GLIBCXX_DEBUG_VERIFY_AT(_Condition,_ErrorMessage,__FILE__,__LINE__)
+#define _GLIBCXX_DEBUG_VERIFY_AT(_Cond,_ErrMsg,_File,_Line)		\
+  _GLIBCXX_DEBUG_VERIFY_AT_F(_Cond,_ErrMsg,_File,_Line,__PRETTY_FUNCTION__)
+
+#define _GLIBCXX_DEBUG_VERIFY(_Cond,_ErrMsg)				\
+  _GLIBCXX_DEBUG_VERIFY_AT_F(_Cond, _ErrMsg, __FILE__, __LINE__,	\
+			     __PRETTY_FUNCTION__)
 
 // Verify that [_First, _Last) forms a valid iterator range.
 #define __glibcxx_check_valid_range(_First,_Last)			\
@@ -56,11 +60,22 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__valid_range(_First, _Last),	\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
 
+#define __glibcxx_check_valid_range_at(_First,_Last,_File,_Line,_Func)	\
+_GLIBCXX_DEBUG_VERIFY_AT_F(__gnu_debug::__valid_range(_First, _Last),	\
+			   _M_message(__gnu_debug::__msg_valid_range)	\
+			   ._M_iterator(_First, #_First)		\
+			   ._M_iterator(_Last, #_Last),			\
+			   _File,_Line,_Func)
+
 #define __glibcxx_check_valid_range2(_First,_Last,_Dist)		\
 _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__valid_range(_First, _Last, _Dist),	\
 		      _M_message(__gnu_debug::__msg_valid_range)	\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
+
+#define __glibcxx_check_valid_constructor_range(_First,_Last)		\
+  __gnu_debug::__check_valid_range(_First, _Last,			\
+				   __FILE__, __LINE__, __PRETTY_FUNCTION__)
 
 // Verify that [_First, _Last) forms a non-empty iterator range.
 #define __glibcxx_check_non_empty_range(_First,_Last)			\

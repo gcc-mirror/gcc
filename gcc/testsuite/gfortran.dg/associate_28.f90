@@ -44,7 +44,7 @@ contains
         End Do
       end associate
     End block outer
-    if (sum_a .ne. 30) call abort
+    if (sum_a .ne. 30) STOP 1
   End Procedure
 End Submodule SetPt
 Program Test

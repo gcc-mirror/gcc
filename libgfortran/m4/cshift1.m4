@@ -1,5 +1,5 @@
 `/* Implementation of the CSHIFT intrinsic
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Feng Wang <wf_cs@yahoo.com>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -78,12 +78,10 @@ cshift1 (gfc_array_char * const restrict ret,
 
   if (ret->base_addr == NULL)
     {
-      int i;
-
       ret->base_addr = xmallocarray (arraysize, size);
       ret->offset = 0;
-      ret->dtype = array->dtype;
-      for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
+      GFC_DTYPE_COPY(ret,array);
+      for (index_type i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
 	  index_type ub, str;
 
@@ -121,7 +119,6 @@ cshift1 (gfc_array_char * const restrict ret,
   {
     case GFC_DTYPE_LOGICAL_1:
     case GFC_DTYPE_INTEGER_1:
-    case GFC_DTYPE_DERIVED_1:
       cshift1_'atype_kind`_i1 ((gfc_array_i1 *)ret, (gfc_array_i1 *) array,
       			h, pwhich);
       return;

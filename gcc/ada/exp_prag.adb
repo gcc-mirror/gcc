@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1090,7 +1090,7 @@ package body Exp_Prag is
       Conseq_Checks : Node_Id   := Empty;
       Count         : Entity_Id;
       Count_Decl    : Node_Id;
-      Error_Decls   : List_Id;
+      Error_Decls   : List_Id := No_List; -- init to avoid warning
       Flag          : Entity_Id;
       Flag_Decl     : Node_Id;
       If_Stmt       : Node_Id;

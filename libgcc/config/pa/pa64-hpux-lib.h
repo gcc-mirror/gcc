@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for HPs running
    HP-UX using the 64bit runtime model.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

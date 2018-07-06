@@ -1,5 +1,5 @@
 /* OpenMP directive matching and resolving.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek
 
 This file is part of GCC.
@@ -1318,23 +1318,21 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      else if (gfc_match_omp_variable_list (" val (",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, NULL, &head)
-		  == MATCH_YES)
+		       == MATCH_YES)
 		linear_op = OMP_LINEAR_VAL;
 	      else if (gfc_match_omp_variable_list (" uval (",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, NULL, &head)
-		  == MATCH_YES)
+		       == MATCH_YES)
 		linear_op = OMP_LINEAR_UVAL;
 	      else if (gfc_match_omp_variable_list ("",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, &end_colon, &head)
-		  == MATCH_YES)
+		       == MATCH_YES)
 		linear_op = OMP_LINEAR_DEFAULT;
 	      else
 		{
-		  gfc_free_omp_namelist (*head);
 		  gfc_current_locus = old_loc;
-		  *head = NULL;
 		  break;
 		}
 	      if (linear_op != OMP_LINEAR_DEFAULT)
@@ -5602,8 +5600,6 @@ resolve_omp_do (gfc_code *code)
 			     "iteration space at %L", name, &do_code->loc);
 		  break;
 		}
-	      if (j < i)
-		break;
 	      do_code2 = do_code2->block->next;
 	    }
 	}
@@ -5767,12 +5763,10 @@ resolve_oacc_nested_loops (gfc_code *code, gfc_code* do_code, int collapse,
 		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->end)
 		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->step))
 		{
-		  gfc_error ("!$ACC LOOP %s loops don't form rectangular iteration space at %L",
-			     clause, &do_code->loc);
+		  gfc_error ("!$ACC LOOP %s loops don't form rectangular "
+			     "iteration space at %L", clause, &do_code->loc);
 		  break;
 		}
-	      if (j < i)
-		break;
 	      do_code2 = do_code2->block->next;
 	    }
 	}

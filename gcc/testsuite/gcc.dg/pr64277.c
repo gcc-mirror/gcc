@@ -1,8 +1,8 @@
 /* PR tree-optimization/64277 */
 /* { dg-do compile } */
 /* { dg-options "-O3 -Wall -Werror -fdump-tree-cunroll-details" } */
+/* { dg-final { scan-tree-dump "loop with 4 iterations completely unrolled" "cunroll" } } */
 /* { dg-final { scan-tree-dump "loop with 5 iterations completely unrolled" "cunroll" } } */
-/* { dg-final { scan-tree-dump "loop with 6 iterations completely unrolled" "cunroll" } } */
 
 #if __SIZEOF_INT__ < 4
   __extension__ typedef __INT32_TYPE__ int32_t;

@@ -64,10 +64,10 @@ contains
       end select
     end do
 !    print "(10i6,/)", j
-    if (any (j .ne. [(i, i = 1,20)])) call abort
+    if (any (j .ne. [(i, i = 1,20)])) STOP 1
 !    print "(10f6.2,/)", r
-    if (any (r(1:10) .ne. [(real (2 * i), i = 1,10)])) call abort
-    if (any (r(11:20) .ne. zero)) call abort
+    if (any (r(1:10) .ne. [(real (2 * i), i = 1,10)])) STOP 2
+    if (any (r(11:20) .ne. zero)) STOP 3
   end subroutine Typeme
 end module test_mod
 

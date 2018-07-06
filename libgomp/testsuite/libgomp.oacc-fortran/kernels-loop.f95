@@ -21,7 +21,7 @@ program main
   !$acc end kernels
 
   do i = 0, n - 1
-     if (c(i) .ne. a(i) + b(i)) call abort
+     if (c(i) .ne. a(i) + b(i)) STOP 1
   end do
 
 end program main

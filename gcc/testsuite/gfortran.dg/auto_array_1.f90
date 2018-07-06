@@ -21,7 +21,7 @@ contains
     
       ! Check it worked.
       if (any (z .ne. reshape ((/1, 2, 3, 4, 5, 6, 7, 8, 9/), (/3, 3/)))) &
-        call abort
+        STOP 1
     end subroutine foo
 
     subroutine foo1(n,x)

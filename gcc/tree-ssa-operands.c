@@ -1,5 +1,5 @@
 /* SSA operands management for trees.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -849,7 +849,6 @@ get_expr_operands (struct function *fn, gimple *stmt, tree *expr_p, int flags)
     case REALIGN_LOAD_EXPR:
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
-    case FMA_EXPR:
       {
 	get_expr_operands (fn, stmt, &TREE_OPERAND (expr, 0), flags);
 	get_expr_operands (fn, stmt, &TREE_OPERAND (expr, 1), flags);

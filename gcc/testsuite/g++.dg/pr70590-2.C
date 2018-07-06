@@ -8,13 +8,13 @@ constexpr int *foo = &a;
 
 void blah (int *);
 
-int
+void
 bar ()
 {
   blah (foo);
 }
 
-int
+void
 baz ()
 {
   blah (foo);

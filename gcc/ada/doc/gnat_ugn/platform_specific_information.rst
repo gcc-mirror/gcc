@@ -219,6 +219,36 @@ this in a library package body in your application:
 It gets the effective user id, and if it's not 0 (i.e. root), it raises
 Program_Error.
 
+.. index:: Linux
+.. index:: GNU/Linux
+
+.. _GNU_Linux_Topics:
+
+GNU/Linux Topics
+================
+
+This section describes topics that are specific to GNU/Linux platforms.
+
+.. _Required_packages_on_GNU_Linux:
+
+Required Packages on GNU/Linux
+------------------------------
+
+GNAT requires the C library developer's package to be installed.
+The name of of that package depends on your GNU/Linux distribution:
+
+* RedHat, SUSE: ``glibc-devel``;
+* Debian, Ubuntu: ``libc6-dev`` (normally installed by default).
+
+If using the 32-bit version of GNAT on a 64-bit version of GNU/Linux,
+you'll need the 32-bit version of the glibc and glibc-devel packages:
+
+* RedHat, SUSE: ``glibc.i686``, ``glibc-devel.i686``
+* Debian, Ubuntu: ``libc6:i386``, ``libc6-dev:i386``
+
+Other GNU/Linux distributions might be choosing a different name
+for that package.
+
 .. index:: Windows
 
 .. _Microsoft_Windows_Topics:

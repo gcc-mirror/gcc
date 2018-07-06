@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target size32plus } } */
 /* { dg-options "-O3" } */
 
 unsigned char a, b, c, d[200][200];

@@ -19,6 +19,6 @@ program whitespace
   stat = 42
 
   tmp = me[num_images(),stat = stat]
-  if(stat /= 0) call abort()
+  if(stat /= 0) STOP 1
 
 end program whitespace

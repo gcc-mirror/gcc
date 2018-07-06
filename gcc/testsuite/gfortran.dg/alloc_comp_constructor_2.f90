@@ -18,9 +18,9 @@
 
   w = (/thytype(y), thytype (2*y)/)
   x = mytype (w)
-  if (any ((/((x%q(j)%h(i),j=1,2),i=1,2)/) .ne. (/1,2,2,4/))) call abort ()
+  if (any ((/((x%q(j)%h(i),j=1,2),i=1,2)/) .ne. (/1,2,2,4/))) STOP 1
 
   x = mytype ((/thytype(3*y), thytype (4*y)/))
-  if (any ((/((x%q(j)%h(i),j=1,2),i=1,2)/) .ne. (/3,4,6,8/))) call abort ()
+  if (any ((/((x%q(j)%h(i),j=1,2),i=1,2)/) .ne. (/3,4,6,8/))) STOP 2
 
 end

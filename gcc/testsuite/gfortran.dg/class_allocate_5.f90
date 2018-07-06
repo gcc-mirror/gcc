@@ -29,6 +29,6 @@ program bug23
 
   write(*,*) a%irp(:)
 
-  if (any (a%irp /= [1,3,4,5])) call abort()
+  if (any (a%irp /= [1,3,4,5])) STOP 1
 end program bug23
 

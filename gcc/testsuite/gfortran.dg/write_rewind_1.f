@@ -9,7 +9,7 @@
       write(11)idata
       write(11)idata
       read(11,end=        1000 )idata
-      call abort()
+      STOP 1
  1000 continue
       rewind 11
       write(11)idata
@@ -18,7 +18,7 @@
       rewind 11
       read(11)idata
       read(11, end=250)idata
-      call abort()
+      STOP 2
  250  continue
       close(11,status='delete')  
       end

@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ftree-vectorize -fno-inline -fno-vect-cost-model -save-temps" } */
 
+#pragma GCC target "+nosve"
 
 extern void abort (void);
 double fmax (double, double);

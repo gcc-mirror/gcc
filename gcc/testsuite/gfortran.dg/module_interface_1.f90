@@ -30,7 +30,7 @@
       integer, intent (in), dimension(:) :: Unsorted
       integer, dimension (1) :: N
       N = Max_Location (Unsorted)
-      if (N(1).ne.5) call abort ()
+      if (N(1).ne.5) STOP 1
       return
     end subroutine Selection_Sort
   end program module_interface

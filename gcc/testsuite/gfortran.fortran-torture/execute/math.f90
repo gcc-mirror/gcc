@@ -5,8 +5,8 @@ subroutine dotest (n, val4, val8, known)
    real(kind=8) val8
    integer n
 
-   if (abs (val4 - known) .gt. 0.001) call abort
-   if (abs (real (val8, kind=4) - known) .gt. 0.001) call abort
+   if (abs (val4 - known) .gt. 0.001) STOP 1
+   if (abs (real (val8, kind=4) - known) .gt. 0.001) STOP 2
 end subroutine
 
 subroutine dotestc (n, val4, val8, known)
@@ -14,8 +14,8 @@ subroutine dotestc (n, val4, val8, known)
    complex(kind=4) val4, known
    complex(kind=8) val8
    integer n
-   if (abs (val4 - known) .gt. 0.001) call abort
-   if (abs (cmplx (val8, kind=4) - known) .gt. 0.001) call abort
+   if (abs (val4 - known) .gt. 0.001) STOP 3
+   if (abs (cmplx (val8, kind=4) - known) .gt. 0.001) STOP 4
 end subroutine
 
 program testmath

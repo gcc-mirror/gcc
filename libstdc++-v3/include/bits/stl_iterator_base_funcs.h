@@ -1,6 +1,6 @@
 // Functions used by iterators -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -208,14 +208,13 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
 
-  template<typename _ForwardIterator>
-    inline _GLIBCXX17_CONSTEXPR _ForwardIterator
-    next(_ForwardIterator __x, typename
-	 iterator_traits<_ForwardIterator>::difference_type __n = 1)
+  template<typename _InputIterator>
+    inline _GLIBCXX17_CONSTEXPR _InputIterator
+    next(_InputIterator __x, typename
+	 iterator_traits<_InputIterator>::difference_type __n = 1)
     {
       // concept requirements
-      __glibcxx_function_requires(_ForwardIteratorConcept<
-				  _ForwardIterator>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       std::advance(__x, __n);
       return __x;
     }

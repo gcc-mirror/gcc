@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -123,20 +123,9 @@ cleanup_barriers (void)
     {
       if (BARRIER_P (insn))
 	{
-	  rtx_insn *prev = prev_nonnote_insn (insn);
+	  rtx_insn *prev = prev_nonnote_nondebug_insn (insn);
 	  if (!prev)
 	    continue;
-
-	  if (CALL_P (prev))
-	    {
-	      /* Make sure we do not split a call and its corresponding
-		 CALL_ARG_LOCATION note.  */
-	      rtx_insn *next = NEXT_INSN (prev);
-
-	      if (NOTE_P (next)
-		  && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-		prev = next;
-	    }
 
 	  if (BARRIER_P (prev))
 	    delete_insn (insn);
@@ -1279,26 +1268,6 @@ delete_related_insns (rtx uncast_insn)
   if (next != 0 && BARRIER_P (next))
     delete_insn (next);
 
-  /* If this is a call, then we have to remove the var tracking note
-     for the call arguments.  */
-
-  if (CALL_P (insn)
-      || (NONJUMP_INSN_P (insn)
-	  && GET_CODE (PATTERN (insn)) == SEQUENCE
-	  && CALL_P (XVECEXP (PATTERN (insn), 0, 0))))
-    {
-      rtx_insn *p;
-
-      for (p = next && next->deleted () ? NEXT_INSN (next) : next;
-	   p && NOTE_P (p);
-	   p = NEXT_INSN (p))
-	if (NOTE_KIND (p) == NOTE_INSN_CALL_ARG_LOCATION)
-	  {
-	    remove_insn (p);
-	    break;
-	  }
-    }
-
   /* If deleting a jump, decrement the count of the label,
      and delete the label if it is now unused.  */
 
@@ -1724,7 +1693,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 				  && REG_P (SUBREG_REG (y)))))
     {
       int reg_x = -1, reg_y = -1;
-      int byte_x = 0, byte_y = 0;
+      poly_int64 byte_x = 0, byte_y = 0;
       struct subreg_info info;
 
       if (GET_MODE (x) != GET_MODE (y))
@@ -1781,7 +1750,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 	    reg_y = reg_renumber[reg_y];
 	}
 
-      return reg_x >= 0 && reg_x == reg_y && byte_x == byte_y;
+      return reg_x >= 0 && reg_x == reg_y && known_eq (byte_x, byte_y);
     }
 
   /* Now we have disposed of all the cases
@@ -1871,6 +1840,11 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 		break;
 	      return 0;
 	    }
+	  break;
+
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
+	    return 0;
 	  break;
 
 	case 't':

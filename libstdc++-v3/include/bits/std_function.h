@@ -1,6 +1,6 @@
 // Implementation of std::function -*- C++ -*-
 
-// Copyright (C) 2004-2017 Free Software Foundation, Inc.
+// Copyright (C) 2004-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,25 +47,6 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  /**
-   * Derives from @c unary_function or @c binary_function, or perhaps
-   * nothing, depending on the number of arguments provided. The
-   * primary template is the basis case, which derives nothing.
-   */
-  template<typename _Res, typename... _ArgTypes>
-    struct _Maybe_unary_or_binary_function { };
-
-  /// Derives from @c unary_function, as appropriate.
-  template<typename _Res, typename _T1>
-    struct _Maybe_unary_or_binary_function<_Res, _T1>
-    : std::unary_function<_T1, _Res> { };
-
-  /// Derives from @c binary_function, as appropriate.
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Maybe_unary_or_binary_function<_Res, _T1, _T2>
-    : std::binary_function<_T1, _T2, _Res> { };
-
 
   /**
    *  @brief Exception class thrown when class template function's
@@ -150,8 +131,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class _Function_base
   {
   public:
-    static const std::size_t _M_max_size = sizeof(_Nocopy_types);
-    static const std::size_t _M_max_align = __alignof__(_Nocopy_types);
+    static const size_t _M_max_size = sizeof(_Nocopy_types);
+    static const size_t _M_max_align = __alignof__(_Nocopy_types);
 
     template<typename _Functor>
       class _Base_manager
@@ -169,10 +150,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static _Functor*
 	_M_get_pointer(const _Any_data& __source)
 	{
-	  const _Functor* __ptr =
-	    __stored_locally? std::__addressof(__source._M_access<_Functor>())
-	    /* have stored a pointer */ : __source._M_access<_Functor*>();
-	  return const_cast<_Functor*>(__ptr);
+	  if _GLIBCXX17_CONSTEXPR (__stored_locally)
+	    {
+	      const _Functor& __f = __source._M_access<_Functor>();
+	      return const_cast<_Functor*>(std::__addressof(__f));
+	    }
+	  else // have stored a pointer
+	    return __source._M_access<_Functor*>();
 	}
 
 	// Clone a location-invariant function object that fits within
@@ -189,7 +173,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_clone(_Any_data& __dest, const _Any_data& __source, false_type)
 	{
 	  __dest._M_access<_Functor*>() =
-	    new _Functor(*__source._M_access<_Functor*>());
+	    new _Functor(*__source._M_access<const _Functor*>());
 	}
 
 	// Destroying a location-invariant object may still require

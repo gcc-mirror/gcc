@@ -1,5 +1,5 @@
 /* Common hooks for Tensilica's Xtensa architecture.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static const struct default_options xtensa_option_optimization_table[] =
   {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     /* Reordering blocks for Xtensa is not a good idea unless the
        compiler understands the range of conditional branches.
        Currently all branch relaxation for Xtensa is handled in the

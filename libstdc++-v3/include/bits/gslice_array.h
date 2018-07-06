@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- gslice_array class.
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -128,8 +128,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       gslice_array(_Array<_Tp>, const valarray<size_t>&);
 
+#if __cplusplus < 201103L
       // not implemented
       gslice_array();
+#else
+    public:
+      gslice_array() = delete;
+#endif
     };
 
   template<typename _Tp>

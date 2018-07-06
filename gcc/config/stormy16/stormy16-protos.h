@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in xstormy16.c
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -28,6 +28,7 @@ extern int direct_return (void);
 extern int xstormy16_interrupt_function_p (void);
 extern int xstormy16_epilogue_uses (int);
 extern void xstormy16_function_profiler (void);
+extern poly_int64 xstormy16_push_rounding (poly_int64);
 
 #if defined (TREE_CODE)
 extern void xstormy16_asm_output_aligned_common (FILE *, tree, const char *,

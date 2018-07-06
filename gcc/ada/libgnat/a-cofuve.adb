@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2016-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2016-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -119,7 +119,7 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    end Contains;
 
    ------------------
-   -- Range_Except --
+   -- Equal_Except --
    ------------------
 
    function Equal_Except

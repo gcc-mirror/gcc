@@ -27,17 +27,17 @@ index1 = image_index(d, [-1, 1] )
 index2 = image_index(d, [0, 1] )
 
 if (one .and. (index1 /= 1 .or. index2 /= 0)) &
-  call abort()
+  STOP 1
 if (.not. one .and. (index1 /= 1 .or. index2 /= 2)) &
-  call abort()
+  STOP 2
 
 index1 = image_index(e, [-1, 3] )
 index2 = image_index(e, [-1, 4] )
 
 if (one .and. (index1 /= 1 .or. index2 /= 0)) &
-  call abort()
+  STOP 3
 if (.not. one .and. (index1 /= 1 .or. index2 /= 2)) &
-  call abort()
+  STOP 4
 
 call test(1, e, d, e)
 call test(2, e, d, e)
@@ -52,11 +52,11 @@ subroutine test(n, a, b, c)
   index3 = image_index(c, [1] )
 
   if (n == 1) then
-    if (index1 /= 1 .or. index2 /= 1 .or. index3 /= 1) call abort()
+    if (index1 /= 1 .or. index2 /= 1 .or. index3 /= 1) STOP 5
   else if (num_images() == 1) then
-    if (index1 /= 1 .or. index2 /= 0 .or. index3 /= 1) call abort()
+    if (index1 /= 1 .or. index2 /= 0 .or. index3 /= 1) STOP 6
   else
-    if (index1 /= 1 .or. index2 /= 2 .or. index3 /= 1) call abort()
+    if (index1 /= 1 .or. index2 /= 2 .or. index3 /= 1) STOP 7
   end if
 
   index1 = image_index(a, [3*n, -3*n, 88*n] )
@@ -64,13 +64,13 @@ subroutine test(n, a, b, c)
   index3 = image_index(c, [2] )
 
   if (one .and. (index1 /= 0 .or. index2 /= 0 .or. index3 /= 0)) &
-    call abort()
+    STOP 8
   if (n == 1 .and. num_images() == 2) then
     if (index1 /= 2 .or. index2 /= 2 .or. index3 /= 2) &
-      call abort()
+      STOP 9
   else if (n == 2 .and. num_images() == 2) then 
     if (index1 /= 0 .or. index2 /= 0 .or. index3 /= 2) &
-      call abort()
+      STOP 10
   end if
 end subroutine test
 end program test_image_index

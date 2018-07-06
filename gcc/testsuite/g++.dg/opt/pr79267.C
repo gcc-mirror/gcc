@@ -45,12 +45,12 @@ D bar ();
 template <typename T> struct L
 {
   struct K { K (int); void operator() (int *) { bar ().q (); } };
-  static J<T> bp () { bq (0); }
+  static J<T> bp () { bq (0); return J<T>(); }
   template <typename br> static void bq (br) { J<T> (0, K (0)); }
 };
 struct F
 {
-  virtual J<int> x (int) { foo (0, 0, 0); J<bs<> > (L<bs<> >::bp ()); }
+  virtual J<int> x (int) { foo (0, 0, 0); J<bs<> > (L<bs<> >::bp ()); return J<int>(); }
 };
 
 void

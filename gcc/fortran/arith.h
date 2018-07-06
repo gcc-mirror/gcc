@@ -1,5 +1,5 @@
 /* Compiler arithmetic header.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -82,6 +82,7 @@ gfc_expr *gfc_hollerith2real (gfc_expr *, int);
 gfc_expr *gfc_hollerith2complex (gfc_expr *, int);
 gfc_expr *gfc_hollerith2character (gfc_expr *, int);
 gfc_expr *gfc_hollerith2logical (gfc_expr *, int);
+gfc_expr *gfc_character2character (gfc_expr *, int);
 
 #endif /* GFC_ARITH_H  */
 

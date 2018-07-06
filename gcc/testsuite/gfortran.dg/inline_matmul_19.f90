@@ -20,7 +20,7 @@
          end do
       end do
       res = MATMUL(TRANSPOSE(CONJG(R)), M)
-      if (any(abs(res-c) >= 1e-6)) call abort
+      if (any(abs(res-c) >= 1e-6)) STOP 1
       c = 0
       do k=1,3
          do j=1,3
@@ -30,5 +30,5 @@
          end do
       end do
       res = matmul(m, transpose(conjg(r)))
-      if (any(abs(res-c) >= 1e-6)) call abort
+      if (any(abs(res-c) >= 1e-6)) STOP 2
       END

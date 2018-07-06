@@ -24,8 +24,8 @@ contains
           end do
         end do
       end do
-    if (i.ne.7.or.j.ne.5.or.k.ne.19) call abort
-    if (m.ne.(600+40+18)) call abort
+    if (i.ne.7.or.j.ne.5.or.k.ne.19) STOP 1
+    if (m.ne.(600+40+18)) STOP 2
     do i = 1, 7
       do j = -3, 5
         do k = 12, 19
@@ -56,8 +56,8 @@ contains
           end do
         end do
       end do
-    if (i.ne.7.or.j.ne.5.or.k.ne.19) call abort
-    if (m.ne.(600+40+18)) call abort
+    if (i.ne.7.or.j.ne.5.or.k.ne.19) STOP 3
+    if (m.ne.(600+40+18)) STOP 4
     do i = 1, 7
       do j = -3, 5
         do k = 12, 19
@@ -88,8 +88,8 @@ contains
           end do
         end do
       end do
-    if (i.ne.7.or.j.ne.5.or.k.ne.19) call abort
-    if (m.ne.(600+40+18)) call abort
+    if (i.ne.7.or.j.ne.5.or.k.ne.19) STOP 5
+    if (m.ne.(600+40+18)) STOP 6
     do i = 1, 7
       do j = -3, 5
         do k = 12, 19
@@ -120,8 +120,8 @@ contains
           end do
         end do
       end do
-    if (i.ne.7.or.j.ne.5.or.k.ne.19) call abort
-    if (m.ne.(600+40+18)) call abort
+    if (i.ne.7.or.j.ne.5.or.k.ne.19) STOP 7
+    if (m.ne.(600+40+18)) STOP 8
     do i = 1, 7
       do j = -3, 5
         do k = 12, 19
@@ -153,8 +153,8 @@ contains
           end do
         end do
       end do
-    if (i.ne.7.or.j.ne.5.or.k.ne.19) call abort
-    if (m.ne.(600+40+18)) call abort
+    if (i.ne.7.or.j.ne.5.or.k.ne.19) STOP 9
+    if (m.ne.(600+40+18)) STOP 10
     do i = 1, 7
       do j = -3, 5
         do k = 12, 19
@@ -186,8 +186,8 @@ contains
           end do
         end do
       end do
-    if (i.ne.7.or.j.ne.5.or.k.ne.19) call abort
-    if (m.ne.(600+40+18)) call abort
+    if (i.ne.7.or.j.ne.5.or.k.ne.19) STOP 11
+    if (m.ne.(600+40+18)) STOP 12
     do i = 1, 7
       do j = -3, 5
         do k = 12, 19

@@ -1,5 +1,5 @@
 /* btest.c -- Test for libbacktrace library
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "filenames.h"
 
@@ -456,6 +457,25 @@ test5 (void)
   return failures;
 }
 
+/* Check that are no files left open.  */
+
+static void
+check_open_files (void)
+{
+  int i;
+
+  for (i = 3; i < 10; i++)
+    {
+      if (close (i) == 0)
+	{
+	  fprintf (stderr,
+		   "ERROR: descriptor %d still open after tests complete\n",
+		   i);
+	  ++failures;
+	}
+    }
+}
+
 /* Run all the tests.  */
 
 int
@@ -473,6 +493,8 @@ main (int argc ATTRIBUTE_UNUSED, char **argv)
   test5 ();
 #endif
 #endif
+
+  check_open_files ();
 
   exit (failures ? EXIT_FAILURE : EXIT_SUCCESS);
 }

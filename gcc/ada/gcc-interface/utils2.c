@@ -1439,8 +1439,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	       the offset to the field.  Otherwise, do this the normal way.  */
 	  if (op_code == ATTR_ADDR_EXPR)
 	    {
-	      HOST_WIDE_INT bitsize;
-	      HOST_WIDE_INT bitpos;
+	      poly_int64 bitsize;
+	      poly_int64 bitpos;
 	      tree offset, inner;
 	      machine_mode mode;
 	      int unsignedp, reversep, volatilep;
@@ -1460,8 +1460,9 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      if (!offset)
 		offset = size_zero_node;
 
-	      offset = size_binop (PLUS_EXPR, offset,
-				   size_int (bitpos / BITS_PER_UNIT));
+	      offset
+		= size_binop (PLUS_EXPR, offset,
+			      size_int (bits_to_bytes_round_down (bitpos)));
 
 	      /* Take the address of INNER, convert it to a pointer to our type
 		 and add the offset.  */

@@ -9,7 +9,7 @@ contains
     integer, dimension (10) :: x
     integer :: i
     do i = 1, 10
-      if (x (i) .ne. i * 100) call abort
+      if (x (i) .ne. i * 100) STOP 1
     end do
   end subroutine test
 

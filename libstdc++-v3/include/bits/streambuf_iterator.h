@@ -1,6 +1,6 @@
 // Streambuf iterators
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,7 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-     
+
   /**
    * @addtogroup iterators
    * @{
@@ -49,7 +49,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     class istreambuf_iterator
     : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
-                      _CharT*,
+		      _CharT*,
 #if __cplusplus >= 201103L
     // LWG 445.
 		      _CharT>
@@ -70,21 +70,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
-		                    ostreambuf_iterator<_CharT2> >::__type
+				    ostreambuf_iterator<_CharT2> >::__type
 	copy(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
 	     ostreambuf_iterator<_CharT2>);
 
       template<bool _IsMove, typename _CharT2>
-	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value, 
+	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
 					       _CharT2*>::__type
 	__copy_move_a2(istreambuf_iterator<_CharT2>,
 		       istreambuf_iterator<_CharT2>, _CharT2*);
 
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
-			            istreambuf_iterator<_CharT2> >::__type
+				    istreambuf_iterator<_CharT2> >::__type
 	find(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
 	     const _CharT2&);
+
+      template<typename _CharT2, typename _Distance>
+	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
+					       void>::__type
+	advance(istreambuf_iterator<_CharT2>&, _Distance);
 
     private:
       // 24.5.3 istreambuf_iterator
@@ -214,15 +219,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT                           char_type;
-      typedef _Traits                          traits_type;
+      typedef _CharT			       char_type;
+      typedef _Traits			       traits_type;
       typedef basic_streambuf<_CharT, _Traits> streambuf_type;
       typedef basic_ostream<_CharT, _Traits>   ostream_type;
       //@}
 
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
-		                    ostreambuf_iterator<_CharT2> >::__type
+				    ostreambuf_iterator<_CharT2> >::__type
 	copy(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
 	     ostreambuf_iterator<_CharT2>);
 
@@ -283,7 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Overloads for streambuf iterators.
   template<typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
-    	                 	    ostreambuf_iterator<_CharT> >::__type
+				    ostreambuf_iterator<_CharT> >::__type
     copy(istreambuf_iterator<_CharT> __first,
 	 istreambuf_iterator<_CharT> __last,
 	 ostreambuf_iterator<_CharT> __result)
@@ -299,8 +304,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<bool _IsMove, typename _CharT>
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
-    				    ostreambuf_iterator<_CharT> >::__type
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
+				    ostreambuf_iterator<_CharT> >::__type
     __copy_move_a2(_CharT* __first, _CharT* __last,
 		   ostreambuf_iterator<_CharT> __result)
     {
@@ -323,15 +328,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<bool _IsMove, typename _CharT>
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
-    				    _CharT*>::__type
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
+				    _CharT*>::__type
     __copy_move_a2(istreambuf_iterator<_CharT> __first,
 		   istreambuf_iterator<_CharT> __last, _CharT* __result)
     {
-      typedef istreambuf_iterator<_CharT>                  __is_iterator_type;
-      typedef typename __is_iterator_type::traits_type     traits_type;
+      typedef istreambuf_iterator<_CharT>		   __is_iterator_type;
+      typedef typename __is_iterator_type::traits_type	   traits_type;
       typedef typename __is_iterator_type::streambuf_type  streambuf_type;
-      typedef typename traits_type::int_type               int_type;
+      typedef typename traits_type::int_type		   int_type;
 
       if (__first._M_sbuf && !__last._M_sbuf)
 	{
@@ -363,10 +368,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     find(istreambuf_iterator<_CharT> __first,
 	 istreambuf_iterator<_CharT> __last, const _CharT& __val)
     {
-      typedef istreambuf_iterator<_CharT>                  __is_iterator_type;
+      typedef istreambuf_iterator<_CharT>		   __is_iterator_type;
       typedef typename __is_iterator_type::traits_type     traits_type;
       typedef typename __is_iterator_type::streambuf_type  streambuf_type;
-      typedef typename traits_type::int_type               int_type;
+      typedef typename traits_type::int_type		   int_type;
       const int_type __eof = traits_type::eof();
 
       if (__first._M_sbuf && !__last._M_sbuf)
@@ -395,6 +400,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       return __first;
+    }
+
+  template<typename _CharT, typename _Distance>
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
+				    void>::__type
+    advance(istreambuf_iterator<_CharT>& __i, _Distance __n)
+    {
+      if (__n == 0)
+	return;
+
+      __glibcxx_assert(__n > 0);
+      __glibcxx_requires_cond(!__i._M_at_eof(),
+			      _M_message(__gnu_debug::__msg_inc_istreambuf)
+			      ._M_iterator(__i));
+
+      typedef istreambuf_iterator<_CharT>		   __is_iterator_type;
+      typedef typename __is_iterator_type::traits_type	   traits_type;
+      typedef typename __is_iterator_type::streambuf_type  streambuf_type;
+      typedef typename traits_type::int_type		   int_type;
+      const int_type __eof = traits_type::eof();
+
+      streambuf_type* __sb = __i._M_sbuf;
+      while (__n > 0)
+	{
+	  streamsize __size = __sb->egptr() - __sb->gptr();
+	  if (__size > __n)
+	    {
+	      __sb->__safe_gbump(__n);
+	      break;
+	    }
+
+	  __sb->__safe_gbump(__size);
+	  __n -= __size;
+	  if (traits_type::eq_int_type(__sb->underflow(), __eof))
+	    {
+	      __glibcxx_requires_cond(__n == 0,
+				_M_message(__gnu_debug::__msg_inc_istreambuf)
+				._M_iterator(__i));
+	      break;
+	    }
+	}
+
+      __i._M_c = __eof;
     }
 
 // @} group iterators

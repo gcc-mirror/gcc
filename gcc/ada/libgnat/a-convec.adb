@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -999,9 +999,12 @@ package body Ada.Containers.Vectors is
 
             --  We know that No_Index (the same as Index_Type'First - 1) is
             --  less than 0, so it is safe to compute the following sum without
-            --  fear of overflow.
+            --  fear of overflow. We need to suppress warnings, because
+            --  otherwise we get an error in -gnatwE mode.
 
+            pragma Warnings (Off);
             Index := No_Index + Index_Type'Base (Count_Type'Last);
+            pragma Warnings (On);
 
             if Index <= Index_Type'Last then
 
@@ -1657,9 +1660,12 @@ package body Ada.Containers.Vectors is
 
             --  We know that No_Index (the same as Index_Type'First - 1) is
             --  less than 0, so it is safe to compute the following sum without
-            --  fear of overflow.
+            --  fear of overflow. We need to suppress warnings, because
+            --  otherwise we get an error in -gnatwE mode.
 
+            pragma Warnings (Off);
             Index := No_Index + Index_Type'Base (Count_Type'Last);
+            pragma Warnings (On);
 
             if Index <= Index_Type'Last then
 

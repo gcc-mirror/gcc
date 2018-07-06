@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -257,10 +257,7 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
 */
 #define FRAME_GROWS_DOWNWARD 1
 
-/* If we generate an insn to push BYTES bytes,
-   this says how many the stack pointer really advances by.
-   On the pdp11, the stack is on an even boundary */
-#define PUSH_ROUNDING(BYTES) ((BYTES + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) pdp11_push_rounding (BYTES)
 
 /* current_first_parm_offset stores the # of registers pushed on the 
    stack */

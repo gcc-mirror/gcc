@@ -161,8 +161,13 @@ func testWriteToConn(t *testing.T, raddr string) {
 	}
 	_, _, err = c.(*UDPConn).WriteMsgUDP(b, nil, nil)
 	switch runtime.GOOS {
-	case "nacl", "windows": // see golang.org/issue/9252
+	case "nacl": // see golang.org/issue/9252
 		t.Skipf("not implemented yet on %s", runtime.GOOS)
+	case "windows":
+		if testenv.IsWindowsXP() {
+			t.Log("skipping broken test on Windows XP (see golang.org/issue/23072)")
+			return
+		}
 	default:
 		if err != nil {
 			t.Fatal(err)
@@ -204,8 +209,13 @@ func testWriteToPacketConn(t *testing.T, raddr string) {
 	}
 	_, _, err = c.(*UDPConn).WriteMsgUDP(b, nil, ra)
 	switch runtime.GOOS {
-	case "nacl", "windows": // see golang.org/issue/9252
+	case "nacl": // see golang.org/issue/9252
 		t.Skipf("not implemented yet on %s", runtime.GOOS)
+	case "windows":
+		if testenv.IsWindowsXP() {
+			t.Log("skipping broken test on Windows XP (see golang.org/issue/23072)")
+			return
+		}
 	default:
 		if err != nil {
 			t.Fatal(err)

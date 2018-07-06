@@ -1,5 +1,5 @@
 /* Code to maintain a C++ template repository.
-   Copyright (C) 1995-2017 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com)
 
 This file is part of GCC.
@@ -330,8 +330,7 @@ repo_emit_p (tree decl)
   /* For constructors and destructors, the repository contains
      information about the clones -- not the original function --
      because only the clones are emitted in the object file.  */
-  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
-      || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
+  if (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
     {
       int emit_p = 0;
       tree clone;

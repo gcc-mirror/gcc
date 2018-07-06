@@ -76,5 +76,5 @@ program test
    rewind (66)
    read (66, '(a)') str
    close (66)
-   if (any (str /= "   ===== end of level   1 =====")) call abort()
+   if (any (str /= "   ===== end of level   1 =====")) STOP 1
 end program test

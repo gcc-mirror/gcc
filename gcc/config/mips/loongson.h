@@ -1,6 +1,6 @@
 /* Intrinsics for ST Microelectronics Loongson-2E/2F SIMD operations.
 
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.

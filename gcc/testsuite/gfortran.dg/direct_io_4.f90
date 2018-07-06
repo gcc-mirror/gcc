@@ -10,13 +10,13 @@ program main
   write(10,rec=1) a
 
   read (10,rec=2, iostat=ios) b
-  if (ios == 0) call abort
+  if (ios == 0) STOP 1
 
   read (10, rec=82641, iostat=ios) b      ! This used to cause a segfault
-  if (ios == 0) call abort
+  if (ios == 0) STOP 2
 
   read(10, rec=1, iostat=ios) b
-  if (ios /= 0) call abort 
-  if (a /= b) call abort
+  if (ios /= 0) STOP 3
+  if (a /= b) STOP 4
 
 end program main

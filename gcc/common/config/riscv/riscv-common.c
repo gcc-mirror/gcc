@@ -1,5 +1,5 @@
 /* Common hooks for RISC-V.
-   Copyright (C) 2016 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "diagnostic-core.h"
 
-/* Parse a RISC-V ISA string into an option mask.  */
+/* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
+   dependent mask bits, in case more than one -march string is passed.  */
 
 static void
 riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
@@ -48,6 +49,8 @@ riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
     {
       p++;
 
+      *flags &= ~MASK_RVE;
+
       *flags |= MASK_MUL;
       *flags |= MASK_ATOMIC;
       *flags |= MASK_HARD_FLOAT;
@@ -56,6 +59,8 @@ riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
   else if (*p == 'i')
     {
       p++;
+
+      *flags &= ~MASK_RVE;
 
       *flags &= ~MASK_MUL;
       if (*p == 'm')
@@ -76,6 +81,28 @@ riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
 	      p++;
 	    }
 	}
+    }
+  else if (*p == 'e')
+    {
+      p++;
+
+      *flags |= MASK_RVE;
+
+      if (*flags & MASK_64BIT)
+	{
+	  error ("RV64E is not a valid base ISA");
+	  return;
+	}
+
+      *flags &= ~MASK_MUL;
+      if (*p == 'm')
+	*flags |= MASK_MUL, p++;
+
+      *flags &= ~MASK_ATOMIC;
+      if (*p == 'a')
+	*flags |= MASK_ATOMIC, p++;
+
+      *flags &= ~(MASK_HARD_FLOAT | MASK_DOUBLE_FLOAT);
     }
   else
     {
@@ -117,7 +144,6 @@ riscv_handle_option (struct gcc_options *opts,
 static const struct default_options riscv_option_optimization_table[] =
   {
     { OPT_LEVELS_1_PLUS, OPT_fsection_anchors, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };

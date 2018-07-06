@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fdump-ipa-inline-details -fno-early-inlining --param large-unit-insns=1 -fno-partial-inlining"  } */
+/* { dg-options "-O3 -fdump-ipa-inline-details -fno-early-inlining -fno-partial-inlining --param large-unit-insns=1 --param inline-unit-growth=20" } */
 /* { dg-add-options bind_pic_locally } */
 int *hashval;
 int *hash;

@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "regs.h"
 #include "cfgbuild.h"
+#include "cfgcleanup.h"
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "params.h"
@@ -672,7 +673,7 @@ extract_new_fences_from (flist_t old_fences, flist_tail_t new_fences,
     {
       int seqno = INSN_SEQNO (succ);
 
-      if (0 < seqno && seqno <= orig_max_seqno
+      if (seqno > 0 && seqno <= orig_max_seqno
           && (pipelining_p || INSN_SCHED_TIMES (succ) <= 0))
         {
           bool b = (in_same_ebb_p (insn, succ)
@@ -3396,17 +3397,22 @@ sel_rank_for_schedule (const void *x, const void *y)
   else if (control_flow_insn_p (tmp2_insn) && !control_flow_insn_p (tmp_insn))
     return 1;
 
-  /* Prefer an expr with greater priority.  */
-  if (EXPR_USEFULNESS (tmp) != 0 && EXPR_USEFULNESS (tmp2) != 0)
-    {
-      int p2 = EXPR_PRIORITY (tmp2) + EXPR_PRIORITY_ADJ (tmp2),
-          p1 = EXPR_PRIORITY (tmp) + EXPR_PRIORITY_ADJ (tmp);
+  /* Prefer an expr with non-zero usefulness.  */
+  int u1 = EXPR_USEFULNESS (tmp), u2 = EXPR_USEFULNESS (tmp2);
 
-      val = p2 * EXPR_USEFULNESS (tmp2) - p1 * EXPR_USEFULNESS (tmp);
+  if (u1 == 0)
+    {
+      if (u2 == 0)
+        u1 = u2 = 1;
+      else
+        return 1;
     }
-  else
-    val = EXPR_PRIORITY (tmp2) - EXPR_PRIORITY (tmp)
-	  + EXPR_PRIORITY_ADJ (tmp2) - EXPR_PRIORITY_ADJ (tmp);
+  else if (u2 == 0)
+    return -1;
+
+  /* Prefer an expr with greater priority.  */
+  val = (u2 * (EXPR_PRIORITY (tmp2) + EXPR_PRIORITY_ADJ (tmp2))
+         - u1 * (EXPR_PRIORITY (tmp) + EXPR_PRIORITY_ADJ (tmp)));
   if (val)
     return val;
 
@@ -4999,12 +5005,16 @@ remove_temp_moveop_nops (bool full_tidying)
    distinguishing between bookkeeping copies and original insns.  */
 static int max_uid_before_move_op = 0;
 
+/* When true, we're always scheduling next insn on the already scheduled code
+   to get the right insn data for the following bundling or other passes.  */
+static int force_next_insn = 0;
+
 /* Remove from AV_VLIW_P all instructions but next when debug counter
    tells us so.  Next instruction is fetched from BNDS.  */
 static void
 remove_insns_for_debug (blist_t bnds, av_set_t *av_vliw_p)
 {
-  if (! dbg_cnt (sel_sched_insn_cnt))
+  if (! dbg_cnt (sel_sched_insn_cnt) || force_next_insn)
     /* Leave only the next insn in av_vliw.  */
     {
       av_set_iterator av_it;
@@ -7636,9 +7646,15 @@ sel_sched_region (int rgn)
   if (schedule_p)
     sel_sched_region_1 ();
   else
-    /* Force initialization of INSN_SCHED_CYCLEs for correct bundling.  */
-    reset_sched_cycles_p = true;
-
+    {
+      /* Schedule always selecting the next insn to make the correct data
+	 for bundling or other later passes.  */
+      pipelining_p = false;
+      force_next_insn = 1;
+      sel_sched_region_1 ();
+      force_next_insn = 0;
+    }
+  reset_sched_cycles_p = pipelining_p;
   sel_region_finish (reset_sched_cycles_p);
 }
 
@@ -7646,6 +7662,10 @@ sel_sched_region (int rgn)
 static void
 sel_global_init (void)
 {
+  /* Remove empty blocks: their presence can break assumptions elsewhere,
+     e.g. the logic to invoke update_liveness_on_insn in sel_region_init.  */
+  cleanup_cfg (0);
+
   calculate_dominance_info (CDI_DOMINATORS);
   alloc_sched_pools ();
 

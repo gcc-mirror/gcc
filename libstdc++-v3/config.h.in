@@ -270,6 +270,9 @@
 /* Define to 1 if you have the <linux/random.h> header file. */
 #undef HAVE_LINUX_RANDOM_H
 
+/* Define to 1 if you have the <linux/types.h> header file. */
+#undef HAVE_LINUX_TYPES_H
+
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
@@ -703,6 +706,9 @@
 /* Define to 1 if you have the `_tanl' function. */
 #undef HAVE__TANL
 
+/* Define to 1 if you have the `_wfopen' function. */
+#undef HAVE__WFOPEN
+
 /* Define to 1 if you have the `__cxa_thread_atexit' function. */
 #undef HAVE___CXA_THREAD_ATEXIT
 
@@ -914,9 +920,6 @@
 
 /* Define if fchmodat is available in <sys/stat.h>. */
 #undef _GLIBCXX_USE_FCHMODAT
-
-/* Define if __float128 is supported on this host. */
-#undef _GLIBCXX_USE_FLOAT128
 
 /* Defined if gettimeofday is available. */
 #undef _GLIBCXX_USE_GETTIMEOFDAY

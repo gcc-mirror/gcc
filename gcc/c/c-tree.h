@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -640,6 +640,7 @@ extern struct c_expr default_function_array_read_conversion (location_t,
 							     struct c_expr);
 extern struct c_expr convert_lvalue_to_rvalue (location_t, struct c_expr,
 					       bool, bool);
+extern tree decl_constant_value_1 (tree, bool);
 extern void mark_exp_read (tree);
 extern tree composite_type (tree, tree);
 extern tree build_component_ref (location_t, tree, tree, location_t);
@@ -671,7 +672,8 @@ extern void set_init_index (location_t, tree, tree, struct obstack *);
 extern void set_init_label (location_t, tree, location_t, struct obstack *);
 extern void process_init_element (location_t, struct c_expr, bool,
 				  struct obstack *);
-extern tree build_compound_literal (location_t, tree, tree, bool);
+extern tree build_compound_literal (location_t, tree, tree, bool,
+				    unsigned int);
 extern void check_compound_literal_type (location_t, struct c_type_name *);
 extern tree c_start_case (location_t, location_t, tree, bool);
 extern void c_finish_case (tree, tree);
@@ -770,8 +772,6 @@ set_c_expr_source_range (c_expr *expr,
 			 source_range src_range);
 
 /* In c-fold.c */
-extern tree decl_constant_value_for_optimization (tree);
-
 extern vec<tree> incomplete_record_decls;
 
 #if CHECKING_P

@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997-2017 Free Software Foundation, Inc.
+// Copyright (C) 1997-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,6 +47,14 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#if __cplusplus >= 201703L
+  // Enable if _Path is a filesystem::path or experimental::filesystem::path
+  template<typename _Path, typename _Result = _Path, typename _Path2
+	   = decltype(std::declval<_Path&>().make_preferred().filename())>
+    using _If_fs_path = enable_if_t<is_same_v<_Path, _Path2>, _Result>;
+#endif // C++17
+
 
   // [27.8.1.1] template class basic_filebuf
   /**
@@ -216,12 +224,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
-#if __cplusplus >= 201703L
-      template<typename _Path, typename _Result = _Path, typename _Path2
-	       = decltype(std::declval<_Path&>().make_preferred().native())>
-	using _If_path = enable_if_t<is_same_v<_Path, _Path2>, _Result>;
-#endif // C++17
-
     public:
       // Constructors/destructor:
       /**
@@ -242,7 +244,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       virtual
       ~basic_filebuf()
-      { this->close(); }
+      {
+	__try
+	  { this->close(); }
+	__catch(...)
+	  { }
+      }
 
 #if __cplusplus >= 201103L
       basic_filebuf& operator=(const basic_filebuf&) = delete;
@@ -302,6 +309,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __filebuf_type*
       open(const char* __s, ios_base::openmode __mode);
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file, as a wide character string.
+       *  @param  __mode  The open mode flags.
+       *  @return  @c this on success, NULL on failure
+       */
+      __filebuf_type*
+      open(const wchar_t* __s, ios_base::openmode __mode);
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Opens an external file.
@@ -321,7 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @return  @c this on success, NULL on failure
        */
       template<typename _Path>
-	_If_path<_Path, __filebuf_type*>
+	_If_fs_path<_Path, __filebuf_type*>
 	open(const _Path& __s, ios_base::openmode __mode)
 	{ return open(__s.c_str(), __mode); }
 #endif // C++17
@@ -515,6 +533,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->open(__s, __mode);
       }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @param  Create an input file stream.
+       *  @param  __s  Wide string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
+       *
+       *  @c ios_base::in is automatically included in @a __mode.
+       */
+      basic_ifstream(const wchar_t* __s,
+		     ios_base::openmode __mode = ios_base::in)
+      : __istream_type(), _M_filebuf()
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
+      }
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Create an input file stream.
@@ -540,8 +575,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @c ios_base::in is automatically included in @a __mode.
        */
-      template<typename _Path, typename = _Require<
-	  is_constructible<__filebuf_type, const _Path&, ios_base::openmode>>>
+      template<typename _Path, typename _Require = _If_fs_path<_Path>>
 	basic_ifstream(const _Path& __s,
 		       ios_base::openmode __mode = ios_base::in)
 	: basic_ifstream(__s.c_str(), __mode)
@@ -631,6 +665,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->clear();
       }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file, as a wide character string.
+       *  @param  __mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(__s,__mode|in).  If that function
+       *  fails, @c failbit is set in the stream's error state.
+       */
+      void
+      open(const wchar_t* __s, ios_base::openmode __mode = ios_base::in)
+      {
+	if (!_M_filebuf.open(__s, __mode | ios_base::in))
+	  this->setstate(ios_base::failbit);
+	else
+	  this->clear();
+      }
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Opens an external file.
@@ -661,9 +714,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  fails, @c failbit is set in the stream's error state.
        */
       template<typename _Path>
-	auto
+	_If_fs_path<_Path, void>
 	open(const _Path& __s, ios_base::openmode __mode = ios_base::in)
-	-> decltype(_M_filebuf.open(__s, __mode))
 	{ open(__s.c_str(), __mode); }
 #endif // C++17
 #endif // C++11
@@ -743,6 +795,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->open(__s, __mode);
       }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @param  Create an output file stream.
+       *  @param  __s  Wide string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
+       *
+       *  @c ios_base::out | @c ios_base::trunc is automatically included in
+       *  @a __mode.
+       */
+      basic_ofstream(const wchar_t* __s,
+		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
+      : __ostream_type(), _M_filebuf()
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
+      }
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Create an output file stream.
@@ -768,8 +838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @c ios_base::out is automatically included in @a __mode.
        */
-      template<typename _Path, typename = _Require<
-	  is_constructible<__filebuf_type, const _Path&, ios_base::openmode>>>
+      template<typename _Path, typename _Require = _If_fs_path<_Path>>
 	basic_ofstream(const _Path& __s,
 		       ios_base::openmode __mode = ios_base::out)
 	: basic_ofstream(__s.c_str(), __mode)
@@ -859,6 +928,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->clear();
       }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(__s,__mode|out).  If that
+       *  function fails, @c failbit is set in the stream's error state.
+       */
+      void
+      open(const wchar_t* __s, ios_base::openmode __mode = ios_base::out)
+      {
+	if (!_M_filebuf.open(__s, __mode | ios_base::out))
+	  this->setstate(ios_base::failbit);
+	else
+	  this->clear();
+      }
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Opens an external file.
@@ -889,9 +977,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  function fails, @c failbit is set in the stream's error state.
        */
       template<typename _Path>
-	auto
+	_If_fs_path<_Path, void>
 	open(const _Path& __s, ios_base::openmode __mode = ios_base::out)
-	-> decltype(_M_filebuf.open(__s, __mode))
 	{ open(__s.c_str(), __mode); }
 #endif // C++17
 #endif // C++11
@@ -971,6 +1058,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->open(__s, __mode);
       }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @param  Create an input/output file stream.
+       *  @param  __s  Wide string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
+       */
+      basic_fstream(const wchar_t* __s,
+		    ios_base::openmode __mode = ios_base::in | ios_base::out)
+      : __iostream_type(0), _M_filebuf()
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
+      }
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Create an input/output file stream.
@@ -992,8 +1094,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  filesystem::path specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        */
-      template<typename _Path, typename = _Require<
-	  is_constructible<__filebuf_type, const _Path&, ios_base::openmode>>>
+      template<typename _Path, typename _Require = _If_fs_path<_Path>>
 	basic_fstream(const _Path& __s,
 		      ios_base::openmode __mode = ios_base::in | ios_base::out)
 	: basic_fstream(__s.c_str(), __mode)
@@ -1084,6 +1185,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->clear();
       }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(__s,__mode).  If that
+       *  function fails, @c failbit is set in the stream's error state.
+       */
+      void
+      open(const wchar_t* __s,
+	   ios_base::openmode __mode = ios_base::in | ios_base::out)
+      {
+	if (!_M_filebuf.open(__s, __mode))
+	  this->setstate(ios_base::failbit);
+	else
+	  this->clear();
+      }
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Opens an external file.
@@ -1115,10 +1236,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  function fails, @c failbit is set in the stream's error state.
        */
       template<typename _Path>
-	auto
+	_If_fs_path<_Path, void>
 	open(const _Path& __s,
 	     ios_base::openmode __mode = ios_base::in | ios_base::out)
-	-> decltype(_M_filebuf.open(__s, __mode))
 	{ open(__s.c_str(), __mode); }
 #endif // C++17
 #endif // C++11

@@ -166,21 +166,21 @@ program main
            print *,"dim = ", dim, "shift = ", shift
            print *,b
            print *,c
-           call abort
+           STOP 1
         end if
         a2 = 42.
         a2(1:2*n1:2,:,:) = a
         b = eoshift(a2(1:2*n1:2,:,:), shift, dim=dim, boundary=bp)
         if (any (b /= c)) then
-           call abort
+           STOP 2
         end if
         c2 = 43.
         c2(1:2*n1:2,:,:) = eoshift(a,shift,dim=dim, boundary=bp)
         if (any(c2(1:2*n1:2,:,:) /= c)) then
-           call abort
+           STOP 3
         end if
         if (any(c2(2:2*n1:2,:,:) /= 43)) then
-           call abort
+           STOP 4
         end if
      end do
   end do

@@ -6,7 +6,7 @@ fn1 (int i, int j)
   return i << j; // { dg-error "is negative" }
 }
 
-constexpr int i1 = fn1 (1, -1);
+constexpr int i1 = fn1 (1, -1); // { dg-message "in .constexpr. expansion of " }
 
 constexpr int
 fn2 (int i, int j)
@@ -14,7 +14,7 @@ fn2 (int i, int j)
   return i << j; // { dg-error "is >= than the precision of the left operand" }
 }
 
-constexpr int i2 = fn2 (1, 200);
+constexpr int i2 = fn2 (1, 200); // { dg-message "in .constexpr. expansion of " }
 
 constexpr int
 fn3 (int i, int j)
@@ -22,7 +22,7 @@ fn3 (int i, int j)
   return i << j; // { dg-error "is negative" }
 }
 
-constexpr int i3 = fn3 (-1, 2);
+constexpr int i3 = fn3 (-1, 2); // { dg-message "in .constexpr. expansion of " }
 
 constexpr int
 fn4 (int i, int j)
@@ -30,7 +30,7 @@ fn4 (int i, int j)
   return i << j; // { dg-error "overflows" }
 }
 
-constexpr int i4 = fn4 (__INT_MAX__, 2);
+constexpr int i4 = fn4 (__INT_MAX__, 2); // { dg-message "in .constexpr. expansion of " }
 
 constexpr int
 fn5 (int i, int j)
@@ -46,7 +46,7 @@ fn6 (unsigned int i, unsigned int j)
   return i << j; // { dg-error "is >= than the precision of the left operand" }
 }
 
-constexpr int i6 = fn6 (1, -1);
+constexpr int i6 = fn6 (1, -1); // { dg-message "in .constexpr. expansion of " }
 
 constexpr int
 fn7 (int i, int j)
@@ -54,7 +54,7 @@ fn7 (int i, int j)
   return i >> j; // { dg-error "is negative" }
 }
 
-constexpr int i7 = fn7 (1, -1);
+constexpr int i7 = fn7 (1, -1); // { dg-message "in .constexpr. expansion of " }
 
 constexpr int
 fn8 (int i, int j)
@@ -70,4 +70,4 @@ fn9 (int i, int j)
   return i >> j;  // { dg-error "is >= than the precision of the left operand" }
 }
 
-constexpr int i9 = fn9 (1, 200);
+constexpr int i9 = fn9 (1, 200); // { dg-message "in .constexpr. expansion of " }

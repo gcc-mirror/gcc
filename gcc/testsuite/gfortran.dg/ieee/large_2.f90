@@ -114,7 +114,7 @@ contains
     real(kind=k1), intent(in) :: x, y
     if (x /= y) then
       print *, x, y
-      call abort
+      STOP 1
     end if
   end subroutine
 
@@ -122,7 +122,7 @@ contains
     real(kind=k2), intent(in) :: x, y
     if (x /= y) then
       print *, x, y
-      call abort
+      STOP 2
     end if
   end subroutine
 
@@ -130,7 +130,7 @@ contains
     real(kind=k1), intent(in) :: x, y
     if (x == y) then
       print *, x, y
-      call abort
+      STOP 3
     end if
   end subroutine
 
@@ -138,7 +138,7 @@ contains
     real(kind=k2), intent(in) :: x, y
     if (x == y) then
       print *, x, y
-      call abort
+      STOP 4
     end if
   end subroutine
 

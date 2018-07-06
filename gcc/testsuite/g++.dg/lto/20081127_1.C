@@ -1,3 +1,3 @@
 struct Foo { Foo(); };
 Foo::Foo() { }
-main() { return 0; }
+int main() { return 0; }

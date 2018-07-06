@@ -5,7 +5,6 @@
 package runtime
 
 import (
-	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
 )
@@ -60,10 +59,11 @@ func systemstack(fn func()) {
 	if gp == mp.g0 || gp == mp.gsignal {
 		fn()
 	} else if gp == mp.curg {
-		mcall(func(origg *g) {
+		fn1 := func(origg *g) {
 			fn()
 			gogo(origg)
-		})
+		}
+		mcall(*(*func(*g))(noescape(unsafe.Pointer(&fn1))))
 	} else {
 		badsystemstack()
 	}
@@ -107,16 +107,21 @@ func reflect_memmove(to, from unsafe.Pointer, n uintptr) {
 func memcmp(a, b unsafe.Pointer, size uintptr) int32
 
 // exported value for testing
-var hashLoad = loadFactor
+var hashLoad = float32(loadFactorNum) / float32(loadFactorDen)
 
 //go:nosplit
 func fastrand() uint32 {
 	mp := getg().m
-	fr := mp.fastrand
-	mx := uint32(int32(fr)>>31) & 0xa8888eef
-	fr = fr<<1 ^ mx
-	mp.fastrand = fr
-	return fr
+	// Implement xorshift64+: 2 32-bit xorshift sequences added together.
+	// Shift triplet [17,7,16] was calculated as indicated in Marsaglia's
+	// Xorshift paper: https://www.jstatsoft.org/article/view/v008i14/xorshift.pdf
+	// This generator passes the SmallCrush suite, part of TestU01 framework:
+	// http://simul.iro.umontreal.ca/testu01/tu01.html
+	s1, s0 := mp.fastrand[0], mp.fastrand[1]
+	s1 ^= s1 << 17
+	s1 = s1 ^ s0 ^ s1>>7 ^ s0>>16
+	mp.fastrand[0], mp.fastrand[1] = s0, s1
+	return s0 + s1
 }
 
 //go:nosplit
@@ -155,6 +160,7 @@ func breakpoint()
 func asminit() {}
 
 //go:linkname reflectcall reflect.call
+//go:noescape
 func reflectcall(fntype *functype, fn *funcval, isInterface, isMethod bool, params, results *unsafe.Pointer)
 
 func procyield(cycles uint32)
@@ -192,14 +198,16 @@ func publicationBarrier()
 
 // getcallerpc returns the program counter (PC) of its caller's caller.
 // getcallersp returns the stack pointer (SP) of its caller's caller.
-// For both, the argp must be a pointer to the caller's first function argument.
+// argp must be a pointer to the caller's first function argument.
 // The implementation may or may not use argp, depending on
-// the architecture.
+// the architecture. The implementation may be a compiler
+// intrinsic; there is not necessarily code implementing this
+// on every platform.
 //
 // For example:
 //
 //	func f(arg1, arg2, arg3 int) {
-//		pc := getcallerpc(unsafe.Pointer(&arg1))
+//		pc := getcallerpc()
 //		sp := getcallersp(unsafe.Pointer(&arg1))
 //	}
 //
@@ -219,7 +227,7 @@ func publicationBarrier()
 // immediately and can only be passed to nosplit functions.
 
 //go:noescape
-func getcallerpc(argp unsafe.Pointer) uintptr
+func getcallerpc() uintptr
 
 //go:noescape
 func getcallersp(argp unsafe.Pointer) uintptr
@@ -298,28 +306,12 @@ func setSupportAES(v bool) {
 	support_aes = v
 }
 
-// Here for gccgo until we port atomic_pointer.go and mgc.go.
-//go:nosplit
-func casp(ptr *unsafe.Pointer, old, new unsafe.Pointer) bool {
-	if !atomic.Casp1((*unsafe.Pointer)(noescape(unsafe.Pointer(ptr))), noescape(old), new) {
-		return false
-	}
-	return true
-}
-
-// Here for gccgo until we port lock_*.go.
-func lock(l *mutex)
-func unlock(l *mutex)
-
 // Here for gccgo.
 func errno() int
 
 // Temporary for gccgo until we port proc.go.
 func entersyscall(int32)
 func entersyscallblock(int32)
-
-// Here for gccgo until we port mgc.go.
-func GC()
 
 // For gccgo to call from C code, so that the C code and the Go code
 // can share the memstats variable for now.
@@ -328,27 +320,14 @@ func getMstats() *mstats {
 	return &memstats
 }
 
-// Temporary for gccgo until we port mem_GOOS.go.
-func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer
-func sysFree(v unsafe.Pointer, n uintptr, sysStat *uint64)
-
-// Temporary for gccgo until we port malloc.go
-func persistentalloc(size, align uintptr, sysStat *uint64) unsafe.Pointer
-
-// Temporary for gccgo until we port mheap.go
-func setprofilebucket(p unsafe.Pointer, b *bucket)
-
-// Temporary for gccgo until we port atomic_pointer.go.
-//go:nosplit
-func atomicstorep(ptr unsafe.Pointer, new unsafe.Pointer) {
-	atomic.StorepNoWB(noescape(ptr), new)
-}
-
 // Get signal trampoline, written in C.
 func getSigtramp() uintptr
 
 // The sa_handler field is generally hidden in a union, so use C accessors.
+//go:noescape
 func getSigactionHandler(*_sigaction) uintptr
+
+//go:noescape
 func setSigactionHandler(*_sigaction, uintptr)
 
 // Retrieve fields from the siginfo_t and ucontext_t pointers passed
@@ -430,7 +409,7 @@ func setpagesize(s uintptr) {
 	}
 }
 
-// Temporary for gccgo until we port mgc.go.
+// Called by C code during library initialization.
 //go:linkname runtime_m0 runtime.runtime_m0
 func runtime_m0() *m {
 	return &m0

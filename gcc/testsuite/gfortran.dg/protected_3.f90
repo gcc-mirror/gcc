@@ -1,4 +1,4 @@
-! { dg-options "-std=f95 -fall-intrinsics" }
+! { dg-options "-std=f95" }
 ! PR fortran/23994
 !
 ! Test PROTECTED attribute. Within the module everything is allowed.

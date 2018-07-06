@@ -7,15 +7,15 @@ program main
   character :: digit_arr(10)
   call copy(digit_string, digit_arr)
   call copy(digit_arr,str)
-  if(str /= '123456789') call abort()
+  if(str /= '123456789') STOP 1
   digit_string = 'qwertasdf'
   call copy2(digit_string, digit_arr)
   call copy2(digit_arr,str)
-  if(str /= 'qwertasdf') call abort()
+  if(str /= 'qwertasdf') STOP 2
   digit_string = '1qayxsw23e'
   call copy3("1qayxsw23e", digit_arr)
   call copy3(digit_arr,str)
-  if(str /= '1qayxsw23e') call abort()
+  if(str /= '1qayxsw23e') STOP 3
 contains
   subroutine copy(in, out)
     character, dimension(*)  :: in

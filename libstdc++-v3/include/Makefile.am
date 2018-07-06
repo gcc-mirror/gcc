@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001-2017 Free Software Foundation, Inc.
+## Copyright (C) 2001-2018 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -1230,6 +1230,14 @@ stamp-allocator-new:
 	echo 0 > stamp-allocator-new
 endif
 
+if ENABLE_FLOAT128
+stamp-float128:
+	echo 'define _GLIBCXX_USE_FLOAT128 1' > stamp-float128
+else
+stamp-float128:
+	echo 'undef _GLIBCXX_USE_FLOAT128' > stamp-float128
+endif
+
 # NB: The non-empty default ldbl_compat works around an AIX sed
 # oddity, see libstdc++/31957 for details.
 ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
@@ -1241,7 +1249,8 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      stamp-extern-template \
 			      stamp-dual-abi \
 			      stamp-cxx11-abi \
-			      stamp-allocator-new
+			      stamp-allocator-new \
+			      stamp-float128
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
 	release=`sed 's/^\([0-9]*\).*$$/\1/' ${toplevel_srcdir}/gcc/BASE-VER` ;\
 	ns_version=`cat stamp-namespace-version` ;\
@@ -1250,6 +1259,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	dualabi=`cat stamp-dual-abi` ;\
 	cxx11abi=`cat stamp-cxx11-abi` ;\
 	allocatornew=`cat stamp-allocator-new` ;\
+	float128=`cat stamp-float128` ;\
 	ldbl_compat='s,g,g,' ;\
 	grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_LONG_DOUBLE_COMPAT[	 ][	 ]*1[	 ]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
@@ -1262,6 +1272,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	-e "s,define _GLIBCXX_USE_DUAL_ABI, define _GLIBCXX_USE_DUAL_ABI $$dualabi," \
 	-e "s,define _GLIBCXX_USE_CXX11_ABI, define _GLIBCXX_USE_CXX11_ABI $$cxx11abi," \
 	-e "s,define _GLIBCXX_USE_ALLOCATOR_NEW, define _GLIBCXX_USE_ALLOCATOR_NEW $$allocatornew," \
+	-e "s,define _GLIBCXX_USE_FLOAT128,$$float128," \
 	-e "$$ldbl_compat" \
 	    < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \
@@ -1479,3 +1490,8 @@ $(decimal_headers): ; @:
 $(ext_headers): ; @:
 $(experimental_headers): ; @:
 $(experimental_bits_headers): ; @:
+
+if INCLUDE_DIR_NOTPARALLEL
+# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81797
+.NOTPARALLEL:
+endif

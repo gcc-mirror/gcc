@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2017 Free Software Foundation, Inc.
+# Copyright (C) 2014-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -33,7 +33,7 @@ load_lib torture-options.exp
 # Initialize.
 dg-init
 
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c*]] "" $DEFAULT_CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" $DEFAULT_CFLAGS
 
 # All done.
 dg-finish

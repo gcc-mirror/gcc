@@ -41,6 +41,9 @@ go_create_gogo(const struct go_create_gogo_args* args)
   if (args->c_header != NULL)
     ::gogo->set_c_header(args->c_header);
   ::gogo->set_debug_escape_level(args->debug_escape_level);
+  if (args->debug_escape_hash != NULL)
+    ::gogo->set_debug_escape_hash(args->debug_escape_hash);
+  ::gogo->set_nil_check_size_threshold(args->nil_check_size_threshold);
 }
 
 // Parse the input files.
@@ -163,6 +166,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 
   // Flatten the parse tree.
   ::gogo->flatten();
+
+  // Reclaim memory of escape analysis Nodes.
+  ::gogo->reclaim_escape_nodes();
 
   // Dump ast, use filename[0] as the base name
   ::gogo->dump_ast(filenames[0]);

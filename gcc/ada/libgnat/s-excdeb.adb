@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2006-2017, Free Software Foundation, Inc.          --
+--         Copyright (C) 2006-2018, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,7 @@ package body System.Exceptions_Debug is
    end Debug_Raise_Exception;
 
    -------------------------------
-   -- Debug_unhandled_Exception --
+   -- Debug_Unhandled_Exception --
    -------------------------------
 
    procedure Debug_Unhandled_Exception (E : SSL.Exception_Data_Ptr) is

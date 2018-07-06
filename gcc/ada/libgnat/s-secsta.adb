@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,27 +52,40 @@ package body System.Secondary_Stack is
      (Addr         : out Address;
       Storage_Size : SSE.Storage_Count)
    is
-      Max_Align   : constant SS_Ptr := SS_Ptr (Standard'Maximum_Alignment);
-      Mem_Request : constant SS_Ptr :=
-                      ((SS_Ptr (Storage_Size) + Max_Align - 1) / Max_Align) *
-                        Max_Align;
-      --  Round up Storage_Size to the nearest multiple of the max alignment
-      --  value for the target. This ensures efficient stack access.
+      use type System.Storage_Elements.Storage_Count;
 
-      Stack : constant SS_Stack_Ptr := SSL.Get_Sec_Stack.all;
+      Max_Align   : constant SS_Ptr := SS_Ptr (Standard'Maximum_Alignment);
+      Mem_Request : SS_Ptr;
+
+      Stack       : constant SS_Stack_Ptr := SSL.Get_Sec_Stack.all;
    begin
+      --  Round up Storage_Size to the nearest multiple of the max alignment
+      --  value for the target. This ensures efficient stack access. First
+      --  perform a check to ensure that the rounding operation does not
+      --  overflow SS_Ptr.
+
+      if SSE.Storage_Count (SS_Ptr'Last) - Standard'Maximum_Alignment <
+        Storage_Size
+      then
+         raise Storage_Error;
+      end if;
+
+      Mem_Request := ((SS_Ptr (Storage_Size) + Max_Align - 1) / Max_Align) *
+                       Max_Align;
+
       --  Case of fixed secondary stack
 
       if not SP.Sec_Stack_Dynamic then
          --  Check if max stack usage is increasing
 
-         if Stack.Top + Mem_Request > Stack.Max then
+         if Stack.Max - Stack.Top - Mem_Request < 0 then
 
             --  If so, check if the stack is exceeded, noting Stack.Top points
             --  to the first free byte (so the value of Stack.Top on a fully
-            --  allocated stack will be Stack.Size + 1).
+            --  allocated stack will be Stack.Size + 1). The comparison is
+            --  formed to prevent integer overflows.
 
-            if Stack.Top + Mem_Request > Stack.Size + 1 then
+            if Stack.Size - Stack.Top - Mem_Request < -1 then
                raise Storage_Error;
             end if;
 
@@ -90,8 +103,8 @@ package body System.Secondary_Stack is
 
       else
          declare
-            Chunk : Chunk_Ptr;
-
+            Chunk                : Chunk_Ptr;
+            Chunk_Size           : SS_Ptr;
             To_Be_Released_Chunk : Chunk_Ptr;
 
          begin
@@ -108,9 +121,8 @@ package body System.Secondary_Stack is
             --  sufficient, if not, go to the next one and eventually create
             --  the necessary room.
 
-            while Chunk.Last - Stack.Top + 1 < Mem_Request loop
+            while Chunk.Last - Stack.Top - Mem_Request < -1 loop
                if Chunk.Next /= null then
-
                   --  Release unused non-first empty chunk
 
                   if Chunk.Prev /= null and then Chunk.First = Stack.Top then
@@ -121,24 +133,29 @@ package body System.Secondary_Stack is
                      Free (To_Be_Released_Chunk);
                   end if;
 
-               --  Create new chunk of default size unless it is not sufficient
-               --  to satisfy the current request.
-
-               elsif Mem_Request <= Stack.Size then
-                  Chunk.Next :=
-                    new Chunk_Id
-                      (First => Chunk.Last + 1,
-                       Last  => Chunk.Last + SS_Ptr (Stack.Size));
-
-                  Chunk.Next.Prev := Chunk;
-
-               --  Otherwise create new chunk of requested size
+               --  Create a new chunk
 
                else
+                  --  The new chunk should be no smaller than the default
+                  --  chunk size to minimize the amount of secondary stack
+                  --  management.
+
+                  if Mem_Request <= Stack.Size then
+                     Chunk_Size := Stack.Size;
+                  else
+                     Chunk_Size := Mem_Request;
+                  end if;
+
+                  --  Check that the indexing limits are not exceeded
+
+                  if SS_Ptr'Last - Chunk.Last - Chunk_Size < 0 then
+                     raise Storage_Error;
+                  end if;
+
                   Chunk.Next :=
                     new Chunk_Id
                       (First => Chunk.Last + 1,
-                       Last  => Chunk.Last + Mem_Request);
+                       Last  => Chunk.Last + Chunk_Size);
 
                   Chunk.Next.Prev := Chunk;
                end if;
@@ -267,10 +284,10 @@ package body System.Secondary_Stack is
                       & SS_Ptr'Image (Stack.Top - 1)
                       & " bytes");
 
-            Put_Line ("  Number of Chunks       : "
+            Put_Line ("  Number of Chunks        : "
                       & Integer'Image (Nb_Chunks));
 
-            Put_Line ("  Default size of Chunks : "
+            Put_Line ("  Default size of Chunks  : "
                       & SP.Size_Type'Image (Stack.Size));
          end;
       end if;
@@ -300,7 +317,15 @@ package body System.Secondary_Stack is
 
       if Stack = null then
          if Size = Unspecified_Size then
-            Stack_Size := Default_Sec_Stack_Size;
+            --  Cover the case when bootstraping with an old compiler that does
+            --  not set Default_SS_Size.
+
+            if Default_SS_Size > 0 then
+               Stack_Size := Default_SS_Size;
+            else
+               Stack_Size := Runtime_Default_Sec_Stack_Size;
+            end if;
+
          else
             Stack_Size := Size;
          end if;

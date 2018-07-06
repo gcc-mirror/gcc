@@ -1,6 +1,6 @@
 ; lang.opt -- Options for the gcc BRIG (HSAIL) front end.
 
-; Copyright (C) 2015-2017 Free Software Foundation, Inc.
+; Copyright (C) 2015-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -30,6 +30,11 @@ BRIG Separate Alias(d)
 
 -dump=
 BRIG Joined Alias(d)
+
+fassume-phsa
+BRIG Report Var(flag_assume_phsa) Init(1) Optimization
+Assume we are finalizing for phsa and its libhsail-rt.  Enables additional
+phsa-specific optimizations (default).
 
 L
 BRIG Joined Separate

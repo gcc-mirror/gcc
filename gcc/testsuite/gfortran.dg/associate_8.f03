@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2003 -fall-intrinsics" }
+! { dg-options "-std=f2003 " }
 
 ! PR fortran/38936
 ! Check associate to polymorphic entities.
@@ -19,19 +19,19 @@ allocate( t2 :: b)
 associate ( one => a, two => b)
   select type(two)
     type is (t)
-      call abort ()
+      STOP 1
     type is (t2)
       print *, 'OK', two
     class default
-      call abort ()
+      STOP 2
   end select
   select type(one)
     type is (t2)
-      call abort ()
+      STOP 3
     type is (t)
       print *, 'OK', one
     class default
-      call abort ()
+      STOP 4
   end select
 end associate
 end

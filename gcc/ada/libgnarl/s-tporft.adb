@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 2002-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,8 +70,8 @@ begin
    Unlock_RTS;
    pragma Assert (Succeeded);
 
-   Self_Id.Master_of_Task := 0;
-   Self_Id.Master_Within := Self_Id.Master_of_Task + 1;
+   Self_Id.Master_Of_Task := 0;
+   Self_Id.Master_Within := Self_Id.Master_Of_Task + 1;
 
    for L in Self_Id.Entry_Calls'Range loop
       Self_Id.Entry_Calls (L).Self := Self_Id;

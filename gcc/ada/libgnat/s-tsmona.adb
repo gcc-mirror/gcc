@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2012-2017, AdaCore                     --
+--                     Copyright (C) 2012-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,8 +48,12 @@ package body Module_Name is
    -- Get --
    ---------
 
-   function Get (Addr : access System.Address) return String is
+   function Get
+     (Addr      : System.Address;
+      Load_Addr : access System.Address) return String
+   is
       pragma Unreferenced (Addr);
+      pragma Unreferenced (Load_Addr);
 
    begin
       return "";

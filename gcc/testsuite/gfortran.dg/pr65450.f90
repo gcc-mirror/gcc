@@ -20,7 +20,7 @@ program pr65450
     m = n
     n = i
   end do
-  if (abs (v(17, 23) + h(17, 23, 2) + 768.0d0) > 0.5d0) call abort
+  if (abs (v(17, 23) + h(17, 23, 2) + 768.0d0) > 0.5d0) STOP 1
 contains
   function foo(a)
     double precision :: a(:,:)

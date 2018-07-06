@@ -1,7 +1,7 @@
 /* This file contains the definitions of the cgraph_inline_failed_t
    enums used in GCC.
 
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -95,6 +95,10 @@ DEFCIFCODE(MISMATCHED_ARGUMENTS, CIF_FINAL_ERROR,
 DEFCIFCODE(LTO_MISMATCHED_DECLARATIONS, CIF_FINAL_ERROR,
 	   N_("mismatched declarations during linktime optimization"))
 
+/* Caller is variadic thunk.  */
+DEFCIFCODE(VARIADIC_THUNK, CIF_FINAL_ERROR,
+	   N_("variadic thunk call"))
+
 /* Call was originally indirect.  */
 DEFCIFCODE(ORIGINALLY_INDIRECT_CALL, CIF_FINAL_NORMAL,
 	   N_("originally indirect function call not considered for inlining"))
@@ -127,10 +131,6 @@ DEFCIFCODE(USES_COMDAT_LOCAL, CIF_FINAL_ERROR,
 /* We can't inline because of mismatched caller/callee attributes.  */
 DEFCIFCODE(ATTRIBUTE_MISMATCH, CIF_FINAL_ERROR,
 	   N_("function attribute mismatch"))
-
-/* We can't inline because of mismatched caller/callee attributes.  */
-DEFCIFCODE(CILK_SPAWN, CIF_FINAL_ERROR,
-	   N_("caller function contains cilk spawn"))
 
 /* We proved that the call is unreachable.  */
 DEFCIFCODE(UNREACHABLE, CIF_FINAL_ERROR,

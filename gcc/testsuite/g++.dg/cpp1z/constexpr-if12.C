@@ -7,7 +7,7 @@ struct T {
 
 template <class MustBeTemplate>
 constexpr auto bf(T t) {
-    if constexpr(t.foo()) {
+    if constexpr(t.foo()) {	// { dg-error "constant expression" }
         return false;
     }
     return true;

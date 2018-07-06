@@ -20,6 +20,7 @@ class c3 : c1, c2
 
 int *c3::fn2 () const
 {
+  return 0;
 }
 
 int *c3::fn3 (int p) const

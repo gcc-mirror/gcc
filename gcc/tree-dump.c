@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -736,7 +736,8 @@ dump_node (const_tree t, dump_flags_t flags, FILE *stream)
   di.flags = flags;
   di.node = t;
   di.nodes = splay_tree_new (splay_tree_compare_pointers, 0,
-			     (splay_tree_delete_value_fn) &free);
+			     (splay_tree_delete_value_fn)
+			     (void (*) (void)) free);
 
   /* Queue up the first node.  */
   queue (&di, t, DUMP_NONE);

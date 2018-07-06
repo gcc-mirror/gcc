@@ -12,12 +12,12 @@ complex c
 double complex d
 
 x = 2.
-if ((sqrt(x) - 1.41)**2 > 1.e-4) call abort ()
+if ((sqrt(x) - 1.41)**2 > 1.e-4) STOP 1
 x = 1.
-if ((atan(x) - 3.14/4) ** 2 > 1.e-4) call abort ()
+if ((atan(x) - 3.14/4) ** 2 > 1.e-4) STOP 2
 c = (-1.,0.)
-if (sqrt(c) /= (0., 1.)) call abort ()
+if (sqrt(c) /= (0., 1.)) STOP 3
 d = c
-if (sqrt(d) /= (0._8, 1._8)) call abort ()
+if (sqrt(d) /= (0._8, 1._8)) STOP 4
 end
  

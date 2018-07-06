@@ -24,17 +24,10 @@ int dummy_sprintf (char*, const char*, ...);
 char buffer [1024];
 extern char *ptr;
 
-int int_range (int min, int max)
+static int int_range (int min, int max)
 {
   extern int int_value (void);
   int n = int_value ();
-  return n < min || max < n ? min : n;
-}
-
-unsigned uint_range (unsigned min, unsigned max)
-{
-  extern unsigned uint_value (void);
-  unsigned n = uint_value ();
   return n < min || max < n ? min : n;
 }
 

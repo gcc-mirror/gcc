@@ -10,5 +10,5 @@ program main
   read (10,'(I2)',iostat=ios) i
   ios = -4321
   read (10, '(I1)', iostat=ios) i
-  if (ios /= 0) call abort
+  if (ios /= 0) STOP 1
 end program main

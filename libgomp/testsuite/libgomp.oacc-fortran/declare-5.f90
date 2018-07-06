@@ -12,7 +12,7 @@ program test
   implicit none
   real a
 
-  if (acc_is_present (b) .neqv. .true.) call abort
+  if (acc_is_present (b) .neqv. .true.) STOP 1
 
   a = 2.0
 
@@ -22,8 +22,8 @@ program test
     a = a + b
    !$acc end parallel
 
-  if (acc_is_present (b) .neqv. .true.) call abort
+  if (acc_is_present (b) .neqv. .true.) STOP 2
 
-  if (a .ne. 3.0) call abort
+  if (a .ne. 3.0) STOP 3
 
 end program test

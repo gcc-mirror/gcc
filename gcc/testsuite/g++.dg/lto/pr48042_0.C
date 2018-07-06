@@ -10,5 +10,5 @@ class B:public A {
 };
 
 int B::x() {
+    return 0;
 }
-

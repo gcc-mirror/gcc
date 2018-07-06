@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -422,9 +422,9 @@ is
       end;
    end Element;
 
-   --------------
-   -- Elements --
-   --------------
+   -----------
+   -- Elems --
+   -----------
 
    function Elems (Container : in out Vector) return Maximal_Array_Ptr is
    begin
@@ -585,7 +585,7 @@ is
       end M_Elements_Reversed;
 
       ------------------------
-      -- M_Elements_Swapted --
+      -- M_Elements_Swapped --
       ------------------------
 
       function M_Elements_Swapped

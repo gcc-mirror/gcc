@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1105,13 +1105,16 @@ move_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	}
 
       /* The destination ought to be dead.  */
-      gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG);
+      if (get_hard_regnum (regstack, dest) >= FIRST_STACK_REG)
+	gcc_assert (any_malformed_asm);
+      else
+	{
+	  replace_reg (psrc, get_hard_regnum (regstack, src));
 
-      replace_reg (psrc, get_hard_regnum (regstack, src));
-
-      regstack->reg[++regstack->top] = REGNO (dest);
-      SET_HARD_REG_BIT (regstack->reg_set, REGNO (dest));
-      replace_reg (pdest, FIRST_STACK_REG);
+	  regstack->reg[++regstack->top] = REGNO (dest);
+	  SET_HARD_REG_BIT (regstack->reg_set, REGNO (dest));
+	  replace_reg (pdest, FIRST_STACK_REG);
+	}
     }
   else if (STACK_REG_P (src))
     {
@@ -1170,7 +1173,8 @@ move_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	  && XINT (SET_SRC (XVECEXP (pat, 0, 1)), 1) == UNSPEC_TAN)
 	emit_swap_insn (insn, regstack, dest);
       else
-	gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG);
+	gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG
+		    || any_malformed_asm);
 
       gcc_assert (regstack->top < REG_STACK_SIZE);
 
@@ -2488,7 +2492,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 	      enum emit_where where)
 {
   int reg;
-  int update_end = 0;
+  rtx_insn *update_end = NULL;
   int i;
 
   /* Stack adjustments for the first insn in a block update the
@@ -2510,7 +2514,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
   if (where == EMIT_AFTER)
     {
       if (current_block && BB_END (current_block) == insn)
-	update_end = 1;
+	update_end = insn;
       insn = NEXT_INSN (insn);
     }
 
@@ -2685,7 +2689,16 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
     }
 
   if (update_end)
-    BB_END (current_block) = PREV_INSN (insn);
+    {
+      for (update_end = NEXT_INSN (update_end); update_end != insn;
+	   update_end = NEXT_INSN (update_end))
+	{
+	  set_block_for_insn (update_end, current_block);
+	  if (INSN_P (update_end))
+	    df_insn_rescan (update_end);
+	}
+      BB_END (current_block) = PREV_INSN (insn);
+    }
 }
 
 /* Print stack configuration.  */
@@ -2954,11 +2967,6 @@ better_edge (edge e1, edge e2)
   if (!e1)
     return e2;
 
-  if (EDGE_FREQUENCY (e1) > EDGE_FREQUENCY (e2))
-    return e1;
-  if (EDGE_FREQUENCY (e1) < EDGE_FREQUENCY (e2))
-    return e2;
-
   if (e1->count () > e2->count ())
     return e1;
   if (e1->count () < e2->count ())
@@ -3039,7 +3047,7 @@ convert_regs_1 (basic_block block)
 
       /* Don't bother processing unless there is a stack reg
 	 mentioned or if it's a CALL_INSN.  */
-      if (DEBUG_INSN_P (insn))
+      if (DEBUG_BIND_INSN_P (insn))
 	{
 	  if (starting_stack_p)
 	    debug_insns_with_starting_stack++;
@@ -3079,7 +3087,7 @@ convert_regs_1 (basic_block block)
       for (insn = BB_HEAD (block); debug_insns_with_starting_stack;
 	   insn = NEXT_INSN (insn))
 	{
-	  if (!DEBUG_INSN_P (insn))
+	  if (!DEBUG_BIND_INSN_P (insn))
 	    continue;
 
 	  debug_insns_with_starting_stack--;

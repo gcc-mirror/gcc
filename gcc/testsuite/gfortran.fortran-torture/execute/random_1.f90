@@ -22,12 +22,12 @@ program test_random
   call random_number (b(1:5))
   call random_seed(get=seed)
   call random_number (b(6:10))
-  if (any (a .ne. b)) call abort
+  if (any (a .ne. b)) STOP 1
 
   ! Get the last 5 numbers again.
   call random_seed (put=seed)
   call random_number (b(6:10))
-  if (any (a .ne. b)) call abort
+  if (any (a .ne. b)) STOP 2
 end program
 
 

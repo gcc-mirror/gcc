@@ -14,8 +14,8 @@
         write(value,'(i3,a5)') j," 5 69"
         read(value,*,end=20) intvalues
    20   write(result,*) (intvalues(i),i=2,4)
-      if (result.ne.('           5          69          33')) call abort
+      if (result.ne.('           5          69          33')) STOP 1
       call cpu_time(finish)
-      if ((finish-start).gt. 0.5) call abort
+      if ((finish-start).gt. 0.5) STOP 2
       enddo
       end program internalread

@@ -1,5 +1,5 @@
 ;; Predicate definitions for S/390 and zSeries.
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;; Contributed by Hartmut Penner (hpenner@de.ibm.com) and
 ;;                Ulrich Weigand (uweigand@de.ibm.com).
 ;;
@@ -65,6 +65,25 @@
     return false;
 
   return true;
+})
+
+;; Return true of the address of the mem operand plus 16 is still a
+;; valid Q constraint address.
+
+(define_predicate "plus16_Q_operand"
+  (and (match_code "mem")
+       (match_operand 0 "general_operand"))
+{
+  rtx addr = XEXP (op, 0);
+  if (REG_P (addr))
+    return true;
+
+  if (GET_CODE (addr) != PLUS
+      || !REG_P (XEXP (addr, 0))
+      || !CONST_INT_P (XEXP (addr, 1)))
+    return false;
+
+  return SHORT_DISP_IN_RANGE (INTVAL (XEXP (addr, 1)) + 16);
 })
 
 ;; Return true if OP is a valid operand for the BRAS instruction.

@@ -14,9 +14,9 @@ program testit
   integer, parameter :: i=lbound(arr,1)
   integer, parameter :: j=ubound(arr,1)
   ! write(6,*) i, j
-  if (i /= 0) call abort
-  if (j /= 2) call abort
+  if (i /= 0) STOP 1
+  if (j /= 2) STOP 2
 end program testit
 
 ! { dg-final { scan-tree-dump-times "bound" 0 "original" } }
-! { dg-final { scan-tree-dump-times "abort" 0 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_stop" 0 "original" } }

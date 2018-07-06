@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2017 Free Software Foundation, Inc.
+// Copyright (C) 2004-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,6 +38,7 @@ foo (void*)
     {
       pthread_exit (0);
     }
+  return 0; // See libstdc++/83450
 }
 
 // c++/18185

@@ -4,10 +4,10 @@
 ! { dg-options "-ffree-line-length-none" }
 
 #define CHECK(I,KIND,FUNCL,FUNCR,RESL,RESR) \
-  if (maskl(I,KIND) /= RESL) call abort ; \
-  if (FUNCL(I) /= RESL) call abort ; \
-  if (maskr(I,KIND) /= RESR) call abort ; \
-  if (FUNCR(I) /= RESR) call abort
+  if (maskl(I,KIND) /= RESL) STOP 1; \
+  if (FUNCL(I) /= RESL) STOP 2; \
+  if (maskr(I,KIND) /= RESR) STOP 3; \
+  if (FUNCR(I) /= RESR) STOP 4
 
   CHECK(0,1,run_maskl1,run_maskr1,0_1,0_1)
   CHECK(1,1,run_maskl1,run_maskr1,-huge(0_1)-1_1,1_1)

@@ -1,5 +1,5 @@
 /* brig-function.h -- declaration of brig_function class.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -44,15 +44,6 @@ class brig_to_generic;
 typedef std::map<std::string, tree> label_index;
 typedef std::map<const BrigDirectiveVariable *, tree> variable_index;
 typedef std::vector<tree> tree_stl_vec;
-
-/* There are 128 c regs and 2048 s/d/q regs each in the HSAIL.  */
-#define BRIG_2_TREE_HSAIL_C_REG_COUNT (128)
-#define BRIG_2_TREE_HSAIL_S_REG_COUNT (2048)
-#define BRIG_2_TREE_HSAIL_D_REG_COUNT (2048)
-#define BRIG_2_TREE_HSAIL_Q_REG_COUNT (2048)
-#define BRIG_2_TREE_HSAIL_TOTAL_REG_COUNT				       \
-  (BRIG_2_TREE_HSAIL_C_REG_COUNT + BRIG_2_TREE_HSAIL_S_REG_COUNT	       \
-   + BRIG_2_TREE_HSAIL_D_REG_COUNT + BRIG_2_TREE_HSAIL_Q_REG_COUNT)
 
 /* Holds data for the currently built GENERIC function.  */
 
@@ -113,6 +104,30 @@ public:
   bool has_function_scope_var (const BrigBase* var) const;
 
   void analyze_calls ();
+
+  tree expand_builtin (BrigOpcode16_t brig_opcode, tree_stl_vec &operands);
+
+  tree expand_or_call_builtin (BrigOpcode16_t brig_opcode,
+			       BrigType16_t brig_type, tree arith_type,
+			       tree_stl_vec &operands);
+  bool can_expand_builtin (BrigOpcode16_t brig_opcode) const;
+
+  tree get_builtin_for_hsa_opcode (tree type, BrigOpcode16_t brig_opcode,
+				   BrigType16_t brig_type) const;
+
+  void unpack (tree value, tree_stl_vec &elements);
+  tree pack (tree_stl_vec &elements);
+  tree add_temp_var (std::string name, tree expr);
+
+  static bool needs_workitem_context_data (BrigOpcode16_t brig_opcode);
+  static HOST_WIDE_INT int_constant_value (tree node);
+  static tree_code get_tree_code_for_hsa_opcode (BrigOpcode16_t brig_opcode,
+						 BrigType16_t brig_type);
+
+  void start_new_bb ();
+  void add_reg_var_update (tree reg_var, tree val);
+  bool is_id_val (tree reg_var);
+  tree id_val (tree reg_var);
 
   const BrigDirectiveExecutable *m_brig_def;
 
@@ -192,6 +207,11 @@ public:
   tree m_wg_id_vars[3];
   tree m_wg_size_vars[3];
   tree m_grid_size_vars[3];
+  /* Explicitly computed WG base for the absolute IDs which is used
+     as the initial value when looping that dimension.   We update
+     the abs id with ++ to make it easy for the vectorizer.  */
+  tree m_abs_id_base_vars[3];
+  tree m_abs_id_vars[3];
 
   /* Set to true in case the kernel contains at least one dispatch packet
      (work-item ID-related) builtin call that could not be expanded to
@@ -222,9 +242,26 @@ public:
   phsa_descriptor m_descriptor;
 
 private:
+
+  tree get_tree_type_for_hsa_reg (const BrigOperandRegister *reg) const;
+
   /* Bookkeeping for the different HSA registers and their tree declarations
      for the currently generated function.  */
   reg_decl_index_entry *m_regs[BRIG_2_TREE_HSAIL_TOTAL_REG_COUNT];
+
+  /* Map for keeping book reads of ID variables, which can be propagated
+     to uses in address expressions to produce cleaner indexing functions
+     with unnecessary casts stripped off, etc.  */
+  typedef std::map<tree, tree> id_val_map;
+
+  /* Keeps track of ID values alive in registers in the currently
+     processed BB.  */
+  id_val_map m_id_val_defs;
+
+  /* HSAIL-specific builtin functions not yet integrated to gcc.  */
+  typedef std::map<std::pair<BrigOpcode16_t, BrigType16_t>, tree> builtin_map;
+
+  static builtin_map s_custom_builtins;
 };
 
 #endif

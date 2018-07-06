@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Danny Smith <dannysmith@users.sourceforge.net>
 
    This file is part of the GNU Offloading and Multi Processing Library

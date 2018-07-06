@@ -12,7 +12,7 @@ HASH
 /* Directives with their #s indented are not recognized.  */
  #if 0	/* { dg-bogus "unterminated" } */
 
-#wrong	/* { dg-error "invalid" } */
+#wrong	/* { dg-error "-:invalid" } */
 
 #define foo 2
 #define bar + 3

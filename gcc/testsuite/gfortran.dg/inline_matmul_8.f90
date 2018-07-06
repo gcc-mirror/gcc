@@ -11,7 +11,7 @@ program main
   data b1 / 2.,  -3.,  5.,  -7., 11., -13./
 
   c1 = matmul(a1(1,:), b1)
-  if (any (c1-[248., -749.] /= 0.)) call abort
+  if (any (c1-[248., -749.] /= 0.)) STOP 1
 end program main
 
 ! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "original" } }

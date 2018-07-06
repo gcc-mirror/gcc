@@ -1,4 +1,4 @@
-#   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+#   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -49,4 +49,17 @@ gcc-dg-runtest [list $srcdir/$subdir/savres.c] "" $alti
 
 # All done.
 torture-finish
+
+torture-init 
+# Test load/store builtins at multiple optimizations
+set-torture-options [list -O0 -Os -O1 -O2 -O3]
+gcc-dg-runtest [list $srcdir/$subdir/builtins-4-runnable.c \
+		$srcdir/$subdir/builtins-4-int128-runnable.c \
+		$srcdir/$subdir/builtins-6-runnable.c \
+		$srcdir/$subdir/builtins-5-p9-runnable.c \
+	       	$srcdir/$subdir/builtins-6-p9-runnable.c] "" $DEFAULT_CFLAGS
+
+# All done.
+torture-finish
+
 dg-finish

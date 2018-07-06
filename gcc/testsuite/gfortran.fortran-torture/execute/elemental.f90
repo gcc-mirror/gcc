@@ -8,21 +8,21 @@ program test_elemental
    a = reshape ((/2, 3, 4, 5, 6, 7, 8, 9/), (/2, 4/))
    b = 0
    b(2, :) = e_fn (a(1, :), 1)
-   if (any (b .ne. reshape ((/0, 1, 0, 3, 0, 5, 0, 7/), (/2, 4/)))) call abort
+   if (any (b .ne. reshape ((/0, 1, 0, 3, 0, 5, 0, 7/), (/2, 4/)))) STOP 1
    a = e_fn (a(:, 4:1:-1), 1 + b)
-   if (any (a .ne. reshape ((/7, 7, 5, 3, 3, -1, 1, -5/), (/2, 4/)))) call abort
+   if (any (a .ne. reshape ((/7, 7, 5, 3, 3, -1, 1, -5/), (/2, 4/)))) STOP 2
    ! This tests intrinsic elemental conversion functions.
    c = 2 * a(1, 1)
-   if (any (c .ne. 14)) call abort
+   if (any (c .ne. 14)) STOP 3
 
    ! This triggered bug due to building ss chains in the wrong order.
    b = 0;
    a = a - e_fn (a, b)
-   if (any (a .ne. 0)) call abort
+   if (any (a .ne. 0)) STOP 4
 
    ! Check expressions involving constants
    a = e_fn (b + 1, 1)
-   if (any (a .ne. 0)) call abort
+   if (any (a .ne. 0)) STOP 5
 contains
 
 elemental integer(kind=4) function e_fn (p, q)

@@ -1,5 +1,5 @@
 /* Generate macros based on the combined_fn enum.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -94,13 +94,15 @@ is_group (string_set *builtins, const char *name, const char *const *suffixes)
 
 /* Print a macro for all combined functions related to NAME, with the
    null-terminated list of suffixes in SUFFIXES.  INTERNAL_P says whether
-   CFN_<NAME> also exists.  */
+   CFN_<NAME> also exists.  FLOATN_P is a suffix to the operator name, blank
+   for normal operators, "_FN" for _Float<N>/_Float<N>X operators only, and
+   "_ALL" for both the traditional operators and the _Float<N>/_Float<N>X
+   operators.  */
 
 static void
 print_case_cfn (const char *name, bool internal_p,
-		const char *const *suffixes, bool floatn_p)
+		const char *const *suffixes, const char *floatn)
 {
-  const char *floatn = (floatn_p) ? "_FN" : "";
   printf ("#define CASE_CFN_%s%s", name, floatn);
   if (internal_p)
     printf (" \\\n  case CFN_%s%s", name, floatn);
@@ -110,15 +112,18 @@ print_case_cfn (const char *name, bool internal_p,
   printf ("\n");
 }
 
-/* Print an operator list for all combined functions related to NAME,
-   with the null-terminated list of suffixes in SUFFIXES.  INTERNAL_P
-   says whether CFN_<NAME> also exists.  */
+/* Print an operator list for all combined functions related to NAME, with the
+   null-terminated list of suffixes in SUFFIXES.  INTERNAL_P says whether
+   CFN_<NAME> also exists.  FLOATN_P is a suffix to the operator name, blank
+   for normal operators, "_FN" for _Float<N>/_Float<N>X operators only, and
+   "_ALL" for both the traditional operators and the _Float<N>/_Float<N>X
+   operators.  */
 
 static void
 print_define_operator_list (const char *name, bool internal_p,
-			    const char *const *suffixes, bool floatn_p)
+			    const char *const *suffixes,
+			    const char *floatn)
 {
-  const char *floatn = (floatn_p) ? "_FN" : "";
   printf ("(define_operator_list %s%s\n", name, floatn);
   for (unsigned int i = 0; suffixes[i]; ++i)
     printf ("    BUILT_IN_%s%s\n", name, suffixes[i]);
@@ -152,6 +157,9 @@ const char *const internal_fn_int_names[] = {
 static const char *const flt_suffixes[] = { "F", "", "L", NULL };
 static const char *const fltfn_suffixes[] = { "F16", "F32", "F64", "F128",
 					      "F32X", "F64X", "F128X", NULL };
+static const char *const fltall_suffixes[] = { "F", "", "L", "F16", "F32",
+					       "F64", "F128", "F32X", "F64X",
+					       "F128X", NULL };
 static const char *const int_suffixes[] = { "", "L", "LL", "IMAX", NULL };
 
 static const char *const *const suffix_lists[] = {
@@ -212,22 +220,31 @@ main (int argc, char **argv)
 		  bool internal_p = internal_fns.contains (root);
 
 		  if (type == 'c')
-		    print_case_cfn (root, internal_p, suffix, false);
+		    print_case_cfn (root, internal_p, suffix, "");
 		  else
-		    print_define_operator_list (root, internal_p,
-						suffix, false);
+		    print_define_operator_list (root, internal_p, suffix, "");
 
 		      /* Support the _Float<N> and _Float<N>X math functions if
-			 they exist.  We put these out as a separate CFN macro,
-			 so code can add support or not as needed.  */
+			 they exist.  We put these out as a separate CFN or
+			 operator macro, so code can add support or not as
+			 needed.  We also put out a combined CFN or operator
+			 macro that includes both the traditional names and the
+			 _Float<N> and _Float<N>X versions.  */
 		  if (suffix == flt_suffixes
 		      && is_group (&builtins, root, fltfn_suffixes))
 		    {
 		      if (type == 'c')
-			print_case_cfn (root, false, fltfn_suffixes, true);
+			{
+			  print_case_cfn (root, false, fltfn_suffixes, "_FN");
+			  print_case_cfn (root, false, fltall_suffixes, "_ALL");
+			}
 		      else
-			print_define_operator_list (root, false, fltfn_suffixes,
-						    true);
+			{
+			  print_define_operator_list (root, false,
+						      fltfn_suffixes, "_FN");
+			  print_define_operator_list (root, internal_p,
+						      fltall_suffixes, "_ALL");
+			}
 		    }
 		}
 	    }

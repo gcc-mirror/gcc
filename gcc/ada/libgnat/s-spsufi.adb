@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,9 +71,9 @@ package body System.Storage_Pools.Subpools.Finalization is
       --  requires that "The subpool no longer belongs to any pool" BEFORE
       --  calling Deallocate_Subpool. The actual dispatching call required is:
       --
-      --     Deallocate_Subpool(Pool_of_Subpool(Subpool).all, Subpool);
+      --     Deallocate_Subpool(Pool_Of_Subpool(Subpool).all, Subpool);
       --
-      --  but that can't be taken literally, because Pool_of_Subpool will
+      --  but that can't be taken literally, because Pool_Of_Subpool will
       --  return null.
 
       declare

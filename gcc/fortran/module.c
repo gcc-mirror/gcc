@@ -1,6 +1,6 @@
 /* Handle modules, which amounts to loading and saving symbols and
    their attendant structures.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -143,7 +143,7 @@ enum gfc_wsym_state
 typedef struct pointer_info
 {
   BBT_HEADER (pointer_info);
-  int integer;
+  HOST_WIDE_INT integer;
   pointer_t type;
 
   /* The first component of each member of the union is the pointer
@@ -368,7 +368,7 @@ get_pointer (void *gp)
    creating the node if not found.  */
 
 static pointer_info *
-get_integer (int integer)
+get_integer (HOST_WIDE_INT integer)
 {
   pointer_info *p, t;
   int c;
@@ -468,7 +468,7 @@ associate_integer_pointer (pointer_info *p, void *gp)
    sometime later.  Returns the pointer_info structure.  */
 
 static pointer_info *
-add_fixup (int integer, void *gp)
+add_fixup (HOST_WIDE_INT integer, void *gp)
 {
   pointer_info *p;
   fixup_t *f;
@@ -1145,7 +1145,7 @@ static atom_type last_atom;
 
 #define MAX_ATOM_SIZE 100
 
-static int atom_int;
+static HOST_WIDE_INT atom_int;
 static char *atom_string, atom_name[MAX_ATOM_SIZE];
 
 
@@ -1275,7 +1275,7 @@ parse_string (void)
 }
 
 
-/* Parse a small integer.  */
+/* Parse an integer. Should fit in a HOST_WIDE_INT.  */
 
 static void
 parse_integer (int c)
@@ -1292,8 +1292,6 @@ parse_integer (int c)
 	}
 
       atom_int = 10 * atom_int + c - '0';
-      if (atom_int > 99999999)
-	bad_module ("Integer overflow");
     }
 
 }
@@ -1635,11 +1633,12 @@ write_char (char out)
 static void
 write_atom (atom_type atom, const void *v)
 {
-  char buffer[20];
+  char buffer[32];
 
   /* Workaround -Wmaybe-uninitialized false positive during
      profiledbootstrap by initializing them.  */
-  int i = 0, len;
+  int len;
+  HOST_WIDE_INT i = 0;
   const char *p;
 
   switch (atom)
@@ -1658,11 +1657,9 @@ write_atom (atom_type atom, const void *v)
       break;
 
     case ATOM_INTEGER:
-      i = *((const int *) v);
-      if (i < 0)
-	gfc_internal_error ("write_atom(): Writing negative integer");
+      i = *((const HOST_WIDE_INT *) v);
 
-      sprintf (buffer, "%d", i);
+      snprintf (buffer, sizeof (buffer), HOST_WIDE_INT_PRINT_DEC, i);
       p = buffer;
       break;
 
@@ -1770,11 +1767,26 @@ static void
 mio_integer (int *ip)
 {
   if (iomode == IO_OUTPUT)
-    write_atom (ATOM_INTEGER, ip);
+    {
+      HOST_WIDE_INT hwi = *ip;
+      write_atom (ATOM_INTEGER, &hwi);
+    }
   else
     {
       require_atom (ATOM_INTEGER);
       *ip = atom_int;
+    }
+}
+
+static void
+mio_hwi (HOST_WIDE_INT *hwi)
+{
+  if (iomode == IO_OUTPUT)
+    write_atom (ATOM_INTEGER, hwi);
+  else
+    {
+      require_atom (ATOM_INTEGER);
+      *hwi = atom_int;
     }
 }
 
@@ -1787,7 +1799,7 @@ mio_intrinsic_op (gfc_intrinsic_op* op)
   /* FIXME: Would be nicer to do this via the operators symbolic name.  */
   if (iomode == IO_OUTPUT)
     {
-      int converted = (int) *op;
+      HOST_WIDE_INT converted = (HOST_WIDE_INT) *op;
       write_atom (ATOM_INTEGER, &converted);
     }
   else
@@ -2719,7 +2731,7 @@ mio_array_ref (gfc_array_ref *ar)
     {
       for (i = 0; i < ar->dimen; i++)
 	{
-	  int tmp = (int)ar->dimen_type[i];
+	  HOST_WIDE_INT tmp = (HOST_WIDE_INT)ar->dimen_type[i];
 	  write_atom (ATOM_INTEGER, &tmp);
 	}
     }
@@ -2756,7 +2768,8 @@ mio_pointer_ref (void *gp)
   if (iomode == IO_OUTPUT)
     {
       p = get_pointer (*((char **) gp));
-      write_atom (ATOM_INTEGER, &p->integer);
+      HOST_WIDE_INT hwi = p->integer;
+      write_atom (ATOM_INTEGER, &hwi);
     }
   else
     {
@@ -2794,18 +2807,18 @@ static void
 mio_component (gfc_component *c, int vtype)
 {
   pointer_info *p;
-  int n;
 
   mio_lparen ();
 
   if (iomode == IO_OUTPUT)
     {
       p = get_pointer (c);
-      mio_integer (&p->integer);
+      mio_hwi (&p->integer);
     }
   else
     {
-      mio_integer (&n);
+      HOST_WIDE_INT n;
+      mio_hwi (&n);
       p = get_integer (n);
       associate_integer_pointer (p, c);
     }
@@ -3430,6 +3443,7 @@ fix_mio_expr (gfc_expr *e)
 static void
 mio_expr (gfc_expr **ep)
 {
+  HOST_WIDE_INT hwi;
   gfc_expr *e;
   atom_type t;
   int flag;
@@ -3644,7 +3658,9 @@ mio_expr (gfc_expr **ep)
 	  break;
 
 	case BT_CHARACTER:
-	  mio_integer (&e->value.character.length);
+	  hwi = e->value.character.length;
+	  mio_hwi (&hwi);
+	  e->value.character.length = hwi;
 	  e->value.character.string
 	    = CONST_CAST (gfc_char_t *,
 			  mio_allocated_wide_string (e->value.character.string,
@@ -5946,7 +5962,7 @@ write_symtree (gfc_symtree *st)
 
   mio_pool_string (&st->name);
   mio_integer (&st->ambiguous);
-  mio_integer (&p->integer);
+  mio_hwi (&p->integer);
 }
 
 
@@ -6132,8 +6148,10 @@ dump_module (const char *name, int dump_flag)
     gfc_fatal_error ("Can't open module file %qs for writing at %C: %s",
 		     filename_tmp, xstrerror (errno));
 
+  /* Use lbasename to ensure module files are reproducible regardless
+     of the build path (see the reproducible builds project).  */
   gzprintf (module_fp, "GFORTRAN module version '%s' created from %s\n",
-	    MOD_VERSION, gfc_source_file);
+	    MOD_VERSION, lbasename (gfc_source_file));
 
   /* Write the module itself.  */
   iomode = IO_OUTPUT;

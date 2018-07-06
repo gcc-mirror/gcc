@@ -1,5 +1,5 @@
 /* Process machine description and calculate constant conditions.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -50,6 +50,7 @@ write_header (void)
 /* Generated automatically by the program `genconditions' from the target\n\
    machine description file.  */\n\
 \n\
+#define IN_TARGET_CODE 1\n\
 #include \"bconfig.h\"\n\
 #define INCLUDE_STRING\n\
 #include \"system.h\"\n\

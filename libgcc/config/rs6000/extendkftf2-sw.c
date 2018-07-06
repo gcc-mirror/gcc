@@ -1,6 +1,6 @@
 /* Software IEEE 128-bit floating-point emulation for PowerPC.
 
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
    Code is based on the main soft-fp library written by:
@@ -44,7 +44,7 @@
 #endif
 
 IBM128_TYPE
-__extendkftf2_sw (__float128 value)
+__extendkftf2_sw (TFtype value)
 {
   IBM128_TYPE ret;
 

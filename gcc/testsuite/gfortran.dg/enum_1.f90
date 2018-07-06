@@ -7,5 +7,5 @@ program main
     enumerator :: red, black
     enumerator blue
   end enum
-  if (red /= 0) call abort
+  if (red /= 0) STOP 1
 end program main

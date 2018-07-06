@@ -1,6 +1,6 @@
 // unordered_map implementation -*- C++ -*-
 
-// Copyright (C) 2010-2017 Free Software Foundation, Inc.
+// Copyright (C) 2010-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -95,10 +95,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  Base is _Hashtable, dispatched at compile time via template
    *  alias __umap_hashtable.
    */
-  template<class _Key, class _Tp,
-	   class _Hash = hash<_Key>,
-	   class _Pred = std::equal_to<_Key>,
-	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
+  template<typename _Key, typename _Tp,
+	   typename _Hash = hash<_Key>,
+	   typename _Pred = equal_to<_Key>,
+	   typename _Alloc = allocator<std::pair<const _Key, _Tp>>>
     class unordered_map
     {
       typedef __umap_hashtable<_Key, _Tp, _Hash, _Pred, _Alloc>  _Hashtable;
@@ -862,7 +862,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus > 201402L
       template<typename, typename, typename>
-	friend class _Hash_merge_helper;
+	friend class std::_Hash_merge_helper;
 
       template<typename _H2, typename _P2>
 	void
@@ -1193,7 +1193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     -> unordered_map<_Key, _Tp, hash<_Key>, equal_to<_Key>, _Allocator>;
 
   template<typename _Key, typename _Tp, typename _Allocator,
-	   _RequireAllocator<_Allocator>>
+	   typename = _RequireAllocator<_Allocator>>
     unordered_map(initializer_list<pair<_Key, _Tp>>, _Allocator)
     -> unordered_map<_Key, _Tp, hash<_Key>, equal_to<_Key>, _Allocator>;
 
@@ -1229,10 +1229,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  Base is _Hashtable, dispatched at compile time via template
    *  alias __ummap_hashtable.
    */
-  template<class _Key, class _Tp,
-	   class _Hash = hash<_Key>,
-	   class _Pred = std::equal_to<_Key>,
-	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
+  template<typename _Key, typename _Tp,
+	   typename _Hash = hash<_Key>,
+	   typename _Pred = equal_to<_Key>,
+	   typename _Alloc = allocator<std::pair<const _Key, _Tp>>>
     class unordered_multimap
     {
       typedef __ummap_hashtable<_Key, _Tp, _Hash, _Pred, _Alloc>  _Hashtable;
@@ -1742,7 +1742,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus > 201402L
       template<typename, typename, typename>
-	friend class _Hash_merge_helper;
+	friend class std::_Hash_merge_helper;
 
       template<typename _H2, typename _P2>
 	void

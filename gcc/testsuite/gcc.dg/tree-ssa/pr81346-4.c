@@ -1,5 +1,5 @@
 /* PR tree-optimization/81346 */
-/* { dg-do run } */
+/* { dg-do run { target int32plus } } */
 /* { dg-options "-O2" } */
 
 #include "pr81346-3.c"

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-vrp -fdump-tree-forwprop1" } */
+/* { dg-options "-O -fcheck-new -fno-tree-vrp -fdump-tree-forwprop1" } */
 
 #include <new>
 
@@ -20,6 +20,5 @@ double foo (void)
   return v.a[2];
 }
 
-/* -std=c++17 and above doesn't emit operator new () != NULL, so there is
-   nothing to fold anymore.  */
-/* { dg-final { scan-tree-dump "Replaced .* != 0B. with .1" "forwprop1" { target c++14_down } } } */
+/* GCC 8 emits operator new () != NULL with -fcheck-new. */
+/* { dg-final { scan-tree-dump "Replaced .* != 0B. with .1" "forwprop1" } } */

@@ -1,6 +1,6 @@
 // { dg-options "-O2" }
 void IOException( char);
-inline int* dummy( const char* const mode )
+inline void dummy( const char* const mode )
 {
   IOException(*mode+*mode);
 }

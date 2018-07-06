@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -707,9 +707,9 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      --  A [generic] package body "freezes" the contract of the nearest
-      --  enclosing package body and all other contracts encountered in the
-      --  same declarative part up to and excluding the package body:
+      --  A [generic] package body freezes the contract of the nearest
+      --  enclosing package body and all other contracts encountered in
+      --  the same declarative part up to and excluding the package body:
 
       --    package body Nearest_Enclosing_Package
       --      with Refined_State => (State => Constit)
@@ -726,21 +726,21 @@ package body Sem_Ch7 is
 
       --  This ensures that any annotations referenced by the contract of a
       --  [generic] subprogram body declared within the current package body
-      --  are available. This form of "freezing" is decoupled from the usual
+      --  are available. This form of freezing is decoupled from the usual
       --  Freeze_xxx mechanism because it must also work in the context of
       --  generics where normal freezing is disabled.
 
-      --  Only bodies coming from source should cause this type of "freezing".
+      --  Only bodies coming from source should cause this type of freezing.
       --  Instantiated generic bodies are excluded because their processing is
       --  performed in a separate compilation pass which lacks enough semantic
       --  information with respect to contract analysis. It is safe to suppress
-      --  the "freezing" of contracts in this case because this action already
+      --  the freezing of contracts in this case because this action already
       --  took place at the end of the enclosing declarative part.
 
       if Comes_From_Source (N)
         and then not Is_Generic_Instance (Spec_Id)
       then
-         Analyze_Previous_Contracts (N);
+         Freeze_Previous_Contracts (N);
       end if;
 
       --  A package body is Ghost when the corresponding spec is Ghost. Set
@@ -748,6 +748,12 @@ package body Sem_Ch7 is
       --  expansion are properly flagged as ignored Ghost.
 
       Mark_And_Set_Ghost_Body (N, Spec_Id);
+
+      --  If the body completes the initial declaration of a compilation unit
+      --  which is subject to pragma Elaboration_Checks, set the model of the
+      --  pragma because it applies to all parts of the unit.
+
+      Install_Elaboration_Model (Spec_Id);
 
       Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
       Style.Check_Identifier (Body_Id, Spec_Id);
@@ -875,10 +881,6 @@ package body Sem_Ch7 is
       then
          Declare_Inherited_Private_Subprograms (Spec_Id);
       end if;
-
-      --  A package body "freezes" the contract of its initial declaration.
-      --  This analysis depends on attribute Corresponding_Spec being set. Only
-      --  bodies coming from source shuld cause this type of "freezing".
 
       if Present (Declarations (N)) then
          Analyze_Declarations (Declarations (N));
@@ -1152,6 +1154,10 @@ package body Sem_Ch7 is
 
       if Is_Comp_Unit then
          Set_Body_Required (Parent (N), Body_Required);
+
+         if Legacy_Elaboration_Checks and not Body_Required then
+            Set_Suppress_Elaboration_Warnings (Id);
+         end if;
       end if;
 
       End_Package_Scope (Id);
@@ -1399,10 +1405,13 @@ package body Sem_Ch7 is
 
             --  We are looking at an incomplete or private type declaration
             --  with a known_discriminant_part whose full view is an
-            --  Unchecked_Union.
+            --  Unchecked_Union. The seemingly useless check with Is_Type
+            --  prevents cascaded errors when routines defined only for type
+            --  entities are called with non-type entities.
 
             if Nkind_In (Decl, N_Incomplete_Type_Declaration,
                                N_Private_Type_Declaration)
+              and then Is_Type (Defining_Identifier (Decl))
               and then Has_Discriminants (Defining_Identifier (Decl))
               and then Present (Full_View (Defining_Identifier (Decl)))
               and then
@@ -1853,6 +1862,11 @@ package body Sem_Ch7 is
 
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
+
+      --  Set the SPARK mode from the current context
+
+      Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Id);
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);

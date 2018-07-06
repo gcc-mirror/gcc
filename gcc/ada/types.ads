@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -851,8 +851,7 @@ package Types is
 
    --  Note on ordering of references. For the tables in Ada.Exceptions units,
    --  usually the ordering does not matter, and we use the same ordering as
-   --  is used here (note the requirement in the ordering here that CE/PE/SE
-   --  codes be kept together, so the subtype declarations work OK).
+   --  is used here.
 
    type RT_Exception_Code is
      (CE_Access_Check_Failed,            -- 00
@@ -894,9 +893,11 @@ package Types is
       SE_Explicit_Raise,                 -- 33
       SE_Infinite_Recursion,             -- 34
       SE_Object_Too_Large,               -- 35
-      PE_Stream_Operation_Not_Allowed);  -- 36
+      PE_Stream_Operation_Not_Allowed,   -- 36
+      PE_Build_In_Place_Mismatch);       -- 37
 
-   Last_Reason_Code : constant := 36;
+   Last_Reason_Code : constant :=
+     RT_Exception_Code'Pos (RT_Exception_Code'Last);
    --  Last reason code
 
    type Reason_Kind is (CE_Reason, PE_Reason, SE_Reason);
@@ -937,6 +938,7 @@ package Types is
               PE_Unchecked_Union_Restriction    => PE_Reason,
               PE_Non_Transportable_Actual       => PE_Reason,
               PE_Stream_Operation_Not_Allowed   => PE_Reason,
+              PE_Build_In_Place_Mismatch        => PE_Reason,
 
               SE_Empty_Storage_Pool             => SE_Reason,
               SE_Explicit_Raise                 => SE_Reason,

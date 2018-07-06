@@ -23,11 +23,11 @@ contains
 !    print *, len(str)
 !    print '(3a)', '>',str,'<'
     if (i == 5) then
-      if (str /= "12345" .or. len(str) /= 5) call abort ()
+      if (str /= "12345" .or. len(str) /= 5) STOP 1
     else if (i == 7) then
-      if (str /= "XXXXXXX" .or. len(str) /= 7) call abort ()
+      if (str /= "XXXXXXX" .or. len(str) /= 7) STOP 2
     else
-      call abort ()
+      STOP 3
     end if
   end subroutine
 end

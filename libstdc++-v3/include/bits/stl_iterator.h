@@ -1,6 +1,6 @@
 // Iterators -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -137,6 +137,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX17_CONSTEXPR
       reverse_iterator(const reverse_iterator& __x)
       : current(__x.current) { }
+
+#if __cplusplus >= 201103L
+      reverse_iterator& operator=(const reverse_iterator&) = default;
+#endif
 
       /**
        *  A %reverse_iterator across other types can be copied if the

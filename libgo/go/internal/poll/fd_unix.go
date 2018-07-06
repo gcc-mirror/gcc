@@ -8,6 +8,7 @@ package poll
 
 import (
 	"io"
+	"runtime"
 	"syscall"
 )
 
@@ -26,6 +27,9 @@ type FD struct {
 	// Writev cache.
 	iovecs *[]syscall.Iovec
 
+	// Semaphore signaled when file is closed.
+	csema uint32
+
 	// Whether this is a streaming descriptor, as opposed to a
 	// packet-based descriptor like a UDP socket. Immutable.
 	IsStream bool
@@ -36,18 +40,23 @@ type FD struct {
 
 	// Whether this is a file rather than a network socket.
 	isFile bool
+
+	// Whether this file has been set to blocking mode.
+	isBlocking bool
 }
 
 // Init initializes the FD. The Sysfd field should already be set.
 // This can be called multiple times on a single FD.
 // The net argument is a network name from the net package (e.g., "tcp"),
 // or "file".
+// Set pollable to true if fd should be managed by runtime netpoll.
 func (fd *FD) Init(net string, pollable bool) error {
 	// We don't actually care about the various network types.
 	if net == "file" {
 		fd.isFile = true
 	}
 	if !pollable {
+		fd.isBlocking = true
 		return nil
 	}
 	return fd.pd.init(fd)
@@ -61,6 +70,7 @@ func (fd *FD) destroy() error {
 	fd.pd.close()
 	err := CloseFunc(fd.Sysfd)
 	fd.Sysfd = -1
+	runtime_Semrelease(&fd.csema)
 	return err
 }
 
@@ -70,15 +80,27 @@ func (fd *FD) Close() error {
 	if !fd.fdmu.increfAndClose() {
 		return errClosing(fd.isFile)
 	}
+
 	// Unblock any I/O.  Once it all unblocks and returns,
 	// so that it cannot be referring to fd.sysfd anymore,
 	// the final decref will close fd.sysfd. This should happen
 	// fairly quickly, since all the I/O is non-blocking, and any
 	// attempts to block in the pollDesc will return errClosing(fd.isFile).
 	fd.pd.evict()
+
 	// The call to decref will call destroy if there are no other
 	// references.
-	return fd.decref()
+	err := fd.decref()
+
+	// Wait until the descriptor is closed. If this was the only
+	// reference, it is already closed. Only wait if the file has
+	// not been set to blocking mode, as otherwise any current I/O
+	// may be blocking, and that would block the Close.
+	if !fd.isBlocking {
+		runtime_Semacquire(&fd.csema)
+	}
+
+	return err
 }
 
 // Shutdown wraps the shutdown network call.
@@ -88,6 +110,16 @@ func (fd *FD) Shutdown(how int) error {
 	}
 	defer fd.decref()
 	return syscall.Shutdown(fd.Sysfd, how)
+}
+
+// SetBlocking puts the file into blocking mode.
+func (fd *FD) SetBlocking() error {
+	if err := fd.incref(); err != nil {
+		return err
+	}
+	defer fd.decref()
+	fd.isBlocking = true
+	return syscall.SetNonblock(fd.Sysfd, false)
 }
 
 // Darwin and FreeBSD can't read or write 2GB+ files at a time,
@@ -125,6 +157,12 @@ func (fd *FD) Read(p []byte) (int, error) {
 				if err = fd.pd.waitRead(fd.isFile); err == nil {
 					continue
 				}
+			}
+
+			// On MacOS we can see EINTR here if the user
+			// pressed ^Z.  See issue #22838.
+			if runtime.GOOS == "darwin" && err == syscall.EINTR {
+				continue
 			}
 		}
 		err = fd.eofError(n, err)
@@ -400,6 +438,15 @@ func (fd *FD) Fstat(s *syscall.Stat_t) error {
 // WaitWrite waits until data can be read from fd.
 func (fd *FD) WaitWrite() error {
 	return fd.pd.waitWrite(fd.isFile)
+}
+
+// WriteOnce is for testing only. It makes a single write call.
+func (fd *FD) WriteOnce(p []byte) (int, error) {
+	if err := fd.writeLock(); err != nil {
+		return 0, err
+	}
+	defer fd.writeUnlock()
+	return syscall.Write(fd.Sysfd, p)
 }
 
 // RawControl invokes the user-defined function f for a non-IO

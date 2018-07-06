@@ -22,5 +22,6 @@ int
 F::g ()
 {
   a = i (h, b, 0);
+  return 0;
 }
 }

@@ -3,7 +3,7 @@
 // { dg-options "-g" }
 
 struct A {
-  operator long() {}
+  operator long() { return 0; }
 } __attribute__((__may_alias__));
 
 struct {

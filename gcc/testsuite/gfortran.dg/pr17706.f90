@@ -13,13 +13,13 @@ program pr17706
   s = x
   write (s, '(F4.1)') small
   ! The plus is optional.  We choose not to display it.
-  if (s .ne. " 0.0") call abort
+  if (s .ne. " 0.0") STOP 1
 
   s = x
   write (s, '(SS,F4.1)') small
-  if (s .ne. " 0.0") call abort
+  if (s .ne. " 0.0") STOP 2
 
   s = x
   write (s, '(SP,F4.1)') small
-  if (s .ne. "+0.0") call abort
+  if (s .ne. "+0.0") STOP 3
 end program

@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -150,11 +150,13 @@ vxworks_override_options (void)
   if (flag_pic && !TARGET_VXWORKS_RTP)
     error ("PIC is only supported for RTPs");
 
-  /* Default to strict dwarf-2 to prevent potential difficulties observed with
-     non-gdb debuggers on extensions > 2.  */
+  /* VxWorks comes with non-gdb debuggers which only support strict
+     dwarf up to certain version.  Default dwarf control to friendly
+     values for these.  */
+
   if (!global_options_set.x_dwarf_strict)
     dwarf_strict = 1;
 
   if (!global_options_set.x_dwarf_version)
-    dwarf_version = 2;
+    dwarf_version = VXWORKS_DWARF_VERSION_DEFAULT;
 }

@@ -7,7 +7,7 @@ subroutine test
   real, pointer :: p(:), q
   common /block/ p, q
 
-  if (any (p .ne. (/1.0, 2.0/)) .or. (q .ne. 42.0)) call abort ()
+  if (any (p .ne. (/1.0, 2.0/)) .or. (q .ne. 42.0)) STOP 1
 end subroutine
 
 program common_pointer_1

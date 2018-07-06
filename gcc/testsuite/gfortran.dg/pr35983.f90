@@ -19,6 +19,6 @@ program main
    DD = descr(c_loc(buf))
    i = transfer (DD%address, 0_c_intptr_t)
    j = transfer (c_loc(buf), 0_c_intptr_t)
-   if (any((/ i,j /) == 0_c_intptr_t)) call abort
-   if (i /= j) call abort
+   if (any((/ i,j /) == 0_c_intptr_t)) STOP 1
+   if (i /= j) STOP 2
 end program main

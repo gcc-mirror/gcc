@@ -1,6 +1,6 @@
 // Optimizations for random number extensions, aarch64 version -*- C++ -*-
 
-// Copyright (C) 2017 Free Software Foundation, Inc.
+// Copyright (C) 2017-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@
 
 #ifdef __ARM_NEON
 
-#ifdef __AARCH64EB__
+#ifdef __ARM_BIG_ENDIAN
 # define __VEXT(_A,_B,_C) __builtin_shuffle (_A, _B, (__Uint8x16_t) \
     {16-_C, 17-_C, 18-_C, 19-_C, 20-_C, 21-_C, 22-_C, 23-_C, \
      24-_C, 25-_C, 26-_C, 27-_C, 28-_C, 29-_C, 30-_C, 31-_C})

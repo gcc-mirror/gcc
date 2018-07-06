@@ -1,6 +1,6 @@
 // random number generation (out of line) -*- C++ -*-
 
-// Copyright (C) 2009-2017 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -128,9 +128,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     template<typename _Sseq>
-      typename std::enable_if<std::is_class<_Sseq>::value>::type
+      auto
       linear_congruential_engine<_UIntType, __a, __c, __m>::
       seed(_Sseq& __q)
+      -> _If_seed_seq<_Sseq>
       {
 	const _UIntType __k0 = __m == 0 ? std::numeric_limits<_UIntType>::digits
 	                                : std::__lg(__m);
@@ -346,10 +347,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   _UIntType __b, size_t __t, _UIntType __c, size_t __l,
 	   _UIntType __f>
     template<typename _Sseq>
-      typename std::enable_if<std::is_class<_Sseq>::value>::type
+      auto
       mersenne_twister_engine<_UIntType, __w, __n, __m, __r, __a, __u, __d,
 			      __s, __b, __t, __c, __l, __f>::
       seed(_Sseq& __q)
+      -> _If_seed_seq<_Sseq>
       {
 	const _UIntType __upper_mask = (~_UIntType()) << __r;
 	const size_t __k = (__w + 31) / 32;
@@ -564,9 +566,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _UIntType, size_t __w, size_t __s, size_t __r>
     template<typename _Sseq>
-      typename std::enable_if<std::is_class<_Sseq>::value>::type
+      auto
       subtract_with_carry_engine<_UIntType, __w, __s, __r>::
       seed(_Sseq& __q)
+      -> _If_seed_seq<_Sseq>
       {
 	const size_t __k = (__w + 31) / 32;
 	uint_least32_t __arr[__r * __k];
@@ -1301,6 +1304,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    const double __c2 = __param._M_c2b + __c1;
 	    const double __c3 = __c2 + 1;
 	    const double __c4 = __c3 + 1;
+	    // 1 / 78
+	    const double __178 = 0.0128205128205128205128205128205128L;
 	    // e^(1 / 78)
 	    const double __e178 = 1.0129030479320018583185514777512983L;
 	    const double __c5 = __c4 + __e178;
@@ -1340,7 +1345,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		else if (__u <= __c4)
 		  __x = 0;
 		else if (__u <= __c5)
-		  __x = 1;
+		  {
+		    __x = 1;
+		    // Only in the Errata, see libstdc++/83237.
+		    __w = __178;
+		  }
 		else
 		  {
 		    const double __v = -std::log(1.0 - __aurng());
@@ -2402,7 +2411,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  __v = __v * __v * __v;
 		  __u = __aurng();
 		}
-	      while (__u > result_type(1.0) - 0.331 * __n * __n * __n * __n
+	      while (__u > result_type(1.0) - 0.0331 * __n * __n * __n * __n
 		     && (std::log(__u) > (0.5 * __n * __n + __a1
 					  * (1.0 - __v + std::log(__v)))));
 
@@ -2423,7 +2432,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  __v = __v * __v * __v;
 		  __u = __aurng();
 		}
-	      while (__u > result_type(1.0) - 0.331 * __n * __n * __n * __n
+	      while (__u > result_type(1.0) - 0.0331 * __n * __n * __n * __n
 		     && (std::log(__u) > (0.5 * __n * __n + __a1
 					  * (1.0 - __v + std::log(__v)))));
 

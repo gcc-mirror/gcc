@@ -1,6 +1,6 @@
 // Deque implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -291,7 +291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		    std::input_iterator_tag)
       {
         iterator __cur = begin();
-        for (; __first != __last && __cur != end(); ++__cur, ++__first)
+        for (; __first != __last && __cur != end(); ++__cur, (void)++__first)
           *__cur = *__first;
         if (__first == __last)
           _M_erase_at_end(__cur);

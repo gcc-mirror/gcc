@@ -2,7 +2,7 @@
 
 struct A
 {
-  virtual int f() { return 1; }	 // { dg-message "overriding" }
+  virtual int f() { return 1; }	 // { dg-message "overridden" }
   virtual auto g() { return 1; } // { dg-error "virtual" }
 };
 

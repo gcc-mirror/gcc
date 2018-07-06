@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build amd64 arm64 mips64 mips64le ppc64 ppc64le s390x arm64be alpha sparc64 ia64
+// +build amd64 arm64 mips64 mips64le ppc64 ppc64le s390x arm64be alpha sparc64 ia64 riscv64
 
 package runtime
 
@@ -78,7 +78,7 @@ func lfstackUnpack(val uint64) *lfnode {
 		return (*lfnode)(unsafe.Pointer(uintptr(int64(val) >> sparcLinuxCntBits << 3)))
 	}
 	if GOARCH == "ia64" {
-		return (*lfnode)(unsafe.Pointer(uintptr((val>>ia64CntBits<<3)&(1<<(64-3)-1) | val&^(1<<(64-3)-1))))
+		return (*lfnode)(unsafe.Pointer(uintptr(((val & (1<<(64-3) - 1)) >> ia64CntBits << 3) | val&^(1<<(64-3)-1))))
 	}
 	if GOARCH == "ppc64" && GOOS == "aix" {
 		if val&(1<<63) != 0 {

@@ -1,5 +1,5 @@
 /* PR79725 */
-/* { dg-do compile } */
+/* { dg-do compile { target size32plus } } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
 _Complex double f(_Complex double x[])

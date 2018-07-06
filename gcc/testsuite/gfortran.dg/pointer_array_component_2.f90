@@ -38,6 +38,6 @@
   end do
 
 ! These lines would segfault.
-  if (int (sum (z%s(1)%x)) .ne. 3) call abort
-  if (int (sum (z%s(1)%x * z%s(2)%x)) .ne. 10) call abort
+  if (int (sum (z%s(1)%x)) .ne. 3) STOP 1
+  if (int (sum (z%s(1)%x * z%s(2)%x)) .ne. 10) STOP 2
 end

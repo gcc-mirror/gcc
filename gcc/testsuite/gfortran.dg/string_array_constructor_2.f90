@@ -25,7 +25,7 @@ contains
         !print *, ca(1)
         cb = (/Uppercase(c)/) ! This gets an ICE
         if (ca(1) .ne. cb(1)) then
-            call abort()
+            STOP 1
         end if
         !print *, ca(1)
     end subroutine

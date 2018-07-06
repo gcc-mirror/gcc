@@ -1,5 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -fselective-scheduling2 -fsel-sched-pipelining" } */
+/* { dg-additional-options "-Wno-return-type" } */
 
 extern "C" {
 	typedef struct _IO_FILE FILE;
@@ -31,7 +32,6 @@ enum tree_code {
 	ERROR_MARK,
 	IDENTIFIER_NODE,
 	OMP_SIMD,
-	CILK_SIMD,
 	MAX_TREE_CODES
 };
 struct tree_identifier {
@@ -191,7 +191,7 @@ cp_parser_omp_for_loop(cp_parser * parser, enum tree_code code, tree clauses,
 	for (i = 0; i < collapse; i++) {
 		bool add_private_clause = false;
 		add_private_clause |=
-		    cp_parser_omp_for_loop_init(parser, code != CILK_SIMD,
+		    cp_parser_omp_for_loop_init(parser, true,
 						this_pre_body, for_block, init,
 						decl, real_decl);
 	}

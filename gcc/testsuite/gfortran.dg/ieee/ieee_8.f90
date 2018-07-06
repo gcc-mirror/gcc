@@ -1,4 +1,4 @@
-! { dg-do run { xfail aarch64*-*-gnu arm*-*-gnueabi arm*-*-gnueabihf } }
+! { dg-do run { xfail aarch64*-*-gnu* arm*-*-gnueabi arm*-*-gnueabihf } }
 ! XFAIL because of PR libfortran/78449.
 
 module foo
@@ -98,16 +98,16 @@ subroutine gee(n, rounding, flag)
 
   integer, parameter :: x8 = merge(4,2,ieee_support_halting(ieee_overflow))
 
-  if (len(s1) /= x1) call abort
-  if (len(s2) /= x2) call abort
-  if (len(s3) /= x3) call abort
+  if (len(s1) /= x1) STOP 1
+  if (len(s2) /= x2) STOP 2
+  if (len(s3) /= x3) STOP 3
 
-  if (len(s4) /= x4) call abort
-  if (len(s5) /= x5) call abort
+  if (len(s4) /= x4) STOP 4
+  if (len(s5) /= x5) STOP 5
 
-  if (len(s6) /= x6) call abort
-  if (len(s7) /= x7) call abort
+  if (len(s6) /= x6) STOP 6
+  if (len(s7) /= x7) STOP 7
 
-  if (len(s8) /= x8) call abort
+  if (len(s8) /= x8) STOP 8
 
 end subroutine

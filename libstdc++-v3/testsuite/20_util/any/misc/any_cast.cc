@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do run }
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -95,15 +95,6 @@ void test03()
   VERIFY(move_count == 1);
   MoveEnabled&& m3 = any_cast<MoveEnabled&&>(any(m));
   VERIFY(move_count == 1);
-  struct MoveDeleted
-  {
-    MoveDeleted(MoveDeleted&&) = delete;
-    MoveDeleted() = default;
-    MoveDeleted(const MoveDeleted&) = default;
-  };
-  MoveDeleted md;
-  MoveDeleted&& md2 = any_cast<MoveDeleted>(any(std::move(md)));
-  MoveDeleted&& md3 = any_cast<MoveDeleted&&>(any(std::move(md)));
 }
 
 void test04()

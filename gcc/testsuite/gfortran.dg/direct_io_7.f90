@@ -11,20 +11,20 @@ program test
   msg = " "
   backspace (95,iostat=ios,iomsg=msg)
   if (ios == 0 .or. &
-       msg /= "Cannot BACKSPACE a file opened for DIRECT access") call abort
+       msg /= "Cannot BACKSPACE a file opened for DIRECT access") STOP 1
 
   ios = 0
   msg = " "
   endfile (95,iostat=ios,iomsg=msg)
   if (ios == 0 .or. &
        msg /= "Cannot perform ENDFILE on a file opened for DIRECT access") &
-       call abort
+       STOP 2
 
   ios = 0
   msg = " "
   rewind (95,iostat=ios,iomsg=msg)
   if (ios == 0 .or. &
-       msg /= "Cannot REWIND a file opened for DIRECT access ") call abort
+       msg /= "Cannot REWIND a file opened for DIRECT access ") STOP 3
 
   close (95)
 end program test

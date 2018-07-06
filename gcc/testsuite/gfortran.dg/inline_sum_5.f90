@@ -25,7 +25,7 @@ program test
       real, dimension(m,n):: y
 
       y = 1.0
-      if (any(sum(y*func(m,n), dim=1) /= m)) call abort
+      if (any(sum(y*func(m,n), dim=1) /= m)) STOP 1
 
     end subroutine sub
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -805,6 +805,42 @@ package body Ghost is
          end if;
       end if;
    end Check_Ghost_Refinement;
+
+   ----------------------
+   -- Check_Ghost_Type --
+   ----------------------
+
+   procedure Check_Ghost_Type (Typ : Entity_Id) is
+      Conc_Typ : Entity_Id;
+      Full_Typ : Entity_Id;
+
+   begin
+      if Is_Ghost_Entity (Typ) then
+         Conc_Typ := Empty;
+         Full_Typ := Typ;
+
+         if Is_Single_Concurrent_Type (Typ) then
+            Conc_Typ := Anonymous_Object (Typ);
+            Full_Typ := Conc_Typ;
+
+         elsif Is_Concurrent_Type (Typ) then
+            Conc_Typ := Typ;
+         end if;
+
+         --  A Ghost type cannot be concurrent (SPARK RM 6.9(19)). Verify this
+         --  legality rule first to give a finer-grained diagnostic.
+
+         if Present (Conc_Typ) then
+            Error_Msg_N ("ghost type & cannot be concurrent", Conc_Typ);
+         end if;
+
+         --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(7))
+
+         if Is_Effectively_Volatile (Full_Typ) then
+            Error_Msg_N ("ghost type & cannot be volatile", Full_Typ);
+         end if;
+      end if;
+   end Check_Ghost_Type;
 
    ------------------
    -- Ghost_Entity --

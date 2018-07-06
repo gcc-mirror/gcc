@@ -3,7 +3,7 @@
 
 struct A {
   ~A();
-  A f(A) { }
+  A f(A) { return A(); }
 };
 
 

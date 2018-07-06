@@ -1,6 +1,6 @@
 /* Integer arithmetic support for Altera Nios II.
    
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Altera and Mentor Graphics, Inc.
 
    This file is free software; you can redistribute it and/or modify it

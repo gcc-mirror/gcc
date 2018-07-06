@@ -2,6 +2,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-mzarch -mhotpatch=0,5" } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-O*" } } */
 
 #include <stdio.h>
 

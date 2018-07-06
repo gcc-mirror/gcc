@@ -1,5 +1,5 @@
 /* go-lang.c -- Go frontend gcc interface.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,6 +38,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "go-c.h"
 #include "go-gcc.h"
+
+#ifndef TARGET_AIX
+#define TARGET_AIX 0
+#endif
 
 /* Language-dependent contents of a type.  */
 
@@ -112,6 +116,8 @@ go_langhook_init (void)
   args.check_divide_overflow = go_check_divide_overflow;
   args.compiling_runtime = go_compiling_runtime;
   args.debug_escape_level = go_debug_escape_level;
+  args.debug_escape_hash = go_debug_escape_hash;
+  args.nil_check_size_threshold = TARGET_AIX ? -1 : 4096;
   args.linemap = go_get_linemap();
   args.backend = go_get_backend();
   go_create_gogo (&args);
@@ -188,7 +194,7 @@ static bool
 go_langhook_handle_option (
     size_t scode,
     const char *arg,
-    int value ATTRIBUTE_UNUSED,
+    int value,
     int kind ATTRIBUTE_UNUSED,
     location_t loc ATTRIBUTE_UNUSED,
     const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
@@ -245,7 +251,7 @@ go_langhook_handle_option (
       break;
 
     case OPT_fgo_optimize_:
-      ret = go_enable_optimize (arg) ? true : false;
+      ret = go_enable_optimize (arg, value) ? true : false;
       break;
 
     case OPT_fgo_pkgpath_:
@@ -372,7 +378,16 @@ go_langhook_type_for_mode (machine_mode mode, int unsignedp)
      make sense for the middle-end to ask the frontend for a type
      which the frontend does not support.  However, at least for now
      it is required.  See PR 46805.  */
-  if (VECTOR_MODE_P (mode))
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+      && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
+    {
+      unsigned int elem_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+						    GET_MODE_NUNITS (mode));
+      tree bool_type = build_nonstandard_boolean_type (elem_bits);
+      return build_vector_type_for_mode (bool_type, mode);
+    }
+  else if (VECTOR_MODE_P (mode)
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
       tree inner;
 

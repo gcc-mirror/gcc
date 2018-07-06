@@ -1,4 +1,4 @@
-// { dg-additional-options "-std=c++14" }
+// { dg-additional-options "-std=c++14 -Wno-return-type" }
 
 template<typename Signature>
 class function;

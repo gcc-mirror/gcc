@@ -27,7 +27,7 @@ template<typename T> struct C
   template<T> int foo();                        // { dg-error "double" }
 };
 
-template<typename T> int baz(T) { C<T> c; }     // { dg-message "required" }
+template<typename T> int baz(T) { C<T> c; return 0;}  // { dg-message "required" }
 
 void foobar()
 {

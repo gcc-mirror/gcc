@@ -1,5 +1,5 @@
 /* Map (unsigned int) keys to (source file, line, column) triples.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -26,6 +26,41 @@ along with this program; see the file COPYING3.  If not see
 #define GTY(x) /* nothing */
 #endif
 
+/* Both gcc and emacs number source *lines* starting at 1, but
+   they have differing conventions for *columns*.
+
+   GCC uses a 1-based convention for source columns,
+   whereas Emacs's M-x column-number-mode uses a 0-based convention.
+
+   For example, an error in the initial, left-hand
+   column of source line 3 is reported by GCC as:
+
+      some-file.c:3:1: error: ...etc...
+
+   On navigating to the location of that error in Emacs
+   (e.g. via "next-error"),
+   the locus is reported in the Mode Line
+   (assuming M-x column-number-mode) as:
+
+     some-file.c   10%   (3, 0)
+
+   i.e. "3:1:" in GCC corresponds to "(3, 0)" in Emacs.  */
+
+/* The type of line numbers.  */
+typedef unsigned int linenum_type;
+
+/* A function for for use by qsort for comparing line numbers.  */
+
+inline int compare (linenum_type lhs, linenum_type rhs)
+{
+  /* Avoid truncation issues by using long long for the comparison,
+     and only consider the sign of the result.  */
+  long long diff = (long long)lhs - (long long)rhs;
+  if (diff)
+    return diff > 0 ? 1 : -1;
+  return 0;
+}
+
 /* Reason for creating a new line map with linemap_add.  LC_ENTER is
    when including a new file, e.g. a #include directive in C.
    LC_LEAVE is when reaching a file's end.  LC_RENAME is when a file
@@ -42,9 +77,6 @@ enum lc_reason
   LC_ENTER_MACRO
   /* FIXME: add support for stringize and paste.  */
 };
-
-/* The type of line numbers.  */
-typedef unsigned int linenum_type;
 
 /* The typedef "source_location" is a key within the location database,
    identifying a source location or macro expansion, along with range
@@ -259,6 +291,11 @@ typedef unsigned int linenum_type;
    To further see how source_location works in practice, see the
    worked example in libcpp/location-example.txt.  */
 typedef unsigned int source_location;
+
+/* Do not track column numbers higher than this one.  As a result, the
+   range of column_bits is [12, 18] (or 0 if column numbers are
+   disabled).  */
+const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 12);
 
 /* Do not pack ranges if locations get higher than this.
    If you change this, update:
@@ -1250,26 +1287,6 @@ typedef struct
   /* In a system header?. */
   bool sysp;
 } expanded_location;
-
-/* Both gcc and emacs number source *lines* starting at 1, but
-   they have differing conventions for *columns*.
-
-   GCC uses a 1-based convention for source columns,
-   whereas Emacs's M-x column-number-mode uses a 0-based convention.
-
-   For example, an error in the initial, left-hand
-   column of source line 3 is reported by GCC as:
-
-      some-file.c:3:1: error: ...etc...
-
-   On navigating to the location of that error in Emacs
-   (e.g. via "next-error"),
-   the locus is reported in the Mode Line
-   (assuming M-x column-number-mode) as:
-
-     some-file.c   10%   (3, 0)
-
-   i.e. "3:1:" in GCC corresponds to "(3, 0)" in Emacs.  */
 
 /* A location within a rich_location: a caret&range, with
    the caret potentially flagged for display.  */

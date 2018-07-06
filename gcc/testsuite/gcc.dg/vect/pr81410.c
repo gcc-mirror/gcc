@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-require-effective-target vect_long_long } */
 
 #include "tree-vect.h"

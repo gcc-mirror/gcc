@@ -22,15 +22,15 @@ program char_pointer_dummy
 contains
   subroutine foo (cc1)
     character*4                :: cc1
-    if (cc1 /= "wxyz") call abort ()
+    if (cc1 /= "wxyz") STOP 1
   end subroutine foo
   subroutine sfoo (sc1)
     character*4, pointer       :: sc1
-    if (sc1 /= "wxyz") call abort ()
+    if (sc1 /= "wxyz") STOP 2
   end subroutine sfoo
   subroutine afoo (ac1)
     character*4, pointer       :: ac1(:)
-    if (ac1(1) /= "wxyz") call abort ()
+    if (ac1(1) /= "wxyz") STOP 3
   end subroutine afoo
 end program char_pointer_dummy
 

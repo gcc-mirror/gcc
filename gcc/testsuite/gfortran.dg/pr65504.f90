@@ -11,7 +11,7 @@ program pr65504
   type (T) :: d
   c = foo ("test")
   d = foo ("test")
-  if (trim(c%b) .ne. "foo") call abort
+  if (trim(c%b) .ne. "foo") STOP 1
   contains
   type (T) function foo (x) result (v)
     character(len=*), intent(in) :: x

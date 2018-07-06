@@ -28,6 +28,6 @@ void foo (int invariant)
     }
 }
 /* After inlining bar into foo, op2 is invariant within inner loop.  */
-/* { dg-final { scan-ipa-dump "op2 change 10.000000. of time"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "op2 change 9.990000. of time"  "inline"  } } */
 /* After inlining bar into foo, op3 is invariant within both loops.  */
 /* { dg-final { scan-ipa-dump "op3 change 1.000000. of time"  "inline"  } } */

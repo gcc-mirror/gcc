@@ -38,15 +38,15 @@ if (p1 .or. p2 .or. p3 .or. p4 .or. .not. p5 .or. .not. p6) call should_not_exis
 if (same_type_as(b1,b1)   .neqv. .true.) call should_not_exist()
 
 ! Not (trivially) compile-time simplifiable:
-if (same_type_as(b1,a1)  .neqv. .true.) call abort()
-if (same_type_as(b1,a11) .neqv. .false.) call abort()
+if (same_type_as(b1,a1)  .neqv. .true.) STOP 1
+if (same_type_as(b1,a11) .neqv. .false.) STOP 2
 allocate(t1 :: b1)
-if (same_type_as(b1,a1)  .neqv. .true.) call abort()
-if (same_type_as(b1,a11) .neqv. .false.) call abort()
+if (same_type_as(b1,a1)  .neqv. .true.) STOP 3
+if (same_type_as(b1,a11) .neqv. .false.) STOP 4
 deallocate(b1)
 allocate(t11 :: b1)
-if (same_type_as(b1,a1)  .neqv. .false.) call abort()
-if (same_type_as(b1,a11) .neqv. .true.) call abort()
+if (same_type_as(b1,a1)  .neqv. .false.) STOP 5
+if (same_type_as(b1,a11) .neqv. .true.) STOP 6
 deallocate(b1)
 
 
@@ -88,38 +88,38 @@ if (extends_type_of(a1,b11)  .neqv. .false.) call should_not_exist()
 
 
 ! Special case, simplified at tree folding:
-if (extends_type_of(b1,b1)   .neqv. .true.) call abort()
+if (extends_type_of(b1,b1)   .neqv. .true.) STOP 7
 
 ! All other possibilities are not compile-time checkable
-if (extends_type_of(b11,b1)  .neqv. .true.) call abort()
-if (extends_type_of(b1,b11)  .neqv. .false.) call abort()
-if (extends_type_of(a11,b11) .neqv. .true.) call abort()
+if (extends_type_of(b11,b1)  .neqv. .true.) STOP 8
+if (extends_type_of(b1,b11)  .neqv. .false.) STOP 9
+if (extends_type_of(a11,b11) .neqv. .true.) STOP 10
 
 allocate(t11 :: b11)
-if (extends_type_of(a11,b11) .neqv. .true.) call abort()
+if (extends_type_of(a11,b11) .neqv. .true.) STOP 11
 deallocate(b11)
 
 allocate(t111 :: b11)
-if (extends_type_of(a11,b11) .neqv. .false.) call abort()
+if (extends_type_of(a11,b11) .neqv. .false.) STOP 12
 deallocate(b11)
 
 allocate(t11 :: b1)
-if (extends_type_of(a11,b1) .neqv. .true.) call abort()
+if (extends_type_of(a11,b1) .neqv. .true.) STOP 13
 deallocate(b1)
 
 allocate(t11::b1)
-if (extends_type_of(b1,a11) .neqv. .true.) call abort()
+if (extends_type_of(b1,a11) .neqv. .true.) STOP 14
 deallocate(b1)
 
 allocate(b1,source=a11)
-if (extends_type_of(b1,a11) .neqv. .true.) call abort()
+if (extends_type_of(b1,a11) .neqv. .true.) STOP 15
 deallocate(b1)
 
 allocate( b1,source=a1)
-if (extends_type_of(b1,a11) .neqv. .false.) call abort()
+if (extends_type_of(b1,a11) .neqv. .false.) STOP 16
 deallocate(b1)
 
 end
 
-! { dg-final { scan-tree-dump-times "abort" 16 "original" } }
+! { dg-final { scan-tree-dump-times "stop_numeric" 16 "original" } }
 ! { dg-final { scan-tree-dump-times "should_not_exist" 0 "original" } }

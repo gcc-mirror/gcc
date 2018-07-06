@@ -21,7 +21,7 @@ c     current Netlib BLAS.)
       do i=1,100
          a(i)=0.D0
       enddo
-      if (dnrm2(100,a,1) .ne. 0.0) call abort
+      if (dnrm2(100,a,1) .ne. 0.0) STOP 1
       end
 
       double precision function dnrm2 ( n, dx, incx)

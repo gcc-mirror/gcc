@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=skylake-avx512 -mprefer-avx256" } */
+/* { dg-options "-O3 -march=skylake-avx512 -mprefer-vector-width=256" } */
 /* { dg-final { scan-assembler-not "%zmm\[0-9\]+" } } */
 /* { dg-final { scan-assembler "vmulpd" } } */
 

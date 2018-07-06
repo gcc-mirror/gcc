@@ -29,7 +29,7 @@ test (A &b, B c)
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
   __restrict auto [ t ] = c;		// { dg-error "invalid use of 'restrict'" }
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
-  long long auto [ u ] = c;		// { dg-error "'long long' invalid for 'structured binding'" }
+  long long auto [ u ] = c;		// { dg-error "'long long' specified with 'auto'" }
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
   virtual auto [ v ] = c;		// { dg-error "'virtual' outside class declaration" }
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
@@ -43,7 +43,7 @@ test (A &b, B c)
 
 void
 test2 (auto & [ p ] = bar ())		// { dg-error "'p' was not declared in this scope" }
-{
+{					// { dg-warning "auto" "" { target { ! concepts } } .-1 }
 }
 
 int arr[4];
@@ -51,16 +51,21 @@ int arr[4];
 void
 test3 (A &b, B c)
 {
-  auto [ d, e, f ] = arr;		// { dg-error "only 3 names provided while 'int .4.' decomposes into 4 elements" }
-					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
-  auto & [ g, h, i, j, k ] = arr;	// { dg-error "5 names provided while 'int .4.' decomposes into 4 elements" }
-					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
-  auto [ l, m ] = b;			// { dg-error "only 2 names provided while 'A' decomposes into 3 elements" }
-					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
-  auto & [ n, o, p, q ] = b;		// { dg-error "4 names provided while 'A' decomposes into 3 elements" }
-					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
+  auto [ d, e, f ] = arr;		// { dg-error "only 3 names provided" }
+					// { dg-message "while 'int .4.' decomposes into 4 elements" "" { target *-*-* } .-1 }
+					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-2 }
+  auto & [ g, h, i, j, k ] = arr;	// { dg-error "5 names provided" }
+					// { dg-message "while 'int .4.' decomposes into 4 elements" "" { target *-*-* } .-1 }
+					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-2 }
+  auto [ l, m ] = b;			// { dg-error "only 2 names provided" }
+					// { dg-message "while 'A' decomposes into 3 elements" "" { target *-*-* } .-1 }
+					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-2 }
+  auto & [ n, o, p, q ] = b;		// { dg-error "4 names provided" }
+					// { dg-message "while 'A' decomposes into 3 elements" "" { target *-*-* } .-1 }
+					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-2 }
   auto [] { c };			// { dg-error "empty structured binding declaration" }
 					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
-  auto [ r, s ] = c;			// { dg-error "2 names provided while 'B' decomposes into 1 elements" }
-					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-1 }
+  auto [ r, s ] = c;			// { dg-error "2 names provided" }
+					// { dg-message "while 'B' decomposes into 1 element" "" { target *-*-* } .-1 }
+					// { dg-warning "structured bindings only available with -std=c..17 or -std=gnu..17" "" { target c++14_down } .-2 }
 }

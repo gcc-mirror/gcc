@@ -1,6 +1,6 @@
 // Filesystem operations -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -84,13 +84,20 @@ fs::absolute(const path& p)
 fs::path
 fs::absolute(const path& p, error_code& ec)
 {
+  path ret;
+  if (p.empty())
+    {
+      ec = make_error_code(std::errc::no_such_file_or_directory);
+      return ret;
+    }
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
   ec = std::make_error_code(errc::not_supported);
-  return {};
 #else
   ec.clear();
-  return current_path() / p;
+  ret = current_path();
+  ret /= p;
 #endif
+  return ret;
 }
 
 namespace
@@ -382,48 +389,68 @@ fs::do_copy_file(const char* from, const char* to,
       return false;
     }
 
+  size_t count = from_st->st_size;
 #ifdef _GLIBCXX_USE_SENDFILE
   off_t offset = 0;
-  const auto n = ::sendfile(out.fd, in.fd, &offset, from_st->st_size);
-  if (n < 0 && (errno == ENOSYS || errno == EINVAL))
+  ssize_t n = ::sendfile(out.fd, in.fd, &offset, count);
+  if (n < 0 && errno != ENOSYS && errno != EINVAL)
     {
-#endif // _GLIBCXX_USE_SENDFILE
-      __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
-      __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
-      if (sbin.is_open())
-	in.fd = -1;
-      if (sbout.is_open())
-	out.fd = -1;
-      if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
-	{
-	  ec = std::make_error_code(std::errc::io_error);
-	  return false;
-	}
-      if (!sbout.close() || !sbin.close())
+      ec.assign(errno, std::generic_category());
+      return false;
+    }
+  if ((size_t)n == count)
+    {
+      if (!out.close() || !in.close())
 	{
 	  ec.assign(errno, std::generic_category());
 	  return false;
 	}
-
       ec.clear();
       return true;
+    }
+  else if (n > 0)
+    count -= n;
+#endif // _GLIBCXX_USE_SENDFILE
+
+  using std::ios;
+  __gnu_cxx::stdio_filebuf<char> sbin(in.fd, ios::in|ios::binary);
+  __gnu_cxx::stdio_filebuf<char> sbout(out.fd, ios::out|ios::binary);
+
+  if (sbin.is_open())
+    in.fd = -1;
+  if (sbout.is_open())
+    out.fd = -1;
 
 #ifdef _GLIBCXX_USE_SENDFILE
-    }
-  if (n != from_st->st_size)
+  if (n != 0)
     {
-      ec.assign(errno, std::generic_category());
-      return false;
-    }
-  if (!out.close() || !in.close())
-    {
-      ec.assign(errno, std::generic_category());
-      return false;
-    }
+      if (n < 0)
+	n = 0;
 
+      const auto p1 = sbin.pubseekoff(n, ios::beg, ios::in);
+      const auto p2 = sbout.pubseekoff(n, ios::beg, ios::out);
+
+      const std::streampos errpos(std::streamoff(-1));
+      if (p1 == errpos || p2 == errpos)
+	{
+	  ec = std::make_error_code(std::errc::io_error);
+	  return false;
+	}
+    }
+#endif
+
+  if (count && !(std::ostream(&sbout) << &sbin))
+    {
+      ec = std::make_error_code(std::errc::io_error);
+      return false;
+    }
+  if (!sbout.close() || !sbin.close())
+    {
+      ec.assign(errno, std::generic_category());
+      return false;
+    }
   ec.clear();
   return true;
-#endif // _GLIBCXX_USE_SENDFILE
 }
 #endif // NEED_DO_COPY_FILE
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
@@ -648,10 +675,8 @@ namespace
     if (::mkdir(p.c_str(), mode))
       {
 	const int err = errno;
-	if (err != EEXIST || !is_directory(p))
+	if (err != EEXIST || !is_directory(p, ec))
 	  ec.assign(err, std::generic_category());
-	else
-	  ec.clear();
       }
     else
       {
@@ -1234,7 +1259,7 @@ bool
 fs::remove(const path& p)
 {
   error_code ec;
-  bool result = fs::remove(p, ec);
+  const bool result = fs::remove(p, ec);
   if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove", p, ec));
   return result;
@@ -1243,16 +1268,15 @@ fs::remove(const path& p)
 bool
 fs::remove(const path& p, error_code& ec) noexcept
 {
-  if (exists(symlink_status(p, ec)))
+  if (::remove(p.c_str()) == 0)
     {
-      if (::remove(p.c_str()) == 0)
-	{
-	  ec.clear();
-	  return true;
-	}
-      else
-	ec.assign(errno, std::generic_category());
+      ec.clear();
+      return true;
     }
+  else if (errno == ENOENT)
+    ec.clear();
+  else
+    ec.assign(errno, std::generic_category());
   return false;
 }
 
@@ -1261,7 +1285,7 @@ std::uintmax_t
 fs::remove_all(const path& p)
 {
   error_code ec;
-  bool result = remove_all(p, ec);
+  const auto result = remove_all(p, ec);
   if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove all", p, ec));
   return result;
@@ -1270,14 +1294,28 @@ fs::remove_all(const path& p)
 std::uintmax_t
 fs::remove_all(const path& p, error_code& ec)
 {
-  auto fs = symlink_status(p, ec);
-  uintmax_t count = 0;
-  if (!ec && fs.type() == file_type::directory)
-    for (directory_iterator d(p, ec), end; !ec && d != end; ++d)
-      count += fs::remove_all(d->path(), ec);
-  if (ec)
+  const auto s = symlink_status(p, ec);
+  if (!status_known(s))
     return -1;
-  return fs::remove(p, ec) ? ++count : -1;  // fs:remove() calls ec.clear()
+
+  ec.clear();
+  if (s.type() == file_type::not_found)
+    return 0;
+
+  uintmax_t count = 0;
+  if (s.type() == file_type::directory)
+    {
+      for (directory_iterator d(p, ec), end; !ec && d != end; d.increment(ec))
+	count += fs::remove_all(d->path(), ec);
+      if (ec.value() == ENOENT)
+	ec.clear();
+      else if (ec)
+	return -1;
+    }
+
+  if (fs::remove(p, ec))
+    ++count;
+  return ec ? -1 : count;
 }
 
 void
@@ -1347,10 +1385,11 @@ fs::space(const path& p, error_code& ec) noexcept
       ec.assign(errno, std::generic_category());
   else
     {
+      uintmax_t fragment_size = f.f_frsize;
       info = space_info{
-	f.f_blocks * f.f_frsize,
-	f.f_bfree * f.f_frsize,
-	f.f_bavail * f.f_frsize
+	f.f_blocks * fragment_size,
+	f.f_bfree * fragment_size,
+	f.f_bavail * fragment_size
       };
       ec.clear();
     }
@@ -1481,7 +1520,8 @@ fs::weakly_canonical(const path& p)
       ++iter;
     }
   // canonicalize:
-  result = canonical(result);
+  if (!result.empty())
+    result = canonical(result);
   // append the non-existing elements:
   while (iter != end)
     result /= *iter++;
@@ -1519,7 +1559,7 @@ fs::weakly_canonical(const path& p, error_code& ec)
       ++iter;
     }
   // canonicalize:
-  if (!ec)
+  if (!ec && !result.empty())
     result = canonical(result, ec);
   if (ec)
     result.clear();

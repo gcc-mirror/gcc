@@ -1,5 +1,5 @@
 `/* Implementation of the MINLOC intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -23,12 +23,15 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "libgfortran.h"'
+#include "libgfortran.h"
+#include <assert.h>'
 
 include(iparm.m4)dnl
 include(ifunction.m4)dnl
 
 `#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)'
+
+#define HAVE_BACK_ARG 1
 
 ARRAY_FUNCTION(0,
 `	atype_name minval;
@@ -39,6 +42,8 @@ ARRAY_FUNCTION(0,
 #endif
 	result = 1;',
 `#if defined ('atype_nan`)
+     	   for (n = 0; n < len; n++, src += delta)
+	     {
 		if (*src <= minval)
 		  {
 		    minval = *src;
@@ -46,14 +51,26 @@ ARRAY_FUNCTION(0,
 		    break;
 		  }
 	      }
-	    for (; n < len; n++, src += delta)
-	      {
+#else
+	    n = 0;
 #endif
-		if (*src < minval)
-		  {
-		    minval = *src;
-		    result = (rtype_name)n + 1;
-		  }')
+	    if (back)
+	      for (; n < len; n++, src += delta)
+	        {
+		  if (unlikely (*src <= minval))
+		    {
+		      minval = *src;
+		      result = (rtype_name)n + 1;
+		    }
+		}
+	    else
+	      for (; n < len; n++, src += delta)
+	        {
+		  if (unlikely (*src < minval))
+		    {
+		      minval = *src;
+		      result = (rtype_name) n + 1;
+		    }')
 
 MASKED_ARRAY_FUNCTION(0,
 `	atype_name minval;
@@ -85,13 +102,23 @@ MASKED_ARRAY_FUNCTION(0,
 	      result = result2;
 	    else
 #endif
-	    for (; n < len; n++, src += delta, msrc += mdelta)
-	      {
-		if (*msrc && *src < minval)
+	    if (back)
+	      for (; n < len; n++, src += delta, msrc += mdelta)
+	      	{
+		  if (*msrc && unlikely (*src <= minval))
+		    {
+		      minval = *src;
+		      result = (rtype_name)n + 1;
+		    }
+		}
+	      else
+	        for (; n < len; n++, src += delta, msrc += mdelta)
 		  {
-		    minval = *src;
-		    result = (rtype_name)n + 1;
-		  }', `')
+		    if (*msrc && unlikely (*src < minval))
+		      {
+		        minval = *src;
+			result = (rtype_name) n + 1;
+		      }')
 
 SCALAR_ARRAY_FUNCTION(0)
 

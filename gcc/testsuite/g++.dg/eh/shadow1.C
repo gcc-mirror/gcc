@@ -13,7 +13,7 @@ struct D : private B
   friend class E;
   
   static B *baz (D *);
-  virtual void V () throw (B);  // { dg-error "overriding" "" { target { ! c++17 } } }
+  virtual void V () throw (B);  // { dg-message "overridden" "" { target { ! c++17 } } }
 };				// { dg-error "dynamic exception specification" "" { target c++17 } .-1 }
 				// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } .-2 }
 struct E : public D

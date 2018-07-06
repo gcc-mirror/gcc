@@ -1,5 +1,5 @@
 /* Implementation of the PARITY intrinsic
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Tobias Burnus  <burnus@net-b.de>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -100,7 +100,7 @@ parity_l2 (gfc_array_l2 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
@@ -150,8 +150,10 @@ parity_l2 (gfc_array_l2 * const restrict retarray,
 	  *dest = 0;
 	else
 	  {
+#if ! defined HAVE_BACK_ARG
 	    for (n = 0; n < len; n++, src += delta)
 	      {
+#endif
 
   result = result != *src;
 	      }

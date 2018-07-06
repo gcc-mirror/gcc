@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,7 +101,7 @@ package body Sem_Intr is
       Nam  : constant Entity_Id := Entity (Name (N));
       Arg1 : constant Node_Id   := First_Actual (N);
       Typ  : Entity_Id;
-      Rtyp : Entity_Id;
+      Rtyp : Entity_Id := Empty;
       Cnam : Name_Id;
       Unam : Node_Id;
 

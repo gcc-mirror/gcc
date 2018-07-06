@@ -30,7 +30,7 @@ the C or C++ compiler, respectively, to use.
 
 var HelpPackages = &base.Command{
 	UsageLine: "packages",
-	Short:     "description of package lists",
+	Short:     "package lists",
 	Long: `
 Many commands apply to a set of packages:
 
@@ -471,6 +471,12 @@ General-purpose environment variables:
 		See https://golang.org/doc/articles/race_detector.html.
 	GOROOT
 		The root of the go tree.
+	GOTMPDIR
+		The directory where the go command will write
+		temporary source files, packages, and binaries.
+	GOCACHE
+		The directory where the go command will store
+		cached information for reuse in future builds.
 
 Environment variables for use with cgo:
 
@@ -481,17 +487,26 @@ Environment variables for use with cgo:
 	CGO_CFLAGS
 		Flags that cgo will pass to the compiler when compiling
 		C code.
-	CGO_CPPFLAGS
-		Flags that cgo will pass to the compiler when compiling
-		C or C++ code.
-	CGO_CXXFLAGS
-		Flags that cgo will pass to the compiler when compiling
-		C++ code.
-	CGO_FFLAGS
-		Flags that cgo will pass to the compiler when compiling
-		Fortran code.
-	CGO_LDFLAGS
-		Flags that cgo will pass to the compiler when linking.
+	CGO_CFLAGS_ALLOW
+		A regular expression specifying additional flags to allow
+		to appear in #cgo CFLAGS source code directives.
+		Does not apply to the CGO_CFLAGS environment variable.
+	CGO_CFLAGS_DISALLOW
+		A regular expression specifying flags that must be disallowed
+		from appearing in #cgo CFLAGS source code directives.
+		Does not apply to the CGO_CFLAGS environment variable.
+	CGO_CPPFLAGS, CGO_CPPFLAGS_ALLOW, CGO_CPPFLAGS_DISALLOW
+		Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+		but for the C preprocessor.
+	CGO_CXXFLAGS, CGO_CXXFLAGS_ALLOW, CGO_CXXFLAGS_DISALLOW
+		Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+		but for the C++ compiler.
+	CGO_FFLAGS, CGO_FFLAGS_ALLOW, CGO_FFLAGS_DISALLOW
+		Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+		but for the Fortran compiler.
+	CGO_LDFLAGS, CGO_LDFLAGS_ALLOW, CGO_LDFLAGS_DISALLOW
+		Like CGO_CFLAGS, CGO_CFLAGS_ALLOW, and CGO_CFLAGS_DISALLOW,
+		but for the linker.
 	CXX
 		The command to use to compile C++ code.
 	PKG_CONFIG
@@ -505,9 +520,15 @@ Architecture-specific environment variables:
 	GO386
 		For GOARCH=386, the floating point instruction set.
 		Valid values are 387, sse2.
+	GOMIPS
+		For GOARCH=mips{,le}, whether to use floating point instructions.
+		Valid values are hardfloat (default), softfloat.
 
 Special-purpose environment variables:
 
+	GCCGOTOOLDIR
+		If set, where to find gccgo tools, such as cgo.
+		The default is based on how gccgo was configured.
 	GOROOT_FINAL
 		The root of the installed Go tree, when it is
 		installed in a location other than where it is built.
@@ -521,9 +542,6 @@ Special-purpose environment variables:
 		Defined by Git. A colon-separated list of schemes that are allowed to be used
 		with git fetch/clone. If set, any scheme not explicitly mentioned will be
 		considered insecure by 'go get'.
-	GCCGOTOOLDIR
-		If set, where to find gccgo tools, such as cgo.
-		The default is based on how gccgo was configured.
 	`,
 }
 
@@ -568,14 +586,16 @@ Non-test Go source files can also include a //go:binary-only-package
 comment, indicating that the package sources are included
 for documentation only and must not be used to build the
 package binary. This enables distribution of Go packages in
-their compiled form alone. See the go/build package documentation
-for more details.
+their compiled form alone. Even binary-only packages require
+accurate import blocks listing required dependencies, so that
+those dependencies can be supplied when linking the resulting
+command.
 	`,
 }
 
 var HelpBuildmode = &base.Command{
 	UsageLine: "buildmode",
-	Short:     "description of build modes",
+	Short:     "build modes",
 	Long: `
 The 'go build' and 'go install' commands take a -buildmode argument which
 indicates which kind of object file is to be built. Currently supported values
@@ -619,5 +639,47 @@ are:
 	-buildmode=plugin
 		Build the listed main packages, plus all packages that they
 		import, into a Go plugin. Packages not named main are ignored.
+`,
+}
+
+var HelpCache = &base.Command{
+	UsageLine: "cache",
+	Short:     "build and test caching",
+	Long: `
+The go command caches build outputs for reuse in future builds.
+The default location for cache data is a subdirectory named go-build
+in the standard user cache directory for the current operating system.
+Setting the GOCACHE environment variable overrides this default,
+and running 'go env GOCACHE' prints the current cache directory.
+
+The go command periodically deletes cached data that has not been
+used recently. Running 'go clean -cache' deletes all cached data.
+
+The build cache correctly accounts for changes to Go source files,
+compilers, compiler options, and so on: cleaning the cache explicitly
+should not be necessary in typical use. However, the build cache
+does not detect changes to C libraries imported with cgo.
+If you have made changes to the C libraries on your system, you
+will need to clean the cache explicitly or else use the -a build flag
+(see 'go help build') to force rebuilding of packages that
+depend on the updated C libraries.
+
+The go command also caches successful package test results.
+See 'go help test' for details. Running 'go clean -testcache' removes
+all cached test results (but not cached build results).
+
+The GODEBUG environment variable can enable printing of debugging
+information about the state of the cache:
+
+GODEBUG=gocacheverify=1 causes the go command to bypass the
+use of any cache entries and instead rebuild everything and check
+that the results match existing cache entries.
+
+GODEBUG=gocachehash=1 causes the go command to print the inputs
+for all of the content hashes it uses to construct cache lookup keys.
+The output is voluminous but can be useful for debugging the cache.
+
+GODEBUG=gocachetest=1 causes the go command to print details of its
+decisions about whether to reuse a cached test result.
 `,
 }

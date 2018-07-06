@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -947,7 +947,7 @@ emit_to_new_bb_before (rtx_insn *seq, rtx_insn *insn)
    at the rtl level.  Emit the code required by the target at a landing
    pad for the given region.  */
 
-void
+static void
 expand_dw2_landing_pad_for_region (eh_region region)
 {
   if (targetm.have_exception_receiver ())
@@ -1003,7 +1003,6 @@ dw2_build_landing_pads (void)
 
       bb = emit_to_new_bb_before (seq, label_rtx (lp->post_landing_pad));
       bb->count = bb->next_bb->count;
-      bb->frequency = bb->next_bb->frequency;
       make_single_succ_edge (bb, bb->next_bb, e_flags);
       if (current_loops)
 	{
@@ -2466,14 +2465,6 @@ add_call_site (rtx landing_pad, int action, int section)
 static rtx_note *
 emit_note_eh_region_end (rtx_insn *insn)
 {
-  rtx_insn *next = NEXT_INSN (insn);
-
-  /* Make sure we do not split a call and its corresponding
-     CALL_ARG_LOCATION note.  */
-  if (next && NOTE_P (next)
-      && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-    insn = next;
-
   return emit_note_after (NOTE_INSN_EH_REGION_END, insn);
 }
 
@@ -2948,7 +2939,6 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
   switch_to_section (s);
 }
 
-
 /* Output a reference from an exception table to the type_info object TYPE.
    TT_FORMAT and TT_FORMAT_SIZE describe the DWARF encoding method used for
    the value.  */
@@ -2998,6 +2988,13 @@ output_ttype (tree type, int tt_format, int tt_format_size)
     dw2_asm_output_encoded_addr_rtx (tt_format, value, is_public, NULL);
 }
 
+/* Output an exception table for the current function according to SECTION.
+
+   If the function has been partitioned into hot and cold parts, value 0 for
+   SECTION refers to the table associated with the hot part while value 1
+   refers to the table associated with the cold part.  If the function has
+   not been partitioned, value 0 refers to the single exception table.  */
+ 
 static void
 output_one_function_exception_table (int section)
 {
@@ -3176,13 +3173,26 @@ output_one_function_exception_table (int section)
     }
 }
 
+/* Output an exception table for the current function according to SECTION,
+   switching back and forth from the function section appropriately.
+
+   If the function has been partitioned into hot and cold parts, value 0 for
+   SECTION refers to the table associated with the hot part while value 1
+   refers to the table associated with the cold part.  If the function has
+   not been partitioned, value 0 refers to the single exception table.  */
+
 void
-output_function_exception_table (const char *fnname)
+output_function_exception_table (int section)
 {
+  const char *fnname = get_fnname_from_decl (current_function_decl);
   rtx personality = get_personality_function (current_function_decl);
 
   /* Not all functions need anything.  */
-  if (! crtl->uses_eh_lsda)
+  if (!crtl->uses_eh_lsda)
+    return;
+
+  /* No need to emit any boilerplate stuff for the cold part.  */
+  if (section == 1 && !crtl->eh.call_site_record_v[1])
     return;
 
   if (personality)
@@ -3198,9 +3208,8 @@ output_function_exception_table (const char *fnname)
   /* If the target wants a label to begin the table, emit it here.  */
   targetm.asm_out.emit_except_table_label (asm_out_file);
 
-  output_one_function_exception_table (0);
-  if (crtl->eh.call_site_record_v[1])
-    output_one_function_exception_table (1);
+  /* Do the real work.  */
+  output_one_function_exception_table (section);
 
   switch_to_section (current_function_section ());
 }

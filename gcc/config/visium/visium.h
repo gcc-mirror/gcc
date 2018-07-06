@@ -1,5 +1,5 @@
 /* Definitions of target machine for Visium.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -1456,7 +1456,7 @@ do									\
    Here we output a word of zero so that jump-tables can be seperated
    in reverse assembly. */
 #define ASM_OUTPUT_CASE_END(STREAM, NUM, TABLE) \
-  asm_fprintf (STREAM, "\t.long   0\n");
+  asm_fprintf (STREAM, "\t.long   0\n")
 
 /* Assembler Commands for Alignment
 

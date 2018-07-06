@@ -1,5 +1,5 @@
 /* Simple bitmaps.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -897,6 +897,7 @@ test_set_range ()
   bitmap_set_range (s, 15, 1);
   ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 1, 14));
   ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 15, 15));
+  sbitmap_free (s);
 
   s = sbitmap_alloc (1024);
   bitmap_clear (s);
@@ -914,6 +915,7 @@ test_set_range ()
   ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 512 + 64, 1023));
   ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512, 512));
   ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512 + 63, 512 + 63));
+  sbitmap_free (s);
 }
 
 /* Verify bitmap_bit_in_range_p functions for sbitmap.  */
@@ -935,6 +937,8 @@ test_bit_in_range ()
   ASSERT_TRUE (bitmap_bit_in_range_p (s, 100, 100));
   ASSERT_TRUE (bitmap_bit_p (s, 100));
 
+  sbitmap_free (s);
+
   s = sbitmap_alloc (64);
   bitmap_clear (s);
   bitmap_set_bit (s, 63);
@@ -942,6 +946,7 @@ test_bit_in_range ()
   ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 63));
   ASSERT_TRUE (bitmap_bit_in_range_p (s, 63, 63));
   ASSERT_TRUE (bitmap_bit_p (s, 63));
+  sbitmap_free (s);
 
   s = sbitmap_alloc (1024);
   bitmap_clear (s);
@@ -985,6 +990,7 @@ test_bit_in_range ()
   ASSERT_FALSE (bitmap_bit_in_range_p (s, 17, 31));
   ASSERT_FALSE (bitmap_bit_in_range_p (s, 49, 63));
   ASSERT_FALSE (bitmap_bit_in_range_p (s, 65, 1023));
+  sbitmap_free (s);
 }
 
 /* Run all of the selftests within this file.  */

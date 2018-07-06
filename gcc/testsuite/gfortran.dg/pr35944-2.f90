@@ -10,6 +10,6 @@
   QDA1 = MOD (1.1_k*(QDA(1)-5.0_k), P=(QDA-2.5_k))
   DO i = 1, 10
     QVAL = MOD (1.1_k*(QDA(1)-5.0_k), P=(QDA(i)-2.5_k))
-    if (qval /= qda1(i)) call abort
+    if (qval /= qda1(i)) STOP 1
   enddo
 end

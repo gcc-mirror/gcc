@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -982,7 +982,7 @@ package System.Tasking is
       --  updated it itself using information from a suspended Caller, or
       --  after Caller has updated it and awakened Self.
 
-      Master_of_Task : Master_Level;
+      Master_Of_Task : Master_Level;
       --  The task executing the master of this task, and the ID of this task's
       --  master (unique only among masters currently active within Parent).
       --

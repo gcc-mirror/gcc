@@ -1,3 +1,115 @@
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-17  Ian Lance Taylor  <iant@golang.org>
+
+	* backtrace.c: Revert last two changes.  Don't call mmap
+	directly.
+
+2018-04-17  Ian Lance Taylor  <iant@golang.org>
+
+	* backtrace.c: Include backtrace-supported.h before checking
+	BACKTRACE_USES_MALLOC.
+
+2018-04-17  Ian Lance Taylor  <iant@golang.org>
+
+	* backtrace.c (backtrace_full): When testing whether we can
+	allocate memory, call mmap directly, and munmap the memory.
+
+2018-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/85161
+	* elf.c (elf_zlib_fetch): Fix up predefined macro names in test for
+	big endian, only use 32-bit loads if endianity macros are predefined
+	and indicate big or little endian.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/82368
+	* elf.c (SHT_PROGBITS): Undefine and define.
+
+2018-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/82368
+	* elf.c (EM_PPC64, EF_PPC64_ABI): Undefine and define.
+	(struct elf_ppc64_opd_data): New type.
+	(elf_initialize_syminfo): Add opd argument, handle symbols
+	pointing into the PowerPC64 ELFv1 .opd section.
+	(elf_add): Read .opd section on PowerPC64 ELFv1, pass pointer
+	to structure with .opd data to elf_initialize_syminfo.
+
+2018-01-31  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_add): Close descriptor if we use a debugfile.
+	* btest.c (check_open_files): New static function.
+	(main): Call check_open_files.
+
+2018-01-25  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_open_debugfile_by_debuglink): Don't check CRC if the
+	desired CRC is zero.
+	(elf_add): Don't clear *found_sym and *found_dwarf if debuginfo.
+
+2018-01-25  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (coff_add): Only release syms_view if it is valid.
+
+2018-01-25  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (coff_add): Another memcpy -> coff_read4 fix.
+
+2018-01-24  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (coff_add): Use coff_read4, not memcpy.
+
+2018-01-24  Ian Lance Taylor  <iant@golang.org>
+
+	PR other/68239
+	* mmap.c (backtrace_free_locked): Don't put more than 16 entries
+	on the free list.
+
+2018-01-19  Tony Reix  <tony.reix@atos.net>
+
+	* xcoff.c (xcoff_incl_compare): New function.
+	(xcoff_incl_search): New function.
+	(xcoff_process_linenos): Use bsearch to find include file.
+	(xcoff_initialize_fileline): Sort include file information.
+
+2018-01-16  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (codes) [GENERATE_FIXED_HUFFMAN_TABLE]: Fix size to be
+	288.
+	(main) [GENERATE_FIXED_HUFFMAN_TABLE]: Pass 288 to
+	elf_zlib_inflate_table.  Generate elf_zlib_default_dist_table.
+	(elf_zlib_default_table): Update.
+	(elf_zlib_default_dist_table): New static array.
+	(elf_zlib_inflate): Use elf_zlib_default_dist_table for dist table
+	for block type 1.
+	* ztest.c (struct zlib_test): Add uncompressed_len.
+	(tests): Initialize uncompressed_len field.  Add new test case.
+	(test_samples): Use uncompressed_len field.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* configure.ac: Add CET_FLAGS to EXTRA_FLAGS.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Likewise.
+	* configure: Likewise.
+
 2017-10-06  Ian Lance Taylor  <iant@golang.org>
 
 	* ztest.c (test_large): Pass unsigned long *, not size_t *, to
@@ -813,7 +925,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2017 Free Software Foundation, Inc.
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

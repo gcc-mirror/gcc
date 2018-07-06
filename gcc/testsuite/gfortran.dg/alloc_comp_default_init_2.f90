@@ -11,7 +11,7 @@ program testprog
   integer, save :: callnb = 0
   type(t_type) :: this
   allocate ( this % chars ( 4))
-  if (.not.recursivefunc (this) .or. (callnb .ne. 10)) call abort ()
+  if (.not.recursivefunc (this) .or. (callnb .ne. 10)) STOP 1
 contains
   recursive function recursivefunc ( this ) result ( match )
     type(t_type), intent(in) :: this

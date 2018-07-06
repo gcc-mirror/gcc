@@ -12,7 +12,7 @@ logical(kind=ATOMIC_LOGICAL_KIND) :: atomic_bool ! { dg-error "has no IMPLICIT t
 
 print *, OUTPUT_UNIT
 
-if (IOSTAT_INQUIRE_INTERNAL_UNIT <= 0) call abort() ! { dg-error "has no IMPLICIT type" }
+if (IOSTAT_INQUIRE_INTERNAL_UNIT <= 0) STOP 1 ! { dg-error "has no IMPLICIT type" }
 print *,STAT_STOPPED_IMAGE ! { dg-error "has no IMPLICIT type" }
 print *, STAT_LOCKED_OTHER_IMAGE ! { dg-error "has no IMPLICIT type" }
 print *, STAT_LOCKED ! { dg-error "has no IMPLICIT type" }

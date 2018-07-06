@@ -1,6 +1,6 @@
 /* Routines for emitting trees to a file stream.
 
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -211,6 +211,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
     {
       bp_pack_value (bp, DECL_PACKED (expr), 1);
       bp_pack_value (bp, DECL_NONADDRESSABLE_P (expr), 1);
+      bp_pack_value (bp, DECL_PADDING_P (expr), 1);
       bp_pack_value (bp, expr->decl_common.off_align, 8);
     }
 
@@ -330,6 +331,7 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     bp_pack_value (bp, TYPE_NONALIASED_COMPONENT (expr), 1);
   if (AGGREGATE_TYPE_P (expr))
     bp_pack_value (bp, TYPE_TYPELESS_STORAGE (expr), 1);
+  bp_pack_value (bp, TYPE_EMPTY_P (expr), 1);
   bp_pack_var_len_unsigned (bp, TYPE_PRECISION (expr));
   bp_pack_var_len_unsigned (bp, TYPE_ALIGN (expr));
 }
@@ -531,11 +533,23 @@ write_ts_common_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 static void
 write_ts_vector_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 {
-  unsigned i;
   /* Note that the number of elements for EXPR has already been emitted
      in EXPR's header (see streamer_write_tree_header).  */
-  for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
-    stream_write_tree (ob, VECTOR_CST_ELT (expr, i), ref_p);
+  unsigned int count = vector_cst_encoded_nelts (expr);
+  for (unsigned int i = 0; i < count; ++i)
+    stream_write_tree (ob, VECTOR_CST_ENCODED_ELT (expr, i), ref_p);
+}
+
+
+/* Write all pointer fields in the TS_POLY_INT_CST structure of EXPR to
+   output block OB.  If REF_P is true, write a reference to EXPR's pointer
+   fields.  */
+
+static void
+write_ts_poly_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
+{
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    stream_write_tree (ob, POLY_INT_CST_COEFF (expr, i), ref_p);
 }
 
 
@@ -595,7 +609,8 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
       && DECL_HAS_VALUE_EXPR_P (expr))
     stream_write_tree (ob, DECL_VALUE_EXPR (expr), ref_p);
 
-  if (VAR_P (expr))
+  if (VAR_P (expr)
+      && DECL_HAS_DEBUG_EXPR_P (expr))
     stream_write_tree (ob, DECL_DEBUG_EXPR (expr), ref_p);
 }
 
@@ -880,6 +895,9 @@ streamer_write_tree_body (struct output_block *ob, tree expr, bool ref_p)
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
     write_ts_vector_tree_pointers (ob, expr, ref_p);
 
+  if (CODE_CONTAINS_STRUCT (code, TS_POLY_INT_CST))
+    write_ts_poly_tree_pointers (ob, expr, ref_p);
+
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
     write_ts_complex_tree_pointers (ob, expr, ref_p);
 
@@ -958,7 +976,12 @@ streamer_write_tree_header (struct output_block *ob, tree expr)
   else if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     write_identifier (ob, ob->main_stream, expr);
   else if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    streamer_write_hwi (ob, VECTOR_CST_NELTS (expr));
+    {
+      bitpack_d bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, VECTOR_CST_LOG2_NPATTERNS (expr), 8);
+      bp_pack_value (&bp, VECTOR_CST_NELTS_PER_PATTERN (expr), 8);
+      streamer_write_bitpack (&bp);
+    }
   else if (CODE_CONTAINS_STRUCT (code, TS_VEC))
     streamer_write_hwi (ob, TREE_VEC_LENGTH (expr));
   else if (CODE_CONTAINS_STRUCT (code, TS_BINFO))

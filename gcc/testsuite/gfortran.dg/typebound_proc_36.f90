@@ -73,5 +73,5 @@ program main
     call data_structure%a()
     call data_logger%init(data_structure)
 
-    if (ctr .ne. 1111) call abort
+    if (ctr .ne. 1111) STOP 1
 end program

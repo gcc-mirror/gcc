@@ -4,11 +4,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+#include "go-system.h"
+
+#include "gogo.h"
 #include "go-location.h"
 #include "go-linemap.h"
 #include "go-encode-id.h"
+#include "lex.h"
 
-// Return whether the character c is OK to use in the assembler.
+// Return whether the character c is OK to use in the assembler.  We
+// only permit ASCII alphanumeric characters, underscore, and dot.
 
 static bool
 char_needs_encoding(char c)
@@ -27,7 +32,7 @@ char_needs_encoding(char c)
     case 'y': case 'z':
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
-    case '_': case '.': case '$': case '/':
+    case '_': case '.':
       return false;
     default:
       return true;
@@ -77,28 +82,62 @@ fetch_utf8_char(const char* p, unsigned int* pc)
   return len;
 }
 
-// Encode an identifier using ASCII characters.
+// Encode an identifier using ASCII characters.  The encoding is
+// described in detail near the end of the long comment at the start
+// of names.cc.  Short version: translate all non-ASCII-alphanumeric
+// characters into ..uXXXX or ..UXXXXXXXX.
 
 std::string
 go_encode_id(const std::string &id)
 {
+  if (Lex::is_invalid_identifier(id))
+    {
+      go_assert(saw_errors());
+      return id;
+    }
+
+  // The encoding is only unambiguous if the input string does not
+  // contain ..u or ..U.
+  go_assert(id.find("..u") == std::string::npos);
+  go_assert(id.find("..U") == std::string::npos);
+
   std::string ret;
   const char* p = id.c_str();
   const char* pend = p + id.length();
+
+  // A leading ".0" is a space introduced before a mangled type name
+  // that starts with a 'u' or 'U', to avoid confusion with the
+  // mangling used here.  We don't need a leading ".0", and we don't
+  // want symbols that start with '.', so remove it.
+  if (p[0] == '.' && p[1] == '0')
+    p += 2;
+
   while (p < pend)
     {
       unsigned int c;
       size_t len = fetch_utf8_char(p, &c);
-      if (len == 1 && !char_needs_encoding(c))
-        ret += c;
+      if (len == 1)
+	{
+	  // At this point we should only be seeing alphanumerics or
+	  // underscore or dot.
+	  go_assert(!char_needs_encoding(c));
+	  ret += c;
+	}
       else
-        {
-          ret += "$U";
-          char buf[30];
-          snprintf(buf, sizeof buf, "%x", c);
-          ret += buf;
-          ret += "$";
-        }
+	{
+	  char buf[16];
+	  if (c < 0x10000)
+	    snprintf(buf, sizeof buf, "..u%04x", c);
+	  else
+	    snprintf(buf, sizeof buf, "..U%08x", c);
+
+	  // We don't want a symbol to start with '.', so add a prefix
+	  // if needed.
+	  if (ret.empty())
+	    ret += '_';
+
+	  ret += buf;
+	}
       p += len;
     }
   return ret;
@@ -110,4 +149,36 @@ go_selectively_encode_id(const std::string &id)
   if (go_id_needs_encoding(id))
     return go_encode_id(id);
   return std::string();
+}
+
+// Encode a struct field tag.  This is only used when we need to
+// create a type descriptor for an anonymous struct type with field
+// tags.  This mangling is applied before go_encode_id.  We skip
+// alphanumerics and underscore, replace every other single byte
+// character with .xNN, and leave larger UTF-8 characters for
+// go_encode_id.
+
+std::string
+go_mangle_struct_tag(const std::string& tag)
+{
+  std::string ret;
+  const char* p = tag.c_str();
+  const char* pend = p + tag.length();
+  while (p < pend)
+    {
+      unsigned int c;
+      size_t len = fetch_utf8_char(p, &c);
+      if (len > 1)
+	ret.append(p, len);
+      else if (!char_needs_encoding(c) && c != '.')
+	ret += c;
+      else
+	{
+	  char buf[16];
+	  snprintf(buf, sizeof buf, ".x%02x", c);
+	  ret += buf;
+	}
+      p += len;
+    }
+  return ret;
 }

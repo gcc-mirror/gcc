@@ -34,7 +34,7 @@ int xxx(void)
 /* We should be able to find out that the loop iterates four times and unroll it completely.  */
 
 /* { dg-final { scan-tree-dump-times "Added canonical iv to loop 1, 4 iterations" 1 "ivcanon"} } */
-/* { dg-final { scan-tree-dump-times "loop with 5 iterations completely unrolled" 1 "cunroll"} } */
+/* { dg-final { scan-tree-dump-times "loop with 4 iterations completely unrolled" 1 "cunroll"} } */
 /* { dg-final { scan-tree-dump-times "foo" 5 "optimized"} } */
 
 /* Because hppa, ia64 and Windows targets include an external declaration

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-fcf-protection=none" } */
 
 int func (int) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored" } */
 int (*fptr) (int) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored" } */

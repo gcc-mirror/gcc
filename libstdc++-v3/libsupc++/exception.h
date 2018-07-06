@@ -1,6 +1,6 @@
 // Exception Handling support header for -*- C++ -*-
 
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -62,6 +62,10 @@ namespace std
   public:
     exception() _GLIBCXX_USE_NOEXCEPT { }
     virtual ~exception() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
+#if __cplusplus >= 201103L
+    exception(const exception&) = default;
+    exception& operator=(const exception&) = default;
+#endif
 
     /** Returns a C-style character string describing the general cause
      *  of the current error.  */

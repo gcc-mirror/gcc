@@ -1,3 +1,13 @@
+2018-02-19  Martin Liska  <mliska@suse.cz>
+
+	PR c/81272
+	* decNumber.c (decCompareOp): Do not use bit and
+	for conjunction of predicates.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2017-05-29  Sylvestre Ledru  <sylvestre@debian.org>
 
 	* bid/bid2dpd_dpd2bid.c (_bid_to_dpd32): Fix whitespace.
@@ -674,7 +684,7 @@
 	* decDPD.h: Likewise.
 	* decLibrary.c, decRound.c: Likewise.
 
-Copyright (C) 2005-2017 Free Software Foundation, Inc.
+Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

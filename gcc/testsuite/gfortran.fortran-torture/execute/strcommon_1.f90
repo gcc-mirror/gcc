@@ -5,7 +5,7 @@ subroutine test1
   common /block/ c
   character(len=12) :: c
 
-  if (c .ne. "Hello World") call abort
+  if (c .ne. "Hello World") STOP 1
 end subroutine
 
 subroutine test2
@@ -13,7 +13,7 @@ subroutine test2
   common /block/ a
   character(len=6), dimension(2) :: a
 
-  if ((a(1) .ne. "Hello") .or. (a(2) .ne. "World")) call abort
+  if ((a(1) .ne. "Hello") .or. (a(2) .ne. "World")) STOP 2
 end subroutine
 
 program strcommon_1

@@ -22,7 +22,6 @@ var (
 	BuildBuildmode         string // -buildmode flag
 	BuildContext           = build.Default
 	BuildI                 bool               // -i flag
-	BuildLdflags           []string           // -ldflags flag
 	BuildLinkshared        bool               // -linkshared flag
 	BuildMSan              bool               // -msan flag
 	BuildN                 bool               // -n flag
@@ -37,6 +36,10 @@ var (
 	BuildV                 bool // -v flag
 	BuildWork              bool // -work flag
 	BuildX                 bool // -x flag
+
+	CmdName string // "build", "install", "list", etc.
+
+	DebugActiongraph string // -debug-actiongraph flag (undocumented, unstable)
 )
 
 func init() {
@@ -73,25 +76,28 @@ func init() {
 }
 
 var (
-	GOROOT    = findGOROOT()
-	GOBIN     = os.Getenv("GOBIN")
-	GOROOTbin = filepath.Join(GOROOT, "bin")
-	GOROOTpkg = filepath.Join(GOROOT, "pkg")
-	GOROOTsrc = filepath.Join(GOROOT, "src")
+	GOROOT       = findGOROOT()
+	GOBIN        = os.Getenv("GOBIN")
+	GOROOTbin    = filepath.Join(GOROOT, "bin")
+	GOROOTpkg    = filepath.Join(GOROOT, "pkg")
+	GOROOTsrc    = filepath.Join(GOROOT, "src")
+	GOROOT_FINAL = findGOROOT_FINAL()
 
 	// Used in envcmd.MkEnv and build ID computations.
-	GOARM = fmt.Sprint(objabi.GOARM)
-	GO386 = objabi.GO386
+	GOARM  = fmt.Sprint(objabi.GOARM)
+	GO386  = objabi.GO386
+	GOMIPS = objabi.GOMIPS
 )
 
 // Update build context to use our computed GOROOT.
 func init() {
 	BuildContext.GOROOT = GOROOT
-	// Note that we must use runtime.GOOS and runtime.GOARCH here,
-	// as the tool directory does not move based on environment variables.
-	// This matches the initialization of ToolDir in go/build,
-	// except for using GOROOT rather than runtime.GOROOT().
 	if runtime.Compiler != "gccgo" {
+		// Note that we must use runtime.GOOS and runtime.GOARCH here,
+		// as the tool directory does not move based on environment
+		// variables. This matches the initialization of ToolDir in
+		// go/build, except for using GOROOT rather than
+		// runtime.GOROOT.
 		build.ToolDir = filepath.Join(GOROOT, "pkg/tool/"+runtime.GOOS+"_"+runtime.GOARCH)
 	}
 }
@@ -100,24 +106,54 @@ func findGOROOT() string {
 	if env := os.Getenv("GOROOT"); env != "" {
 		return filepath.Clean(env)
 	}
-	if runtime.Compiler != "gccgo" {
-		exe, err := os.Executable()
+	def := filepath.Clean(runtime.GOROOT())
+	if runtime.Compiler == "gccgo" {
+		// gccgo has no real GOROOT, and it certainly doesn't
+		// depend on the executable's location.
+		return def
+	}
+	exe, err := os.Executable()
+	if err == nil {
+		exe, err = filepath.Abs(exe)
 		if err == nil {
-			exe, err = filepath.Abs(exe)
+			if dir := filepath.Join(exe, "../.."); isGOROOT(dir) {
+				// If def (runtime.GOROOT()) and dir are the same
+				// directory, prefer the spelling used in def.
+				if isSameDir(def, dir) {
+					return def
+				}
+				return dir
+			}
+			exe, err = filepath.EvalSymlinks(exe)
 			if err == nil {
 				if dir := filepath.Join(exe, "../.."); isGOROOT(dir) {
-					return dir
-				}
-				exe, err = filepath.EvalSymlinks(exe)
-				if err == nil {
-					if dir := filepath.Join(exe, "../.."); isGOROOT(dir) {
-						return dir
+					if isSameDir(def, dir) {
+						return def
 					}
+					return dir
 				}
 			}
 		}
 	}
-	return filepath.Clean(runtime.GOROOT())
+	return def
+}
+
+func findGOROOT_FINAL() string {
+	def := GOROOT
+	if env := os.Getenv("GOROOT_FINAL"); env != "" {
+		def = filepath.Clean(env)
+	}
+	return def
+}
+
+// isSameDir reports whether dir1 and dir2 are the same directory.
+func isSameDir(dir1, dir2 string) bool {
+	if dir1 == dir2 {
+		return true
+	}
+	info1, err1 := os.Stat(dir1)
+	info2, err2 := os.Stat(dir2)
+	return err1 == nil && err2 == nil && os.SameFile(info1, info2)
 }
 
 // isGOROOT reports whether path looks like a GOROOT.

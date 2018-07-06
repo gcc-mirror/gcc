@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fcf-protection -mcet" } */
+/* { dg-options "-O -fcf-protection" } */
 /* { dg-final { scan-assembler-times "endbr32" 1 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "endbr64" 1 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-not "\tcall\[ \t]+" } } */

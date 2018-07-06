@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@ with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -231,10 +232,10 @@ package body Sem_Attr is
       E1      : Node_Id;
       E2      : Node_Id;
 
-      P_Type : Entity_Id;
+      P_Type : Entity_Id := Empty;
       --  Type of prefix after analysis
 
-      P_Base_Type : Entity_Id;
+      P_Base_Type : Entity_Id := Empty;
       --  Base type of prefix after analysis
 
       -----------------------
@@ -419,7 +420,7 @@ package body Sem_Attr is
       --  required error messages.
 
       procedure Error_Attr_P (Msg : String);
-      pragma No_Return (Error_Attr);
+      pragma No_Return (Error_Attr_P);
       --  Like Error_Attr, but error is posted at the start of the prefix
 
       procedure Legal_Formal_Attribute;
@@ -446,7 +447,9 @@ package body Sem_Attr is
       --  node in the aspect case).
 
       procedure Unexpected_Argument (En : Node_Id);
-      --  Signal unexpected attribute argument (En is the argument)
+      pragma No_Return (Unexpected_Argument);
+      --  Signal unexpected attribute argument (En is the argument), and then
+      --  raises Bad_Attribute to avoid any further semantic processing.
 
       procedure Validate_Non_Static_Attribute_Function_Call;
       --  Called when processing an attribute that is a function call to a
@@ -810,9 +813,10 @@ package body Sem_Attr is
          --  analysis, resolution, and expansion are over.
 
          Mark_Elaboration_Attributes
-           (N_Id   => N,
-            Checks => True,
-            Modes  => True);
+           (N_Id     => N,
+            Checks   => True,
+            Modes    => True,
+            Warnings => True);
 
          --  Save the scenario for later examination by the ABE Processing
          --  phase.
@@ -871,6 +875,17 @@ package body Sem_Attr is
 
             else
                Kill_Current_Values;
+            end if;
+
+            --  In the static elaboration model, treat the attribute reference
+            --  as a subprogram call for elaboration purposes. Suppress this
+            --  treatment under debug flag. In any case, we are all done.
+
+            if Legacy_Elaboration_Checks
+              and not Dynamic_Elaboration_Checks
+              and not Debug_Flag_Dot_UU
+            then
+               Check_Elab_Call (N);
             end if;
 
             return;
@@ -1108,8 +1123,10 @@ package body Sem_Attr is
          --  node Nod is within enclosing node Encl_Nod.
 
          procedure Placement_Error;
+         pragma No_Return (Placement_Error);
          --  Emit a general error when the attributes does not appear in a
-         --  postcondition-like aspect or pragma.
+         --  postcondition-like aspect or pragma, and then raises Bad_Attribute
+         --  to avoid any further semantic processing.
 
          ------------------------------
          -- Check_Placement_In_Check --
@@ -2184,8 +2201,8 @@ package body Sem_Attr is
          Rtyp : Entity_Id;
 
       begin
-         --  If we need an object, and we have a prefix that is the name of
-         --  a function entity, convert it into a function call.
+         --  If we need an object, and we have a prefix that is the name of a
+         --  function entity, convert it into a function call.
 
          if Is_Entity_Name (P)
            and then Ekind (Entity (P)) = E_Function
@@ -2585,7 +2602,7 @@ package body Sem_Attr is
 
       procedure Error_Attr is
       begin
-         Set_Etype (N, Any_Type);
+         Set_Etype  (N, Any_Type);
          Set_Entity (N, Any_Type);
          raise Bad_Attribute;
       end Error_Attr;
@@ -5693,11 +5710,15 @@ package body Sem_Attr is
 
          if not (Is_Record_Type (P_Type) or else Is_Array_Type (P_Type)) then
 
-            --  In GNAT mode, the attribute applies to generic types as well
-            --  as composite types, and for non-composite types always returns
-            --  the default bit order for the target.
+            --  The attribute applies to generic private types (in which case
+            --  the legality rule is applied in the instance) as well as to
+            --  composite types. For noncomposite types it always returns the
+            --  default bit order for the target.
+            --  Allowing formal private types was originally introduced in
+            --  GNAT_Mode only, to compile instances of Sequential_IO, but
+            --  users find it more generally useful in generic units.
 
-            if not (GNAT_Mode and then Is_Generic_Type (P_Type))
+            if not (Is_Generic_Type (P_Type) and then Is_Private_Type (P_Type))
               and then not In_Instance
             then
                Error_Attr_P
@@ -6843,7 +6864,10 @@ package body Sem_Attr is
       -- Valid --
       -----------
 
-      when Attribute_Valid =>
+      when Attribute_Valid => Valid : declare
+         Pred_Func : constant Entity_Id := Predicate_Function (P_Type);
+
+      begin
          Check_E0;
 
          --  Ignore check for object if we have a 'Valid reference generated
@@ -6852,53 +6876,78 @@ package body Sem_Attr is
 
          if Comes_From_Source (N) then
             Check_Object_Reference (P);
-         end if;
 
-         if not Is_Scalar_Type (P_Type) then
-            Error_Attr_P ("object for % attribute must be of scalar type");
-         end if;
+            if not Is_Scalar_Type (P_Type) then
+               Error_Attr_P ("object for % attribute must be of scalar type");
+            end if;
 
-         --  If the attribute appears within the subtype's own predicate
-         --  function, then issue a warning that this will cause infinite
-         --  recursion.
+            --  If the attribute appears within the subtype's own predicate
+            --  function, then issue a warning that this will cause infinite
+            --  recursion.
 
-         declare
-            Pred_Func : constant Entity_Id := Predicate_Function (P_Type);
-
-         begin
             if Present (Pred_Func) and then Current_Scope = Pred_Func then
-               Error_Msg_N
-                 ("attribute Valid requires a predicate check??", N);
+               Error_Msg_N ("attribute Valid requires a predicate check??", N);
                Error_Msg_N ("\and will result in infinite recursion??", N);
             end if;
-         end;
+         end if;
 
          Set_Etype (N, Standard_Boolean);
+      end Valid;
 
       -------------------
       -- Valid_Scalars --
       -------------------
 
-      when Attribute_Valid_Scalars =>
+      when Attribute_Valid_Scalars => Valid_Scalars : declare
+      begin
          Check_E0;
-         Check_Object_Reference (P);
-         Set_Etype (N, Standard_Boolean);
-
-         --  Following checks are only for source types
 
          if Comes_From_Source (N) then
-            if not Scalar_Part_Present (P_Type) then
-               Error_Attr_P
-                 ("??attribute % always True, no scalars to check");
-            end if;
+            Check_Object_Reference (P);
 
-            --  Not allowed for unchecked union type
+            --  Do not emit any diagnostics related to private types to avoid
+            --  disclosing the structure of the type.
 
-            if Has_Unchecked_Union (P_Type) then
-               Error_Attr_P
-                 ("attribute % not allowed for Unchecked_Union type");
+            if Is_Private_Type (P_Type) then
+
+               --  Attribute 'Valid_Scalars is not supported on private tagged
+               --  types due to a code generation issue. Is_Visible_Component
+               --  does not allow for a component of a private tagged type to
+               --  be successfully retrieved.
+
+               --  Do not use Error_Attr_P because this bypasses any subsequent
+               --  processing and leaves the attribute with type Any_Type. This
+               --  in turn prevents the proper expansion of the attribute into
+               --  True.
+
+               if Is_Tagged_Type (P_Type) then
+                  Error_Msg_Name_1 := Aname;
+                  Error_Msg_N ("??effects of attribute % are ignored", N);
+               end if;
+
+            --  Otherwise the type is not private
+
+            else
+               if not Scalar_Part_Present (P_Type) then
+                  Error_Msg_Name_1 := Aname;
+                  Error_Msg_F
+                    ("??attribute % always True, no scalars to check", P);
+                  Set_Boolean_Result (N, True);
+               end if;
+
+               --  Attribute 'Valid_Scalars is illegal on unchecked union types
+               --  because it is not always guaranteed that the components are
+               --  retrievable based on whether the discriminants are inferable
+
+               if Has_Unchecked_Union (P_Type) then
+                  Error_Attr_P
+                    ("attribute % not allowed for Unchecked_Union type");
+               end if;
             end if;
          end if;
+
+         Set_Etype (N, Standard_Boolean);
+      end Valid_Scalars;
 
       -----------
       -- Value --
@@ -11058,7 +11107,7 @@ package body Sem_Attr is
 
             --  The context may be a constrained access type (however ill-
             --  advised such subtypes might be) so in order to generate a
-            --  constraint check when needed set the type of the attribute
+            --  constraint check we need to set the type of the attribute
             --  reference to the base type of the context.
 
             Set_Etype (N, Btyp);
@@ -11095,7 +11144,7 @@ package body Sem_Attr is
               and then not (Nkind (P) = N_Selected_Component
                              and then
                                Is_Overloadable (Entity (Selector_Name (P))))
-              and then not Is_Aliased_View (P)
+              and then not Is_Aliased_View (Original_Node (P))
               and then not In_Instance
               and then not In_Inlined_Body
               and then Comes_From_Source (N)
@@ -11820,6 +11869,8 @@ package body Sem_Attr is
 
       if Attr_Id = Attribute_Elaborated then
          null;
+
+      --  Should this be restricted to Expander_Active???
 
       else
          Freeze_Expression (P);

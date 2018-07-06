@@ -11,6 +11,6 @@ program IntAdtest
 
   value = -9223372036854775807_i8_ -1
   write(str_value, format_IntAd) value
-  if (str_value.ne."  -9223372036854775808") call abort
+  if (str_value.ne."  -9223372036854775808") STOP 1
 
 end program IntAdtest

@@ -21,7 +21,7 @@ contains
     integer(c_int), intent(inout) :: arg
     integer(c_int), intent(in) :: res
     call a(arg)
-    if(arg /= res) call abort()
+    if(arg /= res) STOP 1
   end subroutine test_sub
   subroutine test_func(a, arg, res)
     interface
@@ -32,7 +32,7 @@ contains
     end interface
     integer(c_int), intent(in) :: arg
     integer(c_int), intent(in) :: res
-    if(a(arg) /= res) call abort()
+    if(a(arg) /= res) STOP 2
   end subroutine test_func
 end module test_mod
 

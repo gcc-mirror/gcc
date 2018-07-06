@@ -1,5 +1,5 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
    This file is part of GCC.
@@ -155,7 +155,7 @@ extern int darwin_emit_branch_islands;
 
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
+  (RS6000_ALIGN (crtl->outgoing_args_size.to_constant (), 16)		\
    + (STACK_POINTER_OFFSET))
 
 /* Darwin uses a function call if everything needs to be saved/restored.  */

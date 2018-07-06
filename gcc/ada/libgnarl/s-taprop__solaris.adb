@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1623,9 +1623,9 @@ package body System.Task_Primitives.Operations is
       return True;
    end Check_Unlock;
 
-   --------------------
-   -- Check_Finalize --
-   --------------------
+   -------------------------
+   -- Check_Finalize_Lock --
+   -------------------------
 
    function Check_Finalize_Lock (L : Lock_Ptr) return Boolean is
       Self_ID : constant Task_Id := Self;

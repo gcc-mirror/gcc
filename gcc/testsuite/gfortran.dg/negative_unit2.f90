@@ -5,5 +5,5 @@ program negative_unit2
   ! i should be <= NEWUNIT_FIRST in libgfortran/io/unit.c
   i = -100
   write(unit=i,fmt=*, iostat=j) 10
-  if (j == 0) call abort
+  if (j == 0) STOP 1
 end program negative_unit2

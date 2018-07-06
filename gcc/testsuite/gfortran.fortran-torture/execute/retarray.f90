@@ -8,19 +8,19 @@ program testfnarray
 ! These first two shouldn't require a temporary.
    a = 0
    a = test(6, 5)
-   if (a(1,1) .ne. 42) call abort
-   if (a(6,5) .ne. 43) call abort
+   if (a(1,1) .ne. 42) STOP 1
+   if (a(6,5) .ne. 43) STOP 2
 
    a = 0
    a(1:6:2, 2:5) = test2()
-   if (a(1,2) .ne. 42) call abort
-   if (a(5,5) .ne. 43) call abort
+   if (a(1,2) .ne. 42) STOP 3
+   if (a(5,5) .ne. 43) STOP 4
 
    a = 1
    ! This requires a temporary
    a = test(6, 5) - a
-   if (a(1,1) .ne. 41) call abort
-   if (a(6,5) .ne. 42) call abort
+   if (a(1,1) .ne. 41) STOP 5
+   if (a(6,5) .ne. 42) STOP 6
 
    contains
 

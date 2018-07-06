@@ -23,11 +23,11 @@ program cg0033_41
   LL(4)%c = 'QWERTYUIO'
   RR%c = LL%c            ! The equivalence forces a dependency
   L%c = LL(2:4)%c
-  if (any (RR(2:4)%c .ne. L%c)) call abort
+  if (any (RR(2:4)%c .ne. L%c)) STOP 1
   nfv1 = (/1,2,3/)
   nfv2 = nfv1
   L%c = R%c
   L(nfv1)%c = L(nfv2)%c  ! The vector indices force a dependency
-  if (any (R%c .ne. L%c)) call abort
+  if (any (R%c .ne. L%c)) STOP 2
 end
 

@@ -6,7 +6,7 @@ int low(T a, T b, T c) { return a + b + c; } // { dg-message "template" }
 template<typename T>
 int high(T a, T b, T c) { return a + b + c; } // { dg-message "template" }
 
-int test (void)
+void test (void)
 {
   low (5, 6);			// { dg-error "no matching function" }
   // { dg-message "(candidate|3 arguments, 2 provided)" "" { target *-*-* } .-1 }
