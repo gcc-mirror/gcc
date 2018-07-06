@@ -3508,6 +3508,18 @@ expression_expensive_p (tree expr)
       return false;
     }
 
+  if (code == COND_EXPR)
+    return (expression_expensive_p (TREE_OPERAND (expr, 0))
+	    || (EXPR_P (TREE_OPERAND (expr, 1))
+		&& EXPR_P (TREE_OPERAND (expr, 2)))
+	    /* If either branch has side effects or could trap.  */
+	    || TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
+	    || generic_expr_could_trap_p (TREE_OPERAND (expr, 1))
+	    || TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0))
+	    || generic_expr_could_trap_p (TREE_OPERAND (expr, 0))
+	    || expression_expensive_p (TREE_OPERAND (expr, 1))
+	    || expression_expensive_p (TREE_OPERAND (expr, 2)));
+
   switch (TREE_CODE_CLASS (code))
     {
     case tcc_binary:

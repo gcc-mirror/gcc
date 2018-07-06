@@ -1,3 +1,9 @@
+2018-07-06  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.dg/tree-ssa/pr64183.c: Disable final value replacement
+	to preserve the test.
+	* gcc.target/i386/pr85073.c: Likewise.
+
 2018-07-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86401
