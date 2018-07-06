@@ -1,3 +1,14 @@
+2018-07-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/86324
+	* target.def (translate_mode_attribute): New hook.
+	* targhooks.h (default_translate_mode_attribute): Declare.
+	* targhooks.c (default_translate_mode_attribute): New function.
+	* doc/tm.texi.in (TARGET_TRANSLATE_MODE_ATTRIBUTE): New hook.
+	* doc/tm.texi: Regenerate.
+	* config/rs6000/rs6000.c (TARGET_TRANSLATE_MODE_ATTRIBUTE): Define.
+	(rs6000_translate_mode_attribute): New function.
+
 2018-07-06  Paul Koning  <ni1d@arrl.net>
 
 	* doc/md.texi (define_split): Document DONE and FAIL.
