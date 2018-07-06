@@ -1,5 +1,15 @@
 2018-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/84928 use std::move in <numeric> algorithms
+	* include/bits/stl_numeric.h (_GLIBCXX_MOVE_IF_20): Define macro to
+	conditionally move, according to __cplusplus value.
+	(accumulate, inner_product, partial_sum, adjacent_difference): Use
+	_GLIBCXX_MOVE_IF_20.
+	* testsuite/26_numerics/accumulate/lwg2055.cc: New test.
+	* testsuite/26_numerics/adjacent_difference/lwg2055.cc: New test.
+	* testsuite/26_numerics/inner_product/lwg2055.cc: New test.
+	* testsuite/26_numerics/partial_sum/lwg2055.cc: New test.
+
 	* config/abi/pre/gnu.ver: Use wildcards to combine related patterns.
 
 	P0935R0 Eradicating unnecessarily explicit default constructors
