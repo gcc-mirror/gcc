@@ -1,5 +1,10 @@
 2018-07-06  Tamar Christina  <tamar.christina@arm.com>
 
+	PR target/84711
+	* gcc.dg/vect/pr84711.c: Add -msse for i686 targets.
+
+2018-07-06  Tamar Christina  <tamar.christina@arm.com>
+
 	* gcc.target/aarch64/struct_cpy.c: Remove ;.
 
 2018-07-05  Jeff Law  <law@redhat.com>
