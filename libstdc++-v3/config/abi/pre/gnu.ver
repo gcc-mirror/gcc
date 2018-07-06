@@ -1748,10 +1748,20 @@ GLIBCXX_3.4.21 {
     _ZStplI[cw]St11char_traitsI[cw]ESaI[cw]EENSt7__cxx1112basic_stringIT_T0_T1_EE*;
 
     # ABI-tagged stringstreams
-    _ZNSt7__cxx1115basic_stringbuf*;
-    _ZNSt7__cxx1118basic_stringstream*;
-    _ZNSt7__cxx1119basic_istringstream*;
-    _ZNSt7__cxx1119basic_ostringstream*;
+#   _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]*__xfer_bufptrs*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[a1346789]*;
+#   _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]*;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
+#   _ZNSt7__cxx1119basic_istringstreamI[cw]St11char_traitsI[cw]*;
+#   _ZNSt7__cxx1119basic_ostringstreamI[cw]St11char_traitsI[cw]*;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
     _ZNKSt7__cxx1115basic_stringbuf*;
     _ZNKSt7__cxx1118basic_stringstream*;
     _ZNKSt7__cxx1119basic_istringstream*;
@@ -2020,6 +2030,14 @@ GLIBCXX_3.4.26 {
     # std::runtime_error move operations
     _ZNSt13runtime_errorC[12]EOS_;
     _ZNSt13runtime_erroraSEOS_;
+
+    # Default constructors for stringstreams
+    _ZNSt15basic_stringbuf[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt18basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt19basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1115basic_stringbuf[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
 
 } GLIBCXX_3.4.25;
 
