@@ -1810,7 +1810,7 @@ vr_values::adjust_range_with_scev (value_range *vr, struct loop *loop,
 	{
 	  value_range maxvr = VR_INITIALIZER;
 	  signop sgn = TYPE_SIGN (TREE_TYPE (step));
-	  bool overflow;
+	  wi::overflow_type overflow;
 
 	  widest_int wtmp = wi::mul (wi::to_widest (step), nit, sgn,
 				     &overflow);

@@ -307,11 +307,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (div (div @0 INTEGER_CST@1) INTEGER_CST@2)
   (with {
-    bool overflow_p;
+    wi::overflow_type overflow;
     wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@2),
-			    TYPE_SIGN (type), &overflow_p);
+			    TYPE_SIGN (type), &overflow);
    }
-   (if (!overflow_p)
+   (if (!overflow)
     (div @0 { wide_int_to_tree (type, mul); })
     (if (TYPE_UNSIGNED (type)
 	 || mul != wi::min_value (TYPE_PRECISION (type), SIGNED))
@@ -322,13 +322,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (mult (mult @0 INTEGER_CST@1) INTEGER_CST@2)
  (with {
-   bool overflow_p;
+   wi::overflow_type overflow;
    wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@2),
-			   TYPE_SIGN (type), &overflow_p);
+			   TYPE_SIGN (type), &overflow);
   }
   /* Skip folding on overflow: the only special case is @1 * @2 == -INT_MIN,
      otherwise undefined overflow implies that @0 must be zero.  */
-  (if (!overflow_p || TYPE_OVERFLOW_WRAPS (type))
+  (if (!overflow || TYPE_OVERFLOW_WRAPS (type))
    (mult @0 { wide_int_to_tree (type, mul); }))))
 
 /* Optimize A / A to 1.0 if we don't care about
@@ -2861,7 +2861,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     && (cmp == LT_EXPR || cmp == GE_EXPR)))
      (with
       {
-	bool overflow = false;
+	wi::overflow_type overflow = wi::OVF_NONE;
 	enum tree_code code, cmp_code = cmp;
 	wide_int real_c1;
 	wide_int c1 = wi::to_wide (@1);
@@ -3421,7 +3421,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (TREE_CODE (@1) == INTEGER_CST)
      (with
       {
-	bool ovf;
+	wi::overflow_type ovf;
 	wide_int prod = wi::mul (wi::to_wide (@2), wi::to_wide (@1),
 				 TYPE_SIGN (TREE_TYPE (@1)), &ovf);
       }
@@ -3434,7 +3434,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (wi::gt_p (wi::to_wide (@1), 0, TYPE_SIGN (TREE_TYPE (@1))))
    (with
     {
-      bool ovf;
+      wi::overflow_type ovf;
       wide_int prod = wi::mul (wi::to_wide (@2), wi::to_wide (@1),
 			       TYPE_SIGN (TREE_TYPE (@1)), &ovf);
     }

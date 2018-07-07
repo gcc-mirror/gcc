@@ -2029,7 +2029,7 @@ vect_truncate_gather_scatter_offset (gimple *stmt, loop_vec_info loop_vinfo,
 
   /* Try scales of 1 and the element size.  */
   int scales[] = { 1, vect_get_scalar_dr_size (dr) };
-  bool overflow_p = false;
+  wi::overflow_type overflow = wi::OVF_NONE;
   for (int i = 0; i < 2; ++i)
     {
       int scale = scales[i];
@@ -2039,13 +2039,13 @@ vect_truncate_gather_scatter_offset (gimple *stmt, loop_vec_info loop_vinfo,
 
       /* See whether we can calculate (COUNT - 1) * STEP / SCALE
 	 in OFFSET_BITS bits.  */
-      widest_int range = wi::mul (count, factor, SIGNED, &overflow_p);
-      if (overflow_p)
+      widest_int range = wi::mul (count, factor, SIGNED, &overflow);
+      if (overflow)
 	continue;
       signop sign = range >= 0 ? UNSIGNED : SIGNED;
       if (wi::min_precision (range, sign) > element_bits)
 	{
-	  overflow_p = true;
+	  overflow = wi::OVF_UNKNOWN;
 	  continue;
 	}
 
@@ -2071,7 +2071,7 @@ vect_truncate_gather_scatter_offset (gimple *stmt, loop_vec_info loop_vinfo,
       return true;
     }
 
-  if (overflow_p && dump_enabled_p ())
+  if (overflow && dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "truncating gather/scatter offset to %d bits"
 		     " might change its value.\n", element_bits);

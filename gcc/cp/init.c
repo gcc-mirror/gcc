@@ -2943,7 +2943,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       tree inner_nelts_cst = maybe_constant_value (inner_nelts);
       if (TREE_CODE (inner_nelts_cst) == INTEGER_CST)
 	{
-	  bool overflow;
+	  wi::overflow_type overflow;
 	  offset_int result = wi::mul (wi::to_offset (inner_nelts_cst),
 				       inner_nelts_count, SIGNED, &overflow);
 	  if (overflow)
@@ -3072,7 +3072,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 maximum object size and is safe even if we choose not to use
 	 a cookie after all.  */
       max_size -= wi::to_offset (cookie_size);
-      bool overflow;
+      wi::overflow_type overflow;
       inner_size = wi::mul (wi::to_offset (size), inner_nelts_count, SIGNED,
 			    &overflow);
       if (overflow || wi::gtu_p (inner_size, max_size))

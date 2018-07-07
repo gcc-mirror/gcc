@@ -976,7 +976,7 @@ int_const_binop_2 (enum tree_code code, const_tree parg1, const_tree parg2,
   tree t;
   tree type = TREE_TYPE (parg1);
   signop sign = TYPE_SIGN (type);
-  bool overflow = false;
+  wi::overflow_type overflow = wi::OVF_NONE;
 
   wi::tree_to_wide_ref arg1 = wi::to_wide (parg1);
   wide_int arg2 = wi::to_wide (parg2, TYPE_PRECISION (type));
@@ -1133,7 +1133,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
   if (poly_int_tree_p (arg1) && poly_int_tree_p (arg2))
     {
       poly_wide_int res;
-      bool overflow;
+      wi::overflow_type overflow;
       tree type = TREE_TYPE (arg1);
       signop sign = TYPE_SIGN (type);
       switch (code)
@@ -6486,14 +6486,14 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
       if (tcode == code)
 	{
 	  bool overflow_p = false;
-	  bool overflow_mul_p;
+	  wi::overflow_type overflow_mul;
 	  signop sign = TYPE_SIGN (ctype);
 	  unsigned prec = TYPE_PRECISION (ctype);
 	  wide_int mul = wi::mul (wi::to_wide (op1, prec),
 				  wi::to_wide (c, prec),
-				  sign, &overflow_mul_p);
+				  sign, &overflow_mul);
 	  overflow_p = TREE_OVERFLOW (c) | TREE_OVERFLOW (op1);
-	  if (overflow_mul_p
+	  if (overflow_mul
 	      && ((sign == UNSIGNED && tcode != MULT_EXPR) || sign == SIGNED))
 	    overflow_p = true;
 	  if (!overflow_p)
@@ -6705,7 +6705,7 @@ fold_div_compare (enum tree_code code, tree c1, tree c2, tree *lo,
 {
   tree prod, tmp, type = TREE_TYPE (c1);
   signop sign = TYPE_SIGN (type);
-  bool overflow;
+  wi::overflow_type overflow;
 
   /* We have to do this the hard way to detect unsigned overflow.
      prod = int_const_binop (MULT_EXPR, c1, c2);  */
@@ -8396,7 +8396,7 @@ pointer_may_wrap_p (tree base, tree offset, poly_int64 bitpos)
   else
     wi_offset = wi::to_poly_wide (offset);
 
-  bool overflow;
+  wi::overflow_type overflow;
   poly_wide_int units = wi::shwi (bits_to_bytes_round_down (bitpos),
 				  precision);
   poly_wide_int total = wi::add (wi_offset, units, UNSIGNED, &overflow);
@@ -13820,7 +13820,7 @@ fold_negate_const (tree arg0, tree type)
     default:
       if (poly_int_tree_p (arg0))
 	{
-	  bool overflow;
+	  wi::overflow_type overflow;
 	  poly_wide_int res = wi::neg (wi::to_poly_wide (arg0), &overflow);
 	  t = force_fit_type (type, res, 1,
 			      (overflow && ! TYPE_UNSIGNED (type))
@@ -13851,7 +13851,7 @@ fold_abs_const (tree arg0, tree type)
         /* If the value is unsigned or non-negative, then the absolute value
 	   is the same as the ordinary value.  */
 	wide_int val = wi::to_wide (arg0);
-	bool overflow = false;
+	wi::overflow_type overflow = wi::OVF_NONE;
 	if (!wi::neg_p (val, TYPE_SIGN (TREE_TYPE (arg0))))
 	  ;
 

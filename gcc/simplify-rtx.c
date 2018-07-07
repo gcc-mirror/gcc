@@ -4226,7 +4226,7 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
       && CONST_SCALAR_INT_P (op1))
     {
       wide_int result;
-      bool overflow;
+      wi::overflow_type overflow;
       rtx_mode_t pop0 = rtx_mode_t (op0, int_mode);
       rtx_mode_t pop1 = rtx_mode_t (op1, int_mode);
 

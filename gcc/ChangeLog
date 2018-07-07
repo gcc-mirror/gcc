@@ -1,3 +1,42 @@
+2018-07-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (vrp_int_const_binop): Change overflow type to
+	overflow_type.
+	(combine_bound): Use wide-int overflow calculation instead of
+	rolling our own.
+	* calls.c (maybe_warn_alloc_args_overflow): Change overflow type to
+	overflow_type.
+	* fold-const.c (int_const_binop_2): Same.
+	(extract_muldiv_1): Same.
+	(fold_div_compare): Same.
+	(fold_abs_const): Same.
+	* match.pd: Same.
+	* poly-int.h (add): Same.
+	(sub): Same.
+	(neg): Same.
+	(mul): Same.
+	* predict.c (predict_iv_comparison): Same.
+	* profile-count.c (slow_safe_scale_64bit): Same.
+	* simplify-rtx.c (simplify_const_binary_operation): Same.
+	* tree-chrec.c (tree_fold_binomial): Same.
+	* tree-data-ref.c (split_constant_offset_1): Same.
+	* tree-if-conv.c (idx_within_array_bound): Same.
+	* tree-scalar-evolution.c (iv_can_overflow_p): Same.
+	* tree-ssa-phiopt.c (minmax_replacement): Same.
+	* tree-vect-loop.c (is_nonwrapping_integer_induction): Same.
+	* tree-vect-stmts.c (vect_truncate_gather_scatter_offset): Same.
+	* vr-values.c (vr_values::adjust_range_with_scev): Same.
+	* wide-int.cc (wi::add_large): Same.
+	(wi::mul_internal): Same.
+	(wi::sub_large): Same.
+	(wi::divmod_internal): Same.
+	* wide-int.h: Change overflow type to overflow_type for neg, add,
+	mul, smul, umul, div_trunc, div_floor, div_ceil, div_round,
+	mod_trunc, mod_ceil, mod_round, add_large, sub_large,
+	mul_internal, divmod_internal.
+	(overflow_type): New enum.
+	(accumulate_overflow): New.
+
 2018-07-06  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* tree-ssa-phiopt.c (cond_removal_in_popcount_pattern): New.

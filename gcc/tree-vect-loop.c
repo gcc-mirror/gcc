@@ -6051,7 +6051,7 @@ is_nonwrapping_integer_induction (gimple *stmt, struct loop *loop)
   tree step = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo);
   tree lhs_type = TREE_TYPE (gimple_phi_result (stmt));
   widest_int ni, max_loop_value, lhs_max;
-  bool overflow = false;
+  wi::overflow_type overflow = wi::OVF_NONE;
 
   /* Make sure the loop is integer based.  */
   if (TREE_CODE (base) != INTEGER_CST
