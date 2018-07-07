@@ -1,3 +1,10 @@
+2018-07-07  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.misc-tests/options.exp (check_for_all_options): Clean up dump
+	files.
+	(get_dump_flags): New proc.
+	(toplevel): Test all dump flags.
+
 2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/stack_usage6.adb: New test.
