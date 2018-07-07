@@ -1,5 +1,12 @@
 2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (lvalue_required_p): Remove ALIASED parameter
+	and adjust recursive calls.
+	(Identifier_to_gnu): Adjust calls to lvalue_required_p.
+	(gnat_to_gnu): Likewise.
+
+2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_param): Minor tweak.
 	(gnat_to_gnu_subprog_type): New pure_flag local variable.  Set it for
 	a pure Ada function with a by-ref In parameter.  Propagate it onto the
