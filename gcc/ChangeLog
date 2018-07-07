@@ -1,3 +1,7 @@
+2018-07-07  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): New.
+
 2018-07-07  Tom de Vries  <tdevries@suse.de>
 
 	* tree-dfa.c (dump_enumerated_decls): Handle cfun->cfg == NULL.
