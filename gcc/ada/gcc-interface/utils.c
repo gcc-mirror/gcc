@@ -3330,6 +3330,9 @@ finish_subprog_decl (tree decl, tree asm_name, tree type)
   /* Propagate the "const" property.  */
   TREE_READONLY (decl) = TYPE_READONLY (type);
 
+  /* Propagate the "pure" property.  */
+  DECL_PURE_P (decl) = TYPE_RESTRICT (type);
+
   /* Propagate the "noreturn" property.  */
   TREE_THIS_VOLATILE (decl) = TYPE_VOLATILE (type);
 

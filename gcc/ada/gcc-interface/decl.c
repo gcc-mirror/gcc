@@ -5228,7 +5228,6 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
 	     && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_param_type)))
 	gnu_param_type = TREE_TYPE (gnu_param_type);
 
-      by_component_ptr = true;
       gnu_param_type = TREE_TYPE (gnu_param_type);
 
       if (ro_param)
@@ -5236,6 +5235,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
 	  = change_qualified_type (gnu_param_type, TYPE_QUAL_CONST);
 
       gnu_param_type = build_pointer_type (gnu_param_type);
+      by_component_ptr = true;
     }
 
   /* Fat pointers are passed as thin pointers for foreign conventions.  */
@@ -5561,14 +5561,15 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   /* Fields in return type of procedure with copy-in copy-out parameters.  */
   tree gnu_field_list = NULL_TREE;
   /* The semantics of "pure" in Ada essentially matches that of "const"
-     in the back-end.  In particular, both properties are orthogonal to
-     the "nothrow" property if the EH circuitry is explicit in the
-     internal representation of the back-end.  If we are to completely
+     or "pure" in GCC.  In particular, both properties are orthogonal
+     to the "nothrow" property if the EH circuitry is explicit in the
+     internal representation of the middle-end.  If we are to completely
      hide the EH circuitry from it, we need to declare that calls to pure
      Ada subprograms that can throw have side effects since they can
-     trigger an "abnormal" transfer of control flow; thus they can be
-     neither "const" nor "pure" in the back-end sense.  */
+     trigger an "abnormal" transfer of control flow; therefore, they can
+     be neither "const" nor "pure" in the GCC sense.  */
   bool const_flag = (Back_End_Exceptions () && Is_Pure (gnat_subprog));
+  bool pure_flag = false;
   bool return_by_direct_ref_p = false;
   bool return_by_invisi_ref_p = false;
   bool return_unconstrained_p = false;
@@ -5849,13 +5850,19 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	  gnu_param_list = chainon (gnu_param, gnu_param_list);
 	  save_gnu_tree (gnat_param, gnu_param, false);
 
-	  /* If a parameter is a pointer, a function may modify memory through
-	     it and thus shouldn't be considered a const function.   Also, the
-	     memory may be modified between two calls, so they can't be CSE'ed.
-	     The latter case also handles by-ref parameters.  */
-	  if (POINTER_TYPE_P (gnu_param_type)
-	      || TYPE_IS_FAT_POINTER_P (gnu_param_type))
-	    const_flag = false;
+	  /* A pure function in the Ada sense which takes an access parameter
+	     may modify memory through it and thus need be considered neither
+	     const nor pure in the GCC sense.  Likewise it if takes a by-ref
+	     In Out or Out parameter.  But if it takes a by-ref In parameter,
+	     then it may only read memory through it and can be considered
+	     pure in the GCC sense.  */
+	  if ((const_flag || pure_flag)
+	      && (POINTER_TYPE_P (gnu_param_type)
+		  || TYPE_IS_FAT_POINTER_P (gnu_param_type)))
+	    {
+	      const_flag = false;
+	      pure_flag = DECL_POINTS_TO_READONLY_P (gnu_param);
+	    }
 	}
 
       /* If the parameter uses the copy-in copy-out mechanism, allocate a field
@@ -6006,6 +6013,9 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
       if (const_flag)
 	gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_CONST);
+
+      if (pure_flag)
+	gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_RESTRICT);
 
       if (No_Return (gnat_subprog))
 	gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
