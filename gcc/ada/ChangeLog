@@ -1,5 +1,16 @@
 2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Add GNAT_DECL local
+	variable and use it throughout.
+	<E_Variable>: If the nominal subtype of the object is unconstrained,
+	compute the Ada size separately and put in on the padding type if the
+	size is not fixed.
+	<E_Record_Type>: Minor tweak.
+	* gcc-interface/misc.c (gnat_type_max_size): Rename max_size_unit
+	into max_size_unit throughout.
+
+2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (add_decl_expr): Adjust prototype.
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Remove useless test.
 	* gcc-interface/trans.c (add_stmt_with_node): Remove exceptions.
