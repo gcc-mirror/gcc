@@ -1,5 +1,10 @@
 2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/stack_usage6.adb: New test.
+	* gnat.dg/stack_usage6_pkg.ads: New helper.
+
+2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/pure_function3a.adb: New test.
 	* gnat.dg/pure_function3b.adb: Likewise.
 	* gnat.dg/pure_function3c.adb: Likewise.
