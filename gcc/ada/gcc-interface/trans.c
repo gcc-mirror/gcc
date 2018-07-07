@@ -8119,9 +8119,7 @@ add_stmt_force (tree gnu_stmt)
 void
 add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
 {
-  /* Do not emit a location for renamings that come from generic instantiation,
-     they are likely to disturb debugging.  */
-  if (Present (gnat_node) && !renaming_from_instantiation_p (gnat_node))
+  if (Present (gnat_node))
     set_expr_location_from_node (gnu_stmt, gnat_node);
   add_stmt (gnu_stmt);
 }
@@ -8137,10 +8135,10 @@ add_stmt_with_node_force (tree gnu_stmt, Node_Id gnat_node)
 }
 
 /* Add a declaration statement for GNU_DECL to the current statement group.
-   Get SLOC from Entity_Id.  */
+   Get the SLOC to be put onto the statement from GNAT_NODE.  */
 
 void
-add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
+add_decl_expr (tree gnu_decl, Node_Id gnat_node)
 {
   tree type = TREE_TYPE (gnu_decl);
   tree gnu_stmt, gnu_init;
@@ -8179,7 +8177,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	MARK_VISITED (TYPE_ADA_SIZE (type));
     }
   else
-    add_stmt_with_node (gnu_stmt, gnat_entity);
+    add_stmt_with_node (gnu_stmt, gnat_node);
 
   /* If this is a variable and an initializer is attached to it, it must be
      valid for the context.  Similar to init_const in create_var_decl.  */
@@ -8203,7 +8201,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	gnu_decl = convert (TREE_TYPE (TYPE_FIELDS (type)), gnu_decl);
 
       gnu_stmt = build_binary_op (INIT_EXPR, NULL_TREE, gnu_decl, gnu_init);
-      add_stmt_with_node (gnu_stmt, gnat_entity);
+      add_stmt_with_node (gnu_stmt, gnat_node);
     }
 }
 
@@ -10005,6 +10003,32 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus, bool clear_column)
   return true;
 }
 
+/* Return whether GNAT_NODE is a defining identifier for a renaming that comes
+   from the parameter association for the instantiation of a generic.  We do
+   not want to emit source location for them: the code generated for their
+   initialization is likely to disturb debugging.  */
+
+bool
+renaming_from_instantiation_p (Node_Id gnat_node)
+{
+  if (Nkind (gnat_node) != N_Defining_Identifier
+      || !Is_Object (gnat_node)
+      || Comes_From_Source (gnat_node)
+      || !Present (Renamed_Object (gnat_node)))
+    return false;
+
+  /* Get the object declaration of the renamed object, if any and if the
+     renamed object is a mere identifier.  */
+  gnat_node = Renamed_Object (gnat_node);
+  if (Nkind (gnat_node) != N_Identifier)
+    return false;
+
+  gnat_node = Parent (Entity (gnat_node));
+  return (Present (gnat_node)
+	  && Nkind (gnat_node) == N_Object_Declaration
+	  && Present (Corresponding_Generic_Association (gnat_node)));
+}
+
 /* Similar to set_expr_location, but start with the Sloc of GNAT_NODE and
    don't do anything if it doesn't correspond to a source location.  And,
    if CLEAR_COLUMN is true, set the column information to 0.  */
@@ -10013,6 +10037,16 @@ static void
 set_expr_location_from_node (tree node, Node_Id gnat_node, bool clear_column)
 {
   location_t locus;
+
+  /* Do not set a location for constructs likely to disturb debugging.  */
+  if (Nkind (gnat_node) == N_Defining_Identifier)
+    {
+      if (Is_Type (gnat_node) && Is_Actual_Subtype (gnat_node))
+	return;
+
+      if (renaming_from_instantiation_p (gnat_node))
+	return;
+    }
 
   if (!Sloc_to_locus (Sloc (gnat_node), &locus, clear_column))
     return;

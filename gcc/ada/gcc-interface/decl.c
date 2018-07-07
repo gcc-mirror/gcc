@@ -430,11 +430,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      || Is_Public (gnat_entity));
 
   /* Get the name of the entity and set up the line number and filename of
-     the original definition for use in any decl we make.  Make sure we do not
-     inherit another source location.  */
+     the original definition for use in any decl we make.  Make sure we do
+     not inherit another source location.  */
   gnu_entity_name = get_entity_name (gnat_entity);
-  if (Sloc (gnat_entity) != No_Location
-      && !renaming_from_instantiation_p (gnat_entity))
+  if (!renaming_from_instantiation_p (gnat_entity))
     Sloc_to_locus (Sloc (gnat_entity), &input_location);
 
   /* For cases when we are not defining (i.e., we are referencing from
