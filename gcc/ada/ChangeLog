@@ -1,5 +1,16 @@
 2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (add_decl_expr): Adjust prototype.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Remove useless test.
+	* gcc-interface/trans.c (add_stmt_with_node): Remove exceptions.
+	(add_decl_expr): Change type of second parameter and rename it.
+	(renaming_from_instantiation_p): New function moved from...
+	(set_expr_location_from_node): Test for exceptions here and add one
+	for actual subtypes built for unconstrained composite actuals.
+	* gcc-interface/utils.c (renaming_from_instantiation_p): ...here.
+
+2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (lvalue_required_p): Remove ALIASED parameter
 	and adjust recursive calls.
 	(Identifier_to_gnu): Adjust calls to lvalue_required_p.
