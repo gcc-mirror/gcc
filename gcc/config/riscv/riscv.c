@@ -4786,6 +4786,10 @@ riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 #undef TARGET_WARN_FUNC_RETURN
 #define TARGET_WARN_FUNC_RETURN riscv_warn_func_return
 
+/* The low bit is ignored by jump instructions so is safe to use.  */
+#undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-riscv.h"
