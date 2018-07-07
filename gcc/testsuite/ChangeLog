@@ -1,3 +1,10 @@
+2018-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84711
+	* gcc.dg/vect/pr84711.c: Remove unnecessary sse
+	dg-require-effective-target.  Add -msse not just on i386-*, but
+	on all i?86-* and x86_64-*.
+
 2018-07-06  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* gcc.dg/tree-ssa/phi-opt-16.c: New test.
