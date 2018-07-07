@@ -210,7 +210,7 @@ bool
 slow_safe_scale_64bit (uint64_t a, uint64_t b, uint64_t c, uint64_t *res)
 {
   FIXED_WIDE_INT (128) tmp = a;
-  bool overflow;
+  wi::overflow_type overflow;
   tmp = wi::udiv_floor (wi::umul (tmp, b, &overflow) + (c / 2), c);
   gcc_checking_assert (!overflow);
   if (wi::fits_uhwi_p (tmp))

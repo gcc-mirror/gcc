@@ -1,3 +1,8 @@
+2018-07-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* decl.c (build_enumerator): Change overflow type to overflow_type.
+	* init.c (build_new_1): Same.
+
 2018-07-05  Nathan Sidwell  <nathan@acm.org>
 
 	* cp/decl.c (decls_match): Check SYSTEM_IMPLICIT_EXTERN_C not

@@ -1517,7 +1517,7 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
       wide_int x = wi::to_wide (argrange[0][0], szprec);
       wide_int y = wi::to_wide (argrange[1][0], szprec);
 
-      bool vflow;
+      wi::overflow_type vflow;
       wide_int prod = wi::umul (x, y, &vflow);
 
       if (vflow)

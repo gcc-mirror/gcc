@@ -743,7 +743,7 @@ hash_memrefs_baserefs_and_store_DRs_read_written_info (data_reference_p a)
 static bool
 idx_within_array_bound (tree ref, tree *idx, void *dta)
 {
-  bool overflow;
+  wi::overflow_type overflow;
   widest_int niter, valid_niter, delta, wi_step;
   tree ev, init, step;
   tree low, high;

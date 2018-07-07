@@ -917,17 +917,17 @@ add (const Ca &a, const poly_int_pod<N, Cb> &b)
 template<unsigned int N, typename Ca, typename Cb>
 inline poly_int<N, WI_BINARY_RESULT (Ca, Cb)>
 add (const poly_int_pod<N, Ca> &a, const poly_int_pod<N, Cb> &b,
-     signop sgn, bool *overflow)
+     signop sgn, wi::overflow_type *overflow)
 {
   typedef WI_BINARY_RESULT (Ca, Cb) C;
   poly_int<N, C> r;
   POLY_SET_COEFF (C, r, 0, wi::add (a.coeffs[0], b.coeffs[0], sgn, overflow));
   for (unsigned int i = 1; i < N; i++)
     {
-      bool suboverflow;
+      wi::overflow_type suboverflow;
       POLY_SET_COEFF (C, r, i, wi::add (a.coeffs[i], b.coeffs[i], sgn,
 					&suboverflow));
-      *overflow |= suboverflow;
+      wi::accumulate_overflow (*overflow, suboverflow);
     }
   return r;
 }
@@ -1016,17 +1016,17 @@ sub (const Ca &a, const poly_int_pod<N, Cb> &b)
 template<unsigned int N, typename Ca, typename Cb>
 inline poly_int<N, WI_BINARY_RESULT (Ca, Cb)>
 sub (const poly_int_pod<N, Ca> &a, const poly_int_pod<N, Cb> &b,
-     signop sgn, bool *overflow)
+     signop sgn, wi::overflow_type *overflow)
 {
   typedef WI_BINARY_RESULT (Ca, Cb) C;
   poly_int<N, C> r;
   POLY_SET_COEFF (C, r, 0, wi::sub (a.coeffs[0], b.coeffs[0], sgn, overflow));
   for (unsigned int i = 1; i < N; i++)
     {
-      bool suboverflow;
+      wi::overflow_type suboverflow;
       POLY_SET_COEFF (C, r, i, wi::sub (a.coeffs[i], b.coeffs[i], sgn,
 					&suboverflow));
-      *overflow |= suboverflow;
+      wi::accumulate_overflow (*overflow, suboverflow);
     }
   return r;
 }
@@ -1060,16 +1060,16 @@ neg (const poly_int_pod<N, Ca> &a)
 
 template<unsigned int N, typename Ca>
 inline poly_int<N, WI_UNARY_RESULT (Ca)>
-neg (const poly_int_pod<N, Ca> &a, bool *overflow)
+neg (const poly_int_pod<N, Ca> &a, wi::overflow_type *overflow)
 {
   typedef WI_UNARY_RESULT (Ca) C;
   poly_int<N, C> r;
   POLY_SET_COEFF (C, r, 0, wi::neg (a.coeffs[0], overflow));
   for (unsigned int i = 1; i < N; i++)
     {
-      bool suboverflow;
+      wi::overflow_type suboverflow;
       POLY_SET_COEFF (C, r, i, wi::neg (a.coeffs[i], &suboverflow));
-      *overflow |= suboverflow;
+      wi::accumulate_overflow (*overflow, suboverflow);
     }
   return r;
 }
@@ -1136,16 +1136,16 @@ mul (const Ca &a, const poly_int_pod<N, Cb> &b)
 template<unsigned int N, typename Ca, typename Cb>
 inline poly_int<N, WI_BINARY_RESULT (Ca, Cb)>
 mul (const poly_int_pod<N, Ca> &a, const Cb &b,
-     signop sgn, bool *overflow)
+     signop sgn, wi::overflow_type *overflow)
 {
   typedef WI_BINARY_RESULT (Ca, Cb) C;
   poly_int<N, C> r;
   POLY_SET_COEFF (C, r, 0, wi::mul (a.coeffs[0], b, sgn, overflow));
   for (unsigned int i = 1; i < N; i++)
     {
-      bool suboverflow;
+      wi::overflow_type suboverflow;
       POLY_SET_COEFF (C, r, i, wi::mul (a.coeffs[i], b, sgn, &suboverflow));
-      *overflow |= suboverflow;
+      wi::accumulate_overflow (*overflow, suboverflow);
     }
   return r;
 }

@@ -1230,7 +1230,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	{
 	  if (cmp == LT_EXPR)
 	    {
-	      bool overflow;
+	      wi::overflow_type overflow;
 	      wide_int alt = wi::sub (wi::to_wide (larger), 1,
 				      TYPE_SIGN (TREE_TYPE (larger)),
 				      &overflow);
@@ -1239,7 +1239,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	    }
 	  else
 	    {
-	      bool overflow;
+	      wi::overflow_type overflow;
 	      wide_int alt = wi::add (wi::to_wide (larger), 1,
 				      TYPE_SIGN (TREE_TYPE (larger)),
 				      &overflow);
@@ -1256,9 +1256,9 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	 Likewise larger >= CST is equivalent to larger > CST-1.  */
       if (TREE_CODE (smaller) == INTEGER_CST)
 	{
+	  wi::overflow_type overflow;
 	  if (cmp == GT_EXPR)
 	    {
-	      bool overflow;
 	      wide_int alt = wi::add (wi::to_wide (smaller), 1,
 				      TYPE_SIGN (TREE_TYPE (smaller)),
 				      &overflow);
@@ -1267,7 +1267,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	    }
 	  else
 	    {
-	      bool overflow;
 	      wide_int alt = wi::sub (wi::to_wide (smaller), 1,
 				      TYPE_SIGN (TREE_TYPE (smaller)),
 				      &overflow);

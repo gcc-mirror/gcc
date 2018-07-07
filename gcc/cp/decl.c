@@ -14628,7 +14628,6 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 	  if (TYPE_VALUES (enumtype))
 	    {
 	      tree prev_value;
-	      bool overflowed;
 
 	      /* C++03 7.2/4: If no initializer is specified for the first
 		 enumerator, the type is an unspecified integral
@@ -14642,6 +14641,7 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 		value = error_mark_node;
 	      else
 		{
+		  wi::overflow_type overflowed;
 		  tree type = TREE_TYPE (prev_value);
 		  signop sgn = TYPE_SIGN (type);
 		  widest_int wi = wi::add (wi::to_widest (prev_value), 1, sgn,
@@ -14668,7 +14668,7 @@ incremented enumerator value is too large for %<unsigned long%>") : G_("\
 incremented enumerator value is too large for %<long%>"));
 			}
 		      if (type == NULL_TREE)
-			overflowed = true;
+		        overflowed = wi::OVF_UNKNOWN;
 		      else
 			value = wide_int_to_tree (type, wi);
 		    }
