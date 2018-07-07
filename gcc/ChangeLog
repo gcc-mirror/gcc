@@ -1,3 +1,7 @@
+2018-07-07  Tom de Vries  <tdevries@suse.de>
+
+	* tree-dfa.c (dump_enumerated_decls): Handle cfun->cfg == NULL.
+
 2018-07-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (vrp_int_const_binop): Change overflow type to
