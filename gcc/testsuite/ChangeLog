@@ -1,3 +1,10 @@
+2018-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/long-short.C: New.
+	* g++.dg/diagnostic/signed-unsigned.C: Likewise.
+	* g++.dg/diagnostic/virtual-friend.C: Likewise.
+	* g++.old-deja/g++.brendan/crash11.C: Adjust.
+
 2018-07-09  Tom de Vries  <tdevries@suse.de>
 
 	* gcc.dg/vla-1.c: New test.

@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimplify.h"
 #include "asan.h"
+#include "gcc-rich-location.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -10580,9 +10581,18 @@ grokdeclarator (const cp_declarator *declarator,
       int ok = 0;
 
       if (signed_p && unsigned_p)
-	error_at (loc, "%<signed%> and %<unsigned%> specified together");
+	{
+	  gcc_rich_location richloc (declspecs->locations[ds_signed]);
+	  richloc.add_range (declspecs->locations[ds_unsigned], false);
+	  error_at (&richloc,
+		    "%<signed%> and %<unsigned%> specified together");
+	}
       else if (long_p && short_p)
-	error_at (loc, "%<long%> and %<short%> specified together");
+	{
+	  gcc_rich_location richloc (declspecs->locations[ds_long]);
+	  richloc.add_range (declspecs->locations[ds_short], false);
+	  error_at (&richloc, "%<long%> and %<short%> specified together");
+	}
       else if (TREE_CODE (type) != INTEGER_TYPE
 	       || type == char16_type_node || type == char32_type_node
 	       || ((long_p || short_p)
@@ -10723,7 +10733,7 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (staticp == 2)
 	{
-	  rich_location richloc (line_table, declspecs->locations[ds_virtual]);
+	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
 	  richloc.add_range (declspecs->locations[ds_storage_class], false);
 	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
 		    "and %<static%>", dname);
@@ -10732,7 +10742,7 @@ grokdeclarator (const cp_declarator *declarator,
 	}
       if (constexpr_p)
 	{
-	  rich_location richloc (line_table, declspecs->locations[ds_virtual]);
+	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
 	  richloc.add_range (declspecs->locations[ds_constexpr], false);
 	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
 		    "and %<constexpr%>", dname);
@@ -11270,8 +11280,9 @@ grokdeclarator (const cp_declarator *declarator,
 		if (virtualp)
 		  {
 		    /* Cannot be both friend and virtual.  */
-		    error_at (declspecs->locations[ds_friend],
-			      "virtual functions cannot be friends");
+		    gcc_rich_location richloc (declspecs->locations[ds_virtual]);
+		    richloc.add_range (declspecs->locations[ds_friend], false);
+		    error_at (&richloc, "virtual functions cannot be friends");
 		    friendp = 0;
 		  }
 		if (decl_context == NORMAL)
