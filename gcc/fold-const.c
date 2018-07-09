@@ -14546,14 +14546,19 @@ fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE_INT off)
 			  ptr, size_int (off));
 }
 
-/* Return a char pointer for a C string if it is a string constant
-   or sum of string constant and integer constant.  We only support
-   string constants properly terminated with '\0' character.
-   If STRLEN is a valid pointer, length (including terminating character)
-   of returned string is stored to the argument.  */
+/* Return a pointer P to a NUL-terminated string representing the sequence
+   of constant characters referred to by SRC (or a subsequence of such
+   characters within it if SRC is a reference to a string plus some
+   constant offset).  If STRLEN is non-null, store stgrlen(P) in *STRLEN.
+   If STRSIZE is non-null, store in *STRSIZE the size of the array
+   the string is stored in; in that case, even though P points to a NUL
+   terminated string, SRC need not refer to one.  This can happen when
+   SRC refers to a constant character array initialized to all non-NUL
+   values, as in the C declaration: char a[4] = "1234";  */
 
 const char *
-c_getstr (tree src, unsigned HOST_WIDE_INT *strlen)
+c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */,
+	  unsigned HOST_WIDE_INT *strsize /* = NULL */)
 {
   tree offset_node;
 
@@ -14573,18 +14578,47 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen)
 	offset = tree_to_uhwi (offset_node);
     }
 
+  /* STRING_LENGTH is the size of the string literal, including any
+     embedded NULs.  STRING_SIZE is the size of the array the string
+     literal is stored in.  */
   unsigned HOST_WIDE_INT string_length = TREE_STRING_LENGTH (src);
-  const char *string = TREE_STRING_POINTER (src);
-
-  /* Support only properly null-terminated strings.  */
-  if (string_length == 0
-      || string[string_length - 1] != '\0'
-      || offset >= string_length)
-    return NULL;
+  unsigned HOST_WIDE_INT string_size = string_length;
+  tree type = TREE_TYPE (src);
+  if (tree size = TYPE_SIZE_UNIT (type))
+    if (tree_fits_shwi_p (size))
+      string_size = tree_to_uhwi (size);
 
   if (strlen)
-    *strlen = string_length - offset;
-  return string + offset;
+    {
+      /* Compute and store the length of the substring at OFFSET.
+	 All offsets past the initial length refer to null strings.  */
+      if (offset <= string_length)
+	*strlen = string_length - offset;
+      else
+	*strlen = 0;
+    }
+
+  const char *string = TREE_STRING_POINTER (src);
+
+  if (string_length == 0
+      || offset >= string_size)
+    return NULL;
+
+  if (strsize)
+    {
+      /* Support even constant character arrays that aren't proper
+	 NUL-terminated strings.  */
+      *strsize = string_size;
+    }
+  else if (string[string_length - 1] != '\0')
+    {
+      /* Support only properly NUL-terminated strings but handle
+	 consecutive strings within the same array, such as the six
+	 substrings in "1\0002\0003".  */
+      return NULL;
+    }
+
+  return offset <= string_length ? string + offset : "";
 }
 
 /* Given a tree T, compute which bits in T may be nonzero.  */

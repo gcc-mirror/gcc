@@ -602,8 +602,15 @@ c_strlen (tree src, int only_value)
     = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (src))));
 
   /* Set MAXELTS to sizeof (SRC) / sizeof (*SRC) - 1, the maximum possible
-     length of SRC.  */
-  unsigned maxelts = TREE_STRING_LENGTH (src) / eltsize - 1;
+     length of SRC.  Prefer TYPE_SIZE() to TREE_STRING_LENGTH() if possible
+     in case the latter is less than the size of the array.  */
+  HOST_WIDE_INT maxelts = TREE_STRING_LENGTH (src);
+  tree type = TREE_TYPE (src);
+  if (tree size = TYPE_SIZE_UNIT (type))
+    if (tree_fits_shwi_p (size))
+      maxelts = tree_to_uhwi (size);
+
+  maxelts = maxelts / eltsize - 1;
 
   /* PTR can point to the byte representation of any string type, including
      char* and wchar_t*.  */
@@ -629,7 +636,6 @@ c_strlen (tree src, int only_value)
 	 what he gets.  Subtract the offset from the length of the string,
 	 and return that.  This would perhaps not be valid if we were dealing
 	 with named arrays in addition to literal string constants.  */
-
       return size_diffop_loc (loc, size_int (maxelts * eltsize), byteoff);
     }
 

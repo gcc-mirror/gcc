@@ -1,3 +1,12 @@
+2018-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77357
+	* gcc.dg/strlenopt-49.c: New test.
+	* gcc.dg/strlenopt-50.c: New test.
+	* gcc.dg/strlenopt-51.c: New test.
+	* gcc.dg/strlenopt-52.c: New test.
+	* gcc.c-torture/execute/builtins/strlen-3.c: Adjust.
+
 2018-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/86420
