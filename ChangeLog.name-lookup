@@ -1,3 +1,11 @@
+2018-07-09  Nathan Sidwell  <nathan@acm.org>
+
+	Default allocator
+	libcpp/
+	* include/line-map.h (line_maps): Document default allocator.
+	* line-map.c (linemap_init): Set default allocator.
+	(new_linemap): No need to set default here.  Simplify data flow.
+
 2018-07-06  Nathan Sidwell  <nathan@acm.org>
 
 	Hide NT_MACRO

@@ -788,8 +788,7 @@ struct GTY(()) line_maps {
      may require allocating a new line_map.  */
   unsigned int max_column_hint;
 
-  /* If non-null, the allocator to use when resizing 'maps'.  If null,
-     xrealloc is used.  */
+  /* The allocator to use when resizing 'maps', defaults to xrealloc.  */
   line_map_realloc reallocator;
 
   /* The allocators' function used to know the actual size it
