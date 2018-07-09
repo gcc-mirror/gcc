@@ -208,7 +208,8 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  n = id->decl_map->get (val);
 	  if (n != NULL)
 	    val = *n;
-	  if (TREE_CODE (val) != PARM_DECL)
+	  if (TREE_CODE (val) != PARM_DECL
+	      && !(VAR_P (val) && DECL_ABSTRACT_ORIGIN (val)))
 	    {
 	      processing_debug_stmt = -1;
 	      return name;
