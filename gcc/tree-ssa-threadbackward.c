@@ -335,7 +335,7 @@ bb_paths::dump ()
     return;
 
   fprintf (stderr, "range path to BB%d for SSA = ", use_bb->index);
-  print_generic_stmt (stderr, name, 0);
+  print_generic_stmt (stderr, name, TDF_NONE);
 
   for (unsigned i = 0; i < length (); ++i)
     {
@@ -1161,7 +1161,7 @@ thread_jumps::register_current_range_based_path (irange &r)
       fprintf (dump_file,
 	       "Considering range-based path for jump threading: "
 	       "SSA = ");
-      print_generic_stmt (dump_file, name, 0);
+      print_generic_stmt (dump_file, name, TDF_NONE);
       fprintf (dump_file, "\tRange is: ");
       r.dump (dump_file);
     }

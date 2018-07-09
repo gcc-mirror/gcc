@@ -23,10 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 
 
 extern bool wide_int_binop (enum tree_code, wide_int& res, const wide_int& arg1,
-			    const wide_int& arg2, signop sign, bool& overflow);
+			    const wide_int& arg2, signop sign,
+			    wi::overflow_type &overflow);
 extern bool range_binop (enum tree_code code, wide_int& res,
 			 const wide_int& arg1, const wide_int& arg2,
-			 signop sign, bool& overflow, bool ov_undefined);
+			 signop sign, wi::overflow_type &overflow,
+			 bool ov_undefined);
 
 extern void choose_min_max (signop s, wide_int& min, wide_int& max,
 			    wide_int& w0, wide_int& w1, wide_int& w2,

@@ -47,7 +47,7 @@ range_compatible_p (tree t1, tree t2)
 /* Subtract 1 from X and set OVERFLOW if the operation overflows.  */
 
 static wide_int inline
-subtract_one (const wide_int &x, tree type, bool &overflow)
+subtract_one (const wide_int &x, tree type, wi::overflow_type &overflow)
 {
   /* A signed 1-bit bit-field, has a range of [-1,0] so subtracting +1
      overflows, since +1 is unrepresentable.  This is why we have an
@@ -76,7 +76,7 @@ irange::set_range (tree typ, const wide_int &lbound,
   if (rt == INVERSE)
     {
       /* We calculate INVERSE([I,J]) as [-MIN, I-1][J+1, +MAX].  */
-      bool ovf;
+      wi::overflow_type ovf;
       nitems = 0;
       wide_int min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
       wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
@@ -463,7 +463,7 @@ irange::canonicalize ()
      [9,10][11,20] => [9,20].  */
   for (unsigned i = 1; i < (unsigned) (nitems - 2); i += 2)
     {
-      bool ovf;
+      wi::overflow_type ovf;
       wide_int x = wi::add (bounds[i], 1, TYPE_SIGN (type), &ovf);
       /* No need to check for overflow here for the +1, since the
 	 middle ranges cannot have MAXINT.  */
@@ -595,7 +595,7 @@ irange::union_ (const irange &r)
   signop sign = TYPE_SIGN (type);
   wide_int res[max_pairs * 4];
   wide_int u1 ;
-  bool ovf;
+  wi::overflow_type ovf;
   unsigned i = 0, j = 0, k = 0;
 
   while (i < nitems && j < r.nitems)
@@ -836,7 +836,7 @@ irange::invert ()
      we eliminate the underflow, only [6, MAX] remains.  */
 
   unsigned i = 0;
-  bool ovf;
+  wi::overflow_type ovf;
 
   /* Construct leftmost range.  */
   irange orig_range (*this);
@@ -930,7 +930,7 @@ irange::dump (pretty_printer *buffer) const
     pp_string (buffer, "[]");
 
   pp_character (buffer, ' ');
-  dump_generic_node (buffer, type, 0, 0, false);
+  dump_generic_node (buffer, type, 0, TDF_NONE, false);
   if (overflow)
     pp_string (buffer, " (overflow)");
   pp_newline_and_flush (buffer);

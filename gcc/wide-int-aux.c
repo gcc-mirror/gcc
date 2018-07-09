@@ -54,10 +54,10 @@ along with GCC; see the file COPYING3.  If not see
 
 bool
 wide_int_binop (enum tree_code code, wide_int& res, const wide_int& arg1,
-		const wide_int& arg2, signop sign, bool& overflow)
+		const wide_int& arg2, signop sign, wi::overflow_type &overflow)
 {
   wide_int tmp;
-  overflow = false;
+  overflow = wi::OVF_NONE;
   switch (code)
     {
     case BIT_IOR_EXPR:
@@ -195,8 +195,8 @@ wide_int_binop (enum tree_code code, wide_int& res, const wide_int& arg1,
 
 bool
 range_binop (enum tree_code code, wide_int& res, const wide_int& arg1,
-	     const wide_int& arg2, signop sign, bool& overflow,
-	     bool ov_undefined)
+	     const wide_int& arg2, signop sign,
+	     wi::overflow_type &overflow, bool ov_undefined)
 {
   if (!wide_int_binop (code, res, arg1, arg2, sign, overflow))
     return false;
@@ -243,7 +243,7 @@ range_binop (enum tree_code code, wide_int& res, const wide_int& arg1,
 	    return false;
 	}
       /* reset overflow if we set a max/min.  */
-      overflow = false;
+      overflow = wi::OVF_NONE;
     }
   return true;
 }
@@ -268,7 +268,7 @@ do_cross_product (enum tree_code code, signop s, wide_int& lb, wide_int& ub,
 		  const wide_int& lh_lb, const wide_int& lh_ub,
 		  const wide_int& rh_lb, const wide_int& rh_ub) 
 {
-  bool ov;
+  wi::overflow_type ov;
   wide_int cp1, cp2, cp3, cp4;
 
   // Compute the 4 cross operations, bailing if an overflow occurs.

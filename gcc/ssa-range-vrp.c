@@ -92,7 +92,7 @@ execute_ranger_vrp ()
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "RVRP: Considering BB %d:  ", bb->index);
-	      print_gimple_stmt (dump_file, cond, 0,0);
+	      print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
 	    }
 	  if (ranger.path_range_stmt (r, stmt))
 	    {
@@ -131,7 +131,7 @@ execute_ranger_vrp ()
 		  if (dump_file)
 		    {
 		      fprintf (dump_file, "RVRP: Branch rewritten to: ");
-		      print_gimple_stmt (dump_file, cond, 0, 0);
+		      print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
 		      fprintf (dump_file, "\n");
 		    }
 		}

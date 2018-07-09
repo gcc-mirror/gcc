@@ -116,7 +116,7 @@ ssa_global_cache::dump (FILE *f)
   for ( x = 1; x < num_ssa_names; x++)
     if (valid_irange_ssa (ssa_name (x)) && get_global_range (r, ssa_name (x)))
       {
-        print_generic_expr (f, ssa_name (x), 0);
+        print_generic_expr (f, ssa_name (x), TDF_NONE);
 	fprintf (f, "  : ");
         r.dump (f);
       }

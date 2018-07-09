@@ -75,7 +75,9 @@ empty_range_check (irange& r, const irange& op1, const irange & op2, tree type)
 /* Given newly calcuclated lbound and ubound, examine the overflow bits to 
    determine where the various ranges belong.  */
 static void
-add_to_range (irange& r, wide_int& lb, bool ov_lb, wide_int& ub, bool ov_ub)
+add_to_range (irange& r,
+	      wide_int& lb, wi::overflow_type ov_lb,
+	      wide_int& ub, wi::overflow_type ov_ub)
 {
   if (ov_lb)
     {
@@ -356,7 +358,7 @@ operator_not_equal::op2_irange (irange& r, const irange& lhs,
 static void
 build_lt (irange& r, tree type, const wide_int& val)
 {
-  bool ov;
+  wi::overflow_type ov;
   wide_int lim = wi::sub (val, 1, TYPE_SIGN (type), &ov);
 
   /* If val - 1 underflows, check is X < MIN, which is an empty range.  */
@@ -377,7 +379,7 @@ build_le (irange& r, tree type, const wide_int& val)
 static void
 build_gt (irange& r, tree type, const wide_int& val)
 {
-  bool ov;
+  wi::overflow_type ov;
   wide_int lim = wi::add (val, 1, TYPE_SIGN (type), &ov);
   /* If val + 1 overflows, check is for X > MAX , which is an empty range.  */
   if (ov)
@@ -738,7 +740,7 @@ op_wi (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
        const wide_int lh_ub, const wide_int& rh_lb, const wide_int &rh_ub) 
 {
   wide_int new_lb, new_ub, tmp;
-  bool ov_lb, ov_ub;
+  wi::overflow_type ov_lb, ov_ub;
 
   switch (code)
     {
@@ -1987,7 +1989,7 @@ operator_min_max::fold_range (irange& r, const irange& lh,
 			      const irange& rh) const
 {
   wide_int lb, ub;
-  bool ov;
+  wi::overflow_type ov;
   tree type = lh.get_type ();
 
   if (empty_range_check (r, lh, rh, type))
@@ -2174,7 +2176,7 @@ irange_from_value_range (irange &r, const value_range& vr)
 {
   wide_int w1, w2;
   tree type = TREE_TYPE (vr.min);
-  bool ov;
+  wi::overflow_type ov;
 
   if (TREE_CODE (vr.min) != INTEGER_CST || TREE_CODE (vr.max) != INTEGER_CST)
     return false;
@@ -2200,7 +2202,7 @@ irange_from_value_range (irange &r, const value_range& vr)
 static bool
 value_range_from_irange (value_range& vr, const irange& r)
 {
-  bool ov;
+  wi::overflow_type ov;
   if (r.overflow_p ())
     return false;
 

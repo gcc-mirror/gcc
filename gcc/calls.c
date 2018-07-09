@@ -1330,7 +1330,7 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
 
   /* If we don't have a ranger, use global range info.  */
   if (!call
-      && TREE_CODE (exp) == SSA_NAME && integral)
+      && TREE_CODE (exp) == SSA_NAME && integral
       && SSA_NAME_RANGE_INFO (exp))
     {
       wide_int min, max;

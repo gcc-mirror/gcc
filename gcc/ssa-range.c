@@ -341,7 +341,7 @@ block_range_cache::dump (FILE *f)
       if (m_ssa_ranges[x])
         {
 	  fprintf (f, " Ranges for ");
-	  print_generic_expr (f, ssa_name (x), 0);
+	  print_generic_expr (f, ssa_name (x), TDF_NONE);
 	  fprintf (f, ":\n");
 	  m_ssa_ranges[x]->dump (f);
 	}
@@ -911,7 +911,7 @@ path_ranger::exercise (FILE *output)
 			fprintf (output,"   Ranges on Entry :\n");
 		      printed = true;
 		      fprintf (output, "     ");
-		      print_generic_expr (output, name, 0);
+		      print_generic_expr (output, name, TDF_NONE);
 		      fprintf (output, " : ");
 		      range.dump (output);
 		    }
@@ -919,7 +919,7 @@ path_ranger::exercise (FILE *output)
 	    }
 	  if (printed)
 	    fprintf (output, "\n");
-	  dump_bb (output, bb, 2, 0);
+	  dump_bb (output, bb, 2, TDF_NONE);
 	  printed = false;
 	}
 
@@ -961,7 +961,7 @@ path_ranger::exercise (FILE *output)
 		      if (!printed)
 			fprintf (output, "     -- Ranges Defined -- :\n");
 		      fprintf (output, "     ");
-		      print_generic_expr (output, ssa_name (x), 0);
+		      print_generic_expr (output, ssa_name (x), TDF_NONE);
 		      fprintf (output, "  : ");
 		      range.dump (output);
 		      printed = true;
@@ -977,7 +977,7 @@ path_ranger::exercise (FILE *output)
 		    if (!printed)
 		      fprintf (output, "     -- Ranges Defined -- :\n");
 		    fprintf (output, "     ");
-		    print_generic_expr (output, ssa_name (x), 0);
+		    print_generic_expr (output, ssa_name (x), TDF_NONE);
 		    fprintf (output, "  : non-null due to deref in block\n");
 		    printed = true;
 		  }
