@@ -28,7 +28,6 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
-with Exp_Disp; use Exp_Disp;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;

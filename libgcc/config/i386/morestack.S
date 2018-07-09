@@ -730,6 +730,7 @@ __morestack_large_model:
 #endif
 
 __stack_split_initialize:
+	_CET_ENDBR
 
 #ifndef __x86_64__
 

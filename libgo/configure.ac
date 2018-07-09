@@ -224,10 +224,10 @@ AC_SUBST(USE_DEJAGNU)
 #   - libgo/go/syscall/endian_XX.go
 #   - possibly others
 # - possibly update files in libgo/go/internal/syscall/unix
-ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le riscv64 s390 s390x sh shbe sparc sparc64"
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le nios2 ppc ppc64 ppc64le riscv riscv64 s390 s390x sh shbe sparc sparc64 wasm"
 
 # All known GOARCH family values.
-ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 RISCV64 S390 S390X SH SPARC SPARC64"
+ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 NIOS2 PPC PPC64 RISCV RISCV64 S390 S390X SH SPARC SPARC64 WASM"
 
 GOARCH=unknown
 case ${host} in
@@ -289,6 +289,9 @@ changequote([,])dnl
         GOARCH="${GOARCH}le"
         ;;
     esac
+    ;;
+  nios2-*-*)
+    GOARCH=nios2
     ;;
   rs6000*-*-* | powerpc*-*-*)
     AC_COMPILE_IFELSE([
@@ -533,24 +536,6 @@ AC_CHECK_HEADERS([linux/filter.h linux/if_addr.h linux/if_ether.h linux/if_tun.h
 #include <sys/socket.h>
 #endif
 ])
-
-AC_CACHE_CHECK([whether <ustat.h> can be used],
-[libgo_cv_c_ustat_h],
-[CFLAGS_hold=$CFLAGS
-CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE $OSCFLAGS"
-AC_COMPILE_IFELSE(
-[AC_LANG_SOURCE([
-#include <sys/types.h>
-#ifdef HAVE_LINUX_FILTER_H
-#include <linux/filter.h>
-#endif
-#include <ustat.h>
-])], [libgo_cv_c_ustat_h=yes], [libgo_cv_c_ustat_h=no])
-CFLAGS=$CFLAGS_hold])
-if test $libgo_cv_c_ustat_h = yes; then
-  AC_DEFINE(HAVE_USTAT_H, 1,
-    [Define to 1 if you have the <ustat.h> header file and it works.])
-fi
 
 AM_CONDITIONAL(HAVE_SYS_MMAN_H, test "$ac_cv_header_sys_mman_h" = yes)
 

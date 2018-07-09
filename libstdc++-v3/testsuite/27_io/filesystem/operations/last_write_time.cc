@@ -81,7 +81,7 @@ test01()
   ::utimbuf times;
   times.modtime = std::numeric_limits<std::time_t>::max() - 1;
   times.actime = std::numeric_limits<std::time_t>::max() - 1;
-  VERIFY( !::utime(p.c_str(), &times) );
+  VERIFY( !::utime(p.string().c_str(), &times) );
 #else
   return;
 #endif

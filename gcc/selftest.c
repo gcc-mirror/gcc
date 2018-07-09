@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "selftest.h"
+#include "intl.h"
 
 #if CHECKING_P
 
@@ -63,27 +64,34 @@ fail_formatted (const location &loc, const char *fmt, ...)
 }
 
 /* Implementation detail of ASSERT_STREQ.
-   Compare val_expected and val_actual with strcmp.  They ought
-   to be non-NULL; fail gracefully if either are NULL.  */
+   Compare val1 and val2 with strcmp.  They ought
+   to be non-NULL; fail gracefully if either or both are NULL.  */
 
 void
 assert_streq (const location &loc,
-	      const char *desc_expected, const char *desc_actual,
-	      const char *val_expected, const char *val_actual)
+	      const char *desc_val1, const char *desc_val2,
+	      const char *val1, const char *val2)
 {
-  /* If val_expected is NULL, the test is buggy.  Fail gracefully.  */
-  if (val_expected == NULL)
-    fail_formatted (loc, "ASSERT_STREQ (%s, %s) expected=NULL",
-		    desc_expected, desc_actual);
-  /* If val_actual is NULL, fail with a custom error message.  */
-  if (val_actual == NULL)
-    fail_formatted (loc, "ASSERT_STREQ (%s, %s) expected=\"%s\" actual=NULL",
-		    desc_expected, desc_actual, val_expected);
-  if (strcmp (val_expected, val_actual) == 0)
-    pass (loc, "ASSERT_STREQ");
+  /* If val1 or val2 are NULL, fail with a custom error message.  */
+  if (val1 == NULL)
+    if (val2 == NULL)
+      fail_formatted (loc, "ASSERT_STREQ (%s, %s) val1=NULL val2=NULL",
+		      desc_val1, desc_val2);
+    else
+      fail_formatted (loc, "ASSERT_STREQ (%s, %s) val1=NULL val2=\"%s\"",
+		      desc_val1, desc_val2, val2);
   else
-    fail_formatted (loc, "ASSERT_STREQ (%s, %s) expected=\"%s\" actual=\"%s\"",
-		    desc_expected, desc_actual, val_expected, val_actual);
+    if (val2 == NULL)
+      fail_formatted (loc, "ASSERT_STREQ (%s, %s) val1=\"%s\" val2=NULL",
+		      desc_val1, desc_val2, val1);
+    else
+      {
+	if (strcmp (val1, val2) == 0)
+	  pass (loc, "ASSERT_STREQ");
+	else
+	  fail_formatted (loc, "ASSERT_STREQ (%s, %s) val1=\"%s\" val2=\"%s\"",
+			  desc_val1, desc_val2, val1, val2);
+      }
 }
 
 /* Implementation detail of ASSERT_STR_CONTAINS.
@@ -118,6 +126,40 @@ assert_str_contains (const location &loc,
 	 desc_haystack, desc_needle, val_haystack, val_needle);
 }
 
+/* Implementation detail of ASSERT_STR_STARTSWITH.
+   Determine if VAL_STR starts with VAL_PREFIX.
+   ::selftest::pass if VAL_STR does start with VAL_PREFIX.
+   ::selftest::fail if it does not, or either is NULL (using
+   DESC_STR and DESC_PREFIX in the error message).  */
+
+void
+assert_str_startswith (const location &loc,
+		       const char *desc_str,
+		       const char *desc_prefix,
+		       const char *val_str,
+		       const char *val_prefix)
+{
+  /* If val_str is NULL, fail with a custom error message.  */
+  if (val_str == NULL)
+    fail_formatted (loc, "ASSERT_STR_STARTSWITH (%s, %s) str=NULL",
+		    desc_str, desc_prefix);
+
+  /* If val_prefix is NULL, fail with a custom error message.  */
+  if (val_prefix == NULL)
+    fail_formatted (loc,
+		    "ASSERT_STR_STARTSWITH (%s, %s) str=\"%s\" prefix=NULL",
+		    desc_str, desc_prefix, val_str);
+
+  const char *test = strstr (val_str, val_prefix);
+  if (test == val_str)
+    pass (loc, "ASSERT_STR_STARTSWITH");
+  else
+    fail_formatted
+	(loc, "ASSERT_STR_STARTSWITH (%s, %s) str=\"%s\" prefix=\"%s\"",
+	 desc_str, desc_prefix, val_str, val_prefix);
+}
+
+
 /* Constructor.  Generate a name for the file.  */
 
 named_temp_file::named_temp_file (const char *suffix)
@@ -149,6 +191,25 @@ temp_source_file::temp_source_file (const location &loc,
     fail_formatted (loc, "unable to open tempfile: %s", get_filename ());
   fprintf (out, "%s", content);
   fclose (out);
+}
+
+/* Avoid introducing locale-specific differences in the results
+   by hardcoding open_quote and close_quote.  */
+
+auto_fix_quotes::auto_fix_quotes ()
+{
+  m_saved_open_quote = open_quote;
+  m_saved_close_quote = close_quote;
+  open_quote = "`";
+  close_quote = "'";
+}
+
+/* Restore old values of open_quote and close_quote.  */
+
+auto_fix_quotes::~auto_fix_quotes ()
+{
+  open_quote = m_saved_open_quote;
+  close_quote = m_saved_close_quote;
 }
 
 /* Read the contents of PATH into memory, returning a 0-terminated buffer

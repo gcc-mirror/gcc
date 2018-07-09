@@ -538,14 +538,15 @@
     except for some corner cases.  Support for localization
     in <code class="classname">locale</code> may be incomplete on some non-GNU
     platforms. Also dependent on the underlying platform is support
-    for <span class="type">wchar_t</span> and <span class="type">long
-    long</span> specializations, and details of thread support.
+    for <span class="type">wchar_t</span> and <span class="type">long long</span> specializations,
+    and details of thread support.
     </p><p>    
     Long answer: See the implementation status pages for 
     <a class="link" href="manual/status.html#status.iso.1998" title="C++ 1998/2003">C++98</a>,
-    <a class="link" href="manual/status.html#status.iso.tr1" title="C++ TR1">TR1</a>, and 
-    <a class="link" href="manual/status.html#status.iso.2011" title="C++ 2011">C++11</a>.
-    <a class="link" href="manual/status.html#status.iso.2014" title="C++ 2014">C++14</a>.
+    <a class="link" href="manual/status.html#status.iso.tr1" title="C++ TR1">TR1</a>,
+    <a class="link" href="manual/status.html#status.iso.2011" title="C++ 2011">C++11</a>,
+    <a class="link" href="manual/status.html#status.iso.2014" title="C++ 2014">C++14</a>, and
+    <a class="link" href="manual/status.html#status.iso.2017" title="C++ 2017">C++17</a>.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.standard_bugs"></a><a id="q-standard_bugs"></a><p><strong>5.2.</strong></p></td><td align="left" valign="top"><p>
       Bugs in the ISO C++ language or library specification
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-standard_bugs"></a></td><td align="left" valign="top"><p>
@@ -642,7 +643,7 @@
     without other drawbacks, send us a patch.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.ambiguous_overloads"></a><a id="q-ambiguous_overloads"></a><p><strong>6.3.</strong></p></td><td align="left" valign="top"><p>
       Ambiguous overloads after including an old-style header
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-ambiguous_overloads"></a></td><td align="left" valign="top"><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-ambiguous_overloads"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
     Another problem is the <code class="literal">rel_ops</code> namespace and the template
     comparison operator functions contained therein.  If they become
     visible in the same namespace as other comparison functions

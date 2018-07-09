@@ -83,6 +83,24 @@ test01()
   v2 = { "/", "rootname", "dir", "filename" };
 #endif
   VERIFY( v == v2 );
+
+  p = "c:relative/path";
+  v.assign(p.begin(), p.end());
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  v2 = { "c:", "relative", "path" };
+#else
+  v2 = { "c:relative", "path" };
+#endif
+  VERIFY( v == v2 );
+
+  p = "c:/absolute/path";
+  v.assign(p.begin(), p.end());
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  v2 = { "c:", "/", "absolute", "path" };
+#else
+  v2 = { "c:", "absolute", "path" };
+#endif
+  VERIFY( v == v2 );
 }
 
 void
@@ -104,7 +122,7 @@ test02()
 void
 test03()
 {
-  path paths[] = { "single", "multiple/elements" };
+  path paths[] = { "single", "multiple/elements", "trailing/slash/", "/." };
   for (const path& p : paths)
     for (auto iter = p.begin(); iter != p.end(); ++iter)
     {

@@ -308,6 +308,10 @@ C ObjC C++ LTO ObjC++ Var(warn_alloc_size_limit) Warning Joined LangEnabledBy(C 
 -Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that
 attempt to allocate objects larger than the specified number of bytes.
 
+Wno-alloc-size-larger-than
+C ObjC C++ LTO ObjC++ Alias(Walloc-size-larger-than=, 18446744073709551615EiB,none) Warning
+-Wno-alloc-size-larger-than Disable Walloc-size-larger-than= warning.  Equivalent to Walloc-size-larger-than=<SIZE_MAX> or larger.
+
 Walloc-zero
 C ObjC C++ ObjC++ Var(warn_alloc_zero) Warning
 -Walloc-zero Warn for calls to allocation functions that specify zero bytes.
@@ -405,8 +409,8 @@ C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ Obj
 Warn about subscripts whose type is \"char\".
 
 Wchkp
-C ObjC C++ ObjC++ Var(warn_chkp) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn about memory access errors found by Pointer Bounds Checker.
+C ObjC C++ ObjC++ Var(warn_chkp) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 Wclobbered
 C ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
@@ -463,6 +467,11 @@ Warn about deleting polymorphic objects with non-virtual destructors.
 Wdeprecated
 C C++ ObjC ObjC++ CPP(cpp_warn_deprecated) CppReason(CPP_W_DEPRECATED) Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used.
+
+Wdeprecated-copy
+C++ ObjC++ Var(warn_deprecated_copy) Warning LangEnabledBy(C++ ObjC++, Wall)
+Mark implicitly-declared copy operations as deprecated if the class has a
+user-provided copy operation or destructor.
 
 Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
@@ -602,6 +611,10 @@ Warn when there is a conversion between pointers that have incompatible types.
 Winit-self
 C ObjC C++ ObjC++ Var(warn_init_self) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about variables which are initialized to themselves.
+
+Winit-list-lifetime
+C++ ObjC++ Var(warn_init_list) Warning Init(1)
+Warn about uses of std::initializer_list that can result in dangling pointers.
 
 Wimplicit
 C ObjC Var(warn_implicit) Warning LangEnabledBy(C ObjC,Wall)
@@ -1246,98 +1259,87 @@ C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
 
 fcheck-pointer-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_check_pointer_bounds)
-Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to
-control instrumentation.  Currently available for C, C++ and ObjC.
+C ObjC C++ ObjC++ LTO Report Var(flag_check_pointer_bounds) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-check-incomplete-type
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_incomplete_type) Init(1)
-Generate pointer bounds checks for variables with incomplete type.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_incomplete_type) Init(1) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-zero-input-bounds-for-main
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_input_bounds_for_main) Init(0)
-Use zero bounds for all incoming arguments in 'main' function.  It helps when
-instrumented binaries are used with legacy libs.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_input_bounds_for_main) Init(0) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-first-field-has-own-bounds
-C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_first_field_has_own_bounds)
-Forces Pointer Bounds Checker to use narrowed bounds for address of the first
-field in the structure.  By default pointer to the first field has the same
-bounds as pointer to the whole structure.
+C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_first_field_has_own_bounds) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-narrow-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_narrow_bounds) Init(1)
-Control how Pointer Bounds Checker handle pointers to object fields.  When
-narrowing is on, field bounds are used.  Otherwise full object bounds are used.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_narrow_bounds) Init(1) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-narrow-to-innermost-array
-C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_narrow_to_innermost_arrray)
-Forces Pointer Bounds Checker to use bounds of the innermost arrays in case of
-nested static arrays access.  By default outermost array is used.
+C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_narrow_to_innermost_arrray) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-flexible-struct-trailing-arrays
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_flexible_struct_trailing_arrays)
-Forces Pointer Bounds Checker to treat all trailing arrays in structures as
-possibly flexible.  By default only arrays fields with zero length or that are
-marked with attribute bnd_variable_size are treated as flexible.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_flexible_struct_trailing_arrays) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-optimize
 C ObjC C++ ObjC++ LTO Report Var(flag_chkp_optimize) Init(-1)
-Allow Pointer Bounds Checker optimizations.  By default allowed
-on optimization levels >0.
 
 fchkp-use-fast-string-functions
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_fast_string_functions) Init(0)
-Allow to use *_nobnd versions of string functions by Pointer Bounds Checker.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_fast_string_functions) Init(0) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-use-nochk-string-functions
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_nochk_string_functions) Init(0)
-Allow to use *_nochk versions of string functions by Pointer Bounds Checker.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_nochk_string_functions) Init(0) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-use-static-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_bounds) Init(1)
-Use statically initialized variable for vars bounds instead of
-generating them each time it is required.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_bounds) Init(1) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-use-static-const-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_const_bounds) Init(-1)
-Use statically initialized variable for constant bounds instead of
-generating them each time it is required.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_const_bounds) Init(-1) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-treat-zero-dynamic-size-as-infinite
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_dynamic_size_as_infinite) Init(0)
-With this option zero size obtained dynamically for objects with
-incomplete type will be treated as infinite.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_dynamic_size_as_infinite) Init(0) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-check-read
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_check_read) Init(1)
-Generate checks for all read accesses to memory.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_check_read) Init(1) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-check-write
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_check_write) Init(1)
-Generate checks for all write accesses to memory.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_check_write) Init(1) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-store-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_store_bounds) Init(1)
-Generate bounds stores for pointer writes.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_store_bounds) Init(1) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-instrument-calls
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_calls) Init(1)
-Generate bounds passing for calls.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_calls) Init(1) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-instrument-marked-only
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_marked_only) Init(0)
-Instrument only functions marked with bnd_instrument attribute.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_instrument_marked_only) Init(0) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fchkp-use-wrappers
-C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_wrappers) Init(1)
-Transform instrumented builtin calls into calls to wrappers.
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_wrappers) Init(1) Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 static-libmpx
-Driver
+Driver Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 static-libmpxwrappers
-Driver
+Driver Deprecated
+Deprecated in GCC 9.  This switch has no effect.
 
 fcilkplus Undocumented
 C ObjC C++ ObjC++ LTO Report Var(flag_cilkplus) Init(0)
@@ -1441,8 +1443,7 @@ fexternal-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ffor-scope
-C++ ObjC++ Var(flag_new_for_scope) Init(1)
-Scope of for-init-statement variables is local to the loop.
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ffreestanding
 C ObjC C++ ObjC++
@@ -1494,8 +1495,7 @@ C++ ObjC++ Var(flag_new_inheriting_ctors) Init(1)
 Implement C++17 inheriting constructor semantics.
 
 ffriend-injection
-C++ ObjC++ Var(flag_friend_injection)
-Inject friend functions into enclosing namespace.
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fkeep-inline-dllexport
 C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)

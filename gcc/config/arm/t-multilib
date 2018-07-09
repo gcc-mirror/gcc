@@ -58,7 +58,7 @@ all_feat_combs	= +$(firstword $(1)) \
 		      +$(firstword $(1))$(OPT) $(OPT)),)
 
 # Variables used.
-all_early_arch		:= armv5e armv5tej armv6 armv6j armv6k armv6z armv6kz \
+all_early_arch		:= armv5tej armv6 armv6j armv6k armv6z armv6kz \
 			   armv6zk armv6t2 iwmmxt iwmmxt2
 v7_a_nosimd_variants	:= +fp +vfpv3 +vfpv3-d16-fp16 +vfpv3-fp16 +vfpv4-d16 +vfpv4
 v7_a_simd_variants	:= +simd +neon-fp16 +neon-vfpv4

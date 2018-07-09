@@ -50,7 +50,7 @@ with Osint.C;   use Osint.C;
 with Output;    use Output;
 with Par_SCO;
 with Prepcomp;
-with Repinfo;   use Repinfo;
+with Repinfo;
 with Restrict;
 with Rident;    use Rident;
 with Rtsfind;
@@ -247,14 +247,19 @@ procedure Gnat1drv is
          GNATprove_Mode := False;
          Debug_Flag_Dot_FF := False;
 
+         --  Turn off length expansion. CodePeer has its own mechanism to
+         --  handle length attribute.
+
+         Debug_Flag_Dot_PP := True;
+
          --  Turn off C tree generation, not compatible with CodePeer mode. We
          --  do not expect this to happen in normal use, since both modes are
          --  enabled by special tools, but it is useful to turn off these flags
          --  this way when we are doing CodePeer tests on existing test suites
          --  that may have -gnateg set, to avoid the need for special casing.
 
-         Modify_Tree_For_C := False;
-         Generate_C_Code := False;
+         Modify_Tree_For_C      := False;
+         Generate_C_Code        := False;
          Unnest_Subprogram_Mode := False;
 
          --  Turn off inlining, confuses CodePeer output and gains nothing
@@ -1437,7 +1442,9 @@ begin
          Exit_Program (Ecode);
       end if;
 
-      --  In -gnatc mode, we only do annotation if -gnatt or -gnatR is also set
+      --  In -gnatc mode we only do annotation if -gnatt or -gnatR is also set,
+      --  or if -gnatwz is enabled (default setting) and there is an unchecked
+      --  conversion that involves a type whose size is not statically known,
       --  as indicated by Back_Annotate_Rep_Info being set to True.
 
       --  We don't call for annotations on a subunit, because to process those
@@ -1449,6 +1456,9 @@ begin
       --  The back end is not invoked in ASIS mode with GNSA because all type
       --  representation information will be provided by the GNSA back end, not
       --  gigi.
+
+      --  A special back end is always called in CodePeer and GNATprove modes,
+      --  unless this is a subunit.
 
       if Back_End_Mode = Declarations_Only
         and then
@@ -1463,7 +1473,11 @@ begin
          Tree_Dump;
          Tree_Gen;
          Namet.Finalize;
-         Check_Rep_Info;
+
+         if not (Generate_SCIL or GNATprove_Mode) then
+            Check_Rep_Info;
+         end if;
+
          return;
       end if;
 
@@ -1546,7 +1560,7 @@ begin
 
       Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;
-      List_Rep_Info (Ttypes.Bytes_Big_Endian);
+      Repinfo.List_Rep_Info (Ttypes.Bytes_Big_Endian);
       Inline.List_Inlining_Info;
 
       --  Only write the library if the backend did not generate any error

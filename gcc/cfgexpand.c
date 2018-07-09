@@ -74,8 +74,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "output.h"
 #include "builtins.h"
-#include "tree-chkp.h"
-#include "rtl-chkp.h"
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
@@ -2665,7 +2663,6 @@ expand_call_stmt (gcall *stmt)
   CALL_EXPR_VA_ARG_PACK (exp) = gimple_call_va_arg_pack_p (stmt);
   CALL_EXPR_BY_DESCRIPTOR (exp) = gimple_call_by_descriptor_p (stmt);
   SET_EXPR_LOCATION (exp, gimple_location (stmt));
-  CALL_WITH_BOUNDS_P (exp) = gimple_call_with_bounds_p (stmt);
 
   /* Ensure RTL is created for debug args.  */
   if (decl && DECL_HAS_DEBUG_ARGS_P (decl))
@@ -3044,14 +3041,14 @@ expand_asm_stmt (gasm *stmt)
 
       generating_concat_p = 0;
 
-      if ((TREE_CODE (val) == INDIRECT_REF
-	   && allows_mem)
+      if ((TREE_CODE (val) == INDIRECT_REF && allows_mem)
 	  || (DECL_P (val)
 	      && (allows_mem || REG_P (DECL_RTL (val)))
 	      && ! (REG_P (DECL_RTL (val))
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
 	  || ! allows_reg
-	  || is_inout)
+	  || is_inout
+	  || TREE_ADDRESSABLE (type))
 	{
 	  op = expand_expr (val, NULL_RTX, VOIDmode,
 			    !allows_reg ? EXPAND_MEMORY : EXPAND_WRITE);
@@ -3060,7 +3057,7 @@ expand_asm_stmt (gasm *stmt)
 
 	  if (! allows_reg && !MEM_P (op))
 	    error ("output number %d not directly addressable", i);
-	  if ((! allows_mem && MEM_P (op))
+	  if ((! allows_mem && MEM_P (op) && GET_MODE (op) != BLKmode)
 	      || GET_CODE (op) == CONCAT)
 	    {
 	      rtx old_op = op;
@@ -3444,12 +3441,11 @@ expand_value_return (rtx val)
    from the current function.  */
 
 static void
-expand_return (tree retval, tree bounds)
+expand_return (tree retval)
 {
   rtx result_rtl;
   rtx val = 0;
   tree retval_rhs;
-  rtx bounds_rtl;
 
   /* If function wants no value, give it none.  */
   if (TREE_CODE (TREE_TYPE (TREE_TYPE (current_function_decl))) == VOID_TYPE)
@@ -3474,71 +3470,6 @@ expand_return (tree retval, tree bounds)
     retval_rhs = retval;
 
   result_rtl = DECL_RTL (DECL_RESULT (current_function_decl));
-
-  /* Put returned bounds to the right place.  */
-  bounds_rtl = DECL_BOUNDS_RTL (DECL_RESULT (current_function_decl));
-  if (bounds_rtl)
-    {
-      rtx addr = NULL;
-      rtx bnd = NULL;
-
-      if (bounds && bounds != error_mark_node)
-	{
-	  bnd = expand_normal (bounds);
-	  targetm.calls.store_returned_bounds (bounds_rtl, bnd);
-	}
-      else if (REG_P (bounds_rtl))
-	{
-	  if (bounds)
-	    bnd = chkp_expand_zero_bounds ();
-	  else
-	    {
-	      addr = expand_normal (build_fold_addr_expr (retval_rhs));
-	      addr = gen_rtx_MEM (Pmode, addr);
-	      bnd = targetm.calls.load_bounds_for_arg (addr, NULL, NULL);
-	    }
-
-	  targetm.calls.store_returned_bounds (bounds_rtl, bnd);
-	}
-      else
-	{
-	  int n;
-
-	  gcc_assert (GET_CODE (bounds_rtl) == PARALLEL);
-
-	  if (bounds)
-	    bnd = chkp_expand_zero_bounds ();
-	  else
-	    {
-	      addr = expand_normal (build_fold_addr_expr (retval_rhs));
-	      addr = gen_rtx_MEM (Pmode, addr);
-	    }
-
-	  for (n = 0; n < XVECLEN (bounds_rtl, 0); n++)
-	    {
-	      rtx slot = XEXP (XVECEXP (bounds_rtl, 0, n), 0);
-	      if (!bounds)
-		{
-		  rtx offs = XEXP (XVECEXP (bounds_rtl, 0, n), 1);
-		  rtx from = adjust_address (addr, Pmode, INTVAL (offs));
-		  bnd = targetm.calls.load_bounds_for_arg (from, NULL, NULL);
-		}
-	      targetm.calls.store_returned_bounds (slot, bnd);
-	    }
-	}
-    }
-  else if (chkp_function_instrumented_p (current_function_decl)
-	   && !BOUNDED_P (retval_rhs)
-	   && chkp_type_has_pointer (TREE_TYPE (retval_rhs))
-	   && TREE_CODE (retval_rhs) != RESULT_DECL)
-    {
-      rtx addr = expand_normal (build_fold_addr_expr (retval_rhs));
-      addr = gen_rtx_MEM (Pmode, addr);
-
-      gcc_assert (MEM_P (result_rtl));
-
-      chkp_copy_bounds_for_stack_parm (result_rtl, addr, TREE_TYPE (retval_rhs));
-    }
 
   /* If we are returning the RESULT_DECL, then the value has already
      been stored into it, so we don't have to do anything special.  */
@@ -3579,6 +3510,26 @@ expand_return (tree retval, tree bounds)
       /* No hard reg used; calculate value into hard return reg.  */
       expand_expr (retval, const0_rtx, VOIDmode, EXPAND_NORMAL);
       expand_value_return (result_rtl);
+    }
+}
+
+/* Expand a clobber of LHS.  If LHS is stored it in a multi-part
+   register, tell the rtl optimizers that its value is no longer
+   needed.  */
+
+static void
+expand_clobber (tree lhs)
+{
+  if (DECL_P (lhs))
+    {
+      rtx decl_rtl = DECL_RTL_IF_SET (lhs);
+      if (decl_rtl && REG_P (decl_rtl))
+	{
+	  machine_mode decl_mode = GET_MODE (decl_rtl);
+	  if (maybe_gt (GET_MODE_SIZE (decl_mode),
+			REGMODE_NATURAL_SIZE (decl_mode)))
+	    emit_clobber (decl_rtl);
+	}
     }
 }
 
@@ -3626,18 +3577,11 @@ expand_gimple_stmt_1 (gimple *stmt)
 
     case GIMPLE_RETURN:
       {
-	tree bnd = gimple_return_retbnd (as_a <greturn *> (stmt));
 	op0 = gimple_return_retval (as_a <greturn *> (stmt));
 
 	if (op0 && op0 != error_mark_node)
 	  {
 	    tree result = DECL_RESULT (current_function_decl);
-
-	    /* Mark we have return statement with missing bounds.  */
-	    if (!bnd
-		&& chkp_function_instrumented_p (cfun->decl)
-		&& !DECL_P (op0))
-	      bnd = error_mark_node;
 
 	    /* If we are not returning the current function's RESULT_DECL,
 	       build an assignment to it.  */
@@ -3660,7 +3604,7 @@ expand_gimple_stmt_1 (gimple *stmt)
 	if (!op0)
 	  expand_null_return ();
 	else
-	  expand_return (op0, bnd);
+	  expand_return (op0);
       }
       break;
 
@@ -3687,7 +3631,7 @@ expand_gimple_stmt_1 (gimple *stmt)
 	    if (TREE_CLOBBER_P (rhs))
 	      /* This is a clobber to mark the going out of scope for
 		 this LHS.  */
-	      ;
+	      expand_clobber (lhs);
 	    else
 	      expand_assignment (lhs, rhs,
 				 gimple_assign_nontemporal_move_p (
@@ -4182,7 +4126,6 @@ expand_debug_expr (tree exp)
 	case SAD_EXPR:
 	case WIDEN_MULT_PLUS_EXPR:
 	case WIDEN_MULT_MINUS_EXPR:
-	case FMA_EXPR:
 	  goto ternary;
 
 	case TRUTH_ANDIF_EXPR:
@@ -4430,10 +4373,11 @@ expand_debug_expr (tree exp)
 	    goto component_ref;
 
 	  op1 = expand_debug_expr (TREE_OPERAND (exp, 1));
-	  if (!op1 || !CONST_INT_P (op1))
+	  poly_int64 offset;
+	  if (!op1 || !poly_int_rtx_p (op1, &offset))
 	    return NULL;
 
-	  op0 = plus_constant (inner_mode, op0, INTVAL (op1));
+	  op0 = plus_constant (inner_mode, op0, offset);
 	}
 
       as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))));
@@ -4601,6 +4545,7 @@ expand_debug_expr (tree exp)
       }
 
     case ABS_EXPR:
+    case ABSU_EXPR:
       return simplify_gen_unary (ABS, mode, op0, mode);
 
     case NEGATE_EXPR:
@@ -4947,10 +4892,11 @@ expand_debug_expr (tree exp)
 		{
 		  op1 = expand_debug_expr (TREE_OPERAND (TREE_OPERAND (exp, 0),
 							 1));
-		  if (!op1 || !CONST_INT_P (op1))
+		  poly_int64 offset;
+		  if (!op1 || !poly_int_rtx_p (op1, &offset))
 		    return NULL;
 
-		  return plus_constant (mode, op0, INTVAL (op1));
+		  return plus_constant (mode, op0, offset);
 		}
 	    }
 
@@ -5082,8 +5028,11 @@ expand_debug_expr (tree exp)
     case REALIGN_LOAD_EXPR:
     case VEC_COND_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_FLOAT_EXPR:
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_TRUNC_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
     case VEC_UNPACK_FLOAT_LO_EXPR:
     case VEC_UNPACK_HI_EXPR:
@@ -5170,9 +5119,6 @@ expand_debug_expr (tree exp)
 	}
       return NULL;
 
-    case FMA_EXPR:
-      return simplify_gen_ternary (FMA, mode, inner_mode, op0, op1, op2);
-
     default:
     flag_unsupported:
       if (flag_checking)
@@ -5195,6 +5141,10 @@ expand_debug_source_expr (tree exp)
 
   switch (TREE_CODE (exp))
     {
+    case VAR_DECL:
+      if (DECL_ABSTRACT_ORIGIN (exp))
+	return expand_debug_source_expr (DECL_ABSTRACT_ORIGIN (exp));
+      break;
     case PARM_DECL:
       {
 	mode = DECL_MODE (exp);
@@ -6247,9 +6197,6 @@ pass_expand::execute (function *fun)
   free_dominance_info (CDI_DOMINATORS);
 
   rtl_profile_for_bb (ENTRY_BLOCK_PTR_FOR_FN (fun));
-
-  if (chkp_function_instrumented_p (current_function_decl))
-    chkp_reset_rtl_bounds ();
 
   insn_locations_init ();
   if (!DECL_IS_BUILTIN (current_function_decl))

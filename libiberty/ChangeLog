@@ -1,3 +1,24 @@
+2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* simple-object.c (handle_lto_debug_sections): Add rename parameter.
+	(handle_lto_debug_sections_rename): New function.
+	(handle_lto_debug_sections_norename): New function.
+	(simple_object_copy_lto_debug_sections): Add rename parameter.
+
+2018-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* splay-tree.c (splay_tree_compare_strings,
+	splay_tree_delete_pointers): New utility functions.
+
+2018-05-10  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/64914
+	* md5.c: Use strict alignment with UBSAN_BOOTSTRAP.
+
+2018-04-30  Daniel van Gerpen  <daniel@vangerpen.de>
+
+	* argv.c (expandargv): Fix memory leak for copied argv.
+
 2018-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR lto/81968

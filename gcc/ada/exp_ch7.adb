@@ -125,10 +125,10 @@ package body Exp_Ch7 is
    -- Transient Blocks and Finalization Management --
    --------------------------------------------------
 
-   function Find_Node_To_Be_Wrapped (N : Node_Id) return Node_Id;
-   --  N is a node which may generate a transient scope. Loop over the parent
-   --  pointers of N until we find the appropriate node to wrap. If it returns
-   --  Empty, it means that no transient scope is needed in this context.
+   function Find_Transient_Context (N : Node_Id) return Node_Id;
+   --  Locate a suitable context for arbitrary node N which may need to be
+   --  serviced by a transient scope. Return Empty if no suitable context is
+   --  available.
 
    procedure Insert_Actions_In_Scope_Around
      (N         : Node_Id;
@@ -349,6 +349,16 @@ package body Exp_Ch7 is
    procedure Build_Record_Deep_Procs (Typ : Entity_Id);
    --  Build the deep Initialize/Adjust/Finalize for a record Typ with
    --  Has_Component_Component set and store them using the TSS mechanism.
+
+   procedure Check_Unnesting_Elaboration_Code (N : Node_Id);
+   --  The statement part of a package body that is a compilation unit may
+   --  contain blocks that declare local subprograms. In Subprogram_Unnesting
+   --  Mode such subprograms must be handled as nested inside the (implicit)
+   --  elaboration procedure that executes that statement part. To handle
+   --  properly uplevel references we construct that subprogram explicitly,
+   --  to contain blocks and inner subprograms, The statement part becomes
+   --  a call to this subprogram. This is only done if blocks are present
+   --  in the statement list of the body.
 
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;
@@ -1777,10 +1787,55 @@ package body Exp_Ch7 is
             Set_At_End_Proc (HSS, Empty);
          end if;
 
-         --  Release the secondary stack mark
+         --  Release the secondary stack
 
          if Present (Mark_Id) then
-            Append_To (Finalizer_Stmts, Build_SS_Release_Call (Loc, Mark_Id));
+            declare
+               Release : Node_Id := Build_SS_Release_Call (Loc, Mark_Id);
+
+            begin
+               --  If the context is a build-in-place function, the secondary
+               --  stack must be released, unless the build-in-place function
+               --  itself is returning on the secondary stack. Generate:
+               --
+               --    if BIP_Alloc_Form /= Secondary_Stack then
+               --       SS_Release (Mark_Id);
+               --    end if;
+               --
+               --  Note that if the function returns on the secondary stack,
+               --  then the responsibility of reclaiming the space is always
+               --  left to the caller (recursively if needed).
+
+               if Nkind (N) = N_Subprogram_Body then
+                  declare
+                     Spec_Id : constant Entity_Id :=
+                                 Unique_Defining_Entity (N);
+                     BIP_SS  : constant Boolean :=
+                                 Is_Build_In_Place_Function (Spec_Id)
+                                   and then Needs_BIP_Alloc_Form (Spec_Id);
+                  begin
+                     if BIP_SS then
+                        Release :=
+                          Make_If_Statement (Loc,
+                            Condition       =>
+                              Make_Op_Ne (Loc,
+                                Left_Opnd  =>
+                                  New_Occurrence_Of
+                                    (Build_In_Place_Formal
+                                      (Spec_Id, BIP_Alloc_Form), Loc),
+                                Right_Opnd =>
+                                  Make_Integer_Literal (Loc,
+                                    UI_From_Int
+                                      (BIP_Allocation_Form'Pos
+                                        (Secondary_Stack)))),
+
+                            Then_Statements => New_List (Release));
+                     end if;
+                  end;
+               end if;
+
+               Append_To (Finalizer_Stmts, Release);
+            end;
          end if;
 
          --  Protect the statements with abort defer/undefer. This is only when
@@ -3475,6 +3530,10 @@ package body Exp_Ch7 is
 
       Set_At_End_Proc (HSS, New_Occurrence_Of (Fin_Id, Loc));
 
+      --  Attach reference to finalizer to tree, for LLVM use
+
+      Set_Parent (At_End_Proc (HSS), HSS);
+
       Analyze (At_End_Proc (HSS));
       Expand_At_End_Handler (HSS, Empty);
    end Build_Finalizer_Call;
@@ -3910,8 +3969,8 @@ package body Exp_Ch7 is
 
    begin
       --  For restricted run-time libraries (Ravenscar), tasks are
-      --  non-terminating and they can only appear at library level, so we do
-      --  not want finalization of task objects.
+      --  non-terminating and they can only appear at library level,
+      --  so we do not want finalization of task objects.
 
       if Restricted_Profile then
          return Empty;
@@ -3924,6 +3983,78 @@ package body Exp_Ch7 is
              Parameter_Associations => New_List (Concurrent_Ref (Ref)));
       end if;
    end Cleanup_Task;
+
+   -----------------------------------
+   -- Check_Unnesting_Elaboration_Code --
+   -----------------------------------
+
+   procedure Check_Unnesting_Elaboration_Code (N : Node_Id) is
+      Loc       : constant Source_Ptr := Sloc (N);
+      Elab_Body : Node_Id;
+      Elab_Call : Node_Id;
+      Elab_Proc : Entity_Id;
+      Stat      : Node_Id;
+
+   begin
+      if Unnest_Subprogram_Mode
+        and then Present (Handled_Statement_Sequence (N))
+        and then Is_Compilation_Unit (Current_Scope)
+      then
+         Stat := First (Statements (Handled_Statement_Sequence (N)));
+         while Present (Stat) loop
+            exit when Nkind (Stat) = N_Block_Statement
+              and then Present (Identifier (Stat));
+            Next (Stat);
+         end loop;
+
+         if Present (Stat) then
+            Elab_Proc :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_Internal_Name ('I'));
+
+            Elab_Body :=
+              Make_Subprogram_Body (Loc,
+                Specification              =>
+                  Make_Procedure_Specification (Loc,
+                    Defining_Unit_Name => Elab_Proc),
+                Declarations               => New_List,
+                Handled_Statement_Sequence =>
+                  Relocate_Node (Handled_Statement_Sequence (N)));
+
+            Elab_Call :=
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (Elab_Proc, Loc));
+
+            Append_To (Declarations (N), Elab_Body);
+            Analyze (Elab_Body);
+            Set_Has_Nested_Subprogram (Elab_Proc);
+
+            Set_Handled_Statement_Sequence (N,
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements => New_List (Elab_Call)));
+
+            Analyze (Elab_Call);
+
+            --  The scope of all blocks in the elaboration code is now the
+            --  constructed elaboration procedure. Nested subprograms within
+            --  those blocks will have activation records if they contain
+            --  references to entities in the enclosing block.
+
+            Stat :=
+              First (Statements (Handled_Statement_Sequence (Elab_Body)));
+
+            while Present (Stat) loop
+               if Nkind (Stat) = N_Block_Statement
+                 and then Present (Identifier (Stat))
+               then
+                  Set_Scope (Entity (Identifier (Stat)), Elab_Proc);
+               end if;
+
+               Next (Stat);
+            end loop;
+         end if;
+      end if;
+   end Check_Unnesting_Elaboration_Code;
 
    ------------------------------
    -- Check_Visibly_Controlled --
@@ -4082,10 +4213,6 @@ package body Exp_Ch7 is
       --  Examine the scope stack looking for the nearest enclosing transient
       --  scope. Return Empty if no such scope exists.
 
-      function Is_OK_Construct (Constr : Node_Id) return Boolean;
-      --  Determine whether arbitrary node Constr is a suitable construct which
-      --  requires handling by a transient scope.
-
       function Is_Package_Or_Subprogram (Id : Entity_Id) return Boolean;
       --  Determine whether arbitrary Id denotes a package or subprogram [body]
 
@@ -4130,12 +4257,12 @@ package body Exp_Ch7 is
 
             --    for Obj of Container loop
 
-            --  Routine Wrap_Transient_Declaration however does not generate a
-            --  physical block as wrapping a declaration will kill it too ealy.
-            --  To handle this peculiar case, mark the related iterator loop as
-            --  requiring the secondary stack. This signals the finalization
-            --  machinery to manage the secondary stack (see routine
-            --  Process_Statements_For_Controlled_Objects).
+            --  Routine Wrap_Transient_Declaration however does not generate
+            --  a physical block as wrapping a declaration will kill it too
+            --  early. To handle this peculiar case, mark the related iterator
+            --  loop as requiring the secondary stack. This signals the
+            --  finalization machinery to manage the secondary stack (see
+            --  routine Process_Statements_For_Controlled_Objects).
 
             Iter_Loop := Find_Enclosing_Iterator_Loop (Trans_Scop);
 
@@ -4224,40 +4351,6 @@ package body Exp_Ch7 is
          return Empty;
       end Find_Enclosing_Transient_Scope;
 
-      ---------------------
-      -- Is_OK_Construct --
-      ---------------------
-
-      function Is_OK_Construct (Constr : Node_Id) return Boolean is
-      begin
-         --  Nothing to do when there is no construct to consider
-
-         if No (Constr) then
-            return False;
-
-         --  Nothing to do when the construct is an iteration scheme or an Ada
-         --  2012 iterator because the expression is one of the bounds, and the
-         --  expansion will create an explicit declaration for it (see routine
-         --  Analyze_Iteration_Scheme).
-
-         elsif Nkind_In (Constr, N_Iteration_Scheme,
-                                 N_Iterator_Specification)
-         then
-            return False;
-
-         --  Nothing to do in formal verification mode when the construct is
-         --  pragma Check, because the pragma remains unexpanded.
-
-         elsif GNATprove_Mode
-           and then Nkind (Constr) = N_Pragma
-           and then Get_Pragma_Id (Constr) = Pragma_Check
-         then
-            return False;
-         end if;
-
-         return True;
-      end Is_OK_Construct;
-
       ------------------------------
       -- Is_Package_Or_Subprogram --
       ------------------------------
@@ -4274,8 +4367,8 @@ package body Exp_Ch7 is
 
       --  Local variables
 
-      Scop_Id : constant Entity_Id := Find_Enclosing_Transient_Scope;
-      Constr  : Node_Id;
+      Trans_Id : constant Entity_Id := Find_Enclosing_Transient_Scope;
+      Context  : Node_Id;
 
    --  Start of processing for Establish_Transient_Scope
 
@@ -4283,13 +4376,13 @@ package body Exp_Ch7 is
       --  Do not create a new transient scope if there is an existing transient
       --  scope on the stack.
 
-      if Present (Scop_Id) then
+      if Present (Trans_Id) then
 
          --  If the transient scope was requested for purposes of managing the
          --  secondary stack, then the existing scope must perform this task.
 
          if Manage_Sec_Stack then
-            Set_Uses_Sec_Stack (Scop_Id);
+            Set_Uses_Sec_Stack (Trans_Id);
          end if;
 
          return;
@@ -4299,18 +4392,41 @@ package body Exp_Ch7 is
       --  scopes. Locate the proper construct which must be serviced by a new
       --  transient scope.
 
-      Constr := Find_Node_To_Be_Wrapped (N);
+      Context := Find_Transient_Context (N);
 
-      if Is_OK_Construct (Constr) then
-         Create_Transient_Scope (Constr);
+      if Present (Context) then
+         if Nkind (Context) = N_Assignment_Statement then
 
-      --  Otherwise there is no suitable construct which requires handling by
-      --  a transient scope. If the transient scope was requested for purposes
-      --  of managing the secondary stack, delegate the work to an enclosing
-      --  scope.
+            --  An assignment statement with suppressed controlled semantics
+            --  does not need a transient scope because finalization is not
+            --  desirable at this point. Note that No_Ctrl_Actions is also
+            --  set for non-controlled assignments to suppress dispatching
+            --  _assign.
 
-      elsif Manage_Sec_Stack then
-         Delegate_Sec_Stack_Management;
+            if No_Ctrl_Actions (Context)
+              and then Needs_Finalization (Etype (Name (Context)))
+            then
+               --  When a controlled component is initialized by a function
+               --  call, the result on the secondary stack is always assigned
+               --  to the component. Signal the nearest suitable scope that it
+               --  is safe to manage the secondary stack.
+
+               if Manage_Sec_Stack and then Within_Init_Proc then
+                  Delegate_Sec_Stack_Management;
+               end if;
+
+            --  Otherwise the assignment is a normal transient context and thus
+            --  requires a transient scope.
+
+            else
+               Create_Transient_Scope (Context);
+            end if;
+
+         --  General case
+
+         else
+            Create_Transient_Scope (Context);
+         end if;
       end if;
    end Establish_Transient_Scope;
 
@@ -4342,10 +4458,22 @@ package body Exp_Ch7 is
                                    and then Is_Task_Allocation_Block (N);
       Is_Task_Body           : constant Boolean :=
                                  Nkind (Original_Node (N)) = N_Task_Body;
+
+      --  We mark the secondary stack if it is used in this construct, and
+      --  we're not returning a function result on the secondary stack, except
+      --  that a build-in-place function that might or might not return on the
+      --  secondary stack always needs a mark. A run-time test is required in
+      --  the case where the build-in-place function has a BIP_Alloc extra
+      --  parameter (see Create_Finalizer).
+
       Needs_Sec_Stack_Mark   : constant Boolean :=
-                                 Uses_Sec_Stack (Scop)
-                                   and then
-                                     not Sec_Stack_Needed_For_Return (Scop);
+                                   (Uses_Sec_Stack (Scop)
+                                     and then
+                                       not Sec_Stack_Needed_For_Return (Scop))
+                                 or else
+                                   (Is_Build_In_Place_Function (Scop)
+                                     and then Needs_BIP_Alloc_Form (Scop));
+
       Needs_Custom_Cleanup   : constant Boolean :=
                                  Nkind (N) = N_Block_Statement
                                    and then Present (Cleanup_Actions (N));
@@ -4656,6 +4784,7 @@ package body Exp_Ch7 is
          --  end of the body statements.
 
          Expand_Pragma_Initial_Condition (Spec_Id, N);
+         Check_Unnesting_Elaboration_Code (N);
 
          Pop_Scope;
       end if;
@@ -4815,18 +4944,18 @@ package body Exp_Ch7 is
       end if;
    end Expand_N_Package_Declaration;
 
-   -----------------------------
-   -- Find_Node_To_Be_Wrapped --
-   -----------------------------
+   ----------------------------
+   -- Find_Transient_Context --
+   ----------------------------
 
-   function Find_Node_To_Be_Wrapped (N : Node_Id) return Node_Id is
+   function Find_Transient_Context (N : Node_Id) return Node_Id is
       Curr : Node_Id;
       Prev : Node_Id;
 
    begin
       Curr := N;
       Prev := Empty;
-      loop
+      while Present (Curr) loop
          case Nkind (Curr) is
 
             --  Declarations
@@ -4864,52 +4993,61 @@ package body Exp_Ch7 is
                pragma Assert (Present (Prev));
                return Prev;
 
-            --  Assignment statements are usually wrapped in a transient block
-            --  except when they are generated as part of controlled aggregate
-            --  where the wrapping should take place more globally. Note that
-            --  No_Ctrl_Actions is set also for non-controlled assignments, in
-            --  order to disable the use of dispatching _assign, thus the test
-            --  for a controlled type.
-
             when N_Assignment_Statement =>
-               if No_Ctrl_Actions (Curr)
-                 and then Needs_Finalization (Etype (Name (Curr)))
-               then
-                  return Empty;
-               else
-                  return Curr;
-               end if;
-
-            --  An entry of procedure call is usually wrapped except when it
-            --  acts as the alternative of a conditional or timed entry call.
-            --  In that case wrap the context of the alternative.
+               return Curr;
 
             when N_Entry_Call_Statement
                | N_Procedure_Call_Statement
             =>
+               --  When an entry or procedure call acts as the alternative of a
+               --  conditional or timed entry call, the proper context is that
+               --  of the alternative.
+
                if Nkind (Parent (Curr)) = N_Entry_Call_Alternative
                  and then Nkind_In (Parent (Parent (Curr)),
                                     N_Conditional_Entry_Call,
                                     N_Timed_Entry_Call)
                then
                   return Parent (Parent (Curr));
+
+               --  General case for entry or procedure calls
+
                else
                   return Curr;
                end if;
 
-            when N_Pragma
-               | N_Raise_Statement
-            =>
+            when N_Pragma =>
+
+               --  Pragma Check is not a valid transient context in GNATprove
+               --  mode because the pragma must remain unchanged.
+
+               if GNATprove_Mode
+                 and then Get_Pragma_Id (Curr) = Pragma_Check
+               then
+                  return Empty;
+
+               --  General case for pragmas
+
+               else
+                  return Curr;
+               end if;
+
+            when N_Raise_Statement =>
                return Curr;
 
-            --  A return statement is not wrapped when the associated function
-            --  would require wrapping.
-
             when N_Simple_Return_Statement =>
+
+               --  A return statement is not a valid transient context when the
+               --  function itself requires transient scope management because
+               --  the result will be reclaimed too early.
+
                if Requires_Transient_Scope (Etype
                     (Return_Applies_To (Return_Statement_Entity (Curr))))
                then
                   return Empty;
+
+               --  General case for return statements
+
                else
                   return Curr;
                end if;
@@ -4921,12 +5059,23 @@ package body Exp_Ch7 is
                   return Curr;
                end if;
 
-            --  If the construct is within the iteration scheme of a loop, it
-            --  requires a declaration followed by an assignment, in order to
-            --  have a usable statement to wrap.
+            --  An Ada 2012 iterator specification is not a valid context
+            --  because Analyze_Iterator_Specification already employs special
+            --  processing for it.
+
+            when N_Iterator_Specification =>
+               return Empty;
 
             when N_Loop_Parameter_Specification =>
-               return Parent (Curr);
+
+               --  An iteration scheme is not a valid context because routine
+               --  Analyze_Iteration_Scheme already employs special processing.
+
+               if Nkind (Parent (Curr)) = N_Iteration_Scheme then
+                  return Empty;
+               else
+                  return Parent (Curr);
+               end if;
 
             --  Termination
 
@@ -4963,7 +5112,9 @@ package body Exp_Ch7 is
          Prev := Curr;
          Curr := Parent (Curr);
       end loop;
-   end Find_Node_To_Be_Wrapped;
+
+      return Empty;
+   end Find_Transient_Context;
 
    ----------------------------------
    -- Has_New_Controlled_Component --
@@ -5108,7 +5259,7 @@ package body Exp_Ch7 is
             --  node. Inspect the original node to detect the initial placement
             --  of the call.
 
-            elsif Original_Node (N) /= N then
+            elsif Is_Rewrite_Substitution (N) then
                Detect_Subprogram_Call (Original_Node (N));
 
                if Must_Hook then

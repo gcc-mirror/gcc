@@ -85,20 +85,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(16 % sizeof(_UIntType) == 0,
 		    "UIntType size must divide 16");
 
+      template<typename _Sseq>
+	using _If_seed_seq
+	  = typename std::enable_if<std::__detail::__is_seed_seq<
+	    _Sseq, simd_fast_mersenne_twister_engine, result_type>::value
+	    >::type;
+
     public:
       static constexpr size_t state_size = _M_nstate * (16
 							/ sizeof(result_type));
       static constexpr result_type default_seed = 5489u;
 
-      // constructors and member function
+      // constructors and member functions
+
+      simd_fast_mersenne_twister_engine()
+      : simd_fast_mersenne_twister_engine(default_seed)
+      { }
+
       explicit
-      simd_fast_mersenne_twister_engine(result_type __sd = default_seed)
+      simd_fast_mersenne_twister_engine(result_type __sd)
       { seed(__sd); }
 
-      template<typename _Sseq, typename = typename
-	std::enable_if<!std::is_same<_Sseq,
-				     simd_fast_mersenne_twister_engine>::value>
-	       ::type>
+      template<typename _Sseq, typename = _If_seed_seq<_Sseq>>
 	explicit
 	simd_fast_mersenne_twister_engine(_Sseq& __q)
 	{ seed(__q); }
@@ -107,7 +115,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       seed(result_type __sd = default_seed);
 
       template<typename _Sseq>
-	typename std::enable_if<std::is_class<_Sseq>::value>::type
+	_If_seed_seq<_Sseq>
 	seed(_Sseq& __q);
 
       static constexpr result_type
@@ -416,9 +424,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef beta_distribution<_RealType> distribution_type;
 	friend class beta_distribution<_RealType>;
 
+	param_type() : param_type(1) { }
+
 	explicit
-	param_type(_RealType __alpha_val = _RealType(1),
-		   _RealType __beta_val = _RealType(1))
+	param_type(_RealType __alpha_val, _RealType __beta_val = _RealType(1))
 	: _M_alpha(__alpha_val), _M_beta(__beta_val)
 	{
 	  __glibcxx_assert(_M_alpha > _RealType(0));
@@ -451,12 +460,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     public:
+      beta_distribution() : beta_distribution(1.0) { }
+
       /**
        * @brief Constructs a beta distribution with parameters
        * @f$\alpha@f$ and @f$\beta@f$.
        */
       explicit
-      beta_distribution(_RealType __alpha_val = _RealType(1),
+      beta_distribution(_RealType __alpha_val,
 			_RealType __beta_val = _RealType(1))
       : _M_param(__alpha_val, __beta_val)
       { }
@@ -962,7 +973,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef rice_distribution<result_type> distribution_type;
 
-	param_type(result_type __nu_val = result_type(0),
+	param_type() : param_type(0) { }
+
+	param_type(result_type __nu_val,
 		   result_type __sigma_val = result_type(1))
 	: _M_nu(__nu_val), _M_sigma(__sigma_val)
 	{
@@ -995,9 +1008,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Constructors.
+       * @{
        */
+
+      rice_distribution() : rice_distribution(0) { }
+
       explicit
-      rice_distribution(result_type __nu_val = result_type(0),
+      rice_distribution(result_type __nu_val,
 			result_type __sigma_val = result_type(1))
       : _M_param(__nu_val, __sigma_val),
 	_M_ndx(__nu_val, __sigma_val),
@@ -1010,6 +1027,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_ndx(__p.nu(), __p.sigma()),
 	_M_ndy(result_type(0), __p.sigma())
       { }
+
+      // @}
 
       /**
        * @brief Resets the distribution state.
@@ -1208,7 +1227,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef nakagami_distribution<result_type> distribution_type;
 
-	param_type(result_type __mu_val = result_type(1),
+	param_type() : param_type(1) { }
+
+	param_type(result_type __mu_val,
 		   result_type __omega_val = result_type(1))
 	: _M_mu(__mu_val), _M_omega(__omega_val)
 	{
@@ -1241,9 +1262,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Constructors.
+       * @{
        */
+
+      nakagami_distribution() : nakagami_distribution(1) { }
+
       explicit
-      nakagami_distribution(result_type __mu_val = result_type(1),
+      nakagami_distribution(result_type __mu_val,
 			    result_type __omega_val = result_type(1))
       : _M_param(__mu_val, __omega_val),
 	_M_gd(__mu_val, __omega_val / __mu_val)
@@ -1254,6 +1279,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_param(__p),
 	_M_gd(__p.mu(), __p.omega() / __p.mu())
       { }
+
+      // @}
 
       /**
        * @brief Resets the distribution state.
@@ -1445,7 +1472,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef pareto_distribution<result_type> distribution_type;
 
-	param_type(result_type __alpha_val = result_type(1),
+	param_type() : param_type(1) { }
+
+	param_type(result_type __alpha_val,
 		   result_type __mu_val = result_type(1))
 	: _M_alpha(__alpha_val), _M_mu(__mu_val)
 	{
@@ -1478,9 +1507,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Constructors.
+       * @{
        */
+
+      pareto_distribution() : pareto_distribution(1) { }
+
       explicit
-      pareto_distribution(result_type __alpha_val = result_type(1),
+      pareto_distribution(result_type __alpha_val,
 			  result_type __mu_val = result_type(1))
       : _M_param(__alpha_val, __mu_val),
 	_M_ud()
@@ -1491,6 +1524,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_param(__p),
 	_M_ud()
       { }
+
+      // @}
 
       /**
        * @brief Resets the distribution state.
@@ -1684,7 +1719,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef k_distribution<result_type> distribution_type;
 
-	param_type(result_type __lambda_val = result_type(1),
+	param_type() : param_type(1) { }
+
+	param_type(result_type __lambda_val,
 		   result_type __mu_val = result_type(1),
 		   result_type __nu_val = result_type(1))
 	: _M_lambda(__lambda_val), _M_mu(__mu_val), _M_nu(__nu_val)
@@ -1728,9 +1765,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Constructors.
+       * @{
        */
+
+      k_distribution() : k_distribution(1) { }
+
       explicit
-      k_distribution(result_type __lambda_val = result_type(1),
+      k_distribution(result_type __lambda_val,
 		     result_type __mu_val = result_type(1),
 		     result_type __nu_val = result_type(1))
       : _M_param(__lambda_val, __mu_val, __nu_val),
@@ -1744,6 +1785,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_gd1(__p.lambda(), result_type(1) / __p.lambda()),
 	_M_gd2(__p.nu(), __p.mu() / __p.nu())
       { }
+
+      // @}
 
       /**
        * @brief Resets the distribution state.
@@ -1930,8 +1973,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef arcsine_distribution<result_type> distribution_type;
 
-	param_type(result_type __a = result_type(0),
-		   result_type __b = result_type(1))
+	param_type() : param_type(0) { }
+
+	param_type(result_type __a, result_type __b = result_type(1))
 	: _M_a(__a), _M_b(__b)
 	{
 	  __glibcxx_assert(_M_a <= _M_b);
@@ -1962,10 +2006,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Constructors.
+       * :{
        */
+
+      arcsine_distribution() : arcsine_distribution(0) { }
+
       explicit
-      arcsine_distribution(result_type __a = result_type(0),
-			   result_type __b = result_type(1))
+      arcsine_distribution(result_type __a, result_type __b = result_type(1))
       : _M_param(__a, __b),
 	_M_ud(-1.5707963267948966192313216916397514L,
 	      +1.5707963267948966192313216916397514L)
@@ -1977,6 +2024,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_ud(-1.5707963267948966192313216916397514L,
 	      +1.5707963267948966192313216916397514L)
       { }
+
+      // @}
 
       /**
        * @brief Resets the distribution state.
@@ -2171,8 +2220,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef hoyt_distribution<result_type> distribution_type;
 
-	param_type(result_type __q = result_type(0.5L),
-		   result_type __omega = result_type(1))
+	param_type() : param_type(0.5) { }
+
+	param_type(result_type __q, result_type __omega = result_type(1))
 	: _M_q(__q), _M_omega(__omega)
 	{
 	  __glibcxx_assert(_M_q > result_type(0));
@@ -2204,10 +2254,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Constructors.
+       * @{
        */
+
+      hoyt_distribution() : hoyt_distribution(0.5) { }
+
       explicit
-      hoyt_distribution(result_type __q = result_type(0.5L),
-			result_type __omega = result_type(1))
+      hoyt_distribution(result_type __q, result_type __omega = result_type(1))
       : _M_param(__q, __omega),
 	_M_ad(result_type(0.5L) * (result_type(1) + __q * __q),
 	      result_type(0.5L) * (result_type(1) + __q * __q)
@@ -2408,8 +2461,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	friend class triangular_distribution<_RealType>;
 
+	param_type() : param_type(0) { }
+
 	explicit
-	param_type(_RealType __a = _RealType(0),
+	param_type(_RealType __a,
 		   _RealType __b = _RealType(0.5),
 		   _RealType __c = _RealType(1))
 	: _M_a(__a), _M_b(__b), _M_c(__c)
@@ -2456,12 +2511,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_RealType _M_f_bc_ac;
       };
 
+      triangular_distribution() : triangular_distribution(0.0) { }
+
       /**
        * @brief Constructs a triangle distribution with parameters
        * @f$ a @f$, @f$ b @f$ and @f$ c @f$.
        */
       explicit
-      triangular_distribution(result_type __a = result_type(0),
+      triangular_distribution(result_type __a,
 			      result_type __b = result_type(0.5),
 			      result_type __c = result_type(1))
       : _M_param(__a, __b, __c)
@@ -2665,14 +2722,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
+
       /** Parameter type. */
       struct param_type
       {
 	friend class von_mises_distribution<_RealType>;
 
+	param_type() : param_type(0) { }
+
 	explicit
-	param_type(_RealType __mu = _RealType(0),
-		   _RealType __kappa = _RealType(1))
+	param_type(_RealType __mu, _RealType __kappa = _RealType(1))
 	: _M_mu(__mu), _M_kappa(__kappa)
 	{
 	  const _RealType __pi = __gnu_cxx::__math_constants<_RealType>::__pi;
@@ -2708,14 +2767,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_RealType _M_r;
       };
 
+      von_mises_distribution() : von_mises_distribution(0.0) { }
+
       /**
        * @brief Constructs a von Mises distribution with parameters
        * @f$\mu@f$ and @f$\kappa@f$.
        */
       explicit
-      von_mises_distribution(result_type __mu = result_type(0),
+      von_mises_distribution(result_type __mu,
 			     result_type __kappa = result_type(1))
-	: _M_param(__mu, __kappa)
+      : _M_param(__mu, __kappa)
       { }
 
       explicit
@@ -2911,8 +2972,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef hypergeometric_distribution<_UIntType> distribution_type;
 	friend class hypergeometric_distribution<_UIntType>;
 
+	param_type() : param_type(10) { }
+
 	explicit
-	param_type(result_type __N = 10, result_type __K = 5,
+	param_type(result_type __N, result_type __K = 5,
 		   result_type __n = 1)
 	: _M_N{__N}, _M_K{__K}, _M_n{__n}
 	{
@@ -2953,9 +3016,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	result_type _M_n;
       };
 
-      // constructors and member function
+      // constructors and member functions
+
+      hypergeometric_distribution() : hypergeometric_distribution(10) { }
+
       explicit
-      hypergeometric_distribution(result_type __N = 10, result_type __K = 5,
+      hypergeometric_distribution(result_type __N, result_type __K = 5,
 				  result_type __n = 1)
       : _M_param{__N, __K, __n}
       { }
@@ -3174,8 +3240,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef logistic_distribution<result_type> distribution_type;
 
-	param_type(result_type __a = result_type(0),
-		   result_type __b = result_type(1))
+	param_type() : param_type(0) { }
+
+	explicit
+	param_type(result_type __a, result_type __b = result_type(1))
 	: _M_a(__a), _M_b(__b)
 	{
 	  __glibcxx_assert(_M_b > result_type(0));
@@ -3206,10 +3274,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Constructors.
+       * @{
        */
+      logistic_distribution() : logistic_distribution(0.0) { }
+
       explicit
-      logistic_distribution(result_type __a = result_type(0),
-			    result_type __b = result_type(1))
+      logistic_distribution(result_type __a, result_type __b = result_type(1))
       : _M_param(__a, __b)
       { }
 
@@ -3217,6 +3287,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       logistic_distribution(const param_type& __p)
       : _M_param(__p)
       { }
+
+      // @}
 
       /**
        * @brief Resets the distribution state.
@@ -3382,9 +3454,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /** Parameter type. */
       struct param_type
       {
-	explicit
-	param_type()
-	{ }
+	param_type() { }
 
 	friend bool
 	operator==(const param_type&, const param_type&)
@@ -3398,7 +3468,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Constructs a uniform on sphere distribution.
        */
-      explicit
       uniform_on_sphere_distribution()
       : _M_param(), _M_nd()
       { }
@@ -3581,8 +3650,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  = uniform_inside_sphere_distribution<_Dimen, _RealType>;
 	friend class uniform_inside_sphere_distribution<_Dimen, _RealType>;
 
+	param_type() : param_type(1.0) { }
+
 	explicit
-	param_type(_RealType __radius = _RealType(1))
+	param_type(_RealType __radius)
 	: _M_radius(__radius)
 	{
 	  __glibcxx_assert(_M_radius > _RealType(0));
@@ -3606,9 +3677,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Constructors.
+       * @{
        */
+
+      uniform_inside_sphere_distribution()
+      : uniform_inside_sphere_distribution(1.0)
+      { }
+
       explicit
-      uniform_inside_sphere_distribution(_RealType __radius = _RealType(1))
+      uniform_inside_sphere_distribution(_RealType __radius)
       : _M_param(__radius), _M_uosd()
       { }
 
@@ -3616,6 +3693,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       uniform_inside_sphere_distribution(const param_type& __p)
       : _M_param(__p), _M_uosd()
       { }
+
+      // @}
 
       /**
        * @brief Resets the distribution state.

@@ -125,11 +125,13 @@ proc scan-hidden { args } {
     set filename [lindex $testcase 0]
     set output_file "[file rootname [file tail $filename]].s"
 
-    set symbol [lindex $args 0]
+    if { [llength $args] > 0 } {
+	set symbol [lindex $args 0]
 
-    set hidden_scan [hidden-scan-for $symbol]
+	set hidden_scan [hidden-scan-for $symbol]
 
-    set args [lreplace $args 0 0 "$hidden_scan"]
+	set args [lreplace $args 0 0 "$hidden_scan"]
+    }
 
     dg-scan "scan-hidden" 1 $testcase $output_file $args
 }
@@ -143,10 +145,12 @@ proc scan-not-hidden { args } {
     set filename [lindex $testcase 0]
     set output_file "[file rootname [file tail $filename]].s"
 
-    set symbol [lindex $args 0]
-    set hidden_scan [hidden-scan-for $symbol]
+    if { [llength $args] > 0 } {
+	set symbol [lindex $args 0]
+	set hidden_scan [hidden-scan-for $symbol]
 
-    set args [lreplace $args 0 0 "$hidden_scan"]
+	set args [lreplace $args 0 0 "$hidden_scan"]
+    }
 
     dg-scan "scan-not-hidden" 0 $testcase $output_file $args
 }
@@ -175,7 +179,7 @@ proc scan-stack-usage { args } {
     set filename [lindex $testcase 0]
     set output_file "[file rootname [file tail $filename]].su"
 
-    dg-scan "scan-file" 1 $testcase $output_file $args
+    dg-scan "scan-stack-usage" 1 $testcase $output_file $args
 }
 
 # Check that a pattern is not present in the .su file produced by the
@@ -187,7 +191,7 @@ proc scan-stack-usage-not { args } {
     set filename [lindex $testcase 0]
     set output_file "[file rootname [file tail $filename]].su"
 
-    dg-scan "scan-file-not" 0 $testcase $output_file $args
+    dg-scan "scan-stack-usage-not" 0 $testcase $output_file $args
 }
 
 # Return the filename of the Ada spec corresponding to the argument.
@@ -209,7 +213,7 @@ proc scan-ada-spec { args } {
     set testcase  [testname-for-summary]
     set output_file "[get_ada_spec_filename $testcase]"
 
-    dg-scan "scan-file" 1 $testcase $output_file $args
+    dg-scan "scan-ada-spec" 1 $testcase $output_file $args
 }
 
 # Check that a pattern is not present in the .ads file produced by the
@@ -219,17 +223,17 @@ proc scan-ada-spec-not { args } {
     set testcase  [testname-for-summary]
     set output_file "[get_ada_spec_filename $testcase]"
 
-    dg-scan "scan-file-not" 0 $testcase $output_file $args
+    dg-scan "scan-ada-spec-not" 0 $testcase $output_file $args
 }
 
 # Call pass if pattern is present given number of times, otherwise fail.
 proc scan-assembler-times { args } {
     if { [llength $args] < 2 } {
-	error "scan-assembler: too few arguments"
+	error "scan-assembler-times: too few arguments"
         return
     }
     if { [llength $args] > 3 } {
-	error "scan-assembler: too many arguments"
+	error "scan-assembler-times: too many arguments"
 	return
     }
     if { [llength $args] >= 3 } {
@@ -537,5 +541,5 @@ proc scan-lto-assembler { args } {
     set filename [lindex $testcase 0]
     set output_file "[file rootname [file tail $filename]].exe.ltrans0.s"
     verbose "output_file: $output_file"
-    dg-scan "scan-assembler" 1 $testcase $output_file $args
+    dg-scan "scan-lto-assembler" 1 $testcase $output_file $args
 }

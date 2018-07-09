@@ -39,7 +39,7 @@ static void tag_lines (const char *, unsigned, unsigned, unsigned);
 static void tag_counters (const char *, unsigned, unsigned, unsigned);
 static void tag_summary (const char *, unsigned, unsigned, unsigned);
 static void dump_working_sets (const char *filename ATTRIBUTE_UNUSED,
-			       const struct gcov_ctr_summary *summary,
+			       const gcov_summary *summary,
 			       unsigned depth);
 extern int main (int, char **);
 
@@ -220,6 +220,8 @@ dump_gcov_file (const char *filename)
 
   if (!is_data_type)
     {
+      printf ("%s:cwd: %s\n", filename, gcov_read_string ());
+
       /* Support for unexecuted basic blocks.  */
       unsigned support_unexecuted_blocks = gcov_read_unsigned ();
       if (!support_unexecuted_blocks)
@@ -465,52 +467,47 @@ tag_summary (const char *filename ATTRIBUTE_UNUSED,
 	     unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED,
 	     unsigned depth)
 {
-  struct gcov_summary summary;
-  unsigned ix, h_ix;
+  gcov_summary summary;
+  unsigned h_ix;
   gcov_bucket_type *histo_bucket;
 
   gcov_read_summary (&summary);
   printf (" checksum=0x%08x", summary.checksum);
 
-  for (ix = 0; ix != GCOV_COUNTERS_SUMMABLE; ix++)
-    {
-      printf ("\n");
-      print_prefix (filename, depth, 0);
-      printf (VALUE_PADDING_PREFIX "counts=%u, runs=%u",
-	      summary.ctrs[ix].num, summary.ctrs[ix].runs);
+  printf ("\n");
+  print_prefix (filename, depth, 0);
+  printf (VALUE_PADDING_PREFIX "counts=%u, runs=%u",
+	  summary.num, summary.runs);
 
-      printf (", sum_all=%" PRId64,
-	      (int64_t)summary.ctrs[ix].sum_all);
-      printf (", run_max=%" PRId64,
-	      (int64_t)summary.ctrs[ix].run_max);
-      printf (", sum_max=%" PRId64,
-	      (int64_t)summary.ctrs[ix].sum_max);
-      if (ix != GCOV_COUNTER_ARCS)
-        continue;
+  printf (", sum_all=%" PRId64,
+	  (int64_t)summary.sum_all);
+  printf (", run_max=%" PRId64,
+	  (int64_t)summary.run_max);
+  printf (", sum_max=%" PRId64,
+	  (int64_t)summary.sum_max);
+  printf ("\n");
+  print_prefix (filename, depth, 0);
+  printf (VALUE_PADDING_PREFIX "counter histogram:");
+  for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+    {
+      histo_bucket = &summary.histogram[h_ix];
+      if (!histo_bucket->num_counters)
+	continue;
       printf ("\n");
       print_prefix (filename, depth, 0);
-      printf (VALUE_PADDING_PREFIX "counter histogram:");
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        {
-	  histo_bucket = &summary.ctrs[ix].histogram[h_ix];
-	  if (!histo_bucket->num_counters)
-	    continue;
-	  printf ("\n");
-	  print_prefix (filename, depth, 0);
-	  printf (VALUE_PADDING_PREFIX VALUE_PREFIX "num counts=%u, "
-		  "min counter=%" PRId64 ", cum_counter=%" PRId64,
-		  h_ix, histo_bucket->num_counters,
-		  (int64_t)histo_bucket->min_value,
-		  (int64_t)histo_bucket->cum_value);
-        }
-      if (flag_dump_working_sets)
-	dump_working_sets (filename, &summary.ctrs[ix], depth);
+      printf (VALUE_PADDING_PREFIX VALUE_PREFIX "num counts=%u, "
+	      "min counter=%" PRId64 ", cum_counter=%" PRId64,
+	      h_ix, histo_bucket->num_counters,
+	      (int64_t)histo_bucket->min_value,
+	      (int64_t)histo_bucket->cum_value);
     }
+  if (flag_dump_working_sets)
+    dump_working_sets (filename, &summary, depth);
 }
 
 static void
 dump_working_sets (const char *filename ATTRIBUTE_UNUSED,
-		   const struct gcov_ctr_summary *summary,
+		   const gcov_summary *summary,
 		   unsigned depth)
 {
   gcov_working_set_t gcov_working_sets[NUM_GCOV_WORKING_SETS];

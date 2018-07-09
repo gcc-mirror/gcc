@@ -606,10 +606,10 @@ func runTest(cmd *base.Command, args []string) {
 			for _, path := range p.Imports {
 				deps[path] = true
 			}
-			for _, path := range p.Vendored(p.TestImports) {
+			for _, path := range p.Resolve(p.TestImports) {
 				deps[path] = true
 			}
-			for _, path := range p.Vendored(p.XTestImports) {
+			for _, path := range p.Resolve(p.XTestImports) {
 				deps[path] = true
 			}
 		}
@@ -633,6 +633,8 @@ func runTest(cmd *base.Command, args []string) {
 		a := &work.Action{Mode: "go test -i"}
 		for _, p := range load.PackagesForBuild(all) {
 			if cfg.BuildToolchainName == "gccgo" && p.Standard {
+				// gccgo's standard library packages
+				// can not be reinstalled.
 				continue
 			}
 			a.Deps = append(a.Deps, b.CompileAction(work.ModeInstall, work.ModeInstall, p))
@@ -668,6 +670,14 @@ func runTest(cmd *base.Command, args []string) {
 			// Atomic coverage mode uses sync/atomic, so
 			// we can't also do coverage on it.
 			if testCoverMode == "atomic" && p.Standard && p.ImportPath == "sync/atomic" {
+				continue
+			}
+
+			// If using the race detector, silently ignore
+			// attempts to run coverage on the runtime
+			// packages. It will cause the race detector
+			// to be invoked before it has been initialized.
+			if cfg.BuildRace && p.Standard && (p.ImportPath == "runtime" || strings.HasPrefix(p.ImportPath, "runtime/internal")) {
 				continue
 			}
 
@@ -862,9 +872,6 @@ func builderTest(b *work.Builder, p *load.Package) (buildAction, runAction, prin
 			pmain.Internal.Imports = append(pmain.Internal.Imports, ptest)
 		} else {
 			p1 := load.LoadImport(dep, "", nil, &stk, nil, 0)
-			if cfg.BuildToolchainName == "gccgo" && p1.Standard {
-				continue
-			}
 			if p1.Error != nil {
 				return nil, nil, nil, p1.Error
 			}

@@ -1025,7 +1025,7 @@ extern void fancy_abort (const char *, int, const char *)
 	LIBGCC2_LONG_DOUBLE_TYPE_SIZE STRUCT_VALUE			   \
 	EH_FRAME_IN_DATA_SECTION TARGET_FLT_EVAL_METHOD_NON_DEFAULT	   \
 	JCR_SECTION_NAME TARGET_USE_JCR_SECTION SDB_DEBUGGING_INFO	   \
-	SDB_DEBUG
+	SDB_DEBUG NO_IMPLICIT_EXTERN_C
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\
@@ -1202,11 +1202,14 @@ helper_const_non_const_cast (const char *p)
 /* qsort comparator consistency checking: except in release-checking compilers,
    redirect 4-argument qsort calls to qsort_chk; keep 1-argument invocations
    corresponding to vec::qsort (cmp): they use C qsort internally anyway.  */
-#if CHECKING_P
+void qsort_chk (void *, size_t, size_t, int (*)(const void *, const void *));
+void gcc_qsort (void *, size_t, size_t, int (*)(const void *, const void *));
 #define PP_5th(a1, a2, a3, a4, a5, ...) a5
 #undef qsort
+#if CHECKING_P
 #define qsort(...) PP_5th (__VA_ARGS__, qsort_chk, 3, 2, qsort, 0) (__VA_ARGS__)
-void qsort_chk (void *, size_t, size_t, int (*)(const void *, const void *));
+#else
+#define qsort(...) PP_5th (__VA_ARGS__, gcc_qsort, 3, 2, qsort, 0) (__VA_ARGS__)
 #endif
 
 #endif /* ! GCC_SYSTEM_H */

@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -fdump-tree-switchlower" }  */
 /* We scan for 2 switches as the dump file reports a transformation,
    IL really contains just a single.  */
-/* { dg-final { scan-tree-dump-times "switch \\(i_" 2 "switchlower" } }  */
+/* { dg-final { scan-tree-dump-times "switch \\(" 2 "switchlower1" } }  */
 
 void foo (void);
 void bar (void);

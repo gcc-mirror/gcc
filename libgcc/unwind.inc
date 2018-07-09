@@ -73,7 +73,7 @@ _Unwind_RaiseException_Phase2(struct _Unwind_Exception *exc,
       gcc_assert (!match_handler);
 
       uw_update_context (context, &fs);
-      frames++;
+      _Unwind_Frames_Increment (context, frames);
     }
 
   *frames_p = frames;
@@ -190,7 +190,7 @@ _Unwind_ForcedUnwind_Phase2 (struct _Unwind_Exception *exc,
       /* Update cur_context to describe the same frame as fs, and discard
 	 the previous context if necessary.  */
       uw_advance_context (context, &fs);
-      frames++;
+      _Unwind_Frames_Increment (context, frames);
     }
 
   *frames_p = frames;

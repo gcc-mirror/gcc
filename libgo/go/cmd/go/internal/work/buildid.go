@@ -234,18 +234,9 @@ func (b *Builder) gccgoToolID(name, language string) (string, error) {
 	// compile an empty file on standard input.
 	cmdline := str.StringList(cfg.BuildToolexec, name, "-###", "-x", language, "-c", "-")
 	cmd := exec.Command(cmdline[0], cmdline[1:]...)
-
-	// Strip any LANG or LC_ environment variables, and force
-	// LANG=C, so that we get the untranslated output.
-	var env []string
-	for _, e := range os.Environ() {
-		if !strings.HasPrefix(e, "LANG=") && !strings.HasPrefix(e, "LC_") {
-			env = append(env, e)
-		}
-	}
-	env = append(env, "LANG=C")
-
-	cmd.Env = base.EnvForDir(cmd.Dir, env)
+	cmd.Env = base.EnvForDir(cmd.Dir, os.Environ())
+	// Force untranslated output so that we see the string "version".
+	cmd.Env = append(cmd.Env, "LC_ALL=C")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("%s: %v; output: %q", name, err, out)
@@ -303,13 +294,36 @@ func (b *Builder) gccgoToolID(name, language string) (string, error) {
 	return id, nil
 }
 
+// Check if assembler used by gccgo is GNU as.
+func assemblerIsGas() bool {
+	cmd := exec.Command(BuildToolchain.compiler(), "-print-prog-name=as")
+	assembler, err := cmd.Output()
+	if err == nil {
+		cmd := exec.Command(strings.TrimSpace(string(assembler)), "--version")
+		out, err := cmd.Output()
+		if err == nil && strings.Contains(string(out), "GNU") {
+			return true
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
+}
+
 // gccgoBuildIDELFFile creates an assembler file that records the
 // action's build ID in an SHF_EXCLUDE section.
 func (b *Builder) gccgoBuildIDELFFile(a *Action) (string, error) {
 	sfile := a.Objdir + "_buildid.s"
 
 	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "\t"+`.section .go.buildid,"e"`+"\n")
+	if cfg.Goos != "solaris" || assemblerIsGas() {
+		fmt.Fprintf(&buf, "\t"+`.section .go.buildid,"e"`+"\n")
+	} else if cfg.Goarch == "sparc" || cfg.Goarch == "sparc64" {
+		fmt.Fprintf(&buf, "\t"+`.section ".go.buildid",#exclude`+"\n")
+	} else { // cfg.Goarch == "386" || cfg.Goarch == "amd64"
+		fmt.Fprintf(&buf, "\t"+`.section .go.buildid,#exclude`+"\n")
+	}
 	fmt.Fprintf(&buf, "\t.byte ")
 	for i := 0; i < len(a.buildID); i++ {
 		if i > 0 {
@@ -322,8 +336,10 @@ func (b *Builder) gccgoBuildIDELFFile(a *Action) (string, error) {
 		fmt.Fprintf(&buf, "%#02x", a.buildID[i])
 	}
 	fmt.Fprintf(&buf, "\n")
-	fmt.Fprintf(&buf, "\t"+`.section .note.GNU-stack,"",@progbits`+"\n")
-	fmt.Fprintf(&buf, "\t"+`.section .note.GNU-split-stack,"",@progbits`+"\n")
+	if cfg.Goos != "solaris" {
+		fmt.Fprintf(&buf, "\t"+`.section .note.GNU-stack,"",@progbits`+"\n")
+		fmt.Fprintf(&buf, "\t"+`.section .note.GNU-split-stack,"",@progbits`+"\n")
+	}
 
 	if cfg.BuildN || cfg.BuildX {
 		for _, line := range bytes.Split(buf.Bytes(), []byte("\n")) {
@@ -445,15 +461,7 @@ func (b *Builder) useCache(a *Action, p *load.Package, actionHash cache.ActionID
 	// If so, it's up to date and we can reuse it instead of rebuilding it.
 	var buildID string
 	if target != "" && !cfg.BuildA {
-		var err error
-		buildID, err = buildid.ReadFile(target)
-		if err != nil && b.ComputeStaleOnly {
-			if p != nil && !p.Stale {
-				p.Stale = true
-				p.StaleReason = "target missing"
-			}
-			return true
-		}
+		buildID, _ = buildid.ReadFile(target)
 		if strings.HasPrefix(buildID, actionID+buildIDSeparator) {
 			a.buildID = buildID
 			a.built = target
@@ -530,7 +538,10 @@ func (b *Builder) useCache(a *Action, p *load.Package, actionHash cache.ActionID
 				}
 			}
 		}
-		return true
+
+		// Fall through to update a.buildID from the build artifact cache,
+		// which will affect the computation of buildIDs for targets
+		// higher up in the dependency graph.
 	}
 
 	// Check the build artifact cache.
@@ -558,6 +569,10 @@ func (b *Builder) useCache(a *Action, p *load.Package, actionHash cache.ActionID
 						a.built = file
 						a.Target = "DO NOT USE - using cache"
 						a.buildID = buildID
+						if p := a.Package; p != nil {
+							// Clearer than explaining that something else is stale.
+							p.StaleReason = "not installed but available in build cache"
+						}
 						return true
 					}
 				}
@@ -566,6 +581,10 @@ func (b *Builder) useCache(a *Action, p *load.Package, actionHash cache.ActionID
 
 		// Begin saving output for later writing to cache.
 		a.output = []byte{}
+	}
+
+	if b.ComputeStaleOnly {
+		return true
 	}
 
 	return false

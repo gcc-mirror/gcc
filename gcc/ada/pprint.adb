@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;   use Atree;
+with Csets;   use Csets;
 with Einfo;   use Einfo;
 with Namet;   use Namet;
 with Nlists;  use Nlists;
@@ -50,7 +51,7 @@ package body Pprint is
       From_Source  : constant Boolean :=
                        Comes_From_Source (Expr)
                          and then not Opt.Debug_Generated_Code;
-      Append_Paren : Boolean := False;
+      Append_Paren : Natural := 0;
       Left         : Node_Id := Original_Node (Expr);
       Right        : Node_Id := Original_Node (Expr);
 
@@ -212,8 +213,7 @@ package body Pprint is
 
             when N_Character_Literal =>
                declare
-                  Char : constant Int :=
-                           UI_To_Int (Char_Literal_Value (Expr));
+                  Char : constant Int := UI_To_Int (Char_Literal_Value (Expr));
                begin
                   if Char in 32 .. 127 then
                      return "'" & Character'Val (Char) & "'";
@@ -272,11 +272,43 @@ package body Pprint is
             when N_Attribute_Reference =>
                if Take_Prefix then
                   declare
-                     Id     : constant Attribute_Id :=
-                                Get_Attribute_Id (Attribute_Name (Expr));
-                     Str    : constant String :=
-                                Expr_Name (Prefix (Expr)) & "'"
-                                  & Get_Name_String (Attribute_Name (Expr));
+                     function To_Mixed_Case (S : String) return String;
+                     --  Transform given string into the corresponding one in
+                     --  mixed case form.
+
+                     -------------------
+                     -- To_Mixed_Case --
+                     -------------------
+
+                     function To_Mixed_Case (S : String) return String is
+                        Result : String (S'Range);
+                        Ucase  : Boolean := True;
+
+                     begin
+                        for J in S'Range loop
+                           if Ucase then
+                              Result (J) := Fold_Upper (S (J));
+                           else
+                              Result (J) := Fold_Lower (S (J));
+                           end if;
+
+                           Ucase := (S (J) = '_');
+                        end loop;
+
+                        return Result;
+                     end To_Mixed_Case;
+
+                     Id : constant Attribute_Id :=
+                            Get_Attribute_Id (Attribute_Name (Expr));
+
+                     --  Always use mixed case for attributes
+
+                     Str : constant String :=
+                             Expr_Name (Prefix (Expr))
+                               & "'"
+                               & To_Mixed_Case
+                                   (Get_Name_String (Attribute_Name (Expr)));
+
                      N      : Node_Id;
                      Ranges : List_Id;
 
@@ -699,7 +731,9 @@ package body Pprint is
             when N_Range =>
                Left := Original_Node (Low_Bound (Left));
 
-            when N_Type_Conversion =>
+            when N_Qualified_Expression
+               | N_Type_Conversion
+            =>
                Left := Original_Node (Subtype_Mark (Left));
 
             --  For any other item, quit loop
@@ -723,6 +757,20 @@ package body Pprint is
             =>
                Right := Original_Node (Selector_Name (Right));
 
+            when N_Qualified_Expression
+               | N_Type_Conversion
+            =>
+               Right := Original_Node (Expression (Right));
+
+               --  If argument does not already account for a closing
+               --  parenthesis, count one here.
+
+               if not Nkind_In (Right, N_Aggregate,
+                                       N_Quantified_Expression)
+               then
+                  Append_Paren := Append_Paren + 1;
+               end if;
+
             when N_Designator =>
                Right := Original_Node (Identifier (Right));
 
@@ -735,9 +783,16 @@ package body Pprint is
             when N_Parameter_Association =>
                Right := Original_Node (Explicit_Actual_Parameter (Right));
 
+            when N_Component_Association =>
+               if Present (Expression (Right)) then
+                  Right := Expression (Right);
+               else
+                  Right := Last (Choices (Right));
+               end if;
+
             when N_Indexed_Component =>
                Right := Original_Node (Last (Sinfo.Expressions (Right)));
-               Append_Paren := True;
+               Append_Paren := Append_Paren + 1;
 
             when N_Function_Call =>
                if Present (Sinfo.Parameter_Associations (Right)) then
@@ -754,12 +809,15 @@ package body Pprint is
                      while Present (Rover) loop
                         if Comes_From_Source (Original_Node (Rover)) then
                            Right := Original_Node (Rover);
-                           Append_Paren := True;
                            Found := True;
                         end if;
 
                         Next (Rover);
                      end loop;
+
+                     if Found then
+                        Append_Paren := Append_Paren + 1;
+                     end if;
 
                      --  Quit loop if no Comes_From_Source parameters
 
@@ -773,7 +831,37 @@ package body Pprint is
                end if;
 
             when N_Quantified_Expression =>
-               Right := Original_Node (Condition (Right));
+               Right        := Original_Node (Condition (Right));
+               Append_Paren := Append_Paren + 1;
+
+            when N_Aggregate =>
+               declare
+                  Aggr : constant Node_Id := Right;
+                  Sub  : Node_Id;
+
+               begin
+                  Sub := First (Expressions (Aggr));
+                  while Present (Sub) loop
+                     if Sloc (Sub) > Sloc (Right) then
+                        Right := Sub;
+                     end if;
+
+                     Next (Sub);
+                  end loop;
+
+                  Sub := First (Component_Associations (Aggr));
+                  while Present (Sub) loop
+                     if Sloc (Sub) > Sloc (Right) then
+                        Right := Sub;
+                     end if;
+
+                     Next (Sub);
+                  end loop;
+
+                  exit when Right = Aggr;
+
+                  Append_Paren := Append_Paren + 1;
+               end;
 
             --  For all other items, quit the loop
 
@@ -795,6 +883,7 @@ package body Pprint is
          end if;
 
          declare
+            Threshold        : constant := 256;
             Buffer           : String (1 .. Natural (End_Sloc - Scn));
             Index            : Natural := 0;
             Skipping_Comment : Boolean := False;
@@ -804,6 +893,15 @@ package body Pprint is
             if Right /= Expr then
                while Scn < End_Sloc loop
                   case Src (Scn) is
+
+                     --  Give up on non ASCII characters
+
+                     when Character'Val (128) .. Character'Last =>
+                        Append_Paren := 0;
+                        Index := 0;
+                        Right := Expr;
+                        exit;
+
                      when ' '
                         | ASCII.HT
                      =>
@@ -838,6 +936,12 @@ package body Pprint is
                         end if;
                   end case;
 
+                  --  Give up on too long strings
+
+                  if Index >= Threshold then
+                     return Buffer (1 .. Index) & "...";
+                  end if;
+
                   Scn := Scn + 1;
                end loop;
             end if;
@@ -853,11 +957,11 @@ package body Pprint is
                   end if;
                end;
 
-            elsif Append_Paren then
-               return Buffer (1 .. Index) & Expr_Name (Right, False) & ')';
-
             else
-               return Buffer (1 .. Index) & Expr_Name (Right, False);
+               return
+                 Buffer (1 .. Index)
+                   & Expr_Name (Right, False)
+                   & (1 .. Append_Paren => ')');
             end if;
          end;
       end;

@@ -523,7 +523,7 @@ loop_cand::analyze_iloop_reduction_var (tree var)
 
   /* Handle and verify a series of stmts feeding the reduction op.  */
   if (single_use != next_def
-      && !check_reduction_path (UNKNOWN_LOCATION, m_loop, phi, next,
+      && !check_reduction_path (dump_user_location_t (), m_loop, phi, next,
 				gimple_assign_rhs_code (single_use)))
     return false;
 
@@ -1578,7 +1578,7 @@ bool
 tree_loop_interchange::interchange (vec<data_reference_p> datarefs,
 				    vec<ddr_p> ddrs)
 {
-  location_t loc = find_loop_location (m_loop_nest[0]);
+  dump_user_location_t loc = find_loop_location (m_loop_nest[0]);
   bool changed_p = false;
   /* In each iteration we try to interchange I-th loop with (I+1)-th loop.
      The overall effect is to push inner loop to outermost level in whole

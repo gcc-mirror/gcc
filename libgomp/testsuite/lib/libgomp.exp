@@ -29,7 +29,10 @@ load_gcc_lib scandump.exp
 load_gcc_lib scanlang.exp
 load_gcc_lib scanrtl.exp
 load_gcc_lib scantree.exp
+load_gcc_lib scanltranstree.exp
+load_gcc_lib scanoffloadtree.exp
 load_gcc_lib scanipa.exp
+load_gcc_lib scanwpaipa.exp
 load_gcc_lib timeout-dg.exp
 load_gcc_lib torture-options.exp
 load_gcc_lib fortran-modules.exp
@@ -184,9 +187,9 @@ proc libgomp_init { args } {
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
         lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
         lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
-	# The top-level include directory, for gomp-constants.h.
-	lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../../include"
     }
+    # The top-level include directory, for gomp-constants.h.
+    lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../../include"
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
 
     # For build-tree testing, also consider the library paths used for builing.

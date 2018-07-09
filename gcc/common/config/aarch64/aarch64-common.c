@@ -101,7 +101,10 @@ aarch64_handle_option (struct gcc_options *opts,
       return true;
 
     case OPT_mstrict_align:
-      opts->x_target_flags |= MASK_STRICT_ALIGN;
+      if (val)
+	opts->x_target_flags |= MASK_STRICT_ALIGN;
+      else
+	opts->x_target_flags &= ~MASK_STRICT_ALIGN;
       return true;
 
     case OPT_momit_leaf_frame_pointer:

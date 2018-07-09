@@ -43,8 +43,6 @@ FOREACH_FUNCTION(
     maxval = atype_min;
 #endif',
 `#if defined('atype_nan`)
-	}
-      while (0);
       if (unlikely (!fast))
 	{
 	  do
@@ -63,16 +61,29 @@ FOREACH_FUNCTION(
 	  if (likely (fast))
 	    continue;
 	}
-      else do
-	{
+      else
 #endif
-	  if (*base > maxval)
-	    {
-	      maxval = *base;
-	      for (n = 0; n < rank; n++)
-		dest[n * dstride] = count[n] + 1;
-	    }')
-
+        if (back)
+      	  do
+            {
+	      if (unlikely (*base >= maxval))
+	       {
+	         maxval = *base;
+	      	 for (n = 0; n < rank; n++)
+		   dest[n * dstride] = count[n] + 1;
+	       }
+	     base += sstride[0];
+	   }
+         while (++count[0] != extent[0]);
+       else
+         do
+	   {
+	     if (unlikely (*base > maxval))
+	       {
+	         maxval = *base;
+		 for (n = 0; n < rank; n++)
+		   dest[n * dstride] = count[n] + 1;
+	       }')
 MASKED_FOREACH_FUNCTION(
 `  atype_name maxval;
    int fast = 0;
@@ -82,9 +93,7 @@ MASKED_FOREACH_FUNCTION(
 #else
     maxval = atype_min;
 #endif',
-`	}
-      while (0);
-      if (unlikely (!fast))
+`      if (unlikely (!fast))
 	{
 	  do
 	    {
@@ -111,14 +120,28 @@ MASKED_FOREACH_FUNCTION(
 	  if (likely (fast))
 	    continue;
 	}
-      else do
-	{
-	  if (*mbase && *base > maxval)
+      else
+        if (back)
+	  do
 	    {
-	      maxval = *base;
-	      for (n = 0; n < rank; n++)
-		dest[n * dstride] = count[n] + 1;
-	    }')
+	      if (*mbase && *base >= maxval)
+	        {
+	          maxval = *base;
+	          for (n = 0; n < rank; n++)
+		    dest[n * dstride] = count[n] + 1;
+		}
+	      base += sstride[0];
+	    }
+	  while (++count[0] != extent[0]);
+	else
+	  do
+	    {
+	      if (*mbase && unlikely (*base > maxval))
+	        {
+		  maxval = *base;
+		  for (n = 0; n < rank; n++)
+		    dest[n * dstride] = count[n] + 1;
+	        }')
 
 SCALAR_FOREACH_FUNCTION(`0')
 #endif

@@ -143,50 +143,59 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 	      : (TYPE_SATURATING (type)
 		 ? ssmsub_widen_optab : smsub_widen_optab));
 
-    case FMA_EXPR:
-      return fma_optab;
-
     case VEC_WIDEN_MULT_HI_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_umult_hi_optab : vec_widen_smult_hi_optab);
 
     case VEC_WIDEN_MULT_LO_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_umult_lo_optab : vec_widen_smult_lo_optab);
 
     case VEC_WIDEN_MULT_EVEN_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_widen_umult_even_optab : vec_widen_smult_even_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_umult_even_optab : vec_widen_smult_even_optab);
 
     case VEC_WIDEN_MULT_ODD_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_umult_odd_optab : vec_widen_smult_odd_optab);
 
     case VEC_WIDEN_LSHIFT_HI_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_widen_ushiftl_hi_optab : vec_widen_sshiftl_hi_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_ushiftl_hi_optab : vec_widen_sshiftl_hi_optab);
 
     case VEC_WIDEN_LSHIFT_LO_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_widen_ushiftl_lo_optab : vec_widen_sshiftl_lo_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_ushiftl_lo_optab : vec_widen_sshiftl_lo_optab);
 
     case VEC_UNPACK_HI_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_unpacku_hi_optab : vec_unpacks_hi_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_unpacku_hi_optab : vec_unpacks_hi_optab);
 
     case VEC_UNPACK_LO_EXPR:
-      return TYPE_UNSIGNED (type) ?
-	vec_unpacku_lo_optab : vec_unpacks_lo_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_unpacku_lo_optab : vec_unpacks_lo_optab);
 
     case VEC_UNPACK_FLOAT_HI_EXPR:
       /* The signedness is determined from input operand.  */
-      return TYPE_UNSIGNED (type) ?
-	vec_unpacku_float_hi_optab : vec_unpacks_float_hi_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_unpacku_float_hi_optab : vec_unpacks_float_hi_optab);
 
     case VEC_UNPACK_FLOAT_LO_EXPR:
       /* The signedness is determined from input operand.  */
-      return TYPE_UNSIGNED (type) ?
-	vec_unpacku_float_lo_optab : vec_unpacks_float_lo_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_unpacku_float_lo_optab : vec_unpacks_float_lo_optab);
+
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+      /* The signedness is determined from output operand.  */
+      return (TYPE_UNSIGNED (type)
+	      ? vec_unpack_ufix_trunc_hi_optab
+	      : vec_unpack_sfix_trunc_hi_optab);
+
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
+      /* The signedness is determined from output operand.  */
+      return (TYPE_UNSIGNED (type)
+	      ? vec_unpack_ufix_trunc_lo_optab
+	      : vec_unpack_sfix_trunc_lo_optab);
 
     case VEC_PACK_TRUNC_EXPR:
       return vec_pack_trunc_optab;
@@ -196,8 +205,13 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 
     case VEC_PACK_FIX_TRUNC_EXPR:
       /* The signedness is determined from output operand.  */
-      return TYPE_UNSIGNED (type) ?
-	vec_pack_ufix_trunc_optab : vec_pack_sfix_trunc_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? vec_pack_ufix_trunc_optab : vec_pack_sfix_trunc_optab);
+
+    case VEC_PACK_FLOAT_EXPR:
+      /* The signedness is determined from input operand.  */
+      return (TYPE_UNSIGNED (type)
+	      ? vec_packu_float_optab : vec_packs_float_optab);
 
     case VEC_DUPLICATE_EXPR:
       return vec_duplicate_optab;
@@ -237,6 +251,8 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case ABS_EXPR:
       return trapv ? absv_optab : abs_optab;
 
+    case ABSU_EXPR:
+      return abs_optab;
     default:
       return unknown_optab;
     }

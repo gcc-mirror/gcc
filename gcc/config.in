@@ -1323,7 +1323,7 @@
 #endif
 
 
-/* Define if your assembler supports specifying the section flag e. */
+/* Define if your assembler supports specifying the exclude section flag. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_SECTION_EXCLUDE
 #endif

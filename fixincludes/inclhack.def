@@ -377,11 +377,15 @@ fix = {
     mach        = "*-*-vxworks*";
         
     replace     = <<- _EndOfHeader_
-	#ifndef _ASSERT_H
+	#ifdef _ASSERT_H
+	#undef _ASSERT_H
+	#undef assert
+	#endif
+
 	#define _ASSERT_H
 
-	#ifdef assert
-	#undef assert
+	#ifdef __cplusplus
+	extern "C" {
 	#endif
 
 	#if defined(__STDC__) || defined(__cplusplus)
@@ -399,11 +403,13 @@ fix = {
 
 	#define assert(test) ((void) \
 	        ((test) ? ((void)0) : \
-	        __assert("Assertion failed: " ASSERT_STRINGIFY(test) ", file " \
+	        __assert("Assertion failed: " #test ", file " \
 	        __FILE__ ", line " ASSERT_STRINGIFY(__LINE__) "\n")))
 
 	#endif
 
+	#ifdef __cplusplus
+	}
 	#endif
 	_EndOfHeader_;
 };
@@ -5008,6 +5014,22 @@ fix = {
                 "[\t ]*size_t[\t ]*\\)[\t ]*;";
 
     test_text       = "extern int write ( int , char * , size_t ) ;";
+};
+
+/*
+ *  This hack ensures the include_next in the fixed unistd.h actually
+ *  finds the system's unistd.h and not the fixed unistd.h again.
+ */
+fix = {
+    hackname    = vxworks_iolib_include_unistd;
+    files       = ioLib.h;
+    mach        = "*-*-vxworks*";
+    select      = "#include \"unistd.h\"";
+
+    c_fix       = format;
+    c_fix_arg   = "#include <unistd.h>";
+
+    test_text       = "#include \"unistd.h\"";
 };
 
 /*

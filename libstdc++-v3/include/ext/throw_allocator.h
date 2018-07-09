@@ -402,6 +402,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   struct condition_base
   {
+#if __cplusplus >= 201103L
+    condition_base() = default;
+    condition_base(const condition_base&) = default;
+    condition_base& operator=(const condition_base&) = default;
+#endif
     virtual ~condition_base() { };
   };
 

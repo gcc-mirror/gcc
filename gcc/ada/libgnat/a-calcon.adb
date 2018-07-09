@@ -29,7 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Interfaces.C; use Interfaces.C;
+with Interfaces.C;            use Interfaces.C;
+with Interfaces.C.Extensions; use Interfaces.C.Extensions;
 
 package body Ada.Calendar.Conversions is
 
@@ -140,9 +141,25 @@ package body Ada.Calendar.Conversions is
 
    function To_Unix_Time (Ada_Time : Time) return long is
       Val : constant Long_Integer :=
-        Conversion_Operations.To_Unix_Time (Ada_Time);
+              Conversion_Operations.To_Unix_Time (Ada_Time);
    begin
       return long (Val);
    end To_Unix_Time;
+
+   -----------------------
+   -- To_Unix_Nano_Time --
+   -----------------------
+
+   function To_Unix_Nano_Time (Ada_Time : Time) return long_long is
+      pragma Unsuppress (Overflow_Check);
+      Ada_Rep : constant Time_Rep := Time_Rep (Ada_Time);
+
+   begin
+      return long_long (Ada_Rep + Epoch_Offset);
+
+   exception
+      when Constraint_Error =>
+         raise Time_Error;
+   end To_Unix_Nano_Time;
 
 end Ada.Calendar.Conversions;

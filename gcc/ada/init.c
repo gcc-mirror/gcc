@@ -1279,7 +1279,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 
   /* If it was a DEC Ada specific condtiion, make it GNAT otherwise
      keep the old facility.  */
-  if (sigargs [1] & FAC_MASK == DECADA_M_FACILITY)
+  if ((sigargs [1] & FAC_MASK) == DECADA_M_FACILITY)
     SYS$PUTMSG (sigargs, copy_msg, &gnat_facility,
 	        (unsigned long long ) message);
   else
@@ -1937,7 +1937,7 @@ __gnat_map_signal (int sig,
   Raise_From_Signal_Handler (exception, msg);
 }
 
-#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR >= 7) || defined (__aarch64__)
+#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR >= 7) && !defined (__aarch64__)
 
 /* ARM-vx7 case with arm unwinding exceptions */
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE

@@ -1222,8 +1222,8 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    if (memcmp (TREE_OPTIMIZATION (t1), TREE_OPTIMIZATION (t2),
-		sizeof (struct cl_optimization)) != 0)
+    if (!cl_optimization_option_eq (TREE_OPTIMIZATION (t1),
+				    TREE_OPTIMIZATION (t2)))
       return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
@@ -1695,6 +1695,36 @@ unify_scc (struct data_in *data_in, unsigned from,
 }
 
 
+/* Compare types based on source file location.  */
+
+static int
+cmp_type_location (const void *p1_, const void *p2_)
+{
+  tree *p1 = (tree*)(const_cast<void *>(p1_));
+  tree *p2 = (tree*)(const_cast<void *>(p2_));
+  if (*p1 == *p2)
+    return 0;
+
+  tree tname1 = TYPE_NAME (*p1);
+  tree tname2 = TYPE_NAME (*p2);
+  expanded_location xloc1 = expand_location (DECL_SOURCE_LOCATION (tname1));
+  expanded_location xloc2 = expand_location (DECL_SOURCE_LOCATION (tname2));
+
+  const char *f1 = lbasename (xloc1.file);
+  const char *f2 = lbasename (xloc2.file);
+  int r = strcmp (f1, f2);
+  if (r == 0)
+    {
+      int l1 = xloc1.line;
+      int l2 = xloc2.line;
+      if (l1 != l2)
+	return l1 - l2;
+      return xloc1.column - xloc2.column;
+    }
+  else
+    return r;
+}
+
 /* Read all the symbols from buffer DATA, using descriptors in DECL_DATA.
    RESOLUTIONS is the set of symbols picked by the linker (read from the
    resolution file when the linker plugin is being used).  */
@@ -1711,6 +1741,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   unsigned int i;
   const uint32_t *data_ptr, *data_end;
   uint32_t num_decl_states;
+  auto_vec<tree> odr_types;
 
   lto_input_block ib_main ((const char *) data + main_offset,
 			   header->main_size, decl_data->mode_table);
@@ -1772,14 +1803,15 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		  seen_type = true;
 		  num_prevailing_types++;
 		  lto_fixup_prevailing_type (t);
-		}
-	      /* Compute the canonical type of all types.
-		 ???  Should be able to assert that !TYPE_CANONICAL.  */
-	      if (TYPE_P (t) && !TYPE_CANONICAL (t))
-		{
-		  gimple_register_canonical_type (t);
+
+		  /* Compute the canonical type of all types.
+		     Because SCC components are streamed in random (hash) order
+		     we may have encountered the type before while registering
+		     type canonical of a derived type in the same SCC.  */
+		  if (!TYPE_CANONICAL (t))
+		    gimple_register_canonical_type (t);
 		  if (odr_type_p (t))
-		    register_odr_type (t);
+		    odr_types.safe_push (t);
 		}
 	      /* Link shared INTEGER_CSTs into TYPE_CACHED_VALUEs of its
 		 type which is also member of this SCC.  */
@@ -1840,6 +1872,15 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
       gcc_assert (*slot == NULL);
       *slot = state;
     }
+
+  /* Sort types for the file before registering in ODR machinery.  */
+  if (lto_location_cache::current_cache)
+    lto_location_cache::current_cache->apply_location_cache ();
+  odr_types.qsort (cmp_type_location);
+
+  /* Register ODR types.  */
+  for (unsigned i = 0; i < odr_types.length (); i++)
+    register_odr_type (odr_types[i]);
 
   if (data_ptr != data_end)
     internal_error ("bytecode stream: garbage at the end of symbols section");
@@ -2282,38 +2323,6 @@ free_section_data (struct lto_file_decl_data *file_data ATTRIBUTE_UNUSED,
 
 static lto_file *current_lto_file;
 
-/* Helper for qsort; compare partitions and return one with smaller size.
-   We sort from greatest to smallest so parallel build doesn't stale on the
-   longest compilation being executed too late.  */
-
-static int
-cmp_partitions_size (const void *a, const void *b)
-{
-  const struct ltrans_partition_def *pa
-     = *(struct ltrans_partition_def *const *)a;
-  const struct ltrans_partition_def *pb
-     = *(struct ltrans_partition_def *const *)b;
-  return pb->insns - pa->insns;
-}
-
-/* Helper for qsort; compare partitions and return one with smaller order.  */
-
-static int
-cmp_partitions_order (const void *a, const void *b)
-{
-  const struct ltrans_partition_def *pa
-     = *(struct ltrans_partition_def *const *)a;
-  const struct ltrans_partition_def *pb
-     = *(struct ltrans_partition_def *const *)b;
-  int ordera = -1, orderb = -1;
-
-  if (lto_symtab_encoder_size (pa->encoder))
-    ordera = lto_symtab_encoder_deref (pa->encoder, 0)->order;
-  if (lto_symtab_encoder_size (pb->encoder))
-    orderb = lto_symtab_encoder_deref (pb->encoder, 0)->order;
-  return orderb - ordera;
-}
-
 /* Actually stream out ENCODER into TEMP_FILENAME.  */
 
 static void
@@ -2423,7 +2432,8 @@ lto_wpa_write_files (void)
   ltrans_partition part;
   FILE *ltrans_output_list_stream;
   char *temp_filename;
-  vec <char *>temp_filenames = vNULL;
+  auto_vec <char *>temp_filenames;
+  auto_vec <int>temp_priority;
   size_t blen;
 
   /* Open the LTRANS output list.  */
@@ -2450,15 +2460,6 @@ lto_wpa_write_files (void)
   blen = strlen (temp_filename);
 
   n_sets = ltrans_partitions.length ();
-
-  /* Sort partitions by size so small ones are compiled last.
-     FIXME: Even when not reordering we may want to output one list for parallel make
-     and other for final link command.  */
-
-  if (!flag_profile_reorder_functions || !flag_profile_use)
-    ltrans_partitions.qsort (flag_toplevel_reorder
-			   ? cmp_partitions_size
-			   : cmp_partitions_order);
 
   for (i = 0; i < n_sets; i++)
     {
@@ -2511,6 +2512,7 @@ lto_wpa_write_files (void)
 
       part->encoder = NULL;
 
+      temp_priority.safe_push (part->insns);
       temp_filenames.safe_push (xstrdup (temp_filename));
     }
   ltrans_output_list_stream = fopen (ltrans_output_list, "w");
@@ -2520,13 +2522,13 @@ lto_wpa_write_files (void)
   for (i = 0; i < n_sets; i++)
     {
       unsigned int len = strlen (temp_filenames[i]);
-      if (fwrite (temp_filenames[i], 1, len, ltrans_output_list_stream) < len
+      if (fprintf (ltrans_output_list_stream, "%i\n", temp_priority[i]) < 0
+	  || fwrite (temp_filenames[i], 1, len, ltrans_output_list_stream) < len
 	  || fwrite ("\n", 1, 1, ltrans_output_list_stream) < 1)
 	fatal_error (input_location, "writing to LTRANS output list %s: %m",
 		     ltrans_output_list);
      free (temp_filenames[i]);
     }
-  temp_filenames.release();
 
   lto_stats.num_output_files += n_sets;
 
@@ -2970,29 +2972,43 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       all_file_decl_data[i]->current_decl_state = NULL; 
     }
 
-  /* Finally merge the cgraph according to the decl merging decisions.  */
-  timevar_push (TV_IPA_LTO_CGRAPH_MERGE);
-  if (symtab->dump_file)
-    {
-      fprintf (symtab->dump_file, "Before merging:\n");
-      symtab->dump (symtab->dump_file);
-    }
   if (!flag_ltrans)
     {
+      /* Finally merge the cgraph according to the decl merging decisions.  */
+      timevar_push (TV_IPA_LTO_CGRAPH_MERGE);
+
+      gcc_assert (!dump_file);
+      dump_file = dump_begin (lto_link_dump_id, NULL);
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Before merging:\n");
+	  symtab->dump (dump_file);
+	}
       lto_symtab_merge_symbols ();
       /* Removal of unreachable symbols is needed to make verify_symtab to pass;
 	 we are still having duplicated comdat groups containing local statics.
 	 We could also just remove them while merging.  */
       symtab->remove_unreachable_nodes (dump_file);
-    }
-  ggc_collect ();
-  symtab->state = IPA_SSA;
-  /* FIXME: Technically all node removals happening here are useless, because
-     WPA should not stream them.  */
-  if (flag_ltrans)
-    symtab->remove_unreachable_nodes (dump_file);
+      ggc_collect ();
 
-  timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
+      if (dump_file)
+        dump_end (lto_link_dump_id, dump_file);
+      dump_file = NULL;
+      timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
+    }
+  symtab->state = IPA_SSA;
+  /* All node removals happening here are useless, because
+     WPA should not stream them.  Still always perform remove_unreachable_nodes
+     because we may reshape clone tree, get rid of dead masters of inline
+     clones and remove symbol entries for read-only variables we keep around
+     only to be able to constant fold them.  */
+  if (flag_ltrans)
+    {
+      if (symtab->dump_file)
+	 symtab->dump (symtab->dump_file);
+      symtab->remove_unreachable_nodes (symtab->dump_file);
+    }
 
   /* Indicate that the cgraph is built and ready.  */
   symtab->function_flags_ready = true;
@@ -3150,19 +3166,19 @@ do_whole_program_analysis (void)
   if (seen_error ())
     return;
 
-  if (symtab->dump_file)
-    {
-      fprintf (symtab->dump_file, "Optimized ");
-      symtab->dump (symtab->dump_file);
-    }
-
-  symtab_node::checking_verify_symtab_nodes ();
-  bitmap_obstack_release (NULL);
-
   /* We are about to launch the final LTRANS phase, stop the WPA timer.  */
   timevar_pop (TV_WHOPR_WPA);
 
   timevar_push (TV_WHOPR_PARTITIONING);
+
+  gcc_assert (!dump_file);
+  dump_file = dump_begin (partition_dump_id, NULL);
+
+  if (dump_file)
+    symtab->dump (dump_file);
+
+  symtab_node::checking_verify_symtab_nodes ();
+  bitmap_obstack_release (NULL);
   if (flag_lto_partition == LTO_PARTITION_1TO1)
     lto_1_to_1_map ();
   else if (flag_lto_partition == LTO_PARTITION_MAX)
@@ -3190,6 +3206,9 @@ do_whole_program_analysis (void)
      to globals with hidden visibility because they are accessed from multiple
      partitions.  */
   lto_promote_cross_file_statics ();
+  if (dump_file)
+     dump_end (partition_dump_id, dump_file);
+  dump_file = NULL;
   timevar_pop (TV_WHOPR_PARTITIONING);
 
   timevar_stop (TV_PHASE_OPT_GEN);
@@ -3251,7 +3270,8 @@ static void
 lto_process_name (void)
 {
   if (flag_lto)
-    setproctitle ("lto1-lto");
+    setproctitle (flag_incremental_link == INCREMENTAL_LINK_LTO
+		  ? "lto1-inclink" : "lto1-lto");
   if (flag_wpa)
     setproctitle ("lto1-wpa");
   if (flag_ltrans)

@@ -181,8 +181,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2021. Further incorrect usages of result_of
   template<typename _Fn, typename... _Args>
-    using __async_result_of = typename result_of<
-      typename decay<_Fn>::type(typename decay<_Args>::type...)>::type;
+    using __async_result_of = typename __invoke_result<
+      typename decay<_Fn>::type, typename decay<_Args>::type...>::type;
 
   template<typename _Fn, typename... _Args>
     future<__async_result_of<_Fn, _Args...>>
@@ -1462,21 +1462,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 static_cast<_Alloc&>(_M_impl));
     }
 
-  template<typename _Task, typename _Fn, bool
-	   = is_same<_Task, typename decay<_Fn>::type>::value>
-    struct __constrain_pkgdtask
-    { typedef void __type; };
-
-  template<typename _Task, typename _Fn>
-    struct __constrain_pkgdtask<_Task, _Fn, true>
-    { };
-
   /// packaged_task
   template<typename _Res, typename... _ArgTypes>
     class packaged_task<_Res(_ArgTypes...)>
     {
       typedef __future_base::_Task_state_base<_Res(_ArgTypes...)> _State_type;
       shared_ptr<_State_type>                   _M_state;
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3039. Unnecessary decay in thread and packaged_task
+      template<typename _Fn, typename _Fn2 = __remove_cvref_t<_Fn>>
+	using __not_same
+	  = typename enable_if<!is_same<packaged_task, _Fn2>::value>::type;
 
     public:
       // Construction and destruction
@@ -1488,8 +1485,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	packaged_task(allocator_arg_t, const _Allocator& __a) noexcept
 	{ }
 
-      template<typename _Fn, typename = typename
-	       __constrain_pkgdtask<packaged_task, _Fn>::__type>
+      template<typename _Fn, typename = __not_same<_Fn>>
 	explicit
 	packaged_task(_Fn&& __fn)
 	: packaged_task(allocator_arg, std::allocator<int>(),
@@ -1499,11 +1495,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2097.  packaged_task constructors should be constrained
       // 2407. [this constructor should not be] explicit
-      template<typename _Fn, typename _Alloc, typename = typename
-	       __constrain_pkgdtask<packaged_task, _Fn>::__type>
+      template<typename _Fn, typename _Alloc, typename = __not_same<_Fn>>
 	packaged_task(allocator_arg_t, const _Alloc& __a, _Fn&& __fn)
 	: _M_state(__create_task_state<_Res(_ArgTypes...)>(
-		    std::forward<_Fn>(__fn), __a))
+		   std::forward<_Fn>(__fn), __a))
 	{ }
 
       ~packaged_task()

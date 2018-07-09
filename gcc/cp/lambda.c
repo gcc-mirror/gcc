@@ -90,7 +90,7 @@ build_lambda_object (tree lambda_expr)
 	val = build_array_copy (val);
       else if (DECL_NORMAL_CAPTURE_P (field)
 	       && !DECL_VLA_CAPTURE_P (field)
-	       && TREE_CODE (TREE_TYPE (field)) != REFERENCE_TYPE)
+	       && !TYPE_REF_P (TREE_TYPE (field)))
 	{
 	  /* "the entities that are captured by copy are used to
 	     direct-initialize each corresponding non-static data
@@ -411,7 +411,7 @@ build_capture_proxy (tree member, tree init)
 
   type = lambda_proxy_type (object);
 
-  if (name == this_identifier && !POINTER_TYPE_P (type))
+  if (name == this_identifier && !INDIRECT_TYPE_P (type))
     {
       type = build_pointer_type (type);
       type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
@@ -571,7 +571,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 
       if (id == this_identifier && !by_reference_p)
 	{
-	  gcc_assert (POINTER_TYPE_P (type));
+	  gcc_assert (INDIRECT_TYPE_P (type));
 	  type = TREE_TYPE (type);
 	  initializer = cp_build_fold_indirect_ref (initializer);
 	}
@@ -743,9 +743,7 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
     add_capture_p = false;
 
   /* Try to default capture 'this' if we can.  */
-  if (!this_capture
-      && (!add_capture_p
-          || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) != CPLD_NONE))
+  if (!this_capture)
     {
       tree lambda_stack = NULL_TREE;
       tree init = NULL_TREE;
@@ -756,9 +754,15 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
            3. a non-default capturing lambda function.  */
       for (tree tlambda = lambda; ;)
 	{
-          lambda_stack = tree_cons (NULL_TREE,
-                                    tlambda,
-                                    lambda_stack);
+	  if (add_capture_p
+	      && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (tlambda) == CPLD_NONE)
+	    /* tlambda won't let us capture 'this'.  */
+	    break;
+
+	  if (add_capture_p)
+	    lambda_stack = tree_cons (NULL_TREE,
+				      tlambda,
+				      lambda_stack);
 
 	  tree closure = LAMBDA_EXPR_CLOSURE (tlambda);
 	  tree containing_function
@@ -807,10 +811,6 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
 	      init = LAMBDA_EXPR_THIS_CAPTURE (tlambda);
 	      break;
 	    }
-
-	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (tlambda) == CPLD_NONE)
-	    /* An outer lambda won't let us capture 'this'.  */
-	    break;
 	}
 
       if (init)
@@ -884,7 +884,7 @@ resolvable_dummy_lambda (tree object)
       && current_class_type
       && LAMBDA_TYPE_P (current_class_type)
       && lambda_function (current_class_type)
-      && DERIVED_FROM_P (type, current_nonlambda_class_type ()))
+      && DERIVED_FROM_P (type, nonlambda_method_basetype()))
     return CLASSTYPE_LAMBDA_EXPR (current_class_type);
 
   return NULL_TREE;
@@ -949,30 +949,37 @@ current_nonlambda_function (void)
   return fn;
 }
 
-/* Returns the method basetype of the innermost non-lambda function, or
-   NULL_TREE if none.  */
+/* Returns the method basetype of the innermost non-lambda function, including
+   a hypothetical constructor if inside an NSDMI, or NULL_TREE if none.  */
 
 tree
 nonlambda_method_basetype (void)
 {
-  tree fn, type;
   if (!current_class_ref)
     return NULL_TREE;
 
-  type = current_class_type;
+  tree type = current_class_type;
   if (!type || !LAMBDA_TYPE_P (type))
     return type;
 
-  /* Find the nearest enclosing non-lambda function.  */
-  fn = TYPE_NAME (type);
-  do
-    fn = decl_function_context (fn);
-  while (fn && LAMBDA_FUNCTION_P (fn));
+  while (true)
+    {
+      tree lam = CLASSTYPE_LAMBDA_EXPR (type);
+      tree ex = LAMBDA_EXPR_EXTRA_SCOPE (lam);
+      if (ex && TREE_CODE (ex) == FIELD_DECL)
+	/* Lambda in an NSDMI.  */
+	return DECL_CONTEXT (ex);
 
-  if (!fn || !DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
-    return NULL_TREE;
-
-  return TYPE_METHOD_BASETYPE (TREE_TYPE (fn));
+      tree fn = TYPE_CONTEXT (type);
+      if (!fn || TREE_CODE (fn) != FUNCTION_DECL
+	  || !DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	/* No enclosing non-lambda method.  */
+	return NULL_TREE;
+      if (!LAMBDA_FUNCTION_P (fn))
+	/* Found an enclosing non-lambda method.  */
+	return TYPE_METHOD_BASETYPE (TREE_TYPE (fn));
+      type = DECL_CONTEXT (fn);
+    }
 }
 
 /* Like current_scope, but looking through lambdas.  */
@@ -1371,6 +1378,24 @@ record_lambda_scope (tree lambda)
 {
   LAMBDA_EXPR_EXTRA_SCOPE (lambda) = lambda_scope;
   LAMBDA_EXPR_DISCRIMINATOR (lambda) = lambda_count++;
+}
+
+/* This lambda is an instantiation of a lambda in a template default argument
+   that got no LAMBDA_EXPR_EXTRA_SCOPE, so this shouldn't either.  But we do
+   need to use and increment the global count to avoid collisions.  */
+
+void
+record_null_lambda_scope (tree lambda)
+{
+  if (vec_safe_is_empty (lambda_scope_stack))
+    record_lambda_scope (lambda);
+  else
+    {
+      tree_int *p = lambda_scope_stack->begin();
+      LAMBDA_EXPR_EXTRA_SCOPE (lambda) = p->t;
+      LAMBDA_EXPR_DISCRIMINATOR (lambda) = p->i++;
+    }
+  gcc_assert (LAMBDA_EXPR_EXTRA_SCOPE (lambda) == NULL_TREE);
 }
 
 void

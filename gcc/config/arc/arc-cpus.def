@@ -43,34 +43,37 @@
 	  as defined in arc-options.def file, and allowed by arc-arches.def
 	  file.  The specific hardware flags are enumerated without using
 	  spaces between the '|' character and consequtive flags.
+   EXTRA  Extra hardware flags, different than the ones in
+	  arc-arches.def.  Here we can specify the width of lp_count,
+	  for example.
    TUNE	  Tune value for the given configuration, otherwise NONE.  */
 
-ARC_CPU (em,	    em, 0, NONE)
-ARC_CPU (em_mini,   em, FL_RF16, NONE)
-ARC_CPU (arcem,	    em, FL_MPYOPT_2|FL_CD|FL_BS, NONE)
-ARC_CPU (em4,	    em, FL_CD, NONE)
-ARC_CPU (em4_dmips, em, FL_MPYOPT_2|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS, NONE)
-ARC_CPU (em4_fpus,  em, FL_MPYOPT_2|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS|FL_FPU_FPUS, NONE)
-ARC_CPU (em4_fpuda, em, FL_MPYOPT_2|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS|FL_FPU_FPUDA, NONE)
-ARC_CPU (quarkse_em, em, FL_MPYOPT_3|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS|FL_FPX_QUARK|FL_SPFP|FL_DPFP, NONE)
+ARC_CPU (em,	    em, 0, NONE, NONE)
+ARC_CPU (em_mini,   em, FL_RF16, NONE, NONE)
+ARC_CPU (arcem,	    em, FL_MPYOPT_2|FL_CD|FL_BS, NONE, NONE)
+ARC_CPU (em4,	    em, FL_CD, NONE, NONE)
+ARC_CPU (em4_dmips, em, FL_MPYOPT_2|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS, NONE, NONE)
+ARC_CPU (em4_fpus,  em, FL_MPYOPT_2|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS|FL_FPU_FPUS, NONE, NONE)
+ARC_CPU (em4_fpuda, em, FL_MPYOPT_2|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS|FL_FPU_FPUDA, NONE, NONE)
+ARC_CPU (quarkse_em, em, FL_MPYOPT_3|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS|FL_FPX_QUARK|FL_SPFP|FL_DPFP, LPCOUNT_16, NONE)
 
-ARC_CPU (hs,	     hs, 0, NONE)
-ARC_CPU (archs,	     hs, FL_MPYOPT_2|FL_DIVREM|FL_LL64, NONE)
-ARC_CPU (hs34,	     hs, FL_MPYOPT_2, NONE)
-ARC_CPU (hs38,	     hs, FL_MPYOPT_9|FL_DIVREM|FL_LL64, NONE)
-ARC_CPU (hs38_linux, hs, FL_MPYOPT_9|FL_DIVREM|FL_LL64|FL_FPU_FPUD_ALL, NONE)
+ARC_CPU (hs,	     hs, 0, NONE, NONE)
+ARC_CPU (archs,	     hs, FL_MPYOPT_2|FL_DIVREM|FL_LL64, NONE, NONE)
+ARC_CPU (hs34,	     hs, FL_MPYOPT_2, NONE, NONE)
+ARC_CPU (hs38,	     hs, FL_MPYOPT_9|FL_DIVREM|FL_LL64, NONE, NONE)
+ARC_CPU (hs38_linux, hs, FL_MPYOPT_9|FL_DIVREM|FL_LL64|FL_FPU_FPUD_ALL, NONE, NONE)
 
-ARC_CPU (arc600,	  6xx, FL_BS, ARC600)
-ARC_CPU (arc600_norm,	  6xx, FL_BS|FL_NORM, ARC600)
-ARC_CPU (arc600_mul64,	  6xx, FL_BS|FL_NORM|FL_MUL64, ARC600)
-ARC_CPU (arc600_mul32x16, 6xx, FL_BS|FL_NORM|FL_MUL32x16, ARC600)
-ARC_CPU (arc601,	  6xx, 0, ARC600)
-ARC_CPU (arc601_norm,	  6xx, FL_NORM, ARC600)
-ARC_CPU (arc601_mul64,	  6xx, FL_NORM|FL_MUL64, ARC600)
-ARC_CPU (arc601_mul32x16, 6xx, FL_NORM|FL_MUL32x16, ARC600)
+ARC_CPU (arc600,	  6xx, FL_BS, NONE, ARC600)
+ARC_CPU (arc600_norm,	  6xx, FL_BS|FL_NORM, NONE, ARC600)
+ARC_CPU (arc600_mul64,	  6xx, FL_BS|FL_NORM|FL_MUL64, NONE, ARC600)
+ARC_CPU (arc600_mul32x16, 6xx, FL_BS|FL_NORM|FL_MUL32x16, NONE, ARC600)
+ARC_CPU (arc601,	  6xx, 0, NONE, ARC600)
+ARC_CPU (arc601_norm,	  6xx, FL_NORM, NONE, ARC600)
+ARC_CPU (arc601_mul64,	  6xx, FL_NORM|FL_MUL64, NONE, ARC600)
+ARC_CPU (arc601_mul32x16, 6xx, FL_NORM|FL_MUL32x16, NONE, ARC600)
 
-ARC_CPU (arc700, 700, 0, ARC700_4_2_STD)
-ARC_CPU (nps400, 700, 0, ARC700_4_2_STD)
+ARC_CPU (arc700, 700, 0, NONE, ARC700_4_2_STD)
+ARC_CPU (nps400, 700, 0, NONE, ARC700_4_2_STD)
 
 /* Local Variables: */
 /* mode: c */

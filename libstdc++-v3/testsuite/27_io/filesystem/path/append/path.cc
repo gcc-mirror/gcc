@@ -19,7 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 30.10.7.4.3 path appends [fs.path.append]
+// C++17 30.10.8.4.3 path appends [fs.path.append]
 
 #include <filesystem>
 #include <testsuite_hooks.h>
@@ -28,56 +28,79 @@
 using std::filesystem::path;
 using __gnu_test::compare_paths;
 
+// path::operator/=(const path&)
+
+path append(path l, const path& r)
+{
+  l /= r;
+  return l;
+}
+
 void
 test01()
 {
-  const path p("/foo/bar");
+  compare_paths( append("/foo/bar", "/foo/"), "/foo/" );
 
-  path pp = p;
-  pp /= p;
-  compare_paths( pp, p );
+#ifndef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  compare_paths( append("baz", "baz"), "baz/baz" );
+#else
+  compare_paths( append("baz", "baz"), "baz\\baz" );
+#endif
+  compare_paths( append("baz/", "baz"), "baz/baz" );
+  compare_paths( append("baz",  "/foo/bar"), "/foo/bar" );
+  compare_paths( append("baz/", "/foo/bar"), "/foo/bar" );
 
-  path q("baz");
+  VERIFY( append("", "").empty() );
+  VERIFY( !append("", "rel").is_absolute() );
 
-  path qq = q;
-  qq /= q;
-  compare_paths( qq, "baz/baz" );
+  compare_paths( append("dir/", "/file"), "/file" );
+  compare_paths( append("dir/", "file"),  "dir/file" );
 
-  q /= p;
-  compare_paths( q, p );
-
-  path r = "";
-  r /= path();
-  VERIFY( r.empty() );
-
-  r /= path("rel");
-  VERIFY( !r.is_absolute() );
-
-  path s = "dir/";
-  s /= path("/file");
-  compare_paths( s, "/file" );
-
-  s = "dir/";
-  s /= path("file");
-  compare_paths( s, "dir/file" );
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  compare_paths( append("c:/foo", "/bar"),  "c:/bar" );
+#endif
 }
 
 void
 test02()
 {
   // C++17 [fs.path.append] p4
+#ifndef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  compare_paths( append("//host", "foo"),  "//host/foo" );
 
-  path p = path("//host") / "foo";
-  compare_paths( p, "//host/foo" );
+  compare_paths( append("//host/", "foo"),  "//host/foo" );
 
-  path pp = path("//host/") / "foo";
-  compare_paths( pp, "//host/foo" );
+  // path("foo") / ""; // yields "foo/"
+  compare_paths( append("foo", ""), "foo/" );
 
-  path q = path("foo") / "";
-  compare_paths( q, "foo/" );
+  // path("foo") / "/bar"; // yields "/bar"
+  compare_paths( append("foo", "/bar"), "/bar" );
+#else
+  compare_paths( append("//host", "foo"),  "//host\\foo" );
 
-  path qq = path("foo") / "/bar";
-  compare_paths( qq, "/bar" );
+  compare_paths( append("//host/", "foo"), "//host/foo" );
+
+  // path("foo") / ""; // yields "foo/"
+  compare_paths( append("foo", ""), "foo\\" );
+
+  // path("foo") / "/bar"; // yields "/bar"
+  compare_paths( append("foo", "/bar"),  "/bar" );
+
+  // path("foo") / "c:/bar"; // yields "c:/bar"
+  compare_paths( append("foo", "c:/bar"),  "c:/bar" );
+
+  // path("foo") / "c:"; // yields "c:"
+  compare_paths( append("foo", "c:"),  "c:" );
+
+  // path("c:") / ""; // yields "c:"
+  compare_paths( append("c:", ""),  "c:" );
+
+  // path("c:foo") / "/bar"; // yields "c:/bar"
+  compare_paths( append("c:foo", "/bar"),  "c:/bar" );
+
+  // path("c:foo") / "c:bar"; // yields "c:foo/bar"
+  compare_paths( append("foo", "c:\\bar"),  "c:\\bar" );
+#endif
 }
 
 int

@@ -281,6 +281,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "gimple-fold.h"
 #include "tree-into-ssa.h"
+#include "builtins.h"
 
 static tree analyze_scalar_evolution_1 (struct loop *, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
@@ -1984,6 +1985,7 @@ interpret_expr (struct loop *loop, gimple *at_stmt, tree expr)
     return expr;
 
   if (TREE_CODE (expr) == POLYNOMIAL_CHREC
+      || TREE_CODE (expr) == CALL_EXPR
       || get_gimple_rhs_class (TREE_CODE (expr)) == GIMPLE_TERNARY_RHS)
     return chrec_dont_know;
 
@@ -3183,7 +3185,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
 		       && wi::le_p (base_max, type_max, sgn));
 
   /* Account the possible increment in the last ieration.  */
-  bool overflow = false;
+  wi::overflow_type overflow = wi::OVF_NONE;
   nit = wi::add (nit, 1, SIGNED, &overflow);
   if (overflow)
     return true;
@@ -3200,7 +3202,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
      the type.  */
   if (sgn == UNSIGNED || !wi::neg_p (step_max))
     {
-      bool overflow = false;
+      wi::overflow_type overflow = wi::OVF_NONE;
       if (wi::gtu_p (wi::mul (step_max, nit2, UNSIGNED, &overflow),
 		     type_max - base_max)
 	  || overflow)
@@ -3209,7 +3211,8 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
   /* If step can be negative, check that nit*(-step) <= base_min-type_min.  */
   if (sgn == SIGNED && wi::neg_p (step_min))
     {
-      bool overflow = false, overflow2 = false;
+      wi::overflow_type overflow, overflow2;
+      overflow = overflow2 = wi::OVF_NONE;
       if (wi::gtu_p (wi::mul (wi::neg (step_min, &overflow2),
 		     nit2, UNSIGNED, &overflow),
 		     base_min - type_min)
@@ -3313,7 +3316,7 @@ simple_iv_with_niters (struct loop *wrto_loop, struct loop *use_loop,
   enum tree_code code;
   tree type, ev, base, e;
   wide_int extreme;
-  bool folded_casts, overflow;
+  bool folded_casts;
 
   iv->base = NULL_TREE;
   iv->step = NULL_TREE;
@@ -3422,7 +3425,7 @@ simple_iv_with_niters (struct loop *wrto_loop, struct loop *use_loop,
       code = GT_EXPR;
       extreme = wi::max_value (type);
     }
-  overflow = false;
+  wi::overflow_type overflow = wi::OVF_NONE;
   extreme = wi::sub (extreme, wi::to_wide (iv->step),
 		     TYPE_SIGN (type), &overflow);
   if (overflow)
@@ -3492,6 +3495,31 @@ expression_expensive_p (tree expr)
       if (!integer_pow2p (TREE_OPERAND (expr, 1)))
 	return true;
     }
+
+  if (code == CALL_EXPR)
+    {
+      tree arg;
+      call_expr_arg_iterator iter;
+
+      if (!is_inexpensive_builtin (get_callee_fndecl (expr)))
+	return true;
+      FOR_EACH_CALL_EXPR_ARG (arg, iter, expr)
+	if (expression_expensive_p (arg))
+	  return true;
+      return false;
+    }
+
+  if (code == COND_EXPR)
+    return (expression_expensive_p (TREE_OPERAND (expr, 0))
+	    || (EXPR_P (TREE_OPERAND (expr, 1))
+		&& EXPR_P (TREE_OPERAND (expr, 2)))
+	    /* If either branch has side effects or could trap.  */
+	    || TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
+	    || generic_expr_could_trap_p (TREE_OPERAND (expr, 1))
+	    || TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0))
+	    || generic_expr_could_trap_p (TREE_OPERAND (expr, 0))
+	    || expression_expensive_p (TREE_OPERAND (expr, 1))
+	    || expression_expensive_p (TREE_OPERAND (expr, 2)));
 
   switch (TREE_CODE_CLASS (code))
     {

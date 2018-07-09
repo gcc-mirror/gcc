@@ -325,8 +325,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	duration(const duration&) = default;
 
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3050. Conversion specification problem in chrono::duration
 	template<typename _Rep2, typename = _Require<
-		 is_convertible<_Rep2, rep>,
+		 is_convertible<const _Rep2&, rep>,
 		 __or_<__is_float<rep>, __not_<__is_float<_Rep2>>>>>
 	  constexpr explicit duration(const _Rep2& __rep)
 	  : __r(static_cast<rep>(__rep)) { }
@@ -471,10 +473,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // SFINAE helper to obtain common_type<_Rep1, _Rep2> only if _Rep2
     // is implicitly convertible to it.
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3050. Conversion specification problem in chrono::duration constructor
     template<typename _Rep1, typename _Rep2,
 	     typename _CRep = typename common_type<_Rep1, _Rep2>::type>
-      using __common_rep_t
-	= typename enable_if<is_convertible<_Rep2, _CRep>::value, _CRep>::type;
+      using __common_rep_t = typename
+	enable_if<is_convertible<const _Rep2&, _CRep>::value, _CRep>::type;
 
     template<typename _Rep1, typename _Period, typename _Rep2>
       constexpr duration<__common_rep_t<_Rep1, _Rep2>, _Period>

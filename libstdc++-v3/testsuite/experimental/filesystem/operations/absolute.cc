@@ -31,12 +31,29 @@ void
 test01()
 {
   for (const path& p : __gnu_test::test_paths)
+  {
+#if defined(__MINGW32__) || defined(__MINGW64__)
+    if (p.empty())
+      continue;
+#endif
     VERIFY( absolute(p).is_absolute() );
+  }
 }
 
 void
 test02()
 {
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  path p1("/");
+  VERIFY( absolute(p1) != p1 );
+  path p2("/foo");
+  VERIFY( absolute(p2) != p2 );
+  path p3("foo");
+  VERIFY( absolute(p3) != p3 );
+  path p4("C:\\");
+  VERIFY( absolute(p3, p4) == "C:\\foo" );
+  VERIFY( absolute(p4) == p4 );
+#else
   path p1("/");
   VERIFY( absolute(p1) == p1 );
   VERIFY( absolute(p1, "/bar") == p1 );
@@ -46,6 +63,7 @@ test02()
   path p3("foo");
   VERIFY( absolute(p3) != p3 );
   VERIFY( absolute(p3, "/bar") == "/bar/foo" );
+#endif
 }
 
 int

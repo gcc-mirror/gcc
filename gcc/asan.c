@@ -554,14 +554,14 @@ get_last_alloca_addr ()
   return last_alloca_addr;
 }
 
-/* Insert __asan_allocas_unpoison (top, bottom) call after
+/* Insert __asan_allocas_unpoison (top, bottom) call before
    __builtin_stack_restore (new_sp) call.
    The pseudocode of this routine should look like this:
-     __builtin_stack_restore (new_sp);
      top = last_alloca_addr;
      bot = new_sp;
      __asan_allocas_unpoison (top, bot);
      last_alloca_addr = new_sp;
+     __builtin_stack_restore (new_sp);
    In general, we can't use new_sp as bot parameter because on some
    architectures SP has non zero offset from dynamic stack area.  Moreover, on
    some architectures this offset (STACK_DYNAMIC_OFFSET) becomes known for each
@@ -570,9 +570,8 @@ get_last_alloca_addr ()
    http://refspecs.linuxfoundation.org/ELF/ppc64/PPC-elf64abi.html#DYNAM-STACK.
    To overcome the issue we use following trick: pass new_sp as a second
    parameter to __asan_allocas_unpoison and rewrite it during expansion with
-   virtual_dynamic_stack_rtx later in expand_asan_emit_allocas_unpoison
-   function.
-*/
+   new_sp + (virtual_dynamic_stack_rtx - sp) later in
+   expand_asan_emit_allocas_unpoison function.  */
 
 static void
 handle_builtin_stack_restore (gcall *call, gimple_stmt_iterator *iter)
@@ -584,9 +583,9 @@ handle_builtin_stack_restore (gcall *call, gimple_stmt_iterator *iter)
   tree restored_stack = gimple_call_arg (call, 0);
   tree fn = builtin_decl_implicit (BUILT_IN_ASAN_ALLOCAS_UNPOISON);
   gimple *g = gimple_build_call (fn, 2, last_alloca, restored_stack);
-  gsi_insert_after (iter, g, GSI_NEW_STMT);
+  gsi_insert_before (iter, g, GSI_SAME_STMT);
   g = gimple_build_assign (last_alloca, restored_stack);
-  gsi_insert_after (iter, g, GSI_NEW_STMT);
+  gsi_insert_before (iter, g, GSI_SAME_STMT);
 }
 
 /* Deploy and poison redzones around __builtin_alloca call.  To do this, we

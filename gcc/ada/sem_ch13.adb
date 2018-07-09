@@ -119,7 +119,7 @@ package body Sem_Ch13 is
    --  Build the declaration for a predicate function. The declaration is built
    --  at the end of the declarative part containing the type definition, which
    --  may be before the freeze point of the type. The predicate expression is
-   --  pre-analyzed at this point, to catch visibility errors.
+   --  preanalyzed at this point, to catch visibility errors.
 
    procedure Build_Predicate_Functions (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ),
@@ -3013,6 +3013,19 @@ package body Sem_Ch13 is
                   goto Continue;
                end Initializes;
 
+               --  Max_Entry_Queue_Depth
+
+               when Aspect_Max_Entry_Queue_Depth =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name => Name_Max_Entry_Queue_Depth);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
                --  Max_Queue_Length
 
                when Aspect_Max_Queue_Length =>
@@ -3430,9 +3443,13 @@ package body Sem_Ch13 is
 
                   --  We do not do this in ASIS mode, as ASIS relies on the
                   --  original node representing the complete expression, when
-                  --  retrieving it through the source aspect table.
+                  --  retrieving it through the source aspect table. Also, we
+                  --  don't do this in GNATprove mode, because it brings no
+                  --  benefit for proof and causes annoynace for flow analysis,
+                  --  which prefers to be as close to the original source code
+                  --  as possible.
 
-                  if not ASIS_Mode
+                  if not (ASIS_Mode or GNATprove_Mode)
                     and then (Pname = Name_Postcondition
                                or else not Class_Present (Aspect))
                   then
@@ -3865,11 +3882,11 @@ package body Sem_Ch13 is
       end if;
    end Analyze_Aspect_Specifications;
 
-   ---------------------------------------------------
-   -- Analyze_Aspect_Specifications_On_Body_Or_Stub --
-   ---------------------------------------------------
+   ------------------------------------------------
+   -- Analyze_Aspects_On_Subprogram_Body_Or_Stub --
+   ------------------------------------------------
 
-   procedure Analyze_Aspect_Specifications_On_Body_Or_Stub (N : Node_Id) is
+   procedure Analyze_Aspects_On_Subprogram_Body_Or_Stub (N : Node_Id) is
       Body_Id : constant Entity_Id := Defining_Entity (N);
 
       procedure Diagnose_Misplaced_Aspects (Spec_Id : Entity_Id);
@@ -3985,7 +4002,7 @@ package body Sem_Ch13 is
 
       Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
 
-   --  Start of processing for Analyze_Aspects_On_Body_Or_Stub
+   --  Start of processing for Analyze_Aspects_On_Subprogram_Body_Or_Stub
 
    begin
       --  Language-defined aspects cannot be associated with a subprogram body
@@ -3998,7 +4015,7 @@ package body Sem_Ch13 is
       else
          Analyze_Aspect_Specifications (N, Body_Id);
       end if;
-   end Analyze_Aspect_Specifications_On_Body_Or_Stub;
+   end Analyze_Aspects_On_Subprogram_Body_Or_Stub;
 
    -----------------------
    -- Analyze_At_Clause --
@@ -8666,8 +8683,9 @@ package body Sem_Ch13 is
 
       --  Local variables
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
    --  Start of processing for Build_Predicate_Functions
 
@@ -8831,14 +8849,19 @@ package body Sem_Ch13 is
                       Make_Simple_Return_Statement (Loc,
                         Expression => Expr))));
 
-            --  If declaration has not been analyzed yet, Insert declaration
-            --  before freeze node. Insert body itself after freeze node.
-
-            if not Analyzed (FDecl) then
-               Insert_Before_And_Analyze (N, FDecl);
-            end if;
+            --  The declaration has been analyzed when created, and placed
+            --  after type declaration. Insert body itself after freeze node.
 
             Insert_After_And_Analyze (N, FBody);
+
+            --  within a generic unit, prevent a double analysis of the body
+            --  which will not be marked analyzed yet. This will happen when
+            --  the freeze node is created during the preanalysis of an
+            --  expression function.
+
+            if Inside_A_Generic then
+               Set_Analyzed (FBody);
+            end if;
 
             --  Static predicate functions are always side-effect free, and
             --  in most cases dynamic predicate functions are as well. Mark
@@ -9041,7 +9064,7 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_Predicate_Functions;
 
    ------------------------------------------
@@ -9057,8 +9080,9 @@ package body Sem_Ch13 is
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
-      --  Save the Ghost mode to restore on exit
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
       Func_Decl : Node_Id;
       Func_Id   : Entity_Id;
@@ -9102,7 +9126,7 @@ package body Sem_Ch13 is
       Insert_After (Parent (Typ), Func_Decl);
       Analyze (Func_Decl);
 
-      Restore_Ghost_Mode (Saved_GM);
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
 
       return Func_Decl;
    end Build_Predicate_Function_Declaration;
@@ -9500,6 +9524,7 @@ package body Sem_Ch13 is
             | Aspect_Implicit_Dereference
             | Aspect_Initial_Condition
             | Aspect_Initializes
+            | Aspect_Max_Entry_Queue_Depth
             | Aspect_Max_Queue_Length
             | Aspect_Obsolescent
             | Aspect_Part_Of
@@ -9636,7 +9661,7 @@ package body Sem_Ch13 is
                --  from the node, since we may have rewritten things and
                --  substituted an identifier representing the rewrite.
 
-               if Original_Node (Nod) /= Nod then
+               if Is_Rewrite_Substitution (Nod) then
                   Check_Expr_Constants (Original_Node (Nod));
 
                   --  If the node is an object declaration without initial
@@ -11089,13 +11114,27 @@ package body Sem_Ch13 is
 
       --  If we have a type with predicates, build predicate function. This is
       --  not needed in the generic case, nor within TSS subprograms and other
-      --  predefined primitives.
+      --  predefined primitives. For a derived type, ensure that the parent
+      --  type is already frozen so that its predicate function has been
+      --  constructed already. This is necessary if the parent is declared
+      --  in a nested package and its own freeze point has not been reached.
 
       if Is_Type (E)
         and then Nongeneric_Case
         and then not Within_Internal_Subprogram
         and then Has_Predicates (E)
       then
+         declare
+            Atyp : constant Entity_Id := Nearest_Ancestor (E);
+         begin
+            if Present (Atyp)
+              and then Has_Predicates (Atyp)
+              and then not Is_Frozen (Atyp)
+            then
+               Freeze_Before (N, Atyp);
+            end if;
+         end;
+
          Build_Predicate_Functions (E, N);
       end if;
 
@@ -12307,7 +12346,7 @@ package body Sem_Ch13 is
 
    procedure Push_Scope_And_Install_Discriminants (E : Entity_Id) is
    begin
-      if Has_Discriminants (E) then
+      if Is_Type (E) and then Has_Discriminants (E) then
          Push_Scope (E);
 
          --  Make the discriminants visible for type declarations and protected
@@ -13491,7 +13530,7 @@ package body Sem_Ch13 is
 
    procedure Uninstall_Discriminants_And_Pop_Scope (E : Entity_Id) is
    begin
-      if Has_Discriminants (E) then
+      if Is_Type (E) and then Has_Discriminants (E) then
          Uninstall_Discriminants (E);
          Pop_Scope;
       end if;

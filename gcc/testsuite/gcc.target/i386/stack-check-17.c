@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fstack-clash-protection -mtune=generic -fomit-frame-pointer" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
+/* { dg-skip-if "" { *-*-* } { "-fstack-protector*" } { "" } } */
+
 
 
 int x0, x1;

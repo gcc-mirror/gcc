@@ -141,9 +141,9 @@ cxx11-ios_failure.s: cxx11-ios_failure.cc
 	-rm -f tmp-$@
 
 cxx11-ios_failure.lo: cxx11-ios_failure-lt.s
-	$(LTCXXCOMPILE) -c $< -o $@
+	$(LTCXXCOMPILE) -g0 -c $< -o $@
 cxx11-ios_failure.o: cxx11-ios_failure.s
-	$(CXXCOMPILE) -c $<
+	$(CXXCOMPILE) -g0 -c $<
 endif
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be

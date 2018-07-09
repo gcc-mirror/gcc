@@ -141,7 +141,7 @@ SYM(_ITM_beginTransaction):
 	movq	%r15, -24(%rax)
 	xorq	%rdx, %rdx
 	/* Save zero or shadow stack pointer in the new field.  */
-#if defined(__SHSTK__) && defined(__CET__)
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
 	rdsspq	%rdx
 #endif
 	movq	%rdx, -16(%rax)
@@ -177,7 +177,7 @@ SYM(_ITM_beginTransaction):
 	movl	%ebp, 20(%esp)
 	xorl	%edx, %edx
 	/* Save zero or shadow stack pointer in the new field.  */
-#if defined(__SHSTK__) && defined(__CET__)
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
 	rdsspd	%edx
 #endif
 	movl	%edx, 24(%esp)
@@ -221,7 +221,7 @@ SYM(GTM_longjmp):
 	cfi_offset(%rip, 64)
 	cfi_register(%rsp, %rcx)
 	movq	%rcx, %rsp
-#if defined(__SHSTK__) && defined(__CET__)
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
 	/* Check if Shadow Stack is enabled.  */
 	xorq	%rcx, %rcx
 	rdsspq	%rcx
@@ -235,7 +235,7 @@ SYM(GTM_longjmp):
 	/* If # of frames is greater 255 then loop
 	   and adjust.  */
 	cmpq	$255, %rcx
-	jle	.L3
+	jbe	.L3
 	movl	$255, %edi
 	.p2align 4,,10
 	.p2align 3
@@ -243,7 +243,7 @@ SYM(GTM_longjmp):
 	incsspq	%rdi
 	subq	$255, %rcx
 	cmpq	$255, %rcx
-	jg	.L4
+	ja	.L4
 .L3:
 	incsspq	%rcx
 .L1:
@@ -259,7 +259,7 @@ SYM(GTM_longjmp):
 	cfi_offset(%eip, 24)
 	cfi_register(%esp, %ecx)
 	movl	%ecx, %esp
-#if defined(__SHSTK__) && defined(__CET__)
+#if defined __SHSTK__ && defined __CET__ && (__CET__ & 2) != 0
 	/* Check if Shadow Stack is enabled.  */
 	xorl	%ecx, %ecx
 	rdsspd	%ecx
@@ -273,7 +273,7 @@ SYM(GTM_longjmp):
 	/* If # of frames is greater 255 then loop
 	   and adjust.  */
 	cmpl	$255, %ecx
-	jle	.L3
+	jbe	.L3
 	pushl	%eax
 	movl	$255, %eax
 	.p2align 4,,10
@@ -282,7 +282,7 @@ SYM(GTM_longjmp):
 	incsspd	%eax
 	subl	$255, %ecx
 	cmpl	$255, %ecx
-	jg	.L4
+	ja	.L4
 	popl	%eax
 .L3:
 	incsspd	%ecx

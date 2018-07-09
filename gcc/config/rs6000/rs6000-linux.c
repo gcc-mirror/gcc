@@ -34,5 +34,5 @@ rs6000_linux_float_exceptions_rounding_supported_p (void)
   if (OPTION_GLIBC)
     return true;
   else
-    return TARGET_DF_INSN;
+    return TARGET_HARD_FLOAT;
 }

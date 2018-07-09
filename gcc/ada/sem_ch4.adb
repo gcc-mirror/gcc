@@ -1345,7 +1345,7 @@ package body Sem_Ch4 is
             --  parameter has been analyzed, but may need a subsequent
             --  dereference, so skip its analysis now.
 
-            if N /= Original_Node (N)
+            if Is_Rewrite_Substitution (N)
               and then Nkind (Original_Node (N)) = Nkind (N)
               and then Nkind (Name (N)) /= Nkind (Name (Original_Node (N)))
               and then Present (Parameter_Associations (N))
@@ -3030,9 +3030,15 @@ package body Sem_Ch4 is
    begin
       Analyze_Expression (L);
 
-      if No (R) and then Ada_Version >= Ada_2012 then
-         Analyze_Set_Membership;
-         Check_Function_Writable_Actuals (N);
+      if No (R) then
+         if Ada_Version >= Ada_2012 then
+            Analyze_Set_Membership;
+            Check_Function_Writable_Actuals (N);
+         else
+            Error_Msg_N
+              ("multiple choices in membership tests only allowed in Ada 2012",
+               N);
+         end if;
 
          return;
       end if;
@@ -3199,12 +3205,28 @@ package body Sem_Ch4 is
       Actuals : constant List_Id   := Parameter_Associations (N);
       Prev_T  : constant Entity_Id := Etype (N);
 
+      --  Recognize cases of prefixed calls that have been rewritten in
+      --  various ways. The simplest case is a rewritten selected component,
+      --  but it can also be an already-examined indexed component, or a
+      --  prefix that is itself a rewritten prefixed call that is in turn
+      --  an indexed call (the syntactic ambiguity involving the indexing of
+      --  a function with defaulted parameters that returns an array).
+      --  A flag Maybe_Indexed_Call might be useful here ???
+
       Must_Skip  : constant Boolean := Skip_First
                      or else Nkind (Original_Node (N)) = N_Selected_Component
                      or else
                        (Nkind (Original_Node (N)) = N_Indexed_Component
-                          and then Nkind (Prefix (Original_Node (N)))
-                            = N_Selected_Component);
+                         and then Nkind (Prefix (Original_Node (N))) =
+                                    N_Selected_Component)
+                     or else
+                       (Nkind (Parent (N)) = N_Function_Call
+                         and then Is_Array_Type (Etype (Name (N)))
+                         and then Etype (Original_Node (N)) =
+                                    Component_Type (Etype (Name (N)))
+                         and then Nkind (Original_Node (Parent (N))) =
+                                    N_Selected_Component);
+
       --  The first formal must be omitted from the match when trying to find
       --  a primitive operation that is a possible interpretation, and also
       --  after the call has been rewritten, because the corresponding actual
@@ -3883,7 +3905,7 @@ package body Sem_Ch4 is
             Comp := First_Entity (T);
             while Present (Comp) loop
                if Chars (Comp) = Chars (Sel)
-                 and then Is_Visible_Component (Comp)
+                 and then Is_Visible_Component (Comp, Sel)
                then
 
                   --  AI05-105:  if the context is an object renaming with
@@ -4288,9 +4310,9 @@ package body Sem_Ch4 is
          end if;
       end Check_High_Bound;
 
-      -----------------------------
-      -- Is_Universal_Expression --
-      -----------------------------
+      --------------------------------
+      -- Check_Universal_Expression --
+      --------------------------------
 
       procedure Check_Universal_Expression (N : Node_Id) is
       begin
@@ -4342,79 +4364,6 @@ package body Sem_Ch4 is
 
       Check_Function_Writable_Actuals (N);
    end Analyze_Range;
-
-   -----------------------------------
-   -- Analyze_Reduction_Expression --
-   -----------------------------------
-
-   procedure Analyze_Reduction_Expression (N : Node_Id) is
-      Expr    : constant Node_Id := Expression (N);
-      QE_Scop : Entity_Id;
-
-   begin
-      QE_Scop := New_Internal_Entity (E_Loop, Current_Scope, Sloc (N), 'L');
-      Set_Etype  (QE_Scop, Standard_Void_Type);
-      Set_Scope  (QE_Scop, Current_Scope);
-      Set_Parent (QE_Scop, N);
-
-      Push_Scope (QE_Scop);
-
-      --  All constituents are preanalyzed and resolved to avoid untimely
-      --  generation of various temporaries and types. Full analysis and
-      --  expansion is carried out when the reduction expression is
-      --  transformed into an expression with actions.
-
-      if Present (Iterator_Specification (N)) then
-         Preanalyze (Iterator_Specification (N));
-
-      else pragma Assert (Present (Loop_Parameter_Specification (N)));
-         declare
-            Loop_Par : constant Node_Id := Loop_Parameter_Specification (N);
-
-         begin
-            Preanalyze (Loop_Par);
-
-            if Nkind (Discrete_Subtype_Definition (Loop_Par)) = N_Function_Call
-              and then Parent (Loop_Par) /= N
-            then
-               --  The parser cannot distinguish between a loop specification
-               --  and an iterator specification. If after preanalysis the
-               --  proper form has been recognized, rewrite the expression to
-               --  reflect the right kind. This is needed for proper ASIS
-               --  navigation. If expansion is enabled, the transformation is
-               --  performed when the expression is rewritten as a loop.
-
-               Set_Iterator_Specification (N,
-                 New_Copy_Tree (Iterator_Specification (Parent (Loop_Par))));
-
-               Set_Defining_Identifier (Iterator_Specification (N),
-                 Relocate_Node (Defining_Identifier (Loop_Par)));
-               Set_Name (Iterator_Specification (N),
-                 Relocate_Node (Discrete_Subtype_Definition (Loop_Par)));
-               Set_Comes_From_Source (Iterator_Specification (N),
-                 Comes_From_Source (Loop_Parameter_Specification (N)));
-               Set_Loop_Parameter_Specification (N, Empty);
-            end if;
-         end;
-      end if;
-
-      Preanalyze (Expr);
-      End_Scope;
-
-      Set_Etype (N, Etype (Expr));
-   end Analyze_Reduction_Expression;
-
-   --------------------------------------------
-   -- Analyze_Reduction_Expression_Parameter --
-   --------------------------------------------
-
-   procedure Analyze_Reduction_Expression_Parameter (N : Node_Id) is
-      Expr : constant Node_Id := Expression (N);
-
-   begin
-      Analyze (Expr);
-      Set_Etype (N, Etype (Expr));
-   end Analyze_Reduction_Expression_Parameter;
 
    -----------------------
    -- Analyze_Reference --
@@ -5375,7 +5324,7 @@ package body Sem_Ch4 is
                Comp := First_Component (Base_Type (Prefix_Type));
                while Present (Comp) loop
                   if Chars (Comp) = Chars (Sel)
-                    and then Is_Visible_Component (Comp)
+                    and then Is_Visible_Component (Comp, Sel)
                   then
                      Set_Entity_With_Checks (Sel, Comp);
                      Generate_Reference (Comp, Sel);
@@ -6082,7 +6031,7 @@ package body Sem_Ch4 is
 
       Comp  := First_Entity (Prefix);
       while Nr_Of_Suggestions <= Max_Suggestions and then Present (Comp) loop
-         if Is_Visible_Component (Comp) then
+         if Is_Visible_Component (Comp, Sel) then
             if Is_Bad_Spelling_Of (Chars (Comp), Chars (Sel)) then
                Nr_Of_Suggestions := Nr_Of_Suggestions + 1;
 

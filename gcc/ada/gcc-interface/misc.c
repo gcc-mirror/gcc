@@ -736,25 +736,25 @@ gnat_type_max_size (const_tree gnu_type)
   /* First see what we can get from TYPE_SIZE_UNIT, which might not
      be constant even for simple expressions if it has already been
      elaborated and possibly replaced by a VAR_DECL.  */
-  tree max_unitsize = max_size (TYPE_SIZE_UNIT (gnu_type), true);
+  tree max_size_unit = max_size (TYPE_SIZE_UNIT (gnu_type), true);
 
   /* If we don't have a constant, try to look at attributes which should have
      stayed untouched.  */
-  if (!tree_fits_uhwi_p (max_unitsize))
+  if (!tree_fits_uhwi_p (max_size_unit))
     {
       /* For record types, see what we can get from TYPE_ADA_SIZE.  */
       if (RECORD_OR_UNION_TYPE_P (gnu_type)
 	  && !TYPE_FAT_POINTER_P (gnu_type)
 	  && TYPE_ADA_SIZE (gnu_type))
 	{
-	  tree max_adasize = max_size (TYPE_ADA_SIZE (gnu_type), true);
+	  tree max_ada_size = max_size (TYPE_ADA_SIZE (gnu_type), true);
 
 	  /* If we have succeeded in finding a constant, round it up to the
 	     type's alignment and return the result in units.  */
-	  if (tree_fits_uhwi_p (max_adasize))
-	    max_unitsize
+	  if (tree_fits_uhwi_p (max_ada_size))
+	    max_size_unit
 	      = size_binop (CEIL_DIV_EXPR,
-			    round_up (max_adasize, TYPE_ALIGN (gnu_type)),
+			    round_up (max_ada_size, TYPE_ALIGN (gnu_type)),
 			    bitsize_unit_node);
 	}
 
@@ -784,7 +784,7 @@ gnat_type_max_size (const_tree gnu_type)
 		    = fold_build2 (PLUS_EXPR, ctype,
 				   fold_build2 (MINUS_EXPR, ctype, hb, lb),
 				   build_int_cst (ctype, 1));
-		  max_unitsize
+		  max_size_unit
 		    = fold_build2 (MULT_EXPR, sizetype,
 				   fold_convert (sizetype, length),
 				   TYPE_SIZE_UNIT (TREE_TYPE (gnu_type)));
@@ -793,7 +793,7 @@ gnat_type_max_size (const_tree gnu_type)
 	}
     }
 
-  return max_unitsize;
+  return max_size_unit;
 }
 
 static tree get_array_bit_stride (tree);

@@ -29,7 +29,56 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the version using the GCC EH mechanism
+--  This is the version using the GCC EH mechanism, which could rely on
+--  different underlying unwinding engines, for example DWARF or ARM unwind
+--  info based. Here is a sketch of the most prominent data structures
+--  involved:
+
+--      (s-excmac.ads)
+--      GNAT_GCC_Exception:
+--      *-----------------------------------*
+--  o-->|          (s-excmac.ads)           |
+--  |   | Header : <gcc occurrence type>    |
+--  |   |   - Class                         |
+--  |   |   ...                             |    Constraint_Error:
+--  |   |-----------------------------------*    Program_Error:
+--  |   |              (a-except.ads)       |    Foreign_Exception:
+--  |   | Occurrence : Exception_Occurrence |
+--  |   |                                   |    (s-stalib. ads)
+--  |   |   - Id : Exception_Id  --------------> Exception_Data
+--  o------ - Machine_Occurrence            |   *------------------------*
+--      |   - Msg                           |   | Not_Handled_By_Others  |
+--      |   - Traceback                     |   | Lang                   |
+--      |   ...                             |   | Foreign_Data --o       |
+--      *-----------------------------------*   | Full_Name      |       |
+--        ||                                    | ...            |       |
+--        ||          foreign rtti blob         *----------------|-------*
+--        ||          *---------------*                          |
+--        ||          |   ...   ...   |<-------------------------o
+--        ||          *---------------*
+--        ||
+--     Setup_Current_Excep()
+--        ||
+--        ||   Latch into ATCB or
+--        ||   environment Current Exception Buffer:
+--        ||
+--        vv
+--     <> : Exception_Occurrence
+--     *---------------------------*
+--     | ...  ...  ... ... ... ... * --- Get_Current_Excep() ---->
+--     *---------------------------*
+
+--  On "raise" events, the runtime allocates a new GNAT_GCC_Exception
+--  instance and eventually calls into libgcc's Unwind_RaiseException.
+--  This part handles the object through the header part only.
+
+--  During execution, Get_Current_Excep provides a pointer to the
+--  Exception_Occurrence being raised or last raised by the current task.
+
+--  This is actually the address of a statically allocated
+--  Exception_Occurrence attached to the current ATCB or to the environment
+--  thread into which an occurrence being raised is synchronized at critical
+--  points during the raise process, via Setup_Current_Excep.
 
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
@@ -51,6 +100,22 @@ package body Exception_Propagation is
    -- GNAT Specific Entities To Deal With The GCC EH Circuitry --
    --------------------------------------------------------------
 
+   --  Phase identifiers (Unwind Actions)
+
+   type Unwind_Action is new Integer;
+   pragma Convention (C, Unwind_Action);
+
+   UA_SEARCH_PHASE  : constant Unwind_Action := 1;
+   UA_CLEANUP_PHASE : constant Unwind_Action := 2;
+   UA_HANDLER_FRAME : constant Unwind_Action := 4;
+   UA_FORCE_UNWIND  : constant Unwind_Action := 8;
+   UA_END_OF_STACK  : constant Unwind_Action := 16;  --  GCC extension
+
+   pragma Unreferenced
+     (UA_HANDLER_FRAME,
+      UA_FORCE_UNWIND,
+      UA_END_OF_STACK);
+
    procedure GNAT_GCC_Exception_Cleanup
      (Reason : Unwind_Reason_Code;
       Excep  : not null GNAT_GCC_Exception_Access);
@@ -70,10 +135,19 @@ package body Exception_Propagation is
    --  directly from gigi.
 
    function Setup_Current_Excep
-     (GCC_Exception : not null GCC_Exception_Access) return EOA;
+     (GCC_Exception : not null GCC_Exception_Access;
+      Phase : Unwind_Action) return EOA;
    pragma Export (C, Setup_Current_Excep, "__gnat_setup_current_excep");
-   --  Write Get_Current_Excep.all from GCC_Exception. Called by the
-   --  personality routine.
+   --  Acknowledge GCC_Exception as the current exception object being
+   --  raised, which could be an Ada or a foreign exception object.  Return
+   --  a pointer to the embedded Ada occurrence for an Ada exception object,
+   --  to the current exception buffer otherwise.
+   --
+   --  Synchronize the current exception buffer as needed for possible
+   --  accesses through Get_Current_Except.all afterwards, depending on the
+   --  Phase bits, received either from the personality routine, from a
+   --  forced_unwind cleanup handler, or just before the start of propagation
+   --  for an Ada exception (Phase 0 in this case).
 
    procedure Unhandled_Except_Handler
      (GCC_Exception : not null GCC_Exception_Access);
@@ -236,27 +310,41 @@ package body Exception_Propagation is
    -------------------------
 
    function Setup_Current_Excep
-     (GCC_Exception : not null GCC_Exception_Access) return EOA
+     (GCC_Exception : not null GCC_Exception_Access;
+      Phase : Unwind_Action) return EOA
    is
       Excep : constant EOA := Get_Current_Excep.all;
 
    begin
-      --  Setup the exception occurrence
 
       if GCC_Exception.Class = GNAT_Exception_Class then
 
-         --  From the GCC exception
+         --  Ada exception : latch the occurrence data in the Current
+         --  Exception Buffer if needed and return a pointer to the original
+         --  Ada exception object. This particular object was specifically
+         --  allocated for this raise and is thus more precise than the fixed
+         --  Current Exception Buffer address.
 
          declare
             GNAT_Occurrence : constant GNAT_GCC_Exception_Access :=
                                 To_GNAT_GCC_Exception (GCC_Exception);
          begin
-            Excep.all := GNAT_Occurrence.Occurrence;
+
+            --  When reaching here during SEARCH_PHASE, no need to
+            --  replicate the copy performed at the propagation start.
+
+            if Phase /= UA_SEARCH_PHASE then
+               Excep.all := GNAT_Occurrence.Occurrence;
+            end if;
             return GNAT_Occurrence.Occurrence'Access;
          end;
 
       else
-         --  A default one
+
+         --  Foreign exception (caught by Ada handler, reaching here from
+         --  personality routine) : The original exception object doesn't hold
+         --  an Ada occurrence info.  Set the foreign data pointer in the
+         --  Current Exception Buffer and return the address of the latter.
 
          Set_Foreign_Occurrence (Excep, GCC_Exception.all'Address);
 
@@ -312,7 +400,12 @@ package body Exception_Propagation is
    procedure Propagate_GCC_Exception
      (GCC_Exception : not null GCC_Exception_Access)
    is
-      Excep : EOA;
+      --  Acknowledge the current exception info now, before unwinding
+      --  starts so it is available even from C++ handlers involved before
+      --  our personality routine.
+
+      Excep : constant EOA :=
+        Setup_Current_Excep (GCC_Exception, Phase => 0);
 
    begin
       --  Perform a standard raise first. If a regular handler is found, it
@@ -326,7 +419,6 @@ package body Exception_Propagation is
       --  the necessary steps to enable the debugger to gain control while the
       --  stack is still intact.
 
-      Excep := Setup_Current_Excep (GCC_Exception);
       Notify_Unhandled_Exception (Excep);
 
       --  Now, un a forced unwind to trigger cleanups. Control should not
@@ -349,7 +441,7 @@ package body Exception_Propagation is
    -- Propagate_Exception --
    -------------------------
 
-   procedure Propagate_Exception (Excep : EOA) is
+   procedure Propagate_Exception (Excep : Exception_Occurrence) is
    begin
       Propagate_GCC_Exception (To_GCC_Exception (Excep.Machine_Occurrence));
    end Propagate_Exception;
@@ -392,7 +484,7 @@ package body Exception_Propagation is
    is
       Excep : EOA;
    begin
-      Excep := Setup_Current_Excep (GCC_Exception);
+      Excep := Setup_Current_Excep (GCC_Exception, Phase => UA_CLEANUP_PHASE);
       Unhandled_Exception_Terminate (Excep);
    end Unhandled_Except_Handler;
 

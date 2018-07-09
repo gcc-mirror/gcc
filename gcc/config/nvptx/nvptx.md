@@ -56,6 +56,7 @@
    UNSPECV_XCHG
    UNSPECV_BARSYNC
    UNSPECV_MEMBAR
+   UNSPECV_MEMBAR_CTA
    UNSPECV_DIM_POS
 
    UNSPECV_FORK
@@ -1100,14 +1101,14 @@
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 0))]
   ""
-  "trap;")
+  "trap; exit;")
 
 (define_insn "trap_if_true"
   [(trap_if (ne (match_operand:BI 0 "nvptx_register_operand" "R")
 		(const_int 0))
 	    (const_int 0))]
   ""
-  "%j0 trap;"
+  "%j0 trap; %j0 exit;"
   [(set_attr "predicable" "false")])
 
 (define_insn "trap_if_false"
@@ -1115,7 +1116,7 @@
 		(const_int 0))
 	    (const_int 0))]
   ""
-  "%J0 trap;"
+  "%J0 trap; %J0 exit;"
   [(set_attr "predicable" "false")])
 
 (define_expand "ctrap<mode>4"
@@ -1479,6 +1480,22 @@
 	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR))]
   ""
   "\\tmembar.sys;"
+  [(set_attr "predicable" "false")])
+
+(define_expand "nvptx_membar_cta"
+  [(set (match_dup 0)
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR_CTA))]
+  ""
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
+(define_insn "*nvptx_membar_cta"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR_CTA))]
+  ""
+  "\\tmembar.cta;"
   [(set_attr "predicable" "false")])
 
 (define_insn "nvptx_nounroll"

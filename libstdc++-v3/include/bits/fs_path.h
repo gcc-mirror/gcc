@@ -37,11 +37,11 @@
 #include <vector>
 #include <locale>
 #include <iosfwd>
+#include <iomanip>
 #include <codecvt>
 #include <string_view>
 #include <system_error>
 #include <bits/stl_algobase.h>
-#include <bits/quoted_string.h>
 #include <bits/locale_conv.h>
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -65,8 +65,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   /// A filesystem path.
   class path
   {
-    template<typename _CharT>
-      struct __is_encoded_char : std::false_type { };
+    template<typename _CharT, typename _Ch = remove_const_t<_CharT>>
+      using __is_encoded_char
+	= __or_<is_same<_Ch, char>, is_same<_Ch, wchar_t>,
+		is_same<_Ch, char16_t>, is_same<_Ch, char32_t>>;
 
     template<typename _Iter,
 	     typename _Iter_traits = std::iterator_traits<_Iter>>
@@ -144,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	     typename _Iter = decltype(_S_range_begin(std::declval<_Tp>())),
 	     typename _Val = typename std::iterator_traits<_Iter>::value_type>
       using __value_type_is_char
-	= typename std::enable_if<std::is_same<_Val, char>::value>::type;
+	= std::enable_if_t<std::is_same_v<std::remove_const_t<_Val>, char>>;
 
   public:
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
@@ -230,55 +232,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     // appends
 
-    path& operator/=(const path& __p)
-    {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      if (__p.is_absolute()
-	  || (__p.has_root_name() && __p.root_name() != root_name()))
-	operator=(__p);
-      else
-	{
-	  string_type __pathname;
-	  if (__p.has_root_directory())
-	    __pathname = root_name().native();
-	  else if (has_filename() || (!has_root_directory() && is_absolute()))
-	    __pathname = _M_pathname + preferred_separator;
-	  __pathname += __p.relative_path().native(); // XXX is this right?
-	  _M_pathname.swap(__pathname);
-	  _M_split_cmpts();
-	}
-#else
-      // Much simpler, as any path with root-name or root-dir is absolute.
-      if (__p.is_absolute())
-	operator=(__p);
-      else
-	{
-	  if (has_filename() || (_M_type == _Type::_Root_name))
-	    _M_pathname += preferred_separator;
-	  _M_pathname += __p.native();
-	  _M_split_cmpts();
-	}
-#endif
-      return *this;
-    }
+    path& operator/=(const path& __p);
 
     template <class _Source>
       _Path<_Source>&
       operator/=(_Source const& __source)
-      { return append(__source); }
+      { return _M_append(path(__source)); }
 
     template<typename _Source>
       _Path<_Source>&
       append(_Source const& __source)
-      {
-	return _M_append(_S_convert(_S_range_begin(__source),
-				    _S_range_end(__source)));
-      }
+      { return _M_append(path(__source)); }
 
     template<typename _InputIterator>
       _Path<_InputIterator, _InputIterator>&
       append(_InputIterator __first, _InputIterator __last)
-      { return _M_append(_S_convert(__first, __last)); }
+      { return _M_append(path(__first, __last)); }
 
     // concatenation
 
@@ -394,6 +363,40 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     iterator begin() const;
     iterator end() const;
 
+    /// Write a path to a stream
+    template<typename _CharT, typename _Traits>
+      friend std::basic_ostream<_CharT, _Traits>&
+      operator<<(std::basic_ostream<_CharT, _Traits>& __os, const path& __p)
+      {
+	__os << std::quoted(__p.string<_CharT, _Traits>());
+	return __os;
+      }
+
+    /// Read a path from a stream
+    template<typename _CharT, typename _Traits>
+      friend std::basic_istream<_CharT, _Traits>&
+      operator>>(std::basic_istream<_CharT, _Traits>& __is, path& __p)
+      {
+	std::basic_string<_CharT, _Traits> __tmp;
+	if (__is >> std::quoted(__tmp))
+	  __p = std::move(__tmp);
+	return __is;
+      }
+
+    // Create a basic_string by reading until a null character.
+    template<typename _InputIterator,
+	     typename _Traits = std::iterator_traits<_InputIterator>,
+	     typename _CharT
+	       = typename std::remove_cv_t<typename _Traits::value_type>>
+      static std::basic_string<_CharT>
+      _S_string_from_iter(_InputIterator __source)
+      {
+	std::basic_string<_CharT> __str;
+	for (_CharT __ch = *__source; __ch != _CharT(); __ch = *++__source)
+	  __str.push_back(__ch);
+	return __str;
+      }
+
   private:
     enum class _Type : unsigned char {
 	_Multi, _Root_name, _Root_dir, _Filename
@@ -406,19 +409,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     enum class _Split { _Stem, _Extension };
 
-    path& _M_append(string_type&& __str)
-    {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      operator/=(path(std::move(__str)));
-#else
-      if (!_M_pathname.empty() && !_S_is_dir_sep(_M_pathname.back())
-	  && (__str.empty() || !_S_is_dir_sep(__str.front())))
-	_M_pathname += preferred_separator;
-      _M_pathname += __str;
-      _M_split_cmpts();
-#endif
-      return *this;
-    }
+    path& _M_append(path __p);
 
     pair<const string_type*, size_t> _M_find_extension() const;
 
@@ -446,11 +437,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       static string_type
       _S_convert(_InputIterator __src, __null_terminated)
       {
-	using _Tp = typename std::iterator_traits<_InputIterator>::value_type;
-	std::basic_string<typename remove_cv<_Tp>::type> __tmp;
-	for (; *__src != _Tp{}; ++__src)
-	  __tmp.push_back(*__src);
-	return _S_convert(__tmp.c_str(), __tmp.c_str() + __tmp.size());
+	auto __s = _S_string_from_iter(__src);
+	return _S_convert(__s.c_str(), __s.c_str() + __s.size());
       }
 
     static string_type
@@ -470,10 +458,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _S_convert_loc(_InputIterator __src, __null_terminated,
 		     const std::locale& __loc)
       {
-	std::string __tmp;
-	while (*__src != '\0')
-	  __tmp.push_back(*__src++);
-	return _S_convert_loc(__tmp.data(), __tmp.data()+__tmp.size(), __loc);
+	std::string __s = _S_string_from_iter(__src);
+	return _S_convert_loc(__s.data(), __s.data() + __s.size(), __loc);
       }
 
     template<typename _CharT, typename _Traits, typename _Allocator>
@@ -500,27 +486,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     struct _Cmpt;
     using _List = _GLIBCXX_STD_C::vector<_Cmpt>;
     _List _M_cmpts; // empty unless _M_type == _Type::_Multi
-    _Type _M_type = _Type::_Multi;
+    _Type _M_type = _Type::_Filename;
   };
-
-  template<>
-    struct path::__is_encoded_char<char> : std::true_type
-    { using value_type = char; };
-
-  template<>
-    struct path::__is_encoded_char<wchar_t> : std::true_type
-    { using value_type = wchar_t; };
-
-  template<>
-    struct path::__is_encoded_char<char16_t> : std::true_type
-    { using value_type = char16_t; };
-
-  template<>
-    struct path::__is_encoded_char<char32_t> : std::true_type
-    { using value_type = char32_t; };
-
-  template<typename _Tp>
-    struct path::__is_encoded_char<const _Tp> : __is_encoded_char<_Tp> { };
 
   inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
 
@@ -552,31 +519,36 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /// Append one path to another
   inline path operator/(const path& __lhs, const path& __rhs)
-  { return path(__lhs) /= __rhs; }
+  {
+    path __result(__lhs);
+    __result /= __rhs;
+    return __result;
+  }
 
-  /// Write a path to a stream
-  template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __os, const path& __p)
+  template<typename _InputIterator>
+    inline auto
+    u8path(_InputIterator __first, _InputIterator __last)
+    -> decltype(filesystem::path(__first, __last, std::locale::classic()))
     {
-      auto __tmp = __p.string<_CharT, _Traits>();
-      using __quoted_string
-	= std::__detail::_Quoted_string<decltype(__tmp)&, _CharT>;
-      __os << __quoted_string{__tmp, '"', '\\'};
-      return __os;
-    }
-
-  /// Read a path from a stream
-  template<typename _CharT, typename _Traits>
-    basic_istream<_CharT, _Traits>&
-    operator>>(basic_istream<_CharT, _Traits>& __is, path& __p)
-    {
-      basic_string<_CharT, _Traits> __tmp;
-      using __quoted_string
-	= std::__detail::_Quoted_string<decltype(__tmp)&, _CharT>;
-      if (__is >> __quoted_string{ __tmp, '"', '\\' })
-	__p = std::move(__tmp);
-      return __is;
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      codecvt_utf8<path::value_type> __cvt;
+      path::string_type __tmp;
+      if constexpr (is_pointer_v<_InputIterator>)
+	{
+	  if (__str_codecvt_in(__first, __last, __tmp, __cvt))
+	    return path{ __tmp };
+	}
+      else
+	{
+	  const std::string __u8str{__first, __last};
+	  const char* const __ptr = __u8str.data();
+	  if (__str_codecvt_in(__ptr, __ptr + __u8str.size(), __tmp, __cvt))
+	    return path{ __tmp };
+	}
+      return {};
+#else
+      return path{ __first, __last };
+#endif
     }
 
   template<typename _Source>
@@ -585,27 +557,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     -> decltype(filesystem::path(__source, std::locale::classic()))
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      const std::string __u8str{__source};
-      return std::filesystem::u8path(__u8str.begin(), __u8str.end());
+      if constexpr (is_convertible_v<const _Source&, std::string_view>)
+	{
+	  const std::string_view __s = __source;
+	  return filesystem::u8path(__s.data(), __s.data() + __s.size());
+	}
+      else
+	{
+	  std::string __s = path::_S_string_from_iter(__source);
+	  return filesystem::u8path(__s.data(), __s.data() + __s.size());
+	}
 #else
       return path{ __source };
-#endif
-    }
-
-  template<typename _InputIterator>
-    inline auto
-    u8path(_InputIterator __first, _InputIterator __last)
-    -> decltype(filesystem::path(__first, __last, std::locale::classic()))
-    {
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      codecvt_utf8<value_type> __cvt;
-      string_type __tmp;
-      if (__str_codecvt_in(__first, __last, __tmp, __cvt))
-	return path{ __tmp };
-      else
-	return {};
-#else
-      return path{ __first, __last };
 #endif
     }
 
@@ -914,11 +877,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     path::string(const _Allocator& __a) const
     {
       if constexpr (is_same_v<_CharT, value_type>)
+	{
 #if _GLIBCXX_USE_CXX11_ABI
-	return { _M_pathname, __a };
+	  return { _M_pathname, __a };
 #else
-	return { _M_pathname, string_type::size_type(0), __a };
+	  if constexpr (is_same_v<_Allocator, string_type::allocator_type>)
+	    return _M_pathname;
+	  else
+	    return { _M_pathname, string_type::size_type(0), __a };
 #endif
+	}
       else
 	return _S_str_convert<_CharT, _Traits>(_M_pathname, __a);
     }
@@ -1074,7 +1042,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   path::is_absolute() const
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    return has_root_name();
+    return has_root_name() && has_root_directory();
 #else
     return has_root_directory();
 #endif
@@ -1085,7 +1053,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   {
     if (_M_type == _Type::_Multi)
       return iterator(this, _M_cmpts.begin());
-    return iterator(this, false);
+    return iterator(this, empty());
   }
 
   inline path::iterator
@@ -1094,6 +1062,38 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     if (_M_type == _Type::_Multi)
       return iterator(this, _M_cmpts.end());
     return iterator(this, true);
+  }
+
+#ifndef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  inline path& path::operator/=(const path& __p)
+  {
+    // Much simpler than the specification in the standard,
+    // as any path with root-name or root-dir is absolute.
+    if (__p.is_absolute())
+      operator=(__p);
+    else
+      {
+	if (has_filename() || (_M_type == _Type::_Root_name))
+	  _M_pathname += preferred_separator;
+	_M_pathname += __p.native();
+	_M_split_cmpts();
+      }
+    return *this;
+  }
+#endif
+
+  inline path&
+  path::_M_append(path __p)
+  {
+    if (__p.is_absolute())
+      operator=(std::move(__p));
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    else if (__p.has_root_name() && __p.root_name() != root_name())
+      operator=(std::move(__p));
+#endif
+    else
+      operator/=(const_cast<const path&>(__p));
+    return *this;
   }
 
   inline path::iterator&

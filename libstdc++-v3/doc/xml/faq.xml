@@ -742,15 +742,16 @@
     except for some corner cases.  Support for localization
     in <classname>locale</classname> may be incomplete on some non-GNU
     platforms. Also dependent on the underlying platform is support
-    for <type>wchar_t</type> and <type>long
-    long</type> specializations, and details of thread support.
+    for <type>wchar_t</type> and <type>long long</type> specializations,
+    and details of thread support.
     </para>
     <para>    
     Long answer: See the implementation status pages for 
     <link linkend="status.iso.1998">C++98</link>,
-    <link linkend="status.iso.tr1">TR1</link>, and 
-    <link linkend="status.iso.2011">C++11</link>.
-    <link linkend="status.iso.2014">C++14</link>.
+    <link linkend="status.iso.tr1">TR1</link>,
+    <link linkend="status.iso.2011">C++11</link>,
+    <link linkend="status.iso.2014">C++14</link>, and
+    <link linkend="status.iso.2017">C++17</link>.
     </para> 
   </answer>
 </qandaentry>
@@ -891,6 +892,9 @@
     </para>
   </question>
   <answer xml:id="a-ambiguous_overloads">
+    <note>
+      <para>This answer is old and probably no longer be relevant.</para>
+    </note>
     <para>
     Another problem is the <literal>rel_ops</literal> namespace and the template
     comparison operator functions contained therein.  If they become

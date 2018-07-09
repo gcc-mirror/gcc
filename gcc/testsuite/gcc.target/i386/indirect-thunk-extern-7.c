@@ -36,7 +36,7 @@ bar (int i)
 }
 
 /* { dg-final { scan-assembler "mov(?:l|q)\[ \t\]*\.L\[0-9\]+\\(,%" { target *-*-linux* } } } */
-/* { dg-final { scan-assembler "jmp\[ \t\]*__x86_indirect_thunk_(r|e)ax" } } */
+/* { dg-final { scan-assembler "jmp\[ \t\]*__x86_indirect_thunk(_nt|)_(r|e)ax" } } */
 /* { dg-final { scan-assembler-not {\t(lfence|pause)} } } */
 /* { dg-final { scan-assembler-not "jmp\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler-not "call\[ \t\]*\.LIND" } } */

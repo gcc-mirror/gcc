@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -83,6 +83,12 @@ do {							 \
   ((TREE_CODE (NODE) == INTEGER_TYPE || TREE_CODE (NODE) == ARRAY_TYPE) \
    && TYPE_PACKED_ARRAY_TYPE_P (NODE))
 
+/* For FUNCTION_TYPEs, nonzero if the function returns by direct reference,
+   i.e. the callee returns a pointer to a memory location it has allocated
+   and the caller only needs to dereference the pointer.  */
+#define TYPE_RETURN_BY_DIRECT_REF_P(NODE) \
+  TYPE_LANG_FLAG_0 (FUNCTION_TYPE_CHECK (NODE))
+
 /* For INTEGER_TYPE, nonzero if this is a modular type with a modulus that
    is not equal to two to the power of its mode's size.  */
 #define TYPE_MODULAR_P(NODE) TYPE_LANG_FLAG_1 (INTEGER_TYPE_CHECK (NODE))
@@ -152,12 +158,6 @@ do {							 \
 #define TYPE_CONVENTION_FORTRAN_P(NODE) \
   TYPE_LANG_FLAG_4 (ARRAY_TYPE_CHECK (NODE))
 
-/* For FUNCTION_TYPEs, nonzero if the function returns by direct reference,
-   i.e. the callee returns a pointer to a memory location it has allocated
-   and the caller only needs to dereference the pointer.  */
-#define TYPE_RETURN_BY_DIRECT_REF_P(NODE) \
-  TYPE_LANG_FLAG_4 (FUNCTION_TYPE_CHECK (NODE))
-
 /* For RECORD_TYPE, UNION_TYPE and ENUMERAL_TYPE, nonzero if this is a dummy
    type, made to correspond to a private or incomplete type.  */
 #define TYPE_DUMMY_P(NODE) \
@@ -186,6 +186,9 @@ do {							 \
 /* True for a dummy type if TYPE appears in a profile.  */
 #define TYPE_DUMMY_IN_PROFILE_P(NODE) TYPE_LANG_FLAG_6 (NODE)
 
+/* True if objects of this type are guaranteed to be properly aligned.  */
+#define TYPE_ALIGN_OK(NODE) TYPE_LANG_FLAG_7 (NODE)
+
 /* True for types that implement a packed array and for original packed array
    types.  */
 #define TYPE_IMPL_PACKED_ARRAY_P(NODE) \
@@ -198,9 +201,6 @@ do {							 \
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, this holds the maximum
    alignment value the type ought to have.  */
 #define TYPE_MAX_ALIGN(NODE) (TYPE_PRECISION (RECORD_OR_UNION_CHECK (NODE)))
-
-/* True if objects of tagged types are guaranteed to be properly aligned.  */
-#define TYPE_ALIGN_OK(NODE) TYPE_LANG_FLAG_7 (NODE)
 
 /* For an UNCONSTRAINED_ARRAY_TYPE, this is the record containing both the
    template and the object.
@@ -234,6 +234,11 @@ do {							 \
    a full description of the copy in/copy out parameter passing mechanism
    refer to the routine gnat_to_gnu_entity.  */
 #define TYPE_CI_CO_LIST(NODE) TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
+
+/* For an ARRAY_TYPE with variable size, this is the padding type built for
+   the array type when it is itself the component type of another array.  */
+#define TYPE_PADDING_FOR_COMPONENT(NODE) \
+  TYPE_LANG_SLOT_1 (ARRAY_TYPE_CHECK (NODE))
 
 /* For a VECTOR_TYPE, this is the representative array type.  */
 #define TYPE_REPRESENTATIVE_ARRAY(NODE) \

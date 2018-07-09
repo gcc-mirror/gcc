@@ -62,8 +62,16 @@ gcov_error (const char *fmt, ...)
   va_list argp;
 
   va_start (argp, fmt);
-  ret = vfprintf (get_gcov_error_file (), fmt, argp);
+  FILE *f = get_gcov_error_file ();
+  ret = vfprintf (f, fmt, argp);
   va_end (argp);
+
+  if (getenv ("GCOV_EXIT_AT_ERROR"))
+    {
+      fprintf (f, "profiling:exiting after an error\n");
+      exit (1);
+    }
+
   return ret;
 }
 
@@ -128,12 +136,84 @@ create_file_directory (char *filename)
 #endif
 }
 
+/* Replace filename variables in FILENAME.  We currently support expansion:
+
+   %p - process ID
+   %q{ENV} - value of environment variable ENV
+   */
+
+static char *
+replace_filename_variables (char *filename)
+{
+  char buffer[16];
+  char empty[] = "";
+  for (char *p = filename; *p != '\0'; p++)
+    {
+      unsigned length = strlen (filename);
+      if (*p == '%' && *(p + 1) != '\0')
+	{
+	  unsigned start = p - filename;
+	  p++;
+	  char *replacement = NULL;
+	  switch (*p)
+	    {
+	    case 'p':
+	      sprintf (buffer, "%d", getpid ());
+	      replacement = buffer;
+	      p++;
+	      break;
+	    case 'q':
+	      if (*(p + 1) == '{')
+		{
+		  p += 2;
+		  char *e = strchr (p, '}');
+		  if (e)
+		    {
+		      *e = '\0';
+		      replacement = getenv (p);
+		      if (replacement == NULL)
+			replacement = empty;
+		      p = e + 1;
+		    }
+		  else
+		    return filename;
+		}
+	      break;
+	    default:
+	      return filename;
+	    }
+
+	  /* Concat beginning of the path, replacement and
+	     ending of the path.  */
+	  unsigned end = length - (p - filename);
+	  unsigned repl_length = strlen (replacement);
+
+	  char *buffer = (char *)xmalloc (start + end + repl_length + 1);
+	  char *buffer_ptr = buffer;
+	  buffer_ptr = (char *)memcpy (buffer_ptr, filename, start);
+	  buffer_ptr += start;
+	  buffer_ptr = (char *)memcpy (buffer_ptr, replacement, repl_length);
+	  buffer_ptr += repl_length;
+	  buffer_ptr = (char *)memcpy (buffer_ptr, p, end);
+	  buffer_ptr += end;
+	  *buffer_ptr = '\0';
+
+	  free (filename);
+	  filename = buffer;
+	  p = buffer + start + repl_length;
+	}
+    }
+
+  return filename;
+}
+
 static void
 allocate_filename_struct (struct gcov_filename *gf)
 {
   const char *gcov_prefix;
   size_t prefix_length;
   int strip = 0;
+  gf->filename = NULL;
 
   {
     /* Check if the level of dirs to strip off specified. */
@@ -163,12 +243,16 @@ allocate_filename_struct (struct gcov_filename *gf)
       gcov_prefix = ".";
       prefix_length = 1;
     }
-  gf->prefix = prefix_length;
 
   /* Allocate and initialize the filename scratch space.  */
-  gf->filename = (char *) xmalloc (gf->max_length + prefix_length + 2);
   if (prefix_length)
-    memcpy (gf->filename, gcov_prefix, prefix_length);
+    {
+      gf->prefix = (char *) xmalloc (prefix_length + 1);
+      char *p = (char *) memcpy (gf->prefix, gcov_prefix, prefix_length);
+      *(p + prefix_length) = '\0';
+    }
+  else
+    gf->prefix = NULL;
 }
 
 /* Open a gcda file specified by GI_FILENAME.
@@ -179,7 +263,7 @@ gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
 			  struct gcov_filename *gf)
 {
   const char *fname = gi_ptr->filename;
-  char *dst = gf->filename + gf->prefix;
+  int append_slash = 0;
 
   fname = gi_ptr->filename;
 
@@ -212,9 +296,19 @@ gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
 	fname += 2;
 
       if (!IS_DIR_SEPARATOR (*fname))
-	*dst++ = '/';
+	append_slash = 1;
     }
-  strcpy (dst, fname);
+
+  size_t prefix_length = gf->prefix ? strlen (gf->prefix) : 0;
+  gf->filename = (char *) xmalloc (prefix_length + strlen (fname) + 2);
+  *gf->filename = '\0';
+  if (prefix_length)
+    strcat (gf->filename, gf->prefix);
+  if (append_slash)
+    *gf->filename++ = '/';
+  strcat (gf->filename, fname);
+
+  gf->filename = replace_filename_variables (gf->filename);
 
   if (!gcov_open (gf->filename))
     {

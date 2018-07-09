@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define LINK_SPEC "\
 -melf" XLEN_SPEC "lriscv \
+%{mno-relax:--no-relax} \
 %{shared}"
 
 /* Link against Newlib libraries, because the ELF backend assumes Newlib.
@@ -31,5 +32,3 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend%O%s"
-
-#define NO_IMPLICIT_EXTERN_C 1

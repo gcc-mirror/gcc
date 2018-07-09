@@ -1,3 +1,229 @@
+2018-07-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* configure: Regenerated.
+
+2018-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (install_leaf): Use enable_gcov instead of
+	enable_libgcov.
+
+2018-06-27  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* configure.ac: Add --disable-gcov option.
+	* configure: Regenerate.
+	* Makefile.in: Honour @enable_gcov@.
+
+2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/lib1funcs.S (__ARM_ARCH__): Remove definitions, use
+	__ARM_ARCH and __ARM_FEATURE_CLZ instead.
+	(HAVE_ARM_CLZ): Remove definition, use __ARM_FEATURE_CLZ instead.
+	* config/arm/ieee754-df.S: Use __ARM_FEATURE_CLZ instead of
+	__ARM_ARCH__.
+	* config/arm/ieee754-sf.S: Likewise.
+	* config/arm/libunwind.S: Use __ARM_ARCH instead of __ARM_ARCH__.
+
+2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/ieee754-df.S: Remove code for __ARM_ARCH__ < 4, no
+	longer supported.
+	* config/arm/ieee754-sf.S: Likewise.
+
+2018-06-20  Than McIntosh  <thanm@google.com>
+
+	PR libgcc/86213
+	* generic-morestack.c (allocate_segment): Move calls to getenv and
+	getpagesize to __morestack_load_mmap.
+	(__morestack_load_mmap) Initialize static_pagesize and
+	use_guard_page here so as to avoid clobbering SSE regs during a
+	__morestack call.
+
+2018-06-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/t-float128 (FP128_CFLAGS_SW): Compile float128
+	support modules with -mno-gnu-attribute.
+	* config/rs6000/t-float128-hw (FP128_CFLAGS_HW): Likewise.
+
+2018-06-07  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC_INCLUDES): Add
+	-I$(MULTIBUILDTOP)../../gcc/include.
+	* config/t-vxworks7: Likewise. Reformat a bit to match
+	the t-vxworks layout.
+
+2018-06-07  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_TREMONT.
+
+2018-06-07  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Rename cs_all to all and assign it from
+        all_prg.
+
+2018-06-07  Martin Liska  <mliska@suse.cz>
+
+        PR bootstrap/86057
+	* libgcov-driver-system.c (replace_filename_variables): Use
+        memcpy instead of mempcpy.
+	(allocate_filename_struct): Do not allocate filename, allocate
+        prefix and set it.
+	(gcov_exit_open_gcda_file): Allocate memory for gf->filename
+        here and properly copy content into it.
+	* libgcov-driver.c (struct gcov_filename): Remove max_length
+        field, change prefix from size_t into char *.
+	(compute_summary): Do not calculate longest filename.
+	(gcov_do_dump): Release memory of gf.filename after each file.
+	* libgcov-util.c (compute_summary): Use new signature of
+        compute_summary.
+	(calculate_overlap): Likewise.
+
+2018-06-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/47618
+	* libgcov-driver-system.c (replace_filename_variables): New
+        function.
+	(gcov_exit_open_gcda_file): Use it.
+
+2018-06-05  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (gcov_compute_histogram): Remove usage
+	of gcov_ctr_summary.
+	(compute_summary): Do it just for a single summary.
+	(merge_one_data): Likewise.
+	(merge_summary): Simplify as we read just single summary.
+	(dump_one_gcov): Pass proper argument.
+	* libgcov-util.c (compute_one_gcov): Simplify as we have just
+	single summary.
+	(gcov_info_count_all_cold): Likewise.
+	(calculate_overlap): Likewise.
+
+2018-06-02  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config.host (nds32*-linux*): New.
+	* config/nds32/linux-atomic.c: New file.
+	* config/nds32/linux-unwind.h: New file.
+
+2018-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/85591
+	* config/i386/cpuinfo.c (get_amd_cpu): Return
+	AMDFAM15H_BDVER2 for AMDFAM15H model 0x2.
+
+2018-05-30  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+        * crtstuff.c: Remove declaration of _Jv_RegisterClasses.
+
+2018-05-29  Martin Liska  <mliska@suse.cz>
+
+        PR gcov-profile/85759
+	* libgcov-driver-system.c (gcov_error): Introduce usage of
+        GCOV_EXIT_AT_ERROR env. variable.
+	* libgcov-driver.c (merge_one_data): Print error that we
+        overwrite a gcov file with a different timestamp.
+
+2018-05-23  Kalamatee  <kalamatee@gmail.com>
+
+	* config/m68k/lb1sf68.S (Laddsf$nf): Fix sign bit handling in
+	path to Lf$finfty.
+
+2018-05-18  Kito Cheng <kito.cheng@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+	    Jim Wilson <jimw@sifive.com>
+
+	* config/riscv/save-restore.S: Add support for rv32e.
+
+2018-05-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/libunwind.S: Update comment relating to armv5.
+
+2018-05-17  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/arm/cmse.c (cmse_check_address_range): Replace
+	UINTPTR_MAX with __UINTPTR_MAX__ and uintptr_t with __UINTPTR_TYPE__.
+
+2018-05-17  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_GOLDMONT_PLUS.
+	* config/i386/cpuinfo.c (get_intel_cpu): Detect Goldmont Plus.
+
+2018-05-08  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_GOLDMONT.
+	* config/i386/cpuinfo.c (get_intel_cpu): Detect Goldmont.
+
+2018-05-07  Amaan Cheval  <amaan.cheval@gmail.com>
+
+	* config.host (x86_64-*-rtems*): Build crti.o and crtn.o.
+
+2018-04-27  Andreas Tobler  <andreast@gcc.gnu.org>
+	    Maryse Levavasseur <maryse.levavasseur@stormshield.eu>
+
+	PR libgcc/84292
+	* config/arm/freebsd-atomic.c (SYNC_OP_AND_FETCH_N): Fix the
+	op_and_fetch to return the right result.
+
+2018-04-27  Alan Modra  <amodra@gmail.com>
+
+	PR libgcc/85532
+	* config/rs6000/t-crtstuff (CRTSTUFF_T_CFLAGS): Add
+	-fno-asynchronous-unwind-tables.
+
+2018-04-25  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/sfp-machine.h: Fix settings for NDS32_ABI_2FP_PLUS.
+	* config/nds32/t-nds32-newlib (HOST_LIBGCC2_CFLAGS): Use -fwrapv.
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/linux-unwind.h: Add (__CET__ & 2) != 0 check
+	when including "config/i386/shadow-stack-unwind.h".
+
+2018-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2018-04-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/85456
+	* config/rs6000/_powikf2.c: New file.  Add support for the
+	__builtin_powil function when long double is IEEE 128-bit floating
+	point.
+	* config/rs6000/float128-ifunc.c (__powikf2_resolve): Add
+	__powikf2 support.
+	(__powikf2): Likewise.
+	* config/rs6000/quad-float128.h (__powikf2_sw): Likewise.
+	(__powikf2_hw): Likewise.
+	(__powikf2): Likewise.
+	* config/rs6000/t-float128 (fp128_ppc_funcs): Likewise.
+	* config/rs6000/t-float128-hw (fp128_hw_func): Likewise.
+	(_powikf2-hw.c): Likewise.
+
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* unwind-generic.h (_Unwind_Frames_Increment): New.
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Likewise.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Increment frame
+	count with _Unwind_Frames_Increment.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+
+2018-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85379
+	* config/i386/morestack.S (__stack_split_initialize): Add
+	_CET_ENDBR.
+
+2018-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerated.
+
+2018-04-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/85384
+	* configure: Regenerate.
+
 2018-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84945
@@ -465,7 +691,6 @@
 	* config/i386/t-msabi: Modified to add avx and sse versions of stubs.
 
 2017-09-01  Olivier Hainque  <hainque@adacore.com>
-
 	* config.host (*-*-vxworks7): Widen scope to vxworks7*.
 
 2017-08-31  Olivier Hainque  <hainque@adacore.com>

@@ -1338,7 +1338,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::forward<const __element_type&&>(std::get<__i>(__t));
     }
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201402L
 
 #define __cpp_lib_tuples_by_type 201304
 
@@ -1470,6 +1470,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2275. Why is forward_as_tuple not constexpr?
+  /// std::forward_as_tuple
   template<typename... _Elements>
     constexpr tuple<_Elements&&...>
     forward_as_tuple(_Elements&&... __args) noexcept
@@ -1499,8 +1500,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Returns the std::tuple equivalent of a tuple-like type.
   template<typename _Tuple>
     struct __make_tuple
-    : public __do_make_tuple<typename std::remove_cv
-            <typename std::remove_reference<_Tuple>::type>::type>
+    : public __do_make_tuple<__remove_cvref_t<_Tuple>>
     { };
 
   // Combines several std::tuple's into a single one.

@@ -180,9 +180,9 @@ package body System.OS_Interface is
       null;
    end pthread_init;
 
-   ----------------
-   -- Stack_Base --
-   ----------------
+   --------------------
+   -- Get_Stack_Base --
+   --------------------
 
    function Get_Stack_Base (thread : pthread_t) return Address is
       pragma Unreferenced (thread);

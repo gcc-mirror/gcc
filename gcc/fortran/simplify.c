@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Prototypes.  */
 
-static int min_max_choose (gfc_expr *, gfc_expr *, int);
+static int min_max_choose (gfc_expr *, gfc_expr *, int, bool back_val = false);
 
 gfc_expr gfc_bad_expr;
 
@@ -4877,7 +4877,7 @@ gfc_simplify_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask_expr)
 /* Selects between current value and extremum for simplify_min_max
    and simplify_minval_maxval.  */
 static int
-min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign)
+min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign, bool back_val)
 {
   int ret;
 
@@ -4940,6 +4940,9 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign)
       default:
 	gfc_internal_error ("simplify_min_max(): Bad type in arglist");
     }
+  if (back_val && ret == 0)
+    ret = 1;
+
   return ret;
 }
 
@@ -5059,7 +5062,7 @@ gfc_simplify_maxval (gfc_expr *array, gfc_expr* dim, gfc_expr *mask)
 
 static gfc_expr *
 simplify_minmaxloc_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *mask,
-			      gfc_expr *extremum, int sign)
+			      gfc_expr *extremum, int sign, bool back_val)
 {
   gfc_expr *a, *m;
   gfc_constructor *array_ctor, *mask_ctor;
@@ -5094,7 +5097,7 @@ simplify_minmaxloc_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *mask,
 	  if (!m->value.logical)
 	    continue;
 	}
-      if (min_max_choose (a, extremum, sign) > 0)
+      if (min_max_choose (a, extremum, sign, back_val) > 0)
 	mpz_set (result->value.integer, count);
     }
   mpz_clear (count);
@@ -5106,7 +5109,8 @@ simplify_minmaxloc_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *mask,
 
 static gfc_expr *
 simplify_minmaxloc_nodim (gfc_expr *result, gfc_expr *extremum,
-			  gfc_expr *array, gfc_expr *mask, int sign)
+			  gfc_expr *array, gfc_expr *mask, int sign,
+			  bool back_val)
 {
   ssize_t res[GFC_MAX_DIMENSIONS];
   int i, n;
@@ -5158,7 +5162,7 @@ simplify_minmaxloc_nodim (gfc_expr *result, gfc_expr *extremum,
 	  else
 	    ma = true;
 
-	  if (ma && min_max_choose (a, extremum, sign) > 0)
+	  if (ma && min_max_choose (a, extremum, sign, back_val) > 0)
 	    {
 	      for (i = 0; i<array->rank; i++)
 		res[i] = count[i];
@@ -5225,7 +5229,7 @@ new_array (bt type, int kind, int n, locus *where)
 static gfc_expr *
 simplify_minmaxloc_to_array (gfc_expr *result, gfc_expr *array,
 			     gfc_expr *dim, gfc_expr *mask,
-			     gfc_expr *extremum, int sign)
+			     gfc_expr *extremum, int sign, bool back_val)
 {
   mpz_t size;
   int done, i, n, arraysize, resultsize, dim_index, dim_extent, dim_stride;
@@ -5313,7 +5317,7 @@ simplify_minmaxloc_to_array (gfc_expr *result, gfc_expr *array,
       ex = gfc_copy_expr (extremum);
       for (src = base, n = 0; n < dim_extent; src += dim_stride, ++n)
 	{
-	  if (*src && min_max_choose (*src, ex, sign) > 0)
+	  if (*src && min_max_choose (*src, ex, sign, back_val) > 0)
 	    mpz_set_si ((*dest)->value.integer, n + 1);
 	}
 
@@ -5367,12 +5371,13 @@ simplify_minmaxloc_to_array (gfc_expr *result, gfc_expr *array,
 
 gfc_expr *
 gfc_simplify_minmaxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
-			gfc_expr *kind, int sign)
+			gfc_expr *kind, gfc_expr *back, int sign)
 {
   gfc_expr *result;
   gfc_expr *extremum;
   int ikind;
   int init_val;
+  bool back_val = false;
 
   if (!is_constant_array_expr (array)
       || !gfc_is_constant_expr (dim))
@@ -5391,6 +5396,14 @@ gfc_simplify_minmaxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
   else
     ikind = gfc_default_integer_kind;
 
+  if (back)
+    {
+      if (back->expr_type != EXPR_CONSTANT)
+	return NULL;
+
+      back_val = back->value.logical;
+    }
+  
   if (sign < 0)
     init_val = INT_MAX;
   else if (sign > 0)
@@ -5408,29 +5421,32 @@ gfc_simplify_minmaxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
       init_result_expr (result, 0, array);
 
       if (array->rank == 1)
-	return simplify_minmaxloc_to_scalar (result, array, mask, extremum, sign);
+	return simplify_minmaxloc_to_scalar (result, array, mask, extremum,
+					     sign, back_val);
       else
-	return simplify_minmaxloc_to_array (result, array, dim, mask, extremum, sign);
+	return simplify_minmaxloc_to_array (result, array, dim, mask, extremum,
+					    sign, back_val);
     }
   else
     {
       result = new_array (BT_INTEGER, ikind, array->rank, &array->where);
-      return simplify_minmaxloc_nodim (result, extremum, array, mask, sign);
+      return simplify_minmaxloc_nodim (result, extremum, array, mask,
+				       sign, back_val);
     }
 }
 
 gfc_expr *
 gfc_simplify_minloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask, gfc_expr *kind,
-		     gfc_expr *back ATTRIBUTE_UNUSED)
+		     gfc_expr *back)
 {
-  return gfc_simplify_minmaxloc (array, dim, mask, kind, -1);
+  return gfc_simplify_minmaxloc (array, dim, mask, kind, back, -1);
 }
 
 gfc_expr *
 gfc_simplify_maxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask, gfc_expr *kind,
-		     gfc_expr *back ATTRIBUTE_UNUSED)
+		     gfc_expr *back)
 {
-  return gfc_simplify_minmaxloc (array, dim, mask, kind, 1);
+  return gfc_simplify_minmaxloc (array, dim, mask, kind, back, 1);
 }
 
 gfc_expr *
@@ -5457,41 +5473,46 @@ gfc_simplify_mod (gfc_expr *a, gfc_expr *p)
   gfc_expr *result;
   int kind;
 
-  if (a->expr_type != EXPR_CONSTANT || p->expr_type != EXPR_CONSTANT)
+  /* First check p.  */
+  if (p->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  /* p shall not be 0.  */
+  switch (p->ts.type)
+    {
+      case BT_INTEGER:
+	if (mpz_cmp_ui (p->value.integer, 0) == 0)
+	  {
+	    gfc_error ("Argument %qs of MOD at %L shall not be zero",
+			"P", &p->where);
+	    return &gfc_bad_expr;
+	  }
+	break;
+      case BT_REAL:
+	if (mpfr_cmp_ui (p->value.real, 0) == 0)
+	  {
+	    gfc_error ("Argument %qs of MOD at %L shall not be zero",
+			"P", &p->where);
+	    return &gfc_bad_expr;
+	  }
+	break;
+      default:
+	gfc_internal_error ("gfc_simplify_mod(): Bad arguments");
+    }
+
+  if (a->expr_type != EXPR_CONSTANT)
     return NULL;
 
   kind = a->ts.kind > p->ts.kind ? a->ts.kind : p->ts.kind;
   result = gfc_get_constant_expr (a->ts.type, kind, &a->where);
 
-  switch (a->ts.type)
+  if (a->ts.type == BT_INTEGER)
+    mpz_tdiv_r (result->value.integer, a->value.integer, p->value.integer);
+  else
     {
-      case BT_INTEGER:
-	if (mpz_cmp_ui (p->value.integer, 0) == 0)
-	  {
-	    /* Result is processor-dependent.  */
-	    gfc_error ("Second argument MOD at %L is zero", &a->where);
-	    gfc_free_expr (result);
-	    return &gfc_bad_expr;
-	  }
-	mpz_tdiv_r (result->value.integer, a->value.integer, p->value.integer);
-	break;
-
-      case BT_REAL:
-	if (mpfr_cmp_ui (p->value.real, 0) == 0)
-	  {
-	    /* Result is processor-dependent.  */
-	    gfc_error ("Second argument of MOD at %L is zero", &p->where);
-	    gfc_free_expr (result);
-	    return &gfc_bad_expr;
-	  }
-
-	gfc_set_model_kind (kind);
-	mpfr_fmod (result->value.real, a->value.real, p->value.real,
-		   GFC_RND_MODE);
-	break;
-
-      default:
-	gfc_internal_error ("gfc_simplify_mod(): Bad arguments");
+      gfc_set_model_kind (kind);
+      mpfr_fmod (result->value.real, a->value.real, p->value.real,
+		 GFC_RND_MODE);
     }
 
   return range_check (result, "MOD");

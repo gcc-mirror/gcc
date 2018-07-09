@@ -7,10 +7,14 @@ void bar (void);
 void link_error (void);
 
 void
-foo (char *x)
+foo (char *x, double y)
 {
+  /* The expected result should not be constant but rather that
+     of the %f directive with an unknown argument, i.e., at least
+     [3, 317] (but in reality [3, 322] when taking into account
+     that the decimal point can be up to MB_LEN_MAX bytes long).  */
   int a = __builtin_sprintf (x, "%f", 1.0Q);
-  if (a < 8)
+  if (a < 3)
     link_error ();
   if (a > 13)
     bar ();
@@ -18,6 +22,6 @@ foo (char *x)
     link_error ();
 }
 
-/* Verify we don't optimize return value to [8, 13].  */
+/* Verify we don't optimize return value to [3, 13].  */
 /* { dg-final { scan-tree-dump-not "link_error \\(\\);" "optimized" } } */
 /* { dg-final { scan-tree-dump "bar \\(\\);" "optimized" } } */

@@ -420,9 +420,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_avx5124fmaps = 0, has_avx5124vnniw = 0;
   unsigned int has_gfni = 0, has_avx512vbmi2 = 0;
   unsigned int has_avx512bitalg = 0;
-  unsigned int has_ibt = 0, has_shstk = 0;
+  unsigned int has_shstk = 0;
   unsigned int has_avx512vnni = 0, has_vaes = 0;
   unsigned int has_vpclmulqdq = 0;
+  unsigned int has_movdiri = 0, has_movdir64b = 0;
+  unsigned int has_waitpkg = 0;
+  unsigned int has_cldemote = 0;
 
   bool arch;
 
@@ -518,13 +521,16 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_vaes = ecx & bit_VAES;
       has_vpclmulqdq = ecx & bit_VPCLMULQDQ;
       has_avx512bitalg = ecx & bit_AVX512BITALG;
+      has_movdiri = ecx & bit_MOVDIRI;
+      has_movdir64b = ecx & bit_MOVDIR64B;
+      has_cldemote = ecx & bit_CLDEMOTE;
 
       has_avx5124vnniw = edx & bit_AVX5124VNNIW;
       has_avx5124fmaps = edx & bit_AVX5124FMAPS;
 
       has_shstk = ecx & bit_SHSTK;
-      has_ibt = edx & bit_IBT;
       has_pconfig = edx & bit_PCONFIG;
+      has_waitpkg = ecx & bit_WAITPKG;
     }
 
   if (max_level >= 13)
@@ -753,6 +759,15 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  /* Silvermont.  */
 	  cpu = "silvermont";
 	  break;
+	case 0x5c:
+	case 0x5f:
+	  /* Goldmont.  */
+	  cpu = "goldmont";
+	  break;
+	case 0x7a:
+	  /* Goldmont Plus.  */
+	  cpu = "goldmont-plus";
+	  break;
 	case 0x0f:
 	  /* Merom.  */
 	case 0x17:
@@ -857,7 +872,16 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		cpu = "sandybridge";
 	      else if (has_sse4_2)
 		{
-		  if (has_movbe)
+		  if (has_gfni)
+		    /* Assume Tremont.  */
+		    cpu = "tremont";
+		  else if (has_sgx)
+		    /* Assume Goldmont Plus.  */
+		    cpu = "goldmont-plus";
+		  else if (has_xsave)
+		    /* Assume Goldmont.  */
+		    cpu = "goldmont";
+		  else if (has_movbe)
 		    /* Assume Silvermont.  */
 		    cpu = "silvermont";
 		  else
@@ -1092,11 +1116,14 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *pku = has_pku ? " -mpku" : " -mno-pku";
       const char *rdpid = has_rdpid ? " -mrdpid" : " -mno-rdpid";
       const char *gfni = has_gfni ? " -mgfni" : " -mno-gfni";
-      const char *ibt = has_ibt ? " -mibt" : " -mno-ibt";
       const char *shstk = has_shstk ? " -mshstk" : " -mno-shstk";
       const char *vaes = has_vaes ? " -mvaes" : " -mno-vaes";
       const char *vpclmulqdq = has_vpclmulqdq ? " -mvpclmulqdq" : " -mno-vpclmulqdq";
       const char *avx512bitalg = has_avx512bitalg ? " -mavx512bitalg" : " -mno-avx512bitalg";
+      const char *movdiri = has_movdiri ? " -mmovdiri" : " -mno-movdiri";
+      const char *movdir64b = has_movdir64b ? " -mmovdir64b" : " -mno-movdir64b";
+      const char *waitpkg = has_waitpkg ? " -mwaitpkg" : " -mno-waitpkg";
+      const char *cldemote = has_cldemote ? " -mcldemote" : " -mno-cldemote";
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, sgx, bmi2,
@@ -1107,9 +1134,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			avx512cd, avx512pf, prefetchwt1, clflushopt,
 			xsavec, xsaves, avx512dq, avx512bw, avx512vl,
 			avx512ifma, avx512vbmi, avx5124fmaps, avx5124vnniw,
-			clwb, mwaitx, clzero, pku, rdpid, gfni, ibt, shstk,
+			clwb, mwaitx, clzero, pku, rdpid, gfni, shstk,
 			avx512vbmi2, avx512vnni, vaes, vpclmulqdq,
-			avx512bitalg, NULL);
+			avx512bitalg, movdiri, movdir64b, waitpkg, cldemote,
+			NULL);
     }
 
 done:

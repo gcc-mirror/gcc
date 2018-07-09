@@ -1,5 +1,5 @@
 /* { dg-do run { target cet } } */
-/* { dg-options "-O2 -fcf-protection -mcet" } */
+/* { dg-options "-O2 -fcf-protection -mshstk" } */
 
 void _exit(int status) __attribute__ ((__noreturn__));
 

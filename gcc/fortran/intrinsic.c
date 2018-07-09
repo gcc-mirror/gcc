@@ -1849,7 +1849,7 @@ add_functions (void)
 	     mo, BT_UNKNOWN, 0, REQUIRED);
 
   add_sym_2 ("failed_images", GFC_ISYM_FAILED_IMAGES, CLASS_TRANSFORMATIONAL,
-	     ACTUAL_NO, BT_INTEGER, dd, GFC_STD_F2008_TS,
+	     ACTUAL_NO, BT_INTEGER, dd, GFC_STD_F2018,
 	     gfc_check_failed_or_stopped_images,
 	     gfc_simplify_failed_or_stopped_images,
 	     gfc_resolve_failed_images, team, BT_VOID, di, OPTIONAL,
@@ -1947,7 +1947,7 @@ add_functions (void)
   make_generic ("getpid", GFC_ISYM_GETPID, GFC_STD_GNU);
 
   add_sym_1 ("get_team", GFC_ISYM_GET_TEAM, CLASS_TRANSFORMATIONAL,
-	     ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008_TS,
+	     ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2018,
 	     gfc_check_get_team, NULL, gfc_resolve_get_team,
 	     level, BT_INTEGER, di, OPTIONAL);
 
@@ -2102,7 +2102,7 @@ add_functions (void)
 	     ca, BT_REAL, dr, REQUIRED, sub, BT_INTEGER, ii, REQUIRED);
 
   add_sym_2 ("image_status", GFC_ISYM_IMAGE_STATUS, CLASS_ELEMENTAL, ACTUAL_NO,
-	     BT_INTEGER, di, GFC_STD_F2008_TS, gfc_check_image_status,
+	     BT_INTEGER, di, GFC_STD_F2018, gfc_check_image_status,
 	     gfc_simplify_image_status, gfc_resolve_image_status, image,
 	     BT_INTEGER, di, REQUIRED, team, BT_VOID, di, OPTIONAL);
 
@@ -2715,9 +2715,9 @@ add_functions (void)
   make_generic ("range", GFC_ISYM_RANGE, GFC_STD_F95);
 
   add_sym_1 ("rank", GFC_ISYM_RANK, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di,
-	     GFC_STD_F2008_TS, gfc_check_rank, gfc_simplify_rank, gfc_resolve_rank,
+	     GFC_STD_F2018, gfc_check_rank, gfc_simplify_rank, gfc_resolve_rank,
 	     a, BT_REAL, dr, REQUIRED);
-  make_generic ("rank", GFC_ISYM_RANK, GFC_STD_F2008_TS);
+  make_generic ("rank", GFC_ISYM_RANK, GFC_STD_F2018);
 
   add_sym_2 ("real", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
 	     gfc_check_real, gfc_simplify_real, gfc_resolve_real,
@@ -3017,7 +3017,7 @@ add_functions (void)
   make_generic ("stat", GFC_ISYM_STAT, GFC_STD_GNU);
 
   add_sym_2 ("stopped_images", GFC_ISYM_STOPPED_IMAGES, CLASS_TRANSFORMATIONAL,
-	     ACTUAL_NO, BT_INTEGER, dd, GFC_STD_F2008_TS,
+	     ACTUAL_NO, BT_INTEGER, dd, GFC_STD_F2018,
 	     gfc_check_failed_or_stopped_images,
 	     gfc_simplify_failed_or_stopped_images,
 	     gfc_resolve_stopped_images, team, BT_VOID, di, OPTIONAL,
@@ -3070,7 +3070,7 @@ add_functions (void)
   make_generic ("tanh", GFC_ISYM_TANH, GFC_STD_F77);
 
   add_sym_1 ("team_number", GFC_ISYM_TEAM_NUMBER, CLASS_TRANSFORMATIONAL,
-	     ACTUAL_YES, BT_INTEGER, di, GFC_STD_F2008_TS,
+	     ACTUAL_YES, BT_INTEGER, di, GFC_STD_F2018,
 	     gfc_check_team_number, NULL, gfc_resolve_team_number,
 	     team, BT_DERIVED, di, OPTIONAL);
 
@@ -3344,7 +3344,7 @@ add_subroutines (void)
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_5s ("atomic_cas", GFC_ISYM_ATOMIC_CAS, CLASS_ATOMIC,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_atomic_cas, NULL, NULL,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_INOUT,
 	      "old", BT_INTEGER, di, REQUIRED, INTENT_OUT,
@@ -3353,35 +3353,35 @@ add_subroutines (void)
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_3s ("atomic_add", GFC_ISYM_ATOMIC_ADD, CLASS_ATOMIC,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_atomic_op, NULL, NULL,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
 	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_3s ("atomic_and", GFC_ISYM_ATOMIC_AND, CLASS_ATOMIC,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_atomic_op, NULL, NULL,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
 	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_3s ("atomic_or", GFC_ISYM_ATOMIC_OR, CLASS_ATOMIC,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_atomic_op, NULL, NULL,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
 	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_3s ("atomic_xor", GFC_ISYM_ATOMIC_XOR, CLASS_ATOMIC,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_atomic_op, NULL, NULL,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
 	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_4s ("atomic_fetch_add", GFC_ISYM_ATOMIC_FETCH_ADD, CLASS_ATOMIC,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_atomic_fetch_op, NULL, NULL,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
 	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
@@ -3389,7 +3389,7 @@ add_subroutines (void)
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_4s ("atomic_fetch_and", GFC_ISYM_ATOMIC_FETCH_AND, CLASS_ATOMIC,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_atomic_fetch_op, NULL, NULL,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
 	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
@@ -3397,7 +3397,7 @@ add_subroutines (void)
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_4s ("atomic_fetch_or", GFC_ISYM_ATOMIC_FETCH_OR, CLASS_ATOMIC,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_atomic_fetch_op, NULL, NULL,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
 	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
@@ -3405,7 +3405,7 @@ add_subroutines (void)
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_4s ("atomic_fetch_xor", GFC_ISYM_ATOMIC_FETCH_XOR, CLASS_ATOMIC,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_atomic_fetch_op, NULL, NULL,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
 	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
@@ -3419,7 +3419,7 @@ add_subroutines (void)
 	      tm, BT_REAL, dr, REQUIRED, INTENT_OUT);
 
   add_sym_3s ("event_query", GFC_ISYM_EVENT_QUERY, CLASS_ATOMIC,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_event_query, NULL, gfc_resolve_event_query,
 	      "event", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      c, BT_INTEGER, di, OPTIONAL, INTENT_IN,
@@ -3568,6 +3568,12 @@ add_subroutines (void)
       make_alias ("kmvbits", GFC_STD_GNU);
     }
 
+  add_sym_2s ("random_init", GFC_ISYM_RANDOM_INIT, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
+	      gfc_check_random_init, NULL, gfc_resolve_random_init,
+	      "repeatable",     BT_LOGICAL, dl, REQUIRED, INTENT_IN,
+	      "image_distinct", BT_LOGICAL, dl, REQUIRED, INTENT_IN);
+
   add_sym_1s ("random_number", GFC_ISYM_RANDOM_NUMBER, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F95,
 	      gfc_check_random_number, NULL, gfc_resolve_random_number,
@@ -3609,7 +3615,7 @@ add_subroutines (void)
 
   /* Coarray collectives.  */
   add_sym_4s ("co_broadcast", GFC_ISYM_CO_BROADCAST, CLASS_IMPURE,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_co_broadcast, NULL, NULL,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      "source_image", BT_INTEGER, di, REQUIRED, INTENT_IN,
@@ -3617,7 +3623,7 @@ add_subroutines (void)
 	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
 
   add_sym_4s ("co_max", GFC_ISYM_CO_MAX, CLASS_IMPURE,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_co_minmax, NULL, NULL,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
@@ -3625,7 +3631,7 @@ add_subroutines (void)
 	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
 
   add_sym_4s ("co_min", GFC_ISYM_CO_MIN, CLASS_IMPURE,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_co_minmax, NULL, NULL,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
@@ -3633,7 +3639,7 @@ add_subroutines (void)
 	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
 
   add_sym_4s ("co_sum", GFC_ISYM_CO_SUM, CLASS_IMPURE,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_co_sum, NULL, NULL,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
@@ -3641,7 +3647,7 @@ add_subroutines (void)
 	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_OUT);
 
   add_sym_5s ("co_reduce", GFC_ISYM_CO_REDUCE, CLASS_IMPURE,
-	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_co_reduce, NULL, NULL,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
 	      "operator", BT_INTEGER, di, REQUIRED, INTENT_IN,
@@ -4618,8 +4624,8 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
       symstd_msg = "new in Fortran 2008";
       break;
 
-    case GFC_STD_F2008_TS:
-      symstd_msg = "new in TS 29113/TS 18508";
+    case GFC_STD_F2018:
+      symstd_msg = "new in Fortran 2018";
       break;
 
     case GFC_STD_GNU:

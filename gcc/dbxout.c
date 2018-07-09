@@ -464,7 +464,7 @@ dbxout_int (int num)
   if (num < 0)
     {
       putc ('-', asm_out_file);
-      unum = -num;
+      unum = -(unsigned int) num;
     }
   else
     unum = num;
@@ -671,7 +671,7 @@ stabstr_D (HOST_WIDE_INT num)
 {
   char buf[64];
   char *p = buf + sizeof buf;
-  unsigned int unum;
+  unsigned HOST_WIDE_INT unum;
 
   if (num == 0)
     {
@@ -681,7 +681,7 @@ stabstr_D (HOST_WIDE_INT num)
   if (num < 0)
     {
       stabstr_C ('-');
-      unum = -num;
+      unum = -(unsigned HOST_WIDE_INT) num;
     }
   else
     unum = num;
@@ -2377,10 +2377,6 @@ dbxout_type (tree type, int full)
     case FUNCTION_TYPE:
       stabstr_C ('f');
       dbxout_type (TREE_TYPE (type), 0);
-      break;
-
-    case POINTER_BOUNDS_TYPE:
-      /* No debug info for pointer bounds type supported yet.  */
       break;
 
     default:

@@ -258,18 +258,6 @@ package Exp_Disp is
    function Is_Expanded_Dispatching_Call (N : Node_Id) return Boolean;
    --  Returns true if N is the expanded code of a dispatching call
 
-   function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation
-
-   function Is_Predefined_Internal_Operation (E : Entity_Id) return Boolean;
-   --  Similar to the previous one, but excludes stream operations, because
-   --  these may be overridden, and need extra formals, like user-defined
-   --  operations.
-
-   function Is_Predefined_Interface_Primitive (E : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-345): Returns True if E is one of the predefined primitives
-   --  required to implement interfaces.
-
    function Make_DT (Typ : Entity_Id; N : Node_Id := Empty) return List_Id;
    --  Expand the declarations for the Dispatch Table. The node N is the
    --  declaration that forces the generation of the table. It is used to place

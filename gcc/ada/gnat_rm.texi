@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Jan 10, 2018
+GNAT Reference Manual , Jun 06, 2018
 
 AdaCore
 
@@ -755,7 +755,7 @@ The GNAT Library
 * GNAT.Encode_UTF8_String (g-enutst.ads): GNAT Encode_UTF8_String g-enutst ads. 
 * GNAT.Exception_Actions (g-excact.ads): GNAT Exception_Actions g-excact ads. 
 * GNAT.Exception_Traces (g-exctra.ads): GNAT Exception_Traces g-exctra ads. 
-* GNAT.Exceptions (g-expect.ads): GNAT Exceptions g-expect ads. 
+* GNAT.Exceptions (g-except.ads): GNAT Exceptions g-except ads. 
 * GNAT.Expect (g-expect.ads): GNAT Expect g-expect ads. 
 * GNAT.Expect.TTY (g-exptty.ads): GNAT Expect TTY g-exptty ads. 
 * GNAT.Float_Control (g-flocon.ads): GNAT Float_Control g-flocon ads. 
@@ -1761,7 +1761,7 @@ documentation.
 Syntax:
 
 @example
-pragma Assertion_Policy (CHECK | DISABLE | IGNORE);
+pragma Assertion_Policy (CHECK | DISABLE | IGNORE | SUPPRESSIBLE);
 
 pragma Assertion_Policy (
     ASSERTION_KIND => POLICY_IDENTIFIER
@@ -2556,9 +2556,9 @@ pragma Postcondition (if C1 then Pred1);
 pragma Postcondition (if C2 then Pred2);
 @end example
 
-The precondition ensures that one and only one of the conditions is
+The precondition ensures that one and only one of the case guards is
 satisfied on entry to the subprogram.
-The postcondition ensures that for the condition that was True on entry,
+The postcondition ensures that for the case guard that was True on entry,
 the corrresponding consequence is True on exit. Other consequence expressions
 are not evaluated.
 
@@ -2572,13 +2572,13 @@ pragma Contract_Cases (P => Q);
 The placement and visibility rules for @code{Contract_Cases} pragmas are
 identical to those described for preconditions and postconditions.
 
-The compiler checks that boolean expressions given in conditions and
-consequences are valid, where the rules for conditions are the same as
+The compiler checks that boolean expressions given in case guards and
+consequences are valid, where the rules for case guards are the same as
 the rule for an expression in @code{Precondition} and the rules for
 consequences are the same as the rule for an expression in
 @code{Postcondition}. In particular, attributes @code{'Old} and
 @code{'Result} can only be used within consequence expressions.
-The condition for the last contract case may be @code{others}, to denote
+The case guard for the last contract case may be @code{others}, to denote
 any case not captured by the previous cases. The
 following is an example of use within a package spec:
 
@@ -2594,7 +2594,7 @@ end Math_Functions;
 @end example
 
 The meaning of contract cases is that only one case should apply at each
-call, as determined by the corresponding condition evaluating to True,
+call, as determined by the corresponding case guard evaluating to True,
 and that the consequence for this case should hold when the subprogram
 returns.
 
@@ -3067,17 +3067,29 @@ Syntax:
 pragma Elaboration_Checks (Dynamic | Static);
 @end example
 
-This is a configuration pragma that provides control over the
-elaboration model used by the compilation affected by the
-pragma.  If the parameter is @code{Dynamic},
-then the dynamic elaboration
-model described in the Ada Reference Manual is used, as though
-the @emph{-gnatE} switch had been specified on the command
-line.  If the parameter is @code{Static}, then the default GNAT static
-model is used.  This configuration pragma overrides the setting
-of the command line.  For full details on the elaboration models
-used by the GNAT compiler, see the chapter on elaboration order handling
-in the @emph{GNAT User's Guide}.
+This is a configuration pragma which specifies the elaboration model to be
+used during compilation. For more information on the elaboration models of
+GNAT, consult the chapter on elaboration order handling in the @emph{GNAT User's
+Guide}.
+
+The pragma may appear in the following contexts:
+
+
+@itemize *
+
+@item 
+Configuration pragmas file
+
+@item 
+Prior to the context clauses of a compilation unit's initial declaration
+@end itemize
+
+Any other placement of the pragma will result in a warning and the effects of
+the offending pragma will be ignored.
+
+If the pragma argument is @code{Dynamic}, then the dynamic elaboration model is in
+effect. If the pragma argument is @code{Static}, then the static elaboration model
+is in effect.
 
 @node Pragma Eliminate,Pragma Enable_Atomic_Synchronization,Pragma Elaboration_Checks,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-eliminate}@anchor{5b}
@@ -5315,6 +5327,11 @@ Once the pragma has been given for a particular root tagged type, all subtypes
 and derived types of this type inherit the pragma automatically, so the effect
 applies to a complete hierarchy (this is necessary to deal with the class-wide
 dispatching versions of the stream routines).
+
+When pragmas @code{Discard_Names} and @code{No_Tagged_Streams} are simultaneously
+applied to a tagged type its Expanded_Name and External_Tag are initialized
+with empty strings. This is useful to avoid exposing entity names at binary
+level but has a negative impact on the debuggability of tagged types.
 
 @node Pragma Normalize_Scalars,Pragma Obsolescent,Pragma No_Tagged_Streams,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-normalize-scalars}@anchor{a8}
@@ -8053,13 +8070,17 @@ pragma Thread_Local_Storage ([Entity =>] LOCAL_NAME);
 This pragma specifies that the specified entity, which must be
 a variable declared in a library-level package, is to be marked as
 "Thread Local Storage" (@code{TLS}). On systems supporting this (which
-include Windows, Solaris, GNU/Linux and VxWorks 6), this causes each
+include Windows, Solaris, GNU/Linux, and VxWorks 6), this causes each
 thread (and hence each Ada task) to see a distinct copy of the variable.
 
-The variable may not have default initialization, and if there is
+The variable must not have default initialization, and if there is
 an explicit initialization, it must be either @code{null} for an
-access variable, or a static expression for a scalar variable.
-This provides a low level mechanism similar to that provided by
+access variable, a static expression for a scalar variable, or a fully
+static aggregate for a composite type, that is to say, an aggregate all
+of whose components are static, and which does not include packed or
+discriminated components.
+
+This provides a low-level mechanism similar to that provided by
 the @code{Ada.Task_Attributes} package, but much more efficient
 and is also useful in writing interface code that will interact
 with foreign threads.
@@ -8875,6 +8896,10 @@ pragma Warnings (On, Pattern);
 In this usage, the pattern string must match in the Off and On
 pragmas, and (if @emph{-gnatw.w} is given) at least one matching
 warning must be suppressed.
+
+Note: if the ON form is not found, then the effect of the OFF form extends
+until the end of the file (pragma Warnings is purely textual, so its effect
+does not stop at the end of the enclosing scope).
 
 Note: to write a string that will match any warning, use the string
 @code{"***"}. It will not work to use a single asterisk or two
@@ -11646,32 +11671,31 @@ which changes element (1,2) to 20 and (3,4) to 30.
 
 @geindex Valid_Scalars
 
-The @code{'Valid_Scalars} attribute is intended to make it easier to
-check the validity of scalar subcomponents of composite objects. It
-is defined for any prefix @code{X} that denotes an object.
-The value of this attribute is of the predefined type Boolean.
-@code{X'Valid_Scalars} yields True if and only if evaluation of
-@code{P'Valid} yields True for every scalar part P of X or if X has
-no scalar parts. It is not specified in what order the scalar parts
-are checked, nor whether any more are checked after any one of them
-is determined to be invalid. If the prefix @code{X} is of a class-wide
-type @code{T'Class} (where @code{T} is the associated specific type),
-or if the prefix @code{X} is of a specific tagged type @code{T}, then
-only the scalar parts of components of @code{T} are traversed; in other
-words, components of extensions of @code{T} are not traversed even if
-@code{T'Class (X)'Tag /= T'Tag} . The compiler will issue a warning if it can
-be determined at compile time that the prefix of the attribute has no
-scalar parts (e.g., if the prefix is of an access type, an interface type,
-an undiscriminated task type, or an undiscriminated protected type).
+The @code{'Valid_Scalars} attribute is intended to make it easier to check the
+validity of scalar subcomponents of composite objects. The attribute is defined
+for any prefix @code{P} which denotes an object. Prefix @code{P} can be any type
+except for tagged private or @code{Unchecked_Union} types. The value of the
+attribute is of type @code{Boolean}.
 
-For scalar types, @code{Valid_Scalars} is equivalent to @code{Valid}. The use
-of this attribute is not permitted for @code{Unchecked_Union} types for which
-in general it is not possible to determine the values of the discriminants.
+@code{P'Valid_Scalars} yields @code{True} if and only if the evaluation of
+@code{C'Valid} yields @code{True} for every scalar subcomponent @code{C} of @code{P}, or if
+@code{P} has no scalar subcomponents. Attribute @code{'Valid_Scalars} is equivalent
+to attribute @code{'Valid} for scalar types.
 
-Note: @code{Valid_Scalars} can generate a lot of code, especially in the case
-of a large variant record. If the attribute is called in many places in the
-same program applied to objects of the same type, it can reduce program size
-to write a function with a single use of the attribute, and then call that
+It is not specified in what order the subcomponents are checked, nor whether
+any more are checked after any one of them is determined to be invalid. If the
+prefix @code{P} is of a class-wide type @code{T'Class} (where @code{T} is the associated
+specific type), or if the prefix @code{P} is of a specific tagged type @code{T}, then
+only the subcomponents of @code{T} are checked; in other words, components of
+extensions of @code{T} are not checked even if @code{T'Class (P)'Tag /= T'Tag}.
+
+The compiler will issue a warning if it can be determined at compile time that
+the prefix of the attribute has no scalar subcomponents.
+
+Note: @code{Valid_Scalars} can generate a lot of code, especially in the case of
+a large variant record. If the attribute is called in many places in the same
+program applied to objects of the same type, it can reduce program size to
+write a function with a single use of the attribute, and then call that
 function from multiple places.
 
 @node Attribute VADS_Size,Attribute Value_Size,Attribute Valid_Scalars,Implementation Defined Attributes
@@ -17132,6 +17156,11 @@ be suppressed.  In the presence of this pragma, the Image attribute
 provides the image of the Pos of the literal, and Value accepts
 Pos values.
 
+For tagged types, when pragmas @code{Discard_Names} and @code{No_Tagged_Streams}
+simultaneously apply, their Expanded_Name and External_Tag are initialized
+with empty strings. This is useful to avoid exposing entity names at binary
+level.
+
 
 @itemize *
 
@@ -20605,9 +20634,7 @@ This package provides a generic interface to generalized iterators.
 @item @code{Ada.Locales} @emph{(A.19)}
 
 This package provides declarations providing information (Language
-and Country) about the current locale. This package is currently not
-implemented other than by providing stubs which will always return
-Language_Unknown/Country_Unknown.
+and Country) about the current locale.
 
 @item @code{Ada.Numerics}
 
@@ -22789,7 +22816,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Encode_UTF8_String (g-enutst.ads): GNAT Encode_UTF8_String g-enutst ads. 
 * GNAT.Exception_Actions (g-excact.ads): GNAT Exception_Actions g-excact ads. 
 * GNAT.Exception_Traces (g-exctra.ads): GNAT Exception_Traces g-exctra ads. 
-* GNAT.Exceptions (g-expect.ads): GNAT Exceptions g-expect ads. 
+* GNAT.Exceptions (g-except.ads): GNAT Exceptions g-except ads. 
 * GNAT.Expect (g-expect.ads): GNAT Expect g-expect ads. 
 * GNAT.Expect.TTY (g-exptty.ads): GNAT Expect TTY g-exptty ads. 
 * GNAT.Float_Control (g-flocon.ads): GNAT Float_Control g-flocon ads. 
@@ -24035,7 +24062,7 @@ Provides callbacks when an exception is raised. Callbacks can be registered
 for specific exceptions, or when any exception is raised. This
 can be used for instance to force a core dump to ease debugging.
 
-@node GNAT Exception_Traces g-exctra ads,GNAT Exceptions g-expect ads,GNAT Exception_Actions g-excact ads,The GNAT Library
+@node GNAT Exception_Traces g-exctra ads,GNAT Exceptions g-except ads,GNAT Exception_Actions g-excact ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library gnat-exception-traces-g-exctra-ads}@anchor{35e}@anchor{gnat_rm/the_gnat_library id75}@anchor{35f}
 @section @code{GNAT.Exception_Traces} (@code{g-exctra.ads})
 
@@ -24049,12 +24076,12 @@ can be used for instance to force a core dump to ease debugging.
 Provides an interface allowing to control automatic output upon exception
 occurrences.
 
-@node GNAT Exceptions g-expect ads,GNAT Expect g-expect ads,GNAT Exception_Traces g-exctra ads,The GNAT Library
-@anchor{gnat_rm/the_gnat_library id76}@anchor{360}@anchor{gnat_rm/the_gnat_library gnat-exceptions-g-expect-ads}@anchor{361}
-@section @code{GNAT.Exceptions} (@code{g-expect.ads})
+@node GNAT Exceptions g-except ads,GNAT Expect g-expect ads,GNAT Exception_Traces g-exctra ads,The GNAT Library
+@anchor{gnat_rm/the_gnat_library id76}@anchor{360}@anchor{gnat_rm/the_gnat_library gnat-exceptions-g-except-ads}@anchor{361}
+@section @code{GNAT.Exceptions} (@code{g-except.ads})
 
 
-@geindex GNAT.Exceptions (g-expect.ads)
+@geindex GNAT.Exceptions (g-except.ads)
 
 @geindex Exceptions
 @geindex Pure
@@ -24070,7 +24097,7 @@ facility for getting around this limitation for a few
 predefined exceptions, and for example allow raising
 @code{Constraint_Error} with a message from a pure subprogram.
 
-@node GNAT Expect g-expect ads,GNAT Expect TTY g-exptty ads,GNAT Exceptions g-expect ads,The GNAT Library
+@node GNAT Expect g-expect ads,GNAT Expect TTY g-exptty ads,GNAT Exceptions g-except ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library gnat-expect-g-expect-ads}@anchor{362}@anchor{gnat_rm/the_gnat_library id77}@anchor{363}
 @section @code{GNAT.Expect} (@code{g-expect.ads})
 

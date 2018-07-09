@@ -71,7 +71,8 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
 
       size_t ub, stride;
 
-      GFC_DTYPE_COPY_SETRANK(ret,source,rrank);
+      ret->dtype.rank = rrank;
+
       dim = 0;
       rs = 1;
       for (n = 0; n < rrank; n++)

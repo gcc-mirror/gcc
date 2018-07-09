@@ -763,9 +763,9 @@ hashtable_c++0x.o: hashtable_c++0x.cc
 @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
 
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.lo: cxx11-ios_failure-lt.s
-@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -c $< -o $@
+@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -g0 -c $< -o $@
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.o: cxx11-ios_failure.s
-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -c $<
+@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -g0 -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

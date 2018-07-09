@@ -45,6 +45,9 @@ EnumValue
 Enum(abi_type) String(ilp32) Value(ABI_ILP32)
 
 EnumValue
+Enum(abi_type) String(ilp32e) Value(ABI_ILP32E)
+
+EnumValue
 Enum(abi_type) String(ilp32f) Value(ABI_ILP32F)
 
 EnumValue
@@ -122,3 +125,5 @@ Mask(HARD_FLOAT)
 Mask(DOUBLE_FLOAT)
 
 Mask(RVC)
+
+Mask(RVE)

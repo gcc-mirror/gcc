@@ -1,7 +1,7 @@
 // { dg-lto-do link }
 // { dg-require-effective-target fpic }
 // { dg-lto-options {{-fPIC}} }
-// { dg-extra-ld-options "-fPIC -r -nostdlib" }
+// { dg-extra-ld-options "-fPIC -r -nostdlib -flinker-output=nolto-rel" }
 
 class DataArray {
     int max() const    { return 0; }

@@ -71,14 +71,14 @@ void test_unknown_width_floating (int w, double d)
   T ( 7, "%*a", w, d);
   T (21, "%*a", w, 3.141);
 
-  T (12, "%*e",  w, d);    /* { dg-warning "writing a terminating nul" } */
-  T (12, "%#*e", w, d);    /* { dg-warning "writing a terminating nul" } */
+  T (12, "%*e",  w, d);    /* { dg-warning "may write a terminating nul" } */
+  T (12, "%#*e", w, d);    /* { dg-warning "may write a terminating nul" } */
   T (13, "%*e",  w, d);
   T (13, "%#*e", w, d);
   T (13, "%*e",  w, 3.141);
 
-  T ( 8, "%*f",  w, d);   /* { dg-warning "writing a terminating nul" } */
-  T ( 8, "%#*f", w, d);   /* { dg-warning "writing a terminating nul" } */
+  T ( 8, "%*f",  w, d);   /* { dg-warning "may write a terminating nul" } */
+  T ( 8, "%#*f", w, d);   /* { dg-warning "may write a terminating nul" } */
   T ( 9, "%*f",  w, d);
   T ( 9, "%#*f", w, d);
   T ( 9, "%*f",  w, 3.141);
@@ -106,20 +106,20 @@ void test_unknown_precision_integer (int p, int i, double d)
 
 void test_unknown_precision_floating (int p, double d)
 {
-  T ( 0, "%.*a", R (-1, 0), d); /* { dg-warning "between 6 and 24 " } */
-  T ( 6, "%.*a", R (-1, 0), d); /* { dg-warning "writing a terminating nul" } */
+  T ( 0, "%.*a", R (-1, 0), d); /* { dg-warning "between 3 and 24 " } */
+  T ( 6, "%.*a", R (-1, 0), d); /* { dg-warning "may write a terminating nul" } */
   T ( 7, "%.*a", R (-1, 0), d);
   T ( 7, "%.*a", p, d);
   T (21, "%.*a", p, 3.141);
 
-  T ( 0, "%.*e",  R (-1, 0), d); /* { dg-warning "between 5 and 14 " } */
-  T ( 0, "%.*e",  R (-1, 6), d); /* { dg-warning "between 5 and 14 " } */
-  T ( 5, "%.*e",  R (-1, 6), d); /* { dg-warning "writing a terminating nul" } */
+  T ( 0, "%.*e",  R (-1, 0), d); /* { dg-warning "between 3 and 14 " } */
+  T ( 0, "%.*e",  R (-1, 6), d); /* { dg-warning "between 3 and 14 " } */
+  T ( 5, "%.*e",  R (-1, 6), d); /* { dg-warning "may write a terminating nul" } */
   T ( 6, "%.*e",  R (-1, 6), d);
-  /* "%.0e", 0.0 results in 5 bytes: "0e+00"  */
-  T ( 5, "%.*e",  p, d);      /* { dg-warning "writing a terminating nul" } */
-  /* "%#.0e", 0.0 results in 6 bytes: "0.e+00"  */
-  T ( 6, "%#.*e", p, d);      /* { dg-warning "writing a terminating nul" } */
+  /* "%.0e", 0.0 results in 3 or 5 bytes: "inf"/"nan" or "0e+00"  */
+  T ( 5, "%.*e",  p, d);      /* { dg-warning "may write a terminating nul" } */
+  /* "%#.0e", 0.0 results in 3 or 6 bytes: "inf"/"nan" or "0.e+00"  */
+  T ( 6, "%#.*e", p, d);      /* { dg-warning "may write a terminating nul" } */
   T ( 6, "%.*e",  p, d);
   T ( 6, "%.*e",  p, 3.141);
   T ( 6, "%#.*e", p, 3.141);  /* { dg-warning "writing a terminating nul" } */
@@ -183,10 +183,10 @@ void test_unknown_width_and_precision_floating (int w, int p, double d)
   T ( 7, "%*.*a", w, p, d);
   T (21, "%*.*a", w, p, 3.141);
 
-  /* "%0.0e", 0.0 results in 5 bytes: "0e+00"  */
-  T ( 5, "%*.*e",  w, p, d);   /* { dg-warning "writing a terminating nul" } */
-  /* "%#0.0e", 0.0 results in 6 bytes: "0.e+00"  */
-  T ( 6, "%#*.*e", w, p, d);   /* { dg-warning "writing a terminating nul" } */
+  /* "%0.0e", 0.0 results in 3 or 5 bytes: "inf"/"nan" or "0e+00"  */
+  T ( 5, "%*.*e",  w, p, d);   /* { dg-warning "may write a terminating nul" } */
+  /* "%#0.0e", 0.0 results in 3 or 6 bytes: "inf"/"nan" or "0.e+00"  */
+  T ( 6, "%#*.*e", w, p, d);   /* { dg-warning "may write a terminating nul" } */
   T ( 6, "%*.*e",  w, p, d);
   T ( 6, "%*.*e",  w, p, 3.141);
   T ( 6, "%#*.*e", w, p, 3.141);/* { dg-warning "writing a terminating nul" } */

@@ -134,6 +134,7 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-p}|@option{--preserve-paths}]
      [@option{-r}|@option{--relative-only}]
      [@option{-s}|@option{--source-prefix} @var{directory}]
+     [@option{-t}|@option{--stdout}]
      [@option{-u}|@option{--unconditional-branches}]
      [@option{-x}|@option{--hash-filenames}]
      @var{files}
@@ -189,6 +190,7 @@ one entry per line
 
 @smallexample
 version:@var{gcc_version}
+cwd:@var{working_directory}
 file:@var{source_file_name}
 function:@var{start_line_number},@var{end_line_number},@var{execution_count},@var{function_name}
 lcount:@var{line number},@var{execution_count},@var{has_unexecuted_block}
@@ -210,6 +212,7 @@ Here is a sample when @option{-i} is used in conjunction with @option{-b} option
 
 @smallexample
 version: 8.1.0 20180103
+cwd:/home/gcc/testcase
 file:tmp.cpp
 function:7,7,0,_ZN3FooIcEC2Ev
 function:7,7,1,_ZN3FooIiEC2Ev
@@ -316,6 +319,10 @@ coverage files.  This option is useful when building in a separate
 directory, and the pathname to the source directory is not wanted when
 determining the output file names.  Note that this prefix detection is
 applied before determining whether the source file is absolute.
+
+@item -t
+@itemx --stdout
+Output to standard output instead of output files.
 
 @item -u
 @itemx --unconditional-branches
@@ -441,6 +448,7 @@ Here is a sample:
 
 @smallexample
         -:    0:Source:tmp.cpp
+        -:    0:Working directory:/home/gcc/testcase
         -:    0:Graph:tmp.gcno
         -:    0:Data:tmp.gcda
         -:    0:Runs:1
@@ -508,6 +516,7 @@ counts, and the output looks like this:
 
 @smallexample
         -:    0:Source:tmp.cpp
+        -:    0:Working directory:/home/gcc/testcase
         -:    0:Graph:tmp.gcno
         -:    0:Data:tmp.gcda
         -:    0:Runs:1
@@ -596,6 +605,7 @@ When you use the @option{-b} option, your output looks like this:
 
 @smallexample
         -:    0:Source:tmp.cpp
+        -:    0:Working directory:/home/gcc/testcase
         -:    0:Graph:tmp.gcno
         -:    0:Data:tmp.gcda
         -:    0:Runs:1
@@ -790,6 +800,14 @@ is executed after all user defined static destructors,
 as well as handlers registered with @code{atexit}.
 If an executable loads a dynamic shared object via dlopen functionality,
 @option{-Wl,--dynamic-list-data} is needed to dump all profile data.
+
+Profiling run-time library reports various errors related to profile
+manipulation and profile saving.  Errors are printed into standard error output
+or @samp{GCOV_ERROR_FILE} file, if environment variable is used.
+In order to terminate immediately after an errors occurs
+set @samp{GCOV_EXIT_AT_ERROR} environment variable.
+That can help users to find profile clashing which leads
+to a misleading profile.
 
 @c man end
 

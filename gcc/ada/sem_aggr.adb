@@ -115,7 +115,7 @@ package body Sem_Aggr is
    --  expressions allowed for a limited component association (namely, an
    --  aggregate, function call, or <> notation). Report error for violations.
    --  Expression is also OK in an instance or inlining context, because we
-   --  have already pre-analyzed and it is known to be type correct.
+   --  have already preanalyzed and it is known to be type correct.
 
    procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id);
    --  Given aggregate Expr, check that sub-aggregates of Expr that are nested
@@ -1068,7 +1068,9 @@ package body Sem_Aggr is
             --  object may be its unconstrained nominal type. However, if the
             --  context is an assignment, we assume that OTHERS is allowed,
             --  because the target of the assignment will have a constrained
-            --  subtype when fully compiled.
+            --  subtype when fully compiled. Ditto if the context is an
+            --  initialization procedure where a component may have a predicate
+            --  function that carries the base type.
 
             --  Note that there is no node for Explicit_Actual_Parameter.
             --  To test for this context we therefore have to test for node
@@ -1083,6 +1085,7 @@ package body Sem_Aggr is
             Set_Etype (N, Aggr_Typ);  --  May be overridden later on
 
             if Pkind = N_Assignment_Statement
+              or else Inside_Init_Proc
               or else (Is_Constrained (Typ)
                         and then
                           (Pkind = N_Parameter_Association     or else

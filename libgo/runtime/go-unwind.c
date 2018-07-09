@@ -10,10 +10,29 @@
 #include <unistd.h>
 
 #include "unwind.h"
-#define NO_SIZE_OF_ENCODED_VALUE
-#include "unwind-pe.h"
 
 #include "runtime.h"
+
+/* These constants are documented here:
+   https://refspecs.linuxfoundation.org/LSB_3.0.0/LSB-PDA/LSB-PDA/dwarfext.html
+ */
+
+#define DW_EH_PE_omit     0xff
+#define DW_EH_PE_absptr   0x00
+#define DW_EH_PE_uleb128  0x01
+#define DW_EH_PE_udata2   0x02
+#define DW_EH_PE_udata4   0x03
+#define DW_EH_PE_udata8   0x04
+#define DW_EH_PE_sleb128  0x09
+#define DW_EH_PE_sdata2   0x0A
+#define DW_EH_PE_sdata4   0x0B
+#define DW_EH_PE_sdata8   0x0C
+#define DW_EH_PE_pcrel    0x10
+#define DW_EH_PE_textrel  0x20
+#define DW_EH_PE_datarel  0x30
+#define DW_EH_PE_funcrel  0x40
+#define DW_EH_PE_aligned  0x50
+#define DW_EH_PE_indirect 0x80
 
 /* The code for a Go exception.  */
 
@@ -107,6 +126,182 @@ throwException ()
 
   /* Raising an exception should not return.  */
   abort ();
+}
+
+static inline _Unwind_Ptr
+encoded_value_base (uint8_t encoding, struct _Unwind_Context *context)
+{
+  if (encoding == DW_EH_PE_omit)
+    return 0;
+  switch (encoding & 0x70)
+    {
+      case DW_EH_PE_absptr:
+      case DW_EH_PE_pcrel:
+      case DW_EH_PE_aligned:
+        return 0;
+      case DW_EH_PE_textrel:
+        return _Unwind_GetTextRelBase(context);
+      case DW_EH_PE_datarel:
+        return _Unwind_GetDataRelBase(context);
+      case DW_EH_PE_funcrel:
+        return _Unwind_GetRegionStart(context);
+    }
+  abort ();
+}
+
+/* Read an unsigned leb128 value.  */
+
+static inline const uint8_t *
+read_uleb128 (const uint8_t *p, _uleb128_t *val)
+{
+  unsigned int shift = 0;
+  _uleb128_t result = 0;
+  uint8_t byte;
+
+  do
+    {
+      byte = *p++;
+      result |= ((_uleb128_t)byte & 0x7f) << shift;
+      shift += 7;
+    }
+  while (byte & 0x80);
+
+  *val = result;
+  return p;
+}
+
+/* Similar, but read a signed leb128 value.  */
+
+static inline const uint8_t *
+read_sleb128 (const uint8_t *p, _sleb128_t *val)
+{
+  unsigned int shift = 0;
+  _uleb128_t result = 0;
+  uint8_t byte;
+
+  do
+    {
+      byte = *p++;
+      result |= ((_uleb128_t)byte & 0x7f) << shift;
+      shift += 7;
+    }
+  while (byte & 0x80);
+
+  /* sign extension */
+  if (shift < (8 * sizeof(result)) && (byte & 0x40) != 0)
+    result |= (((_uleb128_t)~0) << shift);
+
+  *val = (_sleb128_t)result;
+  return p;
+}
+
+#define ROUND_UP_TO_PVB(x) (x + sizeof(void *) - 1) &- sizeof(void *)
+
+static inline const uint8_t *
+read_encoded_value (struct _Unwind_Context *context, uint8_t encoding,
+                    const uint8_t *p, _Unwind_Ptr *val)
+{
+  _Unwind_Ptr base = encoded_value_base (encoding, context);
+  _Unwind_Internal_Ptr decoded = 0;
+  const uint8_t *origp = p;
+
+  if (encoding == DW_EH_PE_aligned)
+    {
+      _Unwind_Internal_Ptr uip = (_Unwind_Internal_Ptr)p;
+      uip = ROUND_UP_TO_PVB (uip);
+      decoded = *(_Unwind_Internal_Ptr *)uip;
+      p = (const uint8_t *)(uip + sizeof(void *));
+    }
+  else
+    {
+      switch (encoding & 0x0f)
+        {
+          case DW_EH_PE_sdata2:
+            {
+              int16_t result;
+              __builtin_memcpy (&result, p, sizeof(int16_t));
+              decoded = result;
+              p += sizeof(int16_t);
+              break;
+            }
+          case DW_EH_PE_udata2:
+            {
+              uint16_t result;
+              __builtin_memcpy (&result, p, sizeof(uint16_t));
+              decoded = result;
+              p += sizeof(uint16_t);
+              break;
+            }
+          case DW_EH_PE_sdata4:
+            {
+              int32_t result;
+              __builtin_memcpy (&result, p, sizeof(int32_t));
+              decoded = result;
+              p += sizeof(int32_t);
+              break;
+            }
+          case DW_EH_PE_udata4:
+            {
+              uint32_t result;
+              __builtin_memcpy (&result, p, sizeof(uint32_t));
+              decoded = result;
+              p += sizeof(uint32_t);
+              break;
+            }
+          case DW_EH_PE_sdata8:
+            {
+              int64_t result;
+              __builtin_memcpy (&result, p, sizeof(int64_t));
+              decoded = result;
+              p += sizeof(int64_t);
+              break;
+            }
+          case DW_EH_PE_udata8:
+            {
+              uint64_t result;
+              __builtin_memcpy (&result, p, sizeof(uint64_t));
+              decoded = result;
+              p += sizeof(uint64_t);
+              break;
+            }
+          case DW_EH_PE_uleb128:
+            {
+              _uleb128_t value;
+              p = read_uleb128 (p, &value);
+              decoded = (_Unwind_Internal_Ptr)value;
+              break;
+            }
+          case DW_EH_PE_sleb128:
+            {
+              _sleb128_t value;
+              p = read_sleb128 (p, &value);
+              decoded = (_Unwind_Internal_Ptr)value;
+              break;
+            }
+          case DW_EH_PE_absptr:
+            __builtin_memcpy (&decoded, (const void *)p, sizeof(const void*));
+            p += sizeof(void *);
+            break;
+          default:
+            abort ();
+        }
+
+      if (decoded == 0)
+        {
+          *val = decoded;
+          return p;
+        }
+
+      if ((encoding & 0x70) == DW_EH_PE_pcrel)
+        decoded += ((_Unwind_Internal_Ptr)origp);
+      else
+        decoded += base;
+
+      if ((encoding & DW_EH_PE_indirect) != 0)
+        decoded = *(_Unwind_Internal_Ptr *)decoded;
+    }
+  *val = decoded;
+  return p;
 }
 
 /* The rest of this code is really similar to gcc/unwind-c.c and

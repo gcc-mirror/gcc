@@ -97,6 +97,56 @@ _mm512_set_epi32 (int __A, int __B, int __C, int __D,
 	   __H, __G, __F, __E, __D, __C, __B, __A };
 }
 
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set_epi16 (short __q31, short __q30, short __q29, short __q28,
+		  short __q27, short __q26, short __q25, short __q24,
+		  short __q23, short __q22, short __q21, short __q20,
+		  short __q19, short __q18, short __q17, short __q16,
+		  short __q15, short __q14, short __q13, short __q12,
+		  short __q11, short __q10, short __q09, short __q08,
+		  short __q07, short __q06, short __q05, short __q04,
+		  short __q03, short __q02, short __q01, short __q00)
+{
+  return __extension__ (__m512i)(__v32hi){
+    __q00, __q01, __q02, __q03, __q04, __q05, __q06, __q07,
+    __q08, __q09, __q10, __q11, __q12, __q13, __q14, __q15,
+    __q16, __q17, __q18, __q19, __q20, __q21, __q22, __q23,
+    __q24, __q25, __q26, __q27, __q28, __q29, __q30, __q31
+  };
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set_epi8 (char __q63, char __q62, char __q61, char __q60,
+		 char __q59, char __q58, char __q57, char __q56,
+		 char __q55, char __q54, char __q53, char __q52,
+		 char __q51, char __q50, char __q49, char __q48,
+		 char __q47, char __q46, char __q45, char __q44,
+		 char __q43, char __q42, char __q41, char __q40,
+		 char __q39, char __q38, char __q37, char __q36,
+		 char __q35, char __q34, char __q33, char __q32,
+		 char __q31, char __q30, char __q29, char __q28,
+		 char __q27, char __q26, char __q25, char __q24,
+		 char __q23, char __q22, char __q21, char __q20,
+		 char __q19, char __q18, char __q17, char __q16,
+		 char __q15, char __q14, char __q13, char __q12,
+		 char __q11, char __q10, char __q09, char __q08,
+		 char __q07, char __q06, char __q05, char __q04,
+		 char __q03, char __q02, char __q01, char __q00)
+{
+  return __extension__ (__m512i)(__v64qi){
+    __q00, __q01, __q02, __q03, __q04, __q05, __q06, __q07,
+    __q08, __q09, __q10, __q11, __q12, __q13, __q14, __q15,
+    __q16, __q17, __q18, __q19, __q20, __q21, __q22, __q23,
+    __q24, __q25, __q26, __q27, __q28, __q29, __q30, __q31,
+    __q32, __q33, __q34, __q35, __q36, __q37, __q38, __q39,
+    __q40, __q41, __q42, __q43, __q44, __q45, __q46, __q47,
+    __q48, __q49, __q50, __q51, __q52, __q53, __q54, __q55,
+    __q56, __q57, __q58, __q59, __q60, __q61, __q62, __q63
+  };
+}
+
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_set_pd (double __A, double __B, double __C, double __D,
@@ -261,6 +311,13 @@ _mm512_setzero_ps (void)
 {
   return __extension__ (__m512){ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 				 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_setzero (void)
+{
+  return _mm512_setzero_ps ();
 }
 
 extern __inline __m512d
@@ -563,6 +620,20 @@ _mm512_mask_mullo_epi32 (__m512i __W, __mmask16 __M, __m512i __A, __m512i __B)
   return (__m512i) __builtin_ia32_pmulld512_mask ((__v16si) __A,
 						  (__v16si) __B,
 						  (__v16si) __W, __M);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mullox_epi64 (__m512i __A, __m512i __B)
+{
+  return (__m512i) ((__v8du) __A * (__v8du) __B);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_mullox_epi64 (__m512i __W, __mmask8 __M, __m512i __A, __m512i __B)
+{
+  return _mm512_mask_mov_epi64 (__W, __M, _mm512_mullox_epi64 (__A, __B));
 }
 
 extern __inline __m512i

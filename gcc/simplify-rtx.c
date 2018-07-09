@@ -210,7 +210,7 @@ avoid_constant_pool_reference (rtx x)
 {
   rtx c, tmp, addr;
   machine_mode cmode;
-  HOST_WIDE_INT offset = 0;
+  poly_int64 offset = 0;
 
   switch (GET_CODE (x))
     {
@@ -239,13 +239,7 @@ avoid_constant_pool_reference (rtx x)
   addr = targetm.delegitimize_address (addr);
 
   /* Split the address into a base and integer offset.  */
-  if (GET_CODE (addr) == CONST
-      && GET_CODE (XEXP (addr, 0)) == PLUS
-      && CONST_INT_P (XEXP (XEXP (addr, 0), 1)))
-    {
-      offset = INTVAL (XEXP (XEXP (addr, 0), 1));
-      addr = XEXP (XEXP (addr, 0), 0);
-    }
+  addr = strip_offset (addr, &offset);
 
   if (GET_CODE (addr) == LO_SUM)
     addr = XEXP (addr, 1);
@@ -261,7 +255,7 @@ avoid_constant_pool_reference (rtx x)
       /* If we're accessing the constant in a different mode than it was
          originally stored, attempt to fix that up via subreg simplifications.
          If that fails we have no choice but to return the original memory.  */
-      if (offset == 0 && cmode == GET_MODE (x))
+      if (known_eq (offset, 0) && cmode == GET_MODE (x))
 	return c;
       else if (known_in_range_p (offset, 0, GET_MODE_SIZE (cmode)))
         {
@@ -1484,7 +1478,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && SUBREG_PROMOTED_SIGNED_P (op)
 	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (op))))
 	{
-	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, SUBREG_REG (op));
 	  if (temp)
 	    return temp;
 	}
@@ -1567,7 +1561,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && SUBREG_PROMOTED_UNSIGNED_P (op)
 	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (op))))
 	{
-	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, SUBREG_REG (op));
 	  if (temp)
 	    return temp;
 	}
@@ -2272,13 +2266,13 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       if ((GET_CODE (op0) == CONST
 	   || GET_CODE (op0) == SYMBOL_REF
 	   || GET_CODE (op0) == LABEL_REF)
-	  && CONST_INT_P (op1))
-	return plus_constant (mode, op0, INTVAL (op1));
+	  && poly_int_rtx_p (op1, &offset))
+	return plus_constant (mode, op0, offset);
       else if ((GET_CODE (op1) == CONST
 		|| GET_CODE (op1) == SYMBOL_REF
 		|| GET_CODE (op1) == LABEL_REF)
-	       && CONST_INT_P (op0))
-	return plus_constant (mode, op1, INTVAL (op0));
+	       && poly_int_rtx_p (op0, &offset))
+	return plus_constant (mode, op1, offset);
 
       /* See if this is something like X * C - X or vice versa or
 	 if the multiplication is written as a shift.  If so, we can
@@ -4232,7 +4226,7 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
       && CONST_SCALAR_INT_P (op1))
     {
       wide_int result;
-      bool overflow;
+      wi::overflow_type overflow;
       rtx_mode_t pop0 = rtx_mode_t (op0, int_mode);
       rtx_mode_t pop1 = rtx_mode_t (op1, int_mode);
 
@@ -5889,6 +5883,60 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 		 it has side-effects.  */
 	      if (!side_effects_p (otherop))
 		return simplify_gen_binary (VEC_CONCAT, mode, newop0, newop1);
+	    }
+
+	  /* Replace:
+
+	      (vec_merge:outer (vec_duplicate:outer x:inner)
+			       (subreg:outer y:inner 0)
+			       (const_int N))
+
+	     with (vec_concat:outer x:inner y:inner) if N == 1,
+	     or (vec_concat:outer y:inner x:inner) if N == 2.
+
+	     Implicitly, this means we have a paradoxical subreg, but such
+	     a check is cheap, so make it anyway.
+
+	     Only applies for vectors of two elements.  */
+	  if (GET_CODE (op0) == VEC_DUPLICATE
+	      && GET_CODE (op1) == SUBREG
+	      && GET_MODE (op1) == GET_MODE (op0)
+	      && GET_MODE (SUBREG_REG (op1)) == GET_MODE (XEXP (op0, 0))
+	      && paradoxical_subreg_p (op1)
+	      && subreg_lowpart_p (op1)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op0)), 2)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op1)), 2)
+	      && IN_RANGE (sel, 1, 2))
+	    {
+	      rtx newop0 = XEXP (op0, 0);
+	      rtx newop1 = SUBREG_REG (op1);
+	      if (sel == 2)
+		std::swap (newop0, newop1);
+	      return simplify_gen_binary (VEC_CONCAT, mode, newop0, newop1);
+	    }
+
+	  /* Same as above but with switched operands:
+		Replace (vec_merge:outer (subreg:outer x:inner 0)
+					 (vec_duplicate:outer y:inner)
+			       (const_int N))
+
+	     with (vec_concat:outer x:inner y:inner) if N == 1,
+	     or (vec_concat:outer y:inner x:inner) if N == 2.  */
+	  if (GET_CODE (op1) == VEC_DUPLICATE
+	      && GET_CODE (op0) == SUBREG
+	      && GET_MODE (op0) == GET_MODE (op1)
+	      && GET_MODE (SUBREG_REG (op0)) == GET_MODE (XEXP (op1, 0))
+	      && paradoxical_subreg_p (op0)
+	      && subreg_lowpart_p (op0)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op1)), 2)
+	      && known_eq (GET_MODE_NUNITS (GET_MODE (op0)), 2)
+	      && IN_RANGE (sel, 1, 2))
+	    {
+	      rtx newop0 = SUBREG_REG (op0);
+	      rtx newop1 = XEXP (op1, 0);
+	      if (sel == 2)
+		std::swap (newop0, newop1);
+	      return simplify_gen_binary (VEC_CONCAT, mode, newop0, newop1);
 	    }
 
 	  /* Replace (vec_merge (vec_duplicate x) (vec_duplicate y)

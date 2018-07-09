@@ -9,6 +9,7 @@ void *malloc (size_t);
 void free (void *);
 char *strdup (const char *);
 size_t strlen (const char *);
+size_t strnlen (const char *, size_t);
 void *memcpy (void *__restrict, const void *__restrict, size_t);
 void *memmove (void *, const void *, size_t);
 char *strcpy (char *__restrict, const char *__restrict);

@@ -27,5 +27,7 @@ end module
 program e_53_1
   use e_53_1_mod, only : fib, fib_wrapper
   if (fib (15) /= fib_wrapper (15)) STOP 1
-  if (fib (25) /= fib_wrapper (25)) STOP 2
+  ! Reduced from 25 to 23, otherwise execution runs out of thread stack on
+  ! Nvidia Titan V.
+  if (fib (23) /= fib_wrapper (23)) STOP 2
 end program

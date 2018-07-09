@@ -102,21 +102,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   private:
     id				_M_id;
 
-  public:
-    thread() noexcept = default;
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
     // 2097.  packaged_task constructors should be constrained
-    thread(thread&) = delete;
-    thread(const thread&) = delete;
-    thread(const thread&&) = delete;
+    // 3039. Unnecessary decay in thread and packaged_task
+    template<typename _Tp>
+      using __not_same = __not_<is_same<__remove_cvref_t<_Tp>, thread>>;
 
-    thread(thread&& __t) noexcept
-    { swap(__t); }
+  public:
+    thread() noexcept = default;
 
-    template<typename _Callable, typename... _Args>
+    template<typename _Callable, typename... _Args,
+	     typename = _Require<__not_same<_Callable>>>
       explicit
       thread(_Callable&& __f, _Args&&... __args)
       {
+	static_assert( __is_invocable<typename decay<_Callable>::type,
+				      typename decay<_Args>::type...>::value,
+	  "std::thread arguments must be invocable after conversion to rvalues"
+	  );
+
 #ifdef GTHR_ACTIVE_PROXY
 	// Create a reference to pthread_create, not just the gthr weak symbol.
 	auto __depend = reinterpret_cast<void(*)()>(&pthread_create);
@@ -134,6 +138,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (joinable())
 	std::terminate();
     }
+
+    thread(const thread&) = delete;
+
+    thread(thread&& __t) noexcept
+    { swap(__t); }
 
     thread& operator=(const thread&) = delete;
 
@@ -222,29 +231,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	_Tuple _M_t;
 
-	template<size_t _Index>
-	  static __tuple_element_t<_Index, _Tuple>&&
-	  _S_declval();
+	template<typename>
+	  struct __result;
+	template<typename _Fn, typename... _Args>
+	  struct __result<tuple<_Fn, _Args...>>
+	  : __invoke_result<_Fn, _Args...>
+	  { };
 
 	template<size_t... _Ind>
-	  auto
+	  typename __result<_Tuple>::type
 	  _M_invoke(_Index_tuple<_Ind...>)
-	  noexcept(noexcept(std::__invoke(_S_declval<_Ind>()...)))
-	  -> decltype(std::__invoke(_S_declval<_Ind>()...))
 	  { return std::__invoke(std::get<_Ind>(std::move(_M_t))...); }
 
-	using _Indices
-	  = typename _Build_index_tuple<tuple_size<_Tuple>::value>::__type;
-
-	auto
+	typename __result<_Tuple>::type
 	operator()()
-	noexcept(noexcept(std::declval<_Invoker&>()._M_invoke(_Indices())))
-	-> decltype(std::declval<_Invoker&>()._M_invoke(_Indices()))
-	{ return _M_invoke(_Indices()); }
+	{
+	  using _Indices
+	    = typename _Build_index_tuple<tuple_size<_Tuple>::value>::__type;
+	  return _M_invoke(_Indices());
+	}
       };
 
     template<typename... _Tp>
-      using __decayed_tuple = tuple<typename std::decay<_Tp>::type...>;
+      using __decayed_tuple = tuple<typename decay<_Tp>::type...>;
 
   public:
     // Returns a call wrapper that stores

@@ -1475,8 +1475,10 @@ func ChanOf(dir ChanDir, t Type) Type {
 	ch.uncommonType = nil
 	ch.ptrToThis = nil
 
-	ti, _ := lookupCache.LoadOrStore(ckey, &ch.rtype)
-	return ti.(Type)
+	// Canonicalize before storing in lookupCache
+	ti := toType(&ch.rtype)
+	lookupCache.Store(ckey, ti.(*rtype))
+	return ti
 }
 
 func ismapkey(*rtype) bool // implemented in runtime
@@ -1537,8 +1539,10 @@ func MapOf(key, elem Type) Type {
 	mt.reflexivekey = isReflexive(ktyp)
 	mt.needkeyupdate = needKeyUpdate(ktyp)
 
-	ti, _ := lookupCache.LoadOrStore(ckey, &mt.rtype)
-	return ti.(Type)
+	// Canonicalize before storing in lookupCache
+	ti := toType(&mt.rtype)
+	lookupCache.Store(ckey, ti.(*rtype))
+	return ti
 }
 
 // FuncOf returns the function type with the given argument and result types.
@@ -1621,7 +1625,10 @@ func FuncOf(in, out []Type, variadic bool) Type {
 	ft.string = &str
 	ft.uncommonType = nil
 	ft.ptrToThis = nil
-	return addToCache(&ft.rtype)
+
+	// Canonicalize before storing in funcLookupCache
+	tc := toType(&ft.rtype)
+	return addToCache(tc.(*rtype))
 }
 
 // funcStr builds a string representation of a funcType.
@@ -1855,8 +1862,10 @@ func SliceOf(t Type) Type {
 	slice.uncommonType = nil
 	slice.ptrToThis = nil
 
-	ti, _ := lookupCache.LoadOrStore(ckey, &slice.rtype)
-	return ti.(Type)
+	// Canonicalize before storing in lookupCache
+	ti := toType(&slice.rtype)
+	lookupCache.Store(ckey, ti.(*rtype))
+	return ti
 }
 
 // The structLookupCache caches StructOf lookups.
@@ -1903,7 +1912,7 @@ func isValidFieldName(fieldName string) bool {
 // This limitation may be lifted in a future version.
 func StructOf(fields []StructField) Type {
 	var (
-		hash       = uint32(0)
+		hash       = uint32(12)
 		size       uintptr
 		typalign   int8
 		comparable = true
@@ -1988,7 +1997,7 @@ func StructOf(fields []StructField) Type {
 		}
 		fset[name] = struct{}{}
 
-		repr = append(repr, (" " + ft.String())...)
+		repr = append(repr, (" " + *ft.string)...)
 		if f.tag != nil {
 			repr = append(repr, (" " + strconv.Quote(*f.tag))...)
 		}
@@ -2172,7 +2181,9 @@ func StructOf(fields []StructField) Type {
 	typ.uncommonType = nil
 	typ.ptrToThis = nil
 
-	return addToCache(&typ.rtype)
+	// Canonicalize before storing in structLookupCache
+	ti := toType(&typ.rtype)
+	return addToCache(ti.(*rtype))
 }
 
 func runtimeStructField(field StructField) structField {
@@ -2400,8 +2411,10 @@ func ArrayOf(count int, elem Type) Type {
 		}
 	}
 
-	ti, _ := lookupCache.LoadOrStore(ckey, &array.rtype)
-	return ti.(Type)
+	// Canonicalize before storing in lookupCache
+	ti := toType(&array.rtype)
+	lookupCache.Store(ckey, ti.(*rtype))
+	return ti
 }
 
 func appendVarint(x []byte, v uintptr) []byte {

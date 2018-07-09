@@ -22,10 +22,9 @@ along with GCC; see the file COPYING3.  If not see
    Note that no features were obsoleted nor deleted in F2003.
    Please remember to keep those definitions in sync with
    gfortran.texi.  */
-#define GFC_STD_F2018_DEL      (1<<12)  /* Deleted in F2018.  */
-#define GFC_STD_F2018_OBS      (1<<11)  /* Obsolescent in F2018.  */
-#define GFC_STD_F2018          (1<<10)  /* New in F2018.  */
-#define GFC_STD_F2008_TS	(1<<9)	/* POST-F2008 technical reports.  */
+#define GFC_STD_F2018_DEL	(1<<11)	/* Deleted in F2018.  */
+#define GFC_STD_F2018_OBS	(1<<10)	/* Obsolescent in F2018.  */
+#define GFC_STD_F2018		(1<<9)	/* New in F2018.  */
 #define GFC_STD_F2008_OBS	(1<<8)	/* Obsolescent in F2008.  */
 #define GFC_STD_F2008		(1<<7)	/* New in F2008.  */
 #define GFC_STD_LEGACY		(1<<6)	/* Backward compatibility.  */
@@ -37,6 +36,15 @@ along with GCC; see the file COPYING3.  If not see
 #define GFC_STD_F77		(1<<0)	/* Included in F77, but not deleted or
 					   obsolescent in later standards.  */
 
+/* Combinations of the above flags that specify which classes of features
+ * are allowed with a certain -std option.  */
+#define GFC_STD_OPT_F95		(GFC_STD_F77 | GFC_STD_F95 | GFC_STD_F95_OBS  \
+				| GFC_STD_F2008_OBS | GFC_STD_F2018_OBS \
+				| GFC_STD_F2018_DEL)
+#define GFC_STD_OPT_F03		(GFC_STD_OPT_F95 | GFC_STD_F2003)
+#define GFC_STD_OPT_F08		(GFC_STD_OPT_F03 | GFC_STD_F2008)
+#define GFC_STD_OPT_F18		((GFC_STD_OPT_F08 | GFC_STD_F2018) \
+				& (~GFC_STD_F2018_DEL))
 
 /* Bitmasks for the various FPE that can be enabled.  These need to be straight integers
    e.g., 8 instead of (1<<3), because they will be included in Fortran source.  */

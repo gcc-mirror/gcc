@@ -20,9 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_SECTION_TYPE_FLAGS xtensa_multibss_section_type_flags
 
-/* Don't assume anything about the header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
 #undef ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
 

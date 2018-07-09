@@ -20,8 +20,9 @@
 #include <debug/string>
 
 // { dg-do compile }
+// { dg-xfail-if "COW string missing some required members" { ! cxx11-abi } }
 
 // libstdc++/21770
 namespace debug = __gnu_debug;
-template class debug::basic_string<int, std::char_traits<int>, 
+template class debug::basic_string<int, std::char_traits<int>,
 				   std::allocator<char> >;

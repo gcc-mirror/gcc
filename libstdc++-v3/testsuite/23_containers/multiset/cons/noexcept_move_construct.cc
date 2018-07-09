@@ -23,4 +23,25 @@
 
 typedef std::multiset<int> mstype;
 
-static_assert(std::is_nothrow_move_constructible<mstype>::value, "Error");
+static_assert( std::is_nothrow_move_constructible<mstype>::value,
+	       "noexcept move constructor" );
+static_assert( std::is_nothrow_constructible<mstype,
+	       mstype&&, const typename mstype::allocator_type&>::value,
+	       "noexcept move constructor with allocator" );
+
+struct not_noexcept_less
+{
+  not_noexcept_less() = default;
+  not_noexcept_less(const not_noexcept_less&) /* noexcept */
+  { }
+
+  bool
+  operator()(int l, int r) const
+  { return l < r; }
+};
+
+typedef std::multiset<int, not_noexcept_less> emstype;
+
+static_assert( !std::is_nothrow_constructible<emstype, emstype&&,
+	       const typename emstype::allocator_type&>::value,
+	       "except move constructor with allocator" );

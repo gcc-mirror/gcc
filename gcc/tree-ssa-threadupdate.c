@@ -1309,7 +1309,9 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
 	     and thread this elsewhere, so just cancel the jump threading
 	     request by clearing the AUX field now.  */
 	  if (bb->loop_father != e2->src->loop_father
-	      && !loop_exit_edge_p (e2->src->loop_father, e2))
+	      && (!loop_exit_edge_p (e2->src->loop_father, e2)
+		  || flow_loop_nested_p (bb->loop_father,
+					 e2->dest->loop_father)))
 	    {
 	      /* Since this case is not handled by our special code
 		 to thread through a loop header, we must explicitly

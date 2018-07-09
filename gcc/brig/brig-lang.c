@@ -57,7 +57,7 @@ static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 
-/* This file is based on Go frontent'd go-lang.c and gogo-tree.cc.  */
+/* This file is based on Go frontend's go-lang.c and gogo-tree.cc.  */
 
 /* If -v set.  */
 
@@ -123,7 +123,7 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
   /* If we set this to one, the whole program optimizations internalize
      all global variables, making them invisible to the dyn loader (and
      thus the HSA runtime implementation).  */
-  opts->x_flag_whole_program = 0;
+  opts->x_flag_whole_program = 1;
 
   /* The builtin math functions should not set errno.  */
   opts->x_flag_errno_math = 0;
@@ -136,6 +136,8 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
   opts->x_flag_signed_zeros = 1;
 
   opts->x_optimize = 3;
+
+  flag_no_builtin = 1;
 }
 
 /* Handle Brig specific options.  Return 0 if we didn't do anything.  */
@@ -167,9 +169,15 @@ brig_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
 
-  /* gccbrig casts pointers around like crazy, TBAA produces
-     broken code if not force disabling it.  */
-  flag_strict_aliasing = 0;
+  /* gccbrig casts pointers around like crazy, TBAA might produce broken
+     code if not disabling it by default.  Some PRM conformance tests such
+     as prm/core/memory/ordinary/ld/ld_u16 fail currently with strict
+     aliasing (to fix).  It can be enabled from the command line for cases
+     that are known not to break the C style aliasing requirements.  */
+  if (!global_options_set.x_flag_strict_aliasing)
+    flag_strict_aliasing = 0;
+  else
+    flag_strict_aliasing = global_options.x_flag_strict_aliasing;
 
   /* Returning false means that the backend should be used.  */
   return false;
@@ -629,9 +637,11 @@ builtin_type_for_size (int size, bool unsignedp)
 
 static void
 def_builtin_1 (enum built_in_function fncode, const char *name,
-	       enum built_in_class fnclass, tree fntype, tree libtype,
-	       bool both_p, bool fallback_p, bool nonansi_p,
-	       tree fnattrs, bool implicit_p)
+	       enum built_in_class fnclass ATTRIBUTE_UNUSED,
+	       tree fntype, tree libtype ATTRIBUTE_UNUSED,
+	       bool both_p ATTRIBUTE_UNUSED, bool fallback_p,
+	       bool nonansi_p ATTRIBUTE_UNUSED, tree fnattrs,
+	       bool implicit_p)
 {
   tree decl;
   const char *libname;
@@ -643,12 +653,6 @@ def_builtin_1 (enum built_in_function fncode, const char *name,
   decl = add_builtin_function (name, fntype, fncode, fnclass,
 			       (fallback_p ? libname : NULL),
 			       fnattrs);
-
-  if (both_p
-      && !flag_no_builtin
-      && !(nonansi_p && flag_no_nonansi_builtin))
-    add_builtin_function (libname, libtype, fncode, fnclass,
-			  NULL, fnattrs);
 
   set_builtin_decl (fncode, decl, implicit_p);
 }

@@ -33,7 +33,7 @@
 #include <new>
 #include <atomic>
 #include <cstddef>
-#include <bits/alloc_traits.h>
+#include <ext/new_allocator.h>
 #include <experimental/bits/lfts_config.h>
 
 namespace std {
@@ -254,10 +254,120 @@ namespace pmr {
 		    const polymorphic_allocator<_Tp2>& __b) noexcept
     { return !(__a == __b); }
 
+  class __resource_adaptor_common
+  {
+    template<typename> friend class __resource_adaptor_imp;
+
+    struct _AlignMgr
+    {
+      _AlignMgr(size_t __nbytes, size_t __align)
+      : _M_nbytes(__nbytes), _M_align(__align)
+      { }
+
+      // Total size that needs to be allocated.
+      size_t
+      _M_alloc_size() const { return _M_buf_size() + _M_token_size(); }
+
+      void*
+      _M_adjust(void* __ptr) const
+      {
+	const auto __orig_ptr = static_cast<char*>(__ptr);
+	size_t __space = _M_buf_size();
+	// Align the pointer within the buffer:
+	std::align(_M_align, _M_nbytes, __ptr, __space);
+	const auto __aligned_ptr = static_cast<char*>(__ptr);
+	const auto __token_size = _M_token_size();
+	// Store token immediately after the aligned block:
+	char* const __end = __aligned_ptr + _M_nbytes;
+	if (__token_size == 1)
+	  _S_write<unsigned char>(__end, __aligned_ptr - __orig_ptr);
+	else if (__token_size == sizeof(short))
+	  _S_write<unsigned short>(__end, __aligned_ptr - __orig_ptr);
+	else if (__token_size == sizeof(int) && sizeof(int) < sizeof(char*))
+	  _S_write<unsigned int>(__end, __aligned_ptr - __orig_ptr);
+	else // (__token_size == sizeof(char*))
+	  // Just store the original pointer:
+	  _S_write<char*>(__end, __orig_ptr);
+	return __aligned_ptr;
+      }
+
+      char*
+      _M_unadjust(char* __ptr) const
+      {
+	const char* const __end = __ptr + _M_nbytes;
+	char* __orig_ptr;
+	const auto __token_size = _M_token_size();
+	// Read the token and restore the original pointer:
+	if (__token_size == 1)
+	  __orig_ptr = __ptr - _S_read<unsigned char>(__end);
+	else if (__token_size == sizeof(short))
+	  __orig_ptr = __ptr - _S_read<unsigned short>(__end);
+	else if (__token_size == sizeof(int)
+	    && sizeof(int) < sizeof(char*))
+	  __orig_ptr = __ptr - _S_read<unsigned int>(__end);
+	else // (__token_size == sizeof(char*))
+	  __orig_ptr = _S_read<char*>(__end);
+	return __orig_ptr;
+      }
+
+    private:
+      size_t _M_nbytes;
+      size_t _M_align;
+
+      // Number of bytes needed to fit block of given size and alignment.
+      size_t
+      _M_buf_size() const { return _M_nbytes + _M_align - 1; }
+
+      // Number of additional bytes needed to write the token.
+      int
+      _M_token_size() const
+      {
+	if (_M_align <= (1ul << __CHAR_BIT__))
+	  return 1;
+	if (_M_align <= (1ul << (sizeof(short) * __CHAR_BIT__)))
+	  return sizeof(short);
+	if (_M_align <= (1ull << (sizeof(int) * __CHAR_BIT__)))
+	  return sizeof(int);
+	return sizeof(char*);
+      }
+
+      template<typename _Tp>
+	static void
+	_S_write(void* __to, _Tp __val)
+	{ __builtin_memcpy(__to, &__val, sizeof(_Tp)); }
+
+      template<typename _Tp>
+	static _Tp
+	_S_read(const void* __from)
+	{
+	  _Tp __val;
+	  __builtin_memcpy(&__val, __from, sizeof(_Tp));
+	  return __val;
+	}
+    };
+  };
+
   // 8.7.1 __resource_adaptor_imp
   template <typename _Alloc>
-    class __resource_adaptor_imp : public memory_resource
+    class __resource_adaptor_imp
+    : public memory_resource, private __resource_adaptor_common
     {
+      static_assert(is_same<char,
+	  typename allocator_traits<_Alloc>::value_type>::value,
+	  "Allocator's value_type is char");
+      static_assert(is_same<char*,
+	  typename allocator_traits<_Alloc>::pointer>::value,
+	  "Allocator's pointer type is value_type*");
+      static_assert(is_same<const char*,
+	  typename allocator_traits<_Alloc>::const_pointer>::value,
+	  "Allocator's const_pointer type is value_type const*");
+      static_assert(is_same<void*,
+	  typename allocator_traits<_Alloc>::void_pointer>::value,
+	  "Allocator's void_pointer type is void*");
+      static_assert(is_same<const void*,
+	  typename allocator_traits<_Alloc>::const_void_pointer>::value,
+	  "Allocator's const_void_pointer type is void const*");
+
     public:
       using allocator_type = _Alloc;
 
@@ -276,54 +386,48 @@ namespace pmr {
       __resource_adaptor_imp&
       operator=(const __resource_adaptor_imp&) = default;
 
-      allocator_type get_allocator() const { return _M_alloc; }
+      allocator_type get_allocator() const noexcept { return _M_alloc; }
 
     protected:
       virtual void*
-      do_allocate(size_t __bytes, size_t __alignment)
+      do_allocate(size_t __bytes, size_t __alignment) override
       {
-	using _Aligned_alloc = std::__alloc_rebind<_Alloc, char>;
-	size_t __new_size = _S_aligned_size(__bytes,
-					    _S_supported(__alignment) ?
-					    __alignment : _S_max_align);
-	return _Aligned_alloc(_M_alloc).allocate(__new_size);
+	if (__alignment == 1)
+	  return _M_alloc.allocate(__bytes);
+
+	const _AlignMgr __mgr(__bytes, __alignment);
+	// Assume _M_alloc returns 1-byte aligned memory, so allocate enough
+	// space to fit a block of the right size and alignment, plus some
+	// extra bytes to store a token for retrieving the original pointer.
+	return __mgr._M_adjust(_M_alloc.allocate(__mgr._M_alloc_size()));
       }
 
       virtual void
-      do_deallocate(void* __p, size_t __bytes, size_t __alignment)
+      do_deallocate(void* __p, size_t __bytes, size_t __alignment) noexcept
+      override
       {
-	using _Aligned_alloc = std::__alloc_rebind<_Alloc, char>;
-	size_t __new_size = _S_aligned_size(__bytes,
-					    _S_supported(__alignment) ?
-					    __alignment : _S_max_align);
-	using _Ptr = typename allocator_traits<_Aligned_alloc>::pointer;
-	_Aligned_alloc(_M_alloc).deallocate(static_cast<_Ptr>(__p),
-					    __new_size);
+	auto __ptr = static_cast<char*>(__p);
+	if (__alignment == 1)
+	  {
+	    _M_alloc.deallocate(__ptr, __bytes);
+	    return;
+	  }
+
+	const _AlignMgr __mgr(__bytes, __alignment);
+	// Use the stored token to retrieve the original pointer to deallocate.
+	_M_alloc.deallocate(__mgr._M_unadjust(__ptr), __mgr._M_alloc_size());
       }
 
       virtual bool
-      do_is_equal(const memory_resource& __other) const noexcept
+      do_is_equal(const memory_resource& __other) const noexcept override
       {
-	auto __p = dynamic_cast<const __resource_adaptor_imp*>(&__other);
-	return __p ? (_M_alloc == __p->_M_alloc) : false;
+	if (auto __p = dynamic_cast<const __resource_adaptor_imp*>(&__other))
+	  return _M_alloc == __p->_M_alloc;
+	return false;
       }
 
     private:
-      // Calculate Aligned Size
-      // Returns a size that is larger than or equal to __size and divisible
-      // by __alignment, where __alignment is required to be the power of 2.
-      static size_t
-      _S_aligned_size(size_t __size, size_t __alignment)
-      { return ((__size - 1)|(__alignment - 1)) + 1; }
-
-      // Determine whether alignment meets one of those preconditions:
-      // 1. Equals to Zero
-      // 2. Is power of two
-      static bool
-      _S_supported (size_t __x)
-      { return ((__x != 0) && !(__x & (__x - 1))); }
-
-      _Alloc _M_alloc;
+      _Alloc _M_alloc{};
     };
 
   // Global memory resources
@@ -337,34 +441,33 @@ namespace pmr {
   inline memory_resource*
   new_delete_resource() noexcept
   {
-    static resource_adaptor<std::allocator<char>> __r;
-    return static_cast<memory_resource*>(&__r);
+    using type = resource_adaptor<__gnu_cxx::new_allocator<char>>;
+    alignas(type) static unsigned char __buf[sizeof(type)];
+    static type* __r = new(__buf) type;
+    return __r;
   }
-
-  template <typename _Alloc>
-    class __null_memory_resource : private memory_resource
-    {
-    protected:
-      void*
-      do_allocate(size_t, size_t)
-      { std::__throw_bad_alloc(); }
-
-      void
-      do_deallocate(void*, size_t, size_t) noexcept
-      { }
-
-      bool
-      do_is_equal(const memory_resource& __other) const noexcept
-      { return this == &__other; }
-
-      friend memory_resource* null_memory_resource() noexcept;
-    };
 
   inline memory_resource*
   null_memory_resource() noexcept
   {
-    static __null_memory_resource<void> __r;
-    return static_cast<memory_resource*>(&__r);
+    class type final : public memory_resource
+    {
+      void*
+      do_allocate(size_t, size_t) override
+      { std::__throw_bad_alloc(); }
+
+      void
+      do_deallocate(void*, size_t, size_t) noexcept override
+      { }
+
+      bool
+      do_is_equal(const memory_resource& __other) const noexcept override
+      { return this == &__other; }
+    };
+
+    alignas(type) static unsigned char __buf[sizeof(type)];
+    static type* __r = new(__buf) type;
+    return __r;
   }
 
   // The default memory resource

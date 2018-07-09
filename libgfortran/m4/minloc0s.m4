@@ -38,9 +38,10 @@ include(iforeach-s.m4)dnl
 
 FOREACH_FUNCTION(
 `  const atype_name *minval;
-   minval = base;'
+   minval = NULL;'
 ,
-`  if (compare_fcn (base, minval, len) < 0)
+`    if (minval == NULL || (back ? compare_fcn (base, minval, len) <= 0 :
+       	 	    	    	   compare_fcn (base, minval, len) < 0))
     {
       minval = base;
       for (n = 0; n < rank; n++)
@@ -52,7 +53,9 @@ MASKED_FOREACH_FUNCTION(
 
   minval = NULL;'
 ,
-`  if (*mbase && (minval == NULL || compare_fcn (base, minval, len) < 0))
+`  if (*mbase &&
+      (minval == NULL || (back ? compare_fcn (base, minval, len) <= 0 :
+       	 	    	    	 compare_fcn (base, minval, len) < 0)))
     {
       minval = base;
       for (n = 0; n < rank; n++)

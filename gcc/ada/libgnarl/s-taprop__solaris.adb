@@ -1623,9 +1623,9 @@ package body System.Task_Primitives.Operations is
       return True;
    end Check_Unlock;
 
-   --------------------
-   -- Check_Finalize --
-   --------------------
+   -------------------------
+   -- Check_Finalize_Lock --
+   -------------------------
 
    function Check_Finalize_Lock (L : Lock_Ptr) return Boolean is
       Self_ID : constant Task_Id := Self;

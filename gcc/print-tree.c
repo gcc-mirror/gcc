@@ -52,6 +52,71 @@ dump_addr (FILE *file, const char *prefix, const void *addr)
     fprintf (file, "%s" HOST_PTR_PRINTF, prefix, addr);
 }
 
+/* Print to FILE a NODE representing a REAL_CST constant, including
+   Infinity and NaN.  Be verbose when BFRIEF is false.  */
+
+static void
+print_real_cst (FILE *file, const_tree node, bool brief)
+{
+  if (TREE_OVERFLOW (node))
+    fprintf (file, " overflow");
+
+  REAL_VALUE_TYPE d = TREE_REAL_CST (node);
+  if (REAL_VALUE_ISINF (d))
+    fprintf (file,  REAL_VALUE_NEGATIVE (d) ? " -Inf" : " Inf");
+  else if (REAL_VALUE_ISNAN (d))
+    {
+      /* Print a NaN in the format [-][Q]NaN[(significand[exponent])]
+	 where significand is a hexadecimal string that starts with
+	 the 0x prefix followed by 0 if the number is not canonical
+	 and a non-zero digit if it is, and exponent is decimal.  */
+      unsigned start = 0;
+      const char *psig = (const char *) d.sig;
+      for (unsigned i = 0; i != sizeof d.sig; ++i)
+	if (psig[i])
+	  {
+	    start = i;
+	    break;
+	  }
+
+      fprintf (file, " %s%sNaN", d.sign ? "-" : "",
+	       d.signalling ? "S" : "Q");
+
+      if (brief)
+	return;
+
+      if (start)
+	fprintf (file, "(0x%s", d.canonical ? "" : "0");
+      else if (d.uexp)
+	fprintf (file, "(%s", d.canonical ? "" : "0");
+      else if (!d.canonical)
+	{
+	  fprintf (file, "(0)");
+	  return;
+	}
+
+      if (psig[start])
+	{
+	  for (unsigned i = start; i != sizeof d.sig; ++i)
+	    if (i == start)
+	      fprintf (file, "%x", psig[i]);
+	    else
+	      fprintf (file, "%02x", psig[i]);
+	}
+
+      if (d.uexp)
+	fprintf (file, "%se%u)", psig[start] ? "," : "", d.uexp);
+      else if (psig[start])
+	fputc (')', file);
+    }
+  else
+    {
+      char string[64];
+      real_to_decimal (string, &d, sizeof (string), 0, 1);
+      fprintf (file, " %s", string);
+    }
+}
+
 /* Print a node in brief fashion, with just the code, address and name.  */
 
 void
@@ -121,24 +186,7 @@ print_node_brief (FILE *file, const char *prefix, const_tree node, int indent)
       print_dec (wi::to_wide (node), file, TYPE_SIGN (TREE_TYPE (node)));
     }
   if (TREE_CODE (node) == REAL_CST)
-    {
-      REAL_VALUE_TYPE d;
-
-      if (TREE_OVERFLOW (node))
-	fprintf (file, " overflow");
-
-      d = TREE_REAL_CST (node);
-      if (REAL_VALUE_ISINF (d))
-	fprintf (file,  REAL_VALUE_NEGATIVE (d) ? " -Inf" : " Inf");
-      else if (REAL_VALUE_ISNAN (d))
-	fprintf (file, " Nan");
-      else
-	{
-	  char string[60];
-	  real_to_decimal (string, &d, sizeof (string), 0, 1);
-	  fprintf (file, " %s", string);
-	}
-    }
+    print_real_cst (file, node, true);
   if (TREE_CODE (node) == FIXED_CST)
     {
       FIXED_VALUE_TYPE f;
@@ -730,24 +778,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  break;
 
 	case REAL_CST:
-	  {
-	    REAL_VALUE_TYPE d;
-
-	    if (TREE_OVERFLOW (node))
-	      fprintf (file, " overflow");
-
-	    d = TREE_REAL_CST (node);
-	    if (REAL_VALUE_ISINF (d))
-	      fprintf (file,  REAL_VALUE_NEGATIVE (d) ? " -Inf" : " Inf");
-	    else if (REAL_VALUE_ISNAN (d))
-	      fprintf (file, " Nan");
-	    else
-	      {
-		char string[64];
-		real_to_decimal (string, &d, sizeof (string), 0, 1);
-		fprintf (file, " %s", string);
-	      }
-	  }
+	  print_real_cst (file, node, false);
 	  break;
 
 	case FIXED_CST:
@@ -894,7 +925,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  {
 	    pretty_printer buffer;
 	    buffer.buffer->stream = file;
-	    pp_gimple_stmt_1 (&buffer, SSA_NAME_DEF_STMT (node), indent + 4, 0);
+	    pp_gimple_stmt_1 (&buffer, SSA_NAME_DEF_STMT (node), indent + 4,
+			      TDF_NONE);
 	    pp_flush (&buffer);
 	  }
 
@@ -1039,7 +1071,7 @@ dump_tree_via_hooks (const tree_node *ptr, dump_flags_t options)
 DEBUG_FUNCTION void
 debug (const tree_node &ref)
 {
-  dump_tree_via_hooks (&ref, 0);
+  dump_tree_via_hooks (&ref, TDF_NONE);
 }
 
 DEBUG_FUNCTION void
@@ -1070,7 +1102,7 @@ DEBUG_FUNCTION void
 debug_body (const tree_node &ref)
 {
   if (TREE_CODE (&ref) == FUNCTION_DECL)
-    dump_function_to_file (const_cast <tree_node*> (&ref), stderr, 0);
+    dump_function_to_file (const_cast <tree_node*> (&ref), stderr, TDF_NONE);
   else
     debug (ref);
 }

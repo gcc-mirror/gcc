@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -fcf-protection=none -mno-cet" } */
+/* { dg-options "-O0 -fcf-protection=none" } */
 /* { dg-final { scan-assembler-not "endbr" } } */
 /* { dg-final { scan-assembler-not "notrack call\[ \t]+" } } */
 

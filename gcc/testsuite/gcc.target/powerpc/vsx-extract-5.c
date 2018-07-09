@@ -23,55 +23,63 @@
 TYPE
 foo_0s (vector int v)
 {
-  int i = vec_extract (v, 0);
+  int c = 0;
+  int i = vec_extract (v, c);
   return (TYPE) i;
 }
 
 TYPE
 foo_1s (vector int v)
 {
-  int i = vec_extract (v, 1);
+  int c = 1;
+  int i = vec_extract (v, c);
   return (TYPE) i;
 }
 
 TYPE
 foo_2s (vector int v)
 {
-  int i = vec_extract (v, 2);
+  int c = 2;
+  int i = vec_extract (v, c);
   return (TYPE) i;
 }
 
 TYPE
 foo_3s (vector int v)
 {
-  int i = vec_extract (v, 3);
+  int c = 3;
+  int i = vec_extract (v, c);
   return (TYPE) i;
 }
 
 TYPE
 foo_0u (vector unsigned int v)
 {
-  unsigned int u = vec_extract (v, 0);
+  int c = 0;
+  unsigned int u = vec_extract (v, c);
   return (TYPE) u;
 }
 
 TYPE
 foo_1u (vector unsigned int v)
 {
-  unsigned int u = vec_extract (v, 1);
+  int c = 1;
+  unsigned int u = vec_extract (v, c);
   return (TYPE) u;
 }
 
 TYPE
 foo_2u (vector unsigned int v)
 {
-  unsigned int u = vec_extract (v, 2);
+  int c = 2;
+  unsigned int u = vec_extract (v, c);
   return (TYPE) u;
 }
 
 TYPE
 foo_3u (vector unsigned int v)
 {
-  unsigned int u = vec_extract (v, 3);
+  int c = 3;
+  unsigned int u = vec_extract (v, c);
   return (TYPE) u;
 }

@@ -1105,13 +1105,16 @@ move_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	}
 
       /* The destination ought to be dead.  */
-      gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG);
+      if (get_hard_regnum (regstack, dest) >= FIRST_STACK_REG)
+	gcc_assert (any_malformed_asm);
+      else
+	{
+	  replace_reg (psrc, get_hard_regnum (regstack, src));
 
-      replace_reg (psrc, get_hard_regnum (regstack, src));
-
-      regstack->reg[++regstack->top] = REGNO (dest);
-      SET_HARD_REG_BIT (regstack->reg_set, REGNO (dest));
-      replace_reg (pdest, FIRST_STACK_REG);
+	  regstack->reg[++regstack->top] = REGNO (dest);
+	  SET_HARD_REG_BIT (regstack->reg_set, REGNO (dest));
+	  replace_reg (pdest, FIRST_STACK_REG);
+	}
     }
   else if (STACK_REG_P (src))
     {

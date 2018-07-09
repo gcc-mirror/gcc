@@ -46,5 +46,3 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend%O%s crtn%O%s"
-
-#define NO_IMPLICIT_EXTERN_C 1

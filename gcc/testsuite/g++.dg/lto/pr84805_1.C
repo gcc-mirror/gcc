@@ -1,4 +1,4 @@
-class XclRoot {
+class XclRoot { // { dg-lto-warning "7: type 'struct XclRoot' violates the C\\+\\+ One Definition Rule" }
 public:
   virtual ~XclRoot();
 };

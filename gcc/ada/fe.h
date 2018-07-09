@@ -68,6 +68,8 @@ extern Boolean Debug_Flag_NN;
 #define Set_Component_Size		einfo__set_component_size
 #define Set_Esize			einfo__set_esize
 #define Set_Mechanism			einfo__set_mechanism
+#define Set_Normalized_First_Bit	einfo__set_normalized_first_bit
+#define Set_Normalized_Position		einfo__set_normalized_position
 #define Set_RM_Size			einfo__set_rm_size
 
 extern void Set_Alignment		(Entity_Id, Uint);
@@ -75,6 +77,8 @@ extern void Set_Component_Bit_Offset	(Entity_Id, Uint);
 extern void Set_Component_Size		(Entity_Id, Uint);
 extern void Set_Esize			(Entity_Id, Uint);
 extern void Set_Mechanism		(Entity_Id, Mechanism_Type);
+extern void Set_Normalized_First_Bit	(Entity_Id, Uint);
+extern void Set_Normalized_Position	(Entity_Id, Uint);
 extern void Set_RM_Size			(Entity_Id, Uint);
 
 #define Is_Entity_Name einfo__is_entity_name

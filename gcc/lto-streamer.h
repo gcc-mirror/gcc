@@ -120,7 +120,7 @@ along with GCC; see the file COPYING3.  If not see
      String are represented in the table as pairs, a length in ULEB128
      form followed by the data for the string.  */
 
-#define LTO_major_version 7
+#define LTO_major_version 8
 #define LTO_minor_version 0
 
 typedef unsigned char	lto_decl_flags_t;
@@ -582,7 +582,7 @@ struct GTY(()) lto_file_decl_data
   vec<res_pair>  GTY((skip)) respairs;
   unsigned max_index;
 
-  struct gcov_ctr_summary GTY((skip)) profile_info;
+  gcov_summary GTY((skip)) profile_info;
 
   /* Map assigning declarations their resolutions.  */
   hash_map<tree, ld_plugin_symbol_resolution> * GTY((skip)) resolution_map;
@@ -919,9 +919,11 @@ void cl_target_option_stream_in (struct data_in *,
 				 struct bitpack_d *,
 				 struct cl_target_option *);
 
-void cl_optimization_stream_out (struct bitpack_d *, struct cl_optimization *);
+void cl_optimization_stream_out (struct output_block *,
+				 struct bitpack_d *, struct cl_optimization *);
 
-void cl_optimization_stream_in (struct bitpack_d *, struct cl_optimization *);
+void cl_optimization_stream_in (struct data_in *,
+				struct bitpack_d *, struct cl_optimization *);
 
 
 
@@ -1221,5 +1223,6 @@ struct dref_entry {
 
 extern vec<dref_entry> dref_queue;
 
+extern FILE *streamer_dump_file;
 
 #endif /* GCC_LTO_STREAMER_H  */

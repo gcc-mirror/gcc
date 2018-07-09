@@ -443,12 +443,12 @@ visium_option_override (void)
 
   /* Align functions on 256-byte (32-quadword) for GR5 and 64-byte (8-quadword)
      boundaries for GR6 so they start a new burst mode window.  */
-  if (align_functions == 0)
+  if (flag_align_functions && !str_align_functions)
     {
       if (visium_cpu == PROCESSOR_GR6)
-	align_functions = 64;
+	str_align_functions = "64";
       else
-	align_functions = 256;
+	str_align_functions = "256";
 
       /* Allow the size of compilation units to double because of inlining.
 	 In practice the global size of the object code is hardly affected
@@ -459,26 +459,25 @@ visium_option_override (void)
     }
 
   /* Likewise for loops.  */
-  if (align_loops == 0)
+  if (flag_align_loops && !str_align_loops)
     {
       if (visium_cpu == PROCESSOR_GR6)
-	align_loops = 64;
+	str_align_loops = "64";
       else
 	{
-	  align_loops = 256;
 	  /* But not if they are too far away from a 256-byte boundary.  */
-	  align_loops_max_skip = 31;
+	  str_align_loops = "256:32";
 	}
     }
 
   /* Align all jumps on quadword boundaries for the burst mode, and even
      on 8-quadword boundaries for GR6 so they start a new window.  */
-  if (align_jumps == 0)
+  if (flag_align_jumps && !str_align_jumps)
     {
       if (visium_cpu == PROCESSOR_GR6)
-	align_jumps = 64;
+	str_align_jumps = "64";
       else
-	align_jumps = 8;
+	str_align_jumps = "8";
     }
 
   /* We register a machine-specific pass.  This pass must be scheduled as

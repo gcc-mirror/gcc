@@ -2102,10 +2102,7 @@ test_pp_format ()
 {
   /* Avoid introducing locale-specific differences in the results
      by hardcoding open_quote and close_quote.  */
-  const char *old_open_quote = open_quote;
-  const char *old_close_quote = close_quote;
-  open_quote = "`";
-  close_quote = "'";
+  auto_fix_quotes fix_quotes;
 
   /* Verify that plain text is passed through unchanged.  */
   assert_pp_format (SELFTEST_LOCATION, "unformatted", "unformatted");
@@ -2187,10 +2184,6 @@ test_pp_format ()
   assert_pp_format (SELFTEST_LOCATION, "item 3 of 7", "item %i of %i", 3, 7);
   assert_pp_format (SELFTEST_LOCATION, "problem with `bar' at line 10",
 		    "problem with %qs at line %i", "bar", 10);
-
-  /* Restore old values of open_quote and close_quote.  */
-  open_quote = old_open_quote;
-  close_quote = old_close_quote;
 }
 
 /* Run all of the selftests within this file.  */

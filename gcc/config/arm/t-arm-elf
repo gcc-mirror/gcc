@@ -39,9 +39,9 @@ v7ve_fps	:= vfpv3-d16 vfpv3 vfpv3-d16-fp16 vfpv3-fp16 vfpv4 neon \
 v8_fps		:= simd fp16 crypto fp16+crypto dotprod fp16fml
 
 # We don't do anything special with these.  Pre-v4t probably doesn't work.
-all_early_nofp	:= armv2 armv2a armv3 armv3m armv4 armv4t armv5 armv5t
+all_early_nofp	:= armv4 armv4t armv5t
 
-all_early_arch	:= armv5e armv5tej armv6 armv6j armv6k armv6z armv6kz \
+all_early_arch	:= armv5tej armv6 armv6j armv6k armv6z armv6kz \
 		   armv6zk armv6t2 iwmmxt iwmmxt2
 
 all_v7_a_r	:= armv7-a armv7ve armv7-r

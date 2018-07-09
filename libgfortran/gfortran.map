@@ -799,6 +799,7 @@ GFORTRAN_8 {
     _gfortran_product_r4;
     _gfortran_product_r8;
     _gfortran_rand;
+    _gfortran_random_init;
     _gfortran_random_r10;
     _gfortran_random_r16;
     _gfortran_random_r4;

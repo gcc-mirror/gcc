@@ -910,43 +910,52 @@ Gogo::create_initialization_function(Named_object* initfn,
   return initfn;
 }
 
-// Search for references to VAR in any statements or called functions.
+// Given an expression, collect all the global variables defined in
+// this package that it references.
 
-class Find_var : public Traverse
+class Find_vars : public Traverse
 {
- public:
-  // A hash table we use to avoid looping.  The index is the name of a
-  // named object.  We only look through objects defined in this
-  // package.
+ private:
+  // The list of variables we accumulate.
+  typedef Unordered_set(Named_object*) Vars;
+
+  // A hash table we use to avoid looping.  The index is a
+  // Named_object* or a Temporary_statement*.  We only look through
+  // objects defined in this package.
   typedef Unordered_set(const void*) Seen_objects;
 
-  Find_var(Named_object* var, Seen_objects* seen_objects)
+ public:
+  Find_vars()
     : Traverse(traverse_expressions),
-      var_(var), seen_objects_(seen_objects), found_(false)
+      vars_(), seen_objects_()
   { }
 
-  // Whether the variable was found.
-  bool
-  found() const
-  { return this->found_; }
+  // An iterator through the variables found, after the traversal.
+  typedef Vars::const_iterator const_iterator;
+
+  const_iterator
+  begin() const
+  { return this->vars_.begin(); }
+
+  const_iterator
+  end() const
+  { return this->vars_.end(); }
 
   int
   expression(Expression**);
 
  private:
-  // The variable we are looking for.
-  Named_object* var_;
-  // Names of objects we have already seen.
-  Seen_objects* seen_objects_;
-  // True if the variable was found.
-  bool found_;
+  // Accumulated variables.
+  Vars vars_;
+  // Objects we have already seen.
+  Seen_objects seen_objects_;
 };
 
-// See if EXPR refers to VAR, looking through function calls and
-// variable initializations.
+// Collect global variables referenced by EXPR.  Look through function
+// calls and variable initializations.
 
 int
-Find_var::expression(Expression** pexpr)
+Find_vars::expression(Expression** pexpr)
 {
   Expression* e = *pexpr;
 
@@ -954,26 +963,29 @@ Find_var::expression(Expression** pexpr)
   if (ve != NULL)
     {
       Named_object* v = ve->named_object();
-      if (v == this->var_)
+      if (!v->is_variable() || v->package() != NULL)
 	{
-	  this->found_ = true;
-	  return TRAVERSE_EXIT;
+	  // This is a result parameter or a variable defined in a
+	  // different package.  Either way we don't care about it.
+	  return TRAVERSE_CONTINUE;
 	}
 
-      if (v->is_variable() && v->package() == NULL)
+      std::pair<Seen_objects::iterator, bool> ins =
+	this->seen_objects_.insert(v);
+      if (!ins.second)
 	{
-	  Expression* init = v->var_value()->init();
-	  if (init != NULL)
-	    {
-	      std::pair<Seen_objects::iterator, bool> ins =
-		this->seen_objects_->insert(v);
-	      if (ins.second)
-		{
-		  // This is the first time we have seen this name.
-		  if (Expression::traverse(&init, this) == TRAVERSE_EXIT)
-		    return TRAVERSE_EXIT;
-		}
-	    }
+	  // We've seen this variable before.
+	  return TRAVERSE_CONTINUE;
+	}
+
+      if (v->var_value()->is_global())
+	this->vars_.insert(v);
+
+      Expression* init = v->var_value()->init();
+      if (init != NULL)
+	{
+	  if (Expression::traverse(&init, this) == TRAVERSE_EXIT)
+	    return TRAVERSE_EXIT;
 	}
     }
 
@@ -988,7 +1000,7 @@ Find_var::expression(Expression** pexpr)
       if (f->is_function() && f->package() == NULL)
 	{
 	  std::pair<Seen_objects::iterator, bool> ins =
-	    this->seen_objects_->insert(f);
+	    this->seen_objects_.insert(f);
 	  if (ins.second)
 	    {
 	      // This is the first time we have seen this name.
@@ -1006,7 +1018,7 @@ Find_var::expression(Expression** pexpr)
       if (init != NULL)
 	{
 	  std::pair<Seen_objects::iterator, bool> ins =
-	    this->seen_objects_->insert(ts);
+	    this->seen_objects_.insert(ts);
 	  if (ins.second)
 	    {
 	      // This is the first time we have seen this temporary
@@ -1026,22 +1038,28 @@ static bool
 expression_requires(Expression* expr, Block* preinit, Named_object* dep,
 		    Named_object* var)
 {
-  Find_var::Seen_objects seen_objects;
-  Find_var find_var(var, &seen_objects);
+  Find_vars find_vars;
   if (expr != NULL)
-    Expression::traverse(&expr, &find_var);
+    Expression::traverse(&expr, &find_vars);
   if (preinit != NULL)
-    preinit->traverse(&find_var);
+    preinit->traverse(&find_vars);
   if (dep != NULL)
     {
       Expression* init = dep->var_value()->init();
       if (init != NULL)
-	Expression::traverse(&init, &find_var);
+	Expression::traverse(&init, &find_vars);
       if (dep->var_value()->has_pre_init())
-	dep->var_value()->preinit()->traverse(&find_var);
+	dep->var_value()->preinit()->traverse(&find_vars);
     }
 
-  return find_var.found();
+  for (Find_vars::const_iterator p = find_vars.begin();
+       p != find_vars.end();
+       ++p)
+    {
+      if (*p == var)
+	return true;
+    }
+  return false;
 }
 
 // Sort variable initializations.  If the initialization expression
@@ -1052,11 +1070,11 @@ class Var_init
 {
  public:
   Var_init()
-    : var_(NULL), init_(NULL), dep_count_(0)
+    : var_(NULL), init_(NULL), refs_(NULL), dep_count_(0)
   { }
 
   Var_init(Named_object* var, Bstatement* init)
-    : var_(var), init_(init), dep_count_(0)
+    : var_(var), init_(init), refs_(NULL), dep_count_(0)
   { }
 
   // Return the variable.
@@ -1068,6 +1086,19 @@ class Var_init
   Bstatement*
   init() const
   { return this->init_; }
+
+  // Add a reference.
+  void
+  add_ref(Named_object* var);
+
+  // The variables which this variable's initializers refer to.
+  const std::vector<Named_object*>*
+  refs()
+  { return this->refs_; }
+
+  // Clear the references, if any.
+  void
+  clear_refs();
 
   // Return the number of remaining dependencies.
   size_t
@@ -1087,13 +1118,37 @@ class Var_init
  private:
   // The variable being initialized.
   Named_object* var_;
-  // The initialization statement.
+  // The backend initialization statement.
   Bstatement* init_;
+  // Variables this refers to.
+  std::vector<Named_object*>* refs_;
   // The number of initializations this is dependent on.  A variable
   // initialization should not be emitted if any of its dependencies
   // have not yet been resolved.
   size_t dep_count_;
 };
+
+// Add a reference.
+
+void
+Var_init::add_ref(Named_object* var)
+{
+  if (this->refs_ == NULL)
+    this->refs_ = new std::vector<Named_object*>;
+  this->refs_->push_back(var);
+}
+
+// Clear the references, if any.
+
+void
+Var_init::clear_refs()
+{
+  if (this->refs_ != NULL)
+    {
+      delete this->refs_;
+      this->refs_ = NULL;
+    }
+}
 
 // For comparing Var_init keys in a map.
 
@@ -1114,69 +1169,118 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
   if (var_inits->empty())
     return;
 
-  typedef std::pair<Named_object*, Named_object*> No_no;
-  typedef std::map<No_no, bool> Cache;
-  Cache cache;
+  std::map<Named_object*, Var_init*> var_to_init;
 
   // A mapping from a variable initialization to a set of
   // variable initializations that depend on it.
   typedef std::map<Var_init, std::set<Var_init*> > Init_deps;
   Init_deps init_deps;
   bool init_loop = false;
-  for (Var_inits::iterator p1 = var_inits->begin();
-       p1 != var_inits->end();
-       ++p1)
+
+  // Compute all variable references.
+  for (Var_inits::iterator pvar = var_inits->begin();
+       pvar != var_inits->end();
+       ++pvar)
     {
-      Named_object* var = p1->var();
+      Named_object* var = pvar->var();
+      var_to_init[var] = &*pvar;
+
+      Find_vars find_vars;
       Expression* init = var->var_value()->init();
-      Block* preinit = var->var_value()->preinit();
+      if (init != NULL)
+	Expression::traverse(&init, &find_vars);
+      if (var->var_value()->has_pre_init())
+	var->var_value()->preinit()->traverse(&find_vars);
       Named_object* dep = gogo->var_depends_on(var->var_value());
-
-      // Start walking through the list to see which variables VAR
-      // needs to wait for.
-      for (Var_inits::iterator p2 = var_inits->begin();
-	   p2 != var_inits->end();
-	   ++p2)
+      if (dep != NULL)
 	{
-	  if (var == p2->var())
-	    continue;
+	  Expression* dinit = dep->var_value()->init();
+	  if (dinit != NULL)
+	    Expression::traverse(&dinit, &find_vars);
+	  if (dep->var_value()->has_pre_init())
+	    dep->var_value()->preinit()->traverse(&find_vars);
+	}
+      for (Find_vars::const_iterator p = find_vars.begin();
+	   p != find_vars.end();
+	   ++p)
+	pvar->add_ref(*p);
+    }
 
-	  Named_object* p2var = p2->var();
-	  No_no key(var, p2var);
-	  std::pair<Cache::iterator, bool> ins =
-	    cache.insert(std::make_pair(key, false));
-	  if (ins.second)
-	    ins.first->second = expression_requires(init, preinit, dep, p2var);
-	  if (ins.first->second)
+  // Add dependencies to init_deps, and check for cycles.
+  for (Var_inits::iterator pvar = var_inits->begin();
+       pvar != var_inits->end();
+       ++pvar)
+    {
+      Named_object* var = pvar->var();
+
+      const std::vector<Named_object*>* refs = pvar->refs();
+      if (refs == NULL)
+	continue;
+      for (std::vector<Named_object*>::const_iterator pdep = refs->begin();
+	   pdep != refs->end();
+	   ++pdep)
+	{
+	  Named_object* dep = *pdep;
+	  if (var == dep)
 	    {
-	      // VAR depends on P2VAR.
-	      init_deps[*p2].insert(&(*p1));
-	      p1->add_dependency();
+	      // This is a reference from a variable to itself, which
+	      // may indicate a loop.  We only report an error if
+	      // there is an initializer and there is no dependency.
+	      // When there is no initializer, it means that the
+	      // preinitializer sets the variable, which will appear
+	      // to be a loop here.
+	      if (var->var_value()->init() != NULL
+		  && gogo->var_depends_on(var->var_value()) == NULL)
+		go_error_at(var->location(),
+			    ("initialization expression for %qs "
+			     "depends upon itself"),
+			    var->message_name().c_str());
 
-	      // Check for cycles.
-	      key = std::make_pair(p2var, var);
-	      ins = cache.insert(std::make_pair(key, false));
-	      if (ins.second)
-		ins.first->second =
-		  expression_requires(p2var->var_value()->init(),
-				      p2var->var_value()->preinit(),
-				      gogo->var_depends_on(p2var->var_value()),
-				      var);
-	      if (ins.first->second)
+	      continue;
+	    }
+
+	  Var_init* dep_init = var_to_init[dep];
+	  if (dep_init == NULL)
+	    {
+	      // This is a dependency on some variable that doesn't
+	      // have an initializer, so for purposes of
+	      // initialization ordering this is irrelevant.
+	      continue;
+	    }
+
+	  init_deps[*dep_init].insert(&(*pvar));
+	  pvar->add_dependency();
+
+	  // Check for cycles.
+	  const std::vector<Named_object*>* deprefs = dep_init->refs();
+	  if (deprefs == NULL)
+	    continue;
+	  for (std::vector<Named_object*>::const_iterator pdepdep =
+		 deprefs->begin();
+	       pdepdep != deprefs->end();
+	       ++pdepdep)
+	    {
+	      if (*pdepdep == var)
 		{
 		  go_error_at(var->location(),
 			      ("initialization expressions for %qs and "
 			       "%qs depend upon each other"),
 			      var->message_name().c_str(),
-			      p2var->message_name().c_str());
-		  go_inform(p2->var()->location(), "%qs defined here",
-			    p2var->message_name().c_str());
+			      dep->message_name().c_str());
+		  go_inform(dep->location(), "%qs defined here",
+			    dep->message_name().c_str());
 		  init_loop = true;
 		  break;
 		}
 	    }
 	}
     }
+
+  var_to_init.clear();
+  for (Var_inits::iterator pvar = var_inits->begin();
+       pvar != var_inits->end();
+       ++pvar)
+    pvar->clear_refs();
 
   // If there are no dependencies then the declaration order is sorted.
   if (!init_deps.empty() && !init_loop)
@@ -1214,14 +1318,6 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
       var_inits->swap(ready);
       go_assert(init_deps.empty());
     }
-
-  // VAR_INITS is in the correct order.  For each VAR in VAR_INITS,
-  // check for a loop of VAR on itself.
-  // interpret as a loop.
-  for (Var_inits::const_iterator p = var_inits->begin();
-       p != var_inits->end();
-       ++p)
-    gogo->check_self_dep(p->var());
 }
 
 // Give an error if the initialization expression for VAR depends on
@@ -8258,8 +8354,16 @@ Traverse::remember_type(const Type* type)
   // We mostly only have to remember named types.  But it turns out
   // that an interface type can refer to itself without using a name
   // by relying on interface inheritance, as in
-  // type I interface { F() interface{I} }
+  //
+  //         type I interface { F() interface{I} }
+  //
+  // Similarly it is possible for array types to refer to themselves
+  // without a name, e.g.
+  //
+  //         var x [uintptr(unsafe.Sizeof(&x))]byte
+  //
   if (type->classification() != Type::TYPE_NAMED
+      && type->classification() != Type::TYPE_ARRAY
       && type->classification() != Type::TYPE_INTERFACE)
     return false;
   if (this->types_seen_ == NULL)
@@ -8340,6 +8444,9 @@ Traverse::function_declaration(Named_object*)
 void
 Statement_inserter::insert(Statement* s)
 {
+  if (this->statements_added_ != NULL)
+    this->statements_added_->insert(s);
+
   if (this->block_ != NULL)
     {
       go_assert(this->pindex_ != NULL);

@@ -1475,6 +1475,8 @@ iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> bbs,
       return;
     }
 
+  timevar_push (TV_DOMINANCE);
+
   /* Construct the graph G.  */
   hash_map<basic_block, int> map (251);
   FOR_EACH_VEC_ELT (bbs, i, bb)
@@ -1537,6 +1539,8 @@ iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> bbs,
   free (parent);
 
   free_graph (g);
+
+  timevar_pop (TV_DOMINANCE);
 }
 
 void

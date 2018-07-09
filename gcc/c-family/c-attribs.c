@@ -143,9 +143,6 @@ static tree handle_simd_attribute (tree *, tree, tree, int, bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
-static tree handle_bnd_variable_size_attribute (tree *, tree, tree, int, bool *);
-static tree handle_bnd_legacy (tree *, tree, tree, int, bool *);
-static tree handle_bnd_instrument (tree *, tree, tree, int, bool *);
 static tree handle_fallthrough_attribute (tree *, tree, tree, int, bool *);
 static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
 						       int, bool *);
@@ -239,9 +236,6 @@ static const struct attribute_spec::exclusions attr_const_pure_exclusions[] =
 
 /* Table of machine-independent attributes common to all C-like languages.
 
-   All attributes referencing arguments should be additionally processed
-   in chkp_copy_function_type_adding_bounds for correct instrumentation
-   by Pointer Bounds Checker.
    Current list of processed common attributes: nonnull.  */
 const struct attribute_spec c_common_attribute_table[] =
 {
@@ -403,7 +397,7 @@ const struct attribute_spec c_common_attribute_table[] =
 			      0, 0, true, false, false, false,
 			      handle_no_address_safety_analysis_attribute,
 			      NULL },
-  { "no_sanitize",	      1, 1, true, false, false, false,
+  { "no_sanitize",	      1, -1, true, false, false, false,
 			      handle_no_sanitize_attribute, NULL },
   { "no_sanitize_address",    0, 0, true, false, false, false,
 			      handle_no_sanitize_address_attribute, NULL },
@@ -452,12 +446,6 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_assume_aligned_attribute, NULL },
   { "designated_init",        0, 0, false, true, false, false,
 			      handle_designated_init_attribute, NULL },
-  { "bnd_variable_size",      0, 0, true,  false, false, false,
-			      handle_bnd_variable_size_attribute, NULL },
-  { "bnd_legacy",             0, 0, true, false, false, false,
-			      handle_bnd_legacy, NULL },
-  { "bnd_instrument",         0, 0, true, false, false, false,
-			      handle_bnd_instrument, NULL },
   { "fallthrough",	      0, 0, false, false, false, false,
 			      handle_fallthrough_attribute, NULL },
   { "patchable_function_entry",	1, 2, true, false, false, false,
@@ -471,9 +459,6 @@ const struct attribute_spec c_common_attribute_table[] =
 /* Give the specifications for the format attributes, used by C and all
    descendants.
 
-   All attributes referencing arguments should be additionally processed
-   in chkp_copy_function_type_adding_bounds for correct instrumentation
-   by Pointer Bounds Checker.
    Current list of processed format attributes: format, format_arg.  */
 const struct attribute_spec c_common_format_attribute_table[] =
 {
@@ -683,22 +668,26 @@ static tree
 handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
 			      bool *no_add_attrs)
 {
+  unsigned int flags = 0;
   *no_add_attrs = true;
-  tree id = TREE_VALUE (args);
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       return NULL_TREE;
     }
 
-  if (TREE_CODE (id) != STRING_CST)
+  for (; args; args = TREE_CHAIN (args))
     {
-      error ("no_sanitize argument not a string");
-      return NULL_TREE;
-    }
+      tree id = TREE_VALUE (args);
+      if (TREE_CODE (id) != STRING_CST)
+	{
+	  error ("no_sanitize argument not a string");
+	  return NULL_TREE;
+	}
 
-  char *string = ASTRDUP (TREE_STRING_POINTER (id));
-  unsigned int flags = parse_no_sanitize_attribute (string);
+      char *string = ASTRDUP (TREE_STRING_POINTER (id));
+      flags |= parse_no_sanitize_attribute (string);
+    }
 
   add_no_sanitize_value (*node, flags);
 
@@ -1528,6 +1517,10 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	  return NULL_TREE;
 	}
 
+      /* Allow the target a chance to translate MODE into something supported.
+	 See PR86324.  */
+      mode = targetm.translate_mode_attribute (mode);
+
       valid_mode = false;
       switch (GET_MODE_CLASS (mode))
 	{
@@ -2299,13 +2292,12 @@ handle_visibility_attribute (tree *node, tree name, tree args,
 
 static tree
 handle_tls_model_attribute (tree *node, tree name, tree args,
-			    int ARG_UNUSED (flags), bool *no_add_attrs)
+			    int ARG_UNUSED (flags),
+			    bool *ARG_UNUSED (no_add_attrs))
 {
   tree id;
   tree decl = *node;
   enum tls_model kind;
-
-  *no_add_attrs = true;
 
   if (!VAR_P (decl) || !DECL_THREAD_LOCAL_P (decl))
     {
@@ -2483,54 +2475,6 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
   gcc_assert (args
 	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
 	      && !TREE_CHAIN (args));
-  return NULL_TREE;
-}
-
-/* Handle a "bnd_variable_size" attribute; arguments as in
-   struct attribute_spec.handler.  */
-
-static tree
-handle_bnd_variable_size_attribute (tree *node, tree name, tree ARG_UNUSED (args),
-				    int ARG_UNUSED (flags), bool *no_add_attrs)
-{
-  if (TREE_CODE (*node) != FIELD_DECL)
-    {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
-      *no_add_attrs = true;
-    }
-
-  return NULL_TREE;
-}
-
-/* Handle a "bnd_legacy" attribute; arguments as in
-   struct attribute_spec.handler.  */
-
-static tree
-handle_bnd_legacy (tree *node, tree name, tree ARG_UNUSED (args),
-		   int ARG_UNUSED (flags), bool *no_add_attrs)
-{
-  if (TREE_CODE (*node) != FUNCTION_DECL)
-    {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
-      *no_add_attrs = true;
-    }
-
-  return NULL_TREE;
-}
-
-/* Handle a "bnd_instrument" attribute; arguments as in
-   struct attribute_spec.handler.  */
-
-static tree
-handle_bnd_instrument (tree *node, tree name, tree ARG_UNUSED (args),
-		       int ARG_UNUSED (flags), bool *no_add_attrs)
-{
-  if (TREE_CODE (*node) != FUNCTION_DECL)
-    {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
-      *no_add_attrs = true;
-    }
-
   return NULL_TREE;
 }
 

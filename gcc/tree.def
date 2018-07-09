@@ -31,11 +31,7 @@ along with GCC; see the file COPYING3.  If not see
    These tree codes have been sorted so that the macros in tree.h that
    check for various tree codes are optimized into range checks.  This
    gives a measurable performance improvement.  When adding a new
-   code, consider its placement in relation to the other codes.
-
-   When adding a new tree code which might appear as GIMPLE_ASSIGN RHS
-   code, proper handler in chkp_compute_bounds_for_assignment may
-   be required.  */
+   code, consider its placement in relation to the other codes.  */
 
 /* Any erroneous construct is parsed into a node of this type.
    This type of node is accepted without complaint in all contexts
@@ -236,11 +232,6 @@ DEFTREECODE (QUAL_UNION_TYPE, "qual_union_type", tcc_type, 0)
 
 /* The void type in C */
 DEFTREECODE (VOID_TYPE, "void_type", tcc_type, 0)
-
-/* Type to hold bounds for a pointer.
-   Has TYPE_PRECISION component to specify number of bits used
-   by this type.  */
-DEFTREECODE (POINTER_BOUNDS_TYPE, "pointer_bounds_type", tcc_type, 0)
 
 /* Type of functions.  Special fields:
    TREE_TYPE		    type of value returned.
@@ -760,6 +751,11 @@ DEFTREECODE (MAX_EXPR, "max_expr", tcc_binary, 2)
    An ABS_EXPR must have either an INTEGER_TYPE or a REAL_TYPE.  The
    operand of the ABS_EXPR must have the same type.  */
 DEFTREECODE (ABS_EXPR, "abs_expr", tcc_unary, 1)
+
+/* Represents the unsigned absolute value of the operand.
+   An ABSU_EXPR must have unsigned INTEGER_TYPE.  The operand of the ABSU_EXPR
+   must have the corresponding signed type.  */
+DEFTREECODE (ABSU_EXPR, "absu_expr", tcc_unary, 1)
 
 /* Shift operations for shift and rotate.
    Shift means logical shift if done on an
@@ -1345,12 +1341,6 @@ DEFTREECODE (WIDEN_MULT_MINUS_EXPR, "widen_mult_minus_expr", tcc_expression, 3)
    by the second argument.  */
 DEFTREECODE (WIDEN_LSHIFT_EXPR, "widen_lshift_expr", tcc_binary, 2)
 
-/* Fused multiply-add.
-   All operands and the result are of the same type.  No intermediate
-   rounding is performed after multiplying operand one with operand two
-   before adding operand three.  */
-DEFTREECODE (FMA_EXPR, "fma_expr", tcc_expression, 3)
-
 /* Widening vector multiplication.
    The two operands are vectors with N elements of size S. Multiplying the
    elements of the two vectors will result in N products of size 2*S.
@@ -1377,6 +1367,15 @@ DEFTREECODE (VEC_UNPACK_LO_EXPR, "vec_unpack_lo_expr", tcc_unary, 1)
 DEFTREECODE (VEC_UNPACK_FLOAT_HI_EXPR, "vec_unpack_float_hi_expr", tcc_unary, 1)
 DEFTREECODE (VEC_UNPACK_FLOAT_LO_EXPR, "vec_unpack_float_lo_expr", tcc_unary, 1)
 
+/* Unpack (extract) the high/low elements of the input vector, convert
+   floating point values to integer and widen elements into the output
+   vector.  The input vector has twice as many elements as the output
+   vector, that are half the size of the elements of the output vector.  */
+DEFTREECODE (VEC_UNPACK_FIX_TRUNC_HI_EXPR, "vec_unpack_fix_trunc_hi_expr",
+	     tcc_unary, 1)
+DEFTREECODE (VEC_UNPACK_FIX_TRUNC_LO_EXPR, "vec_unpack_fix_trunc_lo_expr",
+	     tcc_unary, 1)
+
 /* Pack (demote/narrow and merge) the elements of the two input vectors
    into the output vector using truncation/saturation.
    The elements of the input vectors are twice the size of the elements of the
@@ -1389,6 +1388,12 @@ DEFTREECODE (VEC_PACK_SAT_EXPR, "vec_pack_sat_expr", tcc_binary, 2)
    elements of the input vector are twice the size of the elements of
    the output vector.  */
 DEFTREECODE (VEC_PACK_FIX_TRUNC_EXPR, "vec_pack_fix_trunc_expr", tcc_binary, 2)
+
+/* Convert fixed point values of the two input vectors to floating point
+   and pack (narrow and merge) the elements into the output vector. The
+   elements of the input vector are twice the size of the elements of
+   the output vector.  */
+DEFTREECODE (VEC_PACK_FLOAT_EXPR, "vec_pack_float_expr", tcc_binary, 2)
 
 /* Widening vector shift left in bits.
    Operand 0 is a vector to be shifted with N elements of size S.

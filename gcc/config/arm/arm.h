@@ -155,7 +155,7 @@ extern tree arm_fp16_type_node;
 /* Thumb-1 only.  */
 #define TARGET_THUMB1_ONLY		(TARGET_THUMB1 && !arm_arch_notm)
 
-#define TARGET_LDRD			(arm_arch5e && ARM_DOUBLEWORD_ALIGN \
+#define TARGET_LDRD			(arm_arch5te && ARM_DOUBLEWORD_ALIGN \
                                          && !TARGET_THUMB1)
 
 #define TARGET_CRC32			(arm_arch_crc)
@@ -233,13 +233,13 @@ extern tree arm_fp16_type_node;
 
 /* Q-bit is present.  */
 #define TARGET_ARM_QBIT \
-  (TARGET_32BIT && arm_arch5e && (arm_arch_notm || arm_arch7))
+  (TARGET_32BIT && arm_arch5te && (arm_arch_notm || arm_arch7))
 /* Saturation operation, e.g. SSAT.  */
 #define TARGET_ARM_SAT \
   (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7))
 /* "DSP" multiply instructions, eg. SMULxy.  */
 #define TARGET_DSP_MULTIPLY \
-  (TARGET_32BIT && arm_arch5e && (arm_arch_notm || arm_arch7em))
+  (TARGET_32BIT && arm_arch5te && (arm_arch_notm || arm_arch7em))
 /* Integer SIMD instructions, and extend-accumulate instructions.  */
 #define TARGET_INT_SIMD \
   (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7em))
@@ -375,8 +375,6 @@ enum base_architecture
   BASE_ARCH_3M = 3,
   BASE_ARCH_4 = 4,
   BASE_ARCH_4T = 4,
-  BASE_ARCH_5 = 5,
-  BASE_ARCH_5E = 5,
   BASE_ARCH_5T = 5,
   BASE_ARCH_5TE = 5,
   BASE_ARCH_5TEJ = 5,
@@ -401,20 +399,17 @@ enum base_architecture
 /* The major revision number of the ARM Architecture implemented by the target.  */
 extern enum base_architecture arm_base_arch;
 
-/* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
-extern int arm_arch3m;
-
 /* Nonzero if this chip supports the ARM Architecture 4 extensions.  */
 extern int arm_arch4;
 
 /* Nonzero if this chip supports the ARM Architecture 4T extensions.  */
 extern int arm_arch4t;
 
-/* Nonzero if this chip supports the ARM Architecture 5 extensions.  */
-extern int arm_arch5;
+/* Nonzero if this chip supports the ARM Architecture 5T extensions.  */
+extern int arm_arch5t;
 
-/* Nonzero if this chip supports the ARM Architecture 5E extensions.  */
-extern int arm_arch5e;
+/* Nonzero if this chip supports the ARM Architecture 5TE extensions.  */
+extern int arm_arch5te;
 
 /* Nonzero if this chip supports the ARM Architecture 6 extensions.  */
 extern int arm_arch6;

@@ -273,7 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	pointer __cur(this->_M_impl._M_start);
 	for (; __first != __last && __cur != this->_M_impl._M_finish;
-	     ++__cur, ++__first)
+	     ++__cur, (void)++__first)
 	  *__cur = *__first;
 	if (__first == __last)
 	  _M_erase_at_end(__cur);
@@ -582,7 +582,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       if (__n != 0)
 	{
-	  size_type __size = size();
+	  const size_type __size = size();
 	  size_type __navail = size_type(this->_M_impl._M_end_of_storage
 					 - this->_M_impl._M_finish);
 
@@ -601,23 +601,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    {
 	      const size_type __len =
 		_M_check_len(__n, "vector::_M_default_append");
-	      const size_type __old_size = __size;
 	      pointer __new_start(this->_M_allocate(__len));
-	      pointer __new_finish(__new_start);
+	      pointer __destroy_from = pointer();
 	      __try
 		{
-		  __new_finish
-		    = std::__uninitialized_move_if_noexcept_a
-		    (this->_M_impl._M_start, this->_M_impl._M_finish,
-		     __new_start, _M_get_Tp_allocator());
-		  __new_finish =
-		    std::__uninitialized_default_n_a(__new_finish, __n,
-						     _M_get_Tp_allocator());
+		  std::__uninitialized_default_n_a(__new_start + __size,
+						   __n, _M_get_Tp_allocator());
+		  __destroy_from = __new_start + __size;
+		  std::__uninitialized_move_if_noexcept_a(
+		      this->_M_impl._M_start, this->_M_impl._M_finish,
+		      __new_start, _M_get_Tp_allocator());
 		}
 	      __catch(...)
 		{
-		  std::_Destroy(__new_start, __new_finish,
-				_M_get_Tp_allocator());
+		  if (__destroy_from)
+		    std::_Destroy(__destroy_from, __destroy_from + __n,
+				  _M_get_Tp_allocator());
 		  _M_deallocate(__new_start, __len);
 		  __throw_exception_again;
 		}
@@ -628,7 +627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			    this->_M_impl._M_end_of_storage
 			    - this->_M_impl._M_start);
 	      this->_M_impl._M_start = __new_start;
-	      this->_M_impl._M_finish = __new_finish;
+	      this->_M_impl._M_finish = __new_start + __size + __n;
 	      this->_M_impl._M_end_of_storage = __new_start + __len;
 	    }
 	}

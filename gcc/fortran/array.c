@@ -533,7 +533,7 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
       as->type = AS_ASSUMED_RANK;
       as->rank = -1;
 
-      if (!gfc_notify_std (GFC_STD_F2008_TS, "Assumed-rank array at %C"))
+      if (!gfc_notify_std (GFC_STD_F2018, "Assumed-rank array at %C"))
 	goto cleanup;
 
       if (!match_codim)
@@ -1097,6 +1097,15 @@ match_array_cons_element (gfc_constructor_base *result)
   m = gfc_match_expr (&expr);
   if (m != MATCH_YES)
     return m;
+
+  if (expr->expr_type == EXPR_FUNCTION
+      && expr->ts.type == BT_UNKNOWN
+      && strcmp(expr->symtree->name, "null") == 0)
+   {
+      gfc_error ("NULL() at %C cannot appear in an array constructor");
+      gfc_free_expr (expr);
+      return MATCH_ERROR;
+   }
 
   gfc_constructor_append_expr (result, expr, &gfc_current_locus);
   return MATCH_YES;
@@ -2031,7 +2040,9 @@ got_charlen:
 	  gfc_ref *ref;
 	  for (ref = p->expr->ref; ref; ref = ref->next)
 	    if (ref->type == REF_SUBSTRING
+		&& ref->u.ss.start
 		&& ref->u.ss.start->expr_type == EXPR_CONSTANT
+		&& ref->u.ss.end
 		&& ref->u.ss.end->expr_type == EXPR_CONSTANT)
 	      break;
 
@@ -2046,7 +2057,8 @@ got_charlen:
 	  else
 	    return true;
 
-	  gcc_assert (current_length != -1);
+	  if (current_length < 0)
+	    current_length = 0;
 
 	  if (found_length == -1)
 	    found_length = current_length;

@@ -330,6 +330,7 @@ typedef struct gfc_ss
   struct gfc_loopinfo *loop;
 
   unsigned is_alloc_lhs:1;
+  unsigned no_bounds_check:1;
 }
 gfc_ss;
 #define gfc_get_ss() XCNEW (gfc_ss)
@@ -915,6 +916,8 @@ extern GTY(()) tree gfor_fndecl_sr_kind;
 extern GTY(()) tree gfor_fndecl_ieee_procedure_entry;
 extern GTY(()) tree gfor_fndecl_ieee_procedure_exit;
 
+/* RANDOM_INIT.  */
+extern GTY(()) tree gfor_fndecl_random_init;
 
 /* True if node is an integer constant.  */
 #define INTEGER_CST_P(node) (TREE_CODE(node) == INTEGER_CST)

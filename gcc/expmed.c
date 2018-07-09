@@ -3678,7 +3678,7 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
     {
       unsigned HOST_WIDE_INT mask = (HOST_WIDE_INT_1U << n) - 1;
       *multiplier_ptr = mhigh.to_uhwi () & mask;
-      return mhigh.to_uhwi () >= mask;
+      return mhigh.to_uhwi () > mask;
     }
   else
     {

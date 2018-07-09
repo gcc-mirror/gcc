@@ -3,4 +3,4 @@
 // { dg-options "-Wzero-as-null-pointer-constant" }
 
 int* no_warn = {};
-decltype( nullptr ) warn = {};
+decltype( nullptr ) warn = {};	// { dg-bogus "zero as null pointer constant" }

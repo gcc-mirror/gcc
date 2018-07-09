@@ -62,7 +62,6 @@ extern void test_pku (void)			__attribute__((__target__("pku")));
 extern void test_lwp (void)			__attribute__((__target__("lwp")));
 extern void test_hle (void)			__attribute__((__target__("hle")));
 extern void test_fxsr (void)			__attribute__((__target__("fxsr")));
-extern void test_mpx (void)			__attribute__((__target__("mpx")));
 extern void test_clwb (void)			__attribute__((__target__("clwb")));
 
 extern void test_cld (void)			__attribute__((__target__("cld")));
@@ -130,7 +129,6 @@ extern void test_no_pku (void)			__attribute__((__target__("no-pku")));
 extern void test_no_lwp (void)			__attribute__((__target__("no-lwp")));
 extern void test_no_hle (void)			__attribute__((__target__("no-hle")));
 extern void test_no_fxsr (void)			__attribute__((__target__("no-fxsr")));
-extern void test_no_mpx (void)			__attribute__((__target__("no-mpx")));
 extern void test_no_clwb (void)			__attribute__((__target__("no-clwb")));
 
 extern void test_no_cld (void)			__attribute__((__target__("no-cld")));
@@ -141,6 +139,10 @@ extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));
 extern void test_arch_corei7 (void)		__attribute__((__target__("arch=corei7")));
 extern void test_arch_corei7_avx (void)		__attribute__((__target__("arch=corei7-avx")));
 extern void test_arch_core_avx2 (void)		__attribute__((__target__("arch=core-avx2")));
+extern void test_arch_silvermont (void)		__attribute__((__target__("arch=silvermont")));
+extern void test_arch_goldmont (void)		__attribute__((__target__("arch=goldmont")));
+extern void test_arch_goldmont_plus (void)	__attribute__((__target__("arch=goldmont-plus")));
+extern void test_arch_tremont (void)		__attribute__((__target__("arch=tremont")));
 extern void test_arch_knl (void)		__attribute__((__target__("arch=knl")));
 extern void test_arch_knm (void)		__attribute__((__target__("arch=knm")));
 extern void test_arch_skylake (void)		__attribute__((__target__("arch=skylake")));

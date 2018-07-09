@@ -44,6 +44,7 @@
 #include "config.h"
 #include "gstdint.h"
 #include "libgomp-plugin.h"
+#include "gomp-constants.h"
 
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
@@ -367,6 +368,7 @@ extern unsigned int gomp_num_teams_var;
 extern int gomp_debug_var;
 extern int goacc_device_num;
 extern char *goacc_device_type;
+extern int goacc_default_dims[GOMP_DIM_MAX];
 
 enum gomp_task_kind
 {
@@ -851,6 +853,8 @@ struct splay_tree_key_s {
   uintptr_t tgt_offset;
   /* Reference count.  */
   uintptr_t refcount;
+  /* Dynamic reference count.  */
+  uintptr_t dynamic_refcount;
   /* Pointer to the original mapping of "omp declare target link" object.  */
   splay_tree_key link_key;
 };
@@ -989,7 +993,9 @@ enum gomp_map_vars_kind
 };
 
 extern void gomp_acc_insert_pointer (size_t, void **, size_t *, void *);
-extern void gomp_acc_remove_pointer (void *, bool, int, int);
+extern void gomp_acc_remove_pointer (void *, size_t, bool, int, int, int);
+extern void gomp_acc_declare_allocate (bool, size_t, void **, size_t *,
+				       unsigned short *);
 
 extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
 					      size_t, void **, void **,
@@ -999,6 +1005,7 @@ extern void gomp_unmap_vars (struct target_mem_desc *, bool);
 extern void gomp_init_device (struct gomp_device_descr *);
 extern void gomp_free_memmap (struct splay_tree_s *);
 extern void gomp_unload_device (struct gomp_device_descr *);
+extern bool gomp_remove_var (struct gomp_device_descr *, splay_tree_key);
 
 /* work.c */
 

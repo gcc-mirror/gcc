@@ -273,6 +273,26 @@
         end subroutine
       end interface
 
+      interface acc_copyout_finalize
+        subroutine acc_copyout_finalize_32_h (a, len)
+          use iso_c_binding, only: c_int32_t
+          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+          type (*), dimension (*) :: a
+          integer (c_int32_t) len
+        end subroutine
+
+        subroutine acc_copyout_finalize_64_h (a, len)
+          use iso_c_binding, only: c_int64_t
+          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+          type (*), dimension (*) :: a
+          integer (c_int64_t) len
+        end subroutine
+
+        subroutine acc_copyout_finalize_array_h (a)
+          type (*), dimension (..), contiguous :: a
+        end subroutine
+      end interface
+
       interface acc_delete
         subroutine acc_delete_32_h (a, len)
           use iso_c_binding, only: c_int32_t
@@ -289,6 +309,26 @@
         end subroutine
 
         subroutine acc_delete_array_h (a)
+          type (*), dimension (..), contiguous :: a
+        end subroutine
+      end interface
+
+      interface acc_delete_finalize
+        subroutine acc_delete_finalize_32_h (a, len)
+          use iso_c_binding, only: c_int32_t
+          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+          type (*), dimension (*) :: a
+          integer (c_int32_t) len
+        end subroutine
+
+        subroutine acc_delete_finalize_64_h (a, len)
+          use iso_c_binding, only: c_int64_t
+          !GCC$ ATTRIBUTES NO_ARG_CHECK :: a
+          type (*), dimension (*) :: a
+          integer (c_int64_t) len
+        end subroutine
+
+        subroutine acc_delete_finalize_array_h (a)
           type (*), dimension (..), contiguous :: a
         end subroutine
       end interface

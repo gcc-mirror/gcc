@@ -63,6 +63,12 @@ static clock_t start_time;
 #define FIBER_STACK_SIZE (64*1024)
 #define GROUP_SEGMENT_ALIGN 256
 
+/* Preserve this amount of additional space in the alloca stack as we need to
+   store the alloca frame pointer to the alloca frame, thus must preserve
+   space for it.  This thus supports at most 1024 functions with allocas in
+   a call chain.  */
+#define ALLOCA_OVERHEAD 1024*4
+
 uint32_t __hsail_workitemabsid (uint32_t dim, PHSAWorkItem *context);
 
 uint32_t __hsail_workitemid (uint32_t dim, PHSAWorkItem *context);
@@ -101,11 +107,20 @@ phsa_work_item_thread (int arg0, int arg1)
 	 the current_work_group_* is set to point to the WG executed next.  */
       if (!wi->wg->more_wgs)
 	break;
+
+      wi->group_x = wg->x;
+      wi->group_y = wg->y;
+      wi->group_z = wg->z;
+
+      wi->cur_wg_size_x = __hsail_currentworkgroupsize (0, wi);
+      wi->cur_wg_size_y = __hsail_currentworkgroupsize (1, wi);
+      wi->cur_wg_size_z = __hsail_currentworkgroupsize (2, wi);
+
 #ifdef DEBUG_PHSA_RT
       printf (
 	"Running work-item %lu/%lu/%lu for wg %lu/%lu/%lu / %lu/%lu/%lu...\n",
-	wi->x, wi->y, wi->z, wg->x, wg->y, wg->z, l_data->wg_max_x,
-	l_data->wg_max_y, l_data->wg_max_z);
+	wi->x, wi->y, wi->z, wi->group_x, wi->group_y, wi->group_z,
+	l_data->wg_max_x, l_data->wg_max_y, l_data->wg_max_z);
 #endif
 
       if (wi->x < __hsail_currentworkgroupsize (0, wi)
@@ -174,6 +189,13 @@ phsa_work_item_thread (int arg0, int arg1)
 	  else
 	    wg->x++;
 #endif
+	  wi->group_x = wg->x;
+	  wi->group_y = wg->y;
+	  wi->group_z = wg->z;
+
+	  wi->cur_wg_size_x = __hsail_currentworkgroupsize (0, wi);
+	  wi->cur_wg_size_y = __hsail_currentworkgroupsize (1, wi);
+	  wi->cur_wg_size_z = __hsail_currentworkgroupsize (2, wi);
 
 	  /* Reinitialize the work-group barrier according to the new WG's
 	     size, which might not be the same as the previous ones, due
@@ -227,6 +249,7 @@ phsa_execute_wi_gang (PHSAKernelLaunchData *context, void *group_base_ptr,
   PHSAWorkItem *wi_threads = NULL;
   PHSAWorkGroup wg;
   size_t flat_wi_id = 0, x, y, z, max_x, max_y, max_z;
+  uint32_t group_x, group_y, group_z;
   fiber_barrier_t wg_start_barrier;
   fiber_barrier_t wg_completion_barrier;
   fiber_barrier_t wg_sync_barrier;
@@ -246,18 +269,18 @@ phsa_execute_wi_gang (PHSAKernelLaunchData *context, void *group_base_ptr,
 	   != 0)
     phsa_fatal_error (3);
 
-  wg.alloca_stack_p = wg.private_segment_total_size;
+  wg.alloca_stack_p = wg.private_segment_total_size + ALLOCA_OVERHEAD;
   wg.alloca_frame_p = wg.alloca_stack_p;
   wg.initial_group_offset = group_local_offset;
 
 #ifdef EXECUTE_WGS_BACKWARDS
-  wg.x = context->wg_max_x - 1;
-  wg.y = context->wg_max_y - 1;
-  wg.z = context->wg_max_z - 1;
+  group_x = context->wg_max_x - 1;
+  group_y = context->wg_max_y - 1;
+  group_z = context->wg_max_z - 1;
 #else
-  wg.x = context->wg_min_x;
-  wg.y = context->wg_min_y;
-  wg.z = context->wg_min_z;
+  group_x = context->wg_min_x;
+  group_y = context->wg_min_y;
+  group_z = context->wg_min_z;
 #endif
 
   fiber_barrier_init (&wg_sync_barrier, wg_size);
@@ -284,6 +307,19 @@ phsa_execute_wi_gang (PHSAKernelLaunchData *context, void *group_base_ptr,
 	  PHSAWorkItem *wi = &wi_threads[flat_wi_id];
 	  wi->launch_data = context;
 	  wi->wg = &wg;
+
+	  wg.x = wi->group_x = group_x;
+	  wg.y = wi->group_y = group_y;
+	  wg.z = wi->group_z = group_z;
+
+	  wi->wg_size_x = context->dp->workgroup_size_x;
+	  wi->wg_size_y = context->dp->workgroup_size_y;
+	  wi->wg_size_z = context->dp->workgroup_size_z;
+
+	  wi->cur_wg_size_x = __hsail_currentworkgroupsize (0, wi);
+	  wi->cur_wg_size_y = __hsail_currentworkgroupsize (1, wi);
+	  wi->cur_wg_size_z = __hsail_currentworkgroupsize (2, wi);
+
 	  wi->x = x;
 	  wi->y = y;
 	  wi->z = z;
@@ -446,7 +482,7 @@ phsa_execute_work_groups (PHSAKernelLaunchData *context, void *group_base_ptr,
 	   != 0)
     phsa_fatal_error (3);
 
-  wg.alloca_stack_p = dp->private_segment_size * wg_size;
+  wg.alloca_stack_p = dp->private_segment_size * wg_size + ALLOCA_OVERHEAD;
   wg.alloca_frame_p = wg.alloca_stack_p;
 
   wg.private_base_ptr = private_base_ptr;
@@ -461,9 +497,17 @@ phsa_execute_work_groups (PHSAKernelLaunchData *context, void *group_base_ptr,
     for (wg_y = context->wg_min_y; wg_y < context->wg_max_y; ++wg_y)
       for (wg_x = context->wg_min_x; wg_x < context->wg_max_x; ++wg_x)
 	{
-	  wi.wg->x = wg_x;
-	  wi.wg->y = wg_y;
-	  wi.wg->z = wg_z;
+	  wi.group_x = wg_x;
+	  wi.group_y = wg_y;
+	  wi.group_z = wg_z;
+
+	  wi.wg_size_x = context->dp->workgroup_size_x;
+	  wi.wg_size_y = context->dp->workgroup_size_y;
+	  wi.wg_size_z = context->dp->workgroup_size_z;
+
+	  wi.cur_wg_size_x = __hsail_currentworkgroupsize (0, &wi);
+	  wi.cur_wg_size_y = __hsail_currentworkgroupsize (1, &wi);
+	  wi.cur_wg_size_z = __hsail_currentworkgroupsize (2, &wi);
 
 	  context->kernel (context->kernarg_addr, &wi, group_base_ptr,
 			   group_local_offset, private_base_ptr);
@@ -558,15 +602,15 @@ __hsail_workitemabsid (uint32_t dim, PHSAWorkItem *context)
     default:
     case 0:
       /* Overflow semantics in the case of WG dim > grid dim.  */
-      id = ((uint64_t) context->wg->x * dp->workgroup_size_x + context->x)
+      id = ((uint64_t) context->group_x * dp->workgroup_size_x + context->x)
 	   % dp->grid_size_x;
       break;
     case 1:
-      id = ((uint64_t) context->wg->y * dp->workgroup_size_y + context->y)
+      id = ((uint64_t) context->group_y * dp->workgroup_size_y + context->y)
 	   % dp->grid_size_y;
       break;
     case 2:
-      id = ((uint64_t) context->wg->z * dp->workgroup_size_z + context->z)
+      id = ((uint64_t) context->group_z * dp->workgroup_size_z + context->z)
 	   % dp->grid_size_z;
       break;
     }
@@ -584,15 +628,15 @@ __hsail_workitemabsid_u64 (uint32_t dim, PHSAWorkItem *context)
     default:
     case 0:
       /* Overflow semantics in the case of WG dim > grid dim.  */
-      id = ((uint64_t) context->wg->x * dp->workgroup_size_x + context->x)
+      id = ((uint64_t) context->group_x * dp->workgroup_size_x + context->x)
 	   % dp->grid_size_x;
       break;
     case 1:
-      id = ((uint64_t) context->wg->y * dp->workgroup_size_y + context->y)
+      id = ((uint64_t) context->group_y * dp->workgroup_size_y + context->y)
 	   % dp->grid_size_y;
       break;
     case 2:
-      id = ((uint64_t) context->wg->z * dp->workgroup_size_z + context->z)
+      id = ((uint64_t) context->group_z * dp->workgroup_size_z + context->z)
 	   % dp->grid_size_z;
       break;
     }
@@ -732,19 +776,19 @@ __hsail_currentworkgroupsize (uint32_t dim, PHSAWorkItem *wi)
     {
     default:
     case 0:
-      if ((uint64_t) wi->wg->x < dp->grid_size_x / dp->workgroup_size_x)
+      if ((uint64_t) wi->group_x < dp->grid_size_x / dp->workgroup_size_x)
 	wg_size = dp->workgroup_size_x; /* Full WG.  */
       else
 	wg_size = dp->grid_size_x % dp->workgroup_size_x; /* Partial WG.  */
       break;
     case 1:
-      if ((uint64_t) wi->wg->y < dp->grid_size_y / dp->workgroup_size_y)
+      if ((uint64_t) wi->group_y < dp->grid_size_y / dp->workgroup_size_y)
 	wg_size = dp->workgroup_size_y; /* Full WG.  */
       else
 	wg_size = dp->grid_size_y % dp->workgroup_size_y; /* Partial WG.  */
       break;
     case 2:
-      if ((uint64_t) wi->wg->z < dp->grid_size_z / dp->workgroup_size_z)
+      if ((uint64_t) wi->group_z < dp->grid_size_z / dp->workgroup_size_z)
 	wg_size = dp->workgroup_size_z; /* Full WG.  */
       else
 	wg_size = dp->grid_size_z % dp->workgroup_size_z; /* Partial WG.  */
@@ -792,11 +836,11 @@ __hsail_workgroupid (uint32_t dim, PHSAWorkItem *wi)
     {
     default:
     case 0:
-      return wi->wg->x;
+      return wi->group_x;
     case 1:
-      return wi->wg->y;
+      return wi->group_y;
     case 2:
-      return wi->wg->z;
+      return wi->group_z;
     }
 }
 
@@ -867,9 +911,12 @@ uint32_t
 __hsail_alloca (uint32_t size, uint32_t align, PHSAWorkItem *wi)
 {
   volatile PHSAWorkGroup *wg = wi->wg;
-  uint32_t new_pos = wg->alloca_stack_p - size;
+  int64_t new_pos = wg->alloca_stack_p - size;
   while (new_pos % align != 0)
     new_pos--;
+  if (new_pos < 0)
+    phsa_fatal_error (2);
+
   wg->alloca_stack_p = new_pos;
 
 #ifdef DEBUG_ALLOCA

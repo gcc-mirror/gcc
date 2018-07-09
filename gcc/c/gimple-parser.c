@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "gimple-ssa.h"
 #include "tree-dfa.h"
+#include "internal-fn.h"
 
 
 /* Gimple parsing functions.  */
@@ -327,7 +328,8 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
     case CPP_NAME:
       {
 	tree id = c_parser_peek_token (parser)->value;
-	if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0)
+	if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0
+	    || strcmp (IDENTIFIER_POINTER (id), "__ABSU") == 0)
 	  goto build_unary_expr;
 	break;
       }
@@ -400,9 +402,10 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
     }
 
   /* GIMPLE call with lhs.  */
-  if (c_parser_next_token_is (parser, CPP_NAME)
-      && c_parser_peek_2nd_token (parser)->type == CPP_OPEN_PAREN
-      && lookup_name (c_parser_peek_token (parser)->value))
+  if (c_parser_next_token_is (parser, CPP_DOT)
+      || (c_parser_next_token_is (parser, CPP_NAME)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_OPEN_PAREN
+	  && lookup_name (c_parser_peek_token (parser)->value)))
     {
       rhs = c_parser_gimple_unary_expression (parser);
       if (rhs.value != error_mark_node)
@@ -636,6 +639,12 @@ c_parser_gimple_unary_expression (c_parser *parser)
 	      op = c_parser_gimple_postfix_expression (parser);
 	      return parser_build_unary_op (op_loc, ABS_EXPR, op);
 	    }
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__ABSU") == 0)
+	    {
+	      c_parser_consume_token (parser);
+	      op = c_parser_gimple_postfix_expression (parser);
+	      return parser_build_unary_op (op_loc, ABSU_EXPR, op);
+	    }
 	  else
 	    return c_parser_gimple_postfix_expression (parser);
 	}
@@ -726,14 +735,57 @@ c_parser_parse_ssa_name (c_parser *parser,
   return name;
 }
 
+/* Parse a gimple call to an internal function.
+
+   gimple-call-internal:
+     . identifier ( gimple-argument-expression-list[opt] )  */
+
+static struct c_expr
+c_parser_gimple_call_internal (c_parser *parser)
+{
+  struct c_expr expr;
+  expr.set_error ();
+
+  gcc_assert (c_parser_next_token_is (parser, CPP_DOT));
+  c_parser_consume_token (parser);
+  location_t loc = c_parser_peek_token (parser)->location;
+  if (!c_parser_next_token_is (parser, CPP_NAME)
+      || c_parser_peek_token (parser)->id_kind != C_ID_ID)
+    {
+      c_parser_error (parser, "expecting internal function name");
+      return expr;
+    }
+  tree id = c_parser_peek_token (parser)->value;
+  internal_fn ifn = lookup_internal_fn (IDENTIFIER_POINTER (id));
+  c_parser_consume_token (parser);
+  if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    {
+      auto_vec<tree> exprlist;
+      if (!c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	c_parser_gimple_expr_list (parser, &exprlist);
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
+      if (ifn == IFN_LAST)
+	error_at (loc, "unknown internal function %qE", id);
+      else
+	{
+	  expr.value = build_call_expr_internal_loc_array
+	    (loc, ifn, void_type_node, exprlist.length (),
+	     exprlist.address ());
+	  expr.original_code = ERROR_MARK;
+	  expr.original_type = NULL;
+	}
+    }
+  return expr;
+}
+
 /* Parse gimple postfix expression.
 
    gimple-postfix-expression:
      gimple-primary-expression
-     gimple-primary-xpression [ gimple-primary-expression ]
+     gimple-primary-expression [ gimple-primary-expression ]
      gimple-primary-expression ( gimple-argument-expression-list[opt] )
-     postfix-expression . identifier
-     postfix-expression -> identifier
+     gimple-postfix-expression . identifier
+     gimple-postfix-expression -> identifier
 
    gimple-argument-expression-list:
      gimple-unary-expression
@@ -743,6 +795,7 @@ c_parser_parse_ssa_name (c_parser *parser,
      identifier
      constant
      string-literal
+     gimple-call-internal
 
 */
 
@@ -778,6 +831,9 @@ c_parser_gimple_postfix_expression (c_parser *parser)
       set_c_expr_source_range (&expr, tok_range);
       expr.original_code = STRING_CST;
       c_parser_consume_token (parser);
+      break;
+    case CPP_DOT:
+      expr = c_parser_gimple_call_internal (parser);
       break;
     case CPP_NAME:
       if (c_parser_peek_token (parser)->id_kind == C_ID_ID)
@@ -901,27 +957,6 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 		    }
 		}
 	      expr.value = fold_convert (type, val);
-	      return expr;
-	    }
-	  else if (strcmp (IDENTIFIER_POINTER (id), "__FMA") == 0)
-	    {
-	      c_parser_consume_token (parser);
-	      auto_vec<tree> args;
-
-	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
-		{
-		  c_parser_gimple_expr_list (parser, &args);
-		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
-					     "expected %<)%>");
-		}
-	      if (args.length () != 3)
-		{
-		  error_at (loc, "invalid number of operands to __FMA");
-		  expr.value = error_mark_node;
-		  return expr;
-		}
-	      expr.value = build3_loc (loc, FMA_EXPR, TREE_TYPE (args[0]),
-				       args[0], args[1], args[2]);
 	      return expr;
 	    }
 

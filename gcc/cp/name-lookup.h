@@ -112,7 +112,7 @@ enum scope_kind {
 			of an if or switch statement.  */
   sk_function_parms, /* The scope containing function parameters.  */
   sk_class,	     /* The scope containing the members of a class.  */
-  sk_scoped_enum,    /* The scope containing the enumertors of a C++0x
+  sk_scoped_enum,    /* The scope containing the enumerators of a C++11
                         scoped enumeration.  */
   sk_namespace,	     /* The scope containing the members of a
 			namespace, including the global scope.  */
@@ -204,11 +204,6 @@ struct GTY(()) cp_binding_level {
 
   /* The binding level which this one is contained in (inherits from).  */
   cp_binding_level *level_chain;
-
-  /* List of VAR_DECLS saved from a previous for statement.
-      These would be dead in ISO-conforming code, but might
-      be referenced in ARM-era code.  */
-  vec<tree, va_gc> *dead_vars_from_for;
 
   /* STATEMENT_LIST for statements in this binding contour.
       Only used at present for SK_CLEANUP temporary bindings.  */

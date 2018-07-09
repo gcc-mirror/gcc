@@ -86,7 +86,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
 
   /* mark node as old */
   v_info->new_node = false;
-  splay_tree_remove (env->nodes_marked_new, v->uid);
+  splay_tree_remove (env->nodes_marked_new, v->get_uid ());
 
   v_info->dfn_number = env->count;
   v_info->low_link = env->count;
@@ -195,7 +195,7 @@ ipa_reduced_postorder (struct cgraph_node **order,
 	  node->aux = info;
 
 	  splay_tree_insert (env.nodes_marked_new,
-			     (splay_tree_key)node->uid,
+			     (splay_tree_key)node->get_uid (),
 			     (splay_tree_value)node);
 	}
       else

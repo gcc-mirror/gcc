@@ -29,5 +29,6 @@
 
 extern void GOMP_PLUGIN_async_unmap_vars (void *, int);
 extern void *GOMP_PLUGIN_acc_thread (void);
+extern int GOMP_PLUGIN_acc_default_dim (unsigned int);
 
 #endif

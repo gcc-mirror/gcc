@@ -319,9 +319,9 @@ package body System.Tasking.Protected_Objects.Single_Entry is
          Send_Program_Error (Entry_Call);
    end PO_Do_Or_Queue;
 
-   ----------------------------
-   -- Protected_Single_Count --
-   ----------------------------
+   ---------------------------
+   -- Protected_Count_Entry --
+   ---------------------------
 
    function Protected_Count_Entry (Object : Protection_Entry) return Natural is
    begin

@@ -3916,10 +3916,14 @@ package body Sem_Ch8 is
       --  manipulation of the scope stack so we much guard against those cases
       --  here, otherwise, we must add the new use_type_clause to the previous
       --  use_type_clause chain in order to mark redundant use_type_clauses as
-      --  used.
+      --  used. When the redundant use-type clauses appear in a parent unit and
+      --  a child unit we must prevent a circularity in the chain that would
+      --  otherwise result from the separate steps of analysis and installation
+      --  of the parent context.
 
       if Present (Current_Use_Clause (E))
         and then Current_Use_Clause (E) /= N
+        and then Prev_Use_Clause (Current_Use_Clause (E)) /= N
         and then No (Prev_Use_Clause (N))
       then
          Set_Prev_Use_Clause (N, Current_Use_Clause (E));
@@ -4322,7 +4326,10 @@ package body Sem_Ch8 is
                Analyze (B_Node);
             end if;
 
-            if Is_Intrinsic_Subprogram (Old_S) and then not In_Instance then
+            if Is_Intrinsic_Subprogram (Old_S)
+              and then not In_Instance
+              and then not Relaxed_RM_Semantics
+            then
                Error_Msg_N
                  ("subprogram used in renaming_as_body cannot be intrinsic",
                   Name (N));
@@ -5416,8 +5423,6 @@ package body Sem_Ch8 is
 
       --  Local variables
 
-      Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
-
       Nested_Inst : Entity_Id := Empty;
       --  The entity of a nested instance which appears within Inst (if any)
 
@@ -5963,11 +5968,19 @@ package body Sem_Ch8 is
       --  reference is a write when it appears on the left hand side of an
       --  assignment.
 
-      if not Within_Subprogram_Call (N) then
-         Build_Variable_Reference_Marker
-           (N     => N,
-            Read  => not Is_Assignment_LHS,
-            Write => Is_Assignment_LHS);
+      if Needs_Variable_Reference_Marker
+           (N        => N,
+            Calls_OK => False)
+      then
+         declare
+            Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+
+         begin
+            Build_Variable_Reference_Marker
+              (N     => N,
+               Read  => not Is_Assignment_LHS,
+               Write => Is_Assignment_LHS);
+         end;
       end if;
    end Find_Direct_Name;
 
@@ -6040,8 +6053,7 @@ package body Sem_Ch8 is
 
       --  Local variables
 
-      Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
-      Selector          : constant Node_Id := Selector_Name (N);
+      Selector : constant Node_Id := Selector_Name (N);
 
       Candidate : Entity_Id := Empty;
       P_Name    : Entity_Id;
@@ -6329,7 +6341,11 @@ package body Sem_Ch8 is
                --  If this is a selection from Ada, System or Interfaces, then
                --  we assume a missing with for the corresponding package.
 
-               if Is_Known_Unit (N) then
+               if Is_Known_Unit (N)
+                 and then not (Present (Entity (Prefix (N)))
+                                and then Scope (Entity (Prefix (N))) /=
+                                           Standard_Standard)
+               then
                   if not Error_Posted (N) then
                      Error_Msg_Node_2 := Selector;
                      Error_Msg_N -- CODEFIX
@@ -6610,11 +6626,19 @@ package body Sem_Ch8 is
       --  reference is a write when it appears on the left hand side of an
       --  assignment.
 
-      if not Within_Subprogram_Call (N) then
-         Build_Variable_Reference_Marker
-           (N     => N,
-            Read  => not Is_Assignment_LHS,
-            Write => Is_Assignment_LHS);
+      if Needs_Variable_Reference_Marker
+           (N        => N,
+            Calls_OK => False)
+      then
+         declare
+            Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+
+         begin
+            Build_Variable_Reference_Marker
+              (N     => N,
+               Read  => not Is_Assignment_LHS,
+               Write => Is_Assignment_LHS);
+         end;
       end if;
    end Find_Expanded_Name;
 
@@ -7098,7 +7122,7 @@ package body Sem_Ch8 is
             end if;
 
          --  If the selected component appears within a default expression
-         --  and it has an actual subtype, the pre-analysis has not yet
+         --  and it has an actual subtype, the preanalysis has not yet
          --  completed its analysis, because Insert_Actions is disabled in
          --  that context. Within the init proc of the enclosing type we
          --  must complete this analysis, if an actual subtype was created.
@@ -8521,7 +8545,8 @@ package body Sem_Ch8 is
      (Clause1 : Entity_Id;
       Clause2 : Entity_Id) return Entity_Id
    is
-      Scope1, Scope2 : Entity_Id;
+      Scope1 : Entity_Id;
+      Scope2 : Entity_Id;
 
    begin
       if Clause1 = Clause2 then

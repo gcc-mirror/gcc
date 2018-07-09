@@ -144,9 +144,7 @@ find_local_binding (cp_binding_level *b, tree name)
   if (cxx_binding *binding = IDENTIFIER_BINDING (name))
     for (;; b = b->level_chain)
       {
-	if (binding->scope == b
-	    && !(VAR_P (binding->value)
-		 && DECL_DEAD_FOR_LOCAL (binding->value)))
+	if (binding->scope == b)
 	  return binding;
 
 	/* Cleanup contours are transparent to the language.  */
@@ -2527,6 +2525,10 @@ check_extern_c_conflict (tree decl)
   if (DECL_ARTIFICIAL (decl) || DECL_IN_SYSTEM_HEADER (decl))
     return;
 
+  /* This only applies to decls at namespace scope.  */
+  if (!DECL_NAMESPACE_SCOPE_P (decl))
+    return;
+
   if (!extern_c_decls)
     extern_c_decls = hash_table<named_decl_hash>::create_ggc (127);
 
@@ -2628,8 +2630,6 @@ check_local_shadow (tree decl)
       old = binding->value;
       old_scope = binding->scope;
     }
-  while (old && VAR_P (old) && DECL_DEAD_FOR_LOCAL (old))
-    old = DECL_SHADOWED_FOR_VAR (old);
 
   tree shadowed = NULL_TREE;
   if (old
@@ -2638,6 +2638,7 @@ check_local_shadow (tree decl)
 	  || (TREE_CODE (old) == TYPE_DECL
 	      && (!DECL_ARTIFICIAL (old)
 		  || TREE_CODE (decl) == TYPE_DECL)))
+      && DECL_FUNCTION_SCOPE_P (old)
       && (!DECL_ARTIFICIAL (decl)
 	  || DECL_IMPLICIT_TYPEDEF_P (decl)
 	  || (VAR_P (decl) && DECL_ANON_UNION_VAR_P (decl))))
@@ -3050,7 +3051,6 @@ do_pushdecl (tree decl, bool is_friend)
 	old = OVL_CHAIN (old);
 
       check_template_shadow (decl);
-      bool visible_injection = false;
 
       if (DECL_DECLARES_FUNCTION_P (decl))
 	{
@@ -3068,11 +3068,8 @@ do_pushdecl (tree decl, bool is_friend)
 		  /* Don't attempt to push it.  */
 		  return error_mark_node;
 		}
-	      if (!flag_friend_injection)
-		/* Hide it from ordinary lookup.  */
-		DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
-	      else
-		visible_injection = true;
+	      /* Hide it from ordinary lookup.  */
+	      DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
 	    }
 	}
 
@@ -3124,9 +3121,6 @@ do_pushdecl (tree decl, bool is_friend)
 	}
       else if (VAR_P (decl))
 	maybe_register_incomplete_var (decl);
-      else if (visible_injection)
-	warning (0, "injected friend %qD is visible"
-		" due to %<-ffriend-injection%>", decl);
 
       if ((VAR_P (decl) || TREE_CODE (decl) == FUNCTION_DECL)
 	  && DECL_EXTERN_C_P (decl))
@@ -3215,84 +3209,6 @@ push_local_binding (tree id, tree decl, bool is_using)
   add_decl_to_level (b, decl);
 }
 
-/* Check to see whether or not DECL is a variable that would have been
-   in scope under the ARM, but is not in scope under the ANSI/ISO
-   standard.  If so, issue an error message.  If name lookup would
-   work in both cases, but return a different result, this function
-   returns the result of ANSI/ISO lookup.  Otherwise, it returns
-   DECL.
-
-   FIXME: Scheduled for removal after GCC-8 is done.  */
-
-tree
-check_for_out_of_scope_variable (tree decl)
-{
-  tree shadowed;
-
-  /* We only care about out of scope variables.  */
-  if (!(VAR_P (decl) && DECL_DEAD_FOR_LOCAL (decl)))
-    return decl;
-
-  shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (decl)
-    ? DECL_SHADOWED_FOR_VAR (decl) : NULL_TREE ;
-  while (shadowed != NULL_TREE && VAR_P (shadowed)
-	 && DECL_DEAD_FOR_LOCAL (shadowed))
-    shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (shadowed)
-      ? DECL_SHADOWED_FOR_VAR (shadowed) : NULL_TREE;
-  if (!shadowed)
-    shadowed = find_namespace_value (current_namespace, DECL_NAME (decl));
-  if (shadowed)
-    {
-      if (!DECL_ERROR_REPORTED (decl)
-	  && flag_permissive
-	  && warning (0, "name lookup of %qD changed", DECL_NAME (decl)))
-	{
-	  inform (DECL_SOURCE_LOCATION (shadowed),
-		  "matches this %qD under ISO standard rules", shadowed);
-	  inform (DECL_SOURCE_LOCATION (decl),
-		  "  matches this %qD under old rules", decl);
-	}
-      DECL_ERROR_REPORTED (decl) = 1;
-      return shadowed;
-    }
-
-  /* If we have already complained about this declaration, there's no
-     need to do it again.  */
-  if (DECL_ERROR_REPORTED (decl))
-    return decl;
-
-  DECL_ERROR_REPORTED (decl) = 1;
-
-  if (TREE_TYPE (decl) == error_mark_node)
-    return decl;
-
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
-    {
-      error ("name lookup of %qD changed for ISO %<for%> scoping",
-	     DECL_NAME (decl));
-      inform (DECL_SOURCE_LOCATION (decl),
-	      "cannot use obsolete binding %qD because it has a destructor",
-	      decl);
-      return error_mark_node;
-    }
-  else
-    {
-      permerror (input_location,
-		 "name lookup of %qD changed for ISO %<for%> scoping",
-	         DECL_NAME (decl));
-      if (flag_permissive)
-        inform (DECL_SOURCE_LOCATION (decl),
-		"using obsolete binding %qD", decl);
-      static bool hint;
-      if (!hint)
-	inform (input_location, flag_permissive
-		? "this flexibility is deprecated and will be removed"
-		: "if you use %<-fpermissive%> G++ will accept your code");
-      hint = true;
-    }
-
-  return decl;
-}
 
 /* true means unconditionally make a BLOCK for the next level pushed.  */
 
@@ -3742,7 +3658,7 @@ debug (cp_binding_level *ptr)
 }
 
 
-void
+static void
 print_other_binding_stack (cp_binding_level *stack)
 {
   cp_binding_level *level;
@@ -5860,8 +5776,19 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 	  && DECL_ANTICIPATED (d))
 	continue;
 
+      /* Skip compiler-generated variables (e.g. __for_begin/__for_end
+	 within range for).  */
+      if (TREE_CODE (d) == VAR_DECL
+	  && DECL_ARTIFICIAL (d))
+	continue;
+
       tree suggestion = DECL_NAME (d);
       if (!suggestion)
+	continue;
+
+      /* Don't suggest names that are for anonymous aggregate types, as
+	 they are an implementation detail generated by the compiler.  */
+      if (anon_aggrname_p (suggestion))
 	continue;
 
       const char *suggestion_str = IDENTIFIER_POINTER (suggestion);
@@ -6587,25 +6514,30 @@ do_pushtag (tree name, tree type, tag_scope scope)
   tree decl;
 
   cp_binding_level *b = current_binding_level;
-  while (/* Cleanup scopes are not scopes from the point of view of
-	    the language.  */
-	 b->kind == sk_cleanup
-	 /* Neither are function parameter scopes.  */
-	 || b->kind == sk_function_parms
-	 /* Neither are the scopes used to hold template parameters
-	    for an explicit specialization.  For an ordinary template
-	    declaration, these scopes are not scopes from the point of
-	    view of the language.  */
-	 || (b->kind == sk_template_parms
-	     && (b->explicit_spec_p || scope == ts_global))
-	 || (b->kind == sk_class
-	     && (scope != ts_current
-		 /* We may be defining a new type in the initializer
-		    of a static member variable. We allow this when
-		    not pedantic, and it is particularly useful for
-		    type punning via an anonymous union.  */
-		 || COMPLETE_TYPE_P (b->this_entity))))
-    b = b->level_chain;
+  while (true)
+    {
+      if (/* Cleanup scopes are not scopes from the point of view of
+	     the language.  */
+	  b->kind == sk_cleanup
+	  /* Neither are function parameter scopes.  */
+	  || b->kind == sk_function_parms
+	  /* Neither are the scopes used to hold template parameters
+	     for an explicit specialization.  For an ordinary template
+	     declaration, these scopes are not scopes from the point of
+	     view of the language.  */
+	  || (b->kind == sk_template_parms
+	      && (b->explicit_spec_p || scope == ts_global)))
+	b = b->level_chain;
+      else if (b->kind == sk_class
+	       && scope != ts_current)
+	{
+	  b = b->level_chain;
+	  if (b->kind == sk_template_parms)
+	    b = b->level_chain;
+	}
+      else
+	break;
+    }
 
   gcc_assert (identifier_p (name));
 
@@ -6618,7 +6550,18 @@ do_pushtag (tree name, tree type, tag_scope scope)
 
       if (! context)
 	{
-	  tree cs = current_scope ();
+	  cp_binding_level *cb = b;
+	  while (cb->kind != sk_namespace
+		 && cb->kind != sk_class
+		 && (cb->kind != sk_function_parms
+		     || !cb->this_entity))
+	    cb = cb->level_chain;
+	  tree cs = cb->this_entity;
+
+	  gcc_checking_assert (TREE_CODE (cs) == FUNCTION_DECL
+			       ? cs == current_function_decl
+			       : TYPE_P (cs) ? cs == current_class_type
+			       : cs == current_namespace);
 
 	  if (scope == ts_current
 	      || (cs && TREE_CODE (cs) == FUNCTION_DECL))
@@ -6657,11 +6600,11 @@ do_pushtag (tree name, tree type, tag_scope scope)
 
       if (b->kind == sk_class)
 	{
-	  if (!TYPE_BEING_DEFINED (current_class_type)
-	      && !LAMBDA_TYPE_P (type))
-	    return error_mark_node;
-
-	  if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
+	  if (!TYPE_BEING_DEFINED (current_class_type))
+	    /* Don't push anywhere if the class is complete; a lambda in an
+	       NSDMI is not a member of the class.  */
+	    ;
+	  else if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
 	    /* Put this TYPE_DECL on the TYPE_FIELDS list for the
 	       class.  But if it's a member template class, we want
 	       the TEMPLATE_DECL, not the TYPE_DECL, so this is done
@@ -6924,7 +6867,7 @@ do_push_to_top_level (void)
 
   scope_chain = s;
   current_function_decl = NULL_TREE;
-  vec_alloc (current_lang_base, 10);
+  current_lang_base = NULL;
   current_lang_name = lang_name_cplusplus;
   current_namespace = global_namespace;
   push_class_stack ();
@@ -6944,7 +6887,7 @@ do_pop_from_top_level (void)
     invalidate_class_lookup_cache ();
   pop_class_stack ();
 
-  current_lang_base = 0;
+  release_tree_vector (current_lang_base);
 
   scope_chain = s->prev;
   FOR_EACH_VEC_SAFE_ELT (s->old_bindings, i, saved)

@@ -174,6 +174,18 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__silvermont");
       def_or_undef (parse_in, "__silvermont__");
       break;
+    case PROCESSOR_GOLDMONT:
+      def_or_undef (parse_in, "__goldmont");
+      def_or_undef (parse_in, "__goldmont__");
+      break;
+    case PROCESSOR_GOLDMONT_PLUS:
+      def_or_undef (parse_in, "__goldmont_plus");
+      def_or_undef (parse_in, "__goldmont_plus__");
+      break;
+    case PROCESSOR_TREMONT:
+      def_or_undef (parse_in, "__tremont");
+      def_or_undef (parse_in, "__tremont__");
+      break;
     case PROCESSOR_KNL:
       def_or_undef (parse_in, "__knl");
       def_or_undef (parse_in, "__knl__");
@@ -310,6 +322,15 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_SILVERMONT:
       def_or_undef (parse_in, "__tune_slm__");
       def_or_undef (parse_in, "__tune_silvermont__");
+      break;
+    case PROCESSOR_GOLDMONT:
+      def_or_undef (parse_in, "__tune_goldmont__");
+      break;
+    case PROCESSOR_GOLDMONT_PLUS:
+      def_or_undef (parse_in, "__tune_goldmont_plus__");
+      break;
+    case PROCESSOR_TREMONT:
+      def_or_undef (parse_in, "__tune_tremont__");
       break;
     case PROCESSOR_KNL:
       def_or_undef (parse_in, "__tune_knl__");
@@ -487,8 +508,6 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__XSAVEC__");
   if (isa_flag & OPTION_MASK_ISA_XSAVES)
     def_or_undef (parse_in, "__XSAVES__");
-  if (isa_flag2 & OPTION_MASK_ISA_MPX)
-    def_or_undef (parse_in, "__MPX__");
   if (isa_flag & OPTION_MASK_ISA_CLWB)
     def_or_undef (parse_in, "__CLWB__");
   if (isa_flag2 & OPTION_MASK_ISA_MWAITX)
@@ -499,22 +518,20 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__RDPID__");
   if (isa_flag & OPTION_MASK_ISA_GFNI)
     def_or_undef (parse_in, "__GFNI__");
-  if (isa_flag2 & OPTION_MASK_ISA_IBT)
-    {
-      def_or_undef (parse_in, "__IBT__");
-      if (flag_cf_protection != CF_NONE)
-	def_or_undef (parse_in, "__CET__");
-    }
-  if (isa_flag & OPTION_MASK_ISA_SHSTK)
-    {
-      def_or_undef (parse_in, "__SHSTK__");
-      if (flag_cf_protection != CF_NONE)
-	def_or_undef (parse_in, "__CET__");
-    }
+  if ((isa_flag & OPTION_MASK_ISA_SHSTK))
+    def_or_undef (parse_in, "__SHSTK__");
   if (isa_flag2 & OPTION_MASK_ISA_VAES)
     def_or_undef (parse_in, "__VAES__");
   if (isa_flag & OPTION_MASK_ISA_VPCLMULQDQ)
     def_or_undef (parse_in, "__VPCLMULQDQ__");
+  if (isa_flag & OPTION_MASK_ISA_MOVDIRI)
+    def_or_undef (parse_in, "__MOVDIRI__");
+  if (isa_flag2 & OPTION_MASK_ISA_MOVDIR64B)
+    def_or_undef (parse_in, "__MOVDIR64B__");
+  if (isa_flag2 & OPTION_MASK_ISA_WAITPKG)
+    def_or_undef (parse_in, "__WAITPKG__");
+  if (isa_flag2 & OPTION_MASK_ISA_CLDEMOTE)
+    def_or_undef (parse_in, "__CLDEMOTE__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
@@ -674,6 +691,10 @@ ix86_target_macros (void)
 
   cpp_define (parse_in, "__SEG_FS");
   cpp_define (parse_in, "__SEG_GS");
+
+  if (flag_cf_protection != CF_NONE)
+    cpp_define_formatted (parse_in, "__CET__=%d",
+			  flag_cf_protection & ~CF_SET);
 }
 
 

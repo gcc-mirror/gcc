@@ -244,7 +244,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       virtual
       ~basic_filebuf()
-      { this->close(); }
+      {
+	__try
+	  { this->close(); }
+	__catch(...)
+	  { }
+      }
 
 #if __cplusplus >= 201103L
       basic_filebuf& operator=(const basic_filebuf&) = delete;
@@ -303,6 +308,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       __filebuf_type*
       open(const char* __s, ios_base::openmode __mode);
+
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file, as a wide character string.
+       *  @param  __mode  The open mode flags.
+       *  @return  @c this on success, NULL on failure
+       */
+      __filebuf_type*
+      open(const wchar_t* __s, ios_base::openmode __mode);
+#endif
 
 #if __cplusplus >= 201103L
       /**
@@ -517,6 +533,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->open(__s, __mode);
       }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @param  Create an input file stream.
+       *  @param  __s  Wide string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
+       *
+       *  @c ios_base::in is automatically included in @a __mode.
+       */
+      basic_ifstream(const wchar_t* __s,
+		     ios_base::openmode __mode = ios_base::in)
+      : __istream_type(), _M_filebuf()
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
+      }
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Create an input file stream.
@@ -632,6 +665,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->clear();
       }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file, as a wide character string.
+       *  @param  __mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(__s,__mode|in).  If that function
+       *  fails, @c failbit is set in the stream's error state.
+       */
+      void
+      open(const wchar_t* __s, ios_base::openmode __mode = ios_base::in)
+      {
+	if (!_M_filebuf.open(__s, __mode | ios_base::in))
+	  this->setstate(ios_base::failbit);
+	else
+	  this->clear();
+      }
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Opens an external file.
@@ -742,6 +794,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);
       }
+
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @param  Create an output file stream.
+       *  @param  __s  Wide string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
+       *
+       *  @c ios_base::out | @c ios_base::trunc is automatically included in
+       *  @a __mode.
+       */
+      basic_ofstream(const wchar_t* __s,
+		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
+      : __ostream_type(), _M_filebuf()
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
+      }
+#endif
 
 #if __cplusplus >= 201103L
       /**
@@ -858,6 +928,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->clear();
       }
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(__s,__mode|out).  If that
+       *  function fails, @c failbit is set in the stream's error state.
+       */
+      void
+      open(const wchar_t* __s, ios_base::openmode __mode = ios_base::out)
+      {
+	if (!_M_filebuf.open(__s, __mode | ios_base::out))
+	  this->setstate(ios_base::failbit);
+	else
+	  this->clear();
+      }
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Opens an external file.
@@ -968,6 +1057,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);
       }
+
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @param  Create an input/output file stream.
+       *  @param  __s  Wide string specifying the filename.
+       *  @param  __mode  Open file in specified mode (see std::ios_base).
+       */
+      basic_fstream(const wchar_t* __s,
+		    ios_base::openmode __mode = ios_base::in | ios_base::out)
+      : __iostream_type(0), _M_filebuf()
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
+      }
+#endif
 
 #if __cplusplus >= 201103L
       /**
@@ -1080,6 +1184,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // 409. Closing an fstream should clear error state
 	  this->clear();
       }
+
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      /**
+       *  @brief  Opens an external file.
+       *  @param  __s  The name of the file.
+       *  @param  __mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(__s,__mode).  If that
+       *  function fails, @c failbit is set in the stream's error state.
+       */
+      void
+      open(const wchar_t* __s,
+	   ios_base::openmode __mode = ios_base::in | ios_base::out)
+      {
+	if (!_M_filebuf.open(__s, __mode))
+	  this->setstate(ios_base::failbit);
+	else
+	  this->clear();
+      }
+#endif
 
 #if __cplusplus >= 201103L
       /**

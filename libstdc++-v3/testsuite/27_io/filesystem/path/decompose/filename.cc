@@ -30,6 +30,7 @@ using std::filesystem::path;
 void
 test01()
 {
+  // [fs.path.decompose] p7
   VERIFY( path("/foo/bar.txt").filename() == "bar.txt" );
   VERIFY( path("/foo/bar").filename()     == "bar"     );
   VERIFY( path("/foo/bar/").filename()    == ""        );

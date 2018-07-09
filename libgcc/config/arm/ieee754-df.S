@@ -245,7 +245,7 @@ LSYM(Lad_a):
 	@ No rounding necessary since ip will always be 0 at this point.
 LSYM(Lad_l):
 
-#if __ARM_ARCH__ < 5
+#if !defined (__ARM_FEATURE_CLZ)
 
 	teq	xh, #0
 	movne	r3, #20
@@ -656,78 +656,8 @@ ARM_FUNC_ALIAS aeabi_dmul muldf3
 	orr	yh, yh, #0x00100000
 	beq	LSYM(Lml_1)
 
-#if __ARM_ARCH__ < 4
-
-	@ Put sign bit in r6, which will be restored in yl later.
-	and   r6, r6, #0x80000000
-
-	@ Well, no way to make it shorter without the umull instruction.
-	stmfd   sp!, {r6, r7, r8, r9, sl, fp}   @ sp -= 24
-	.cfi_remember_state         @ Save the current CFI state.
-	.cfi_adjust_cfa_offset 24   @ CFA is now sp + previousOffset + 24.
-	.cfi_rel_offset r6, 0       @ Registers are saved from sp to sp + 20.
-	.cfi_rel_offset r7, 4
-	.cfi_rel_offset r8, 8
-	.cfi_rel_offset r9, 12
-	.cfi_rel_offset sl, 16
-	.cfi_rel_offset fp, 20
-
-	mov	r7, xl, lsr #16
-	mov	r8, yl, lsr #16
-	mov	r9, xh, lsr #16
-	mov	sl, yh, lsr #16
-	bic	xl, xl, r7, lsl #16
-	bic	yl, yl, r8, lsl #16
-	bic	xh, xh, r9, lsl #16
-	bic	yh, yh, sl, lsl #16
-	mul	ip, xl, yl
-	mul	fp, xl, r8
-	mov	lr, #0
-	adds	ip, ip, fp, lsl #16
-	adc	lr, lr, fp, lsr #16
-	mul	fp, r7, yl
-	adds	ip, ip, fp, lsl #16
-	adc	lr, lr, fp, lsr #16
-	mul	fp, xl, sl
-	mov	r5, #0
-	adds	lr, lr, fp, lsl #16
-	adc	r5, r5, fp, lsr #16
-	mul	fp, r7, yh
-	adds	lr, lr, fp, lsl #16
-	adc	r5, r5, fp, lsr #16
-	mul	fp, xh, r8
-	adds	lr, lr, fp, lsl #16
-	adc	r5, r5, fp, lsr #16
-	mul	fp, r9, yl
-	adds	lr, lr, fp, lsl #16
-	adc	r5, r5, fp, lsr #16
-	mul	fp, xh, sl
-	mul	r6, r9, sl
-	adds	r5, r5, fp, lsl #16
-	adc	r6, r6, fp, lsr #16
-	mul	fp, r9, yh
-	adds	r5, r5, fp, lsl #16
-	adc	r6, r6, fp, lsr #16
-	mul	fp, xl, yh
-	adds	lr, lr, fp
-	mul	fp, r7, sl
-	adcs	r5, r5, fp
-	mul	fp, xh, yl
-	adc	r6, r6, #0
-	adds	lr, lr, fp
-	mul	fp, r9, r8
-	adcs	r5, r5, fp
-	mul	fp, r7, r8
-	adc	r6, r6, #0
-	adds	lr, lr, fp
-	mul	fp, xh, yh
-	adcs	r5, r5, fp
-	adc	r6, r6, #0
-	ldmfd   sp!, {yl, r7, r8, r9, sl, fp}   @ sp += 24
-	.cfi_restore_state   @ Restore the previous CFI state.
-#else
-
 	@ Here is the actual multiplication.
+	@ This code works on architecture versions > 4
 	umull	ip, lr, xl, yl
 	mov	r5, #0
 	umlal	lr, r5, xh, yl
@@ -735,8 +665,6 @@ ARM_FUNC_ALIAS aeabi_dmul muldf3
 	umlal	lr, r5, xl, yh
 	mov	r6, #0
 	umlal	r5, r6, xh, yh
-
-#endif
 
 	@ The LSBs in ip are only significant for the final rounding.
 	@ Fold them into lr.

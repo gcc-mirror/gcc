@@ -29,19 +29,20 @@ void
 test01()
 {
   const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
+  const path root = __gnu_test::root_path();
 
-  VERIFY( exists(path{"/"}) );
-  VERIFY( exists(path{"/."}) );
+  VERIFY( exists(root) );
+  VERIFY( exists(root/".") );
   VERIFY( exists(path{"."}) );
   VERIFY( exists(path{".."}) );
   VERIFY( exists(std::filesystem::current_path()) );
 
   std::error_code ec;
   ec = bad_ec;
-  VERIFY( exists(path{"/"}, ec) );
+  VERIFY( exists(root, ec) );
   VERIFY( !ec );
   ec = bad_ec;
-  VERIFY( exists(path{"/."}, ec) );
+  VERIFY( exists(root/".", ec) );
   VERIFY( !ec );
   ec = bad_ec;
   VERIFY( exists(path{"."}, ec) );

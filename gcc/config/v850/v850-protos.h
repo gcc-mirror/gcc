@@ -32,7 +32,6 @@ extern void   v850_init_expanders           (void);
 #ifdef RTX_CODE
 extern rtx    v850_return_addr              (int);
 extern const char *output_move_single       (rtx *);
-extern void   notice_update_cc              (rtx, rtx_insn *);
 extern char * construct_save_jarl           (rtx);
 extern char * construct_restore_jr          (rtx);
 #ifdef HAVE_MACHINE_MODES

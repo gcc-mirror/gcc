@@ -4,9 +4,11 @@ program e_53_2
   !$omp declare target (fib)
   integer :: x, fib
   !$omp target map(from: x)
-    x = fib (25)
+    ! Reduced from 25 to 23, otherwise execution runs out of thread stack on
+    ! Nvidia Titan V.
+    x = fib (23)
   !$omp end target
-  if (x /= fib (25)) STOP 1
+  if (x /= fib (23)) STOP 1
 end program
 
 integer recursive function fib (n) result (f)

@@ -38,6 +38,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace __detail
+{
   //
   // gslice_array closure.
   //
@@ -59,8 +61,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_index.size(); }
 
     private:
-      const _Dom&	      _M_expr;
-      const valarray<size_t>& _M_index;
+      typename _ValArrayRef<_Dom>::__type	_M_expr;
+      const valarray<size_t>&			_M_index;
     };
 
   template<typename _Tp>
@@ -128,8 +130,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_index.size(); }
 
     private:
-      const _Dom&	      _M_expr;
-      const valarray<size_t>& _M_index;
+      typename _ValArrayRef<_Dom>::__type	_M_expr;
+      const valarray<size_t>&			_M_index;
     };
 
   template<class _Dom>
@@ -153,6 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _IClos (const valarray<_Tp>& __a, const valarray<size_t>& __i)
       : _Base (__a, __i) {}
     };
+} // namespace __detail
   
   //
   // class _Expr
@@ -526,7 +529,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                                                        \
   template<typename _Tp>                                               \
     inline _Expr<_BinClos<_UFun, _ValArray, _Constant, _Tp, _Tp>, _Tp> \
-    _Fun(const valarray<_Tp>& __v, const _Tp& __t)                     \
+    _Fun(const valarray<_Tp>& __v,				       \
+	 const typename valarray<_Tp>::value_type& __t)                \
     {                                                                  \
       typedef _BinClos<_UFun, _ValArray, _Constant, _Tp, _Tp> _Closure;\
       return _Expr<_Closure, _Tp>(_Closure(__v, __t));                 \
@@ -534,7 +538,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 								       \
   template<typename _Tp>                                               \
     inline _Expr<_BinClos<_UFun, _Constant, _ValArray, _Tp, _Tp>, _Tp> \
-    _Fun(const _Tp& __t, const valarray<_Tp>& __v)                     \
+    _Fun(const typename valarray<_Tp>::value_type& __t,		       \
+	 const valarray<_Tp>& __v)                                     \
     {                                                                  \
       typedef _BinClos<_UFun, _Constant, _ValArray, _Tp, _Tp> _Closure;\
       return _Expr<_Closure, _Tp>(_Closure(__t, __v));                 \

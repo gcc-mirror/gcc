@@ -13653,10 +13653,10 @@ esac
 #   - libgo/go/syscall/endian_XX.go
 #   - possibly others
 # - possibly update files in libgo/go/internal/syscall/unix
-ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le riscv64 s390 s390x sh shbe sparc sparc64"
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le nios2 ppc ppc64 ppc64le riscv riscv64 s390 s390x sh shbe sparc sparc64 wasm"
 
 # All known GOARCH family values.
-ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 RISCV64 S390 S390X SH SPARC SPARC64"
+ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 NIOS2 PPC PPC64 RISCV RISCV64 S390 S390X SH SPARC SPARC64 WASM"
 
 GOARCH=unknown
 case ${host} in
@@ -13744,6 +13744,9 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         GOARCH="${GOARCH}le"
         ;;
     esac
+    ;;
+  nios2-*-*)
+    GOARCH=nios2
     ;;
   rs6000*-*-* | powerpc*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14756,39 +14759,6 @@ fi
 
 done
 
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether <ustat.h> can be used" >&5
-$as_echo_n "checking whether <ustat.h> can be used... " >&6; }
-if test "${libgo_cv_c_ustat_h+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  CFLAGS_hold=$CFLAGS
-CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE $OSCFLAGS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <sys/types.h>
-#ifdef HAVE_LINUX_FILTER_H
-#include <linux/filter.h>
-#endif
-#include <ustat.h>
-
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  libgo_cv_c_ustat_h=yes
-else
-  libgo_cv_c_ustat_h=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-CFLAGS=$CFLAGS_hold
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_c_ustat_h" >&5
-$as_echo "$libgo_cv_c_ustat_h" >&6; }
-if test $libgo_cv_c_ustat_h = yes; then
-
-$as_echo "#define HAVE_USTAT_H 1" >>confdefs.h
-
-fi
 
  if test "$ac_cv_header_sys_mman_h" = yes; then
   HAVE_SYS_MMAN_H_TRUE=

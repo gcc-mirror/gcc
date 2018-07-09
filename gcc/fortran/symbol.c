@@ -1349,6 +1349,20 @@ gfc_add_volatile (symbol_attribute *attr, const char *name, locus *where)
 			 where))
       return false;
 
+  /* F2008:  C1282 A designator of a variable with the VOLATILE attribute
+     shall not appear in a pure subprogram.
+
+     F2018: C1588 A local variable of a pure subprogram, or of a BLOCK
+     construct within a pure subprogram, shall not have the SAVE or
+     VOLATILE attribute.  */
+  if (gfc_pure (NULL))
+    {
+      gfc_error ("VOLATILE attribute at %L cannot be specified in a "
+		 "PURE procedure", where);
+      return false;
+    }
+
+
   attr->volatile_ = 1;
   attr->volatile_ns = gfc_current_ns;
   return check_conflict (attr, name, where);
@@ -2721,9 +2735,13 @@ gfc_define_st_label (gfc_st_label *lp, gfc_sl_type type, locus *label_locus)
 	    lp->defined = type;
 
 	  if (lp->referenced == ST_LABEL_DO_TARGET && type != ST_LABEL_DO_TARGET
-      	      && !gfc_notify_std (GFC_STD_F95_OBS, "DO termination statement "
-				  "which is not END DO or CONTINUE with "
-				  "label %d at %C", labelno))
+      	      && !gfc_notify_std (GFC_STD_F95_OBS | GFC_STD_F2018_DEL,
+				  "DO termination statement which is not END DO"
+				  " or CONTINUE with label %d at %C", labelno))
+	    return;
+	  if (type == ST_LABEL_DO_TARGET
+	      && !gfc_notify_std (GFC_STD_F2018_OBS, "Labeled DO statement "
+				  "at %L", label_locus))
 	    return;
 	  break;
 
@@ -2778,8 +2796,8 @@ gfc_reference_st_label (gfc_st_label *lp, gfc_sl_type type)
     }
 
   if (lp->referenced == ST_LABEL_DO_TARGET && type == ST_LABEL_DO_TARGET
-      && !gfc_notify_std (GFC_STD_F95_OBS, "Shared DO termination label %d "
-			  "at %C", labelno))
+      && !gfc_notify_std (GFC_STD_F95_OBS | GFC_STD_F2018_DEL,
+			  "Shared DO termination label %d at %C", labelno))
     return false;
 
   if (lp->referenced != ST_LABEL_DO_TARGET)
@@ -3481,22 +3499,6 @@ find_common_symtree (gfc_symtree *st, gfc_common_head *head)
     result = find_common_symtree (st->right, head);
 
   return result;
-}
-
-
-/* Clear the given storage, and make it the current change set for registering
-   changed symbols.  Its contents are freed after a call to
-   gfc_restore_last_undo_checkpoint or gfc_drop_last_undo_checkpoint, but
-   it is up to the caller to free the storage itself.  It is usually a local
-   variable, so there is nothing to do anyway.  */
-
-void
-gfc_new_undo_checkpoint (gfc_undo_change_set &chg_syms)
-{
-  chg_syms.syms = vNULL;
-  chg_syms.tbps = vNULL;
-  chg_syms.previous = latest_undo_chgset;
-  latest_undo_chgset = &chg_syms;
 }
 
 

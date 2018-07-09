@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fdump-tree-evrp-details -fdump-tree-vrp1-details" } */
 
 static int blocksize = 4096;
 
@@ -33,7 +33,7 @@ void foo (void)
 
 
 /* First, we should simplify the bits < 0 test within the loop.  */
-/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "evrp" } } */
 
 /* Second, we should thread the edge out of the loop via the break
    statement.  We also realize that the final bytes == 0 test is useless,

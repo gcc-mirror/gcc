@@ -51,6 +51,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp1, typename _Tp2>
     class _ValArray;
 
+namespace __detail
+{
   template<class _Oper, template<class, class> class _Meta, class _Dom>
     struct _UnClos;
 
@@ -74,6 +76,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<template<class, class> class _Meta, class _Dom>
     class _RefFunClos;
+} // namespace __detail
+
+  using __detail::_UnClos;
+  using __detail::_BinClos;
+  using __detail::_SClos;
+  using __detail::_GClos;
+  using __detail::_IClos;
+  using __detail::_ValFunClos;
+  using __detail::_RefFunClos;
 
   template<class _Tp> class valarray;   // An array of type _Tp
   class slice;                          // BLAS-like slice out of an array
@@ -1067,11 +1078,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define _DEFINE_VALARRAY_UNARY_OPERATOR(_Op, _Name)                     \
   template<typename _Tp>						\
-    inline typename valarray<_Tp>::template _UnaryOp<_Name>::_Rt      	\
+    inline typename valarray<_Tp>::template _UnaryOp<_Name>::_Rt	\
     valarray<_Tp>::operator _Op() const					\
     {									\
-      typedef _UnClos<_Name, _ValArray, _Tp> _Closure;	                \
-      typedef typename __fun<_Name, _Tp>::result_type _Rt;              \
+      typedef _UnClos<_Name, _ValArray, _Tp> _Closure;			\
+      typedef typename __fun<_Name, _Tp>::result_type _Rt;		\
       return _Expr<_Closure, _Rt>(_Closure(*this));			\
     }
 
@@ -1139,34 +1150,36 @@ _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(>>, __shift_right)
 
 #define _DEFINE_BINARY_OPERATOR(_Op, _Name)				\
   template<typename _Tp>						\
-    inline _Expr<_BinClos<_Name, _ValArray, _ValArray, _Tp, _Tp>,       \
-                 typename __fun<_Name, _Tp>::result_type>               \
+    inline _Expr<_BinClos<_Name, _ValArray, _ValArray, _Tp, _Tp>,	\
+		 typename __fun<_Name, _Tp>::result_type>		\
     operator _Op(const valarray<_Tp>& __v, const valarray<_Tp>& __w)	\
     {									\
-      __glibcxx_assert(__v.size() == __w.size());                       \
-      typedef _BinClos<_Name, _ValArray, _ValArray, _Tp, _Tp> _Closure; \
-      typedef typename __fun<_Name, _Tp>::result_type _Rt;              \
-      return _Expr<_Closure, _Rt>(_Closure(__v, __w));                  \
+      __glibcxx_assert(__v.size() == __w.size());			\
+      typedef _BinClos<_Name, _ValArray, _ValArray, _Tp, _Tp> _Closure;	\
+      typedef typename __fun<_Name, _Tp>::result_type _Rt;		\
+      return _Expr<_Closure, _Rt>(_Closure(__v, __w));			\
     }									\
 									\
   template<typename _Tp>						\
-    inline _Expr<_BinClos<_Name, _ValArray,_Constant, _Tp, _Tp>,        \
-                 typename __fun<_Name, _Tp>::result_type>               \
-    operator _Op(const valarray<_Tp>& __v, const _Tp& __t)		\
+    inline _Expr<_BinClos<_Name, _ValArray,_Constant, _Tp, _Tp>,	\
+		 typename __fun<_Name, _Tp>::result_type>		\
+    operator _Op(const valarray<_Tp>& __v,				\
+		 const typename valarray<_Tp>::value_type& __t)		\
     {									\
       typedef _BinClos<_Name, _ValArray, _Constant, _Tp, _Tp> _Closure;	\
-      typedef typename __fun<_Name, _Tp>::result_type _Rt;              \
-      return _Expr<_Closure, _Rt>(_Closure(__v, __t));	                \
+      typedef typename __fun<_Name, _Tp>::result_type _Rt;		\
+      return _Expr<_Closure, _Rt>(_Closure(__v, __t));			\
     }									\
 									\
   template<typename _Tp>						\
-    inline _Expr<_BinClos<_Name, _Constant, _ValArray, _Tp, _Tp>,       \
-                 typename __fun<_Name, _Tp>::result_type>               \
-    operator _Op(const _Tp& __t, const valarray<_Tp>& __v)		\
+    inline _Expr<_BinClos<_Name, _Constant, _ValArray, _Tp, _Tp>,	\
+		 typename __fun<_Name, _Tp>::result_type>		\
+    operator _Op(const typename valarray<_Tp>::value_type& __t,		\
+		 const valarray<_Tp>& __v)				\
     {									\
-      typedef _BinClos<_Name, _Constant, _ValArray, _Tp, _Tp> _Closure; \
-      typedef typename __fun<_Name, _Tp>::result_type _Rt;              \
-      return _Expr<_Closure, _Rt>(_Closure(__t, __v));        	        \
+      typedef _BinClos<_Name, _Constant, _ValArray, _Tp, _Tp> _Closure;	\
+      typedef typename __fun<_Name, _Tp>::result_type _Rt;		\
+      return _Expr<_Closure, _Rt>(_Closure(__t, __v));			\
     }
 
 _DEFINE_BINARY_OPERATOR(+, __plus)

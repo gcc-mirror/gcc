@@ -655,7 +655,7 @@ package body System.Tasking.Stages is
          T.Common.Task_Image_Len := Len;
       end if;
 
-      --  Note: we used to have code here to initialize T.Commmon.Domain, but
+      --  Note: we used to have code here to initialize T.Common.Domain, but
       --  that is not needed, since this is initialized in System.Tasking.
 
       Unlock (Self_ID);

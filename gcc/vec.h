@@ -1028,6 +1028,40 @@ vec<T, A, vl_embed>::ordered_remove (unsigned ix)
 }
 
 
+/* Remove elements in [START, END) from VEC for which COND holds.  Ordering of
+   remaining elements is preserved.  This is an O(N) operation.  */
+
+#define VEC_ORDERED_REMOVE_IF_FROM_TO(vec, read_index, write_index,	\
+				      elem_ptr, start, end, cond)	\
+  {									\
+    gcc_assert ((end) <= (vec).length ());				\
+    for (read_index = write_index = (start); read_index < (end);	\
+	 ++read_index)							\
+      {									\
+	elem_ptr = &(vec)[read_index];					\
+	bool remove_p = (cond);						\
+	if (remove_p)							\
+	  continue;							\
+									\
+	if (read_index != write_index)					\
+	  (vec)[write_index] = (vec)[read_index];			\
+									\
+	write_index++;							\
+      }									\
+									\
+    if (read_index - write_index > 0)					\
+      (vec).block_remove (write_index, read_index - write_index);	\
+  }
+
+
+/* Remove elements from VEC for which COND holds.  Ordering of remaining
+   elements is preserved.  This is an O(N) operation.  */
+
+#define VEC_ORDERED_REMOVE_IF(vec, read_index, write_index, elem_ptr,	\
+			      cond)					\
+  VEC_ORDERED_REMOVE_IF_FROM_TO ((vec), read_index, write_index,	\
+				 elem_ptr, 0, (vec).length (), (cond))
+
 /* Remove an element from the IXth position of this vector.  Ordering of
    remaining elements is destroyed.  This is an O(1) operation.  */
 
@@ -1355,6 +1389,7 @@ public:
   T *bsearch (const void *key, int (*compar)(const void *, const void *));
   unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
   bool contains (const T &search) const;
+  void reverse (void);
 
   bool using_auto_storage () const;
 
@@ -1426,6 +1461,15 @@ vec_alloc (vec<T> *&v, unsigned nelems CXX_MEM_STAT_INFO)
   v->create (nelems PASS_MEM_STAT);
 }
 
+
+/* A subclass of auto_vec <char *> that frees all of its elements on
+   deletion.  */
+
+class auto_string_vec : public auto_vec <char *>
+{
+ public:
+  ~auto_string_vec ();
+};
 
 /* Conditionally allocate heap memory for VEC and its internal vector.  */
 
@@ -1518,6 +1562,18 @@ vec<T, va_heap, vl_ptr>::iterate (unsigned ix, T **ptr) const
   for (I = vec_safe_length (V) - 1;			\
        vec_safe_iterate ((V), (I), &(P));	\
        (I)--)
+
+/* auto_string_vec's dtor, freeing all contained strings, automatically
+   chaining up to ~auto_vec <char *>, which frees the internal buffer.  */
+
+inline
+auto_string_vec::~auto_string_vec ()
+{
+  int i;
+  char *str;
+  FOR_EACH_VEC_ELT (*this, i, str)
+    free (str);
+}
 
 
 /* Return a copy of this vector.  */
@@ -1864,6 +1920,19 @@ inline bool
 vec<T, va_heap, vl_ptr>::contains (const T &search) const
 {
   return m_vec ? m_vec->contains (search) : false;
+}
+
+/* Reverse content of the vector.  */
+
+template<typename T>
+inline void
+vec<T, va_heap, vl_ptr>::reverse (void)
+{
+  unsigned l = length ();
+  T *ptr = address ();
+
+  for (unsigned i = 0; i < l / 2; i++)
+    std::swap (ptr[i], ptr[l - i - 1]);
 }
 
 template<typename T>

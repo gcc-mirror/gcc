@@ -284,14 +284,14 @@ package body Exp_Aggr is
 
    procedure Convert_To_Positional
      (N                    : Node_Id;
-      Max_Others_Replicate : Nat     := 5;
+      Max_Others_Replicate : Nat     := 32;
       Handle_Bit_Packed    : Boolean := False);
    --  If possible, convert named notation to positional notation. This
    --  conversion is possible only in some static cases. If the conversion is
    --  possible, then N is rewritten with the analyzed converted aggregate.
    --  The parameter Max_Others_Replicate controls the maximum number of
    --  values corresponding to an others choice that will be converted to
-   --  positional notation (the default of 5 is the normal limit, and reflects
+   --  positional notation (the default of 32 is the normal limit, and reflects
    --  the fact that normally the loop is better than a lot of separate
    --  assignments). Note that this limit gets overridden in any case if
    --  either of the restrictions No_Elaboration_Code or No_Implicit_Loops is
@@ -300,11 +300,6 @@ package body Exp_Aggr is
    --  of conversion is pointless), but in the special case of a call from
    --  Packed_Array_Aggregate_Handled, we set this parameter to True, since
    --  these are cases we handle in there.
-
-   --  It would seem useful to have a higher default for Max_Others_Replicate,
-   --  but aggregates in the compiler make this impossible: the compiler
-   --  bootstrap fails if Max_Others_Replicate is greater than 25. This
-   --  is unexpected ???
 
    procedure Expand_Array_Aggregate (N : Node_Id);
    --  This is the top-level routine to perform array aggregate expansion.
@@ -2846,7 +2841,7 @@ package body Exp_Aggr is
 
          In_Place_Expansion :=
            Nkind (Init_Expr) = N_Function_Call
-                and then not Is_Build_In_Place_Result_Type (Comp_Typ);
+             and then not Is_Build_In_Place_Result_Type (Comp_Typ);
 
          --  The initialization expression is a controlled function call.
          --  Perform in-place removal of side effects to avoid creating a
@@ -2865,7 +2860,11 @@ package body Exp_Aggr is
             Set_No_Side_Effect_Removal (Init_Expr);
 
             --  Install all hook-related declarations and prepare the clean up
-            --  statements.
+            --  statements. The generated code follows the initialization order
+            --  of individual components and discriminants, rather than being
+            --  inserted prior to the aggregate. This ensures that a transient
+            --  component which mentions a discriminant has proper visibility
+            --  of the discriminant.
 
             Process_Transient_Component
               (Loc        => Loc,
@@ -2873,7 +2872,7 @@ package body Exp_Aggr is
                Init_Expr  => Init_Expr,
                Fin_Call   => Fin_Call,
                Hook_Clear => Hook_Clear,
-               Aggr       => N);
+               Stmts      => Stmts);
          end if;
 
          --  Use the noncontrolled component initialization circuitry to
@@ -4292,7 +4291,7 @@ package body Exp_Aggr is
 
    procedure Convert_To_Positional
      (N                    : Node_Id;
-      Max_Others_Replicate : Nat     := 5;
+      Max_Others_Replicate : Nat     := 32;
       Handle_Bit_Packed    : Boolean := False)
    is
       Typ : constant Entity_Id := Etype (N);
@@ -4368,7 +4367,8 @@ package body Exp_Aggr is
                elsif Nkind (Expression (Expr)) /= N_Aggregate
                  or else not Compile_Time_Known_Aggregate (Expression (Expr))
                  or else Expansion_Delayed (Expression (Expr))
-                 or else Nkind (Expr) = N_Iterated_Component_Association
+                 or else Nkind_In (Expr, N_Iterated_Component_Association,
+                                         N_Quantified_Expression)
                then
                   Static_Components := False;
                   exit;
@@ -4490,7 +4490,9 @@ package body Exp_Aggr is
                      return False;
                   end if;
 
-                  Vals (Num) := Relocate_Node (Elmt);
+                  --  Duplicate expression for each index it covers
+
+                  Vals (Num) := New_Copy_Tree (Elmt);
                   Num := Num + 1;
 
                   Next (Elmt);
@@ -4519,13 +4521,23 @@ package body Exp_Aggr is
 
                   --  If we have an others choice, fill in the missing elements
                   --  subject to the limit established by Max_Others_Replicate.
+                  --  If the expression involves a construct that generates
+                  --  a loop, we must generate individual assignments and
+                  --  no flattening is possible.
 
                   if Nkind (Choice) = N_Others_Choice then
                      Rep_Count := 0;
 
+                     if Nkind_In (Expression (Elmt),
+                                  N_Iterated_Component_Association,
+                                  N_Quantified_Expression)
+                     then
+                        return False;
+                     end if;
+
                      for J in Vals'Range loop
                         if No (Vals (J)) then
-                           Vals (J) := New_Copy_Tree (Expression (Elmt));
+                           Vals (J)  := New_Copy_Tree (Expression (Elmt));
                            Rep_Count := Rep_Count + 1;
 
                            --  Check for maximum others replication. Note that
@@ -4576,6 +4588,12 @@ package body Exp_Aggr is
                            end;
                         end if;
                      end loop;
+
+                     if Rep_Count = 0
+                       and then Warn_On_Redundant_Constructs
+                     then
+                        Error_Msg_N ("there are no others?r?", Elmt);
+                     end if;
 
                      exit Component_Loop;
 
@@ -4709,7 +4727,25 @@ package body Exp_Aggr is
          return;
       end if;
 
+      --  A subaggregate may have been flattened but is not known to be
+      --  Compile_Time_Known. Set that flag in cases that cannot require
+      --  elaboration code, so that the aggregate can be used as the
+      --  initial value of a thread-local variable.
+
       if Is_Flat (N, Number_Dimensions (Typ)) then
+         Check_Static_Components;
+         if Static_Components then
+            if Is_Packed (Etype (N))
+              or else
+                (Is_Record_Type (Component_Type (Etype (N)))
+                  and then Has_Discriminants (Component_Type (Etype (N))))
+            then
+               null;
+            else
+               Set_Compile_Time_Known_Aggregate (N);
+            end if;
+         end if;
+
          return;
       end if;
 
@@ -4918,20 +4954,21 @@ package body Exp_Aggr is
       --  specifically optimized for the target.
 
       function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
-         Ctyp      : Entity_Id;
-         Index     : Entity_Id;
-         Expr      : Node_Id := N;
-         Low       : Node_Id;
-         High      : Node_Id;
          Csiz      : Uint;
+         Ctyp      : Entity_Id;
+         Expr      : Node_Id;
+         High      : Node_Id;
+         Index     : Entity_Id;
+         Low       : Node_Id;
+         Nunits    : Int;
          Remainder : Uint;
          Value     : Uint;
-         Nunits    : Nat;
 
       begin
          --  Recurse as far as possible to find the innermost component type
 
          Ctyp := Etype (N);
+         Expr := N;
          while Is_Array_Type (Ctyp) loop
             if Nkind (Expr) /= N_Aggregate
               or else not Is_Others_Aggregate (Expr)
@@ -5021,6 +5058,15 @@ package body Exp_Aggr is
          --  The expression needs to be analyzed if True is returned
 
          Analyze_And_Resolve (Expr, Ctyp);
+
+         --  Strip away any conversions from the expression as they simply
+         --  qualify the real expression.
+
+         while Nkind_In (Expr, N_Unchecked_Type_Conversion,
+                               N_Type_Conversion)
+         loop
+            Expr := Expression (Expr);
+         end loop;
 
          Nunits := UI_To_Int (Csiz) / System_Storage_Unit;
 
@@ -6061,7 +6107,7 @@ package body Exp_Aggr is
       --  that Convert_To_Positional succeeded and reanalyzed the rewritten
       --  aggregate.
 
-      elsif Analyzed (N) and then N /= Original_Node (N) then
+      elsif Analyzed (N) and then Is_Rewrite_Substitution (N) then
          return;
       end if;
 
@@ -7212,6 +7258,10 @@ package body Exp_Aggr is
                return False;
 
             elsif Is_Delayed_Aggregate (Expr_Q) then
+               Static_Components := False;
+               return False;
+
+            elsif Nkind (Expr_Q) = N_Quantified_Expression then
                Static_Components := False;
                return False;
 

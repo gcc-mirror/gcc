@@ -405,7 +405,7 @@ package body Contracts is
          then
             Analyze_Task_Contract (Defining_Entity (Decl));
 
-         --  For type declarations, we need to do the pre-analysis of Iterable
+         --  For type declarations, we need to do the preanalysis of Iterable
          --  aspect specifications.
 
          --  Other type aspects need to be resolved here???
@@ -2284,7 +2284,9 @@ package body Contracts is
             if Present (Items) then
                Prag := Contract_Test_Cases (Items);
                while Present (Prag) loop
-                  if Pragma_Name (Prag) = Name_Contract_Cases then
+                  if Pragma_Name (Prag) = Name_Contract_Cases
+                    and then Is_Checked (Prag)
+                  then
                      Expand_Pragma_Contract_Cases
                        (CCs     => Prag,
                         Subp_Id => Subp_Id,
@@ -2342,7 +2344,9 @@ package body Contracts is
             if Present (Items) then
                Prag := Pre_Post_Conditions (Items);
                while Present (Prag) loop
-                  if Pragma_Name (Prag) = Post_Nam then
+                  if Pragma_Name (Prag) = Post_Nam
+                    and then Is_Checked (Prag)
+                  then
                      Append_Enabled_Item
                        (Item => Build_Pragma_Check_Equivalent (Prag),
                         List => Stmts);
@@ -2364,7 +2368,9 @@ package body Contracts is
                   --  Note that non-matching pragmas are skipped
 
                   if Nkind (Decl) = N_Pragma then
-                     if Pragma_Name (Decl) = Post_Nam then
+                     if Pragma_Name (Decl) = Post_Nam
+                       and then Is_Checked (Decl)
+                     then
                         Append_Enabled_Item
                           (Item => Build_Pragma_Check_Equivalent (Decl),
                            List => Stmts);
@@ -2394,6 +2400,7 @@ package body Contracts is
          procedure Process_Spec_Postconditions is
             Subps   : constant Subprogram_List :=
                         Inherited_Subprograms (Spec_Id);
+            Item    : Node_Id;
             Items   : Node_Id;
             Prag    : Node_Id;
             Subp_Id : Entity_Id;
@@ -2406,7 +2413,9 @@ package body Contracts is
             if Present (Items) then
                Prag := Pre_Post_Conditions (Items);
                while Present (Prag) loop
-                  if Pragma_Name (Prag) = Name_Postcondition then
+                  if Pragma_Name (Prag) = Name_Postcondition
+                    and then Is_Checked (Prag)
+                  then
                      Append_Enabled_Item
                        (Item => Build_Pragma_Check_Equivalent (Prag),
                         List => Stmts);
@@ -2429,13 +2438,20 @@ package body Contracts is
                      if Pragma_Name (Prag) = Name_Postcondition
                        and then Class_Present (Prag)
                      then
-                        Append_Enabled_Item
-                          (Item =>
-                             Build_Pragma_Check_Equivalent
-                               (Prag     => Prag,
-                                Subp_Id  => Spec_Id,
-                                Inher_Id => Subp_Id),
-                           List => Stmts);
+                        Item :=
+                          Build_Pragma_Check_Equivalent
+                            (Prag     => Prag,
+                             Subp_Id  => Spec_Id,
+                             Inher_Id => Subp_Id);
+
+                        --  The pragma Check equivalent of the class-wide
+                        --  postcondition is still created even though the
+                        --  pragma may be ignored because the equivalent
+                        --  performs semantic checks.
+
+                        if Is_Checked (Prag) then
+                           Append_Enabled_Item (Item, Stmts);
+                        end if;
                      end if;
 
                      Prag := Next_Pragma (Prag);
@@ -2630,9 +2646,11 @@ package body Contracts is
          ----------------------
 
          procedure Prepend_To_Decls (Item : Node_Id) is
-            Decls : List_Id := Declarations (Body_Decl);
+            Decls : List_Id;
 
          begin
+            Decls := Declarations (Body_Decl);
+
             --  Ensure that the body has a declarative list
 
             if No (Decls) then
@@ -2680,12 +2698,13 @@ package body Contracts is
          -------------------------------------
 
          procedure Process_Inherited_Preconditions is
-            Subps      : constant Subprogram_List :=
-                           Inherited_Subprograms (Spec_Id);
-            Check_Prag : Node_Id;
-            Items      : Node_Id;
-            Prag       : Node_Id;
-            Subp_Id    : Entity_Id;
+            Subps : constant Subprogram_List :=
+                      Inherited_Subprograms (Spec_Id);
+
+            Item    : Node_Id;
+            Items   : Node_Id;
+            Prag    : Node_Id;
+            Subp_Id : Entity_Id;
 
          begin
             --  Process the contracts of all inherited subprograms, looking for
@@ -2701,20 +2720,29 @@ package body Contracts is
                      if Pragma_Name (Prag) = Name_Precondition
                        and then Class_Present (Prag)
                      then
-                        Check_Prag :=
+                        Item :=
                           Build_Pragma_Check_Equivalent
                             (Prag     => Prag,
                              Subp_Id  => Spec_Id,
                              Inher_Id => Subp_Id);
 
-                        --  The spec of an inherited subprogram already yielded
-                        --  a class-wide precondition. Merge the existing
-                        --  precondition with the current one using "or else".
+                        --  The pragma Check equivalent of the class-wide
+                        --  precondition is still created even though the
+                        --  pragma may be ignored because the equivalent
+                        --  performs semantic checks.
 
-                        if Present (Class_Pre) then
-                           Merge_Preconditions (Check_Prag, Class_Pre);
-                        else
-                           Class_Pre := Check_Prag;
+                        if Is_Checked (Prag) then
+
+                           --  The spec of an inherited subprogram already
+                           --  yielded a class-wide precondition. Merge the
+                           --  existing precondition with the current one
+                           --  using "or else".
+
+                           if Present (Class_Pre) then
+                              Merge_Preconditions (Item, Class_Pre);
+                           else
+                              Class_Pre := Item;
+                           end if;
                         end if;
                      end if;
 
@@ -2736,7 +2764,8 @@ package body Contracts is
          -------------------------------
 
          procedure Process_Preconditions_For (Subp_Id : Entity_Id) is
-            Items     : constant Node_Id := Contract (Subp_Id);
+            Items : constant Node_Id := Contract (Subp_Id);
+
             Decl      : Node_Id;
             Prag      : Node_Id;
             Subp_Decl : Node_Id;
@@ -2747,7 +2776,9 @@ package body Contracts is
             if Present (Items) then
                Prag := Pre_Post_Conditions (Items);
                while Present (Prag) loop
-                  if Pragma_Name (Prag) = Name_Precondition then
+                  if Pragma_Name (Prag) = Name_Precondition
+                    and then Is_Checked (Prag)
+                  then
                      Prepend_To_Decls_Or_Save (Prag);
                   end if;
 
@@ -2772,7 +2803,9 @@ package body Contracts is
                   --  Note that non-matching pragmas are skipped
 
                   if Nkind (Decl) = N_Pragma then
-                     if Pragma_Name (Decl) = Name_Precondition then
+                     if Pragma_Name (Decl) = Name_Precondition
+                       and then Is_Checked (Decl)
+                     then
                         Prepend_To_Decls_Or_Save (Decl);
                      end if;
 
@@ -2908,20 +2941,18 @@ package body Contracts is
 
       elsif Is_Ignored_Ghost_Entity (Subp_Id) then
          return;
-      end if;
 
       --  Do not re-expand the same contract. This scenario occurs when a
       --  construct is rewritten into something else during its analysis
       --  (expression functions for instance).
 
-      if Has_Expanded_Contract (Subp_Id) then
+      elsif Has_Expanded_Contract (Subp_Id) then
          return;
-
-      --  Otherwise mark the subprogram
-
-      else
-         Set_Has_Expanded_Contract (Subp_Id);
       end if;
+
+      --  Prevent multiple expansion attempts of the same contract
+
+      Set_Has_Expanded_Contract (Subp_Id);
 
       --  Ensure that the formal parameters are visible when expanding all
       --  contract items.

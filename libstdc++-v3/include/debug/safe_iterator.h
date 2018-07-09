@@ -91,11 +91,6 @@ namespace __gnu_debug
       typedef _Safe_iterator_base _Safe_base;
       typedef typename _Sequence::const_iterator _Const_iterator;
 
-      /// Determine if this is a constant iterator.
-      bool
-      _M_constant() const
-      { return std::__are_same<_Const_iterator, _Safe_iterator>::__value; }
-
       typedef std::iterator_traits<_Iterator> _Traits;
 
       struct _Attach_single
@@ -127,7 +122,7 @@ namespace __gnu_debug
        */
       _Safe_iterator(const _Iterator& __i, const _Safe_sequence_base* __seq)
       _GLIBCXX_NOEXCEPT
-      : _Iter_base(__i), _Safe_base(__seq, _M_constant())
+      : _Iter_base(__i), _Safe_base(__seq, _S_constant())
       {
 	_GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
 			      _M_message(__msg_init_singular)
@@ -185,7 +180,7 @@ namespace __gnu_debug
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-				|| __x.base() == _Iterator(),
+				|| __x.base() == _MutableIterator(),
 				_M_message(__msg_init_const_singular)
 				._M_iterator(*this, "this")
 				._M_iterator(__x, "other"));
@@ -396,6 +391,12 @@ namespace __gnu_debug
       }
 
       // ------ Utilities ------
+
+      /// Determine if this is a constant iterator.
+      static bool
+      _S_constant()
+      { return std::__are_same<_Const_iterator, _Safe_iterator>::__value; }
+
       /**
        * @brief Return the underlying iterator
        */
@@ -414,12 +415,12 @@ namespace __gnu_debug
       /** Attach iterator to the given sequence. */
       void
       _M_attach(_Safe_sequence_base* __seq)
-      { _Safe_base::_M_attach(__seq, _M_constant()); }
+      { _Safe_base::_M_attach(__seq, _S_constant()); }
 
       /** Likewise, but not thread-safe. */
       void
       _M_attach_single(_Safe_sequence_base* __seq)
-      { _Safe_base::_M_attach_single(__seq, _M_constant()); }
+      { _Safe_base::_M_attach_single(__seq, _S_constant()); }
 
       /// Is the iterator dereferenceable?
       bool
@@ -860,6 +861,11 @@ namespace __gnu_debug
 
       return __res;
     }
+
+  template<typename _Iterator, typename _Sequence, typename _Size>
+    inline bool
+    __can_advance(const _Safe_iterator<_Iterator, _Sequence>& __it, _Size __n)
+    { return __it._M_can_advance(__n); }
 
 #if __cplusplus < 201103L
   template<typename _Iterator, typename _Sequence>

@@ -14315,7 +14315,7 @@ _ACEOF
 # Check whether --with-gcc-major-version-only was given.
 if test "${with_gcc_major_version_only+set}" = set; then :
   withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
-        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
       fi
 
 fi
@@ -14594,7 +14594,7 @@ $as_echo_n "checking for exported symbols... " >&6; }
      if test "x$export_sym_check" != x; then
        echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
        ${CC} ${CFLAGS} ${LDFLAGS} conftest.c -o conftest$ac_exeext > /dev/null 2>&1
-       if $export_sym_check conftest$ac_exeext | grep -q foobar > /dev/null; then
+       if $export_sym_check conftest$ac_exeext | grep foobar > /dev/null; then
 	 : # No need to use a flag
 	 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
@@ -14604,7 +14604,7 @@ $as_echo "yes" >&6; }
 	 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -rdynamic" >&5
 $as_echo_n "checking for -rdynamic... " >&6; }
 	 ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest$ac_exeext > /dev/null 2>&1
-	 if $export_sym_check conftest$ac_exeext | grep -q foobar > /dev/null; then
+	 if $export_sym_check conftest$ac_exeext | grep foobar > /dev/null; then
 	   plugin_rdynamic=yes
 	   pluginlibs="-rdynamic"
 	 else

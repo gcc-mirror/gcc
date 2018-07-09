@@ -1279,8 +1279,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Qualified_Expression
         or else NT (N).Nkind = N_Raise_Expression
         or else NT (N).Nkind = N_Raise_Statement
-        or else NT (N).Nkind = N_Reduction_Expression
-        or else NT (N).Nkind = N_Reduction_Expression_Parameter
         or else NT (N).Nkind = N_Simple_Return_Statement
         or else NT (N).Nkind = N_Type_Conversion
         or else NT (N).Nkind = N_Unchecked_Expression
@@ -1931,6 +1929,7 @@ package body Sinfo is
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference
         or else NT (N).Nkind = N_Call_Marker
         or else NT (N).Nkind = N_Entry_Call_Statement
         or else NT (N).Nkind = N_Function_Call
@@ -2217,8 +2216,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Iteration_Scheme
-        or else NT (N).Nkind = N_Quantified_Expression
-        or else NT (N).Nkind = N_Reduction_Expression);
+        or else NT (N).Nkind = N_Quantified_Expression);
       return Node2 (N);
    end Iterator_Specification;
 
@@ -2348,8 +2346,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Iteration_Scheme
-        or else NT (N).Nkind = N_Quantified_Expression
-        or else NT (N).Nkind = N_Reduction_Expression);
+        or else NT (N).Nkind = N_Quantified_Expression);
       return Node4 (N);
    end Loop_Parameter_Specification;
 
@@ -4746,8 +4743,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Qualified_Expression
         or else NT (N).Nkind = N_Raise_Expression
         or else NT (N).Nkind = N_Raise_Statement
-        or else NT (N).Nkind = N_Reduction_Expression
-        or else NT (N).Nkind = N_Reduction_Expression_Parameter
         or else NT (N).Nkind = N_Simple_Return_Statement
         or else NT (N).Nkind = N_Type_Conversion
         or else NT (N).Nkind = N_Unchecked_Expression
@@ -5355,6 +5350,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Allocator);
+      pragma Assert (not Val
+        or else not Is_Static_Coextension (N));
       Set_Flag18 (N, Val);
    end Set_Is_Dynamic_Coextension;
 
@@ -5398,6 +5395,7 @@ package body Sinfo is
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference
         or else NT (N).Nkind = N_Call_Marker
         or else NT (N).Nkind = N_Entry_Call_Statement
         or else NT (N).Nkind = N_Function_Call
@@ -5617,6 +5615,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Allocator);
+      pragma Assert (not Val
+        or else not Is_Dynamic_Coextension (N));
       Set_Flag14 (N, Val);
    end Set_Is_Static_Coextension;
 
@@ -5684,8 +5684,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Iteration_Scheme
-        or else NT (N).Nkind = N_Quantified_Expression
-        or else NT (N).Nkind = N_Reduction_Expression);
+        or else NT (N).Nkind = N_Quantified_Expression);
       Set_Node2_With_Parent (N, Val);
    end Set_Iterator_Specification;
 
@@ -5815,8 +5814,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Iteration_Scheme
-        or else NT (N).Nkind = N_Quantified_Expression
-        or else NT (N).Nkind = N_Reduction_Expression);
+        or else NT (N).Nkind = N_Quantified_Expression);
       Set_Node4_With_Parent (N, Val);
    end Set_Loop_Parameter_Specification;
 
@@ -7255,9 +7253,9 @@ package body Sinfo is
              T = V11;
    end Nkind_In;
 
-   -----------------
-   -- Pragma_Name --
-   -----------------
+   --------------------------
+   -- Pragma_Name_Unmapped --
+   --------------------------
 
    function Pragma_Name_Unmapped (N : Node_Id) return Name_Id is
    begin

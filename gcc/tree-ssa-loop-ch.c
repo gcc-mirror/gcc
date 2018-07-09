@@ -165,17 +165,28 @@ do_while_loop_p (struct loop *loop)
       return false;
     }
 
-  /* If the header contains just a condition, it is not a do-while loop.  */
-  stmt = last_and_only_stmt (loop->header);
-  if (stmt
-      && gimple_code (stmt) == GIMPLE_COND)
+  /* If the latch does not have a single predecessor, it is not a
+     do-while loop.  */
+  if (!single_pred_p (loop->latch))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "Loop %i is not do-while loop: "
-		 "header contains just condition.\n", loop->num);
+		 "Loop %i is not do-while loop: latch has multiple "
+		 "predecessors.\n", loop->num);
       return false;
     }
+
+  /* If the latch predecessor doesn't exit the loop, it is not a
+     do-while loop.  */
+  if (!loop_exits_from_bb_p (loop, single_pred (loop->latch)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Loop %i is not do-while loop: latch predecessor "
+		 "does not exit loop.\n", loop->num);
+      return false;
+    }
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Loop %i is do-while loop\n", loop->num);
 
@@ -305,8 +316,9 @@ ch_base::copy_headers (function *fun)
       /* If the loop is already a do-while style one (either because it was
 	 written as such, or because jump threading transformed it into one),
 	 we might be in fact peeling the first iteration of the loop.  This
-	 in general is not a good idea.  */
-      if (!process_loop_p (loop))
+	 in general is not a good idea.  Also avoid touching infinite loops.  */
+      if (!loop_has_exit_edges (loop)
+	  || !process_loop_p (loop))
 	continue;
 
       /* Iterate the header copying up to limit; this takes care of the cases
@@ -328,6 +340,11 @@ ch_base::copy_headers (function *fun)
 	  bbs[n_bbs++] = header;
 	  gcc_assert (bbs_size > n_bbs);
 	  header = exit->dest;
+	  /* Make sure to stop copying after we copied the first exit test.
+	     Without further heuristics we do not want to rotate the loop
+	     any further.  */
+	  if (loop_exits_from_bb_p (loop, exit->src))
+	    break;
 	}
 
       if (!exit)
@@ -392,6 +409,15 @@ ch_base::copy_headers (function *fun)
       split_edge (loop_preheader_edge (loop));
       split_edge (loop_latch_edge (loop));
 
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  if (do_while_loop_p (loop))
+	    fprintf (dump_file, "Loop %d is now do-while loop.\n", loop->num);
+	  else
+	    fprintf (dump_file, "Loop %d is still not do-while loop.\n",
+		     loop->num);
+	}
+
       changed = true;
     }
 
@@ -409,7 +435,8 @@ unsigned int
 pass_ch::execute (function *fun)
 {
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS
-		       | LOOPS_HAVE_SIMPLE_LATCHES);
+		       | LOOPS_HAVE_SIMPLE_LATCHES
+		       | LOOPS_HAVE_RECORDED_EXITS);
 
   unsigned int res = copy_headers (fun);
 

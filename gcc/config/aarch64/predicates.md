@@ -62,6 +62,10 @@
 	(and (match_code "const_double")
 	     (match_test "aarch64_float_const_zero_rtx_p (op)"))))
 
+(define_predicate "aarch64_reg_zero_or_fp_zero"
+  (ior (match_operand 0 "aarch64_reg_or_fp_zero")
+       (match_operand 0 "aarch64_reg_or_zero")))
+
 (define_predicate "aarch64_reg_zero_or_m1_or_1"
   (and (match_code "reg,subreg,const_int")
        (ior (match_operand 0 "register_operand")
@@ -621,3 +625,6 @@
 ;; A special predicate that doesn't match a particular mode.
 (define_special_predicate "aarch64_any_register_operand"
   (match_code "reg"))
+
+(define_predicate "aarch64_sve_any_binary_operator"
+  (match_code "plus,minus,mult,div,udiv,smax,umax,smin,umin,and,ior,xor"))

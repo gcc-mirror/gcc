@@ -489,9 +489,9 @@ package body Exception_Data is
       Append_Info_NL (Info, Ptr);
    end Append_Info_Untailored_Exception_Traceback;
 
-   -------------------------------------------
-   -- Basic_Exception_Information_Maxlength --
-   -------------------------------------------
+   ------------------------------------
+   -- Basic_Exception_Info_Maxlength --
+   ------------------------------------
 
    function Basic_Exception_Info_Maxlength
      (X : Exception_Occurrence) return Natural

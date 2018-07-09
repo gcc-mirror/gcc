@@ -245,7 +245,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Allocator-extended default constructor.
       explicit
       multiset(const allocator_type& __a)
-      : _M_t(_Compare(), _Key_alloc_type(__a)) { }
+      : _M_t(_Key_alloc_type(__a)) { }
 
       /// Allocator-extended copy constructor.
       multiset(const multiset& __m, const allocator_type& __a)
@@ -259,14 +259,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Allocator-extended initialier-list constructor.
       multiset(initializer_list<value_type> __l, const allocator_type& __a)
-      : _M_t(_Compare(), _Key_alloc_type(__a))
+      : _M_t(_Key_alloc_type(__a))
       { _M_t._M_insert_equal(__l.begin(), __l.end()); }
 
       /// Allocator-extended range constructor.
       template<typename _InputIterator>
 	multiset(_InputIterator __first, _InputIterator __last,
 		 const allocator_type& __a)
-	: _M_t(_Compare(), _Key_alloc_type(__a))
+	: _M_t(_Key_alloc_type(__a))
 	{ _M_t._M_insert_equal(__first, __last); }
 
       /**
@@ -737,6 +737,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{ return _M_t._M_count_tr(__x); }
 #endif
       //@}
+
+#if __cplusplus > 201703L
+      //@{
+      /**
+       *  @brief  Finds whether an element with the given key exists.
+       *  @param  __x  Key of elements to be located.
+       *  @return  True if there is any element with the specified key.
+       */
+      bool
+      contains(const key_type& __x) const
+      { return _M_t.find(__x) != _M_t.end(); }
+
+      template<typename _Kt>
+	auto
+	contains(const _Kt& __x) const
+	-> decltype(_M_t._M_find_tr(__x), void(), true)
+	{ return _M_t._M_find_tr(__x) != _M_t.end(); }
+      //@}
+#endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 214.  set::find() missing const overload

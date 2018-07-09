@@ -26,9 +26,6 @@
 #ifndef GCC_V850_H
 #define GCC_V850_H
 
-extern GTY(()) rtx v850_compare_op0;
-extern GTY(()) rtx v850_compare_op1;
-
 #undef LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!symbolic:--start-group -lc -lgcc --end-group}}"
 
@@ -567,20 +564,6 @@ struct cum_arg { int nbytes; };
 
 #define SELECT_CC_MODE(OP, X, Y)       v850_select_cc_mode (OP, X, Y)
 
-/* Tell final.c how to eliminate redundant test instructions.  */
-
-/* Here we define machine-dependent flags and fields in cc_status
-   (see `conditions.h').  No extra ones are needed for the VAX.  */
-
-/* Store in cc_status the expressions
-   that the condition codes will describe
-   after execution of an instruction whose pattern is EXP.
-   Do not alter them if the instruction would not alter the cc's.  */
-
-#define CC_OVERFLOW_UNUSABLE 0x200
-#define CC_NO_CARRY CC_NO_OVERFLOW
-#define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
-
 /* Nonzero if access to memory by bytes or half words is no faster
    than accessing full words.  */
 #define SLOW_BYTE_ACCESS 1
@@ -850,12 +833,6 @@ extern const char * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS]
 #define SYMBOL_REF_SDA_P(X)	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_SDA) != 0)
 
 #define TARGET_ASM_INIT_SECTIONS v850_asm_init_sections
-
-/* Define this so that the cc1plus will not think that system header files
-   need an implicit 'extern "C" { ... }' assumed.  This breaks testing C++
-   in a build directory where the libstdc++ header files are found via a
-   -isystem <path-to-build-dir>.  */
-#define NO_IMPLICIT_EXTERN_C
 
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) \
   ((LENGTH) = v850_adjust_insn_length ((INSN), (LENGTH)))

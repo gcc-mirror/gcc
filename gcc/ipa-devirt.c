@@ -684,16 +684,9 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
     {
       if (!types_same_for_odr (t1, t2, true))
         return false;
-      /* Limit recursion: if subtypes are ODR types and we know that they are
-	 same, be happy.  We need to call get_odr_type on both subtypes since
-	 we don't know which among t1 and t2 defines the common ODR type and
-	 therefore which call will report the ODR violation, if any.  */
-	 if (!odr_type_p (t1)
-	     || !odr_type_p (t2)
-	     || !COMPLETE_TYPE_P (t1)
-	     || !COMPLETE_TYPE_P (t2)
-	     || (!get_odr_type (t1, true)->odr_violated
-		 && !get_odr_type (t2, true)->odr_violated))
+      /* Limit recursion: If subtypes are ODR types and we know
+	 that they are same, be happy.  */
+      if (!odr_type_p (t1) || !get_odr_type (t1, true)->odr_violated)
         return true;
     }
 
@@ -1587,8 +1580,15 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 				 "in another translation unit"));
 		    return false;
 		  }
-		gcc_assert (DECL_NONADDRESSABLE_P (f1)
-			    == DECL_NONADDRESSABLE_P (f2));
+		if (DECL_BIT_FIELD (f1) != DECL_BIT_FIELD (f2))
+		  {
+		    warn_odr (t1, t2, f1, f2, warn, warned,
+			      G_("one field is bitfield while other is not"));
+		    return false;
+		  }
+		else
+		  gcc_assert (DECL_NONADDRESSABLE_P (f1)
+			      == DECL_NONADDRESSABLE_P (f2));
 	      }
 
 	    /* If one aggregate has more fields than the other, they
@@ -3755,8 +3755,7 @@ ipa_devirt (void)
 	      {
 		if (dump_enabled_p ())
                   {
-                    location_t locus = gimple_location_safe (e->call_stmt);
-                    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
+                    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, e->call_stmt,
 				     "speculatively devirtualizing call "
 				     "in %s to %s\n",
 				     n->dump_name (),

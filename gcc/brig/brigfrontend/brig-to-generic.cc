@@ -52,6 +52,7 @@
 #include "cgraph.h"
 #include "dumpfile.h"
 #include "tree-pretty-print.h"
+#include "attribs.h"
 
 extern int gccbrig_verbose;
 
@@ -487,7 +488,9 @@ brig_to_generic::add_global_variable (const std::string &name, tree var_decl)
   tree var_addr = build1 (ADDR_EXPR, ptype, var_decl);
 
   DECL_INITIAL (host_def_var) = var_addr;
-  TREE_PUBLIC (host_def_var) = 0;
+  TREE_PUBLIC (host_def_var) = 1;
+
+  set_externally_visible (host_def_var);
 }
 
 /* Adds an indirection pointer for a potential host-defined program scope
@@ -510,8 +513,16 @@ brig_to_generic::add_host_def_var_ptr (const std::string &name, tree var_decl)
   TREE_ADDRESSABLE (ptr_var) = 1;
   TREE_STATIC (ptr_var) = 1;
 
+  set_externally_visible (ptr_var);
+
   append_global (ptr_var);
   m_global_variables[var_name] = ptr_var;
+}
+
+void
+brig_to_generic::add_decl_call (tree call)
+{
+  m_decl_call.push_back (call);
 }
 
 /* Produce a "mangled name" for the given brig function or kernel.
@@ -701,8 +712,6 @@ brig_to_generic::finish_function ()
       m_cf->finish ();
       m_cf->emit_metadata (stmts);
       dump_function (m_dump_file, m_cf);
-      gimplify_function_tree (m_cf->m_func_decl);
-      cgraph_node::finalize_function (m_cf->m_func_decl, true);
     }
   else
     /* Emit the kernel only at the very end so we can analyze the total
@@ -846,6 +855,43 @@ call_builtin (tree pdecl, int nargs, tree rettype, ...)
 void
 brig_to_generic::write_globals ()
 {
+
+  /* Replace calls to declarations with calls to definitions.  Otherwise
+     inlining will fail to find the definition to inline from.  */
+
+  for (size_t i = 0; i < m_decl_call.size(); ++i)
+    {
+      tree decl_call = m_decl_call.at(i);
+      tree func_decl = get_callee_fndecl (decl_call);
+      brig_function *brig_function = get_finished_function (func_decl);
+
+      if (brig_function && brig_function->m_func_decl
+	  && DECL_EXTERNAL (brig_function->m_func_decl) == 0
+	  && brig_function->m_func_decl != func_decl)
+	{
+
+	  decl_call = CALL_EXPR_FN (decl_call);
+	  STRIP_NOPS (decl_call);
+	  if (TREE_CODE (decl_call) == ADDR_EXPR
+	      && TREE_CODE (TREE_OPERAND (decl_call, 0)) == FUNCTION_DECL)
+	    TREE_OPERAND (decl_call, 0) = brig_function->m_func_decl;
+	}
+    }
+
+  for (std::map<std::string, brig_function *>::iterator i
+	 = m_finished_functions.begin(), e = m_finished_functions.end();
+       i != e; ++i)
+    {
+      brig_function *brig_f = (*i).second;
+      if (brig_f->m_is_kernel)
+	continue;
+
+      /* Finalize only at this point to allow the cgraph analysis to
+	 see definitions to calls to later functions.  */
+      gimplify_function_tree (brig_f->m_func_decl);
+      cgraph_node::finalize_function (brig_f->m_func_decl, true);
+    }
+
   /* Now that the whole BRIG module has been processed, build a launcher
      and a metadata section for each built kernel.  */
   for (size_t i = 0; i < m_kernels.size (); ++i)
@@ -879,6 +925,18 @@ brig_to_generic::write_globals ()
       tree launcher = f->emit_launcher_and_metadata ();
 
       append_global (launcher);
+
+      if (m_dump_file)
+	{
+	  std::string kern_name = f->m_name.substr (1);
+	  fprintf (m_dump_file, "\n;; Function %s", kern_name.c_str());
+	  fprintf (m_dump_file, "\n;; enabled by -%s\n\n",
+		   dump_flag_name (TDI_original));
+	  print_generic_decl (m_dump_file, launcher, TDF_NONE);
+	  print_generic_expr (m_dump_file, DECL_SAVED_TREE (launcher),
+			      TDF_NONE);
+	  fprintf (m_dump_file, "\n");
+	}
 
       gimplify_function_tree (launcher);
       cgraph_node::finalize_function (launcher, true);
@@ -933,6 +991,25 @@ get_scalar_unsigned_int_type (tree original_type)
 					 * BITS_PER_UNIT, true);
 }
 
+/* Set the declaration externally visible so it won't get removed by
+   whole program optimizations.  */
+
+void
+set_externally_visible (tree decl)
+{
+  if (!lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
+    DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("externally_visible"),
+					NULL, DECL_ATTRIBUTES (decl));
+}
+
+void
+set_inline (tree decl)
+{
+  if (!lookup_attribute ("inline", DECL_ATTRIBUTES (decl)))
+    DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("inline"),
+					NULL, DECL_ATTRIBUTES (decl));
+}
+
 void
 dump_function (FILE *dump_file, brig_function *f)
 {
@@ -942,8 +1019,8 @@ dump_function (FILE *dump_file, brig_function *f)
       fprintf (dump_file, "\n;; Function %s", f->m_name.c_str ());
       fprintf (dump_file, "\n;; enabled by -%s\n\n",
 	       dump_flag_name (TDI_original));
-      print_generic_decl (dump_file, f->m_func_decl, 0);
-      print_generic_expr (dump_file, f->m_current_bind_expr, 0);
+      print_generic_decl (dump_file, f->m_func_decl, TDF_NONE);
+      print_generic_expr (dump_file, f->m_current_bind_expr, TDF_NONE);
       fprintf (dump_file, "\n");
     }
 }

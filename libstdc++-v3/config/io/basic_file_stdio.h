@@ -84,6 +84,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __basic_file*
       open(const char* __name, ios_base::openmode __mode, int __prot = 0664);
 
+#if _GLIBCXX_HAVE__WFOPEN && _GLIBCXX_USE_WCHAR_T
+      __basic_file*
+      open(const wchar_t* __name, ios_base::openmode __mode);
+#endif
+
       __basic_file*
       sys_open(__c_file* __file, ios_base::openmode);
 

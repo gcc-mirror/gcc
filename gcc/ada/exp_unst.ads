@@ -562,6 +562,42 @@ package Exp_Unst is
    --    uplevel call, a subprogram at level 5 can call one at level 2 or even
    --    the outer level subprogram at level 1.
 
+   -------------------------------------
+   -- Handling of unconstrained types --
+   -------------------------------------
+
+   --  Objects whose nominal subtype is an unconstrained array type present
+   --  additional complications for translation into LLVM. The address
+   --  attribute of such objects points to the first component of the
+   --  array, and the bounds are found elsewhere, typically ahead of the
+   --  components. In many cases the bounds of an object are stored ahead
+   --  of the components and can be retrieved from it. However, if the
+   --  object is an expression (e.g. a slice) the bounds are not adjacent
+   --  and thus must be conveyed explicitly by means of a so-called
+   --  fat pointer. This leads to the following enhancements to the
+   --  handling of uplevel references described so far. This applies only
+   --  to uplevel references to unconstrained formals of enclosing
+   --  subprograms:
+   --
+   --  a) Uplevel references are detected as before during the tree traversal
+   --  in Visit_Node. For reference to uplevel formals, we include those with
+   --  an unconstrained array type (e.g. String) even if such a type has
+   --  static bounds.
+   --
+   --  b) references to unconstrained formals are recognized in the Subp
+   --  table by means of the predicate Needs_Fat_Pointer.
+   --
+   --  c) When constructing the required activation record we also construct
+   --  a named access type whose designated type is the unconstrained array
+   --  type. The activation record of a subprogram that contains such an
+   --  uplevel reference includes a component of this access type. The
+   --  declaration for that access type is introduced and analyzed before
+   --  that of the activation record, so it appears in the subprogram that
+   --  has that formal.
+   --
+   --  d) The uplevel reference is rewritten as an explicit dereference (.all)
+   --  of the corresponding pointer component.
+   --
    -----------
    -- Subps --
    -----------
@@ -683,12 +719,18 @@ package Exp_Unst is
    --  function returns the level of nesting (Subp = 1, subprograms that
    --  are immediately nested within Subp = 2, etc.).
 
+   function In_Synchronized_Unit (Subp : Entity_Id) return Boolean;
+   --  Predicate to identify subprograms declared in task and protected types.
+   --  These subprograms are called from outside the compilation and therefore
+   --  must be considered reachable (and cannot be eliminated) because we must
+   --  generate code for them.
+
    function Subp_Index (Sub : Entity_Id) return SI_Type;
    --  Given the entity for a subprogram, return corresponding Subp's index
 
    procedure Unnest_Subprograms (N : Node_Id);
    --  Called to unnest subprograms. If we are in unnest subprogram mode, this
-   --  is the call that traverses the tree N and locates all the library level
+   --  is the call that traverses the tree N and locates all the library-level
    --  subprograms with nested subprograms to process them.
 
 end Exp_Unst;

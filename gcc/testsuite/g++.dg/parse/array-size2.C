@@ -15,6 +15,6 @@ void
 foo (void)
 {
   char g[(char *) &((struct S *) 0)->b - (char *) 0]; // { dg-error "constant" }
-  char h[(__SIZE_TYPE__) &((struct S *) 8)->b];	      // { dg-error "constant" "" { xfail *-*-* } }
+  char h[(__SIZE_TYPE__) &((struct S *) 8)->b];	      // { dg-error "constant" }
   bar (g, h);
 }
