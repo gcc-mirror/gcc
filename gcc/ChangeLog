@@ -1,3 +1,9 @@
+2018-07-09  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86413
+	* dwarf2out.c (gen_block_die): For an early generated DIE
+	always output high/low PC attributes.
+
 2018-07-09  Tom de Vries  <tdevries@suse.de>
 
 	* cfgexpand.c (expand_debug_source_expr): Handle VAR_DECL.

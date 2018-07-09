@@ -25622,6 +25622,11 @@ gen_block_die (tree stmt, dw_die_ref context_die)
     /* The outer scopes for inlinings *must* always be represented.  We
        generate DW_TAG_inlined_subroutine DIEs for them.  (See below.) */
     must_output_die = 1;
+  else if (BLOCK_DIE (stmt))
+    /* If we already have a DIE then it was filled early.  Meanwhile
+       we might have pruned all BLOCK_VARS as optimized out but we
+       still want to generate high/low PC attributes so output it.  */
+    must_output_die = 1;
   else
     {
       /* Determine if this block directly contains any "significant"
