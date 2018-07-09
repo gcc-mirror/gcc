@@ -1,3 +1,7 @@
+2018-07-09  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Add back wrongly removed attribute.
+
 2018-07-09  Richard Biener  <rguenther@suse.de>
 
 	PR debug/86413
