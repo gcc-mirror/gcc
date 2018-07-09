@@ -1,3 +1,9 @@
+2018-07-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sparc.c (sparc_fold_builtin) <SPARC_BUILTIN_PDIST,
+	SPARC_BUILTIN_PDISTN>: Adapt for signature change of wi::neg,
+	wi::add.
+
 2018-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/86420
