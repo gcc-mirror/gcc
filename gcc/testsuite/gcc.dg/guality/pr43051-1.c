@@ -31,14 +31,14 @@ bar (struct S *c, int v, struct S *e)
 #endif
   while (c < e)
     {
-      foo ("c", (__UINTPTR_TYPE__) c, 0);	/* { dg-final { gdb-test 34 "c" "\&a\[0\]" } } */
-      foo ("v", v, 1);				/* { dg-final { gdb-test 35 "v" "1" } } */
-      foo ("e", (__UINTPTR_TYPE__) e, 2);	/* { dg-final { gdb-test 36 "e" "\&a\[1\]" } } */
+      foo ("c", (__UINTPTR_TYPE__) c, 0);	/* { dg-final { gdb-test . "c" "\&a\[0\]" } } */
+      foo ("v", v, 1);				/* { dg-final { gdb-test . "v" "1" } } */
+      foo ("e", (__UINTPTR_TYPE__) e, 2);	/* { dg-final { gdb-test . "e" "\&a\[1\]" } } */
       if (c->v == v)
 	return c;
-      foo ("c", (__UINTPTR_TYPE__) c, 3);	/* { dg-final { gdb-test 39 "c" "\&a\[0\]" } } */
-      foo ("v", v, 4);				/* { dg-final { gdb-test 40 "v" "1" } } */
-      foo ("e", (__UINTPTR_TYPE__) e, 5);	/* { dg-final { gdb-test 41 "e" "\&a\[1\]" } } */
+      foo ("c", (__UINTPTR_TYPE__) c, 3);	/* { dg-final { gdb-test . "c" "\&a\[0\]" } } */
+      foo ("v", v, 4);				/* { dg-final { gdb-test . "v" "1" } } */
+      foo ("e", (__UINTPTR_TYPE__) e, 5);	/* { dg-final { gdb-test . "e" "\&a\[1\]" } } */
       c++;
     }
 #ifdef __i386__
