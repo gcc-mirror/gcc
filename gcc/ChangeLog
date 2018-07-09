@@ -1,3 +1,29 @@
+2018-07-09  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.c (pdp11_addr_cost): New function.
+	(pdp11_insn_cost): New function.
+	(pdp11_md_asm_adjust): New function.
+	(TARGET_INVALID_WITHIN_DOLOOP): Define.
+	(pdp11_rtx_costs): Update to match machine better.
+	(output_addr_const_pdp11): Correct format mismatch warnings.
+	* config/pdp11/pdp11.h (SLOW_BYTE_ACCESS): Correct definition.
+	* config/pdp11/pdp11.md: General change to add base_cost and/or
+	length attributes for use by new pdp11_insn_cost function.
+	(MIN_BRANCH): Correct definition.
+	(MIN_SOB): Ditto.
+	(doloop_end): Use standard pattern name for looping pattern.
+	(doloop_end_nocc): New.
+	(movsf): Add another constraint alternative.
+	(zero_extendqihi2): Add constraint alternatives for not in place
+	extend.
+	(zero_extendhisi2): Remove.
+	(shift patterns): Add CC handling variants.
+	(bswaphi2): New.
+	(bswapsi2): New.
+	(rothi3): New.
+	(define_peephole2): New peephole to recognize mov that sets CC for
+	subsequent test.
+
 2018-07-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sparc/sparc.c (sparc_fold_builtin) <SPARC_BUILTIN_PDIST,
