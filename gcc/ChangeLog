@@ -1,3 +1,17 @@
+2018-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77357
+	PR middle-end/86428
+	* builtins.c (c_strlen): Avoid out-of-bounds warnings when
+	accessing implicitly initialized array elements.
+	* expr.c (string_constant): Handle string initializers of
+	character arrays within aggregates.
+	* gimple-fold.c (fold_array_ctor_reference): Add argument.
+	Store element offset.  As a special case, handle zero size.
+	(fold_nonarray_ctor_reference): Same.
+	(fold_ctor_reference): Add argument.  Store subobject offset.
+	* gimple-fold.h (fold_ctor_reference): Add argument.
+
 2018-07-09  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.c (pdp11_addr_cost): New function.

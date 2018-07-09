@@ -2,7 +2,10 @@
 
    Test strlen on const variables initialized to string literals.
 
-   Written by Jakub Jelinek, 9/14/2004.  */
+   Written by Jakub Jelinek, 9/14/2004.
+
+   { dg-do compile }
+   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
 
 extern void abort (void);
 extern __SIZE_TYPE__ strlen (const char *);
@@ -10,7 +13,6 @@ extern char *strcpy (char *, const char *);
 static const char bar[] = "Hello, World!";
 static const char baz[] = "hello, world?";
 static const char larger[20] = "short string";
-extern int inside_main;
 
 int l1 = 1;
 int x = 6;
@@ -59,12 +61,10 @@ main_test(void)
   if (strlen (&larger[10]) != 2)
     abort ();
 
-  inside_main = 0;
-  /* This will result in strlen call, because larger
-     array is bigger than its initializer.  */
   if (strlen (larger + (x++ & 7)) != 5)
     abort ();
   if (x != 8)
     abort ();
-  inside_main = 1;
 }
+
+/* { dg-final { scan-tree-dump-not "strlen" "optimized" } } */
