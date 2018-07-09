@@ -5141,6 +5141,10 @@ expand_debug_source_expr (tree exp)
 
   switch (TREE_CODE (exp))
     {
+    case VAR_DECL:
+      if (DECL_ABSTRACT_ORIGIN (exp))
+	return expand_debug_source_expr (DECL_ABSTRACT_ORIGIN (exp));
+      break;
     case PARM_DECL:
       {
 	mode = DECL_MODE (exp);
