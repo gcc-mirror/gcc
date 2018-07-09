@@ -11854,16 +11854,19 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	      tree e0 = VECTOR_CST_ELT (arg0, i);
 	      tree e1 = VECTOR_CST_ELT (arg1, i);
 
-	      bool neg1_ovf, neg2_ovf, add1_ovf, add2_ovf;
+	      wi::overflow_type neg1_ovf, neg2_ovf, add1_ovf, add2_ovf;
 
 	      tmp = wi::neg (wi::to_widest (e1), &neg1_ovf);
 	      tmp = wi::add (wi::to_widest (e0), tmp, SIGNED, &add1_ovf);
 	      if (wi::neg_p (tmp))
 		tmp = wi::neg (tmp, &neg2_ovf);
 	      else
-		neg2_ovf = false;
+		neg2_ovf = wi::OVF_NONE;
 	      result = wi::add (result, tmp, SIGNED, &add2_ovf);
-	      overflow |= neg1_ovf | neg2_ovf | add1_ovf | add2_ovf;
+	      overflow |= ((neg1_ovf != wi::OVF_NONE)
+			   | (neg2_ovf != wi::OVF_NONE)
+			   | (add1_ovf != wi::OVF_NONE)
+			   | (add2_ovf != wi::OVF_NONE));
 	    }
 
 	  gcc_assert (!overflow);
