@@ -5141,7 +5141,7 @@ real_nextafter (REAL_VALUE_TYPE *r, format_helper fmt,
       get_zero (r, x->sign);
       return true;
     }
-  return r->cl == rvc_zero;
+  return r->cl == rvc_zero || REAL_EXP (r) < fmt->emin;
 }
 
 /* Write into BUF the maximum representable finite floating-point

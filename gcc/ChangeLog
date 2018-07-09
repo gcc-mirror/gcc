@@ -1,3 +1,8 @@
+2018-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86420
+	* real.c (real_nextafter): Return true if result is denormal.
+
 2018-07-09  Martin Liska  <mliska@suse.cz>
 
 	* common.opt: Add back wrongly removed attribute.

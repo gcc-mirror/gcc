@@ -1,3 +1,10 @@
+2018-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86420
+	* gcc.dg/nextafter-1.c (TEST): Adjust the tests that expect denormals
+	to be returned and when first argument is not 0, so that they don't do
+	anything for NEED_EXC or NEED_ERRNO.
+
 2018-07-09  Tom de Vries  <tdevries@suse.de>
 
 	* gcc.dg/guality/asm-1.c: Use relative line numbers where obvious.
