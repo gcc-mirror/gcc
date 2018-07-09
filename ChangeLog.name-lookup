@@ -1,5 +1,11 @@
 2018-07-09  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/line-map.h (enum lc_reason): Reformat comments.
+	gcc/
+	* diagnostic.c (diagnostic_report_current_module): Reroll loop.
+	use array for prefix strings.
+
 	Default allocator
 	libcpp/
 	* include/line-map.h (line_maps): Document default allocator.
