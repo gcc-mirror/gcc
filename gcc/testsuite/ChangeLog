@@ -1,3 +1,46 @@
+2018-07-09  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/guality/asm-1.c: Use relative line numbers where obvious.
+	* gcc.dg/guality/bswaptest.c: Same.
+	* gcc.dg/guality/clztest.c: Same.
+	* gcc.dg/guality/csttest.c: Same.
+	* gcc.dg/guality/ctztest.c: Same.
+	* gcc.dg/guality/drap.c: Same.
+	* gcc.dg/guality/nrv-1.c: Same.
+	* gcc.dg/guality/pr41353-1.c: Same.
+	* gcc.dg/guality/pr41353-2.c: Same.
+	* gcc.dg/guality/pr41404-1.c: Same.
+	* gcc.dg/guality/pr43051-1.c: Same.
+	* gcc.dg/guality/pr43077-1.c: Same.
+	* gcc.dg/guality/pr43177.c: Same.
+	* gcc.dg/guality/pr43329-1.c: Same.
+	* gcc.dg/guality/pr43479.c: Same.
+	* gcc.dg/guality/pr43593.c: Same.
+	* gcc.dg/guality/pr45003-1.c: Same.
+	* gcc.dg/guality/pr45003-2.c: Same.
+	* gcc.dg/guality/pr45003-3.c: Same.
+	* gcc.dg/guality/pr48437.c: Same.
+	* gcc.dg/guality/pr48466.c: Same.
+	* gcc.dg/guality/pr49888.c: Same.
+	* gcc.dg/guality/pr54200.c: Same.
+	* gcc.dg/guality/pr54519-1.c: Same.
+	* gcc.dg/guality/pr54519-2.c: Same.
+	* gcc.dg/guality/pr54519-3.c: Same.
+	* gcc.dg/guality/pr54519-4.c: Same.
+	* gcc.dg/guality/pr54519-5.c: Same.
+	* gcc.dg/guality/pr54519-6.c: Same.
+	* gcc.dg/guality/pr54551.c: Same.
+	* gcc.dg/guality/pr54693-2.c: Same.
+	* gcc.dg/guality/pr54693.c: Same.
+	* gcc.dg/guality/pr54796.c: Same.
+	* gcc.dg/guality/pr54970.c: Same.
+	* gcc.dg/guality/pr67192.c: Same.
+	* gcc.dg/guality/pr69947.c: Same.
+	* gcc.dg/guality/pr78726.c: Same.
+	* gcc.dg/guality/rotatetest.c: Same.
+	* gcc.dg/guality/sra-1.c: Same.
+	* gcc.dg/guality/vla-2.c: Same.
+
 2018-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/long-short.C: New.

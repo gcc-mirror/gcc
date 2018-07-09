@@ -19,7 +19,7 @@ main ()
   for (i = 0; i < 10; i++)
     {
       c = 0x30 + i;
-      foo (&arr[i], c); /* { dg-final { gdb-test 22 "i" "c - 48" } } */
+      foo (&arr[i], c); /* { dg-final { gdb-test . "i" "c - 48" } } */
     }
   arr[10] = 0;
 
