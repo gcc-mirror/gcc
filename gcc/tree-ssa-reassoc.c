@@ -1606,7 +1606,7 @@ undistribute_ops_list (enum tree_code opcode,
     {
       fprintf (dump_file, "searching for un-distribute opportunities ");
       print_generic_expr (dump_file,
-	(*ops)[bitmap_first_set_bit (candidates)]->op, 0);
+	(*ops)[bitmap_first_set_bit (candidates)]->op, TDF_NONE);
       fprintf (dump_file, " %d\n", nr_candidates);
     }
 
@@ -3172,7 +3172,7 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	 to (unsigned) k_32 < (unsigned) iftmp.0_44, then we would execute
 	 those stmts even for negative k_32 and the value ranges would be no
 	 longer guaranteed and so the optimization would be invalid.  */
-      if (opcode == ERROR_MARK)
+      while (opcode == ERROR_MARK)
 	{
 	  gimple *g = SSA_NAME_DEF_STMT (rhs2);
 	  basic_block bb2 = gimple_bb (g);
@@ -3182,21 +3182,37 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	    {
 	      /* As an exception, handle a few common cases.  */
 	      if (gimple_assign_cast_p (g)
-		  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (g)))
-		  && TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (g)))
-		  && (TYPE_PRECISION (TREE_TYPE (rhs2))
-		      > TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (g)))))
-		/* Zero-extension is always ok.  */ ;
+		  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (g))))
+		{
+		  tree op0 = gimple_assign_rhs1 (g);
+		  if (TYPE_UNSIGNED (TREE_TYPE (op0))
+		      && (TYPE_PRECISION (TREE_TYPE (rhs2))
+			  > TYPE_PRECISION (TREE_TYPE (op0))))
+		    /* Zero-extension is always ok.  */
+		    break;
+		  else if (TYPE_PRECISION (TREE_TYPE (rhs2))
+			   == TYPE_PRECISION (TREE_TYPE (op0))
+			   && TREE_CODE (op0) == SSA_NAME)
+		    {
+		      /* Cast from signed to unsigned or vice versa.  Retry
+			 with the op0 as new rhs2.  */
+		      rhs2 = op0;
+		      continue;
+		    }
+		}
 	      else if (is_gimple_assign (g)
 		       && gimple_assign_rhs_code (g) == BIT_AND_EXPR
 		       && TREE_CODE (gimple_assign_rhs2 (g)) == INTEGER_CST
 		       && !wi::neg_p (wi::to_wide (gimple_assign_rhs2 (g))))
 		/* Masking with INTEGER_CST with MSB clear is always ok
-		   too.  */ ;
-	      else
-		continue;
+		   too.  */
+		break;
+	      rhs2 = NULL_TREE;
 	    }
+	  break;
 	}
+      if (rhs2 == NULL_TREE)
+	continue;
 
       wide_int nz = get_nonzero_bits (rhs2);
       if (wi::neg_p (nz))
@@ -3253,10 +3269,13 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
       gimple_set_uid (g, uid);
       rhs1 = gimple_assign_lhs (g);
       gsi_insert_before (&gsi, g, GSI_SAME_STMT);
-      g = gimple_build_assign (make_ssa_name (utype), NOP_EXPR, rhs2);
-      gimple_set_uid (g, uid);
-      rhs2 = gimple_assign_lhs (g);
-      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      if (!useless_type_conversion_p (utype, TREE_TYPE (rhs2)))
+	{
+	  g = gimple_build_assign (make_ssa_name (utype), NOP_EXPR, rhs2);
+	  gimple_set_uid (g, uid);
+	  rhs2 = gimple_assign_lhs (g);
+	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	}
       if (tree_swap_operands_p (rhs1, rhs2))
 	{
 	  std::swap (rhs1, rhs2);

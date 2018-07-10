@@ -1155,6 +1155,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 			 false);
       pp_right_paren (pp);
       break;
+    case OMP_CLAUSE_IF_PRESENT:
+      pp_string (pp, "if_present");
+      break;
+    case OMP_CLAUSE_FINALIZE:
+      pp_string (pp, "finalize");
+      break;
 
     default:
       /* Should never happen.  */
@@ -1423,7 +1429,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
     case VOID_TYPE:
-    case POINTER_BOUNDS_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
@@ -2601,6 +2606,12 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_greater (pp);
       break;
 
+    case ABSU_EXPR:
+      pp_string (pp, "ABSU_EXPR <");
+      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_greater (pp);
+      break;
+
     case RANGE_EXPR:
       NIY;
       break;
@@ -3554,7 +3565,7 @@ print_struct_decl (pretty_printer *pp, const_tree node, int spc,
 		|| TREE_CODE (node) == QUAL_UNION_TYPE))
 	pp_string (pp, "union ");
 
-      dump_generic_node (pp, TYPE_NAME (node), spc, 0, false);
+      dump_generic_node (pp, TYPE_NAME (node), spc, TDF_NONE, false);
     }
 
   /* Print the contents of the structure.  */
@@ -4194,7 +4205,7 @@ dump_function_header (FILE *dump_file, tree fdecl, dump_flags_t flags)
     fprintf (dump_file, ", decl_uid=%d", DECL_UID (fdecl));
   if (node)
     {
-      fprintf (dump_file, ", cgraph_uid=%d", node->uid);
+      fprintf (dump_file, ", cgraph_uid=%d", node->get_uid ());
       fprintf (dump_file, ", symbol_order=%d)%s\n\n", node->order,
                node->frequency == NODE_FREQUENCY_HOT
                ? " (hot)"

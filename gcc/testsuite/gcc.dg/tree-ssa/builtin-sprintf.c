@@ -479,12 +479,12 @@ test_a_double (double d)
   RNG (11, 16, 17, "%.*a", 4, 6.0); /* 0xc.0000p-1 */
   RNG (12, 17, 18, "%.*a", 5, 7.0); /* 0xe.00000p-1 */
 	                            /* d is in [ 0, -DBL_MAX ] */
-  RNG ( 6, 10, 11, "%.0a", d);      /* 0x0p+0 ... -0x2p+1023 */
+  RNG ( 3, 10, 11, "%.0a", d);      /* inf/nan or 0x0p+0 ... -0x2p+1023 */
   /* %a is poorly specified and allows for implementations divergence:
      some (such as Glibc) trim redundant trailing zeros after decimal
      point and others (e.g., Solaris) don't.  */
-  RNG ( 8, 30, 31, "%.1a", d);      /* 0x0.0p+0  ... -0x2.0...0p+1023 */
-  RNG ( 9, 30, 31, "%.2a", d);      /* 0x0.00p+0 ... -0x2.00...0p+1023 */
+  RNG ( 3, 30, 31, "%.1a", d);      /* inf or 0x0.0p+0  ... -0x2.0...0p+1023 */
+  RNG ( 3, 30, 31, "%.2a", d);      /* inf or 0x0.00p+0 ... -0x2.00...0p+1023 */
 }
 
 static void __attribute__ ((noinline, noclone))
@@ -522,29 +522,32 @@ test_e_double (double d)
   RNG (12, 17, 18, "%e",  1.0e-12);
   RNG (13, 18, 19, "%e",  1.0e-123);
 
-  RNG (12, 19, 20, "%e",   d);
-  RNG ( 5, 11, 12, "%.e",  d);
-  RNG ( 5, 12, 13, "%.0e", d);
-  RNG ( 7, 14, 15, "%.1e", d);
-  RNG ( 8, 15, 16, "%.2e", d);
-  RNG ( 9, 16, 17, "%.3e", d);
-  RNG (10, 17, 18, "%.4e", d);
-  RNG (11, 18, 19, "%.5e", d);
-  RNG (12, 19, 20, "%.6e", d);
-  RNG (13, 20, 21, "%.7e", d);
+  RNG ( 3, 19, 20, "%e",   d);
+  RNG ( 3, 11, 12, "%.e",  d);
+  RNG ( 3, 12, 13, "%.0e", d);
+  RNG ( 3, 14, 15, "%.1e", d);
+  RNG ( 3, 15, 16, "%.2e", d);
+  RNG ( 3, 16, 17, "%.3e", d);
+  RNG ( 3, 17, 18, "%.4e", d);
+  RNG ( 3, 18, 19, "%.5e", d);
+  RNG ( 3, 19, 20, "%.6e", d);
+  RNG ( 3, 20, 21, "%.7e", d);
 
-  RNG (4006, 4013, 4014, "%.4000e", d);
+  RNG ( 3, 4013, 4014, "%.4000e", d);
 
-  RNG ( 5,  7,  8, "%.*e", 0, d);
-  RNG ( 7, 14, 15, "%.*e", 1, d);
-  RNG ( 8, 15, 16, "%.*e", 2, d);
-  RNG ( 9, 16, 17, "%.*e", 3, d);
-  RNG (10, 17, 18, "%.*e", 4, d);
-  RNG (11, 18, 19, "%.*e", 5, d);
-  RNG (12, 19, 20, "%.*e", 6, d);
-  RNG (13, 20, 21, "%.*e", 7, d);
+  RNG ( 3,  7,  8, "%.*e", 0, d);
+  RNG ( 3, 14, 15, "%.*e", 1, d);
+  RNG ( 3, 15, 16, "%.*e", 2, d);
+  RNG ( 3, 16, 17, "%.*e", 3, d);
+  RNG ( 3, 17, 18, "%.*e", 4, d);
+  RNG ( 3, 18, 19, "%.*e", 5, d);
+  RNG ( 3, 19, 20, "%.*e", 6, d);
+  RNG ( 3, 20, 21, "%.*e", 7, d);
 
-  RNG (4006, 4013, 4014, "%.*e", 4000, d);
+  RNG ( 3, 4013, 4014, "%.*e",  4000, d);
+  RNG ( 4, 4013, 4014, "%+.*e", 4000, d);
+  RNG ( 4, 4013, 4014, "% .*e", 4000, d);
+  RNG ( 3, 4013, 4014, "%#.*e", 4000, d);
 }
 
 static void __attribute__ ((noinline, noclone))
@@ -584,26 +587,27 @@ test_e_long_double (long double d)
   RNG (20, 26, 27, "%.13Le",  1.0e-113L);
 
   /* The following correspond to the double results plus 1 for the upper
-     bound accounting for the four-digit exponent.  */
-  RNG (12, 20, 21, "%Le", d);    /* 0.000000e+00 ...  -1.189732e+4932 */
-  RNG ( 5,  8,  9, "%.Le", d);
-  RNG ( 5,  9, 10, "%.0Le", d);
-  RNG ( 7, 15, 16, "%.1Le", d);  /* 0.0e+00      ...  -1.2e+4932 */
-  RNG ( 8, 16, 17, "%.2Le", d);  /* 0.00e+00     ...  -1.19e+4932 */
-  RNG ( 9, 17, 18, "%.3Le", d);
-  RNG (10, 18, 19, "%.4Le", d);
-  RNG (11, 19, 20, "%.5Le", d);
-  RNG (12, 20, 21, "%.6Le", d);  /* same as plain "%Le" */
-  RNG (13, 21, 22, "%.7Le", d);  /* 0.0000000e+00 ... -1.1897315e+4932 */
+     bound accounting for the four-digit exponent.  The lower bound is
+     for inf/nan.  */
+  RNG ( 3, 20, 21, "%Le", d);    /* inf or 0.000000e+00 ...  -1.189732e+4932 */
+  RNG ( 3,  8,  9, "%.Le", d);
+  RNG ( 3,  9, 10, "%.0Le", d);
+  RNG ( 3, 15, 16, "%.1Le", d);  /* inf or 0.0e+00      ...  -1.2e+4932 */
+  RNG ( 3, 16, 17, "%.2Le", d);  /* inf or 0.00e+00     ...  -1.19e+4932 */
+  RNG ( 3, 17, 18, "%.3Le", d);
+  RNG ( 3, 18, 19, "%.4Le", d);
+  RNG ( 3, 19, 20, "%.5Le", d);
+  RNG ( 3, 20, 21, "%.6Le", d);  /* same as plain "%Le" */
+  RNG ( 3, 21, 22, "%.7Le", d);  /* inf or 0.0000000e+00 ... -1.1897315e+4932 */
 
-  RNG ( 5,  9, 10, "%.*Le", 0, d);
-  RNG ( 7, 15, 16, "%.*Le", 1, d);
-  RNG ( 8, 16, 17, "%.*Le", 2, d);
-  RNG ( 9, 17, 18, "%.*Le", 3, d);
-  RNG (10, 18, 19, "%.*Le", 4, d);
-  RNG (11, 19, 20, "%.*Le", 5, d);
-  RNG (12, 20, 21, "%.*Le", 6, d);
-  RNG (13, 21, 22, "%.*Le", 7, d);
+  RNG ( 3,  9, 10, "%.*Le", 0, d);
+  RNG ( 3, 15, 16, "%.*Le", 1, d);
+  RNG ( 3, 16, 17, "%.*Le", 2, d);
+  RNG ( 3, 17, 18, "%.*Le", 3, d);
+  RNG ( 3, 18, 19, "%.*Le", 4, d);
+  RNG ( 3, 19, 20, "%.*Le", 5, d);
+  RNG ( 3, 20, 21, "%.*Le", 6, d);
+  RNG ( 3, 21, 22, "%.*Le", 7, d);
 }
 
 static void __attribute__ ((noinline, noclone))
@@ -626,7 +630,10 @@ test_f_double (double d)
   RNG (  8,  13,  14, "%f", 1.0e-12);
   RNG (  8,  13,  14, "%f", 1.0e-123);
 
-  RNG (  8, 322, 323, "%f", d);
+  RNG (  3, 322, 323, "%f",  d);
+  RNG (  4, 322, 323, "%+f", d);
+  RNG (  4, 322, 323, "% f", d);
+  RNG (  3, 322, 323, "%#f", d);
 }
 
 static void __attribute__ ((noinline, noclone))

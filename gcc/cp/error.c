@@ -2764,6 +2764,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case VEC_DELETE_EXPR:
     case MODOP_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
     case CONJ_EXPR:
     case VECTOR_CST:
     case FIXED_CST:
@@ -3031,7 +3032,7 @@ location_of (tree t)
     return DECL_SOURCE_LOCATION (t);
   if (TREE_CODE (t) == DEFAULT_ARG)
     return defarg_location (t);
-  return EXPR_LOC_OR_LOC (t, input_location);
+  return cp_expr_loc_or_loc (t, input_location);
 }
 
 /* Now the interfaces from error et al to dump_type et al. Each takes an

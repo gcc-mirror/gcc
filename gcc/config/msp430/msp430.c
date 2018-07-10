@@ -725,10 +725,25 @@ msp430_mcu_name (void)
   if (target_mcu)
     {
       unsigned int i;
-      static char mcu_name [64];
+      unsigned int start_upper;
+      unsigned int end_upper;
+      static char mcu_name[64];
 
-      snprintf (mcu_name, sizeof (mcu_name) - 1, "__%s__", target_mcu);
-      for (i = strlen (mcu_name); i--;)
+      /* The 'i' in the device name symbol for msp430i* devices must be lower
+	 case, to match the expected symbol in msp430.h.  */
+      if (strncmp (target_mcu, "msp430i", 7) == 0)
+	{
+	  snprintf (mcu_name, sizeof (mcu_name) - 1, "__MSP430i%s__",
+		    target_mcu + 7);
+	  start_upper = 9;
+	}
+      else
+	{
+	  snprintf (mcu_name, sizeof (mcu_name) - 1, "__%s__", target_mcu);
+	  start_upper = 2;
+	}
+      end_upper = strlen (mcu_name) - 2;
+      for (i = start_upper; i < end_upper; i++)
 	mcu_name[i] = TOUPPER (mcu_name[i]);
       return mcu_name;
     }
@@ -1878,11 +1893,9 @@ msp430_attr (tree * node,
 {
   gcc_assert (DECL_P (* node));
 
+  /* Only the interrupt attribute takes an argument.  */
   if (args != NULL)
     {
-      /* Only the interrupt attribute takes an argument.  */
-      gcc_assert (TREE_NAME_EQ (name, ATTR_INTR));
-
       tree value = TREE_VALUE (args);
 
       switch (TREE_CODE (value))
@@ -1927,13 +1940,12 @@ msp430_attr (tree * node,
       if (TREE_CODE (TREE_TYPE (* node)) == FUNCTION_TYPE
 	  && ! VOID_TYPE_P (TREE_TYPE (TREE_TYPE (* node))))
 	message = "interrupt handlers must be void";
-
-      if (! TREE_PUBLIC (* node))
-	message = "interrupt handlers cannot be static";
-
-      /* Ensure interrupt handlers never get optimised out.  */
-      TREE_USED (* node) = 1;
-      DECL_PRESERVE_P (* node) = 1;
+      else
+	{
+	  /* Ensure interrupt handlers never get optimised out.  */
+	  TREE_USED (* node) = 1;
+	  DECL_PRESERVE_P (* node) = 1;
+	}
     }
   else if (TREE_NAME_EQ (name, ATTR_REENT))
     {

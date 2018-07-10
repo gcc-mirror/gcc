@@ -1054,12 +1054,6 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
       new_field_list = new_field;
     }
 
-  finish_record_type (new_type, nreverse (new_field_list), 2, false);
-  relate_alias_sets (new_type, type, ALIAS_SET_COPY);
-  if (TYPE_STUB_DECL (type))
-    SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
-			    DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
-
   /* If this is a padding record, we never want to make the size smaller
      than what was specified.  For QUAL_UNION_TYPE, also copy the size.  */
   if (TYPE_IS_PADDING_P (type) || TREE_CODE (type) == QUAL_UNION_TYPE)
@@ -1077,7 +1071,11 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
   if (!TYPE_CONTAINS_TEMPLATE_P (type))
     SET_TYPE_ADA_SIZE (new_type, TYPE_ADA_SIZE (type));
 
-  compute_record_mode (new_type);
+  finish_record_type (new_type, nreverse (new_field_list), 2, false);
+  relate_alias_sets (new_type, type, ALIAS_SET_COPY);
+  if (TYPE_STUB_DECL (type))
+    SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
+			    DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
 
   /* Try harder to get a packable type if necessary, for example
      in case the record itself contains a BLKmode field.  */
@@ -1951,33 +1949,40 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
   if (code == QUAL_UNION_TYPE)
     nreverse (field_list);
 
-  if (rep_level < 2)
+  /* We need to set the regular sizes if REP_LEVEL is one.  */
+  if (rep_level == 1)
     {
       /* If this is a padding record, we never want to make the size smaller
 	 than what was specified in it, if any.  */
       if (TYPE_IS_PADDING_P (record_type) && TYPE_SIZE (record_type))
 	size = TYPE_SIZE (record_type);
 
+      tree size_unit = had_size_unit
+		       ? TYPE_SIZE_UNIT (record_type)
+		       : convert (sizetype,
+				  size_binop (CEIL_DIV_EXPR, size,
+					      bitsize_unit_node));
+      const unsigned int align = TYPE_ALIGN (record_type);
+
+      TYPE_SIZE (record_type) = variable_size (round_up (size, align));
+      TYPE_SIZE_UNIT (record_type)
+	= variable_size (round_up (size_unit, align / BITS_PER_UNIT));
+    }
+
+  /* We need to set the Ada size if REP_LEVEL is zero or one.  */
+  if (rep_level < 2)
+    {
       /* Now set any of the values we've just computed that apply.  */
       if (!TYPE_FAT_POINTER_P (record_type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (record_type))
 	SET_TYPE_ADA_SIZE (record_type, ada_size);
+    }
 
-      if (rep_level > 0)
-	{
-	  tree size_unit = had_size_unit
-			   ? TYPE_SIZE_UNIT (record_type)
-			   : convert (sizetype,
-				      size_binop (CEIL_DIV_EXPR, size,
-						  bitsize_unit_node));
-	  unsigned int align = TYPE_ALIGN (record_type);
-
-	  TYPE_SIZE (record_type) = variable_size (round_up (size, align));
-	  TYPE_SIZE_UNIT (record_type)
-	    = variable_size (round_up (size_unit, align / BITS_PER_UNIT));
-
-	  compute_record_mode (record_type);
-	}
+  /* We need to set the mode if REP_LEVEL is one or two.  */
+  if (rep_level > 0)
+    {
+      compute_record_mode (record_type);
+      finish_bitfield_layout (record_type);
     }
 
   /* Reset the TYPE_MAX_ALIGN field since it's private to gigi.  */
@@ -2933,37 +2938,6 @@ value_factor_p (tree value, HOST_WIDE_INT factor)
   return false;
 }
 
-/* Return whether GNAT_NODE is a defining identifier for a renaming that comes
-   from the parameter association for the instantiation of a generic.  We do
-   not want to emit source location for them: the code generated for their
-   initialization is likely to disturb debugging.  */
-
-bool
-renaming_from_instantiation_p (Node_Id gnat_node)
-{
-  if (Nkind (gnat_node) != N_Defining_Identifier
-      || !Is_Object (gnat_node)
-      || Comes_From_Source (gnat_node)
-      || !Present (Renamed_Object (gnat_node)))
-    return false;
-
-  /* Get the object declaration of the renamed object, if any and if the
-     renamed object is a mere identifier.  */
-  gnat_node = Renamed_Object (gnat_node);
-  if (Nkind (gnat_node) != N_Identifier)
-    return false;
-
-  gnat_node = Entity (gnat_node);
-  if (!Present (Parent (gnat_node)))
-    return false;
-
-  gnat_node = Parent (gnat_node);
-  return
-   (Present (gnat_node)
-    && Nkind (gnat_node) == N_Object_Declaration
-    && Present (Corresponding_Generic_Association (gnat_node)));
-}
-
 /* Defer the initialization of DECL's DECL_CONTEXT attribute, scheduling to
    feed it with the elaboration of GNAT_SCOPE.  */
 
@@ -3322,8 +3296,14 @@ finish_subprog_decl (tree decl, tree asm_name, tree type)
   DECL_BY_REFERENCE (result_decl) = TREE_ADDRESSABLE (type);
   DECL_RESULT (decl) = result_decl;
 
+  /* Propagate the "const" property.  */
   TREE_READONLY (decl) = TYPE_READONLY (type);
-  TREE_SIDE_EFFECTS (decl) = TREE_THIS_VOLATILE (decl) = TYPE_VOLATILE (type);
+
+  /* Propagate the "pure" property.  */
+  DECL_PURE_P (decl) = TYPE_RESTRICT (type);
+
+  /* Propagate the "noreturn" property.  */
+  TREE_THIS_VOLATILE (decl) = TYPE_VOLATILE (type);
 
   if (asm_name)
     {
@@ -6221,8 +6201,7 @@ handle_noreturn_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 	   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     TREE_TYPE (*node)
       = build_pointer_type
-	(build_type_variant (TREE_TYPE (type),
-			     TYPE_READONLY (TREE_TYPE (type)), 1));
+	(change_qualified_type (TREE_TYPE (type), TYPE_QUAL_VOLATILE));
   else
     {
       warning (OPT_Wattributes, "%qs attribute ignored",

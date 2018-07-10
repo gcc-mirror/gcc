@@ -30,6 +30,11 @@
 #include "config/rs6000/rs6000-opts.h"
 #endif
 
+/* 128-bit floating point precision values.  */
+#ifndef RS6000_MODES_H
+#include "config/rs6000/rs6000-modes.h"
+#endif
+
 /* Definitions for the object file format.  These are set at
    compile-time.  */
 
@@ -106,7 +111,8 @@
 /* Common ASM definitions used by ASM_SPEC among the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
    provide the default assembler options if the user uses -mcpu=native, so if
-   you make changes here, make them also there.  */
+   you make changes here, make them also there.  PR63177: Do not pass -mpower8
+   to the assembler if -mpower9-vector was also used.  */
 #define ASM_CPU_SPEC \
 "%{!mcpu*: \
   %{mpowerpc64*: -mppc64} \
@@ -120,7 +126,7 @@
 %{mcpu=power6: %(asm_cpu_power6) -maltivec} \
 %{mcpu=power6x: %(asm_cpu_power6) -maltivec} \
 %{mcpu=power7: %(asm_cpu_power7)} \
-%{mcpu=power8: %(asm_cpu_power8)} \
+%{mcpu=power8: %{!mpower9-vector: %(asm_cpu_power8)}} \
 %{mcpu=power9: %(asm_cpu_power9)} \
 %{mcpu=a2: -ma2} \
 %{mcpu=powerpc: -mppc} \
@@ -169,6 +175,7 @@
 %{maltivec: -maltivec} \
 %{mvsx: -mvsx %{!maltivec: -maltivec} %{!mcpu*: %(asm_cpu_power7)}} \
 %{mpower8-vector|mcrypto|mdirect-move|mhtm: %{!mcpu*: %(asm_cpu_power8)}} \
+%{mpower9-vector: %{!mcpu*|mcpu=power8: %(asm_cpu_power9)}} \
 -many"
 
 #define CPP_DEFAULT_SPEC ""
@@ -537,16 +544,12 @@ extern int rs6000_vector_align[];
 #define TARGET_ALIGN_NATURAL 0
 #endif
 
-#define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
+/* We use values 126..128 to pick the appropriate long double type (IFmode,
+   KFmode, TFmode).  */
+#define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size > 64)
 #define TARGET_IEEEQUAD rs6000_ieeequad
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 #define TARGET_LDBRX (TARGET_POPCNTD || rs6000_cpu == PROCESSOR_CELL)
-
-/* Define as 1 if we support multilibs for switching long double between IEEE
-   128-bit floating point and IBM extended double.  */
-#ifndef TARGET_IEEEQUAD_MULTILIB
-#define TARGET_IEEEQUAD_MULTILIB 0
-#endif
 
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
    Enable 32-bit fcfid's on any of the switches for newer ISA machines.  */
@@ -863,9 +866,8 @@ extern unsigned char rs6000_recip_bits[];
    words.  */
 #define DOUBLE_TYPE_SIZE 64
 
-/* A C expression for the size in bits of the type `long double' on
-   the target machine.  If you don't define this, the default is two
-   words.  */
+/* A C expression for the size in bits of the type `long double' on the target
+   machine.  If you don't define this, the default is two words.  */
 #define LONG_DOUBLE_TYPE_SIZE rs6000_long_double_type_size
 
 /* Work around rs6000_long_double_type_size dependency in ada/targtyps.c.  */

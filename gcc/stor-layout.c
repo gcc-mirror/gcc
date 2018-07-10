@@ -2389,11 +2389,6 @@ layout_type (tree type)
       SET_TYPE_MODE (type, VOIDmode);
       break;
 
-    case POINTER_BOUNDS_TYPE:
-      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
-      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
-      break;
-
     case OFFSET_TYPE:
       TYPE_SIZE (type) = bitsize_int (POINTER_SIZE);
       TYPE_SIZE_UNIT (type) = size_int (POINTER_SIZE_UNITS);

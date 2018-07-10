@@ -251,6 +251,8 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case ABS_EXPR:
       return trapv ? absv_optab : abs_optab;
 
+    case ABSU_EXPR:
+      return abs_optab;
     default:
       return unknown_optab;
     }

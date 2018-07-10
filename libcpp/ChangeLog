@@ -1,3 +1,23 @@
+2018-07-03  Nathan Sidwell  <nathan@acm.org>
+
+	Reorg line_map data structures for better packing.
+	* include/line-map.h (enum lc_reason): Add LC_HWM.
+	(LINE_MAP_MAX_LOCATION): Define here.
+	(struct line_map): Move reason field to line_map_ordinary.  Adjust
+	GTY tagging.
+	(struct line_map_ordinary): Reorder fields for less padding.
+	(struct line_map_macro): Likewise.
+	(MAP_ORDINARY_P): New.
+	(linemap_check_ordinary, linemap_check_macro): Adjust.
+	* line-map.c (LINE_MAP_MAX_SOURCE_LOCATION): Delete.
+	(new_linemap): Take start_location, not reason.  Adjust.
+	(linemap_add, linemap_enter_macro): Adjust.
+	(linemap_line_start): Likewise.
+	(linemap_macro_expansion_map_p): Use MAP_ORDINARY_P.
+	(linemap_macro_loc_to_spelling_point): Likewise.
+	(linemap_macro_loc_to_def_point): Likewise.
+	(linemap_dump): Likewise.
+
 2018-05-23  Jason Merrill  <jason@redhat.com>
 
 	* system.h: #include <new> earlier.

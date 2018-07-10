@@ -161,6 +161,7 @@
   VUNSPEC_ARC_CAS
   VUNSPEC_ARC_SC
   VUNSPEC_ARC_LL
+  VUNSPEC_ARC_BLOCKAGE
   ])
 
 (define_constants
@@ -384,13 +385,18 @@
 ;; and insn lengths: insns with shimm values cannot be conditionally executed.
 (define_attr "length" ""
   (cond
-    [(eq_attr "iscompact" "true,maybe")
+    [(eq_attr "iscompact" "true")
+      (const_int 2)
+
+     (eq_attr "iscompact" "maybe")
      (cond
        [(eq_attr "type" "sfunc")
 	(cond [(match_test "GET_CODE (PATTERN (insn)) == COND_EXEC")
 	       (const_int 12)]
 	      (const_int 10))
-	(match_test "GET_CODE (PATTERN (insn)) == COND_EXEC") (const_int 4)]
+	(match_test "GET_CODE (PATTERN (insn)) == COND_EXEC") (const_int 4)
+	(match_test "find_reg_note (insn, REG_SAVE_NOTE, GEN_INT (1))")
+	(const_int 4)]
       (const_int 2))
 
     (eq_attr "iscompact" "true_limm")
@@ -4431,8 +4437,16 @@
   ""
   "nop%?"
   [(set_attr "type" "misc")
-   (set_attr "iscompact" "true")
-   (set_attr "length" "2")])
+   (set_attr "iscompact" "maybe")
+   (set_attr "length" "*")])
+
+(define_insn "blockage"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_ARC_BLOCKAGE)]
+  ""
+  ""
+  [(set_attr "length" "0")
+   (set_attr "type" "block")]
+)
 
 ;; Split up troublesome insns for better scheduling.
 
@@ -4977,8 +4991,6 @@
   {
     return \"rtie\";
   }
-  if (TARGET_PAD_RETURN)
-    arc_pad_return ();
   output_asm_insn (\"j%!%* [%0]%&\", &reg);
   return \"\";
 }
@@ -5022,8 +5034,6 @@
 		   arc_return_address_register (arc_compute_function_type
 						(cfun)));
 
-  if (TARGET_PAD_RETURN)
-    arc_pad_return ();
   output_asm_insn (\"j%d0%!%# [%1]%&\", xop);
   /* record the condition in case there is a delay insn.  */
   arc_ccfsm_record_condition (xop[0], false, insn, 0);

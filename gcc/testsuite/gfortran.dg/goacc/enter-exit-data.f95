@@ -84,5 +84,8 @@ contains
   !$acc exit data delete (tip) ! { dg-error "POINTER" }
   !$acc exit data delete (tia) ! { dg-error "ALLOCATABLE" }
   !$acc exit data copyout (i) delete (i) ! { dg-error "multiple clauses" }
+  !$acc exit data finalize
+  !$acc exit data finalize copyout (i)
+  !$acc exit data finalize delete (i)
   end subroutine foo
 end module test

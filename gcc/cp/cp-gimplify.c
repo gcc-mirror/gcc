@@ -217,7 +217,7 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
     {
       /* If COND is constant, don't bother building an exit.  If it's false,
 	 we won't build a loop.  If it's true, any exits are in the body.  */
-      location_t cloc = EXPR_LOC_OR_LOC (cond, start_locus);
+      location_t cloc = cp_expr_loc_or_loc (cond, start_locus);
       exit = build1_loc (cloc, GOTO_EXPR, void_type_node,
 			 get_bc_label (bc_break));
       exit = fold_build3_loc (cloc, COND_EXPR, void_type_node, cond,
@@ -579,7 +579,7 @@ int
 cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 {
   int saved_stmts_are_full_exprs_p = 0;
-  location_t loc = EXPR_LOC_OR_LOC (*expr_p, input_location);
+  location_t loc = cp_expr_loc_or_loc (*expr_p, input_location);
   enum tree_code code = TREE_CODE (*expr_p);
   enum gimplify_status ret;
 
@@ -1623,6 +1623,13 @@ cp_maybe_instrument_return (tree fndecl)
 	case STATEMENT_LIST:
 	  {
 	    tree_stmt_iterator i = tsi_last (t);
+	    while (!tsi_end_p (i))
+	      {
+		tree p = tsi_stmt (i);
+		if (TREE_CODE (p) != DEBUG_BEGIN_STMT)
+		  break;
+		tsi_prev (&i);
+	      }
 	    if (!tsi_end_p (i))
 	      {
 		t = tsi_stmt (i);
@@ -2274,6 +2281,7 @@ cp_fold (tree x)
     case FLOAT_EXPR:
     case NEGATE_EXPR:
     case ABS_EXPR:
+    case ABSU_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
     case FIXED_CONVERT_EXPR:

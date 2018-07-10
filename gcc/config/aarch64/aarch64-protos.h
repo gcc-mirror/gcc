@@ -250,9 +250,9 @@ struct tune_params
   int memmov_cost;
   int issue_rate;
   unsigned int fusible_ops;
-  int function_align;
-  int jump_align;
-  int loop_align;
+  const char *function_align;
+  const char *jump_align;
+  const char *loop_align;
   int int_reassoc_width;
   int fp_reassoc_width;
   int vec_reassoc_width;
@@ -448,7 +448,7 @@ void aarch64_asm_output_labelref (FILE *, const char *);
 void aarch64_cpu_cpp_builtins (cpp_reader *);
 const char * aarch64_gen_far_branch (rtx *, int, const char *, const char *);
 const char * aarch64_output_probe_stack_range (rtx, rtx);
-void aarch64_err_no_fpadvsimd (machine_mode, const char *);
+void aarch64_err_no_fpadvsimd (machine_mode);
 void aarch64_expand_epilogue (bool);
 void aarch64_expand_mov_immediate (rtx, rtx, rtx (*) (rtx, rtx) = 0);
 void aarch64_emit_sve_pred_move (rtx, rtx, rtx);
@@ -513,7 +513,6 @@ bool aarch64_gen_adjusted_ldpstp (rtx *, bool, scalar_mode, RTX_CODE);
 void aarch64_expand_sve_vec_cmp_int (rtx, rtx_code, rtx, rtx);
 bool aarch64_expand_sve_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
 void aarch64_expand_sve_vcond (machine_mode, machine_mode, rtx *);
-void aarch64_sve_prepare_conditional_op (rtx *, unsigned int, bool);
 #endif /* RTX_CODE */
 
 void aarch64_init_builtins (void);

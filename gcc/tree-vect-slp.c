@@ -348,7 +348,7 @@ again:
 
       oprnd_info = (*oprnds_info)[i];
 
-      if (!vect_is_simple_use (oprnd, vinfo, &def_stmt, &dt))
+      if (!vect_is_simple_use (oprnd, vinfo, &dt, &def_stmt))
 	{
 	  if (dump_enabled_p ())
 	    {
@@ -365,11 +365,9 @@ again:
          from the pattern.  Check that all the stmts of the node are in the
          pattern.  */
       if (def_stmt && gimple_bb (def_stmt)
-          && vect_stmt_in_region_p (vinfo, def_stmt)
-          && vinfo_for_stmt (def_stmt)
-          && STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (def_stmt))
-	  && !STMT_VINFO_RELEVANT (vinfo_for_stmt (def_stmt))
-	  && !STMT_VINFO_LIVE_P (vinfo_for_stmt (def_stmt)))
+	  && vect_stmt_in_region_p (vinfo, def_stmt)
+	  && vinfo_for_stmt (def_stmt)
+	  && is_pattern_stmt_p (vinfo_for_stmt (def_stmt)))
         {
           pattern = true;
           if (!first && !oprnd_info->first_pattern
@@ -398,7 +396,6 @@ again:
 	      return 1;
             }
 
-          def_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (def_stmt));
           dt = STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt));
 
           if (dt == vect_unknown_def_type)
@@ -1510,7 +1507,8 @@ fail:
 /* Dump a slp tree NODE using flags specified in DUMP_KIND.  */
 
 static void
-vect_print_slp_tree (dump_flags_t dump_kind, location_t loc, slp_tree node)
+vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
+		     slp_tree node)
 {
   int i;
   gimple *stmt;
@@ -2177,8 +2175,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
   unsigned int i;
   gimple *first_element;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "=== vect_analyze_slp ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_slp");
 
   /* Find SLP sequences starting from groups of grouped stores.  */
   FOR_EACH_VEC_ELT (vinfo->grouped_stores, i, first_element)
@@ -2231,9 +2228,7 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
   slp_instance instance;
   int decided_to_slp = 0;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "=== vect_make_slp_decision ==="
-                     "\n");
+  DUMP_VECT_SCOPE ("vect_make_slp_decision");
 
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
@@ -2399,9 +2394,7 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
   vec<slp_instance> slp_instances = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
   slp_instance instance;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "=== vect_detect_hybrid_slp ==="
-                     "\n");
+  DUMP_VECT_SCOPE ("vect_detect_hybrid_slp");
 
   /* First walk all pattern stmt in the loop and mark defs of uses as
      hybrid because immediate uses in them are not recorded.  */
@@ -2445,8 +2438,9 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
    REGION_BEGIN_IN (inclusive) and REGION_END_IN (exclusive).  */
 
 _bb_vec_info::_bb_vec_info (gimple_stmt_iterator region_begin_in,
-			    gimple_stmt_iterator region_end_in)
-  : vec_info (vec_info::bb, init_cost (NULL)),
+			    gimple_stmt_iterator region_end_in,
+			    vec_info_shared *shared)
+  : vec_info (vec_info::bb, init_cost (NULL), shared),
     bb (gsi_bb (region_begin_in)),
     region_begin (region_begin_in),
     region_end (region_end_in)
@@ -2622,9 +2616,7 @@ vect_slp_analyze_operations (vec_info *vinfo)
   slp_instance instance;
   int i;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_slp_analyze_operations ===\n");
+  DUMP_VECT_SCOPE ("vect_slp_analyze_operations");
 
   scalar_stmts_to_slp_tree_map_t *visited
     = new scalar_stmts_to_slp_tree_map_t ();
@@ -2810,7 +2802,7 @@ static bb_vec_info
 vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 		       gimple_stmt_iterator region_end,
 		       vec<data_reference_p> datarefs, int n_stmts,
-		       bool &fatal)
+		       bool &fatal, vec_info_shared *shared)
 {
   bb_vec_info bb_vinfo;
   slp_instance instance;
@@ -2830,11 +2822,12 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
       return NULL;
     }
 
-  bb_vinfo = new _bb_vec_info (region_begin, region_end);
+  bb_vinfo = new _bb_vec_info (region_begin, region_end, shared);
   if (!bb_vinfo)
     return NULL;
 
   BB_VINFO_DATAREFS (bb_vinfo) = datarefs;
+  bb_vinfo->shared->save_datarefs ();
 
   /* Analyze the data references.  */
 
@@ -2981,8 +2974,7 @@ vect_slp_bb (basic_block bb)
   bool any_vectorized = false;
   auto_vector_sizes vector_sizes;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "===vect_slp_analyze_bb===\n");
+  DUMP_VECT_SCOPE ("vect_slp_analyze_bb");
 
   /* Autodetect first vector size we try.  */
   current_vector_size = 0;
@@ -3009,7 +3001,7 @@ vect_slp_bb (basic_block bb)
 	  insns++;
 
 	  if (gimple_location (stmt) != UNKNOWN_LOCATION)
-	    vect_location = gimple_location (stmt);
+	    vect_location = stmt;
 
 	  if (!vect_find_stmt_data_reference (NULL, stmt, &datarefs))
 	    break;
@@ -3026,19 +3018,28 @@ vect_slp_bb (basic_block bb)
 
       bool vectorized = false;
       bool fatal = false;
+      vec_info_shared shared;
       bb_vinfo = vect_slp_analyze_bb_1 (region_begin, region_end,
-					datarefs, insns, fatal);
+					datarefs, insns, fatal, &shared);
       if (bb_vinfo
 	  && dbg_cnt (vect_slp))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location, "SLPing BB part\n");
 
+	  bb_vinfo->shared->check_datarefs ();
 	  vect_schedule_slp (bb_vinfo);
 
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "basic block part vectorized\n");
+	  unsigned HOST_WIDE_INT bytes;
+	  if (current_vector_size.is_constant (&bytes))
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			     "basic block part vectorized using "
+			     HOST_WIDE_INT_PRINT_UNSIGNED " byte "
+			     "vectors\n", bytes);
+	  else
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			     "basic block part vectorized using variable "
+			     "length vectors\n");
 
 	  vectorized = true;
 	}
@@ -3101,7 +3102,6 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   enum tree_code code = gimple_expr_code (stmt);
   tree op, vectype;
-  gimple *def_stmt;
   enum vect_def_type dt;
 
   /* For comparison and COND_EXPR type is chosen depending
@@ -3113,8 +3113,7 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
       else
 	op = gimple_assign_rhs2 (stmt);
 
-      if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &def_stmt,
-			       &dt, &vectype))
+      if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &dt, &vectype))
 	gcc_unreachable ();
 
       return !vectype || VECTOR_BOOLEAN_TYPE_P (vectype);
@@ -3131,8 +3130,7 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
       else
 	op = TREE_OPERAND (cond, 0);
 
-      if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &def_stmt,
-			       &dt, &vectype))
+      if (!vect_is_simple_use (op, stmt_vinfo->vinfo, &dt, &vectype))
 	gcc_unreachable ();
 
       return !vectype || VECTOR_BOOLEAN_TYPE_P (vectype);

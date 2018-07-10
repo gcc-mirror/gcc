@@ -85,6 +85,7 @@ AARCH64_CORE("thunderx2t99",  thunderx2t99,  thunderx2t99, 8_1A,  AARCH64_FL_FOR
 /* ARM ('A') cores. */
 AARCH64_CORE("cortex-a55",  cortexa55, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa53, 0x41, 0xd05, -1)
 AARCH64_CORE("cortex-a75",  cortexa75, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa73, 0x41, 0xd0a, -1)
+AARCH64_CORE("cortex-a76",  cortexa76, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa72, 0x41, 0xd0b, -1)
 
 /* ARMv8.4-A Architecture Processors.  */
 
@@ -101,5 +102,6 @@ AARCH64_CORE("cortex-a73.cortex-a53",  cortexa73cortexa53, cortexa53, 8A,  AARCH
 /* ARM DynamIQ big.LITTLE configurations.  */
 
 AARCH64_CORE("cortex-a75.cortex-a55",  cortexa75cortexa55, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd0a, 0xd05), -1)
+AARCH64_CORE("cortex-a76.cortex-a55",  cortexa76cortexa55, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa72, 0x41, AARCH64_BIG_LITTLE (0xd0b, 0xd05), -1)
 
 #undef AARCH64_CORE

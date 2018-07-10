@@ -11,8 +11,8 @@ long __attribute__((noinline))
 foo (long x)
 {
   long l = x + 3;
-  bar (l);/* { dg-final { gdb-test 15 "l" "10" } } */
-  bar (l);/* { dg-final { gdb-test 15 "x" "7" } } */
+  bar (l);/* { dg-final { gdb-test .+1 "l" "10" } } */
+  bar (l);/* { dg-final { gdb-test . "x" "7" } } */
   return l;
 }
 
@@ -20,8 +20,8 @@ long __attribute__((noinline))
 baz (int x)
 {
   long l = x + 3;
-  bar (l);/* { dg-final { gdb-test 24 "l" "10" } } */
-  bar (l);/* { dg-final { gdb-test 24 "x" "7" } } */
+  bar (l);/* { dg-final { gdb-test .+1 "l" "10" } } */
+  bar (l);/* { dg-final { gdb-test . "x" "7" } } */
   return l;
 }
 

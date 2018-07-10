@@ -104,6 +104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
     // 2097.  packaged_task constructors should be constrained
+    // 3039. Unnecessary decay in thread and packaged_task
     template<typename _Tp>
       using __not_same = __not_<is_same<__remove_cvref_t<_Tp>, thread>>;
 

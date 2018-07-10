@@ -1,7 +1,7 @@
 /* Ensure that we do not get bizarre warnings referring to
    __attribute__((packed)) or some such.  */
 /* { dg-do compile } */
-/* { dg-options "-Wpadded -Wpacked -Wabi" } */
+/* { dg-options "-Wpadded -Wpacked -Wabi=8" } */
 
 #include "../objc-obj-c++-shared/TestsuiteObject.h"
 

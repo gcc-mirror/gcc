@@ -363,6 +363,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     iterator begin() const;
     iterator end() const;
 
+    /// Write a path to a stream
+    template<typename _CharT, typename _Traits>
+      friend std::basic_ostream<_CharT, _Traits>&
+      operator<<(std::basic_ostream<_CharT, _Traits>& __os, const path& __p)
+      {
+	__os << std::quoted(__p.string<_CharT, _Traits>());
+	return __os;
+      }
+
+    /// Read a path from a stream
+    template<typename _CharT, typename _Traits>
+      friend std::basic_istream<_CharT, _Traits>&
+      operator>>(std::basic_istream<_CharT, _Traits>& __is, path& __p)
+      {
+	std::basic_string<_CharT, _Traits> __tmp;
+	if (__is >> std::quoted(__tmp))
+	  __p = std::move(__tmp);
+	return __is;
+      }
+
     // Create a basic_string by reading until a null character.
     template<typename _InputIterator,
 	     typename _Traits = std::iterator_traits<_InputIterator>,
@@ -504,26 +524,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     __result /= __rhs;
     return __result;
   }
-
-  /// Write a path to a stream
-  template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __os, const path& __p)
-    {
-      __os << std::quoted(__p.string<_CharT, _Traits>());
-      return __os;
-    }
-
-  /// Read a path from a stream
-  template<typename _CharT, typename _Traits>
-    basic_istream<_CharT, _Traits>&
-    operator>>(basic_istream<_CharT, _Traits>& __is, path& __p)
-    {
-      basic_string<_CharT, _Traits> __tmp;
-      if (__is >> std::quoted(__tmp))
-	__p = std::move(__tmp);
-      return __is;
-    }
 
   template<typename _InputIterator>
     inline auto

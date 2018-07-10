@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "Array too big" { "pdp11-*-*" } { "-mint32" } } */
 
 /* Large static storage.  */
 

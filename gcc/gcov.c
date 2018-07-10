@@ -1801,7 +1801,7 @@ read_count_file (void)
 	{
 	  struct gcov_summary summary;
 	  gcov_read_summary (&summary);
-	  object_runs += summary.ctrs[GCOV_COUNTER_ARCS].runs;
+	  object_runs += summary.runs;
 	  program_count++;
 	}
       else if (tag == GCOV_TAG_FUNCTION && !length)
@@ -2461,42 +2461,7 @@ mangle_name (char const *base, char *ptr)
       ptr += len;
     }
   else
-    {
-      /* Convert '/' to '#', convert '..' to '^',
-	 convert ':' to '~' on DOS based file system.  */
-      const char *probe;
-
-#if HAVE_DOS_BASED_FILE_SYSTEM
-      if (base[0] && base[1] == ':')
-	{
-	  ptr[0] = base[0];
-	  ptr[1] = '~';
-	  ptr += 2;
-	  base += 2;
-	}
-#endif
-      for (; *base; base = probe)
-	{
-	  size_t len;
-
-	  for (probe = base; *probe; probe++)
-	    if (*probe == '/')
-	      break;
-	  len = probe - base;
-	  if (len == 2 && base[0] == '.' && base[1] == '.')
-	    *ptr++ = '^';
-	  else
-	    {
-	      memcpy (ptr, base, len);
-	      ptr += len;
-	    }
-	  if (*probe)
-	    {
-	      *ptr++ = '#';
-	      probe++;
-	    }
-	}
-    }
+    ptr = mangle_path (base);
 
   return ptr;
 }
@@ -2945,8 +2910,6 @@ output_lines (FILE *gcov_file, const source_info *src)
   const char *retval;
 
   fprintf (gcov_file, DEFAULT_LINE_START "Source:%s\n", src->coverage.name);
-  fprintf (gcov_file, DEFAULT_LINE_START "Working directory:%s\n",
-	   bbg_cwd);
   if (!multiple_files)
     {
       fprintf (gcov_file, DEFAULT_LINE_START "Graph:%s\n", bbg_file_name);

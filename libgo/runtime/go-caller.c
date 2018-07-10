@@ -116,7 +116,7 @@ __go_get_backtrace_state ()
 	 argv[0] (http://gcc.gnu.org/PR61895).  It would be nice to
 	 have a better check for whether this file is the real
 	 executable.  */
-      if (stat (filename, &s) < 0 || s.st_size < 1024)
+      if (filename != NULL && (stat (filename, &s) < 0 || s.st_size < 1024))
 	filename = NULL;
 
       back_state = backtrace_create_state (filename, 1, error_callback, NULL);

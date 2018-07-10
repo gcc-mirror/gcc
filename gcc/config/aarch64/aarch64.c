@@ -637,9 +637,9 @@ static const struct tune_params generic_tunings =
   4, /* memmov_cost  */
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
-  8,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "8",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -663,9 +663,9 @@ static const struct tune_params cortexa35_tunings =
   1, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
-  16,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -689,9 +689,9 @@ static const struct tune_params cortexa53_tunings =
   2, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
-  16,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -715,9 +715,9 @@ static const struct tune_params cortexa57_tunings =
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fusible_ops  */
-  16,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -741,9 +741,9 @@ static const struct tune_params cortexa72_tunings =
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fusible_ops  */
-  16,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -767,9 +767,9 @@ static const struct tune_params cortexa73_tunings =
   2, /* issue_rate.  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
-  16,	/* function_align.  */
-  4,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -794,9 +794,9 @@ static const struct tune_params exynosm1_tunings =
   4,	/* memmov_cost  */
   3,	/* issue_rate  */
   (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
-  4,	/* function_align.  */
-  4,	/* jump_align.  */
-  4,	/* loop_align.  */
+  "4",	/* function_align.  */
+  "4",	/* jump_align.  */
+  "4",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -819,9 +819,9 @@ static const struct tune_params thunderxt88_tunings =
   6, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
-  8,	/* function_align.  */
-  8,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "8",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -844,9 +844,9 @@ static const struct tune_params thunderx_tunings =
   6, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
-  8,	/* function_align.  */
-  8,	/* jump_align.  */
-  8,	/* loop_align.  */
+  "8",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -870,9 +870,9 @@ static const struct tune_params xgene1_tunings =
   6, /* memmov_cost  */
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
-  16,	/* function_align.  */
-  8,	/* jump_align.  */
-  16,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -880,7 +880,7 @@ static const struct tune_params xgene1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -896,9 +896,9 @@ static const struct tune_params qdf24xx_tunings =
   4, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fuseable_ops  */
-  16,	/* function_align.  */
-  8,	/* jump_align.  */
-  16,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -924,9 +924,9 @@ static const struct tune_params saphira_tunings =
   4, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
    | AARCH64_FUSE_MOVK_MOVK), /* fuseable_ops  */
-  16,	/* function_align.  */
-  8,	/* jump_align.  */
-  16,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
@@ -950,9 +950,9 @@ static const struct tune_params thunderx2t99_tunings =
   4, /* issue_rate.  */
   (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC
    | AARCH64_FUSE_ALU_BRANCH), /* fusible_ops  */
-  16,	/* function_align.  */
-  8,	/* jump_align.  */
-  16,	/* loop_align.  */
+  "16",	/* function_align.  */
+  "8",	/* jump_align.  */
+  "16",	/* loop_align.  */
   3,	/* int_reassoc_width.  */
   2,	/* fp_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
@@ -1077,13 +1077,22 @@ aarch64_gen_far_branch (rtx * operands, int pos_label, const char * dest,
 }
 
 void
-aarch64_err_no_fpadvsimd (machine_mode mode, const char *msg)
+aarch64_err_no_fpadvsimd (machine_mode mode)
 {
-  const char *mc = FLOAT_MODE_P (mode) ? "floating-point" : "vector";
   if (TARGET_GENERAL_REGS_ONLY)
-    error ("%qs is incompatible with %s %s", "-mgeneral-regs-only", mc, msg);
+    if (FLOAT_MODE_P (mode))
+      error ("%qs is incompatible with the use of floating-point types",
+	     "-mgeneral-regs-only");
+    else
+      error ("%qs is incompatible with the use of vector types",
+	     "-mgeneral-regs-only");
   else
-    error ("%qs feature modifier is incompatible with %s %s", "+nofp", mc, msg);
+    if (FLOAT_MODE_P (mode))
+      error ("%qs feature modifier is incompatible with the use of"
+	     " floating-point types", "+nofp");
+    else
+      error ("%qs feature modifier is incompatible with the use of"
+	     " vector types", "+nofp");
 }
 
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.
@@ -3519,7 +3528,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
   if (allocate_nvrn)
     {
       if (!TARGET_FLOAT)
-	aarch64_err_no_fpadvsimd (mode, "argument");
+	aarch64_err_no_fpadvsimd (mode);
 
       if (nvrn + nregs <= NUM_FP_ARG_REGS)
 	{
@@ -3661,7 +3670,7 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
       int nregs ATTRIBUTE_UNUSED; /* Likewise.  */
       if (aarch64_vfp_is_call_or_return_candidate (TYPE_MODE (type), type,
 						   &mode, &nregs, NULL))
-	aarch64_err_no_fpadvsimd (TYPE_MODE (type), "return type");
+	aarch64_err_no_fpadvsimd (TYPE_MODE (type));
     }
   return;
 }
@@ -5681,7 +5690,10 @@ aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
   return mode == SImode || mode == DImode
 	 || mode == SFmode || mode == DFmode
 	 || (aarch64_vector_mode_supported_p (mode)
-	     && known_eq (GET_MODE_SIZE (mode), 8));
+	     && (known_eq (GET_MODE_SIZE (mode), 8)
+		 || (known_eq (GET_MODE_SIZE (mode), 16)
+		    && (aarch64_tune_params.extra_tuning_flags
+			& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0)));
 }
 
 /* Return true if REGNO is a virtual pointer register, or an eliminable
@@ -5838,7 +5850,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
 	  if (load_store_pair_p)
 	    return ((known_eq (GET_MODE_SIZE (mode), 4)
-		     || known_eq (GET_MODE_SIZE (mode), 8))
+		     || known_eq (GET_MODE_SIZE (mode), 8)
+		     || known_eq (GET_MODE_SIZE (mode), 16))
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
 	    return (offset_9bit_signed_unscaled_p (mode, offset)
@@ -5898,7 +5911,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
 	  if (load_store_pair_p)
 	    return ((known_eq (GET_MODE_SIZE (mode), 4)
-		     || known_eq (GET_MODE_SIZE (mode), 8))
+		     || known_eq (GET_MODE_SIZE (mode), 8)
+		     || known_eq (GET_MODE_SIZE (mode), 16))
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
 	    return offset_9bit_signed_unscaled_p (mode, offset);
@@ -10558,12 +10572,12 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
      alignment to what the target wants.  */
   if (!opts->x_optimize_size)
     {
-      if (opts->x_align_loops <= 0)
-	opts->x_align_loops = aarch64_tune_params.loop_align;
-      if (opts->x_align_jumps <= 0)
-	opts->x_align_jumps = aarch64_tune_params.jump_align;
-      if (opts->x_align_functions <= 0)
-	opts->x_align_functions = aarch64_tune_params.function_align;
+      if (opts->x_flag_align_loops && !opts->x_str_align_loops)
+	opts->x_str_align_loops = aarch64_tune_params.loop_align;
+      if (opts->x_flag_align_jumps && !opts->x_str_align_jumps)
+	opts->x_str_align_jumps = aarch64_tune_params.jump_align;
+      if (opts->x_flag_align_functions && !opts->x_str_align_functions)
+	opts->x_str_align_functions = aarch64_tune_params.function_align;
     }
 
   /* We default to no pc-relative literal loads.  */
@@ -12254,7 +12268,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
       /* TYPE passed in fp/simd registers.  */
       if (!TARGET_FLOAT)
-	aarch64_err_no_fpadvsimd (mode, "varargs");
+	aarch64_err_no_fpadvsimd (mode);
 
       f_top = build3 (COMPONENT_REF, TREE_TYPE (f_vrtop),
 		      unshare_expr (valist), f_vrtop, NULL_TREE);
@@ -16044,54 +16058,6 @@ aarch64_expand_sve_vcond (machine_mode data_mode, machine_mode cmp_mode,
   emit_set_insn (ops[0], gen_rtx_UNSPEC (data_mode, vec, UNSPEC_SEL));
 }
 
-/* Prepare a cond_<optab><mode> operation that has the operands
-   given by OPERANDS, where:
-
-   - operand 0 is the destination
-   - operand 1 is a predicate
-   - operands 2 to NOPS - 2 are the operands to an operation that is
-     performed for active lanes
-   - operand NOPS - 1 specifies the values to use for inactive lanes.
-
-   COMMUTATIVE_P is true if operands 2 and 3 are commutative.  In that case,
-   no pattern is provided for a tie between operands 3 and NOPS - 1.  */
-
-void
-aarch64_sve_prepare_conditional_op (rtx *operands, unsigned int nops,
-				    bool commutative_p)
-{
-  /* We can do the operation directly if the "else" value matches one
-     of the other inputs.  */
-  for (unsigned int i = 2; i < nops - 1; ++i)
-    if (rtx_equal_p (operands[i], operands[nops - 1]))
-      {
-	if (i == 3 && commutative_p)
-	  std::swap (operands[2], operands[3]);
-	return;
-      }
-
-  /* If the "else" value is different from the other operands, we have
-     the choice of doing a SEL on the output or a SEL on an input.
-     Neither choice is better in all cases, but one advantage of
-     selecting the input is that it can avoid a move when the output
-     needs to be distinct from the inputs.  E.g. if operand N maps to
-     register N, selecting the output would give:
-
-	MOVPRFX Z0.S, Z2.S
-	ADD Z0.S, P1/M, Z0.S, Z3.S
-	SEL Z0.S, P1, Z0.S, Z4.S
-
-     whereas selecting the input avoids the MOVPRFX:
-
-	SEL Z0.S, P1, Z2.S, Z4.S
-	ADD Z0.S, P1/M, Z0.S, Z3.S.  */
-  machine_mode mode = GET_MODE (operands[0]);
-  rtx temp = gen_reg_rtx (mode);
-  rtvec vec = gen_rtvec (3, operands[1], operands[2], operands[nops - 1]);
-  emit_set_insn (temp, gen_rtx_UNSPEC (mode, vec, UNSPEC_SEL));
-  operands[2] = operands[nops - 1] = temp;
-}
-
 /* Implement TARGET_MODES_TIEABLE_P.  In principle we should always return
    true.  However due to issues with register allocation it is preferable
    to avoid tieing integer scalar and FP scalar modes.  Executing integer
@@ -16171,26 +16137,29 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 bool
 aarch64_expand_movmem (rtx *operands)
 {
-  unsigned int n;
+  int n, mode_bits;
   rtx dst = operands[0];
   rtx src = operands[1];
   rtx base;
+  machine_mode cur_mode = BLKmode, next_mode;
   bool speed_p = !optimize_function_for_size_p (cfun);
 
   /* When optimizing for size, give a better estimate of the length of a
-     memcpy call, but use the default otherwise.  */
-  unsigned int max_instructions = (speed_p ? 15 : AARCH64_CALL_RATIO) / 2;
+     memcpy call, but use the default otherwise.  Moves larger than 8 bytes
+     will always require an even number of instructions to do now.  And each
+     operation requires both a load+store, so devide the max number by 2.  */
+  int max_num_moves = (speed_p ? 16 : AARCH64_CALL_RATIO) / 2;
 
   /* We can't do anything smart if the amount to copy is not constant.  */
   if (!CONST_INT_P (operands[2]))
     return false;
 
-  n = UINTVAL (operands[2]);
+  n = INTVAL (operands[2]);
 
-  /* Try to keep the number of instructions low.  For cases below 16 bytes we
-     need to make at most two moves.  For cases above 16 bytes it will be one
-     move for each 16 byte chunk, then at most two additional moves.  */
-  if (((n / 16) + (n % 16 ? 2 : 0)) > max_instructions)
+  /* Try to keep the number of instructions low.  For all cases we will do at
+     most two moves for the residual amount, since we'll always overlap the
+     remainder.  */
+  if (((n / 16) + (n % 16 ? 2 : 0)) > max_num_moves)
     return false;
 
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
@@ -16199,81 +16168,36 @@ aarch64_expand_movmem (rtx *operands)
   base = copy_to_mode_reg (Pmode, XEXP (src, 0));
   src = adjust_automodify_address (src, VOIDmode, base, 0);
 
-  /* Simple cases.  Copy 0-3 bytes, as (if applicable) a 2-byte, then a
-     1-byte chunk.  */
-  if (n < 4)
+  /* Convert n to bits to make the rest of the code simpler.  */
+  n = n * BITS_PER_UNIT;
+
+  while (n > 0)
     {
-      if (n >= 2)
+      /* Find the largest mode in which to do the copy in without over reading
+	 or writing.  */
+      opt_scalar_int_mode mode_iter;
+      FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
+	if (GET_MODE_BITSIZE (mode_iter.require ()) <= n)
+	  cur_mode = mode_iter.require ();
+
+      gcc_assert (cur_mode != BLKmode);
+
+      mode_bits = GET_MODE_BITSIZE (cur_mode).to_constant ();
+      aarch64_copy_one_block_and_progress_pointers (&src, &dst, cur_mode);
+
+      n -= mode_bits;
+
+      /* Do certain trailing copies as overlapping if it's going to be
+	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
+	 byte copy it's more efficient to do two overlapping 8 byte copies than
+	 8 + 6 + 1.  */
+      next_mode = smallest_mode_for_size (n, MODE_INT);
+      int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
+      if (n > 0 && n_bits > n && n_bits <= 8 * BITS_PER_UNIT)
 	{
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, HImode);
-	  n -= 2;
-	}
-
-      if (n == 1)
-	aarch64_copy_one_block_and_progress_pointers (&src, &dst, QImode);
-
-      return true;
-    }
-
-  /* Copy 4-8 bytes.  First a 4-byte chunk, then (if applicable) a second
-     4-byte chunk, partially overlapping with the previously copied chunk.  */
-  if (n < 8)
-    {
-      aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-      n -= 4;
-      if (n > 0)
-	{
-	  int move = n - 4;
-
-	  src = aarch64_move_pointer (src, move);
-	  dst = aarch64_move_pointer (dst, move);
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-	}
-      return true;
-    }
-
-  /* Copy more than 8 bytes.  Copy chunks of 16 bytes until we run out of
-     them, then (if applicable) an 8-byte chunk.  */
-  while (n >= 8)
-    {
-      if (n / 16)
-	{
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, TImode);
-	  n -= 16;
-	}
-      else
-	{
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, DImode);
-	  n -= 8;
-	}
-    }
-
-  /* Finish the final bytes of the copy.  We can always do this in one
-     instruction.  We either copy the exact amount we need, or partially
-     overlap with the previous chunk we copied and copy 8-bytes.  */
-  if (n == 0)
-    return true;
-  else if (n == 1)
-    aarch64_copy_one_block_and_progress_pointers (&src, &dst, QImode);
-  else if (n == 2)
-    aarch64_copy_one_block_and_progress_pointers (&src, &dst, HImode);
-  else if (n == 4)
-    aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-  else
-    {
-      if (n == 3)
-	{
-	  src = aarch64_move_pointer (src, -1);
-	  dst = aarch64_move_pointer (dst, -1);
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, SImode);
-	}
-      else
-	{
-	  int move = n - 8;
-
-	  src = aarch64_move_pointer (src, move);
-	  dst = aarch64_move_pointer (dst, move);
-	  aarch64_copy_one_block_and_progress_pointers (&src, &dst, DImode);
+	  src = aarch64_move_pointer (src, (n - n_bits) / BITS_PER_UNIT);
+	  dst = aarch64_move_pointer (dst, (n - n_bits) / BITS_PER_UNIT);
+	  n = n_bits;
 	}
     }
 

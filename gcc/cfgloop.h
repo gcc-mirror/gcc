@@ -357,7 +357,7 @@ extern bool loop_exit_edge_p (const struct loop *, const_edge);
 extern bool loop_exits_to_bb_p (struct loop *, basic_block);
 extern bool loop_exits_from_bb_p (struct loop *, basic_block);
 extern void mark_loop_exit_edges (void);
-extern location_t get_loop_location (struct loop *loop);
+extern dump_user_location_t get_loop_location (struct loop *loop);
 
 /* Loops & cfg manipulation.  */
 extern basic_block *get_loop_body (const struct loop *);

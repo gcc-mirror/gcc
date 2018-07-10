@@ -81,8 +81,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 
 
-/* Loop or bb location.  */
-source_location vect_location;
+/* Loop or bb location, with hotness information.  */
+dump_user_location_t vect_location;
 
 /* Vector mapping GIMPLE stmt to stmt_vec_info. */
 vec<stmt_vec_info> *stmt_vec_info_vec;
@@ -450,10 +450,10 @@ shrink_simd_arrays
 /* Initialize the vec_info with kind KIND_IN and target cost data
    TARGET_COST_DATA_IN.  */
 
-vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in)
+vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in,
+		    vec_info_shared *shared_)
   : kind (kind_in),
-    datarefs (vNULL),
-    ddrs (vNULL),
+    shared (shared_),
     target_cost_data (target_cost_data_in)
 {
   stmt_vec_infos.create (50);
@@ -463,23 +463,48 @@ vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in)
 vec_info::~vec_info ()
 {
   slp_instance instance;
-  struct data_reference *dr;
   unsigned int i;
-
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
-    if (dr->aux)
-      {
-        free (dr->aux);
-        dr->aux = NULL;
-      }
 
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     vect_free_slp_instance (instance);
 
-  free_data_refs (datarefs);
-  free_dependence_relations (ddrs);
   destroy_cost_data (target_cost_data);
   free_stmt_vec_infos (&stmt_vec_infos);
+}
+
+vec_info_shared::vec_info_shared ()
+  : datarefs (vNULL),
+    datarefs_copy (vNULL),
+    ddrs (vNULL)
+{
+}
+
+vec_info_shared::~vec_info_shared ()
+{
+  free_data_refs (datarefs);
+  free_dependence_relations (ddrs);
+  datarefs_copy.release ();
+}
+
+void
+vec_info_shared::save_datarefs ()
+{
+  if (!flag_checking)
+    return;
+  datarefs_copy.reserve_exact (datarefs.length ());
+  for (unsigned i = 0; i < datarefs.length (); ++i)
+    datarefs_copy.quick_push (*datarefs[i]);
+}
+
+void
+vec_info_shared::check_datarefs ()
+{
+  if (!flag_checking)
+    return;
+  gcc_assert (datarefs.length () == datarefs_copy.length ());
+  for (unsigned i = 0; i < datarefs.length (); ++i)
+    if (memcmp (&datarefs_copy[i], datarefs[i], sizeof (data_reference)) != 0)
+      gcc_unreachable ();
 }
 
 /* A helper function to free scev and LOOP niter information, as well as
@@ -659,6 +684,159 @@ set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   free (bbs);
 }
 
+/* Try to vectorize LOOP.  */
+
+static unsigned
+try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
+		      unsigned *num_vectorized_loops,
+		      loop_p loop, loop_vec_info orig_loop_vinfo,
+		      gimple *loop_vectorized_call,
+		      gimple *loop_dist_alias_call)
+{
+  unsigned ret = 0;
+  vec_info_shared shared;
+  vect_location = find_loop_location (loop);
+  if (LOCATION_LOCUS (vect_location.get_location_t ()) != UNKNOWN_LOCATION
+      && dump_enabled_p ())
+    dump_printf (MSG_NOTE, "\nAnalyzing loop at %s:%d\n",
+		 LOCATION_FILE (vect_location.get_location_t ()),
+		 LOCATION_LINE (vect_location.get_location_t ()));
+
+  loop_vec_info loop_vinfo = vect_analyze_loop (loop, orig_loop_vinfo, &shared);
+  loop->aux = loop_vinfo;
+
+  if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
+    {
+      /* Free existing information if loop is analyzed with some
+	 assumptions.  */
+      if (loop_constraint_set_p (loop, LOOP_C_FINITE))
+	vect_free_loop_info_assumptions (loop);
+
+      /* If we applied if-conversion then try to vectorize the
+	 BB of innermost loops.
+	 ???  Ideally BB vectorization would learn to vectorize
+	 control flow by applying if-conversion on-the-fly, the
+	 following retains the if-converted loop body even when
+	 only non-if-converted parts took part in BB vectorization.  */
+      if (flag_tree_slp_vectorize != 0
+	  && loop_vectorized_call
+	  && ! loop->inner)
+	{
+	  basic_block bb = loop->header;
+	  bool has_mask_load_store = false;
+	  for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple *stmt = gsi_stmt (gsi);
+	      if (is_gimple_call (stmt)
+		  && gimple_call_internal_p (stmt)
+		  && (gimple_call_internal_fn (stmt) == IFN_MASK_LOAD
+		      || gimple_call_internal_fn (stmt) == IFN_MASK_STORE))
+		{
+		  has_mask_load_store = true;
+		  break;
+		}
+	      gimple_set_uid (stmt, -1);
+	      gimple_set_visited (stmt, false);
+	    }
+	  if (! has_mask_load_store && vect_slp_bb (bb))
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "basic block vectorized\n");
+	      fold_loop_internal_call (loop_vectorized_call,
+				       boolean_true_node);
+	      loop_vectorized_call = NULL;
+	      ret |= TODO_cleanup_cfg;
+	    }
+	}
+      /* If outer loop vectorization fails for LOOP_VECTORIZED guarded
+	 loop, don't vectorize its inner loop; we'll attempt to
+	 vectorize LOOP_VECTORIZED guarded inner loop of the scalar
+	 loop version.  */
+      if (loop_vectorized_call && loop->inner)
+	loop->inner->dont_vectorize = true;
+      return ret;
+    }
+
+  if (!dbg_cnt (vect_loop))
+    {
+      /* Free existing information if loop is analyzed with some
+	 assumptions.  */
+      if (loop_constraint_set_p (loop, LOOP_C_FINITE))
+	vect_free_loop_info_assumptions (loop);
+      return ret;
+    }
+
+  if (loop_vectorized_call)
+    set_uid_loop_bbs (loop_vinfo, loop_vectorized_call);
+
+  unsigned HOST_WIDE_INT bytes;
+  if (current_vector_size.is_constant (&bytes))
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+		     "loop vectorized vectorized using "
+		     HOST_WIDE_INT_PRINT_UNSIGNED " byte "
+		     "vectors\n", bytes);
+  else
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+		     "loop vectorized using variable length vectors\n");
+
+  loop_p new_loop = vect_transform_loop (loop_vinfo);
+  (*num_vectorized_loops)++;
+  /* Now that the loop has been vectorized, allow it to be unrolled
+     etc.  */
+  loop->force_vectorize = false;
+
+  if (loop->simduid)
+    {
+      simduid_to_vf *simduid_to_vf_data = XNEW (simduid_to_vf);
+      if (!simduid_to_vf_htab)
+	simduid_to_vf_htab = new hash_table<simduid_to_vf> (15);
+      simduid_to_vf_data->simduid = DECL_UID (loop->simduid);
+      simduid_to_vf_data->vf = loop_vinfo->vectorization_factor;
+      *simduid_to_vf_htab->find_slot (simduid_to_vf_data, INSERT)
+	  = simduid_to_vf_data;
+    }
+
+  if (loop_vectorized_call)
+    {
+      fold_loop_internal_call (loop_vectorized_call, boolean_true_node);
+      loop_vectorized_call = NULL;
+      ret |= TODO_cleanup_cfg;
+    }
+  if (loop_dist_alias_call)
+    {
+      tree value = gimple_call_arg (loop_dist_alias_call, 1);
+      fold_loop_internal_call (loop_dist_alias_call, value);
+      loop_dist_alias_call = NULL;
+      ret |= TODO_cleanup_cfg;
+    }
+
+  /* Epilogue of vectorized loop must be vectorized too.  */
+  if (new_loop)
+    ret |= try_vectorize_loop_1 (simduid_to_vf_htab, num_vectorized_loops,
+				 new_loop, loop_vinfo, NULL, NULL);
+
+  return ret;
+}
+
+/* Try to vectorize LOOP.  */
+
+static unsigned
+try_vectorize_loop (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
+		    unsigned *num_vectorized_loops, loop_p loop)
+{
+  if (!((flag_tree_loop_vectorize
+	 && optimize_loop_nest_for_speed_p (loop))
+	|| loop->force_vectorize))
+    return 0;
+
+  return try_vectorize_loop_1 (simduid_to_vf_htab, num_vectorized_loops,
+			       loop, NULL,
+			       vect_loop_vectorized_call (loop),
+			       vect_loop_dist_alias_call (loop));
+}
+
+
 /* Function vectorize_loops.
 
    Entry point to loop vectorization phase.  */
@@ -674,7 +852,6 @@ vectorize_loops (void)
   hash_table<simd_array_to_simduid> *simd_array_to_simduid_htab = NULL;
   bool any_ifcvt_loops = false;
   unsigned ret = 0;
-  struct loop *new_loop;
 
   vect_loops_num = number_of_loops (cfun);
 
@@ -727,152 +904,20 @@ vectorize_loops (void)
 		  = get_loop (cfun, tree_to_shwi (arg));
 		if (vector_loop && vector_loop != loop)
 		  {
-		    loop = vector_loop;
 		    /* Make sure we don't vectorize it twice.  */
-		    loop->dont_vectorize = true;
-		    goto try_vectorize;
+		    vector_loop->dont_vectorize = true;
+		    ret |= try_vectorize_loop (simduid_to_vf_htab,
+					       &num_vectorized_loops,
+					       vector_loop);
 		  }
 	      }
 	  }
       }
     else
-      {
-	loop_vec_info loop_vinfo, orig_loop_vinfo;
-	gimple *loop_vectorized_call, *loop_dist_alias_call;
-       try_vectorize:
-	if (!((flag_tree_loop_vectorize
-	       && optimize_loop_nest_for_speed_p (loop))
-	      || loop->force_vectorize))
-	  continue;
-	orig_loop_vinfo = NULL;
-	loop_vectorized_call = vect_loop_vectorized_call (loop);
-	loop_dist_alias_call = vect_loop_dist_alias_call (loop);
-       vectorize_epilogue:
-	vect_location = find_loop_location (loop);
-        if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
-	    && dump_enabled_p ())
-	  dump_printf (MSG_NOTE, "\nAnalyzing loop at %s:%d\n",
-                       LOCATION_FILE (vect_location),
-		       LOCATION_LINE (vect_location));
+      ret |= try_vectorize_loop (simduid_to_vf_htab, &num_vectorized_loops,
+				 loop);
 
-	loop_vinfo = vect_analyze_loop (loop, orig_loop_vinfo);
-	loop->aux = loop_vinfo;
-
-	if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
-	  {
-	    /* Free existing information if loop is analyzed with some
-	       assumptions.  */
-	    if (loop_constraint_set_p (loop, LOOP_C_FINITE))
-	      vect_free_loop_info_assumptions (loop);
-
-	    /* If we applied if-conversion then try to vectorize the
-	       BB of innermost loops.
-	       ???  Ideally BB vectorization would learn to vectorize
-	       control flow by applying if-conversion on-the-fly, the
-	       following retains the if-converted loop body even when
-	       only non-if-converted parts took part in BB vectorization.  */
-	    if (flag_tree_slp_vectorize != 0
-		&& loop_vectorized_call
-		&& ! loop->inner)
-	      {
-		basic_block bb = loop->header;
-		bool has_mask_load_store = false;
-		for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
-		     !gsi_end_p (gsi); gsi_next (&gsi))
-		  {
-		    gimple *stmt = gsi_stmt (gsi);
-		    if (is_gimple_call (stmt)
-			&& gimple_call_internal_p (stmt)
-			&& (gimple_call_internal_fn (stmt) == IFN_MASK_LOAD
-			    || gimple_call_internal_fn (stmt) == IFN_MASK_STORE))
-		      {
-			has_mask_load_store = true;
-			break;
-		      }
-		    gimple_set_uid (stmt, -1);
-		    gimple_set_visited (stmt, false);
-		  }
-		if (! has_mask_load_store && vect_slp_bb (bb))
-		  {
-		    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-				     "basic block vectorized\n");
-		    fold_loop_internal_call (loop_vectorized_call,
-					     boolean_true_node);
-		    loop_vectorized_call = NULL;
-		    ret |= TODO_cleanup_cfg;
-		  }
-	      }
-	    /* If outer loop vectorization fails for LOOP_VECTORIZED guarded
-	       loop, don't vectorize its inner loop; we'll attempt to
-	       vectorize LOOP_VECTORIZED guarded inner loop of the scalar
-	       loop version.  */
-	    if (loop_vectorized_call && loop->inner)
-	      loop->inner->dont_vectorize = true;
-	    continue;
-	  }
-
-        if (!dbg_cnt (vect_loop))
-	  {
-	    /* We may miss some if-converted loops due to
-	       debug counter.  Set any_ifcvt_loops to visit
-	       them at finalization.  */
-	    any_ifcvt_loops = true;
-	    /* Free existing information if loop is analyzed with some
-	       assumptions.  */
-	    if (loop_constraint_set_p (loop, LOOP_C_FINITE))
-	      vect_free_loop_info_assumptions (loop);
-
-	    break;
-	  }
-
-	if (loop_vectorized_call)
-	  set_uid_loop_bbs (loop_vinfo, loop_vectorized_call);
-        if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
-	    && dump_enabled_p ())
-          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-                           "loop vectorized\n");
-	new_loop = vect_transform_loop (loop_vinfo);
-	num_vectorized_loops++;
-	/* Now that the loop has been vectorized, allow it to be unrolled
-	   etc.  */
-	loop->force_vectorize = false;
-
-	if (loop->simduid)
-	  {
-	    simduid_to_vf *simduid_to_vf_data = XNEW (simduid_to_vf);
-	    if (!simduid_to_vf_htab)
-	      simduid_to_vf_htab = new hash_table<simduid_to_vf> (15);
-	    simduid_to_vf_data->simduid = DECL_UID (loop->simduid);
-	    simduid_to_vf_data->vf = loop_vinfo->vectorization_factor;
-	    *simduid_to_vf_htab->find_slot (simduid_to_vf_data, INSERT)
-	      = simduid_to_vf_data;
-	  }
-
-	if (loop_vectorized_call)
-	  {
-	    fold_loop_internal_call (loop_vectorized_call, boolean_true_node);
-	    loop_vectorized_call = NULL;
-	    ret |= TODO_cleanup_cfg;
-	  }
-	if (loop_dist_alias_call)
-	  {
-	    tree value = gimple_call_arg (loop_dist_alias_call, 1);
-	    fold_loop_internal_call (loop_dist_alias_call, value);
-	    loop_dist_alias_call = NULL;
-	    ret |= TODO_cleanup_cfg;
-	  }
-
-	if (new_loop)
-	  {
-	    /* Epilogue of vectorized loop must be vectorized too.  */
-	    vect_loops_num = number_of_loops (cfun);
-	    loop = new_loop;
-	    orig_loop_vinfo = loop_vinfo;  /* To pass vect_analyze_loop.  */
-	    goto vectorize_epilogue;
-	  }
-      }
-
-  vect_location = UNKNOWN_LOCATION;
+  vect_location = dump_user_location_t ();
 
   statistics_counter_event (cfun, "Vectorized loops", num_vectorized_loops);
   if (dump_enabled_p ()
@@ -884,7 +929,7 @@ vectorize_loops (void)
   /*  ----------- Finalize. -----------  */
 
   if (any_ifcvt_loops)
-    for (i = 1; i < vect_loops_num; i++)
+    for (i = 1; i < number_of_loops (cfun); i++)
       {
 	loop = get_loop (cfun, i);
 	if (loop && loop->dont_vectorize)
@@ -907,18 +952,16 @@ vectorize_loops (void)
 	  }
       }
 
-  for (i = 1; i < vect_loops_num; i++)
+  for (i = 1; i < number_of_loops (cfun); i++)
     {
       loop_vec_info loop_vinfo;
       bool has_mask_store;
 
       loop = get_loop (cfun, i);
-      if (!loop)
+      if (!loop || !loop->aux)
 	continue;
       loop_vinfo = (loop_vec_info) loop->aux;
-      has_mask_store = false;
-      if (loop_vinfo)
-	has_mask_store = LOOP_VINFO_HAS_MASK_STORE (loop_vinfo);
+      has_mask_store = LOOP_VINFO_HAS_MASK_STORE (loop_vinfo);
       delete loop_vinfo;
       if (has_mask_store
 	  && targetm.vectorize.empty_mask_is_expensive (IFN_MASK_STORE))
@@ -1066,8 +1109,7 @@ pass_slp_vectorize::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       if (vect_slp_bb (bb))
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			 "basic block vectorized\n");
+	dump_printf_loc (MSG_NOTE, vect_location, "basic block vectorized\n");
     }
 
   if (!in_loop_pipeline)
@@ -1207,7 +1249,7 @@ increase_alignment (void)
 {
   varpool_node *vnode;
 
-  vect_location = UNKNOWN_LOCATION;
+  vect_location = dump_user_location_t ();
   type_align_map = new hash_map<tree, unsigned>;
 
   /* Increase the alignment of all global arrays for vectorization.  */

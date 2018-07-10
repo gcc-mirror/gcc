@@ -1211,14 +1211,6 @@ do									\
    machines this should be `QImode'. */
 #define FUNCTION_MODE SImode
 
-/* `NO_IMPLICIT_EXTERN_C'
-
-   Define this macro if the system header files support C++ as well as
-   C.  This macro inhibits the usual method of using system header
-   files in C++, which is to pretend that the file's contents are
-   enclosed in `extern "C" {...}'. */
-#define NO_IMPLICIT_EXTERN_C
-
 /* Dividing the Output into Sections (Texts, Data, ...)
 
    An object file is divided into sections containing different types
@@ -1501,7 +1493,8 @@ do									\
    expression of type `int'. */
 #define ASM_OUTPUT_MAX_SKIP_ALIGN(STREAM,LOG,MAX_SKIP)			\
   if ((LOG) != 0) {							\
-    if ((MAX_SKIP) == 0) fprintf ((STREAM), "\t.p2align %d\n", (LOG));	\
+    if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1<<(LOG))-1)			\
+      fprintf ((STREAM), "\t.p2align %d\n", (LOG));			\
     else {								\
       fprintf ((STREAM), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
       /* Make sure that we have at least 8-byte alignment if > 8-byte	\

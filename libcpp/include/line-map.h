@@ -74,8 +74,9 @@ enum lc_reason
   LC_LEAVE,
   LC_RENAME,
   LC_RENAME_VERBATIM,
-  LC_ENTER_MACRO
+  LC_ENTER_MACRO,
   /* FIXME: add support for stringize and paste.  */
+  LC_HWM /* High Water Mark.  */
 };
 
 /* The typedef "source_location" is a key within the location database,
@@ -168,7 +169,7 @@ enum lc_reason
              |   Beyond this point, ordinary linemaps have 0 bits per column:
              |   each increment of the value corresponds to a new source line.
              |
-  0x70000000 | LINE_MAP_MAX_SOURCE_LOCATION
+  0x70000000 | LINE_MAP_MAX_LOCATION
              |   Beyond the point, we give up on ordinary maps; attempts to
              |   create locations in them lead to UNKNOWN_LOCATION (0).
              |
@@ -307,6 +308,9 @@ const source_location LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES = 0x50000000;
      gcc.dg/plugin/location-overflow-test-*.c.  */
 const source_location LINE_MAP_MAX_LOCATION_WITH_COLS = 0x60000000;
 
+/* Highest possible source location encoded within an ordinary map.  */
+const source_location LINE_MAP_MAX_LOCATION = 0x70000000;
+
 /* A range of source locations.
 
    Ranges are closed:
@@ -377,11 +381,13 @@ typedef size_t (*line_map_round_alloc_size_func) (size_t);
    location of the expansion point of PLUS. That location is mapped in
    the map that is active right before the location of the invocation
    of PLUS.  */
-struct GTY((tag ("0"), desc ("%h.reason == LC_ENTER_MACRO ? 2 : 1"))) line_map {
+
+/* This contains GTY mark-up to support precompiled headers.
+   line_map is an abstract class, only derived objects exist.  */
+struct GTY((tag ("0"), desc ("MAP_ORDINARY_P (&%h) ? 1 : 2"))) line_map {
   source_location start_location;
 
-  /* The reason for creation of this line map.  */
-  ENUM_BITFIELD (lc_reason) reason : CHAR_BIT;
+  /* Size and alignment is (usually) 4 bytes.  */
 };
 
 /* An ordinary line map encodes physical source locations. Those
@@ -397,13 +403,12 @@ struct GTY((tag ("0"), desc ("%h.reason == LC_ENTER_MACRO ? 2 : 1"))) line_map {
 
    The highest possible source location is MAX_SOURCE_LOCATION.  */
 struct GTY((tag ("1"))) line_map_ordinary : public line_map {
-  const char *to_file;
-  linenum_type to_line;
+  /* Base class is 4 bytes.  */
 
-  /* An index into the set that gives the line mapping at whose end
-     the current one was included.  File(s) at the bottom of the
-     include stack have this set to -1.  */
-  int included_from;
+  /* 4 bytes of integers, each 1 byte for easy extraction/insertion.  */
+
+  /* The reason for creation of this line map.  */
+  ENUM_BITFIELD (lc_reason) reason : 8;
 
   /* SYSP is one for a system header, two for a C system header file
      that therefore needs to be extern "C" protected in C++, and zero
@@ -429,6 +434,18 @@ struct GTY((tag ("1"))) line_map_ordinary : public line_map {
      |                         |    (e.g. 7)           |   (e.g. 5)        |
      +-------------------------+-----------------------+-------------------+ */
   unsigned int m_range_bits : 8;
+
+  /* Pointer alignment boundary on both 32 and 64-bit systems.  */
+
+  const char *to_file;
+  linenum_type to_line;
+
+  /* An index into the set that gives the line mapping at whose end
+     the current one was included.  File(s) at the bottom of the
+     include stack have this set to -1.  */
+  int included_from;
+
+  /* Size is 20 or 24 bytes, no padding  */
 };
 
 /* This is the highest possible source location encoded within an
@@ -443,14 +460,19 @@ struct cpp_hashnode;
    The offset from START_LOCATION is used to index into
    MACRO_LOCATIONS; this holds the original location of the token.  */
 struct GTY((tag ("2"))) line_map_macro : public line_map {
-  /* The cpp macro which expansion gave birth to this macro map.  */
-  struct cpp_hashnode * GTY ((nested_ptr (union tree_node,
-				   "%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
-				   "%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL")))
-    macro;
+  /* Base is 4 bytes.  */
 
   /* The number of tokens inside the replacement-list of MACRO.  */
   unsigned int n_tokens;
+
+  /* Pointer alignment boundary.  */
+
+  /* The cpp macro whose expansion gave birth to this macro map.  */
+  struct cpp_hashnode *
+    GTY ((nested_ptr (union tree_node,
+		      "%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
+		      "%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL")))
+    macro;
 
   /* This array of location is actually an array of pairs of
      locations. The elements inside it thus look like:
@@ -513,6 +535,8 @@ struct GTY((tag ("2"))) line_map_macro : public line_map {
      could have been either a macro or an ordinary map, depending on
      if we are in a nested expansion context not.  */
   source_location expansion;
+
+  /* Size is 20 or 32 (4 bytes padding on 64-bit).  */
 };
 
 #if CHECKING_P && (GCC_VERSION >= 2007)
@@ -540,6 +564,14 @@ struct GTY((tag ("2"))) line_map_macro : public line_map {
 #define linemap_assert_fails(EXPR) (! (EXPR))
 #endif
 
+/* Categorize line map kinds.  */
+
+inline bool
+MAP_ORDINARY_P (const line_map *map)
+{
+  return map->start_location < LINE_MAP_MAX_LOCATION;
+}
+
 /* Return TRUE if MAP encodes locations coming from a macro
    replacement-list at macro expansion point.  */
 bool
@@ -552,7 +584,7 @@ linemap_macro_expansion_map_p (const struct line_map *);
 inline line_map_ordinary *
 linemap_check_ordinary (struct line_map *map)
 {
-  linemap_assert (!linemap_macro_expansion_map_p (map));
+  linemap_assert (MAP_ORDINARY_P (map));
   return (line_map_ordinary *)map;
 }
 
@@ -563,7 +595,7 @@ linemap_check_ordinary (struct line_map *map)
 inline const line_map_ordinary *
 linemap_check_ordinary (const struct line_map *map)
 {
-  linemap_assert (!linemap_macro_expansion_map_p (map));
+  linemap_assert (MAP_ORDINARY_P (map));
   return (const line_map_ordinary *)map;
 }
 
@@ -572,7 +604,7 @@ linemap_check_ordinary (const struct line_map *map)
 
 inline line_map_macro *linemap_check_macro (line_map *map)
 {
-  linemap_assert (linemap_macro_expansion_map_p (map));
+  linemap_assert (!MAP_ORDINARY_P (map));
   return (line_map_macro *)map;
 }
 
@@ -582,7 +614,7 @@ inline line_map_macro *linemap_check_macro (line_map *map)
 inline const line_map_macro *
 linemap_check_macro (const line_map *map)
 {
-  linemap_assert (linemap_macro_expansion_map_p (map));
+  linemap_assert (!MAP_ORDINARY_P (map));
   return (const line_map_macro *)map;
 }
 

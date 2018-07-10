@@ -17,10 +17,9 @@ int main2 ()
 }
 
 /* Expected results:
-     vec_unpackl                    vupkhsh
-     vec_unpackh                    vupklsh
+     vec_unpackl                    xvcvspdp
+     vec_unpackh                    xvcvspdp
 */
 
-/* { dg-final { scan-assembler-times "vupkhpx" 1 } } */
-/* { dg-final { scan-assembler-times "vupklpx" 1 } } */
+/* { dg-final { scan-assembler-times "xvcvspdp" 2 } } */
 

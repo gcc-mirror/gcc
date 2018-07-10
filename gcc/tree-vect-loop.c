@@ -224,10 +224,10 @@ vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
   if (STMT_VINFO_IN_PATTERN_P (stmt_info)
       && STMT_VINFO_RELATED_STMT (stmt_info))
     {
+      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
       stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
 
       /* If a pattern statement has def stmts, analyze them too.  */
-      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
       for (gimple_stmt_iterator si = gsi_start (pattern_def_seq);
 	   !gsi_end_p (si); gsi_next (&si))
 	{
@@ -296,9 +296,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   unsigned i;
   auto_vec<stmt_vec_info> mask_producers;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_determine_vectorization_factor ===\n");
+  DUMP_VECT_SCOPE ("vect_determine_vectorization_factor");
 
   for (i = 0; i < nbbs; i++)
     {
@@ -479,9 +477,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
   gphi_iterator gsi;
   bool double_reduc;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_analyze_scalar_cycles ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_scalar_cycles");
 
   /* First - identify all inductions.  Reduction detection assumes that all the
      inductions have been identified, therefore, this order must not be
@@ -727,9 +723,7 @@ vect_get_loop_niters (struct loop *loop, tree *assumptions,
   *assumptions = boolean_true_node;
   *number_of_iterationsm1 = chrec_dont_know;
   *number_of_iterations = chrec_dont_know;
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== get_loop_niters ===\n");
+  DUMP_VECT_SCOPE ("get_loop_niters");
 
   if (!exit)
     return cond;
@@ -809,8 +803,8 @@ bb_in_loop_p (const_basic_block bb, const void *data)
 /* Create and initialize a new loop_vec_info struct for LOOP_IN, as well as
    stmt_vec_info structs for all the stmts in LOOP_IN.  */
 
-_loop_vec_info::_loop_vec_info (struct loop *loop_in)
-  : vec_info (vec_info::loop, init_cost (loop_in)),
+_loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
+  : vec_info (vec_info::loop, init_cost (loop_in), shared),
     loop (loop_in),
     bbs (XCNEWVEC (basic_block, loop->num_nodes)),
     num_itersm1 (NULL_TREE),
@@ -1170,9 +1164,7 @@ vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
 			  tree *assumptions, tree *number_of_iterationsm1,
 			  tree *number_of_iterations, gcond **inner_loop_cond)
 {
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_analyze_loop_form ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_loop_form");
 
   /* Different restrictions apply when we are considering an inner-most loop,
      vs. an outer (nested) loop.
@@ -1359,7 +1351,7 @@ vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
 /* Analyze LOOP form and return a loop_vec_info if it is of suitable form.  */
 
 loop_vec_info
-vect_analyze_loop_form (struct loop *loop)
+vect_analyze_loop_form (struct loop *loop, vec_info_shared *shared)
 {
   tree assumptions, number_of_iterations, number_of_iterationsm1;
   gcond *loop_cond, *inner_loop_cond = NULL;
@@ -1369,7 +1361,7 @@ vect_analyze_loop_form (struct loop *loop)
 				  &number_of_iterations, &inner_loop_cond))
     return NULL;
 
-  loop_vec_info loop_vinfo = new _loop_vec_info (loop);
+  loop_vec_info loop_vinfo = new _loop_vec_info (loop, shared);
   LOOP_VINFO_NITERSM1 (loop_vinfo) = number_of_iterationsm1;
   LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = number_of_iterations;
@@ -1422,9 +1414,7 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
   poly_uint64 vectorization_factor;
   int i;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_update_vf_for_slp ===\n");
+  DUMP_VECT_SCOPE ("vect_update_vf_for_slp");
 
   vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   gcc_assert (known_ne (vectorization_factor, 0U));
@@ -1527,9 +1517,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
   bool need_to_vectorize = false;
   bool ok;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_analyze_loop_operations ===\n");
+  DUMP_VECT_SCOPE ("vect_analyze_loop_operations");
 
   stmt_vector_for_cost cost_vec;
   cost_vec.create (2);
@@ -1824,6 +1812,11 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
 	      }
 	    return false;
 	  }
+	/* If dependence analysis will give up due to the limit on the
+	   number of datarefs stop here and fail fatally.  */
+	if (datarefs->length ()
+	    > (unsigned)PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
+	  return false;
       }
   return true;
 }
@@ -1834,7 +1827,7 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
    for it.  The different analyses will record information in the
    loop_vec_info struct.  */
 static bool
-vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
+vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
 {
   bool ok;
   int res;
@@ -1848,29 +1841,25 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
      and analyze their evolution in the loop.  */
 
   loop_p loop = LOOP_VINFO_LOOP (loop_vinfo);
-  if (!find_loop_nest (loop, &LOOP_VINFO_LOOP_NEST (loop_vinfo)))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: loop nest containing two "
-			 "or more consecutive inner loops cannot be "
-			 "vectorized\n");
-      return false;
-    }
 
   /* Gather the data references and count stmts in the loop.  */
-  unsigned int n_stmts;
-  if (!vect_get_datarefs_in_loop (loop, LOOP_VINFO_BBS (loop_vinfo),
-				  &LOOP_VINFO_DATAREFS (loop_vinfo),
-				  &n_stmts))
+  if (!LOOP_VINFO_DATAREFS (loop_vinfo).exists ())
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: loop contains function "
-			 "calls or data references that cannot "
-			 "be analyzed\n");
-      return false;
+      if (!vect_get_datarefs_in_loop (loop, LOOP_VINFO_BBS (loop_vinfo),
+				      &LOOP_VINFO_DATAREFS (loop_vinfo),
+				      n_stmts))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not vectorized: loop contains function "
+			     "calls or data references that cannot "
+			     "be analyzed\n");
+	  return false;
+	}
+      loop_vinfo->shared->save_datarefs ();
     }
+  else
+    loop_vinfo->shared->check_datarefs ();
 
   /* Analyze the data references and also adjust the minimal
      vectorization factor according to the loads and stores.  */
@@ -1959,7 +1948,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
   unsigned th;
 
   /* Check the SLP opportunities in the loop, analyze and build SLP trees.  */
-  ok = vect_analyze_slp (loop_vinfo, n_stmts);
+  ok = vect_analyze_slp (loop_vinfo, *n_stmts);
   if (!ok)
     return false;
 
@@ -2259,10 +2248,10 @@ again:
 	  STMT_SLP_TYPE (stmt_info) = loop_vect;
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 	    {
+	      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
 	      stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
 	      STMT_SLP_TYPE (stmt_info) = loop_vect;
-	      for (gimple_stmt_iterator pi
-		     = gsi_start (STMT_VINFO_PATTERN_DEF_SEQ (stmt_info));
+	      for (gimple_stmt_iterator pi = gsi_start (pattern_def_seq);
 		   !gsi_end_p (pi); gsi_next (&pi))
 		{
 		  gimple *pstmt = gsi_stmt (pi);
@@ -2298,7 +2287,8 @@ again:
    loop_vec_info struct.  If ORIG_LOOP_VINFO is not NULL epilogue must
    be vectorized.  */
 loop_vec_info
-vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo)
+vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
+		   vec_info_shared *shared)
 {
   loop_vec_info loop_vinfo;
   auto_vector_sizes vector_sizes;
@@ -2308,9 +2298,7 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo)
   targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
   unsigned int next_size = 0;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "===== analyze_loop_nest =====\n");
+  DUMP_VECT_SCOPE ("analyze_loop_nest");
 
   if (loop_outer (loop)
       && loop_vec_info_for_loop (loop_outer (loop))
@@ -2322,11 +2310,22 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo)
       return NULL;
     }
 
+  if (!find_loop_nest (loop, &shared->loop_nest))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: loop nest containing two "
+			 "or more consecutive inner loops cannot be "
+			 "vectorized\n");
+      return NULL;
+    }
+
+  unsigned n_stmts = 0;
   poly_uint64 autodetected_vector_size = 0;
   while (1)
     {
       /* Check the CFG characteristics of the loop (nesting, entry/exit).  */
-      loop_vinfo = vect_analyze_loop_form (loop);
+      loop_vinfo = vect_analyze_loop_form (loop, shared);
       if (!loop_vinfo)
 	{
 	  if (dump_enabled_p ())
@@ -2340,7 +2339,7 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo)
       if (orig_loop_vinfo)
 	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = orig_loop_vinfo;
 
-      if (vect_analyze_loop_2 (loop_vinfo, fatal))
+      if (vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts))
 	{
 	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
 
@@ -2737,8 +2736,8 @@ needs_fold_left_reduction_p (tree type, tree_code code,
    reduction operation CODE has a handled computation expression.  */
 
 bool
-check_reduction_path (location_t loc, loop_p loop, gphi *phi, tree loop_arg,
-		      enum tree_code code)
+check_reduction_path (dump_user_location_t loc, loop_p loop, gphi *phi,
+		      tree loop_arg, enum tree_code code)
 {
   auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
   auto_bitmap visited;
@@ -3756,8 +3755,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   else
     {
       if (LOOP_VINFO_LOOP (loop_vinfo)->force_vectorize)
-	warning_at (vect_location, OPT_Wopenmp_simd, "vectorization "
-		    "did not happen for a simd loop");
+	warning_at (vect_location.get_location_t (), OPT_Wopenmp_simd,
+		    "vectorization did not happen for a simd loop");
 
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -4573,7 +4572,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
     {
       /* Get at the scalar def before the loop, that defines the initial value
 	 of the reduction variable.  */
-      gimple *def_stmt;
       initial_def = PHI_ARG_DEF_FROM_EDGE (reduc_def_stmt,
 					   loop_preheader_edge (loop));
       /* Optimize: if initial_def is for REDUC_MAX smaller than the base
@@ -4588,7 +4586,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	      || (induc_code == MIN_EXPR
 		  && tree_int_cst_lt (induc_val, initial_def))))
 	induc_val = initial_def;
-      vect_is_simple_use (initial_def, loop_vinfo, &def_stmt, &initial_def_dt);
+      vect_is_simple_use (initial_def, loop_vinfo, &initial_def_dt);
       vec_initial_def = get_initial_def_for_reduction (stmt, initial_def,
 						       &adjustment_def);
       vec_initial_defs.create (1);
@@ -6053,7 +6051,7 @@ is_nonwrapping_integer_induction (gimple *stmt, struct loop *loop)
   tree step = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo);
   tree lhs_type = TREE_TYPE (gimple_phi_result (stmt));
   widest_int ni, max_loop_value, lhs_max;
-  bool overflow = false;
+  wi::overflow_type overflow = wi::OVF_NONE;
 
   /* Make sure the loop is integer based.  */
   if (TREE_CODE (base) != INTEGER_CST
@@ -6397,7 +6395,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
         continue;
 
       is_simple_use = vect_is_simple_use (ops[i], loop_vinfo,
-					  &def_stmt, &dts[i], &tem);
+					  &dts[i], &tem, &def_stmt);
       dt = dts[i];
       gcc_assert (is_simple_use);
       if (dt == vect_reduction_def)
@@ -6489,6 +6487,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     }
 
   stmt_vec_info reduc_def_info = vinfo_for_stmt (reduc_def_stmt);
+  /* PHIs should not participate in patterns.  */
+  gcc_assert (!STMT_VINFO_RELATED_STMT (reduc_def_info));
   enum vect_reduction_type v_reduc_type
     = STMT_VINFO_REDUC_TYPE (reduc_def_info);
   gimple *tmp = STMT_VINFO_REDUC_DEF (reduc_def_info);
@@ -6593,8 +6593,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	    = PHI_ARG_DEF_FROM_EDGE (def_stmt, loop_preheader_edge (loop));
 
 	  gcc_assert (cond_reduc_val != NULL_TREE);
-	  vect_is_simple_use (cond_initial_val, loop_vinfo,
-			      &def_stmt, &cond_initial_dt);
+	  vect_is_simple_use (cond_initial_val, loop_vinfo, &cond_initial_dt);
 	  if (cond_initial_dt == vect_constant_def
 	      && types_compatible_p (TREE_TYPE (cond_initial_val),
 				     TREE_TYPE (cond_reduc_val)))
@@ -7460,9 +7459,7 @@ vectorizable_induction (gimple *phi,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = induc_vec_info_type;
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "=== vectorizable_induction ===\n");
+      DUMP_VECT_SCOPE ("vectorizable_induction");
       vect_model_induction_cost (stmt_info, ncopies, cost_vec);
       return true;
     }
@@ -8306,6 +8303,75 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
     scale_bbs_frequencies (&loop->latch, 1, exit_l->probability / prob);
 }
 
+/* Vectorize STMT if relevant, inserting any new instructions before GSI.
+   When vectorizing STMT as a store, set *SEEN_STORE to its stmt_vec_info.
+   *SLP_SCHEDULE is a running record of whether we have called
+   vect_schedule_slp.  */
+
+static void
+vect_transform_loop_stmt (loop_vec_info loop_vinfo, gimple *stmt,
+			  gimple_stmt_iterator *gsi,
+			  stmt_vec_info *seen_store, bool *slp_scheduled)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  if (!stmt_info)
+    return;
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "------>vectorizing statement: ");
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+    }
+
+  if (MAY_HAVE_DEBUG_BIND_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
+    vect_loop_kill_debug_uses (loop, stmt);
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info)
+      && !STMT_VINFO_LIVE_P (stmt_info))
+    return;
+
+  if (STMT_VINFO_VECTYPE (stmt_info))
+    {
+      poly_uint64 nunits
+	= TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
+      if (!STMT_SLP_TYPE (stmt_info)
+	  && maybe_ne (nunits, vf)
+	  && dump_enabled_p ())
+	/* For SLP VF is set according to unrolling factor, and not
+	   to vector size, hence for SLP this print is not valid.  */
+	dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
+    }
+
+  /* SLP.  Schedule all the SLP instances when the first SLP stmt is
+     reached.  */
+  if (slp_vect_type slptype = STMT_SLP_TYPE (stmt_info))
+    {
+
+      if (!*slp_scheduled)
+	{
+	  *slp_scheduled = true;
+
+	  DUMP_VECT_SCOPE ("scheduling SLP instances");
+
+	  vect_schedule_slp (loop_vinfo);
+	}
+
+      /* Hybrid SLP stmts must be vectorized in addition to SLP.  */
+      if (slptype == pure_slp)
+	return;
+    }
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "transform statement.\n");
+
+  bool grouped_store = false;
+  if (vect_transform_stmt (stmt, gsi, &grouped_store, NULL, NULL))
+    *seen_store = stmt_info;
+}
+
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -8326,17 +8392,14 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   tree niters_vector_mult_vf = NULL_TREE;
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   unsigned int lowest_vf = constant_lower_bound (vf);
-  bool grouped_store;
   bool slp_scheduled = false;
-  gimple *stmt, *pattern_stmt;
-  gimple_seq pattern_def_seq = NULL;
-  gimple_stmt_iterator pattern_def_si = gsi_none ();
-  bool transform_pattern_stmt = false;
+  gimple *stmt;
   bool check_profitability = false;
   unsigned int th;
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "=== vec_transform_loop ===\n");
+  DUMP_VECT_SCOPE ("vec_transform_loop");
+
+  loop_vinfo->shared->check_datarefs ();
 
   /* Use the more conservative vectorization threshold.  If the number
      of iterations is constant assume the cost check has been performed
@@ -8483,196 +8546,67 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	    }
 	}
 
-      pattern_stmt = NULL;
       for (gimple_stmt_iterator si = gsi_start_bb (bb);
-	   !gsi_end_p (si) || transform_pattern_stmt;)
+	   !gsi_end_p (si);)
 	{
-	  bool is_store;
-
-          if (transform_pattern_stmt)
-	    stmt = pattern_stmt;
-          else
+	  stmt = gsi_stmt (si);
+	  /* During vectorization remove existing clobber stmts.  */
+	  if (gimple_clobber_p (stmt))
 	    {
-	      stmt = gsi_stmt (si);
-	      /* During vectorization remove existing clobber stmts.  */
-	      if (gimple_clobber_p (stmt))
+	      unlink_stmt_vdef (stmt);
+	      gsi_remove (&si, true);
+	      release_defs (stmt);
+	    }
+	  else
+	    {
+	      stmt_info = vinfo_for_stmt (stmt);
+
+	      /* vector stmts created in the outer-loop during vectorization of
+		 stmts in an inner-loop may not have a stmt_info, and do not
+		 need to be vectorized.  */
+	      stmt_vec_info seen_store = NULL;
+	      if (stmt_info)
 		{
-		  unlink_stmt_vdef (stmt);
-		  gsi_remove (&si, true);
-		  release_defs (stmt);
-		  continue;
-		}
-	    }
-
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "------>vectorizing statement: ");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-	    }
-
-	  stmt_info = vinfo_for_stmt (stmt);
-
-	  /* vector stmts created in the outer-loop during vectorization of
-	     stmts in an inner-loop may not have a stmt_info, and do not
-	     need to be vectorized.  */
-	  if (!stmt_info)
-	    {
-	      gsi_next (&si);
-	      continue;
-	    }
-
-	  if (MAY_HAVE_DEBUG_BIND_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
-	    vect_loop_kill_debug_uses (loop, stmt);
-
-	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
-	      && !STMT_VINFO_LIVE_P (stmt_info))
-            {
-              if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-                  && (pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info))
-                  && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
-                      || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
-                {
-                  stmt = pattern_stmt;
-                  stmt_info = vinfo_for_stmt (stmt);
-                }
-              else
-	        {
-   	          gsi_next (&si);
-	          continue;
-                }
-	    }
-          else if (STMT_VINFO_IN_PATTERN_P (stmt_info)
-                   && (pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info))
-                   && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
-                       || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
-            transform_pattern_stmt = true;
-
-	  /* If pattern statement has def stmts, vectorize them too.  */
-	  if (is_pattern_stmt_p (stmt_info))
-	    {
-	      if (pattern_def_seq == NULL)
-		{
-		  pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
-		  pattern_def_si = gsi_start (pattern_def_seq);
-		}
-	      else if (!gsi_end_p (pattern_def_si))
-		gsi_next (&pattern_def_si);
-	      if (pattern_def_seq != NULL)
-		{
-		  gimple *pattern_def_stmt = NULL;
-		  stmt_vec_info pattern_def_stmt_info = NULL;
-
-		  while (!gsi_end_p (pattern_def_si))
+		  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 		    {
-		      pattern_def_stmt = gsi_stmt (pattern_def_si);
-		      pattern_def_stmt_info
-			= vinfo_for_stmt (pattern_def_stmt);
-		      if (STMT_VINFO_RELEVANT_P (pattern_def_stmt_info)
-			  || STMT_VINFO_LIVE_P (pattern_def_stmt_info))
-			break;
-		      gsi_next (&pattern_def_si);
+		      gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
+		      for (gimple_stmt_iterator subsi = gsi_start (def_seq);
+			   !gsi_end_p (subsi); gsi_next (&subsi))
+			vect_transform_loop_stmt (loop_vinfo,
+						  gsi_stmt (subsi), &si,
+						  &seen_store,
+						  &slp_scheduled);
+		      gimple *pat_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+		      vect_transform_loop_stmt (loop_vinfo, pat_stmt, &si,
+						&seen_store, &slp_scheduled);
 		    }
-
-		  if (!gsi_end_p (pattern_def_si))
+		  vect_transform_loop_stmt (loop_vinfo, stmt, &si,
+					    &seen_store, &slp_scheduled);
+		}
+	      if (seen_store)
+		{
+		  if (STMT_VINFO_GROUPED_ACCESS (seen_store))
 		    {
-		      if (dump_enabled_p ())
-			{
-			  dump_printf_loc (MSG_NOTE, vect_location,
-					   "==> vectorizing pattern def "
-					   "stmt: ");
-			  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
-					    pattern_def_stmt, 0);
-			}
-
-		      stmt = pattern_def_stmt;
-		      stmt_info = pattern_def_stmt_info;
+		      /* Interleaving.  If IS_STORE is TRUE, the
+			 vectorization of the interleaving chain was
+			 completed - free all the stores in the chain.  */
+		      gsi_next (&si);
+		      vect_remove_stores (DR_GROUP_FIRST_ELEMENT (seen_store));
 		    }
 		  else
 		    {
-		      pattern_def_si = gsi_none ();
-		      transform_pattern_stmt = false;
+		      /* Free the attached stmt_vec_info and remove the
+			 stmt.  */
+		      free_stmt_vec_info (stmt);
+		      unlink_stmt_vdef (stmt);
+		      gsi_remove (&si, true);
+		      release_defs (stmt);
 		    }
 		}
 	      else
-		transform_pattern_stmt = false;
-            }
-
-	  if (STMT_VINFO_VECTYPE (stmt_info))
-	    {
-	      poly_uint64 nunits
-		= TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
-	      if (!STMT_SLP_TYPE (stmt_info)
-		  && maybe_ne (nunits, vf)
-		  && dump_enabled_p ())
-		  /* For SLP VF is set according to unrolling factor, and not
-		     to vector size, hence for SLP this print is not valid.  */
-		dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
+		gsi_next (&si);
 	    }
-
-	  /* SLP. Schedule all the SLP instances when the first SLP stmt is
-	     reached.  */
-	  if (STMT_SLP_TYPE (stmt_info))
-	    {
-	      if (!slp_scheduled)
-		{
-		  slp_scheduled = true;
-
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_NOTE, vect_location,
-				     "=== scheduling SLP instances ===\n");
-
-		  vect_schedule_slp (loop_vinfo);
-		}
-
-	      /* Hybrid SLP stmts must be vectorized in addition to SLP.  */
-	      if (!vinfo_for_stmt (stmt) || PURE_SLP_STMT (stmt_info))
-		{
-		  if (!transform_pattern_stmt && gsi_end_p (pattern_def_si))
-		    {
-		      pattern_def_seq = NULL;
-		      gsi_next (&si);
-		    }
-		  continue;
-		}
-	    }
-
-	  /* -------- vectorize statement ------------ */
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location, "transform statement.\n");
-
-	  grouped_store = false;
-	  is_store = vect_transform_stmt (stmt, &si, &grouped_store, NULL, NULL);
-          if (is_store)
-            {
-	      if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-		{
-		  /* Interleaving. If IS_STORE is TRUE, the vectorization of the
-		     interleaving chain was completed - free all the stores in
-		     the chain.  */
-		  gsi_next (&si);
-		  vect_remove_stores (DR_GROUP_FIRST_ELEMENT (stmt_info));
-		}
-	      else
-		{
-		  /* Free the attached stmt_vec_info and remove the stmt.  */
-		  gimple *store = gsi_stmt (si);
-		  free_stmt_vec_info (store);
-		  unlink_stmt_vdef (store);
-		  gsi_remove (&si, true);
-		  release_defs (store);
-		}
-
-	      /* Stores can only appear at the end of pattern statements.  */
-	      gcc_assert (!transform_pattern_stmt);
-	      pattern_def_seq = NULL;
-	    }
-	  else if (!transform_pattern_stmt && gsi_end_p (pattern_def_si))
-	    {
-	      pattern_def_seq = NULL;
-	      gsi_next (&si);
-	    }
-	}		        /* stmts in BB */
+	}
 
       /* Stub out scalar statements that must not survive vectorization.
 	 Doing this here helps with grouped statements, or statements that

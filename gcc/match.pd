@@ -102,6 +102,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match (nop_convert @0)
  @0) 
 
+/* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
+   ABSU_EXPR returns unsigned absolute value of the operand and the operand
+   of the ABSU_EXPR will have the corresponding signed type.  */
+(simplify (abs (convert @0))
+ (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && !TYPE_UNSIGNED (TREE_TYPE (@0))
+      && element_precision (type) > element_precision (TREE_TYPE (@0)))
+  (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+   (convert (absu:utype @0)))))
+
+
 /* Simplifications of operations with one constant operand and
    simplifications to constants or single values.  */
 
@@ -296,11 +307,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (div (div @0 INTEGER_CST@1) INTEGER_CST@2)
   (with {
-    bool overflow_p;
+    wi::overflow_type overflow;
     wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@2),
-			    TYPE_SIGN (type), &overflow_p);
+			    TYPE_SIGN (type), &overflow);
    }
-   (if (!overflow_p)
+   (if (!overflow)
     (div @0 { wide_int_to_tree (type, mul); })
     (if (TYPE_UNSIGNED (type)
 	 || mul != wi::min_value (TYPE_PRECISION (type), SIGNED))
@@ -311,13 +322,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (mult (mult @0 INTEGER_CST@1) INTEGER_CST@2)
  (with {
-   bool overflow_p;
+   wi::overflow_type overflow;
    wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@2),
-			   TYPE_SIGN (type), &overflow_p);
+			   TYPE_SIGN (type), &overflow);
   }
   /* Skip folding on overflow: the only special case is @1 * @2 == -INT_MIN,
      otherwise undefined overflow implies that @0 must be zero.  */
-  (if (!overflow_p || TYPE_OVERFLOW_WRAPS (type))
+  (if (!overflow || TYPE_OVERFLOW_WRAPS (type))
    (mult @0 { wide_int_to_tree (type, mul); }))))
 
 /* Optimize A / A to 1.0 if we don't care about
@@ -767,6 +778,60 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && wi::bit_and_not (get_nonzero_bits (@0), wi::to_wide (@1)) == 0)
   (bit_xor @0 @1)))
 #endif
+
+/* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,
+   ((A & N) + B) & M -> (A + B) & M
+   Similarly if (N & M) == 0,
+   ((A | N) + B) & M -> (A + B) & M
+   and for - instead of + (or unary - instead of +)
+   and/or ^ instead of |.
+   If B is constant and (B & M) == 0, fold into A & M.  */
+(for op (plus minus)
+ (for bitop (bit_and bit_ior bit_xor)
+  (simplify
+   (bit_and (op:s (bitop:s@0 @3 INTEGER_CST@4) @1) INTEGER_CST@2)
+    (with
+     { tree pmop[2];
+       tree utype = fold_bit_and_mask (TREE_TYPE (@0), @2, op, @0, bitop,
+				       @3, @4, @1, ERROR_MARK, NULL_TREE,
+				       NULL_TREE, pmop); }
+     (if (utype)
+      (convert (bit_and (op (convert:utype { pmop[0]; })
+			    (convert:utype { pmop[1]; }))
+			(convert:utype @2))))))
+  (simplify
+   (bit_and (op:s @0 (bitop:s@1 @3 INTEGER_CST@4)) INTEGER_CST@2)
+    (with
+     { tree pmop[2];
+       tree utype = fold_bit_and_mask (TREE_TYPE (@0), @2, op, @0, ERROR_MARK,
+				       NULL_TREE, NULL_TREE, @1, bitop, @3,
+				       @4, pmop); }
+     (if (utype)
+      (convert (bit_and (op (convert:utype { pmop[0]; })
+			    (convert:utype { pmop[1]; }))
+			(convert:utype @2)))))))
+ (simplify
+  (bit_and (op:s @0 @1) INTEGER_CST@2)
+   (with
+    { tree pmop[2];
+      tree utype = fold_bit_and_mask (TREE_TYPE (@0), @2, op, @0, ERROR_MARK,
+				      NULL_TREE, NULL_TREE, @1, ERROR_MARK,
+				      NULL_TREE, NULL_TREE, pmop); }
+    (if (utype)
+     (convert (bit_and (op (convert:utype { pmop[0]; })
+			   (convert:utype { pmop[1]; }))
+		       (convert:utype @2)))))))
+(for bitop (bit_and bit_ior bit_xor)
+ (simplify
+  (bit_and (negate:s (bitop:s@0 @2 INTEGER_CST@3)) INTEGER_CST@1)
+   (with
+    { tree pmop[2];
+      tree utype = fold_bit_and_mask (TREE_TYPE (@0), @1, NEGATE_EXPR, @0,
+				      bitop, @2, @3, NULL_TREE, ERROR_MARK,
+				      NULL_TREE, NULL_TREE, pmop); }
+    (if (utype)
+     (convert (bit_and (negate (convert:utype { pmop[0]; }))
+		       (convert:utype @1)))))))
 
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
@@ -1462,14 +1527,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (op @1 { build_zero_cst (TREE_TYPE (@1)); }))))
 
 /* Transform:
- * (X / Y) == 0 -> X < Y if X, Y are unsigned.
- * (X / Y) != 0 -> X >= Y, if X, Y are unsigned.
- */
+   (X / Y) == 0 -> X < Y if X, Y are unsigned.
+   (X / Y) != 0 -> X >= Y, if X, Y are unsigned.  */
 (for cmp (eq ne)
      ocmp (lt ge)
  (simplify
   (cmp (trunc_div @0 @1) integer_zerop)
   (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       /* Complex ==/!= is allowed, but not </>=.  */
+       && TREE_CODE (TREE_TYPE (@0)) != COMPLEX_TYPE
        && (VECTOR_TYPE_P (type) || !VECTOR_TYPE_P (TREE_TYPE (@0))))
    (ocmp @0 @1))))
 
@@ -1771,10 +1837,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   (neg_inner_op @0 { wide_int_to_tree (type, wi::to_wide (cst)); })
 	   /* Last resort, use some unsigned type.  */
 	   (with { tree utype = unsigned_type_for (type); }
-	    (view_convert (inner_op
-			   (view_convert:utype @0)
-			   (view_convert:utype
-			    { drop_tree_overflow (cst); })))))))))))))
+	    (if (utype)
+	     (view_convert (inner_op
+			    (view_convert:utype @0)
+			    (view_convert:utype
+			     { drop_tree_overflow (cst); }))))))))))))))
 
   /* (CST1 - A) +- CST2 -> CST3 - A  */
   (for outer_op (plus minus)
@@ -2794,7 +2861,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     && (cmp == LT_EXPR || cmp == GE_EXPR)))
      (with
       {
-	bool overflow = false;
+	wi::overflow_type overflow = wi::OVF_NONE;
 	enum tree_code code, cmp_code = cmp;
 	wide_int real_c1;
 	wide_int c1 = wi::to_wide (@1);
@@ -3354,7 +3421,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (TREE_CODE (@1) == INTEGER_CST)
      (with
       {
-	bool ovf;
+	wi::overflow_type ovf;
 	wide_int prod = wi::mul (wi::to_wide (@2), wi::to_wide (@1),
 				 TYPE_SIGN (TREE_TYPE (@1)), &ovf);
       }
@@ -3367,7 +3434,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (wi::gt_p (wi::to_wide (@1), 0, TYPE_SIGN (TREE_TYPE (@1))))
    (with
     {
-      bool ovf;
+      wi::overflow_type ovf;
       wide_int prod = wi::mul (wi::to_wide (@2), wi::to_wide (@1),
 			       TYPE_SIGN (TREE_TYPE (@1)), &ovf);
     }

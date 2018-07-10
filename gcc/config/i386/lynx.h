@@ -61,8 +61,10 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)			\
   do {									\
     if ((LOG) != 0) {							\
-      if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG));	\
-      else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
+      if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)		\
+	fprintf ((FILE), "\t.p2align %d\n", (LOG));			\
+      else								\
+	fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
     }									\
   } while (0)
 #endif

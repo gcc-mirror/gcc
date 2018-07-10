@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "context.h"
 #include "fold-const.h"
+#include "opt-suggestions.h"
 #include "gcc.h"
 #include "diagnostic.h"
 
@@ -1749,26 +1750,6 @@ block (function *func,
   m_label_expr = NULL;
 }
 
-/* A subclass of auto_vec <char *> that frees all of its elements on
-   deletion.  */
-
-class auto_argvec : public auto_vec <char *>
-{
- public:
-  ~auto_argvec ();
-};
-
-/* auto_argvec's dtor, freeing all contained strings, automatically
-   chaining up to ~auto_vec <char *>, which frees the internal buffer.  */
-
-auto_argvec::~auto_argvec ()
-{
-  int i;
-  char *str;
-  FOR_EACH_VEC_ELT (*this, i, str)
-    free (str);
-}
-
 /* Compile a playback::context:
 
    - Use the context's options to cconstruct command-line options, and
@@ -1822,7 +1803,7 @@ compile ()
   /* Acquire the JIT mutex and set "this" as the active playback ctxt.  */
   acquire_mutex ();
 
-  auto_argvec fake_args;
+  auto_string_vec fake_args;
   make_fake_args (&fake_args, ctxt_progname, &requested_dumps);
   if (errors_occurred ())
     {
@@ -2440,7 +2421,7 @@ invoke_driver (const char *ctxt_progname,
   /* Currently this lumps together both assembling and linking into
      TV_ASSEMBLE.  */
   auto_timevar assemble_timevar (get_timer (), tv_id);
-  auto_argvec argvec;
+  auto_string_vec argvec;
 #define ADD_ARG(arg) argvec.safe_push (xstrdup (arg))
 
   ADD_ARG (gcc_driver_name);

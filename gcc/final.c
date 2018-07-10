@@ -2128,7 +2128,7 @@ final (rtx_insn *first, FILE *file, int optimize_p)
 }
 
 const char *
-get_insn_template (int code, rtx insn)
+get_insn_template (int code, rtx_insn *insn)
 {
   switch (insn_data[code].output_format)
     {
@@ -2138,8 +2138,7 @@ get_insn_template (int code, rtx insn)
       return insn_data[code].output.multi[which_alternative];
     case INSN_OUTPUT_FORMAT_FUNCTION:
       gcc_assert (insn);
-      return (*insn_data[code].output.function) (recog_data.operand,
-						 as_a <rtx_insn *> (insn));
+      return (*insn_data[code].output.function) (recog_data.operand, insn);
 
     default:
       gcc_unreachable ();
@@ -2529,6 +2528,12 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    {
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
 	      ASM_OUTPUT_MAX_SKIP_ALIGN (file, align, max_skip);
+	      /* Above, we don't know whether a label, jump or loop
+		 alignment was used.  Conservatively apply
+		 label subalignment, not jump or loop
+		 subalignment (they are almost always larger).  */
+	      ASM_OUTPUT_MAX_SKIP_ALIGN (file, state_align_labels.levels[1].log,
+					 state_align_labels.levels[1].maxskip);
 #else
 #ifdef ASM_OUTPUT_ALIGN_WITH_NOP
               ASM_OUTPUT_ALIGN_WITH_NOP (file, align);

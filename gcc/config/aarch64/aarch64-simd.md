@@ -205,6 +205,34 @@
   [(set_attr "type" "neon_stp")]
 )
 
+(define_insn "load_pair<VQ:mode><VQ2:mode>"
+  [(set (match_operand:VQ 0 "register_operand" "=w")
+	(match_operand:VQ 1 "aarch64_mem_pair_operand" "Ump"))
+   (set (match_operand:VQ2 2 "register_operand" "=w")
+	(match_operand:VQ2 3 "memory_operand" "m"))]
+  "TARGET_SIMD
+    && rtx_equal_p (XEXP (operands[3], 0),
+		    plus_constant (Pmode,
+			       XEXP (operands[1], 0),
+			       GET_MODE_SIZE (<VQ:MODE>mode)))"
+  "ldp\\t%q0, %q2, %1"
+  [(set_attr "type" "neon_ldp_q")]
+)
+
+(define_insn "vec_store_pair<VQ:mode><VQ2:mode>"
+  [(set (match_operand:VQ 0 "aarch64_mem_pair_operand" "=Ump")
+	(match_operand:VQ 1 "register_operand" "w"))
+   (set (match_operand:VQ2 2 "memory_operand" "=m")
+	(match_operand:VQ2 3 "register_operand" "w"))]
+  "TARGET_SIMD && rtx_equal_p (XEXP (operands[2], 0),
+		plus_constant (Pmode,
+			       XEXP (operands[0], 0),
+			       GET_MODE_SIZE (<VQ:MODE>mode)))"
+  "stp\\t%q1, %q3, %0"
+  [(set_attr "type" "neon_stp_q")]
+)
+
+
 (define_split
   [(set (match_operand:VQ 0 "register_operand" "")
       (match_operand:VQ 1 "register_operand" ""))]
@@ -2205,8 +2233,9 @@
 ;; Max/Min are introduced by idiom recognition by GCC's mid-end.  An
 ;; expression like:
 ;;      a = (b < c) ? b : c;
-;; is idiom-matched as MIN_EXPR<b,c> only if -ffinite-math-only is enabled
-;; either explicitly or indirectly via -ffast-math.
+;; is idiom-matched as MIN_EXPR<b,c> only if -ffinite-math-only and
+;; -fno-signed-zeros are enabled either explicitly or indirectly via
+;; -ffast-math.
 ;;
 ;; MIN_EXPR and MAX_EXPR eventually map to 'smin' and 'smax' in RTL.
 ;; The 'smax' and 'smin' RTL standard pattern names do not specify which
@@ -3358,6 +3387,22 @@
 })
 
 ;; <su><r>h<addsub>.
+
+(define_expand "<u>avg<mode>3_floor"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand")
+	(unspec:VDQ_BHSI [(match_operand:VDQ_BHSI 1 "register_operand")
+			  (match_operand:VDQ_BHSI 2 "register_operand")]
+			 HADD))]
+  "TARGET_SIMD"
+)
+
+(define_expand "<u>avg<mode>3_ceil"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand")
+	(unspec:VDQ_BHSI [(match_operand:VDQ_BHSI 1 "register_operand")
+			  (match_operand:VDQ_BHSI 2 "register_operand")]
+			 RHADD))]
+  "TARGET_SIMD"
+)
 
 (define_insn "aarch64_<sur>h<addsub><mode>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
@@ -5850,9 +5895,32 @@
 
 (define_insn "aarch64_crypto_aes<aes_op>v16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=w")
-        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "0")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "%0")
 		       (match_operand:V16QI 2 "register_operand" "w")]
          CRYPTO_AES))]
+  "TARGET_SIMD && TARGET_AES"
+  "aes<aes_op>\\t%0.16b, %2.16b"
+  [(set_attr "type" "crypto_aese")]
+)
+
+(define_insn "*aarch64_crypto_aes<aes_op>v16qi_xor_combine"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(xor:V16QI
+			(match_operand:V16QI 1 "register_operand" "%0")
+			(match_operand:V16QI 2 "register_operand" "w"))
+		       (match_operand:V16QI 3 "aarch64_simd_imm_zero" "")]
+		       CRYPTO_AES))]
+  "TARGET_SIMD && TARGET_AES"
+  "aes<aes_op>\\t%0.16b, %2.16b"
+  [(set_attr "type" "crypto_aese")]
+)
+
+(define_insn "*aarch64_crypto_aes<aes_op>v16qi_xor_combine"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(match_operand:V16QI 3 "aarch64_simd_imm_zero" "")
+	(xor:V16QI (match_operand:V16QI 1 "register_operand" "%0")
+		   (match_operand:V16QI 2 "register_operand" "w"))]
+	CRYPTO_AES))]
   "TARGET_SIMD && TARGET_AES"
   "aes<aes_op>\\t%0.16b, %2.16b"
   [(set_attr "type" "crypto_aese")]

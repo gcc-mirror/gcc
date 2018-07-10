@@ -601,9 +601,10 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 	}
     }
 
-  /* Fortran 95 Draft Standard, page 51, Section 5.1.1.5, on the Character
+  /* Fortran 2008 Draft Standard, page 535, C418, on type-param-value
      type, lists the only ways a character length value of * can be used:
-     dummy arguments of procedures, named constants, and function results
+     dummy arguments of procedures, named constants, function results and
+     in allocate statements if the allocate_object is an assumed length dummy
      in external functions.  Internal function results and results of module
      procedures are not on this list, ergo, not permitted.  */
 
@@ -3103,12 +3104,25 @@ resolve_function (gfc_expr *expr)
       return false;
     }
 
-  /* If this ia a deferred TBP with an abstract interface (which may
+  /* If this is a deferred TBP with an abstract interface (which may
      of course be referenced), expr->value.function.esym will be set.  */
   if (sym && sym->attr.abstract && !expr->value.function.esym)
     {
       gfc_error ("ABSTRACT INTERFACE %qs must not be referenced at %L",
 		 sym->name, &expr->where);
+      return false;
+    }
+
+  /* If this is a deferred TBP with an abstract interface, its result
+     cannot be an assumed length character (F2003: C418).  */
+  if (sym && sym->attr.abstract && sym->attr.function
+      && sym->result->ts.u.cl
+      && sym->result->ts.u.cl->length == NULL
+      && !sym->result->ts.deferred)
+    {
+      gfc_error ("ABSTRACT INTERFACE %qs at %L must not have an assumed "
+		 "character length result (F2008: C418)", sym->name,
+		 &sym->declared_at);
       return false;
     }
 
@@ -3878,7 +3892,13 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg,
+      if (op1->ts.type == BT_DERIVED || op2->ts.type == BT_DERIVED)
+	sprintf (msg,
+	       _("Unexpected derived-type entities in binary intrinsic "
+		 "numeric operator %%<%s%%> at %%L"),
+	       gfc_op2string (e->value.op.op));
+      else
+      	sprintf (msg,
 	       _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
@@ -10378,6 +10398,11 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       && rhs->ts.type == BT_CLASS
       && rhs->expr_type != EXPR_ARRAY)
     gfc_add_data_component (rhs);
+
+  /* Make sure there is a vtable and, in particular, a _copy for the
+     rhs type.  */
+  if (UNLIMITED_POLY (lhs) && lhs->rank && rhs->ts.type != BT_CLASS)
+    gfc_find_vtab (&rhs->ts);
 
   bool caf_convert_to_send = flag_coarray == GFC_FCOARRAY_LIB
       && (lhs_coindexed

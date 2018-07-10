@@ -11275,6 +11275,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	case 'f':
 	  if (!strcmp ("final", p))
 	    result = PRAGMA_OMP_CLAUSE_FINAL;
+	  else if (!strcmp ("finalize", p))
+	    result = PRAGMA_OACC_CLAUSE_FINALIZE;
 	  else if (!strcmp ("firstprivate", p))
 	    result = PRAGMA_OMP_CLAUSE_FIRSTPRIVATE;
 	  else if (!strcmp ("from", p))
@@ -11293,7 +11295,9 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OACC_CLAUSE_HOST;
 	  break;
 	case 'i':
-	  if (!strcmp ("in_reduction", p))
+	  if (!strcmp ("if_present", p))
+	    result = PRAGMA_OACC_CLAUSE_IF_PRESENT;
+	  else if (!strcmp ("in_reduction", p))
 	    result = PRAGMA_OMP_CLAUSE_IN_REDUCTION;
 	  else if (!strcmp ("inbranch", p))
 	    result = PRAGMA_OMP_CLAUSE_INBRANCH;
@@ -11345,18 +11349,20 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_PARALLEL;
 	  else if (!strcmp ("present", p))
 	    result = PRAGMA_OACC_CLAUSE_PRESENT;
+	  /* As of OpenACC 2.5, these are now aliases of the non-present_or
+	     clauses.  */
 	  else if (!strcmp ("present_or_copy", p)
 		   || !strcmp ("pcopy", p))
-	    result = PRAGMA_OACC_CLAUSE_PRESENT_OR_COPY;
+	    result = PRAGMA_OACC_CLAUSE_COPY;
 	  else if (!strcmp ("present_or_copyin", p)
 		   || !strcmp ("pcopyin", p))
-	    result = PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYIN;
+	    result = PRAGMA_OACC_CLAUSE_COPYIN;
 	  else if (!strcmp ("present_or_copyout", p)
 		   || !strcmp ("pcopyout", p))
-	    result = PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYOUT;
+	    result = PRAGMA_OACC_CLAUSE_COPYOUT;
 	  else if (!strcmp ("present_or_create", p)
 		   || !strcmp ("pcreate", p))
-	    result = PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE;
+	    result = PRAGMA_OACC_CLAUSE_CREATE;
 	  else if (!strcmp ("priority", p))
 	    result = PRAGMA_OMP_CLAUSE_PRIORITY;
 	  else if (!strcmp ("private", p))
@@ -11375,6 +11381,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_SCHEDULE;
 	  else if (!strcmp ("sections", p))
 	    result = PRAGMA_OMP_CLAUSE_SECTIONS;
+	  else if (!strcmp ("self", p)) /* "self" is a synonym for "host".  */
+	    result = PRAGMA_OACC_CLAUSE_HOST;
 	  else if (!strcmp ("seq", p))
 	    result = PRAGMA_OACC_CLAUSE_SEQ;
 	  else if (!strcmp ("shared", p))
@@ -11383,8 +11391,6 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_SIMD;
 	  else if (!strcmp ("simdlen", p))
 	    result = PRAGMA_OMP_CLAUSE_SIMDLEN;
-	  else if (!strcmp ("self", p))
-	    result = PRAGMA_OACC_CLAUSE_SELF;
 	  break;
 	case 't':
 	  if (!strcmp ("task_reduction", p))
@@ -11774,15 +11780,7 @@ c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
    copyout ( variable-list )
    create ( variable-list )
    delete ( variable-list )
-   present ( variable-list )
-   present_or_copy ( variable-list )
-     pcopy ( variable-list )
-   present_or_copyin ( variable-list )
-     pcopyin ( variable-list )
-   present_or_copyout ( variable-list )
-     pcopyout ( variable-list )
-   present_or_create ( variable-list )
-     pcreate ( variable-list ) */
+   present ( variable-list ) */
 
 static tree
 c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
@@ -11792,19 +11790,19 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
   switch (c_kind)
     {
     case PRAGMA_OACC_CLAUSE_COPY:
-      kind = GOMP_MAP_FORCE_TOFROM;
+      kind = GOMP_MAP_TOFROM;
       break;
     case PRAGMA_OACC_CLAUSE_COPYIN:
-      kind = GOMP_MAP_FORCE_TO;
+      kind = GOMP_MAP_TO;
       break;
     case PRAGMA_OACC_CLAUSE_COPYOUT:
-      kind = GOMP_MAP_FORCE_FROM;
+      kind = GOMP_MAP_FROM;
       break;
     case PRAGMA_OACC_CLAUSE_CREATE:
-      kind = GOMP_MAP_FORCE_ALLOC;
+      kind = GOMP_MAP_ALLOC;
       break;
     case PRAGMA_OACC_CLAUSE_DELETE:
-      kind = GOMP_MAP_DELETE;
+      kind = GOMP_MAP_RELEASE;
       break;
     case PRAGMA_OACC_CLAUSE_DEVICE:
       kind = GOMP_MAP_FORCE_TO;
@@ -11813,7 +11811,6 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
       kind = GOMP_MAP_DEVICE_RESIDENT;
       break;
     case PRAGMA_OACC_CLAUSE_HOST:
-    case PRAGMA_OACC_CLAUSE_SELF:
       kind = GOMP_MAP_FORCE_FROM;
       break;
     case PRAGMA_OACC_CLAUSE_LINK:
@@ -11821,18 +11818,6 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
       break;
     case PRAGMA_OACC_CLAUSE_PRESENT:
       kind = GOMP_MAP_FORCE_PRESENT;
-      break;
-    case PRAGMA_OACC_CLAUSE_PRESENT_OR_COPY:
-      kind = GOMP_MAP_TOFROM;
-      break;
-    case PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYIN:
-      kind = GOMP_MAP_TO;
-      break;
-    case PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYOUT:
-      kind = GOMP_MAP_FROM;
-      break;
-    case PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE:
-      kind = GOMP_MAP_ALLOC;
       break;
     default:
       gcc_unreachable ();
@@ -12884,8 +12869,9 @@ c_parser_oacc_shape_clause (c_parser *parser, omp_clause_code kind,
   return list;
 }
 
-/* OpenACC:
+/* OpenACC 2.5:
    auto
+   finalize
    independent
    nohost
    seq */
@@ -14407,6 +14393,11 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
 	  c_name = "device_resident";
 	  break;
+	case PRAGMA_OACC_CLAUSE_FINALIZE:
+	  clauses = c_parser_oacc_simple_clause (parser, OMP_CLAUSE_FINALIZE,
+						 clauses);
+	  c_name = "finalize";
+	  break;
 	case PRAGMA_OACC_CLAUSE_FIRSTPRIVATE:
 	  clauses = c_parser_omp_clause_firstprivate (parser, clauses);
 	  c_name = "firstprivate";
@@ -14423,6 +14414,11 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OACC_CLAUSE_IF:
 	  clauses = c_parser_omp_clause_if (parser, clauses, false);
 	  c_name = "if";
+	  break;
+	case PRAGMA_OACC_CLAUSE_IF_PRESENT:
+	  clauses = c_parser_oacc_simple_clause (parser, OMP_CLAUSE_IF_PRESENT,
+						 clauses);
+	  c_name = "if_present";
 	  break;
 	case PRAGMA_OACC_CLAUSE_INDEPENDENT:
 	  clauses = c_parser_oacc_simple_clause (parser, OMP_CLAUSE_INDEPENDENT,
@@ -14449,22 +14445,6 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
 	  c_name = "present";
 	  break;
-	case PRAGMA_OACC_CLAUSE_PRESENT_OR_COPY:
-	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
-	  c_name = "present_or_copy";
-	  break;
-	case PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYIN:
-	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
-	  c_name = "present_or_copyin";
-	  break;
-	case PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYOUT:
-	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
-	  c_name = "present_or_copyout";
-	  break;
-	case PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE:
-	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
-	  c_name = "present_or_create";
-	  break;
 	case PRAGMA_OACC_CLAUSE_PRIVATE:
 	  clauses = c_parser_omp_clause_private (parser, clauses);
 	  c_name = "private";
@@ -14474,10 +14454,6 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
 					     clauses);
 	  c_name = "reduction";
-	  break;
-	case PRAGMA_OACC_CLAUSE_SELF:
-	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
-	  c_name = "self";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
 	  clauses = c_parser_oacc_simple_clause (parser, OMP_CLAUSE_SEQ,
@@ -14889,11 +14865,7 @@ c_parser_oacc_cache (location_t loc, c_parser *parser)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_CREATE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPY)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYIN)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYOUT)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE) )
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT))
 
 static tree
 c_parser_oacc_data (location_t loc, c_parser *parser, bool *if_p)
@@ -14923,11 +14895,7 @@ c_parser_oacc_data (location_t loc, c_parser *parser, bool *if_p)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICEPTR)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_LINK)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPY)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYIN)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYOUT)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE) )
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT))
 
 static void
 c_parser_oacc_declare (c_parser *parser)
@@ -14962,8 +14930,8 @@ c_parser_oacc_declare (c_parser *parser)
       switch (OMP_CLAUSE_MAP_KIND (t))
 	{
 	case GOMP_MAP_FIRSTPRIVATE_POINTER:
-	case GOMP_MAP_FORCE_ALLOC:
-	case GOMP_MAP_FORCE_TO:
+	case GOMP_MAP_ALLOC:
+	case GOMP_MAP_TO:
 	case GOMP_MAP_FORCE_DEVICEPTR:
 	case GOMP_MAP_DEVICE_RESIDENT:
 	  break;
@@ -15076,8 +15044,6 @@ c_parser_oacc_declare (c_parser *parser)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYIN)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_CREATE)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYIN)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
 #define OACC_EXIT_DATA_CLAUSE_MASK					\
@@ -15085,6 +15051,7 @@ c_parser_oacc_declare (c_parser *parser)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_COPYOUT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DELETE) 		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_FINALIZE) 		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
 static void
@@ -15228,10 +15195,6 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_GANGS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPY)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYIN)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYOUT)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
@@ -15249,10 +15212,6 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_GANGS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NUM_WORKERS)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPY)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYIN)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_COPYOUT)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_PRESENT_OR_CREATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_REDUCTION)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR_LENGTH)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
@@ -15480,7 +15439,7 @@ c_finish_oacc_routine (struct oacc_routine_data *data, tree fndecl,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_DEVICE)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_HOST)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF)			\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SELF)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF_PRESENT)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WAIT) )
 
 static void

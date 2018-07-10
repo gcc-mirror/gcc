@@ -968,7 +968,7 @@ value_range_constant_singleton (value_range *vr)
 static bool
 vrp_int_const_binop (enum tree_code code, tree val1, tree val2, wide_int *res)
 {
-  bool overflow = false;
+  wi::overflow_type overflow = wi::OVF_NONE;
   signop sign = TYPE_SIGN (TREE_TYPE (val1));
 
   switch (code)
@@ -1275,6 +1275,172 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
 		   wide_int_to_tree (type, max), NULL);
 }
 
+/* If BOUND will include a symbolic bound, adjust it accordingly,
+   otherwise leave it as is.
+
+   CODE is the original operation that combined the bounds (PLUS_EXPR
+   or MINUS_EXPR).
+
+   TYPE is the type of the original operation.
+
+   SYM_OPn is the symbolic for OPn if it has a symbolic.
+
+   NEG_OPn is TRUE if the OPn was negated.  */
+
+static void
+adjust_symbolic_bound (tree &bound, enum tree_code code, tree type,
+		       tree sym_op0, tree sym_op1,
+		       bool neg_op0, bool neg_op1)
+{
+  bool minus_p = (code == MINUS_EXPR);
+  /* If the result bound is constant, we're done; otherwise, build the
+     symbolic lower bound.  */
+  if (sym_op0 == sym_op1)
+    ;
+  else if (sym_op0)
+    bound = build_symbolic_expr (type, sym_op0,
+				 neg_op0, bound);
+  else if (sym_op1)
+    {
+      /* We may not negate if that might introduce
+	 undefined overflow.  */
+      if (!minus_p
+	  || neg_op1
+	  || TYPE_OVERFLOW_WRAPS (type))
+	bound = build_symbolic_expr (type, sym_op1,
+				     neg_op1 ^ minus_p, bound);
+      else
+	bound = NULL_TREE;
+    }
+}
+
+/* Combine OP1 and OP1, which are two parts of a bound, into one wide
+   int bound according to CODE.  CODE is the operation combining the
+   bound (either a PLUS_EXPR or a MINUS_EXPR).
+
+   TYPE is the type of the combine operation.
+
+   WI is the wide int to store the result.
+
+   OVF is -1 if an underflow occurred, +1 if an overflow occurred or 0
+   if over/underflow occurred.  */
+
+static void
+combine_bound (enum tree_code code, wide_int &wi, wi::overflow_type &ovf,
+	       tree type, tree op0, tree op1)
+{
+  bool minus_p = (code == MINUS_EXPR);
+  const signop sgn = TYPE_SIGN (type);
+  const unsigned int prec = TYPE_PRECISION (type);
+
+  /* Combine the bounds, if any.  */
+  if (op0 && op1)
+    {
+      if (minus_p)
+	wi = wi::sub (wi::to_wide (op0), wi::to_wide (op1), sgn, &ovf);
+      else
+	wi = wi::add (wi::to_wide (op0), wi::to_wide (op1), sgn, &ovf);
+    }
+  else if (op0)
+    wi = wi::to_wide (op0);
+  else if (op1)
+    {
+      if (minus_p)
+	wi = wi::neg (wi::to_wide (op1), &ovf);
+      else
+	wi = wi::to_wide (op1);
+    }
+  else
+    wi = wi::shwi (0, prec);
+}
+
+/* Given a range in [WMIN, WMAX], adjust it for possible overflow and
+   put the result in VR.
+
+   TYPE is the type of the range.
+
+   MIN_OVF and MAX_OVF indicate what type of overflow, if any,
+   occurred while originally calculating WMIN or WMAX.  -1 indicates
+   underflow.  +1 indicates overflow.  0 indicates neither.  */
+
+static void
+set_value_range_with_overflow (value_range &vr,
+			       tree type,
+			       const wide_int &wmin, const wide_int &wmax,
+			       wi::overflow_type min_ovf,
+			       wi::overflow_type max_ovf)
+{
+  const signop sgn = TYPE_SIGN (type);
+  const unsigned int prec = TYPE_PRECISION (type);
+  vr.type = VR_RANGE;
+  vr.equiv = NULL;
+  if (TYPE_OVERFLOW_WRAPS (type))
+    {
+      /* If overflow wraps, truncate the values and adjust the
+	 range kind and bounds appropriately.  */
+      wide_int tmin = wide_int::from (wmin, prec, sgn);
+      wide_int tmax = wide_int::from (wmax, prec, sgn);
+      if ((min_ovf != wi::OVF_NONE) == (max_ovf != wi::OVF_NONE))
+	{
+	  /* No overflow or both overflow or underflow.  The
+	     range kind stays VR_RANGE.  */
+	  vr.min = wide_int_to_tree (type, tmin);
+	  vr.max = wide_int_to_tree (type, tmax);
+	}
+      else if ((min_ovf == wi::OVF_UNDERFLOW && max_ovf == wi::OVF_NONE)
+	       || (max_ovf == wi::OVF_OVERFLOW && min_ovf == wi::OVF_NONE))
+	{
+	  /* Min underflow or max overflow.  The range kind
+	     changes to VR_ANTI_RANGE.  */
+	  bool covers = false;
+	  wide_int tem = tmin;
+	  vr.type = VR_ANTI_RANGE;
+	  tmin = tmax + 1;
+	  if (wi::cmp (tmin, tmax, sgn) < 0)
+	    covers = true;
+	  tmax = tem - 1;
+	  if (wi::cmp (tmax, tem, sgn) > 0)
+	    covers = true;
+	  /* If the anti-range would cover nothing, drop to varying.
+	     Likewise if the anti-range bounds are outside of the
+	     types values.  */
+	  if (covers || wi::cmp (tmin, tmax, sgn) > 0)
+	    {
+	      set_value_range_to_varying (&vr);
+	      return;
+	    }
+	  vr.min = wide_int_to_tree (type, tmin);
+	  vr.max = wide_int_to_tree (type, tmax);
+	}
+      else
+	{
+	  /* Other underflow and/or overflow, drop to VR_VARYING.  */
+	  set_value_range_to_varying (&vr);
+	  return;
+	}
+    }
+  else
+    {
+      /* If overflow does not wrap, saturate to the types min/max
+	 value.  */
+      wide_int type_min = wi::min_value (prec, sgn);
+      wide_int type_max = wi::max_value (prec, sgn);
+      if (min_ovf == wi::OVF_UNDERFLOW)
+	vr.min = wide_int_to_tree (type, type_min);
+      else if (min_ovf == wi::OVF_OVERFLOW)
+	vr.min = wide_int_to_tree (type, type_max);
+      else
+	vr.min = wide_int_to_tree (type, wmin);
+
+      if (max_ovf == wi::OVF_UNDERFLOW)
+	vr.max = wide_int_to_tree (type, type_min);
+      else if (max_ovf == wi::OVF_OVERFLOW)
+	vr.max = wide_int_to_tree (type, type_max);
+      else
+	vr.max = wide_int_to_tree (type, wmax);
+    }
+}
+
 /* Extract range information from a binary operation CODE based on
    the ranges of each of its operands *VR0 and *VR1 with resulting
    type EXPR_TYPE.  The resulting range is stored in *VR.  */
@@ -1471,6 +1637,8 @@ extract_range_from_binary_expr_1 (value_range *vr,
       tree sym_max_op1 = NULL_TREE;
       bool neg_min_op0, neg_min_op1, neg_max_op0, neg_max_op1;
 
+      neg_min_op0 = neg_min_op1 = neg_max_op0 = neg_max_op1 = false;
+
       /* If we have a PLUS or MINUS with two VR_RANGEs, either constant or
 	 single-symbolic ranges, try to compute the precise resulting range,
 	 but only if we know that this resulting range will also be constant
@@ -1495,240 +1663,41 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	      || (sym_max_op0 == sym_max_op1
 		  && neg_max_op0 == (minus_p ? neg_max_op1 : !neg_max_op1))))
 	{
-	  const signop sgn = TYPE_SIGN (expr_type);
-	  const unsigned int prec = TYPE_PRECISION (expr_type);
-	  wide_int type_min, type_max, wmin, wmax;
-	  int min_ovf = 0;
-	  int max_ovf = 0;
+	  wide_int wmin, wmax;
+	  wi::overflow_type min_ovf = wi::OVF_NONE;
+	  wi::overflow_type max_ovf = wi::OVF_NONE;
 
-	  /* Get the lower and upper bounds of the type.  */
-	  if (TYPE_OVERFLOW_WRAPS (expr_type))
-	    {
-	      type_min = wi::min_value (prec, sgn);
-	      type_max = wi::max_value (prec, sgn);
-	    }
-	  else
-	    {
-	      type_min = wi::to_wide (vrp_val_min (expr_type));
-	      type_max = wi::to_wide (vrp_val_max (expr_type));
-	    }
-
-	  /* Combine the lower bounds, if any.  */
-	  if (min_op0 && min_op1)
-	    {
-	      if (minus_p)
-		{
-		  wmin = wi::to_wide (min_op0) - wi::to_wide (min_op1);
-
-		  /* Check for overflow.  */
-		  if (wi::cmp (0, wi::to_wide (min_op1), sgn)
-		      != wi::cmp (wmin, wi::to_wide (min_op0), sgn))
-		    min_ovf = wi::cmp (wi::to_wide (min_op0),
-				       wi::to_wide (min_op1), sgn);
-		}
-	      else
-		{
-		  wmin = wi::to_wide (min_op0) + wi::to_wide (min_op1);
-
-		  /* Check for overflow.  */
-		  if (wi::cmp (wi::to_wide (min_op1), 0, sgn)
-		      != wi::cmp (wmin, wi::to_wide (min_op0), sgn))
-		    min_ovf = wi::cmp (wi::to_wide (min_op0), wmin, sgn);
-		}
-	    }
-	  else if (min_op0)
-	    wmin = wi::to_wide (min_op0);
-	  else if (min_op1)
-	    {
-	      if (minus_p)
-		{
-		  wmin = -wi::to_wide (min_op1);
-
-		  /* Check for overflow.  */
-		  if (sgn == SIGNED
-		      && wi::neg_p (wi::to_wide (min_op1))
-		      && wi::neg_p (wmin))
-		    min_ovf = 1;
-		  else if (sgn == UNSIGNED && wi::to_wide (min_op1) != 0)
-		    min_ovf = -1;
-		}
-	      else
-		wmin = wi::to_wide (min_op1);
-	    }
-	  else
-	    wmin = wi::shwi (0, prec);
-
-	  /* Combine the upper bounds, if any.  */
-	  if (max_op0 && max_op1)
-	    {
-	      if (minus_p)
-		{
-		  wmax = wi::to_wide (max_op0) - wi::to_wide (max_op1);
-
-		  /* Check for overflow.  */
-		  if (wi::cmp (0, wi::to_wide (max_op1), sgn)
-		      != wi::cmp (wmax, wi::to_wide (max_op0), sgn))
-		    max_ovf = wi::cmp (wi::to_wide (max_op0),
-				       wi::to_wide (max_op1), sgn);
-		}
-	      else
-		{
-		  wmax = wi::to_wide (max_op0) + wi::to_wide (max_op1);
-
-		  if (wi::cmp (wi::to_wide (max_op1), 0, sgn)
-		      != wi::cmp (wmax, wi::to_wide (max_op0), sgn))
-		    max_ovf = wi::cmp (wi::to_wide (max_op0), wmax, sgn);
-		}
-	    }
-	  else if (max_op0)
-	    wmax = wi::to_wide (max_op0);
-	  else if (max_op1)
-	    {
-	      if (minus_p)
-		{
-		  wmax = -wi::to_wide (max_op1);
-
-		  /* Check for overflow.  */
-		  if (sgn == SIGNED
-		      && wi::neg_p (wi::to_wide (max_op1))
-		      && wi::neg_p (wmax))
-		    max_ovf = 1;
-		  else if (sgn == UNSIGNED && wi::to_wide (max_op1) != 0)
-		    max_ovf = -1;
-		}
-	      else
-		wmax = wi::to_wide (max_op1);
-	    }
-	  else
-	    wmax = wi::shwi (0, prec);
-
-	  /* Check for type overflow.  */
-	  if (min_ovf == 0)
-	    {
-	      if (wi::cmp (wmin, type_min, sgn) == -1)
-		min_ovf = -1;
-	      else if (wi::cmp (wmin, type_max, sgn) == 1)
-		min_ovf = 1;
-	    }
-	  if (max_ovf == 0)
-	    {
-	      if (wi::cmp (wmax, type_min, sgn) == -1)
-		max_ovf = -1;
-	      else if (wi::cmp (wmax, type_max, sgn) == 1)
-		max_ovf = 1;
-	    }
+	  /* Build the bounds.  */
+	  combine_bound (code, wmin, min_ovf, expr_type, min_op0, min_op1);
+	  combine_bound (code, wmax, max_ovf, expr_type, max_op0, max_op1);
 
 	  /* If we have overflow for the constant part and the resulting
 	     range will be symbolic, drop to VR_VARYING.  */
-	  if ((min_ovf && sym_min_op0 != sym_min_op1)
-	      || (max_ovf && sym_max_op0 != sym_max_op1))
+	  if (((bool)min_ovf && sym_min_op0 != sym_min_op1)
+	      || ((bool)max_ovf && sym_max_op0 != sym_max_op1))
 	    {
 	      set_value_range_to_varying (vr);
 	      return;
 	    }
 
-	  if (TYPE_OVERFLOW_WRAPS (expr_type))
-	    {
-	      /* If overflow wraps, truncate the values and adjust the
-		 range kind and bounds appropriately.  */
-	      wide_int tmin = wide_int::from (wmin, prec, sgn);
-	      wide_int tmax = wide_int::from (wmax, prec, sgn);
-	      if (min_ovf == max_ovf)
-		{
-		  /* No overflow or both overflow or underflow.  The
-		     range kind stays VR_RANGE.  */
-		  min = wide_int_to_tree (expr_type, tmin);
-		  max = wide_int_to_tree (expr_type, tmax);
-		}
-	      else if ((min_ovf == -1 && max_ovf == 0)
-		       || (max_ovf == 1 && min_ovf == 0))
-		{
-		  /* Min underflow or max overflow.  The range kind
-		     changes to VR_ANTI_RANGE.  */
-		  bool covers = false;
-		  wide_int tem = tmin;
-		  type = VR_ANTI_RANGE;
-		  tmin = tmax + 1;
-		  if (wi::cmp (tmin, tmax, sgn) < 0)
-		    covers = true;
-		  tmax = tem - 1;
-		  if (wi::cmp (tmax, tem, sgn) > 0)
-		    covers = true;
-		  /* If the anti-range would cover nothing, drop to varying.
-		     Likewise if the anti-range bounds are outside of the
-		     types values.  */
-		  if (covers || wi::cmp (tmin, tmax, sgn) > 0)
-		    {
-		      set_value_range_to_varying (vr);
-		      return;
-		    }
-		  min = wide_int_to_tree (expr_type, tmin);
-		  max = wide_int_to_tree (expr_type, tmax);
-		}
-	      else
-		{
-		  /* Other underflow and/or overflow, drop to VR_VARYING.  */
-		  set_value_range_to_varying (vr);
-		  return;
-		}
-	    }
-	  else
-	    {
-	      /* If overflow does not wrap, saturate to the types min/max
-	         value.  */
-	      if (min_ovf == -1)
-		min = wide_int_to_tree (expr_type, type_min);
-	      else if (min_ovf == 1)
-		min = wide_int_to_tree (expr_type, type_max);
-	      else
-		min = wide_int_to_tree (expr_type, wmin);
+	  /* Adjust the range for possible overflow.  */
+	  set_value_range_with_overflow (*vr, expr_type,
+					 wmin, wmax, min_ovf, max_ovf);
+	  if (vr->type == VR_VARYING)
+	    return;
 
-	      if (max_ovf == -1)
-		max = wide_int_to_tree (expr_type, type_min);
-	      else if (max_ovf == 1)
-		max = wide_int_to_tree (expr_type, type_max);
-	      else
-		max = wide_int_to_tree (expr_type, wmax);
-	    }
-
-	  /* If the result lower bound is constant, we're done;
-	     otherwise, build the symbolic lower bound.  */
-	  if (sym_min_op0 == sym_min_op1)
-	    ;
-	  else if (sym_min_op0)
-	    min = build_symbolic_expr (expr_type, sym_min_op0,
-				       neg_min_op0, min);
-	  else if (sym_min_op1)
-	    {
-	      /* We may not negate if that might introduce
-		 undefined overflow.  */
-	      if (! minus_p
-		  || neg_min_op1
-		  || TYPE_OVERFLOW_WRAPS (expr_type))
-		min = build_symbolic_expr (expr_type, sym_min_op1,
-					   neg_min_op1 ^ minus_p, min);
-	      else
-		min = NULL_TREE;
-	    }
-
-	  /* Likewise for the upper bound.  */
-	  if (sym_max_op0 == sym_max_op1)
-	    ;
-	  else if (sym_max_op0)
-	    max = build_symbolic_expr (expr_type, sym_max_op0,
-				       neg_max_op0, max);
-	  else if (sym_max_op1)
-	    {
-	      /* We may not negate if that might introduce
-		 undefined overflow.  */
-	      if (! minus_p
-		  || neg_max_op1
-		  || TYPE_OVERFLOW_WRAPS (expr_type))
-		max = build_symbolic_expr (expr_type, sym_max_op1,
-					   neg_max_op1 ^ minus_p, max);
-	      else
-		max = NULL_TREE;
-	    }
+	  /* Build the symbolic bounds if needed.  */
+	  adjust_symbolic_bound (vr->min, code, expr_type,
+				 sym_min_op0, sym_min_op1,
+				 neg_min_op0, neg_min_op1);
+	  adjust_symbolic_bound (vr->max, code, expr_type,
+				 sym_max_op0, sym_max_op1,
+				 neg_max_op0, neg_max_op1);
+	  /* ?? It would probably be cleaner to eliminate min/max/type
+	     entirely and hold these values in VR directly.  */
+	  min = vr->min;
+	  max = vr->max;
+	  type = vr->type;
 	}
       else
 	{
@@ -2374,6 +2343,85 @@ extract_range_from_binary_expr_1 (value_range *vr,
     set_value_range (vr, type, min, max, NULL);
 }
 
+/* Calculates the absolute value of a range and puts the result in VR.
+   VR0 is the input range.  TYPE is the type of the resulting
+   range.  */
+
+static void
+extract_range_from_abs_expr (value_range &vr, tree type, value_range &vr0)
+{
+  /* Pass through vr0 in the easy cases.  */
+  if (TYPE_UNSIGNED (type)
+      || value_range_nonnegative_p (&vr0))
+    {
+      copy_value_range (&vr, &vr0);
+      return;
+    }
+
+  /* For the remaining varying or symbolic ranges we can't do anything
+     useful.  */
+  if (vr0.type == VR_VARYING
+      || symbolic_range_p (&vr0))
+    {
+      set_value_range_to_varying (&vr);
+      return;
+    }
+
+  /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
+     useful range.  */
+  if (!TYPE_OVERFLOW_UNDEFINED (type)
+      && ((vr0.type == VR_RANGE
+	   && vrp_val_is_min (vr0.min))
+	  || (vr0.type == VR_ANTI_RANGE
+	      && !vrp_val_is_min (vr0.min))))
+    {
+      set_value_range_to_varying (&vr);
+      return;
+    }
+
+  /* ABS_EXPR may flip the range around, if the original range
+     included negative values.  */
+  tree min, max;
+  if (!vrp_val_is_min (vr0.min))
+    min = fold_unary_to_constant (ABS_EXPR, type, vr0.min);
+  else
+    min = TYPE_MAX_VALUE (type);
+
+  if (!vrp_val_is_min (vr0.max))
+    max = fold_unary_to_constant (ABS_EXPR, type, vr0.max);
+  else
+    max = TYPE_MAX_VALUE (type);
+
+  int cmp = compare_values (min, max);
+  gcc_assert (vr0.type != VR_ANTI_RANGE);
+
+  /* If the range contains zero then we know that the minimum value in the
+     range will be zero.  */
+  if (range_includes_zero_p (vr0.min, vr0.max) == 1)
+    {
+      if (cmp == 1)
+	max = min;
+      min = build_int_cst (type, 0);
+    }
+  else
+    {
+      /* If the range was reversed, swap MIN and MAX.  */
+      if (cmp == 1)
+	std::swap (min, max);
+    }
+
+  cmp = compare_values (min, max);
+  if (cmp == -2 || cmp == 1)
+    {
+      /* If the new range has its limits swapped around (MIN > MAX),
+	 then the operation caused one of them to wrap around, mark
+	 the new range VARYING.  */
+      set_value_range_to_varying (&vr);
+    }
+  else
+    set_value_range (&vr, vr0.type, min, max, NULL);
+}
+
 /* Extract range information from a unary operation CODE based on
    the range of its operand *VR0 with type OP0_TYPE with resulting type TYPE.
    The resulting range is stored in *VR.  */
@@ -2504,117 +2552,7 @@ extract_range_from_unary_expr (value_range *vr,
       return;
     }
   else if (code == ABS_EXPR)
-    {
-      tree min, max;
-      int cmp;
-
-      /* Pass through vr0 in the easy cases.  */
-      if (TYPE_UNSIGNED (type)
-	  || value_range_nonnegative_p (&vr0))
-	{
-	  copy_value_range (vr, &vr0);
-	  return;
-	}
-
-      /* For the remaining varying or symbolic ranges we can't do anything
-	 useful.  */
-      if (vr0.type == VR_VARYING
-	  || symbolic_range_p (&vr0))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
-         useful range.  */
-      if (!TYPE_OVERFLOW_UNDEFINED (type)
-	  && ((vr0.type == VR_RANGE
-	       && vrp_val_is_min (vr0.min))
-	      || (vr0.type == VR_ANTI_RANGE
-		  && !vrp_val_is_min (vr0.min))))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* ABS_EXPR may flip the range around, if the original range
-	 included negative values.  */
-      if (!vrp_val_is_min (vr0.min))
-	min = fold_unary_to_constant (code, type, vr0.min);
-      else
-	min = TYPE_MAX_VALUE (type);
-
-      if (!vrp_val_is_min (vr0.max))
-	max = fold_unary_to_constant (code, type, vr0.max);
-      else
-	max = TYPE_MAX_VALUE (type);
-
-      cmp = compare_values (min, max);
-
-      /* If a VR_ANTI_RANGEs contains zero, then we have
-	 ~[-INF, min(MIN, MAX)].  */
-      if (vr0.type == VR_ANTI_RANGE)
-	{
-	  if (range_includes_zero_p (vr0.min, vr0.max) == 1)
-	    {
-	      /* Take the lower of the two values.  */
-	      if (cmp != 1)
-		max = min;
-
-	      /* Create ~[-INF, min (abs(MIN), abs(MAX))]
-	         or ~[-INF + 1, min (abs(MIN), abs(MAX))] when
-		 flag_wrapv is set and the original anti-range doesn't include
-	         TYPE_MIN_VALUE, remember -TYPE_MIN_VALUE = TYPE_MIN_VALUE.  */
-	      if (TYPE_OVERFLOW_WRAPS (type))
-		{
-		  tree type_min_value = TYPE_MIN_VALUE (type);
-
-		  min = (vr0.min != type_min_value
-			 ? int_const_binop (PLUS_EXPR, type_min_value,
-					    build_int_cst (TREE_TYPE (type_min_value), 1))
-			 : type_min_value);
-		}
-	      else
-		min = TYPE_MIN_VALUE (type);
-	    }
-	  else
-	    {
-	      /* All else has failed, so create the range [0, INF], even for
-	         flag_wrapv since TYPE_MIN_VALUE is in the original
-	         anti-range.  */
-	      vr0.type = VR_RANGE;
-	      min = build_int_cst (type, 0);
-	      max = TYPE_MAX_VALUE (type);
-	    }
-	}
-
-      /* If the range contains zero then we know that the minimum value in the
-         range will be zero.  */
-      else if (range_includes_zero_p (vr0.min, vr0.max) == 1)
-	{
-	  if (cmp == 1)
-	    max = min;
-	  min = build_int_cst (type, 0);
-	}
-      else
-	{
-          /* If the range was reversed, swap MIN and MAX.  */
-	  if (cmp == 1)
-	    std::swap (min, max);
-	}
-
-      cmp = compare_values (min, max);
-      if (cmp == -2 || cmp == 1)
-	{
-	  /* If the new range has its limits swapped around (MIN > MAX),
-	     then the operation caused one of them to wrap around, mark
-	     the new range VARYING.  */
-	  set_value_range_to_varying (vr);
-	}
-      else
-	set_value_range (vr, vr0.type, min, max, NULL);
-      return;
-    }
+    return extract_range_from_abs_expr (*vr, type, vr0);
 
   /* For unhandled operations fall back to varying.  */
   set_value_range_to_varying (vr);
@@ -5922,9 +5860,9 @@ union_ranges (enum value_range_type *vr0type,
 	  if (TREE_CODE (*vr0min) == INTEGER_CST)
 	    {
 	      *vr0type = vr1type;
-	      *vr0min = vr1min;
 	      *vr0max = int_const_binop (MINUS_EXPR, *vr0min,
 					 build_int_cst (TREE_TYPE (*vr0min), 1));
+	      *vr0min = vr1min;
 	    }
 	  else
 	    goto give_up;

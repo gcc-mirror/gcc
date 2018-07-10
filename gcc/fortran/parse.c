@@ -624,6 +624,8 @@ decode_oacc_directive (void)
   gfc_clear_error ();   /* Clear any pending errors.  */
   gfc_clear_warning (); /* Clear any pending warnings.  */
 
+  gfc_matching_function = false;
+
   if (gfc_pure (NULL))
     {
       gfc_error_now ("OpenACC directives at %C may not appear in PURE "
@@ -794,6 +796,8 @@ decode_omp_directive (void)
 
   gfc_clear_error ();	/* Clear any pending errors.  */
   gfc_clear_warning ();	/* Clear any pending warnings.  */
+
+  gfc_matching_function = false;
 
   if (gfc_current_state () == COMP_FUNCTION
       && gfc_current_block ()->result->ts.kind == -1)

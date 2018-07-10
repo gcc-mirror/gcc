@@ -346,8 +346,11 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
       if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun) || (e->flags & EDGE_EH))
 	return false;
       /* If goto_locus of any of the edges differs, prevent removing
-	 the forwarder block for -O0.  */
-      else if (optimize == 0 && e->goto_locus != locus)
+	 the forwarder block when not optimizing.  */
+      else if (!optimize
+	       && (LOCATION_LOCUS (e->goto_locus) != UNKNOWN_LOCATION
+		   || LOCATION_LOCUS (locus) != UNKNOWN_LOCATION)
+	       && e->goto_locus != locus)
 	return false;
   }
 
@@ -362,7 +365,10 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	case GIMPLE_LABEL:
 	  if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt))))
 	    return false;
-	  if (optimize == 0 && gimple_location (stmt) != locus)
+	  if (!optimize
+	      && (gimple_has_location (stmt)
+		  || LOCATION_LOCUS (locus) != UNKNOWN_LOCATION)
+	      && gimple_location (stmt) != locus)
 	    return false;
 	  break;
 
@@ -684,8 +690,8 @@ want_merge_blocks_p (basic_block bb1, basic_block bb2)
 }
 
 
-/* Tries to cleanup cfg in basic block BB.  Returns true if anything
-   changes.  */
+/* Tries to cleanup cfg in basic block BB by merging blocks.  Returns
+   true if anything changes.  */
 
 static bool
 cleanup_tree_cfg_bb (basic_block bb)
@@ -725,6 +731,12 @@ cleanup_control_flow_pre ()
 {
   bool retval = false;
 
+  /* We want remove_edge_and_dominated_blocks to only remove edges,
+     not dominated blocks which it does when dom info isn't available.
+     Pretend so.  */
+  dom_state saved_state = dom_info_state (CDI_DOMINATORS);
+  set_dom_info_availability (CDI_DOMINATORS, DOM_NONE);
+
   auto_vec<edge_iterator, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
   auto_sbitmap visited (last_basic_block_for_fn (cfun));
   bitmap_clear (visited);
@@ -741,6 +753,8 @@ cleanup_control_flow_pre ()
 	  && ! bitmap_bit_p (visited, dest->index))
 	{
 	  bitmap_set_bit (visited, dest->index);
+	  /* We only possibly remove edges from DEST here, leaving
+	     possibly unreachable code in the IL.  */
 	  retval |= cleanup_control_flow_bb (dest);
 	  if (EDGE_COUNT (dest->succs) > 0)
 	    stack.quick_push (ei_start (dest->succs));
@@ -754,13 +768,35 @@ cleanup_control_flow_pre ()
 	}
     }
 
+  set_dom_info_availability (CDI_DOMINATORS, saved_state);
+
+  /* We are deleting BBs in non-reverse dominator order, make sure
+     insert_debug_temps_for_defs is prepared for that.  */
+  if (retval)
+    free_dominance_info (CDI_DOMINATORS);
+
+  /* Remove all now (and previously) unreachable blocks.  */
+  for (int i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); ++i)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      if (bb && !bitmap_bit_p (visited, bb->index))
+	{
+	  if (!retval)
+	    free_dominance_info (CDI_DOMINATORS);
+	  delete_basic_block (bb);
+	  retval = true;
+	}
+    }
+
   return retval;
 }
 
 static bool
 mfb_keep_latches (edge e)
 {
-  return ! dominated_by_p (CDI_DOMINATORS, e->src, e->dest);
+  return !((dom_info_available_p (CDI_DOMINATORS)
+	    && dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+	   || (e->flags & EDGE_DFS_BACK));
 }
 
 /* Remove unreachable blocks and other miscellaneous clean up work.
@@ -769,22 +805,7 @@ mfb_keep_latches (edge e)
 static bool
 cleanup_tree_cfg_noloop (void)
 {
-  bool changed;
-
   timevar_push (TV_TREE_CLEANUP_CFG);
-
-  /* If dominance information is available, there cannot be any unreachable
-     blocks.  */
-  if (!dom_info_available_p (CDI_DOMINATORS))
-    {
-      changed = delete_unreachable_blocks ();
-      calculate_dominance_info (CDI_DOMINATORS);
-    }
-  else
-    {
-      checking_verify_dominators (CDI_DOMINATORS);
-      changed = false;
-    }
 
   /* Ensure that we have single entries into loop headers.  Otherwise
      if one of the entries is becoming a latch due to CFG cleanup
@@ -795,6 +816,10 @@ cleanup_tree_cfg_noloop (void)
      we need to capture the dominance state before the pending transform.  */
   if (current_loops)
     {
+      /* This needs backedges or dominators.  */
+      if (!dom_info_available_p (CDI_DOMINATORS))
+	mark_dfs_back_edges ();
+
       loop_p loop;
       unsigned i;
       FOR_EACH_VEC_ELT (*get_loops (cfun), i, loop)
@@ -816,7 +841,9 @@ cleanup_tree_cfg_noloop (void)
 		    any_abnormal = true;
 		    break;
 		  }
-		if (dominated_by_p (CDI_DOMINATORS, e->src, bb))
+		if ((dom_info_available_p (CDI_DOMINATORS)
+		     && dominated_by_p (CDI_DOMINATORS, e->src, bb))
+		    || (e->flags & EDGE_DFS_BACK))
 		  {
 		    found_latch = true;
 		    continue;
@@ -850,11 +877,18 @@ cleanup_tree_cfg_noloop (void)
   /* Start by iterating over all basic blocks in PRE order looking for
      edge removal opportunities.  Do this first because incoming SSA form
      may be invalid and we want to avoid performing SSA related tasks such
-     as propgating out a PHI node during BB merging in that state.  */
-  changed |= cleanup_control_flow_pre ();
+     as propgating out a PHI node during BB merging in that state.  This
+     also gets rid of unreachable blocks.  */
+  bool changed = cleanup_control_flow_pre ();
 
   /* After doing the above SSA form should be valid (or an update SSA
      should be required).  */
+
+  /* Compute dominator info which we need for the iterative process below.  */
+  if (!dom_info_available_p (CDI_DOMINATORS))
+    calculate_dominance_info (CDI_DOMINATORS);
+  else
+    checking_verify_dominators (CDI_DOMINATORS);
 
   /* During forwarder block cleanup, we may redirect edges out of
      SWITCH_EXPRs, which can get expensive.  So we want to enable
@@ -884,6 +918,10 @@ cleanup_tree_cfg_noloop (void)
       if (!bb)
 	continue;
 
+      /* BB merging done by cleanup_tree_cfg_bb can end up propagating
+	 out single-argument PHIs which in turn can expose
+	 cleanup_control_flow_bb opportunities so we have to repeat
+	 that here.  */
       changed |= cleanup_control_flow_bb (bb);
       changed |= cleanup_tree_cfg_bb (bb);
     }

@@ -553,7 +553,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
     {
       init = DECL_INITIAL (DECL_TI_TEMPLATE (member));
       location_t expr_loc
-	= EXPR_LOC_OR_LOC (init, DECL_SOURCE_LOCATION (member));
+	= cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (member));
       tree *slot;
       if (TREE_CODE (init) == DEFAULT_ARG)
 	/* Unparsed.  */;
@@ -742,7 +742,7 @@ maybe_warn_list_ctor (tree member, tree init)
   if (!begin)
     return;
 
-  location_t loc = EXPR_LOC_OR_LOC (init, input_location);
+  location_t loc = cp_expr_loc_or_loc (init, input_location);
   warning_at (loc, OPT_Winit_list_lifetime,
 	     "initializing %qD from %qE does not extend the lifetime "
 	     "of the underlying array", member, begin);
@@ -1740,7 +1740,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
     return error_mark_node;
 
   location_t init_loc = (init
-			 ? EXPR_LOC_OR_LOC (init, input_location)
+			 ? cp_expr_loc_or_loc (init, input_location)
 			 : location_of (exp));
 
   TREE_READONLY (exp) = 0;
@@ -2403,12 +2403,7 @@ build_raw_new_expr (vec<tree, va_gc> *placement, tree type, tree nelts,
   else if (init->is_empty ())
     init_list = void_node;
   else
-    {
-      init_list = build_tree_list_vec (init);
-      for (tree v = init_list; v; v = TREE_CHAIN (v))
-	if (TREE_CODE (TREE_VALUE (v)) == OVERLOAD)
-	  lookup_keep (TREE_VALUE (v), true);
-    }
+    init_list = build_tree_list_vec (init);
 
   new_expr = build4 (NEW_EXPR, build_pointer_type (type),
 		     build_tree_list_vec (placement), type, nelts,
@@ -2571,7 +2566,7 @@ find_flexarray_init (tree t, tree init)
 static void
 warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 {
-  location_t loc = EXPR_LOC_OR_LOC (oper, input_location);
+  location_t loc = cp_expr_loc_or_loc (oper, input_location);
 
   /* The number of bytes to add to or subtract from the size of the provided
      buffer based on an offset into an array or an array element reference.
@@ -2936,7 +2931,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
   /* Lots of logic below depends on whether we have a constant number of
      elements, so go ahead and fold it now.  */
-  const_tree cst_outer_nelts = fold_non_dependent_expr (outer_nelts);
+  const_tree cst_outer_nelts = fold_non_dependent_expr (outer_nelts, complain);
 
   /* If our base type is an array, then make sure we know how many elements
      it has.  */
@@ -2948,7 +2943,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       tree inner_nelts_cst = maybe_constant_value (inner_nelts);
       if (TREE_CODE (inner_nelts_cst) == INTEGER_CST)
 	{
-	  bool overflow;
+	  wi::overflow_type overflow;
 	  offset_int result = wi::mul (wi::to_offset (inner_nelts_cst),
 				       inner_nelts_count, SIGNED, &overflow);
 	  if (overflow)
@@ -2963,7 +2958,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	{
 	  if (complain & tf_error)
 	    {
-	      error_at (EXPR_LOC_OR_LOC (inner_nelts, input_location),
+	      error_at (cp_expr_loc_or_loc (inner_nelts, input_location),
 			"array size in new-expression must be constant");
 	      cxx_constant_value(inner_nelts);
 	    }
@@ -2992,7 +2987,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     {
       if (complain & tf_warning_or_error)
 	{
-	  pedwarn (EXPR_LOC_OR_LOC (outer_nelts, input_location), OPT_Wvla,
+	  pedwarn (cp_expr_loc_or_loc (outer_nelts, input_location), OPT_Wvla,
 		   typedef_variant_p (orig_type)
 		   ? G_("non-constant array new length must be specified "
 			"directly, not by typedef")
@@ -3077,7 +3072,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 maximum object size and is safe even if we choose not to use
 	 a cookie after all.  */
       max_size -= wi::to_offset (cookie_size);
-      bool overflow;
+      wi::overflow_type overflow;
       inner_size = wi::mul (wi::to_offset (size), inner_nelts_count, SIGNED,
 			    &overflow);
       if (overflow || wi::gtu_p (inner_size, max_size))
@@ -3736,7 +3731,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Try to determine the constant value only for the purposes
 	 of the diagnostic below but continue to use the original
 	 value and handle const folding later.  */
-      const_tree cst_nelts = fold_non_dependent_expr (nelts);
+      const_tree cst_nelts = fold_non_dependent_expr (nelts, complain);
 
       /* The expression in a noptr-new-declarator is erroneous if it's of
 	 non-class type and its value before converting to std::size_t is
@@ -4109,7 +4104,7 @@ build_vec_init (tree base, tree maxindex, tree init,
   tree obase = base;
   bool xvalue = false;
   bool errors = false;
-  location_t loc = (init ? EXPR_LOC_OR_LOC (init, input_location)
+  location_t loc = (init ? cp_expr_loc_or_loc (init, input_location)
 		    : location_of (base));
 
   if (TREE_CODE (atype) == ARRAY_TYPE && TYPE_DOMAIN (atype))

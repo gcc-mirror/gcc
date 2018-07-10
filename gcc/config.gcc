@@ -650,7 +650,7 @@ bdver3 bdver4 znver1 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
 core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
 sandybridge ivybridge haswell broadwell bonnell silvermont knl knm \
 skylake-avx512 cannonlake icelake-client icelake-server skylake goldmont \
-goldmont-plus x86-64 native"
+goldmont-plus tremont x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -1024,11 +1024,6 @@ aarch64*-*-linux*)
 alpha*-*-linux*)
 	tm_file="elfos.h ${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
 	tmake_file="${tmake_file} alpha/t-linux alpha/t-alpha"
-	extra_options="${extra_options} alpha/elf.opt"
-	;;
-alpha*-*-freebsd*)
-	tm_file="elfos.h ${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
-	tmake_file="${tmake_file} alpha/t-alpha"
 	extra_options="${extra_options} alpha/elf.opt"
 	;;
 alpha*-*-netbsd*)
@@ -2085,10 +2080,17 @@ riscv*-*-linux*)
 	;;
 riscv*-*-elf* | riscv*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
-	case "x${enable_multilib}" in
-	xno) ;;
-	xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
-	*) echo "Unknown value for enable_multilib"; exit 1
+	case ${target} in
+	*-*-rtems*)
+	  tm_file="${tm_file} rtems.h riscv/rtems.h"
+	  tmake_file="${tmake_file} riscv/t-rtems"
+	  ;;
+	*)
+	  case "x${enable_multilib}" in
+	  xno) ;;
+	  xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
+	  *) echo "Unknown value for enable_multilib"; exit 1
+	  esac
 	esac
 	tmake_file="${tmake_file} riscv/t-riscv"
 	gnu_ld=yes
@@ -2096,11 +2098,6 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	# Force .init_array support.  The configure script cannot always
 	# automatically detect that GAS supports it, yet we require it.
 	gcc_cv_initfini_array=yes
-	case ${target} in
-	riscv*-*-rtems*)
-	  tm_file="${tm_file} rtems.h riscv/rtems.h"
-	  ;;
-	esac
 	;;
 riscv*-*-freebsd*)
 	tm_file="${tm_file} elfos.h ${fbsd_tm_file} riscv/freebsd.h"
@@ -4094,7 +4091,7 @@ case "${target}" in
 		supported_defaults="abi arch tune"
 
 		case "${target}" in
-		riscv32*) xlen=32 ;;
+		riscv-* | riscv32*) xlen=32 ;;
 		riscv64*) xlen=64 ;;
 		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
 		esac
@@ -4569,16 +4566,6 @@ case "${target}" in
 		elif test x$with_long_double_format = xibm; then
 		    tm_defines="${tm_defines} TARGET_IEEEQUAD_DEFAULT=0"
 		fi
-
-		case "${target}:${enable_multilib}:${with_long_double_format}" in
-		    powerpc64le*:yes:ieee | powerpc64le*:yes:ibm)
-			tm_defines="${tm_defines} TARGET_IEEEQUAD_MULTILIB=1"
-			tmake_file="${tmake_file} rs6000/t-ldouble-linux64le-${with_long_double_format}"
-			;;
-		    *)
-			:
-			;;
-		esac
 		;;
 
 	s390*-*-*)

@@ -51,6 +51,8 @@ extern void lto_obj_end_section (void);
 extern lto_file *lto_set_current_out_file (lto_file *file);
 extern lto_file *lto_get_current_out_file (void);
 
+extern int lto_link_dump_id, decl_merge_dump_id, partition_dump_id;
+
 /* Hash table entry to hold the start offset and length of an LTO
    section in a .o file.  */
 struct lto_section_slot

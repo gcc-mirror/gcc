@@ -143,6 +143,11 @@ DEF_INTERNAL_OPTAB_FN (FMS, ECF_CONST, fms, ternary)
 DEF_INTERNAL_OPTAB_FN (FNMA, ECF_CONST, fnma, ternary)
 DEF_INTERNAL_OPTAB_FN (FNMS, ECF_CONST, fnms, ternary)
 
+DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_FLOOR, ECF_CONST | ECF_NOTHROW, first,
+			      savg_floor, uavg_floor, binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (AVG_CEIL, ECF_CONST | ECF_NOTHROW, first,
+			      savg_ceil, uavg_ceil, binary)
+
 DEF_INTERNAL_OPTAB_FN (COND_ADD, ECF_CONST, cond_add, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_SUB, ECF_CONST, cond_sub, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_MUL, ECF_CONST, cond_smul, cond_binary)

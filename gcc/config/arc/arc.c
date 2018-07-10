@@ -934,7 +934,7 @@ arc_init (void)
   /* Warn for unimplemented PIC in pre-ARC700 cores, and disable flag_pic.  */
   if (flag_pic && TARGET_ARC600_FAMILY)
     {
-      warning (DK_WARNING,
+      warning (0,
 	       "PIC is not supported for %s. Generating non-PIC code only..",
 	       arc_cpu_string);
       flag_pic = 0;
@@ -998,7 +998,7 @@ irq_range (const char *cstr)
   dash = strchr (str, '-');
   if (!dash)
     {
-      warning (0, "value of -mirq-ctrl-saved must have form R0-REGx");
+      warning (OPT_mirq_ctrl_saved_, "missing dash");
       return;
     }
   *dash = '\0';
@@ -1010,7 +1010,7 @@ irq_range (const char *cstr)
   first = decode_reg_name (str);
   if (first != 0)
     {
-      warning (0, "first register must be R0");
+      warning (OPT_mirq_ctrl_saved_, "first register must be R0");
       return;
     }
 
@@ -1023,13 +1023,14 @@ irq_range (const char *cstr)
 
   if (last < 0)
     {
-      warning (0, "unknown register name: %s", dash + 1);
+      warning (OPT_mirq_ctrl_saved_, "unknown register name: %s", dash + 1);
       return;
     }
 
   if (!(last & 0x01))
     {
-      warning (0, "last register name %s must be an odd register", dash + 1);
+      warning (OPT_mirq_ctrl_saved_,
+	       "last register name %s must be an odd register", dash + 1);
       return;
     }
 
@@ -1037,7 +1038,8 @@ irq_range (const char *cstr)
 
   if (first > last)
     {
-      warning (0, "%s-%s is an empty range", str, dash + 1);
+      warning (OPT_mirq_ctrl_saved_,
+	       "%s-%s is an empty range", str, dash + 1);
       return;
     }
 
@@ -1062,7 +1064,8 @@ irq_range (const char *cstr)
 	  break;
 
 	default:
-	  warning (0, "unknown register name: %s", str);
+	  warning (OPT_mirq_ctrl_saved_,
+		   "unknown register name: %s", str);
 	  return;
 	}
     }
@@ -1147,14 +1150,16 @@ arc_override_options (void)
 	    if (TARGET_V2)
 	      irq_range (opt->arg);
 	    else
-	      warning (0, "option -mirq-ctrl-saved valid only for ARC v2 processors");
+	      warning (OPT_mirq_ctrl_saved_,
+		       "option -mirq-ctrl-saved valid only for ARC v2 processors");
 	    break;
 
 	  case OPT_mrgf_banked_regs_:
 	    if (TARGET_V2)
 	      parse_mrgf_banked_regs_option (opt->arg);
 	    else
-	      warning (0, "option -mrgf-banked-regs valid only for ARC v2 processors");
+	      warning (OPT_mrgf_banked_regs_,
+		       "option -mrgf-banked-regs valid only for ARC v2 processors");
 	    break;
 
 	  default:
@@ -1186,6 +1191,42 @@ arc_override_options (void)
 	}
     }
 
+  /* Check options against architecture options.  Throw an error if
+     option is not allowed.  Extra, check options against default
+     architecture/cpu flags and throw an warning if we find a
+     mismatch.  */
+#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC0, DOC1)		\
+  do {								\
+    if ((!(arc_selected_cpu->arch_info->flags & CODE))		\
+	&& (VAR == VAL))					\
+      error ("Option %s=%s is not available for %s CPU.",	\
+	     DOC0, DOC1, arc_selected_cpu->name);		\
+    if ((arc_selected_cpu->arch_info->dflags & CODE)		\
+	&& (VAR != DEFAULT_##VAR)				\
+	&& (VAR != VAL))					\
+      warning (0, "Option %s is ignored, the default value %s"	\
+	       " is considered for %s CPU.", DOC0, DOC1,	\
+	       arc_selected_cpu->name);				\
+ } while (0);
+#define ARC_OPT(NAME, CODE, MASK, DOC)				\
+  do {								\
+    if ((!(arc_selected_cpu->arch_info->flags & CODE))		\
+	&& (target_flags & MASK))				\
+      error ("Option %s is not available for %s CPU",		\
+	     DOC, arc_selected_cpu->name);			\
+    if ((arc_selected_cpu->arch_info->dflags & CODE)		\
+	&& (target_flags_explicit & MASK)			\
+	&& (!(target_flags & MASK)))				\
+      warning (0, "Unset option %s is ignored, it is always"	\
+	       " enabled for %s CPU.", DOC,			\
+	       arc_selected_cpu->name);				\
+  } while (0);
+
+#include "arc-options.def"
+
+#undef ARC_OPTX
+#undef ARC_OPT
+
   /* Set cpu flags accordingly to architecture/selected cpu.  The cpu
      specific flags are set in arc-common.c.  The architecture forces
      the default hardware configurations in, regardless what command
@@ -1199,7 +1240,7 @@ arc_override_options (void)
     if (arc_selected_cpu->arch_info->dflags & CODE)	\
       target_flags |= MASK;				\
   } while (0);
-#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)		\
+#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC0, DOC1)	\
   do {							\
     if ((arc_selected_cpu->flags & CODE)		\
 	&& (VAR == DEFAULT_##VAR))			\
@@ -1213,29 +1254,15 @@ arc_override_options (void)
 #undef ARC_OPTX
 #undef ARC_OPT
 
-  /* Check options against architecture options.  Throw an error if
-     option is not allowed.  */
-#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)			\
-  do {								\
-    if ((VAR == VAL)						\
-	&& (!(arc_selected_cpu->arch_info->flags & CODE)))	\
-      {								\
-	error ("%s is not available for %s architecture",	\
-	       DOC, arc_selected_cpu->arch_info->name);		\
-      }								\
-  } while (0);
-#define ARC_OPT(NAME, CODE, MASK, DOC)				\
-  do {								\
-    if ((target_flags & MASK)					\
-	&& (!(arc_selected_cpu->arch_info->flags & CODE)))	\
-      error ("%s is not available for %s architecture",		\
-	     DOC, arc_selected_cpu->arch_info->name);		\
-  } while (0);
-
-#include "arc-options.def"
-
-#undef ARC_OPTX
-#undef ARC_OPT
+  /* Set extras.  */
+  switch (arc_selected_cpu->extra)
+    {
+    case HAS_LPCOUNT_16:
+      arc_lpcwidth = 16;
+      break;
+    default:
+      break;
+    }
 
   /* Set Tune option.  */
   if (arc_tune == ARC_TUNE_NONE)
@@ -1249,7 +1276,8 @@ arc_override_options (void)
     {
       if (TARGET_COMPACT_CASESI)
 	{
-	  warning (0, "compact-casesi is not applicable to ARCv2");
+	  warning (OPT_mcompact_casesi,
+		   "compact-casesi is not applicable to ARCv2");
 	  TARGET_COMPACT_CASESI = 0;
 	}
     }
@@ -2601,8 +2629,6 @@ typedef struct GTY (()) machine_function
   struct arc_frame_info frame_info;
   /* To keep track of unalignment caused by short insns.  */
   int unalign;
-  int force_short_suffix; /* Used when disgorging return delay slot insns.  */
-  const char *size_reason;
   struct arc_ccfsm ccfsm_current;
   /* Map from uid to ccfsm state during branch shortening.  */
   rtx ccfsm_current_insn;
@@ -4260,7 +4286,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 	}
       break;
     case '&':
-      if (TARGET_ANNOTATE_ALIGN && cfun->machine->size_reason)
+      if (TARGET_ANNOTATE_ALIGN)
 	fprintf (file, "; unalign: %d", cfun->machine->unalign);
       return;
     case '+':
@@ -4933,7 +4959,6 @@ static int
 arc_verify_short (rtx_insn *insn, int, int check_attr)
 {
   enum attr_iscompact iscompact;
-  struct machine_function *machine;
 
   if (check_attr > 0)
     {
@@ -4941,10 +4966,6 @@ arc_verify_short (rtx_insn *insn, int, int check_attr)
       if (iscompact == ISCOMPACT_FALSE)
 	return 0;
     }
-  machine = cfun->machine;
-
-  if (machine->force_short_suffix >= 0)
-    return machine->force_short_suffix;
 
   return (get_attr_length (insn) & 2) != 0;
 }
@@ -4983,8 +5004,6 @@ arc_final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
       cfun->machine->prescan_initialized = 1;
     }
   arc_ccfsm_advance (insn, &arc_ccfsm_current);
-
-  cfun->machine->size_reason = 0;
 }
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
@@ -7287,8 +7306,8 @@ hwloop_optimize (hwloop_info loop)
   int i;
   edge entry_edge;
   basic_block entry_bb, bb;
-  rtx iter_reg, end_label;
-  rtx_insn *insn, *seq, *entry_after, *last_insn;
+  rtx iter_reg;
+  rtx_insn *insn, *seq, *entry_after, *last_insn, *end_label;
   unsigned int length;
   bool need_fix = false;
   rtx lp_reg = gen_rtx_REG (SImode, LP_COUNT);
@@ -7626,6 +7645,76 @@ jli_call_scan (void)
     }
 }
 
+/* Add padding if necessary to avoid a mispredict.  A return could
+   happen immediately after the function start.  A call/return and
+   return/return must be 6 bytes apart to avoid mispredict.  */
+
+static void
+pad_return (void)
+{
+  rtx_insn *insn;
+  long offset;
+
+  if (!TARGET_PAD_RETURN)
+    return;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      rtx_insn *prev0 = prev_active_insn (insn);
+      bool wantlong = false;
+
+      if (!INSN_P (insn) || GET_CODE (PATTERN (insn)) != SIMPLE_RETURN)
+	continue;
+
+      if (!prev0)
+	{
+	  prev0 = emit_insn_before (gen_nopv (), insn);
+	  /* REG_SAVE_NOTE is used by Haifa scheduler, we are in reorg
+	     so it is safe to reuse it for forcing a particular length
+	     for an instruction.  */
+	  add_reg_note (prev0, REG_SAVE_NOTE, GEN_INT (1));
+	  emit_insn_before (gen_nopv (), insn);
+	  continue;
+	}
+      offset = get_attr_length (prev0);
+
+      if (get_attr_length (prev0) == 2
+	  && get_attr_iscompact (prev0) != ISCOMPACT_TRUE)
+	{
+	  /* Force long version of the insn.  */
+	  wantlong = true;
+	  offset += 2;
+	}
+
+     rtx_insn *prev = prev_active_insn (prev0);
+      if (prev)
+	offset += get_attr_length (prev);
+
+      prev = prev_active_insn (prev);
+      if (prev)
+	offset += get_attr_length (prev);
+
+      switch (offset)
+	{
+	case 2:
+	  prev = emit_insn_before (gen_nopv (), insn);
+	  add_reg_note (prev, REG_SAVE_NOTE, GEN_INT (1));
+	  break;
+	case 4:
+	  emit_insn_before (gen_nopv (), insn);
+	  break;
+	default:
+	  continue;
+	}
+
+      if (wantlong)
+	add_reg_note (prev0, REG_SAVE_NOTE, GEN_INT (1));
+
+      /* Emit a blockage to avoid delay slot scheduling.  */
+      emit_insn_before (gen_blockage (), insn);
+    }
+}
+
 static int arc_reorg_in_progress = 0;
 
 /* ARC's machince specific reorg function.  */
@@ -7651,6 +7740,7 @@ arc_reorg (void)
 
   workaround_arc_anomaly ();
   jli_call_scan ();
+  pad_return ();
 
 /* FIXME: should anticipate ccfsm action, generate special patterns for
    to-be-deleted branches that have no delay slot and have at least the
@@ -9209,79 +9299,6 @@ arc_branch_size_unknown_p (void)
   return !optimize_size && arc_reorg_in_progress;
 }
 
-/* We are about to output a return insn.  Add padding if necessary to avoid
-   a mispredict.  A return could happen immediately after the function
-   start, but after a call we know that there will be at least a blink
-   restore.  */
-
-void
-arc_pad_return (void)
-{
-  rtx_insn *insn = current_output_insn;
-  rtx_insn *prev = prev_active_insn (insn);
-  int want_long;
-
-  if (!prev)
-    {
-      fputs ("\tnop_s\n", asm_out_file);
-      cfun->machine->unalign ^= 2;
-      want_long = 1;
-    }
-  /* If PREV is a sequence, we know it must be a branch / jump or a tailcall,
-     because after a call, we'd have to restore blink first.  */
-  else if (GET_CODE (PATTERN (prev)) == SEQUENCE)
-    return;
-  else
-    {
-      want_long = (get_attr_length (prev) == 2);
-      prev = prev_active_insn (prev);
-    }
-  if (!prev
-      || ((NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	  ? CALL_ATTR (as_a <rtx_sequence *> (PATTERN (prev))->insn (0),
-		       NON_SIBCALL)
-	  : CALL_ATTR (prev, NON_SIBCALL)))
-    {
-      if (want_long)
-	cfun->machine->size_reason
-	  = "call/return and return/return must be 6 bytes apart to avoid mispredict";
-      else if (TARGET_UNALIGN_BRANCH && cfun->machine->unalign)
-	{
-	  cfun->machine->size_reason
-	    = "Long unaligned jump avoids non-delay slot penalty";
-	  want_long = 1;
-	}
-      /* Disgorge delay insn, if there is any, and it may be moved.  */
-      if (final_sequence
-	  /* ??? Annulled would be OK if we can and do conditionalize
-	     the delay slot insn accordingly.  */
-	  && !INSN_ANNULLED_BRANCH_P (insn)
-	  && (get_attr_cond (insn) != COND_USE
-	      || !reg_set_p (gen_rtx_REG (CCmode, CC_REG),
-			     XVECEXP (final_sequence, 0, 1))))
-	{
-	  prev = as_a <rtx_insn *> (XVECEXP (final_sequence, 0, 1));
-	  gcc_assert (!prev_real_insn (insn)
-		      || !arc_hazard (prev_real_insn (insn), prev));
-	  cfun->machine->force_short_suffix = !want_long;
-	  rtx save_pred = current_insn_predicate;
-	  final_scan_insn (prev, asm_out_file, optimize, 1, NULL);
-	  cfun->machine->force_short_suffix = -1;
-	  prev->set_deleted ();
-	  current_output_insn = insn;
-	  current_insn_predicate = save_pred;
-	}
-      else if (want_long)
-	fputs ("\tnop\n", asm_out_file);
-      else
-	{
-	  fputs ("\tnop_s\n", asm_out_file);
-	  cfun->machine->unalign ^= 2;
-	}
-    }
-  return;
-}
-
 /* The usual; we set up our machine_function data.  */
 
 static struct machine_function *
@@ -9290,7 +9307,6 @@ arc_init_machine_status (void)
   struct machine_function *machine;
   machine = ggc_cleared_alloc<machine_function> ();
   machine->fn_type = ARC_FUNCTION_UNKNOWN;
-  machine->force_short_suffix = -1;
 
   return machine;
 }
@@ -9802,7 +9818,7 @@ arc_return_address_register (unsigned int fn_type)
 
   if (ARC_INTERRUPT_P (fn_type))
     {
-      if (((fn_type & ARC_FUNCTION_ILINK1) | ARC_FUNCTION_FIRQ) != 0)
+      if ((fn_type & (ARC_FUNCTION_ILINK1 | ARC_FUNCTION_FIRQ)) != 0)
         regno = ILINK1_REGNUM;
       else if ((fn_type & ARC_FUNCTION_ILINK2) != 0)
         regno = ILINK2_REGNUM;
@@ -10717,7 +10733,7 @@ arc_handle_aux_attribute (tree *node,
 	  tree arg = TREE_VALUE (args);
 	  if (TREE_CODE (arg) != INTEGER_CST)
 	    {
-	      warning (0, "%qE attribute allows only an integer "
+	      warning (OPT_Wattributes, "%qE attribute allows only an integer "
 		       "constant argument", name);
 	      *no_add_attrs = true;
 	    }

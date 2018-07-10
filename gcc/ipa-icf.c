@@ -658,7 +658,7 @@ sem_function::equals_wpa (sem_item *item,
   cl_optimization *opt1 = opts_for_fn (decl);
   cl_optimization *opt2 = opts_for_fn (item->decl);
 
-  if (opt1 != opt2 && memcmp (opt1, opt2, sizeof(cl_optimization)))
+  if (opt1 != opt2 && !cl_optimization_option_eq (opt1, opt2))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1199,6 +1199,7 @@ sem_function::merge (sem_item *alias_item)
 		     "can not create wrapper of stdarg function.\n");
 	}
       else if (ipa_fn_summaries
+	       && ipa_fn_summaries->get (alias) != NULL
 	       && ipa_fn_summaries->get (alias)->self_size <= 2)
 	{
 	  if (dump_file)
@@ -1220,8 +1221,7 @@ sem_function::merge (sem_item *alias_item)
 	 are not interposable.  */
       redirect_callers
 	= alias->get_availability () > AVAIL_INTERPOSABLE
-	  && original->get_availability () > AVAIL_INTERPOSABLE
-	  && !alias->instrumented_version;
+	  && original->get_availability () > AVAIL_INTERPOSABLE;
       /* TODO: We can redirect, but we need to produce alias of ORIGINAL
 	 with proper properties.  */
       if (!sem_item::compare_referenced_symbol_properties (NULL, original, alias,

@@ -149,10 +149,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_POSIX_IO
 #define TARGET_POSIX_IO
 
-/* Don't assume anything about the header files.  */
-#undef  NO_IMPLICIT_EXTERN_C
-#define NO_IMPLICIT_EXTERN_C    1
-
 /* Define some types that are the same on all NetBSD platforms,
    making them agree with <machine/ansi.h>.  */
 

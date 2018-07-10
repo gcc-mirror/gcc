@@ -48,9 +48,6 @@
     }						\
   while (false)
 
-/* Do not assume anything about header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
 /* The GNU C++ standard library requires that these macros be defined.  */
 #undef CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"

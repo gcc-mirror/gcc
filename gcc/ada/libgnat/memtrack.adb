@@ -107,12 +107,6 @@ package body System.Memory is
       Size   : size_t;
       Nmemb  : size_t;
       Stream : File_Ptr);
-
-   procedure fwrite
-     (Str    : String;
-      Size   : size_t;
-      Nmemb  : size_t;
-      Stream : File_Ptr);
    pragma Import (C, fwrite);
 
    procedure fputc (C : Integer; Stream : File_Ptr);
@@ -306,9 +300,13 @@ package body System.Memory is
             OS_Exit (255);
          end if;
 
-         fwrite ("GMEM DUMP" & ASCII.LF, 10, 1, Gmemfile);
-         fwrite (Timestamp'Address, Duration'Max_Size_In_Storage_Elements, 1,
-                 Gmemfile);
+         declare
+            S : constant String := "GMEM DUMP" & ASCII.LF;
+         begin
+            fwrite (S'Address, S'Length, 1, Gmemfile);
+            fwrite (Timestamp'Address, Duration'Max_Size_In_Storage_Elements,
+                    1, Gmemfile);
+         end;
       end if;
    end Gmem_Initialize;
 

@@ -103,9 +103,6 @@
 #endif
 #endif
 
-#define min(A,B)	((A) < (B) ? (A) : (B))
-#define max(A,B)	((A) > (B) ? (A) : (B))
-
 static pad_direction rs6000_function_arg_padding (machine_mode, const_tree);
 
 /* Structure used to define the rs6000 stack */
@@ -199,6 +196,19 @@ int dot_symbols;
    compiler makes no further distinction between pointers and any other objects
    of this machine mode.  */
 scalar_int_mode rs6000_pmode;
+
+#if TARGET_ELF
+/* Note whether IEEE 128-bit floating point was passed or returned, either as
+   the __float128/_Float128 explicit type, or when long double is IEEE 128-bit
+   floating point.  We changed the default C++ mangling for these types and we
+   may want to generate a weak alias of the old mangling (U10__float128) to the
+   new mangling (u9__ieee128).  */
+static bool rs6000_passes_ieee128;
+#endif
+
+/* Generate the manged name (i.e. U10__float128) used in GCC 8.1, and not the
+   name used in current releases (i.e. u9__ieee128).  */
+static bool ieee128_mangling_gcc_8_1;
 
 /* Width in bits of a pointer.  */
 unsigned rs6000_pointer_size;
@@ -1792,6 +1802,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_EH_RETURN_FILTER_MODE
 #define TARGET_EH_RETURN_FILTER_MODE rs6000_eh_return_filter_mode
 
+#undef TARGET_TRANSLATE_MODE_ATTRIBUTE
+#define TARGET_TRANSLATE_MODE_ATTRIBUTE rs6000_translate_mode_attribute
+
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P rs6000_scalar_mode_supported_p
 
@@ -1973,6 +1986,11 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET rs6000_starting_frame_offset
+
+#if TARGET_ELF && RS6000_WEAK
+#undef TARGET_ASM_GLOBALIZE_DECL_NAME
+#define TARGET_ASM_GLOBALIZE_DECL_NAME rs6000_globalize_decl_name
+#endif
 
 
 /* Processor table.  */
@@ -2872,7 +2890,7 @@ rs6000_debug_reg_global (void)
   fprintf (stderr, DEBUG_FMT_D, "tls_size", rs6000_tls_size);
   fprintf (stderr, DEBUG_FMT_D, "long_double_size",
 	   rs6000_long_double_type_size);
-  if (rs6000_long_double_type_size == 128)
+  if (rs6000_long_double_type_size > 64)
     {
       fprintf (stderr, DEBUG_FMT_S, "long double type",
 	       TARGET_IEEEQUAD ? "IEEE" : "IBM");
@@ -3891,7 +3909,9 @@ rs6000_builtin_mask_calculate (void)
 	  | ((TARGET_HTM)		    ? RS6000_BTM_HTM	   : 0)
 	  | ((TARGET_DFP)		    ? RS6000_BTM_DFP	   : 0)
 	  | ((TARGET_HARD_FLOAT)	    ? RS6000_BTM_HARD_FLOAT : 0)
-	  | ((TARGET_LONG_DOUBLE_128)	    ? RS6000_BTM_LDBL128   : 0)
+	  | ((TARGET_LONG_DOUBLE_128
+	      && TARGET_HARD_FLOAT
+	      && !TARGET_IEEEQUAD)	    ? RS6000_BTM_LDBL128   : 0)
 	  | ((TARGET_FLOAT128_TYPE)	    ? RS6000_BTM_FLOAT128  : 0)
 	  | ((TARGET_FLOAT128_HW)	    ? RS6000_BTM_FLOAT128_HW : 0));
 }
@@ -4541,30 +4561,35 @@ rs6000_option_override_internal (bool global_init_p)
 	}
     }
 
+  /* Use long double size to select the appropriate long double.  We use
+     TYPE_PRECISION to differentiate the 3 different long double types.  We map
+     128 into the precision used for TFmode.  */
+  int default_long_double_size = (RS6000_DEFAULT_LONG_DOUBLE_SIZE == 64
+				  ? 64
+				  : FLOAT_PRECISION_TFmode);
+
   /* Set long double size before the IEEE 128-bit tests.  */
   if (!global_options_set.x_rs6000_long_double_type_size)
     {
       if (main_target_opt != NULL
 	  && (main_target_opt->x_rs6000_long_double_type_size
-	      != RS6000_DEFAULT_LONG_DOUBLE_SIZE))
+	      != default_long_double_size))
 	error ("target attribute or pragma changes long double size");
       else
-	rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
+	rs6000_long_double_type_size = default_long_double_size;
     }
+  else if (rs6000_long_double_type_size == 128)
+    rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
 
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
      explicitly redefine TARGET_IEEEQUAD and TARGET_IEEEQUAD_DEFAULT to 0, so
      those systems will not pick up this default.  Warn if the user changes the
-     default unless either the user used the -Wno-psabi option, or the compiler
-     was built to enable multilibs to switch between the two long double
-     types.  */
+     default unless -Wno-psabi.  */
   if (!global_options_set.x_rs6000_ieeequad)
     rs6000_ieeequad = TARGET_IEEEQUAD_DEFAULT;
 
-  else if (!TARGET_IEEEQUAD_MULTILIB
-	   && rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT
-	   && TARGET_LONG_DOUBLE_128)
+  else if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
     {
       static bool warned_change_long_double;
       if (!warned_change_long_double)
@@ -4936,29 +4961,30 @@ rs6000_option_override_internal (bool global_init_p)
 	  if (rs6000_tune == PROCESSOR_TITAN
 	      || rs6000_tune == PROCESSOR_CELL)
 	    {
-	      if (align_functions <= 0)
-		align_functions = 8;
-	      if (align_jumps <= 0)
-		align_jumps = 8;
-	      if (align_loops <= 0)
-		align_loops = 8;
+	      if (flag_align_functions && !str_align_functions)
+		str_align_functions = "8";
+	      if (flag_align_jumps && !str_align_jumps)
+		str_align_jumps = "8";
+	      if (flag_align_loops && !str_align_loops)
+		str_align_loops = "8";
 	    }
 	  if (rs6000_align_branch_targets)
 	    {
-	      if (align_functions <= 0)
-		align_functions = 16;
-	      if (align_jumps <= 0)
-		align_jumps = 16;
-	      if (align_loops <= 0)
+	      if (flag_align_functions && !str_align_functions)
+		str_align_functions = "16";
+	      if (flag_align_jumps && !str_align_jumps)
+		str_align_jumps = "16";
+	      if (flag_align_loops && !str_align_loops)
 		{
 		  can_override_loop_align = 1;
-		  align_loops = 16;
+		  str_align_loops = "16";
 		}
 	    }
-	  if (align_jumps_max_skip <= 0)
-	    align_jumps_max_skip = 15;
-	  if (align_loops_max_skip <= 0)
-	    align_loops_max_skip = 15;
+
+	  if (flag_align_jumps && !str_align_jumps)
+	    str_align_jumps = "16";
+	  if (flag_align_loops && !str_align_loops)
+	    str_align_loops = "16";
 	}
 
       /* Arrange to save and restore machine status around nested functions.  */
@@ -7979,6 +8005,13 @@ mem_operand_gpr (rtx op, machine_mode mode)
   int extra;
   rtx addr = XEXP (op, 0);
 
+  /* PR85755: Allow PRE_INC and PRE_DEC addresses.  */
+  if (TARGET_UPDATE
+      && (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
+      && mode_supports_pre_incdec_p (mode)
+      && legitimate_indirect_address_p (XEXP (addr, 0), false))
+    return true;
+
   /* Don't allow non-offsettable addresses.  See PRs 83969 and 84279.  */
   if (!rs6000_offsettable_memref_p (op, mode, false))
     return false;
@@ -10854,12 +10887,12 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 
       if (field_count > 0)
 	{
-	  int n_regs = (SCALAR_FLOAT_MODE_P (field_mode) ?
-			(GET_MODE_SIZE (field_mode) + 7) >> 3 : 1);
+	  int reg_size = ALTIVEC_OR_VSX_VECTOR_MODE (field_mode) ? 16 : 8;
+	  int field_size = ROUND_UP (GET_MODE_SIZE (field_mode), reg_size);
 
 	  /* The ELFv2 ABI allows homogeneous aggregates to occupy
 	     up to AGGR_ARG_NUM_REG registers.  */
-	  if (field_count * n_regs <= AGGR_ARG_NUM_REG)
+	  if (field_count * field_size <= AGGR_ARG_NUM_REG * reg_size)
 	    {
 	      if (elt_mode)
 		*elt_mode = field_mode;
@@ -11108,6 +11141,12 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 			  && (TYPE_MAIN_VARIANT (return_type)
 			      == long_double_type_node))))
 		rs6000_passes_long_double = true;
+
+	      /* Note if we passed or return a IEEE 128-bit type.  We changed
+		 the mangling for these types, and we may need to make an alias
+		 with the old mangling.  */
+	      if (FLOAT128_IEEE_P (return_mode))
+		rs6000_passes_ieee128 = true;
 	    }
 	  if (ALTIVEC_OR_VSX_VECTOR_MODE (return_mode))
 	    rs6000_passes_vector = true;
@@ -11559,6 +11598,12 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 		  || (type != NULL
 		      && TYPE_MAIN_VARIANT (type) == long_double_type_node)))
 	    rs6000_passes_long_double = true;
+
+	  /* Note if we passed or return a IEEE 128-bit type.  We changed the
+	     mangling for these types, and we may need to make an alias with
+	     the old mangling.  */
+	  if (FLOAT128_IEEE_P (mode))
+	    rs6000_passes_ieee128 = true;
 	}
       if (named && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
 	rs6000_passes_vector = true;
@@ -15311,10 +15356,15 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
   else if ((fnmask & RS6000_BTM_P9_MISC) == RS6000_BTM_P9_MISC)
     error ("builtin function %qs requires the %qs option", name,
 	   "-mcpu=power9");
-  else if ((fnmask & (RS6000_BTM_HARD_FLOAT | RS6000_BTM_LDBL128))
-	   == (RS6000_BTM_HARD_FLOAT | RS6000_BTM_LDBL128))
-    error ("builtin function %qs requires the %qs and %qs options",
-	   name, "-mhard-float", "-mlong-double-128");
+  else if ((fnmask & RS6000_BTM_LDBL128) == RS6000_BTM_LDBL128)
+    {
+      if (!TARGET_HARD_FLOAT)
+	error ("builtin function %qs requires the %qs option", name,
+	       "-mhard-float");
+      else
+	error ("builtin function %qs requires the %qs option", name,
+	       TARGET_IEEEQUAD ? "-mabi=ibmlongdouble" : "-mlong-double-128");
+    }
   else if ((fnmask & RS6000_BTM_HARD_FLOAT) != 0)
     error ("builtin function %qs requires the %qs option", name,
 	   "-mhard-float");
@@ -16185,6 +16235,26 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	}
       break;
 
+      /* For the pack and unpack int128 routines, fix up the builtin so it
+	 uses the correct IBM128 type.  */
+    case MISC_BUILTIN_PACK_IF:
+      if (TARGET_LONG_DOUBLE_128 && !TARGET_IEEEQUAD)
+	{
+	  icode = CODE_FOR_packtf;
+	  fcode = MISC_BUILTIN_PACK_TF;
+	  uns_fcode = (size_t)fcode;
+	}
+      break;
+
+    case MISC_BUILTIN_UNPACK_IF:
+      if (TARGET_LONG_DOUBLE_128 && !TARGET_IEEEQUAD)
+	{
+	  icode = CODE_FOR_unpacktf;
+	  fcode = MISC_BUILTIN_UNPACK_TF;
+	  uns_fcode = (size_t)fcode;
+	}
+      break;
+
     default:
       break;
     }
@@ -16355,14 +16425,24 @@ rs6000_init_builtins (void)
      __ieee128.  */
   if (TARGET_FLOAT128_TYPE)
     {
-      ibm128_float_type_node = make_node (REAL_TYPE);
-      TYPE_PRECISION (ibm128_float_type_node) = 128;
-      SET_TYPE_MODE (ibm128_float_type_node, IFmode);
-      layout_type (ibm128_float_type_node);
+      if (!TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128)
+	ibm128_float_type_node = long_double_type_node;
+      else
+	{
+	  ibm128_float_type_node = make_node (REAL_TYPE);
+	  TYPE_PRECISION (ibm128_float_type_node) = 128;
+	  SET_TYPE_MODE (ibm128_float_type_node, IFmode);
+	  layout_type (ibm128_float_type_node);
+	}
+
       lang_hooks.types.register_builtin_type (ibm128_float_type_node,
 					      "__ibm128");
 
-      ieee128_float_type_node = float128_type_node;
+      if (TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128)
+	ieee128_float_type_node = long_double_type_node;
+      else
+	ieee128_float_type_node = float128_type_node;
+
       lang_hooks.types.register_builtin_type (ieee128_float_type_node,
 					      "__ieee128");
     }
@@ -17815,9 +17895,14 @@ init_float128_ieee (machine_mode mode)
 {
   if (FLOAT128_VECTOR_P (mode))
     {
-      /* Set up to call __mulkc3 and __divkc3 under -mabi=ieeelongdouble.  */
-     if (mode == TFmode && TARGET_IEEEQUAD)
+      static bool complex_muldiv_init_p = false;
+
+      /* Set up to call __mulkc3 and __divkc3 under -mabi=ieeelongdouble.  If
+	 we have clone or target attributes, this will be called a second
+	 time.  We want to create the built-in function only once.  */
+     if (mode == TFmode && TARGET_IEEEQUAD && !complex_muldiv_init_p)
        {
+	 complex_muldiv_init_p = true;
 	 built_in_function fncode_mul =
 	   (built_in_function) (BUILT_IN_COMPLEX_MUL_MIN + TCmode
 				- MIN_MODE_COMPLEX_FLOAT);
@@ -32117,7 +32202,7 @@ rs6000_mangle_type (const_tree type)
   if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IBM_P (TYPE_MODE (type)))
     return "g";
   if (SCALAR_FLOAT_TYPE_P (type) && FLOAT128_IEEE_P (TYPE_MODE (type)))
-    return "u9__ieee128";
+    return ieee128_mangling_gcc_8_1 ? "U10__float128" : "u9__ieee128";
 
   /* For all other types, use the default mangling.  */
   return NULL;
@@ -33479,13 +33564,6 @@ rs6000_xcoff_visibility (tree decl)
   };
 
   enum symbol_visibility vis = DECL_VISIBILITY (decl);
-
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && cgraph_node::get (decl)
-      && cgraph_node::get (decl)->instrumentation_clone
-      && cgraph_node::get (decl)->instrumented_version)
-    vis = DECL_VISIBILITY (cgraph_node::get (decl)->instrumented_version->decl);
-
   return visibility_types[vis];
 }
 #endif
@@ -35601,6 +35679,18 @@ static scalar_int_mode
 rs6000_eh_return_filter_mode (void)
 {
   return TARGET_32BIT ? SImode : word_mode;
+}
+
+/* Target hook for translate_mode_attribute.  */
+static machine_mode
+rs6000_translate_mode_attribute (machine_mode mode)
+{
+  if ((FLOAT128_IEEE_P (mode)
+       && ieee128_float_type_node == long_double_type_node)
+      || (FLOAT128_IBM_P (mode)
+	  && ibm128_float_type_node == long_double_type_node))
+    return COMPLEX_MODE_P (mode) ? E_TCmode : E_TFmode;
+  return mode;
 }
 
 /* Target hook for scalar_mode_supported_p.  */
@@ -38726,6 +38816,40 @@ rs6000_starting_frame_offset (void)
     return 0;
   return RS6000_STARTING_FRAME_OFFSET;
 }
+
+
+/* Create an alias for a mangled name where we have changed the mangling (in
+   GCC 8.1, we used U10__float128, and now we use u9__ieee128).  This is called
+   via the target hook TARGET_ASM_GLOBALIZE_DECL_NAME.  */
+
+#if TARGET_ELF && RS6000_WEAK
+static void
+rs6000_globalize_decl_name (FILE * stream, tree decl)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+
+  targetm.asm_out.globalize_label (stream, name);
+
+  if (rs6000_passes_ieee128 && name[0] == '_' && name[1] == 'Z')
+    {
+      tree save_asm_name = DECL_ASSEMBLER_NAME (decl);
+      const char *old_name;
+
+      ieee128_mangling_gcc_8_1 = true;
+      lang_hooks.set_decl_assembler_name (decl);
+      old_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      SET_DECL_ASSEMBLER_NAME (decl, save_asm_name);
+      ieee128_mangling_gcc_8_1 = false;
+
+      if (strcmp (name, old_name) != 0)
+	{
+	  fprintf (stream, "\t.weak %s\n", old_name);
+	  fprintf (stream, "\t.set %s,%s\n", old_name, name);
+	}
+    }
+}
+#endif
+
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

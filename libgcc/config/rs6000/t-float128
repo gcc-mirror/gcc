@@ -59,7 +59,7 @@ fp128_includes		= $(srcdir)/soft-fp/double.h \
 
 # Build the emulator without ISA 3.0 hardware support.
 FP128_CFLAGS_SW		 = -Wno-type-limits -mvsx -mfloat128 \
-			   -mno-float128-hardware \
+			   -mno-float128-hardware -mno-gnu-attribute \
 			   -I$(srcdir)/soft-fp \
 			   -I$(srcdir)/config/rs6000 \
 			   $(FLOAT128_HW_INSNS)

@@ -206,7 +206,7 @@ fe_file_change (const line_map_ordinary *new_map)
 
 	  input_location = new_map->start_location;
 	  (*debug_hooks->start_source_file) (line, LINEMAP_FILE (new_map));
-#ifndef NO_IMPLICIT_EXTERN_C
+#ifdef SYSTEM_IMPLICIT_EXTERN_C
 	  if (c_header_level)
 	    ++c_header_level;
 	  else if (LINEMAP_SYSP (new_map) == 2)
@@ -219,7 +219,7 @@ fe_file_change (const line_map_ordinary *new_map)
     }
   else if (new_map->reason == LC_LEAVE)
     {
-#ifndef NO_IMPLICIT_EXTERN_C
+#ifdef SYSTEM_IMPLICIT_EXTERN_C
       if (c_header_level && --c_header_level == 0)
 	{
 	  if (LINEMAP_SYSP (new_map) == 2)

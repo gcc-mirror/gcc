@@ -8,8 +8,3 @@
       associate (x => null())   ! { dg-error "cannot be NULL()" }
       end associate
    end subroutine
-
-   subroutine s2
-      associate (x => [null()]) ! { dg-error "has no type" }
-      end associate
-   end subroutine

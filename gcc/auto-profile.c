@@ -318,8 +318,8 @@ static string_table *afdo_string_table;
 /* Store the AutoFDO source profile.  */
 static autofdo_source_profile *afdo_source_profile;
 
-/* gcov_ctr_summary structure to store the profile_info.  */
-static struct gcov_ctr_summary *afdo_profile_info;
+/* gcov_summary structure to store the profile_info.  */
+static gcov_summary *afdo_profile_info;
 
 /* Helper functions.  */
 
@@ -1682,8 +1682,7 @@ read_autofdo_file (void)
   if (auto_profile_file == NULL)
     auto_profile_file = DEFAULT_AUTO_PROFILE_FILE;
 
-  autofdo::afdo_profile_info = (struct gcov_ctr_summary *)xcalloc (
-      1, sizeof (struct gcov_ctr_summary));
+  autofdo::afdo_profile_info = XNEW (gcov_summary);
   autofdo::afdo_profile_info->runs = 1;
   autofdo::afdo_profile_info->sum_max = 0;
   autofdo::afdo_profile_info->sum_all = 0;
@@ -1713,7 +1712,7 @@ afdo_callsite_hot_enough_for_early_inline (struct cgraph_edge *edge)
   if (count > 0)
     {
       bool is_hot;
-      const struct gcov_ctr_summary *saved_profile_info = profile_info;
+      const gcov_summary *saved_profile_info = profile_info;
       /* At early inline stage, profile_info is not set yet. We need to
          temporarily set it to afdo_profile_info to calculate hotness.  */
       profile_info = autofdo::afdo_profile_info;

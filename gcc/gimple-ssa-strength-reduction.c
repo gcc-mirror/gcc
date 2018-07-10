@@ -3379,7 +3379,7 @@ insert_initializers (slsr_cand_t c)
 	      fputs ("Using existing initializer: ", dump_file);
 	      print_gimple_stmt (dump_file,
 				 SSA_NAME_DEF_STMT (incr_vec[i].initializer),
-				 0, 0);
+				 0, TDF_NONE);
 	    }
 	  continue;
 	}

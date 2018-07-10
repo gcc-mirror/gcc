@@ -1,3 +1,102 @@
+2018-07-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* configure: Regenerated.
+
+2018-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (install_leaf): Use enable_gcov instead of
+	enable_libgcov.
+
+2018-06-27  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* configure.ac: Add --disable-gcov option.
+	* configure: Regenerate.
+	* Makefile.in: Honour @enable_gcov@.
+
+2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/lib1funcs.S (__ARM_ARCH__): Remove definitions, use
+	__ARM_ARCH and __ARM_FEATURE_CLZ instead.
+	(HAVE_ARM_CLZ): Remove definition, use __ARM_FEATURE_CLZ instead.
+	* config/arm/ieee754-df.S: Use __ARM_FEATURE_CLZ instead of
+	__ARM_ARCH__.
+	* config/arm/ieee754-sf.S: Likewise.
+	* config/arm/libunwind.S: Use __ARM_ARCH instead of __ARM_ARCH__.
+
+2018-06-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/ieee754-df.S: Remove code for __ARM_ARCH__ < 4, no
+	longer supported.
+	* config/arm/ieee754-sf.S: Likewise.
+
+2018-06-20  Than McIntosh  <thanm@google.com>
+
+	PR libgcc/86213
+	* generic-morestack.c (allocate_segment): Move calls to getenv and
+	getpagesize to __morestack_load_mmap.
+	(__morestack_load_mmap) Initialize static_pagesize and
+	use_guard_page here so as to avoid clobbering SSE regs during a
+	__morestack call.
+
+2018-06-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/t-float128 (FP128_CFLAGS_SW): Compile float128
+	support modules with -mno-gnu-attribute.
+	* config/rs6000/t-float128-hw (FP128_CFLAGS_HW): Likewise.
+
+2018-06-07  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC_INCLUDES): Add
+	-I$(MULTIBUILDTOP)../../gcc/include.
+	* config/t-vxworks7: Likewise. Reformat a bit to match
+	the t-vxworks layout.
+
+2018-06-07  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_TREMONT.
+
+2018-06-07  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Rename cs_all to all and assign it from
+        all_prg.
+
+2018-06-07  Martin Liska  <mliska@suse.cz>
+
+        PR bootstrap/86057
+	* libgcov-driver-system.c (replace_filename_variables): Use
+        memcpy instead of mempcpy.
+	(allocate_filename_struct): Do not allocate filename, allocate
+        prefix and set it.
+	(gcov_exit_open_gcda_file): Allocate memory for gf->filename
+        here and properly copy content into it.
+	* libgcov-driver.c (struct gcov_filename): Remove max_length
+        field, change prefix from size_t into char *.
+	(compute_summary): Do not calculate longest filename.
+	(gcov_do_dump): Release memory of gf.filename after each file.
+	* libgcov-util.c (compute_summary): Use new signature of
+        compute_summary.
+	(calculate_overlap): Likewise.
+
+2018-06-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/47618
+	* libgcov-driver-system.c (replace_filename_variables): New
+        function.
+	(gcov_exit_open_gcda_file): Use it.
+
+2018-06-05  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (gcov_compute_histogram): Remove usage
+	of gcov_ctr_summary.
+	(compute_summary): Do it just for a single summary.
+	(merge_one_data): Likewise.
+	(merge_summary): Simplify as we read just single summary.
+	(dump_one_gcov): Pass proper argument.
+	* libgcov-util.c (compute_one_gcov): Simplify as we have just
+	single summary.
+	(gcov_info_count_all_cold): Likewise.
+	(calculate_overlap): Likewise.
+
 2018-06-02  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Monk Chiang  <sh.chiang04@gmail.com>
 

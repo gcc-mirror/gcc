@@ -1,14 +1,14 @@
 # Translation of cpplib to Esperanto
-# Copyright (C) 2013, 2014, 2015, 2016, 2017 Free Software Foundation, Inc.
+# Copyright (C) 2013, 2014, 2015, 2016, 2017, 2018 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016, 2017.
+# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016, 2017, 2018.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 7.1-b20170101\n"
+"Project-Id-Version: cpplib 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2017-01-28 22:15-0300\n"
+"PO-Revision-Date: 2018-06-06 16:53-0300\n"
 "Last-Translator: Felipe Castro <fefcas@gmail.com>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
 "Language: eo\n"
@@ -292,12 +292,12 @@ msgstr "malvalida instrukcio #%s"
 #: directives.c:1248
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
-msgstr "registro de pragma en nomspaco \"%s\" kun nekongrua nom-etendigo"
+msgstr "registro de pragma en nomspaco \"%s\" kun nekongrua nom-disvolviĝo"
 
 #: directives.c:1257
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
-msgstr "registro de pragma \"%s\" kun nom-etendigo kaj sen nomspaco"
+msgstr "registro de pragma \"%s\" kun nom-disvolviĝo kaj sen nomspaco"
 
 #: directives.c:1275
 #, c-format
@@ -438,10 +438,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "malvalida prefikso \"0b\" por glitkoma konstanto"
 
 #: expr.c:666
-#, fuzzy
-#| msgid "use of C++1z hexadecimal floating constant"
 msgid "use of C++17 hexadecimal floating constant"
-msgstr "uzo de deksesuma glitkoma konstanto de C++1z"
+msgstr "uzo de deksesuma glitkoma konstanto de C++17"
 
 #: expr.c:669
 msgid "use of C99 hexadecimal floating constant"
@@ -695,13 +693,11 @@ msgstr "'%.*s' ne estas en NFC"
 
 #: lex.c:1365
 msgid "__VA_OPT__ is not available until C++2a"
-msgstr ""
+msgstr "__VA_OPT__ ne disponeblas ĝis C++2a"
 
 #: lex.c:1372
-#, fuzzy
-#| msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgid "__VA_OPT__ can only appear in the expansion of a C++2a variadic macro"
-msgstr "__VA_ARGS__ nur povas aperi en la etendigo de variebl-argumenta makroo de C++11"
+msgstr "__VA_OPT__ nur povas aperi en la disvolviĝo de variebl-argumenta makroo de C++2a"
 
 #: lex.c:1403 lex.c:1495
 #, c-format
@@ -710,11 +706,11 @@ msgstr "provo uzi venenitan \"%s\""
 
 #: lex.c:1413 lex.c:1505
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
-msgstr "__VA_ARGS__ nur povas aperi en la etendigo de variebl-argumenta makroo de C++11"
+msgstr "__VA_ARGS__ nur povas aperi en la disvolviĝo de variebl-argumenta makroo de C++11"
 
 #: lex.c:1417 lex.c:1509
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
-msgstr "__VA_ARGS__ nur povas aperi en la etendigo de variebl-argumenta makroo de C99"
+msgstr "__VA_ARGS__ nur povas aperi en la disvolviĝo de variebl-argumenta makroo de C99"
 
 #: lex.c:1427 lex.c:1521
 #, c-format
@@ -777,10 +773,8 @@ msgid "unspellable token %s"
 msgstr "neliterumebla ĵetono %s"
 
 #: macro.c:93
-#, fuzzy
-#| msgid "'##' cannot appear at either end of a macro expansion"
 msgid "'##' cannot appear at either end of __VA_OPT__"
-msgstr "'##' ne povas aperi ĉe iu ajn fino de makroa etendigo"
+msgstr "'##' ne povas aperi ĉe iu ajn flanko de __VA_OPT__"
 
 #: macro.c:352
 #, c-format
@@ -896,7 +890,7 @@ msgstr "mankas ')' en makroa parametro-listo"
 
 #: macro.c:3161
 msgid "'##' cannot appear at either end of a macro expansion"
-msgstr "'##' ne povas aperi ĉe iu ajn fino de makroa etendigo"
+msgstr "'##' ne povas aperi ĉe iu ajn flanko de makroa disvolviĝo"
 
 #: macro.c:3198
 msgid "ISO C++11 requires whitespace after the macro name"

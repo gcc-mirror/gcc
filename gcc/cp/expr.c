@@ -186,12 +186,15 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	    expr = convert_from_reference (r);
 	}
       break;
-    default:
+
+    CASE_CONVERT:
+    case VIEW_CONVERT_EXPR:
       if (location_wrapper_p (expr))
-	{
-	  loc = EXPR_LOCATION (expr);
-	  recurse_op[0] = true;
-	}
+	loc = EXPR_LOCATION (expr);
+      recurse_op[0] = true;
+      break;
+
+    default:
       break;
     }
 
@@ -350,7 +353,13 @@ fold_for_warn (tree x)
   /* It's not generally safe to fully fold inside of a template, so
      call fold_non_dependent_expr instead.  */
   if (processing_template_decl)
-    return fold_non_dependent_expr (x);
+    {
+      tree f = fold_non_dependent_expr (x, tf_none);
+      if (f == error_mark_node)
+	return x;
+      else
+	return f;
+    }
 
   return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
 }

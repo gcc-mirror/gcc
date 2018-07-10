@@ -120,7 +120,7 @@
    (match_operand:SI 1 "mem_noofs_operand" "")
    (match_operand:SI 2 "register_operand" "")
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_ATOMIC"
+  "TARGET_ARC700 || TARGET_V2"
 {
   enum memmodel model = (enum memmodel) INTVAL (operands[3]);
 

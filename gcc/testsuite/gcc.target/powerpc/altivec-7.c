@@ -18,7 +18,6 @@ vector unsigned int *vecuint;
 vector bool int *vecubi;
 vector bool char *vecubci;
 vector bool short int *vecubsi;
-vector bool long long int *vecublli;
 vector unsigned short *vecushort;
 vector bool int *vecbint;
 vector float *vecfloat;
@@ -50,13 +49,11 @@ int main ()
 
   *vecubi++ = vec_unpackh(vecubsi[0]);
   *vecuint++ = vec_unpackh(varpixel[0]);
-  *vecublli++ = vec_unpackh(vecubi[0]);
   *vecubsi++ = vec_unpackh(vecubci[0]);
   *vecshort++ = vec_unpackh(vecchar[0]);
 
   *vecubi++ = vec_unpackl(vecubsi[0]);
   *vecuint++ = vec_unpackl(varpixel[0]);
-  *vecublli++ = vec_unpackl(vecubi[0]);
   *vecubsi++ = vec_unpackl(vecubci[0]);
   *vecshort++ = vec_unpackl(vecchar[0]);
   
@@ -72,14 +69,12 @@ int main ()
      vec_lvewx                      lvewx
      vec_unpackh                    vupklsh
      vec_unpackh                    vupklpx
-     vec_unpackh                    vupklsw
      vec_unpackh                    vupklsb
      vec_unpackl                    vupkhsh
      vec_unpackl                    vupkhpx
-     vec_unpackl                    vupkhsw
      vec_unpackl                    vupkhsb
-     vec_andc                       xxnor
-                                    xxland
+     vec_andc                       xxlnor (vnor AIX)
+                                    xxland (vand AIX)
      vec_vxor                       xxlxor
      vec_vmsumubm                   vmsumubm
      vec_vmulesb                    vmulosb
@@ -90,22 +85,19 @@ int main ()
 /* { dg-final { scan-assembler-times "vpkpx" 2 } } */
 /* { dg-final { scan-assembler-times "vmulesb" 1 } } */
 /* { dg-final { scan-assembler-times "vmulosb" 1 } } */
-/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M} 44 { target le } } } */
-/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M} 4 { target be } } } */
+/* { dg-final { scan-assembler-times {\mlvx\M} 0 { target { powerpc*-*-linux* } } } } */
+/* { dg-final { scan-assembler-times {\mlvx\M} 42 { target { powerpc*-*-aix* } } } } */
 /* { dg-final { scan-assembler-times "lvewx" 2 } } */
 /* { dg-final { scan-assembler-times "lvxl" 1 } } */
 /* { dg-final { scan-assembler-times "vupklsh" 2 } } */
 /* { dg-final { scan-assembler-times "vupkhsh" 2 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 4 } } */
-/* { dg-final { scan-assembler-times "xxland" 4 } } */
-/* { dg-final { scan-assembler-times "xxlxor" 5 } } */
+/* { dg-final { scan-assembler-times {\mxxlnor\M|\mvnor\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mxxland\M|\mvand\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mxxlxor\M|\mvxor\M} 5 } } */
 /* { dg-final { scan-assembler-times "xxlandc" 0 } } */
-/* { dg-final { scan-assembler-times "xxlxor" 5 } } */
-/* { dg-final { scan-assembler-times "lvx" 1 } } */
 /* { dg-final { scan-assembler-times "vmsumubm" 1 } } */
 /* { dg-final { scan-assembler-times "vupklpx" 1 } } */
 /* { dg-final { scan-assembler-times "vupklsx" 0 } } */
 /* { dg-final { scan-assembler-times "vupklsb" 2 } } */
 /* { dg-final { scan-assembler-times "vupkhpx" 1 } } */
-/* { dg-final { scan-assembler-times "vupkhsw" 1 } } */
 /* { dg-final { scan-assembler-times "vupkhsb" 2 } } */

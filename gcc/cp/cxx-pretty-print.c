@@ -2078,7 +2078,7 @@ cxx_pretty_printer::statement (tree t)
 	{
 	  if (TREE_CODE (OMP_DEPOBJ_CLAUSES (t)) == OMP_CLAUSE)
 	    dump_omp_clauses (this, OMP_DEPOBJ_CLAUSES (t),
-			      pp_indentation (this), 0);
+			      pp_indentation (this), TDF_NONE);
 	  else
 	    switch (tree_to_uhwi (OMP_DEPOBJ_CLAUSES (t)))
 	      {

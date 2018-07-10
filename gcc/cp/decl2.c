@@ -756,7 +756,8 @@ finish_static_data_member_decl (tree decl,
   if (LOCAL_CLASS_P (current_class_type)
       /* We already complained about the template definition.  */
       && !DECL_TEMPLATE_INSTANTIATION (decl))
-    permerror (input_location, "local class %q#T shall not have static data member %q#D",
+    permerror (DECL_SOURCE_LOCATION (decl),
+	       "local class %q#T shall not have static data member %q#D",
 	       current_class_type, decl);
   else
     for (tree t = current_class_type; TYPE_P (t);
@@ -1386,7 +1387,8 @@ cp_check_const_attributes (tree attributes)
   for (attr = attributes; attr; attr = TREE_CHAIN (attr))
     {
       tree arg;
-      for (arg = TREE_VALUE (attr); arg; arg = TREE_CHAIN (arg))
+      for (arg = TREE_VALUE (attr); arg && TREE_CODE (arg) == TREE_LIST;
+	   arg = TREE_CHAIN (arg))
 	{
 	  tree expr = TREE_VALUE (arg);
 	  if (EXPR_P (expr))
@@ -1676,7 +1678,7 @@ finish_anon_union (tree anon_union_decl)
    what compiler will be expecting.  */
 
 tree
-coerce_new_type (tree type)
+coerce_new_type (tree type, location_t loc)
 {
   int e = 0;
   tree args = TYPE_ARG_TYPES (type);
@@ -1686,7 +1688,8 @@ coerce_new_type (tree type)
   if (!same_type_p (TREE_TYPE (type), ptr_type_node))
     {
       e = 1;
-      error ("%<operator new%> must return type %qT", ptr_type_node);
+      error_at (loc, "%<operator new%> must return type %qT",
+		ptr_type_node);
     }
 
   if (args && args != void_list_node)
@@ -1697,8 +1700,8 @@ coerce_new_type (tree type)
 	     
 	     The first parameter shall not have an associated default
 	     argument.  */
-	  error ("the first parameter of %<operator new%> cannot "
-		 "have a default argument");
+	  error_at (loc, "the first parameter of %<operator new%> cannot "
+		    "have a default argument");
 	  /* Throw away the default argument.  */
 	  TREE_PURPOSE (args) = NULL_TREE;
 	}
@@ -1713,7 +1716,7 @@ coerce_new_type (tree type)
     e = 2;
 
   if (e == 2)
-    permerror (input_location, "%<operator new%> takes type %<size_t%> (%qT) "
+    permerror (loc, "%<operator new%> takes type %<size_t%> (%qT) "
 	       "as first parameter", size_type_node);
 
   switch (e)
@@ -1732,7 +1735,7 @@ coerce_new_type (tree type)
 }
 
 tree
-coerce_delete_type (tree type)
+coerce_delete_type (tree type, location_t loc)
 {
   int e = 0;
   tree args = TYPE_ARG_TYPES (type);
@@ -1742,7 +1745,8 @@ coerce_delete_type (tree type)
   if (!same_type_p (TREE_TYPE (type), void_type_node))
     {
       e = 1;
-      error ("%<operator delete%> must return type %qT", void_type_node);
+      error_at (loc, "%<operator delete%> must return type %qT",
+		void_type_node);
     }
 
   if (!args || args == void_list_node
@@ -1751,8 +1755,8 @@ coerce_delete_type (tree type)
       e = 2;
       if (args && args != void_list_node)
 	args = TREE_CHAIN (args);
-      error ("%<operator delete%> takes type %qT as first parameter",
-	     ptr_type_node);
+      error_at (loc, "%<operator delete%> takes type %qT as first parameter",
+		ptr_type_node);
     }
   switch (e)
   {
@@ -5204,8 +5208,10 @@ cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
       && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && copy_fn_p (decl))
     {
-      warned = warning (OPT_Wdeprecated_copy,
-			"implicitly-declared %qD is deprecated", decl);
+      /* Don't warn about system library classes (c++/86342).  */
+      if (!DECL_IN_SYSTEM_HEADER (decl))
+	warned = warning (OPT_Wdeprecated_copy,
+			  "implicitly-declared %qD is deprecated", decl);
       if (warned)
 	{
 	  tree ctx = DECL_CONTEXT (decl);

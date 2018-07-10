@@ -10,4 +10,4 @@ foo (int (&a)[8], int *b, int *c)
     a[i] = b[i] * c[i];
 }
 
-// { dg-final { scan-tree-dump "note: loop with 8 iterations completely unrolled" "cunrolli" } }
+// { dg-final { scan-tree-dump "loop with 8 iterations completely unrolled" "cunrolli" } }

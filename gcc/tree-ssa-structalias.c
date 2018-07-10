@@ -5353,6 +5353,7 @@ find_func_clobbers (struct function *fn, gimple *origt)
       /* For callees without function info (that's external functions),
 	 ESCAPED is clobbered and used.  */
       if (cfi->decl
+	  && TREE_CODE (cfi->decl) == FUNCTION_DECL
 	  && !cfi->is_fn_info)
 	{
 	  varinfo_t vi;
@@ -6120,7 +6121,8 @@ create_variable_info_for (tree decl, const char *name, bool add_id)
   cgraph_node *node;
   if (in_ipa_mode
       && TREE_CODE (decl) == FUNCTION_DECL
-      && (node = cgraph_node::get (decl))->ifunc_resolver)
+      && (node = cgraph_node::get (decl))
+      && node->ifunc_resolver)
     {
       varinfo_t fi = get_vi_for_tree (node->get_alias_target ()->decl);
       constraint_expr rhs
