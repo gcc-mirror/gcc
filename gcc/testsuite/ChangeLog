@@ -1,3 +1,8 @@
+2018-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/86406
+	* g++.dg/ubsan/pr86406.C: New test.
+
 2018-07-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/86400
