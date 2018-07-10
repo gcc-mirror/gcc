@@ -223,10 +223,10 @@ public:
       return *this;
     }
 
-    std::pair<Key, Value> operator* ()
+    std::pair<const Key&, Value&> operator* ()
     {
       hash_entry &e = *m_iter;
-      return std::pair<Key, Value> (e.m_key, e.m_value);
+      return std::pair<const Key&, Value&> (e.m_key, e.m_value);
     }
 
     bool
