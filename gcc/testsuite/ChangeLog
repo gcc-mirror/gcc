@@ -1,3 +1,8 @@
+2018-07-10  Martin Liska  <mliska@suse.cz>
+
+        PR testsuite/86445
+	* gcc.dg/pr84100.c: Change it back to dg-bogus.
+
 2018-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/86406
