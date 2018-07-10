@@ -1,3 +1,18 @@
+2018-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86443
+	* gimplify.c (find_combined_omp_for): Add DATA argument, in addition
+	to finding the inner OMP_FOR/OMP_SIMD stmt find non-trivial wrappers,
+	BLOCKs with BLOCK_VARs, OMP_PARALLEL in between, OMP_FOR in between.
+	(gimplify_omp_for): For composite loops, move outer
+	OMP_{DISTRIBUTE,TASKLOOP,FOR,PARALLEL} right around innermost
+	OMP_FOR/OMP_SIMD if there are any non-trivial wrappers.  For class
+	iterators add any needed clauses.  Allow OMP_FOR_ORIG_DECLS to contain
+	TREE_LIST for both the original class iterator and the "last" helper
+	var.  Gimplify OMP_FOR_PRE_BODY before the outermost composite
+	loop, remember has_decl_expr from outer composite loops for the
+	innermost OMP_SIMD in TREE_PRIVATE bit on OMP_FOR_INIT.
+
 2018-07-09  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/77357

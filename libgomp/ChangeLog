@@ -1,3 +1,8 @@
+2018-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86443
+	* testsuite/libgomp.c++/for-15.C: New test.
+
 2018-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86291

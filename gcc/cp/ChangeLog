@@ -1,3 +1,13 @@
+2018-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86443
+	* semantics.c (handle_omp_for_class_iterator): Remove lastp argument,
+	instead of setting *lastp turn orig_declv elt into a TREE_LIST.
+	(finish_omp_for): Adjust handle_omp_for_class_iterator caller.
+	* pt.c (tsubst_omp_for_iterator): Allow OMP_FOR_ORIG_DECLS to contain
+	TREE_LIST for both the original class iterator and the "last" helper
+	var.
+
 2018-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Use rich_location::add_range in three
