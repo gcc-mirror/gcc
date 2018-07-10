@@ -8,7 +8,7 @@ __attribute__((optimize ("align-loops=16", "align-jumps=16",
 			 "align-labels=16", "align-functions=16")))
 void
 foo (void)
-{			/* { dg-warning "bad option" } */
+{			/* { dg-bogus "bad option" } */
   for (int i = 0; i < 1024; ++i)
     bar ();
 }
