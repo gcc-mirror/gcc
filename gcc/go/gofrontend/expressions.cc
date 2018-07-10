@@ -11886,10 +11886,9 @@ Interface_field_reference_expression::do_flatten(Gogo*, Named_object*,
   if (!this->expr_->is_variable())
     {
       Temporary_statement* temp =
-	Statement::make_temporary(this->expr_->type(), NULL, this->location());
+	Statement::make_temporary(NULL, this->expr_, this->location());
       inserter->insert(temp);
-      this->expr_ = Expression::make_set_and_use_temporary(temp, this->expr_,
-							   this->location());
+      this->expr_ = Expression::make_temporary_reference(temp, this->location());
     }
   return this;
 }
