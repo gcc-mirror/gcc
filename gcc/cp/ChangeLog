@@ -1,5 +1,9 @@
 2018-07-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/86406
+	* cp-gimplify.c (cp_maybe_instrument_return): Skip trailing
+	DEBUG_BEGIN_STMTs.
+
 	PR c++/86443
 	* semantics.c (handle_omp_for_class_iterator): Remove lastp argument,
 	instead of setting *lastp turn orig_declv elt into a TREE_LIST.

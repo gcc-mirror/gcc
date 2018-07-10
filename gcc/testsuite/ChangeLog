@@ -1,5 +1,8 @@
 2018-07-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/86406
+	* g++.dg/ubsan/pr86406.C: New test.
+
 	PR fortran/86421
 	* gfortran.dg/vect/pr86421.f90: New test.
 
