@@ -28066,7 +28066,7 @@ output_macinfo_op (macinfo_entry *ref)
       node = find_AT_string (ref->info);
       gcc_assert (node
 		  && (node->form == DW_FORM_strp
-		      || node->form == dwarf_form (DW_FORM_strx)));
+		      || node->form == dwarf_FORM (DW_FORM_strx)));
       dw2_asm_output_data (1, ref->code,
 			   ref->code == DW_MACRO_define_strp
 			   ? "Define macro strp"

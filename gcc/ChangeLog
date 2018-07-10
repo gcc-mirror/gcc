@@ -1,3 +1,8 @@
+2018-07-10  Mark Wielaard  <mark@klomp.org>
+
+	PR debug/86459
+	* dwarf2out.c (output_macinfo_op): Fix dwarf_FORM typo in gcc_assert.
+
 2018-07-10  Richard Biener  <rguenther@suse.de>
 
 	* hash-map.h (hash_map::iterator::operator*): Return
