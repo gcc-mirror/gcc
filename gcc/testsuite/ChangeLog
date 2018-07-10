@@ -1,3 +1,8 @@
+2018-07-10  Mark Wielaard  <mark@klomp.org>
+
+	PR debug/86459
+	* gcc.dg/pr86459.c: New test.
+
 2018-07-10  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/86461
