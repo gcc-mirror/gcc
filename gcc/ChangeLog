@@ -1,3 +1,11 @@
+2018-07-10  Carl Love  <cel@us.ibm.com>
+
+	Backport from mainline
+	2017-09-07  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/vsx.md (define_insn "*stxvl"): Add missing argument to
+	the sldi instruction.
+
 2018-06-29  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
