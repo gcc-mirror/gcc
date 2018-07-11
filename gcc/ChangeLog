@@ -1,5 +1,10 @@
 2018-07-11  Aldy Hernandez  <aldyh@redhat.com>
 
+        * tree-ssa-threadupdate.c (thread_through_all_blocks): Do not jump
+	thread twice from the same starting edge.
+
+2018-07-11  Aldy Hernandez  <aldyh@redhat.com>
+
 	* vr-values.c (gimple_stmt_nonzero_p): Abstract common code to...
 	* gimple.c (gimple_call_nonnull_result_p): ...here...
 	(gimple_call_nonnull_arg): ...and here.
