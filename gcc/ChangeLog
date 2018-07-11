@@ -1,4 +1,13 @@
-2018-07-10  Richard Biener  <rguenther@suse.de>
+2018-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86457
+	* dwarf2out.c (init_sections_and_labels): Use
+	output_asm_line_debug_info consistently.
+	(dwarf2out_early_finish): Likewise.
+	(dwarf2out_finish): Remove DW_AT_stmt_list from early generated
+	type units.
+
+2018-07-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely_1):
 	Rework father_bb setting in a way to avoid propagating constants
