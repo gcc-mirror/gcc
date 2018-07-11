@@ -1,4 +1,4 @@
-2018-07-08  Paul Koning  <ni1d@arrl.net>
+2018-07-11  Paul Koning  <ni1d@arrl.net>
 
 	* doc/md.texi (define_subst): Document how multiple occurrences of
 	the same argument in the replacement pattern are handled.
