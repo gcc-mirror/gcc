@@ -10263,7 +10263,11 @@ the expression from the original pattern, which matched
 @code{match_operand N} from the input pattern.  As a consequence,
 @code{match_dup} cannot be used to point to @code{match_operand}s from
 the output pattern, it should always refer to a @code{match_operand}
-from the input pattern.
+from the input pattern.  If a @code{match_dup N} occurs more than once
+in the output template, its first occurrence is replaced with the
+expression from the original pattern, and the subsequent expressions
+are replaced with @code{match_dup N}, i.e., a reference to the first
+expression.
 
 In the output template one can refer to the expressions from the
 original pattern and create new ones.  For instance, some operands could
