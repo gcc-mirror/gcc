@@ -1,3 +1,68 @@
+2018-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/avx512bitalgintrin.h (_mm512_mask_bitshuffle_epi64_mask):
+	Use __mmask64 type instead of __mmask8 for __M argument.
+	* config/i386/avx512fintrin.h (_mm512_mask_xor_epi64,
+	_mm512_maskz_xor_epi64): Use __mmask8 type instead of __mmask16 for
+	__U argument.
+	(_mm512_mask_cmpneq_epi64_mask): Use __mmask8 type instead of
+	__mmask16 for __M argument.
+	(_mm512_maskz_insertf32x4, _mm512_maskz_inserti32x4,
+	_mm512_mask_insertf32x4, _mm512_mask_inserti32x4): Cast last argument
+	to __mmask16 instead of __mmask8.
+	* config/i386/avx512vlintrin.h (_mm_mask_add_ps, _mm_maskz_add_ps,
+	_mm256_mask_add_ps, _mm256_maskz_add_ps, _mm_mask_sub_ps,
+	_mm_maskz_sub_ps, _mm256_mask_sub_ps, _mm256_maskz_sub_ps,
+	_mm256_maskz_cvtepi32_ps, _mm_maskz_cvtepi32_ps): Use __mmask8 type
+	instead of __mmask16 for __U argument.
+	* config/i386/avx512vlbwintrin.h (_mm_mask_cmp_epi8_mask): Use
+	__mmask16 instead of __mmask8 for __U argument.
+	(_mm256_mask_cmp_epi8_mask): Use __mmask32 instead of __mmask16 for
+	__U argument.
+	(_mm256_cmp_epi8_mask): Use __mmask32 return type instead of
+	__mmask16.
+	(_mm_mask_cmp_epu8_mask): Use __mmask16 instead of __mmask8 for __U
+	argument.
+	(_mm256_mask_cmp_epu8_mask): Use __mmask32 instead of __mmask16 for
+	__U argument.
+	(_mm256_cmp_epu8_mask): Use __mmask32 return type instead of
+	__mmask16.
+	(_mm_mask_cmp_epi16_mask): Cast last argument to __mmask8 instead
+	of __mmask16.
+	(_mm256_mask_cvtepi8_epi16): Use __mmask16 instead of __mmask32 for
+	__U argument.
+	(_mm_mask_cvtepi8_epi16): Use __mmask8 instead of __mmask32 for
+	__U argument.
+	(_mm256_mask_cvtepu8_epi16): Use __mmask16 instead of __mmask32 for
+	__U argument.
+	(_mm_mask_cvtepu8_epi16): Use __mmask8 instead of __mmask32 for
+	__U argument.
+	(_mm256_mask_cmpneq_epu8_mask, _mm256_mask_cmplt_epu8_mask,
+	_mm256_mask_cmpge_epu8_mask, _mm256_mask_cmple_epu8_mask): Change
+	return type as well as __M argument type and all casts from __mmask8
+	to __mmask32.
+	(_mm256_mask_cmpneq_epu16_mask, _mm256_mask_cmplt_epu16_mask,
+	_mm256_mask_cmpge_epu16_mask, _mm256_mask_cmple_epu16_mask): Change
+	return type as well as __M argument type and all casts from __mmask8
+	to __mmask16.
+	(_mm256_mask_cmpneq_epi8_mask, _mm256_mask_cmplt_epi8_mask,
+	_mm256_mask_cmpge_epi8_mask, _mm256_mask_cmple_epi8_mask): Change
+	return type as well as __M argument type and all casts from __mmask8
+	to __mmask32.
+	(_mm256_mask_cmpneq_epi16_mask, _mm256_mask_cmplt_epi16_mask,
+	_mm256_mask_cmpge_epi16_mask, _mm256_mask_cmple_epi16_mask): Change
+	return type as well as __M argument type and all casts from __mmask8
+	to __mmask16.
+	* config/i386/avx512vbmi2vlintrin.h (_mm_mask_shrdi_epi32,
+	_mm_mask_shldi_epi32): Cast last argument to __mmask8 instead of
+	__mmask16.
+
+2018-07-11  Grazvydas Ignotas  <notasas@gmail.com>
+
+	* config/i386/avx512bwintrin.h: (_mm512_mask_cmp_epi8_mask,
+	_mm512_mask_cmp_epu8_mask): Use __mmask64 type instead of __mmask32
+	for __U argument.
+
 2018-07-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/86400

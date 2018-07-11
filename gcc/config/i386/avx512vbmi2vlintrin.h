@@ -541,7 +541,7 @@ _mm_shldi_epi64 (__m128i __A, __m128i __B, int __C)
 	(__v4si)(__m128i)(B),(int)(C))
 #define _mm_mask_shrdi_epi32(A, B, C, D, E) \
   ((__m128i) __builtin_ia32_vpshrd_v4si_mask ((__v4si)(__m128i)(C), \
-	(__v4si)(__m128i)(D), (int)(E), (__v4si)(__m128i)(A),(__mmask16)(B))
+	(__v4si)(__m128i)(D), (int)(E), (__v4si)(__m128i)(A),(__mmask8)(B))
 #define _mm_maskz_shrdi_epi32(A, B, C, D) \
   ((__m128i) __builtin_ia32_vpshrd_v4si_mask ((__v4si)(__m128i)(B), \
 	(__v4si)(__m128i)(C),(int)(D), \
@@ -601,7 +601,7 @@ _mm_shldi_epi64 (__m128i __A, __m128i __B, int __C)
 	(__v4si)(__m128i)(B),(int)(C))
 #define _mm_mask_shldi_epi32(A, B, C, D, E) \
   ((__m128i) __builtin_ia32_vpshld_v4si_mask ((__v4si)(__m128i)(C), \
-	(__v4si)(__m128i)(D), (int)(E), (__v4si)(__m128i)(A),(__mmask16)(B))
+	(__v4si)(__m128i)(D), (int)(E), (__v4si)(__m128i)(A),(__mmask8)(B))
 #define _mm_maskz_shldi_epi32(A, B, C, D) \
   ((__m128i) __builtin_ia32_vpshld_v4si_mask ((__v4si)(__m128i)(B), \
 	(__v4si)(__m128i)(C),(int)(D), \
