@@ -107,7 +107,7 @@ _mm512_bitshuffle_epi64_mask (__m512i __A, __m512i __B)
 
 extern __inline __mmask64
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_bitshuffle_epi64_mask (__mmask8 __M, __m512i __A, __m512i __B)
+_mm512_mask_bitshuffle_epi64_mask (__mmask64 __M, __m512i __A, __m512i __B)
 {
   return (__mmask64) __builtin_ia32_vpshufbitqmb512_mask ((__v64qi) __A,
 						 (__v64qi) __B,
