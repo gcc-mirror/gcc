@@ -1,3 +1,9 @@
+2018-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely_1):
+	Rework father_bb setting in a way to avoid propagating constants
+	multiple times on a loop body.
+
 2018-07-10  Mark Wielaard  <mark@klomp.org>
 
 	PR debug/86459
