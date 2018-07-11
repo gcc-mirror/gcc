@@ -88,10 +88,11 @@ private:
 
 template <typename T> const I<T> &J<T>::begin () { return b; }
 template <typename T> const I<T> &J<T>::end () { return e; }
+#pragma omp end declare target
 
-int a[2000];
 int results[2000];
 
+#pragma omp declare target
 template <typename T>
 void
 baz (I<T> &i)
@@ -107,13 +108,6 @@ baz (int i)
   if (i < 0 || i >= 2000)
     abort ();
   results[i]++;
-}
-
-void
-qux (I<int> &i)
-{
-  if (*i != 1931)
-    abort ();
 }
 
 void
