@@ -6123,6 +6123,19 @@ types (@pxref{Common Function Attributes},
 The message attached to the attribute is affected by the setting of
 the @option{-fmessage-length} option.
 
+@item mode (@var{mode})
+@cindex @code{mode} variable attribute
+This attribute specifies the data type for the declaration---whichever
+type corresponds to the mode @var{mode}.  This in effect lets you
+request an integer or floating-point type according to its width.
+
+@xref{Machine Modes,,, gccint, GNU Compiler Collection (GCC) Internals},
+for a list of the possible keywords for @var{mode}.
+You may also specify a mode of @code{byte} or @code{__byte__} to
+indicate the mode corresponding to a one-byte integer, @code{word} or
+@code{__word__} for the mode of a one-word integer, and @code{pointer}
+or @code{__pointer__} for the mode used to represent pointers.
+
 @item nonstring
 @cindex @code{nonstring} variable attribute
 The @code{nonstring} variable attribute specifies that an object or member
@@ -6157,19 +6170,6 @@ int f (struct Data *pd, const char *s)
   return strlen (pd->name);   // unsafe, gets a warning
 @}
 @end smallexample
-
-@item mode (@var{mode})
-@cindex @code{mode} variable attribute
-This attribute specifies the data type for the declaration---whichever
-type corresponds to the mode @var{mode}.  This in effect lets you
-request an integer or floating-point type according to its width.
-
-@xref{Machine Modes,,, gccint, GNU Compiler Collection (GCC) Internals},
-for a list of the possible keywords for @var{mode}.
-You may also specify a mode of @code{byte} or @code{__byte__} to
-indicate the mode corresponding to a one-byte integer, @code{word} or
-@code{__word__} for the mode of a one-word integer, and @code{pointer}
-or @code{__pointer__} for the mode used to represent pointers.
 
 @item packed
 @cindex @code{packed} variable attribute
@@ -7111,6 +7111,19 @@ If you replaced @code{short_a} with @code{short} in the variable
 declaration, the above program would abort when compiled with
 @option{-fstrict-aliasing}, which is on by default at @option{-O2} or
 above.
+
+@item mode (@var{mode})
+@cindex @code{mode} type attribute
+This attribute specifies the data type for the declaration---whichever
+type corresponds to the mode @var{mode}.  This in effect lets you
+request an integer or floating-point type according to its width.
+
+@xref{Machine Modes,,, gccint, GNU Compiler Collection (GCC) Internals},
+for a list of the possible keywords for @var{mode}.
+You may also specify a mode of @code{byte} or @code{__byte__} to
+indicate the mode corresponding to a one-byte integer, @code{word} or
+@code{__word__} for the mode of a one-word integer, and @code{pointer}
+or @code{__pointer__} for the mode used to represent pointers.
 
 @item packed
 @cindex @code{packed} type attribute
