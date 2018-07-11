@@ -1,3 +1,33 @@
+2018-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512bw-vpcmpb-2.c (CMP): Use SIZE macro instead
+	of hardcoding size.  Cast (rel) to MASK_TYPE.
+	* gcc.target/i386/avx512bw-vpcmpub-2.c (CMP): Likewise.
+	* gcc.target/i386/avx512f-vinserti32x4-3.c: New test.
+	* gcc.target/i386/avx512f-vinsertf32x4-3.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpnequb-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpgeub-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpleb-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpgeb-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpltb-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpltub-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpleub-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpneqb-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpnequw-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpgeuw-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmplew-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpgew-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpltw-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpltuw-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpleuw-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpneqw-2.c: New test.
+
+2018-07-11  Grazvydas Ignotas  <notasas@gmail.com>
+
+	* gcc.target/i386/avx512bw-vpcmpb-2.c (SIZE): Define to
+	(AVX512F_LEN / 8) instead of (AVX512F_LEN / 16).
+	* gcc.target/i386/avx512bw-vpcmpub-2.c (SIZE): Likewise.
+
 2018-07-10  Mark Wielaard  <mark@klomp.org>
 
 	PR debug/86459
