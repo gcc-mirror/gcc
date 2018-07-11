@@ -1,3 +1,10 @@
+2018-07-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in: Move information from fpu field of each
+	cpu definition to the isa field.
+	* config/arm/parsecpu.awk (fpu): Delete match rule.
+	(gen_comm_data): Don't add bits from the CPU's FPU entry.
+
 2018-07-11  Richard Biener  <rguenther@suse.de>
 
 	PR debug/86457

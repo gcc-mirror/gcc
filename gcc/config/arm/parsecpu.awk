@@ -289,9 +289,6 @@ function gen_comm_data () {
 	    }
 	    all_isa_bits = all_isa_bits " " arch_opt_isa[feats[1],feats[m]]
 	}
-	if (cpus[n] in cpu_fpu) {
-	    all_isa_bits = all_isa_bits " " fpu_isa[cpu_fpu[cpus[n]]]
-	}
 	if (cpus[n] in cpu_isa) {
 	    all_isa_bits = all_isa_bits " " cpu_isa[cpus[n]]
 	}
@@ -659,13 +656,6 @@ BEGIN {
     if (NF != 2) fatal("syntax: architecture <arch-name>")
     if (cpu_name == "") fatal("\"architecture\" outside of cpu block")
     cpu_arch[cpu_name] = $2
-    parse_ok = 1
-}
-
-/^[ 	]*fpu / {
-    if (NF != 2) fatal("syntax: fpu <fpu-name>")
-    if (cpu_name == "") fatal("\"fpu\" outside of cpu block")
-    cpu_fpu[cpu_name] = $2
     parse_ok = 1
 }
 
