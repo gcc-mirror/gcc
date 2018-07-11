@@ -30,6 +30,12 @@ struct GTY(()) answer {
   cpp_token GTY ((length ("%h.count"))) first[1];
 };
 
+/* The kind of the cpp_macro.  */
+enum cpp_macro_kind {
+  cmk_macro,	/* An ISO macro (token expansion).  */
+  cmk_traditional,	/* A traditional macro (text expansion).  */
+};
+
 /* Each macro definition is recorded in a cpp_macro structure.
    Variadic macros cannot occur with traditional cpp.  */
 struct GTY(()) cpp_macro {
@@ -37,28 +43,33 @@ struct GTY(()) cpp_macro {
      the original spelling of those identifiers, not the canonical
      UTF-8 spelling, goes here.  */
   cpp_hashnode ** GTY ((nested_ptr (union tree_node,
-		"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
-			"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL"),
-			length ("%h.paramc")))
-    params;
+	"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
+	"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL"),
+			  length ("%h.paramc"))) params;
 
-  /* Replacement tokens (ISO) or replacement text (traditional).  See
-     comment at top of cpptrad.c for how traditional function-like
-     macros are encoded.  */
-  union cpp_macro_u
+  union cpp_exp_u
   {
-    cpp_token * GTY ((tag ("0"), length ("%0.count"))) tokens;
-    const unsigned char * GTY ((tag ("1"))) text;
-  } GTY ((desc ("%1.traditional"))) exp;
+    /* Replacement tokens (ISO), or assertion body value.  */
+    cpp_token * GTY ((tag ("false"), length ("%0.count"))) tokens;
+
+    /* Replacement text (traditional).  See comment at top of
+       cpptrad.c for how traditional function-like macros are
+       encoded.  */
+    const unsigned char * GTY ((tag ("true"))) text;
+  } GTY ((desc ("%1.kind == cmk_traditional"))) exp;
 
   /* Definition line number.  */
   source_location line;
 
-  /* Number of tokens in expansion, or bytes for traditional macros.  */
+  /* Number of tokens in body, or bytes for traditional macros.  */
+  /* Do we really need 2^32-1 range here?  */
   unsigned int count;
 
   /* Number of parameters.  */
   unsigned short paramc;
+
+  /* The kind of this macro (ISO, trad or assert) */
+  unsigned kind : 2;
 
   /* If a function-like macro.  */
   unsigned int fun_like : 1;
@@ -72,11 +83,10 @@ struct GTY(()) cpp_macro {
   /* Nonzero if it has been expanded or had its existence tested.  */
   unsigned int used     : 1;
 
-  /* Indicate which field of 'exp' is in use.  */
-  unsigned int traditional : 1;
-
   /* Indicate whether the tokens include extra CPP_PASTE tokens at the
      end to track invalid redefinitions with consecutive CPP_PASTE
      tokens.  */
   unsigned int extra_tokens : 1;
+
+  /* 9 bits spare (32-bit). 41 on 64-bit target.  */
 };

@@ -851,9 +851,9 @@ push_replacement_text (cpp_reader *pfile, cpp_hashnode *node)
   else
     {
       cpp_macro *macro = node->value.macro;
+      gcc_assert (macro->kind == cmk_traditional);
       macro->used = 1;
       text = macro->exp.text;
-      macro->traditional = 1;
       len = macro->count;
     }
 
@@ -1131,6 +1131,8 @@ save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
   size_t len = pfile->out.cur - pfile->out.base;
   uchar *exp;
 
+  /* This is a traditional macro now.  */
+  macro->kind = cmk_traditional;
   if (macro->paramc == 0)
     {
       /* Object-like and function-like macros without parameters
@@ -1139,7 +1141,6 @@ save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
       memcpy (exp, pfile->out.base, len);
       exp[len] = '\n';
       macro->exp.text = exp;
-      macro->traditional = 1;
       macro->count = len;
     }
   else
@@ -1155,7 +1156,6 @@ save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
       exp = BUFF_FRONT (pfile->a_buff);
       block = (struct block *) (exp + macro->count);
       macro->exp.text = exp;
-      macro->traditional = 1;
 
       /* Write out the block information.  */
       block->text_len = len;

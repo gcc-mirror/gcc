@@ -3406,7 +3406,7 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
     return false;
 
   macro->exp.tokens = (cpp_token *) BUFF_FRONT (pfile->a_buff);
-  macro->traditional = 0;
+  macro->kind = cmk_macro;
 
   /* Don't count the CPP_EOF.  */
   macro->count--;

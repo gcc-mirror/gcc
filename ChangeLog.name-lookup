@@ -1,5 +1,13 @@
 2018-07-11  Nathan Sidwell  <nathan@acm.org>
 
+	Add cpp_macro_kind
+	libcpp/
+	* include/cpp-id-data.h (enum cpp_macro_kind): New.
+	(struct cpp_macro): Replace traditional with kind.  Adjust GTY.
+	* macro.c (create_iso_definition): Set kind.
+	* traditional.c (push_replacement_text): Assert trad.
+	(save_replacement_text): Set kind.
+
 	Store include-from as a location, not line-map index.
 	libcpp/
 	* include/line-map.h (line_map_ordinary): Replace included_from
