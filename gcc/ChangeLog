@@ -1,3 +1,9 @@
+2018-07-11  Paul Koning  <ni1d@arrl.net>
+
+	* doc/extend.texi (Common Variable Attributes): Move "mode" into
+	alphabetical order.
+	(Common Type Attributes): Add "mode" attribute.
+
 2018-07-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not
