@@ -721,11 +721,9 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
    file being read.  */
 
 static void
-lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *ib,
-					    struct data_in *data_in, tree expr)
+lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *,
+					    struct data_in *, tree)
 {
-  if (TREE_CODE (expr) == TYPE_DECL)
-    DECL_ORIGINAL_TYPE (expr) = stream_read_tree (ib, data_in);
 }
 
 

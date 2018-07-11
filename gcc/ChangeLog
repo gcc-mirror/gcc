@@ -1,3 +1,18 @@
+2018-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not
+	stream DECL_ORIGINAL_TYPE.
+	(DFS::DFS_write_tree_body): Drop hack handling local external decls.
+	(hash_tree): Do not walk DECL_ORIGINAL_TYPE.
+	* tree-streamer-in.c (lto_input_ts_decl_non_common_tree_pointers):
+	Do not walk original type.
+	* tree-streamer-out.c (streamer_write_chain): Drop hack handling
+	external decls.
+	(write_ts_decl_non_common_tree_pointers): Do not stream
+	DECL_ORIGINAL_TYPE
+	* tree.c (free_lang_data_in_decl): Clear DECL_ORIGINAL_TYPE.
+	(find_decls_types_r): Do not walk DEC_ORIGINAL_TYPE.
+
 2018-07-11  Aldy Hernandez  <aldyh@redhat.com>
 
         * tree-ssa-threadupdate.c (thread_through_all_blocks): Do not jump

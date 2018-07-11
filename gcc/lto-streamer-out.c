@@ -819,12 +819,6 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	DFS_follow_tree_edge (DECL_DEBUG_EXPR (expr));
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
-    {
-      if (TREE_CODE (expr) == TYPE_DECL)
-	DFS_follow_tree_edge (DECL_ORIGINAL_TYPE (expr));
-    }
-
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
     {
       /* Make sure we don't inadvertently set the assembler name.  */
@@ -907,14 +901,13 @@ DFS::DFS_write_tree_body (struct output_block *ob,
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     {
       for (tree t = BLOCK_VARS (expr); t; t = TREE_CHAIN (t))
-	if (VAR_OR_FUNCTION_DECL_P (t)
-	    && DECL_EXTERNAL (t))
-	  /* We have to stream externals in the block chain as
-	     non-references.  See also
-	     tree-streamer-out.c:streamer_write_chain.  */
-	  DFS_write_tree (ob, expr_state, t, ref_p, false);
-	else
+	{
+	  /* We would have to stream externals in the block chain as
+	     non-references but we should have dropped them in
+	     free-lang-data.  */
+	  gcc_assert (!VAR_OR_FUNCTION_DECL_P (t) || !DECL_EXTERNAL (t));
 	  DFS_follow_tree_edge (t);
+	}
 
       DFS_follow_tree_edge (BLOCK_SUPERCONTEXT (expr));
       DFS_follow_tree_edge (BLOCK_ABSTRACT_ORIGIN (expr));
@@ -1242,12 +1235,6 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	visit (DECL_DEBUG_EXPR (t));
       /* ???  Hash DECL_INITIAL as streamed.  Needs the output-block to
          be able to call get_symbol_initial_value.  */
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
-    {
-      if (code == TYPE_DECL)
-	visit (DECL_ORIGINAL_TYPE (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
