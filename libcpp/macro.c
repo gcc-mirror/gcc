@@ -3032,7 +3032,7 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 
   /* Check parameter spellings.  */
   for (i = 0; i < macro1->paramc; i++)
-    if (macro1->params[i] != macro2->params[i])
+    if (macro1->parm.params[i] != macro2->parm.params[i])
       return true;
 
   /* Check the replacement text or tokens.  */
@@ -3257,7 +3257,7 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
   if (ctoken->type == CPP_OPEN_PAREN && !(ctoken->flags & PREV_WHITE))
     {
       bool ok = parse_params (pfile, macro);
-      macro->params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
+      macro->parm.params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
       if (!ok)
 	return false;
 
@@ -3267,12 +3267,13 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 	  cpp_hashnode **params =
             (cpp_hashnode **) pfile->hash_table->alloc_subobject
             (sizeof (cpp_hashnode *) * macro->paramc);
-	  memcpy (params, macro->params,
+	  memcpy (params, macro->parm.params,
 		  sizeof (cpp_hashnode *) * macro->paramc);
-	  macro->params = params;
+	  macro->parm.params = params;
 	}
       else
-	BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->params[macro->paramc];
+	BUFF_FRONT (pfile->a_buff)
+	  = (uchar *) &macro->parm.params[macro->paramc];
       macro->fun_like = 1;
     }
   else if (ctoken->type != CPP_EOF && !(ctoken->flags & PREV_WHITE))
@@ -3464,7 +3465,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   else
     macro = (cpp_macro *) _cpp_aligned_alloc (pfile, sizeof (cpp_macro));
   macro->line = pfile->directive_line;
-  macro->params = 0;
+  macro->parm.params = 0;
   macro->paramc = 0;
   macro->variadic = 0;
   macro->used = !CPP_OPTION (pfile, warn_unused_macros);
@@ -3576,7 +3577,7 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
 	 identifier inside the string matches one of them.  */
       for (i = 0; i < macro->paramc; i++)
 	{
-	  const cpp_hashnode *node = macro->params[i];
+	  const cpp_hashnode *node = macro->parm.params[i];
 
 	  if (NODE_LEN (node) == len
 	      && !memcmp (p, NODE_NAME (node), len))
@@ -3630,7 +3631,7 @@ cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
       len += 4;		/* "()" plus possible final ".." of named
 			   varargs (we have + 1 below).  */
       for (i = 0; i < macro->paramc; i++)
-	len += NODE_LEN (macro->params[i]) + 1; /* "," */
+	len += NODE_LEN (macro->parm.params[i]) + 1; /* "," */
     }
 
   /* This should match below where we fill in the buffer.  */
@@ -3674,7 +3675,7 @@ cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
       *buffer++ = '(';
       for (i = 0; i < macro->paramc; i++)
 	{
-	  cpp_hashnode *param = macro->params[i];
+	  cpp_hashnode *param = macro->parm.params[i];
 
 	  if (param != pfile->spec_nodes.n__VA_ARGS__)
 	    {

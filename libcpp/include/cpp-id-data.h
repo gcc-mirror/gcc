@@ -33,24 +33,32 @@ struct GTY(()) answer {
 /* The kind of the cpp_macro.  */
 enum cpp_macro_kind {
   cmk_macro,	/* An ISO macro (token expansion).  */
+  cmk_assert,   /* An assertion.  */
   cmk_traditional,	/* A traditional macro (text expansion).  */
 };
 
 /* Each macro definition is recorded in a cpp_macro structure.
    Variadic macros cannot occur with traditional cpp.  */
 struct GTY(()) cpp_macro {
-  /* Parameters, if any.  If parameter names use extended identifiers,
-     the original spelling of those identifiers, not the canonical
-     UTF-8 spelling, goes here.  */
-  cpp_hashnode ** GTY ((nested_ptr (union tree_node,
+  union cpp_parm_u 
+  {
+    /* Parameters, if any.  If parameter names use extended identifiers,
+       the original spelling of those identifiers, not the canonical
+       UTF-8 spelling, goes here.  */
+    cpp_hashnode ** GTY ((tag ("false"),
+			  nested_ptr (union tree_node,
 	"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
 	"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL"),
-			  length ("%h.paramc"))) params;
+			  length ("%1.paramc"))) params;
+
+    /* If this is an assertion, the next one in the chain.  */
+    cpp_macro *GTY ((tag ("true"))) next;
+  } GTY ((desc ("%1.kind == cmk_assert"))) parm;
 
   union cpp_exp_u
   {
     /* Replacement tokens (ISO), or assertion body value.  */
-    cpp_token * GTY ((tag ("false"), length ("%0.count"))) tokens;
+    cpp_token * GTY ((tag ("false"), length ("%1.count"))) tokens;
 
     /* Replacement text (traditional).  See comment at top of
        cpptrad.c for how traditional function-like macros are

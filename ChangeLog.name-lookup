@@ -1,5 +1,18 @@
 2018-07-11  Nathan Sidwell  <nathan@acm.org>
 
+	Add cmk_assert structures
+	libcpp/
+	* include/cpp-id-data.h (enum cpp_macro_kind): Add cmk_assert.
+	(struct cpp_macro): Place parms in union.
+	* macro.c (warn_of_redefinition): Adjust param field access.
+	(create_iso_definiton, _cpp_create_definition): Likewise.
+	(check_trad_stringification, cpp_macro_definition): Likewise.
+	* traditional.c (_cpp_replacement_text_len): Likewise.
+	(_cpp_copy_replacement_text, _cpp_create_trad_definition): Likewise.
+	gcc/c-family/
+	* c-ada-spec.c (macro_length, dump_ada_macros): Adjust param field
+	access.
+
 	Add cpp_macro_kind
 	libcpp/
 	* include/cpp-id-data.h (enum cpp_macro_kind): New.

@@ -919,7 +919,7 @@ _cpp_replacement_text_len (const cpp_macro *macro)
 	  len += b->text_len;
 	  if (b->arg_index == 0)
 	    break;
-	  len += NODE_LEN (macro->params[b->arg_index - 1]);
+	  len += NODE_LEN (macro->parm.params[b->arg_index - 1]);
 	  exp += BLOCK_LEN (b->text_len);
 	}
     }
@@ -948,7 +948,7 @@ _cpp_copy_replacement_text (const cpp_macro *macro, uchar *dest)
 	  dest += b->text_len;
 	  if (b->arg_index == 0)
 	    break;
-	  param = macro->params[b->arg_index - 1];
+	  param = macro->parm.params[b->arg_index - 1];
 	  memcpy (dest, NODE_NAME (param), NODE_LEN (param));
 	  dest += NODE_LEN (param);
 	  exp += BLOCK_LEN (b->text_len);
@@ -1195,7 +1195,7 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
       bool ok = scan_parameters (pfile, macro);
 
       /* Remember the params so we can clear NODE_MACRO_ARG flags.  */
-      macro->params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
+      macro->parm.params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
 
       /* Setting macro to NULL indicates an error occurred, and
 	 prevents unnecessary work in _cpp_scan_out_logical_line.  */
@@ -1203,7 +1203,8 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
 	macro = NULL;
       else
 	{
-	  BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->params[macro->paramc];
+	  BUFF_FRONT (pfile->a_buff)
+	    = (uchar *) &macro->parm.params[macro->paramc];
 	  macro->fun_like = 1;
 	}
     }
