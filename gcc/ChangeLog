@@ -1,3 +1,16 @@
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (mprts_hook_cnt): Remove.
+	(vn_lookup_simplify_result): Remove recursion limit applied
+	here.
+	(vn_nary_build_or_lookup_1): Adjust.
+	(try_to_simplify): Likewise.
+	* gimple-match-head.c (gimple_resimplify1): Instead apply one
+	here.
+	(gimple_resimplify2): Likewise.
+	(gimple_resimplify3): Likewise.
+	(gimple_resimplify4): Likewise.
+
 2018-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/avx512bitalgintrin.h (_mm512_mask_bitshuffle_epi64_mask):
