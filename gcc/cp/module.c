@@ -167,6 +167,7 @@ Classes used:
 #include "toplev.h"
 #include "opts.h"
 #include "attribs.h"
+#include "intl.h"
 
 #if defined (HAVE_AF_UNIX) || defined (HAVE_AF_INET6)
 /* socket, connect, shutdown  */
@@ -7188,10 +7189,10 @@ module_mapper::module_mapper (location_t loc, const char *option)
   if (errmsg)
     {
       errno = err;
-      error_at (loc, err <= 0 ? "failed %s of mapper %qs: %s"
-		: "failed %s of mapper %qs: %m",
+      error_at (loc, err <= 0 ? G_("failed %s of mapper %qs: %s")
+		: G_("failed %s of mapper %qs: %m"),
 		errmsg, name ? name : option,
-		err < 0 ? gai_strerror (err) : "Facility not provided");
+		err < 0 ? gai_strerror (err) : _("Facility not provided"));
       kill (loc);
       return;
     }
@@ -10737,8 +10738,8 @@ declare_module (const cp_expr &name, bool exporting_p, tree, line_maps *lmaps)
       if (state->is_legacy () != modules_legacy_p ())
 	error_at (from_loc,
 		  state->is_legacy ()
-		  ? "legacy module only permitted with %<-fmodules-header%>"
-		  : "legacy module expected with %<-fmodules-header%>");
+		  ? G_("legacy module only permitted with %<-fmodules-header%>")
+		  : G_("legacy module expected with %<-fmodules-header%>"));
       if (state->is_legacy ())
 	{
 	  module_legacy_name = IDENTIFIER_POINTER (state->name);
@@ -11070,6 +11071,18 @@ init_module_processing ()
     fatal_error (input_location,
 		 "C++ modules incompatible with precompiled headers");
 
+  /* Check for ill-formed combinations.  */
+  if (!modules_atom_p ()
+      && (module_legacy_name || flag_module_preamble >= 0))
+    {
+      flag_modules = module_legacy_name ? -2 : -1;
+      error ("%s not suppported with %<-fmodules-ts%>",
+	     module_legacy_name ? "legacy headers" : "preamble parsing");
+    }
+
+  if (module_legacy_name && !module_legacy_name[0])
+    module_legacy_name = NULL;
+
   module_state::init ();
 }
 
@@ -11189,9 +11202,13 @@ handle_module_option (unsigned code, const char *str, int num)
     {
     case OPT_fmodule_preamble_:
       flag_module_preamble = num;
-      /* Fall through.  */
+      /* Default ATOM.  */
+      if (!flag_modules)
+	flag_modules = -1;
+      return true;
 
     case OPT_fmodules_atom:
+      /* Don't drop out of legacy mode.  */
       if (flag_modules >= 0)
 	flag_modules = -1;
       return true;
@@ -11212,9 +11229,11 @@ handle_module_option (unsigned code, const char *str, int num)
 	    if (str[l] == ':')
 	      str += l + 1;
 	    else if (!str[l])
-	      str = NULL;
+	      str += l;
 	  }
-	flag_modules = -2;
+	/* Default ATOM legacy.  */
+	if (flag_modules <= 0)
+	  flag_modules = -2;
 	module_legacy_name = str;
       }
       return true;

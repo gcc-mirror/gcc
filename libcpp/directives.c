@@ -2662,13 +2662,14 @@ cpp_get_deps (cpp_reader *pfile)
 void
 cpp_pop_directives (cpp_reader *pfile, bool all_files)
 {
-  cpp_buffer *buffer = pfile->buffer;
-  do
-    {
-      buffer->if_stack = NULL;
-      buffer = buffer->prev;
-    }
-  while (buffer && all_files);
+  /* We can have a NULL buffer, if we peeked to EOF.  */
+  if (cpp_buffer *buffer = pfile->buffer)
+    do
+      {
+	buffer->if_stack = NULL;
+	buffer = buffer->prev;
+      }
+    while (buffer && all_files);
 }
 
 /* Push a new buffer on the buffer stack.  Returns the new buffer; it

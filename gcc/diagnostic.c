@@ -606,20 +606,20 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 	      static const char *const msgs[] =
 		{
 		 NULL,
-		 "                 from",
-		 "In file included from",
-		 "        included from",
-		 "In file of module",
-		 "        of module",
-		 "In module imported at",
-		 "          imported at",
+		 N_("                 from"),
+		 N_("In file included from"),
+		 N_("        included from"),
+		 N_("In file of module"),
+		 N_("        of module"),
+		 N_("In module imported at"),
+		 N_("          imported at"),
 		};
 
 	      unsigned index = (was_module ? 6 : is_module ? 4
 				: need_inc ? 2 : 0) + !first;
 
 	      pp_verbatim (context->printer, "%s%s %r%s%s%R",
-			   first ? "" : ",\n", msgs[index],
+			   first ? "" : ",\n", G_(msgs[index]),
 			   "locus", LINEMAP_FILE (map), line_col);
 	      first = false, need_inc = was_module, was_module = is_module;
 	    }

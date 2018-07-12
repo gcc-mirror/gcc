@@ -1,5 +1,23 @@
 2018-07-12  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family/
+	* c.opt (fmodule-preamble): Alias fmodule-preamble=
+	(fmodule-preamble): Fix type.
+	* module.c: Add i18n markers.
+	(init_module_processing): Detect unsupported option combos.
+	(handle_module_option): Don't zap explicit modules-ts.
+	gcc/
+	* diagnostic.c (diagnostic_report_current_module): Add i18n
+	markers.
+	gcc/testsuite/
+	* g++.dg/modules/cpp-preamble-9.C: New.
+	* g++.dg/modules/modules.exp (mode_list): Preamble is atom.
+	libcpp/
+	* directives.c (cpp_pop_directives): Buffer could be NULL.
+
+	gcc/cp/
+	* lex.c (atom_preamble_prefix_peek): Use cpp_macro_p.
+
 	Hide NT_MACRO
 	libcpp/
 	* include/cpplib.h (cpp_macro_p): New.
