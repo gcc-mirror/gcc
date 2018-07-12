@@ -1,3 +1,10 @@
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86492
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::coalesce_immediate_stores): Call
+	check_no_overlap even for the merge_overlapping case.  Formatting fix.
+
 2018-07-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/86479

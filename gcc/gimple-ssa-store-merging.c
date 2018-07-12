@@ -2702,7 +2702,12 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	{
 	  /* Only allow overlapping stores of constants.  */
 	  if (info->rhs_code == INTEGER_CST
-	      && merged_store->stores[0]->rhs_code == INTEGER_CST)
+	      && merged_store->stores[0]->rhs_code == INTEGER_CST
+	      && check_no_overlap (m_store_info, i, INTEGER_CST,
+				   MAX (merged_store->last_order, info->order),
+				   MAX (merged_store->start
+					+ merged_store->width,
+					info->bitpos + info->bitsize)))
 	    {
 	      merged_store->merge_overlapping (info);
 	      goto done;
@@ -2732,10 +2737,8 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	      info->ops_swapped_p = true;
 	    }
 	  if (check_no_overlap (m_store_info, i, info->rhs_code,
-				MAX (merged_store->last_order,
-				     info->order),
-				MAX (merged_store->start
-				     + merged_store->width,
+				MAX (merged_store->last_order, info->order),
+				MAX (merged_store->start + merged_store->width,
 				     info->bitpos + info->bitsize)))
 	    {
 	      /* Turn MEM_REF into BIT_INSERT_EXPR for bit-field stores.  */
