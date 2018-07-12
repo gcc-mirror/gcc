@@ -416,7 +416,7 @@ class dump_location_t
 };
 
 /* In dumpfile.c */
-extern FILE *dump_begin (int, dump_flags_t *);
+extern FILE *dump_begin (int, dump_flags_t *, int part=-1);
 extern void dump_end (int, FILE *);
 extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
@@ -538,10 +538,10 @@ public:
   /* Return the name of the dump file for the given phase.
      If the dump is not enabled, returns NULL.  */
   char *
-  get_dump_file_name (int phase) const;
+  get_dump_file_name (int phase, int part = -1) const;
 
   char *
-  get_dump_file_name (struct dump_file_info *dfi) const;
+  get_dump_file_name (struct dump_file_info *dfi, int part = -1) const;
 
   int
   dump_switch_p (const char *arg);
@@ -560,7 +560,7 @@ public:
   dump_finish (int phase);
 
   FILE *
-  dump_begin (int phase, dump_flags_t *flag_ptr);
+  dump_begin (int phase, dump_flags_t *flag_ptr, int part);
 
   /* Returns nonzero if tree dump PHASE has been initialized.  */
   int

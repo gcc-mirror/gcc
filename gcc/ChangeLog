@@ -1,3 +1,13 @@
+2018-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* dumpfile.c (gcc::dump_manager::get_dump_file_name): Add PART
+	 parameter.
+	(gcc::dump_manager::get_dump_file_name): likewise.
+	(dump_begin): Likewise.
+	* dumpfile.h (dump_begin): Update prototype.
+	(gcc::dump_manager::get_dump_file_name,
+	gcc::dump_manager::get_dump_file_name): Update prototype.
+
 2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* internal-fn.h (vectorizable_internal_fn_p): New function.
