@@ -190,7 +190,7 @@ scan_translation_unit (cpp_reader *pfile)
 	    {
 	      /* We're bailing out, possibly in the middle of a #if
 		 nest.  We don't want that to cause problems.  */
-	      cpp_pop_directives (pfile, true);
+	      cpp_clear_if_stack (pfile);
 	      break;
 	    }
 	}

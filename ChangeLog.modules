@@ -1,5 +1,12 @@
 2018-07-12  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/cpplib.h (cpp_clear_if_stack): Renamed from
+	cpp_pop_directives.
+	* directives.c (cpp_clear_if_stack): Likewise, drop all arg.
+	gcc/c-family/
+	* c-ppoutput.c (scan_translation_unit): Fixup.
+
 	gcc/c-family/
 	* c.opt (fmodule-preamble): Alias fmodule-preamble=
 	(fmodule-preamble): Fix type.
@@ -13,7 +20,7 @@
 	* g++.dg/modules/cpp-preamble-9.C: New.
 	* g++.dg/modules/modules.exp (mode_list): Preamble is atom.
 	libcpp/
-	* directives.c (cpp_pop_directives): Buffer could be NULL.
+	* directives.c (cpp_pop_directives): Buffer could be NULL.le
 
 	gcc/cp/
 	* lex.c (atom_preamble_prefix_peek): Use cpp_macro_p.

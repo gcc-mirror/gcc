@@ -947,7 +947,7 @@ extern void cpp_unassert (cpp_reader *, const char *);
 /* Undefine all macros and assertions.  */
 extern void cpp_undef_all (cpp_reader *);
 
-extern void cpp_pop_directives (cpp_reader *, bool);
+extern void cpp_clear_if_stack (cpp_reader *);
 
 extern cpp_buffer *cpp_push_buffer (cpp_reader *, const unsigned char *,
 				    size_t, int);

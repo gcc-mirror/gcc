@@ -2657,19 +2657,14 @@ cpp_get_deps (cpp_reader *pfile)
   return pfile->deps;
 }
 
-/* Close #ifs in current (or all) open files.  */
+/* Close #ifs stack open files.  */
 
 void
-cpp_pop_directives (cpp_reader *pfile, bool all_files)
+cpp_clear_if_stack (cpp_reader *pfile)
 {
   /* We can have a NULL buffer, if we peeked to EOF.  */
-  if (cpp_buffer *buffer = pfile->buffer)
-    do
-      {
-	buffer->if_stack = NULL;
-	buffer = buffer->prev;
-      }
-    while (buffer && all_files);
+  for (cpp_buffer *buffer = pfile->buffer; buffer; buffer = buffer->prev)
+    buffer->if_stack = NULL;
 }
 
 /* Push a new buffer on the buffer stack.  Returns the new buffer; it
