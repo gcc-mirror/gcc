@@ -6587,6 +6587,13 @@ fold_binary_op_with_conditional_arg (location_t loc,
   tree rhs = NULL_TREE;
   enum tree_code cond_code = COND_EXPR;
 
+  /* Do not move possibly trapping operations into the conditional as this
+     pessimizes code and causes gimplification issues when applied late.  */
+  if (operation_could_trap_p (code, FLOAT_TYPE_P (type),
+			      ANY_INTEGRAL_TYPE_P (type)
+			      && TYPE_OVERFLOW_TRAPS (type), op1))
+    return NULL_TREE;
+
   if (TREE_CODE (cond) == COND_EXPR
       || TREE_CODE (cond) == VEC_COND_EXPR)
     {
