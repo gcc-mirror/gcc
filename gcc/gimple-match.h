@@ -40,16 +40,57 @@ private:
   int rep;
 };
 
+/* Represents the condition under which an operation should happen,
+   and the value to use otherwise.  The condition applies elementwise
+   (as for VEC_COND_EXPR) if the values are vectors.  */
+struct gimple_match_cond
+{
+  enum uncond { UNCOND };
+
+  /* Build an unconditional op.  */
+  gimple_match_cond (uncond) : cond (NULL_TREE), else_value (NULL_TREE) {}
+  gimple_match_cond (tree, tree);
+
+  gimple_match_cond any_else () const;
+
+  /* The condition under which the operation occurs, or NULL_TREE
+     if the operation is unconditional.  */
+  tree cond;
+
+  /* The value to use when the condition is false.  This is NULL_TREE if
+     the operation is unconditional or if the value doesn't matter.  */
+  tree else_value;
+};
+
+inline
+gimple_match_cond::gimple_match_cond (tree cond_in, tree else_value_in)
+  : cond (cond_in), else_value (else_value_in)
+{
+}
+
+/* Return a gimple_match_cond with the same condition but with an
+   arbitrary ELSE_VALUE.  */
+
+inline gimple_match_cond
+gimple_match_cond::any_else () const
+{
+  return gimple_match_cond (cond, NULL_TREE);
+}
+
 /* Represents an operation to be simplified, or the result of the
    simplification.  */
 struct gimple_match_op
 {
-  gimple_match_op () : type (NULL_TREE), num_ops (0) {}
-  gimple_match_op (code_helper, tree, unsigned int);
-  gimple_match_op (code_helper, tree, tree);
-  gimple_match_op (code_helper, tree, tree, tree);
-  gimple_match_op (code_helper, tree, tree, tree, tree);
-  gimple_match_op (code_helper, tree, tree, tree, tree, tree);
+  gimple_match_op ();
+  gimple_match_op (const gimple_match_cond &, code_helper, tree, unsigned int);
+  gimple_match_op (const gimple_match_cond &,
+		   code_helper, tree, tree);
+  gimple_match_op (const gimple_match_cond &,
+		   code_helper, tree, tree, tree);
+  gimple_match_op (const gimple_match_cond &,
+		   code_helper, tree, tree, tree, tree);
+  gimple_match_op (const gimple_match_cond &,
+		   code_helper, tree, tree, tree, tree, tree);
 
   void set_op (code_helper, tree, unsigned int);
   void set_op (code_helper, tree, tree);
@@ -62,6 +103,10 @@ struct gimple_match_op
 
   /* The maximum value of NUM_OPS.  */
   static const unsigned int MAX_NUM_OPS = 4;
+
+  /* The conditions under which the operation is performed, and the value to
+     use as a fallback.  */
+  gimple_match_cond cond;
 
   /* The operation being performed.  */
   code_helper code;
@@ -76,39 +121,49 @@ struct gimple_match_op
   tree ops[MAX_NUM_OPS];
 };
 
-/* Constructor that takes the code, type and number of operands, but leaves
-   the caller to fill in the operands.  */
+inline
+gimple_match_op::gimple_match_op ()
+  : cond (gimple_match_cond::UNCOND), type (NULL_TREE), num_ops (0)
+{
+}
+
+/* Constructor that takes the condition, code, type and number of
+   operands, but leaves the caller to fill in the operands.  */
 
 inline
-gimple_match_op::gimple_match_op (code_helper code_in, tree type_in,
+gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
+				  code_helper code_in, tree type_in,
 				  unsigned int num_ops_in)
-  : code (code_in), type (type_in), num_ops (num_ops_in)
+  : cond (cond_in), code (code_in), type (type_in), num_ops (num_ops_in)
 {
 }
 
 /* Constructors for various numbers of operands.  */
 
 inline
-gimple_match_op::gimple_match_op (code_helper code_in, tree type_in,
+gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
+				  code_helper code_in, tree type_in,
 				  tree op0)
-  : code (code_in), type (type_in), num_ops (1)
+  : cond (cond_in), code (code_in), type (type_in), num_ops (1)
 {
   ops[0] = op0;
 }
 
 inline
-gimple_match_op::gimple_match_op (code_helper code_in, tree type_in,
+gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
+				  code_helper code_in, tree type_in,
 				  tree op0, tree op1)
-  : code (code_in), type (type_in), num_ops (2)
+  : cond (cond_in), code (code_in), type (type_in), num_ops (2)
 {
   ops[0] = op0;
   ops[1] = op1;
 }
 
 inline
-gimple_match_op::gimple_match_op (code_helper code_in, tree type_in,
+gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
+				  code_helper code_in, tree type_in,
 				  tree op0, tree op1, tree op2)
-  : code (code_in), type (type_in), num_ops (3)
+  : cond (cond_in), code (code_in), type (type_in), num_ops (3)
 {
   ops[0] = op0;
   ops[1] = op1;
@@ -116,9 +171,10 @@ gimple_match_op::gimple_match_op (code_helper code_in, tree type_in,
 }
 
 inline
-gimple_match_op::gimple_match_op (code_helper code_in, tree type_in,
+gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
+				  code_helper code_in, tree type_in,
 				  tree op0, tree op1, tree op2, tree op3)
-  : code (code_in), type (type_in), num_ops (4)
+  : cond (cond_in), code (code_in), type (type_in), num_ops (4)
 {
   ops[0] = op0;
   ops[1] = op1;

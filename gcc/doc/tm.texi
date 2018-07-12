@@ -6048,6 +6048,22 @@ expanded sequence has been inserted.  This hook is also responsible
 for allocating any storage for reductions when necessary.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_PREFERRED_ELSE_VALUE (unsigned @var{ifn}, tree @var{type}, unsigned @var{nops}, tree *@var{ops})
+This hook returns the target's preferred final argument for a call
+to conditional internal function @var{ifn} (really of type
+@code{internal_fn}).  @var{type} specifies the return type of the
+function and @var{ops} are the operands to the conditional operation,
+of which there are @var{nops}.
+
+For example, if @var{ifn} is @code{IFN_COND_ADD}, the hook returns
+a value of type @var{type} that should be used when @samp{@var{ops}[0]}
+and @samp{@var{ops}[1]} are conditionally added together.
+
+This hook is only relevant if the target supports conditional patterns
+like @code{cond_add@var{m}}.  The default implementation returns a zero
+constant of type @var{type}.
+@end deftypefn
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses

@@ -1786,7 +1786,8 @@ vn_nary_simplify (vn_nary_op_t nary)
 {
   if (nary->length > gimple_match_op::MAX_NUM_OPS)
     return NULL_TREE;
-  gimple_match_op op (nary->opcode, nary->type, nary->length);
+  gimple_match_op op (gimple_match_cond::UNCOND, nary->opcode,
+		      nary->type, nary->length);
   memcpy (op.ops, nary->op, sizeof (tree) * nary->length);
   return vn_nary_build_or_lookup_1 (&op, false);
 }
@@ -2014,8 +2015,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  else if (INTEGRAL_TYPE_P (vr->type)
 		   && known_eq (ref->size, 8))
 	    {
-	      gimple_match_op res_op (NOP_EXPR, vr->type,
-				      gimple_call_arg (def_stmt, 1));
+	      gimple_match_op res_op (gimple_match_cond::UNCOND, NOP_EXPR,
+				      vr->type, gimple_call_arg (def_stmt, 1));
 	      val = vn_nary_build_or_lookup (&res_op);
 	      if (!val
 		  || (TREE_CODE (val) == SSA_NAME
@@ -2155,7 +2156,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	      || known_eq (ref->size, TYPE_PRECISION (vr->type)))
 	  && multiple_p (ref->size, BITS_PER_UNIT))
 	{
-	  gimple_match_op op (BIT_FIELD_REF, vr->type,
+	  gimple_match_op op (gimple_match_cond::UNCOND,
+			      BIT_FIELD_REF, vr->type,
 			      SSA_VAL (gimple_assign_rhs1 (def_stmt)),
 			      bitsize_int (ref->size),
 			      bitsize_int (offset - offset2));
@@ -3686,7 +3688,8 @@ visit_nary_op (tree lhs, gassign *stmt)
 		      unsigned rhs_prec = TYPE_PRECISION (TREE_TYPE (rhs1));
 		      if (lhs_prec == rhs_prec)
 			{
-			  gimple_match_op match_op (NOP_EXPR, type, ops[0]);
+			  gimple_match_op match_op (gimple_match_cond::UNCOND,
+						    NOP_EXPR, type, ops[0]);
 			  result = vn_nary_build_or_lookup (&match_op);
 			  if (result)
 			    {
@@ -3699,7 +3702,8 @@ visit_nary_op (tree lhs, gassign *stmt)
 			{
 			  tree mask = wide_int_to_tree
 			    (type, wi::mask (rhs_prec, false, lhs_prec));
-			  gimple_match_op match_op (BIT_AND_EXPR,
+			  gimple_match_op match_op (gimple_match_cond::UNCOND,
+						    BIT_AND_EXPR,
 						    TREE_TYPE (lhs),
 						    ops[0], mask);
 			  result = vn_nary_build_or_lookup (&match_op);
@@ -3823,7 +3827,8 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
 	 of VIEW_CONVERT_EXPR <TREE_TYPE (result)> (result).
 	 So first simplify and lookup this expression to see if it
 	 is already available.  */
-      gimple_match_op res_op (VIEW_CONVERT_EXPR, TREE_TYPE (op), result);
+      gimple_match_op res_op (gimple_match_cond::UNCOND,
+			      VIEW_CONVERT_EXPR, TREE_TYPE (op), result);
       result = vn_nary_build_or_lookup (&res_op);
     }
 

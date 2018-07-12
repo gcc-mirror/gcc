@@ -2306,4 +2306,12 @@ default_select_early_remat_modes (sbitmap)
 {
 }
 
+/* The default implementation of TARGET_PREFERRED_ELSE_VALUE.  */
+
+tree
+default_preferred_else_value (unsigned, tree type, unsigned, tree *)
+{
+  return build_zero_cst (type);
+}
+
 #include "gt-targhooks.h"
