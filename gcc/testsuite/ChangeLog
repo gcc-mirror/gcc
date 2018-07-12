@@ -1,3 +1,7 @@
+2018-07-12  Kito Cheng  <kito.cheng@gmail.com>
+
+        * gcc.target/riscv/interrupt-conflict-mode.c: New.
+
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/declare-target-3.c: New test.
