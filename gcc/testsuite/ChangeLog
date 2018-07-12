@@ -1,3 +1,8 @@
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86492
+	* gcc.c-torture/execute/pr86492.c: New test.
+
 2018-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/avx512bw-vpcmpb-2.c (CMP): Use SIZE macro instead
