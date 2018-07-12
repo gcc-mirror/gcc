@@ -1,3 +1,11 @@
+2018-07-12  Paul Koning  <ni1d@arrl.net>
+
+	* doc/rtl.texi (REG_NONNEG): Remove decrement and branch until
+	zero reference, add doloop_end instead.
+	* doc/md.texi (decrement_and_branch_until_zero): Remove.
+	(Looping patterns): Remove decrement_and_branch_until_zero.  Add
+	detail for doloop_end.
+
 2018-07-12  Martin Sebor  <msebor@redhat.com>
 
 	PR c/86453
