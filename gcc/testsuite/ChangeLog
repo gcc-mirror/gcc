@@ -1,3 +1,8 @@
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86492
+	* gcc.c-torture/execute/pr86492.c: New test.
+
 2018-07-12  Richard Biener  <rguenther@suse.de>
 
 	PR c/86453
