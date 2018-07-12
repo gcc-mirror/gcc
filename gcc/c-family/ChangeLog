@@ -1,3 +1,10 @@
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR c/86453
+	* c-attribs.c (handle_packed_attribute): Do not build a variant
+	type with TYPE_PACKED, instead ignore the attribute if we may
+	not apply to the original type.
+
 2018-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86443

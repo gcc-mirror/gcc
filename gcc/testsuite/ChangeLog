@@ -1,5 +1,10 @@
 2018-07-12  Richard Biener  <rguenther@suse.de>
 
+	PR c/86453
+	* g++.dg/warn/pr86453.C: New testcase.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/86479
 	* gcc.dg/graphite/pr86479.c: New testcase.
 
