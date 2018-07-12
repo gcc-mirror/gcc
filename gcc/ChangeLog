@@ -1,5 +1,13 @@
 2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* internal-fn.h (vectorizable_internal_fn_p): New function.
+	* tree-vect-slp.c (compatible_calls_p): Likewise.
+	(vect_build_slp_tree_1): Remove nops argument.  Handle calls
+	to internal functions.
+	(vect_build_slp_tree_2): Update call to vect_build_slp_tree_1.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* fold-const.h (inverse_conditions_p): Declare.
 	* fold-const.c (inverse_conditions_p): New function.
 	* match.pd: Use inverse_conditions_p.  Add folds of view_converts

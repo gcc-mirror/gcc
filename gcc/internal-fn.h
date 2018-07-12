@@ -160,6 +160,17 @@ direct_internal_fn_p (internal_fn fn)
   return direct_internal_fn_array[fn].type0 >= -1;
 }
 
+/* Return true if FN is a direct internal function that can be vectorized by
+   converting the return type and all argument types to vectors of the same
+   number of elements.  E.g. we can vectorize an IFN_SQRT on floats as an
+   IFN_SQRT on vectors of N floats.  */
+
+inline bool
+vectorizable_internal_fn_p (internal_fn fn)
+{
+  return direct_internal_fn_array[fn].vectorizable;
+}
+
 /* Return optab information about internal function FN.  Only meaningful
    if direct_internal_fn_p (FN).  */
 
