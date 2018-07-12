@@ -1,5 +1,7 @@
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/torture/20180712-1.c: New test.
+
 	PR tree-optimization/86492
 	* gcc.c-torture/execute/pr86492.c: New test.
 
