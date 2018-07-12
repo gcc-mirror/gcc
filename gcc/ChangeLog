@@ -1,5 +1,11 @@
 2018-07-12  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/86479
+	* fold-const.c (fold_binary_op_with_conditional_arg): Do not
+	move possibly trapping operations into the conditional.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-sccvn.c (mprts_hook_cnt): Remove.
 	(vn_lookup_simplify_result): Remove recursion limit applied
 	here.
