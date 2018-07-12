@@ -2648,7 +2648,12 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	{
 	  /* Only allow overlapping stores of constants.  */
 	  if (info->rhs_code == INTEGER_CST
-	      && merged_store->stores[0]->rhs_code == INTEGER_CST)
+	      && merged_store->stores[0]->rhs_code == INTEGER_CST
+	      && check_no_overlap (m_store_info, i, INTEGER_CST,
+				   MAX (merged_store->last_order, info->order),
+				   MAX (merged_store->start
+					+ merged_store->width,
+					info->bitpos + info->bitsize)))
 	    {
 	      merged_store->merge_overlapping (info);
 	      continue;
