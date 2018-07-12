@@ -2787,6 +2787,22 @@ compcode_to_comparison (enum comparison_code code)
     }
 }
 
+/* Return true if COND1 tests the opposite condition of COND2.  */
+
+bool
+inverse_conditions_p (const_tree cond1, const_tree cond2)
+{
+  return (COMPARISON_CLASS_P (cond1)
+	  && COMPARISON_CLASS_P (cond2)
+	  && (invert_tree_comparison
+	      (TREE_CODE (cond1),
+	       HONOR_NANS (TREE_OPERAND (cond1, 0))) == TREE_CODE (cond2))
+	  && operand_equal_p (TREE_OPERAND (cond1, 0),
+			      TREE_OPERAND (cond2, 0), 0)
+	  && operand_equal_p (TREE_OPERAND (cond1, 1),
+			      TREE_OPERAND (cond2, 1), 0));
+}
+
 /* Return a tree for the comparison which is the combination of
    doing the AND or OR (depending on CODE) of the two operations LCODE
    and RCODE on the identical operands LL_ARG and LR_ARG.  Take into account

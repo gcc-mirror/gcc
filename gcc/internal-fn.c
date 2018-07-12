@@ -3466,7 +3466,8 @@ internal_fn_mask_index (internal_fn fn)
       return 4;
 
     default:
-      return -1;
+      return (conditional_internal_fn_code (fn) != ERROR_MARK
+	      || get_unconditional_internal_fn (fn) != IFN_LAST ? 0 : -1);
     }
 }
 
@@ -3529,6 +3530,26 @@ void
 expand_internal_call (gcall *stmt)
 {
   expand_internal_call (gimple_call_internal_fn (stmt), stmt);
+}
+
+/* If TYPE is a vector type, return true if IFN is a direct internal
+   function that is supported for that type.  If TYPE is a scalar type,
+   return true if IFN is a direct internal function that is supported for
+   the target's preferred vector version of TYPE.  */
+
+bool
+vectorized_internal_fn_supported_p (internal_fn ifn, tree type)
+{
+  scalar_mode smode;
+  if (!VECTOR_TYPE_P (type) && is_a <scalar_mode> (TYPE_MODE (type), &smode))
+    {
+      machine_mode vmode = targetm.vectorize.preferred_simd_mode (smode);
+      if (VECTOR_MODE_P (vmode))
+	type = build_vector_type_for_mode (type, vmode);
+    }
+
+  return (VECTOR_MODE_P (TYPE_MODE (type))
+	  && direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED));
 }
 
 void
