@@ -212,4 +212,6 @@ extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);
 extern void expand_PHI (internal_fn, gcall *);
 
+extern bool vectorized_internal_fn_supported_p (internal_fn, tree);
+
 #endif

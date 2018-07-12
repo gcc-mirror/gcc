@@ -1,4 +1,38 @@
 2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* fold-const.h (inverse_conditions_p): Declare.
+	* fold-const.c (inverse_conditions_p): New function.
+	* match.pd: Use inverse_conditions_p.  Add folds of view_converts
+	that test the inverse condition of a conditional internal function.
+	* internal-fn.h (vectorized_internal_fn_supported_p): Declare.
+	* internal-fn.c (internal_fn_mask_index): Handle conditional
+	internal functions.
+	(vectorized_internal_fn_supported_p): New function.
+	* tree-if-conv.c: Include internal-fn.h and fold-const.h.
+	(any_pred_load_store): Replace with...
+	(need_to_predicate): ...this new variable.
+	(redundant_ssa_names): New variable.
+	(ifcvt_can_use_mask_load_store): Move initial checks to...
+	(ifcvt_can_predicate): ...this new function.  Handle tree codes
+	for which a conditional internal function exists.
+	(if_convertible_gimple_assign_stmt_p): Use ifcvt_can_predicate
+	instead of ifcvt_can_use_mask_load_store.  Update after variable
+	name change.
+	(predicate_load_or_store): New function, split out from
+	predicate_mem_writes.
+	(check_redundant_cond_expr): New function.
+	(value_available_p): Likewise.
+	(predicate_rhs_code): Likewise.
+	(predicate_mem_writes): Rename to...
+	(predicate_statements): ...this.  Use predicate_load_or_store
+	and predicate_rhs_code.
+	(combine_blocks, tree_if_conversion): Update after above name changes.
+	(ifcvt_local_dce): Handle redundant_ssa_names.
+	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): Handle
+	general conditional functions.
+	* tree-vect-stmts.c (vectorizable_call): Likewise.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

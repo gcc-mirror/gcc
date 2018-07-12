@@ -3905,65 +3905,68 @@ vect_recog_mask_conversion_pattern (stmt_vec_info stmt_vinfo, tree *type_out)
 
   /* Check for MASK_LOAD ans MASK_STORE calls requiring mask conversion.  */
   if (is_gimple_call (last_stmt)
-      && gimple_call_internal_p (last_stmt)
-      && (gimple_call_internal_fn (last_stmt) == IFN_MASK_STORE
-	  || gimple_call_internal_fn (last_stmt) == IFN_MASK_LOAD))
+      && gimple_call_internal_p (last_stmt))
     {
       gcall *pattern_stmt;
-      bool load = (gimple_call_internal_fn (last_stmt) == IFN_MASK_LOAD);
 
-      if (load)
+      internal_fn ifn = gimple_call_internal_fn (last_stmt);
+      int mask_argno = internal_fn_mask_index (ifn);
+      if (mask_argno < 0)
+	return NULL;
+
+      bool store_p = internal_store_fn_p (ifn);
+      if (store_p)
+	{
+	  int rhs_index = internal_fn_stored_value_index (ifn);
+	  tree rhs = gimple_call_arg (last_stmt, rhs_index);
+	  vectype1 = get_vectype_for_scalar_type (TREE_TYPE (rhs));
+	}
+      else
 	{
 	  lhs = gimple_call_lhs (last_stmt);
 	  vectype1 = get_vectype_for_scalar_type (TREE_TYPE (lhs));
 	}
-      else
-	{
-	  rhs2 = gimple_call_arg (last_stmt, 3);
-	  vectype1 = get_vectype_for_scalar_type (TREE_TYPE (rhs2));
-	}
 
-      rhs1 = gimple_call_arg (last_stmt, 2);
-      rhs1_type = search_type_for_mask (rhs1, vinfo);
-      if (!rhs1_type)
+      tree mask_arg = gimple_call_arg (last_stmt, mask_argno);
+      tree mask_arg_type = search_type_for_mask (mask_arg, vinfo);
+      if (!mask_arg_type)
 	return NULL;
-      vectype2 = get_mask_type_for_scalar_type (rhs1_type);
+      vectype2 = get_mask_type_for_scalar_type (mask_arg_type);
 
       if (!vectype1 || !vectype2
 	  || known_eq (TYPE_VECTOR_SUBPARTS (vectype1),
 		       TYPE_VECTOR_SUBPARTS (vectype2)))
 	return NULL;
 
-      tmp = build_mask_conversion (rhs1, vectype1, stmt_vinfo);
+      tmp = build_mask_conversion (mask_arg, vectype1, stmt_vinfo);
 
-      if (load)
+      auto_vec<tree, 8> args;
+      unsigned int nargs = gimple_call_num_args (last_stmt);
+      args.safe_grow (nargs);
+      for (unsigned int i = 0; i < nargs; ++i)
+	args[i] = ((int) i == mask_argno
+		   ? tmp
+		   : gimple_call_arg (last_stmt, i));
+      pattern_stmt = gimple_build_call_internal_vec (ifn, args);
+
+      if (!store_p)
 	{
 	  lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
-	  pattern_stmt
-	    = gimple_build_call_internal (IFN_MASK_LOAD, 3,
-					  gimple_call_arg (last_stmt, 0),
-					  gimple_call_arg (last_stmt, 1),
-					  tmp);
 	  gimple_call_set_lhs (pattern_stmt, lhs);
 	}
-      else
-	  pattern_stmt
-	    = gimple_build_call_internal (IFN_MASK_STORE, 4,
-					  gimple_call_arg (last_stmt, 0),
-					  gimple_call_arg (last_stmt, 1),
-					  tmp,
-					  gimple_call_arg (last_stmt, 3));
-
       gimple_call_set_nothrow (pattern_stmt, true);
 
       pattern_stmt_info = new_stmt_vec_info (pattern_stmt, vinfo);
       set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
-      STMT_VINFO_DATA_REF (pattern_stmt_info)
-	= STMT_VINFO_DATA_REF (stmt_vinfo);
-      STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
-	= STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
-      STMT_VINFO_GATHER_SCATTER_P (pattern_stmt_info)
-	= STMT_VINFO_GATHER_SCATTER_P (stmt_vinfo);
+      if (STMT_VINFO_DATA_REF (stmt_vinfo))
+	{
+	  STMT_VINFO_DATA_REF (pattern_stmt_info)
+	    = STMT_VINFO_DATA_REF (stmt_vinfo);
+	  STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
+	    = STMT_VINFO_DR_WRT_VEC_LOOP (stmt_vinfo);
+	  STMT_VINFO_GATHER_SCATTER_P (pattern_stmt_info)
+	    = STMT_VINFO_GATHER_SCATTER_P (stmt_vinfo);
+	}
 
       *type_out = vectype1;
       vect_pattern_detected ("vect_recog_mask_conversion_pattern", last_stmt);
