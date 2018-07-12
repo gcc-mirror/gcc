@@ -27,7 +27,7 @@ typedef unsigned char uchar;
 struct GTY(()) answer {
   struct answer *next;
   unsigned int count;
-  cpp_token GTY ((length ("%h.count"))) first[1];
+  cpp_token *GTY ((length ("%h.count"))) exp;
 };
 
 /* The kind of the cpp_macro.  */

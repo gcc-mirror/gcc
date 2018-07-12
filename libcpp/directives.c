@@ -124,9 +124,11 @@ static const cpp_token *get_token_no_padding (cpp_reader *);
 static const cpp_token *get__Pragma_string (cpp_reader *);
 static void destringize_and_run (cpp_reader *, const cpp_string *,
 				 source_location);
-static int parse_answer (cpp_reader *, struct answer **, int, source_location);
-static cpp_hashnode *parse_assertion (cpp_reader *, struct answer **, int);
-static struct answer ** find_answer (cpp_hashnode *, const struct answer *);
+static int parse_answer (cpp_reader *, int, source_location, cpp_token **);
+static cpp_hashnode *parse_assertion (cpp_reader *, int,
+				      cpp_token **, unsigned *);
+static struct answer ** find_answer (cpp_hashnode *,
+				     const cpp_token *exp, unsigned);
 static void handle_assertion (cpp_reader *, const char *, int);
 static void do_pragma_push_macro (cpp_reader *);
 static void do_pragma_pop_macro (cpp_reader *);
@@ -2177,21 +2179,19 @@ push_conditional (cpp_reader *pfile, int skip, int type,
 }
 
 /* Read the tokens of the answer into the macro pool, in a directive
-   of type TYPE.  Only commit the memory if we intend it as permanent
-   storage, i.e. the #assert case.  Returns 0 on success, and sets
-   ANSWERP to point to the answer.  PRED_LOC is the location of the
-   predicate.  */
-static int
-parse_answer (cpp_reader *pfile, struct answer **answerp, int type,
-	      source_location pred_loc)
-{
-  const cpp_token *paren;
-  struct answer *answer;
-  unsigned int acount;
+   of type TYPE.  The result is stored in temporary storage, caller
+   will need to make that permanent in the #assert case.
 
+   Returns expansion length (which may be zero) on success.  <0 on error.
+   PRED_LOC is the location of the predicate.  */
+
+static int
+parse_answer (cpp_reader *pfile, int type, source_location pred_loc,
+	      cpp_token **exp_ptr)
+{
   /* In a conditional, it is legal to not have an open paren.  We
      should save the following token in this case.  */
-  paren = cpp_get_token (pfile);
+  const cpp_token *paren = cpp_get_token (pfile);
 
   /* If not a paren, see if we're OK.  */
   if (paren->type != CPP_OPEN_PAREN)
@@ -2210,15 +2210,14 @@ parse_answer (cpp_reader *pfile, struct answer **answerp, int type,
 
       cpp_error_with_line (pfile, CPP_DL_ERROR, pred_loc, 0,
 			   "missing '(' after predicate");
-      return 1;
+      return -1;
     }
 
-  for (acount = 0;; acount++)
-    {
-      size_t room_needed;
-      const cpp_token *token = cpp_get_token (pfile);
-      cpp_token *dest;
+  unsigned count = 0;
 
+  for (;;)
+    {
+      const cpp_token *token = cpp_get_token (pfile);
       if (token->type == CPP_CLOSE_PAREN)
 	break;
 
@@ -2228,62 +2227,65 @@ parse_answer (cpp_reader *pfile, struct answer **answerp, int type,
 	  return 1;
 	}
 
-      /* struct answer includes the space for one token.  */
-      room_needed = (sizeof (struct answer) + acount * sizeof (cpp_token));
+      size_t needed = (count + 1) * sizeof (cpp_token) + sizeof (answer);
+      if (BUFF_ROOM (pfile->a_buff) < needed)
+	_cpp_extend_buff (pfile, &pfile->a_buff, needed);
 
-      if (BUFF_ROOM (pfile->a_buff) < room_needed)
-	_cpp_extend_buff (pfile, &pfile->a_buff, sizeof (struct answer));
-
-      dest = &((struct answer *) BUFF_FRONT (pfile->a_buff))->first[acount];
+      cpp_token *dest = &((cpp_token *)BUFF_FRONT (pfile->a_buff))[count++];
       *dest = *token;
-
-      /* Drop whitespace at start, for answer equivalence purposes.  */
-      if (acount == 0)
-	dest->flags &= ~PREV_WHITE;
     }
 
-  if (acount == 0)
+  if (!count)
     {
       cpp_error (pfile, CPP_DL_ERROR, "predicate's answer is empty");
-      return 1;
+      return -1;
     }
 
-  answer = (struct answer *) BUFF_FRONT (pfile->a_buff);
-  answer->count = acount;
-  answer->next = NULL;
-  *answerp = answer;
+  cpp_token *exp = (cpp_token *)BUFF_FRONT (pfile->a_buff);
 
-  return 0;
+  /* Drop whitespace at start, for answer equivalence purposes.  */
+  exp[0].flags &= ~PREV_WHITE;
+
+  *exp_ptr = exp;
+
+  return count;
 }
 
 /* Parses an assertion directive of type TYPE, returning a pointer to
    the hash node of the predicate, or 0 on error.  If an answer was
-   supplied, it is placed in ANSWERP, otherwise it is set to 0.  */
+   supplied, it is placed in EXP_PTR & EXP_COUNT, which is otherwise
+   set to 0.  */
 static cpp_hashnode *
-parse_assertion (cpp_reader *pfile, struct answer **answerp, int type)
+parse_assertion (cpp_reader *pfile, int type,
+		 cpp_token **exp_ptr, unsigned *exp_count)
 {
   cpp_hashnode *result = 0;
-  const cpp_token *predicate;
 
   /* We don't expand predicates or answers.  */
   pfile->state.prevent_expansion++;
 
-  *answerp = 0;
-  predicate = cpp_get_token (pfile);
+  *exp_count = 0;
+
+  const cpp_token *predicate = cpp_get_token (pfile);
   if (predicate->type == CPP_EOF)
     cpp_error (pfile, CPP_DL_ERROR, "assertion without predicate");
   else if (predicate->type != CPP_NAME)
     cpp_error_with_line (pfile, CPP_DL_ERROR, predicate->src_loc, 0,
 			 "predicate must be an identifier");
-  else if (parse_answer (pfile, answerp, type, predicate->src_loc) == 0)
+  else
     {
-      unsigned int len = NODE_LEN (predicate->val.node.node);
-      unsigned char *sym = (unsigned char *) alloca (len + 1);
+      int count = parse_answer (pfile, type, predicate->src_loc, exp_ptr);
+      if (count >= 0)
+	{
+	  *exp_count = count;
+	  unsigned int len = NODE_LEN (predicate->val.node.node);
+	  unsigned char *sym = (unsigned char *) alloca (len + 1);
 
-      /* Prefix '#' to get it out of macro namespace.  */
-      sym[0] = '#';
-      memcpy (sym + 1, NODE_NAME (predicate->val.node.node), len);
-      result = cpp_lookup (pfile, sym, len + 1);
+	  /* Prefix '#' to get it out of macro namespace.  */
+	  sym[0] = '#';
+	  memcpy (sym + 1, NODE_NAME (predicate->val.node.node), len);
+	  result = cpp_lookup (pfile, sym, len + 1);
+	}
     }
 
   pfile->state.prevent_expansion--;
@@ -2292,25 +2294,26 @@ parse_assertion (cpp_reader *pfile, struct answer **answerp, int type)
 
 /* Returns a pointer to the pointer to CANDIDATE in the answer chain,
    or a pointer to NULL if the answer is not in the chain.  */
+
 static struct answer **
-find_answer (cpp_hashnode *node, const struct answer *candidate)
+find_answer (cpp_hashnode *node, const cpp_token *exp, unsigned count)
 {
-  unsigned int i;
   struct answer **result;
 
   for (result = &node->value.answers; *result; result = &(*result)->next)
     {
       struct answer *answer = *result;
 
-      if (answer->count == candidate->count)
-	{
-	  for (i = 0; i < answer->count; i++)
-	    if (! _cpp_equiv_tokens (&answer->first[i], &candidate->first[i]))
-	      break;
+      if (count != answer->count)
+	continue;
 
-	  if (i == answer->count)
-	    break;
-	}
+      unsigned i;
+      for (i = 0; i < count; i++)
+	if (! _cpp_equiv_tokens (&answer->exp[i], &exp[i]))
+	  break;
+
+      if (i == count)
+	break;
     }
 
   return result;
@@ -2319,13 +2322,14 @@ find_answer (cpp_hashnode *node, const struct answer *candidate)
 /* Test an assertion within a preprocessor conditional.  Returns
    nonzero on failure, zero on success.  On success, the result of
    the test is written into VALUE, otherwise the value 0.  */
+
 int
 _cpp_test_assertion (cpp_reader *pfile, unsigned int *value)
 {
-  struct answer *answer;
-  cpp_hashnode *node;
+  cpp_token *exp;
+  unsigned count;
 
-  node = parse_assertion (pfile, &answer, T_IF);
+  cpp_hashnode *node = parse_assertion (pfile, T_IF, &exp, &count);
 
   /* For recovery, an erroneous assertion expression is handled as a
      failing assertion.  */
@@ -2333,7 +2337,7 @@ _cpp_test_assertion (cpp_reader *pfile, unsigned int *value)
 
   if (node)
     *value = (node->type == NT_ASSERTION &&
-	      (answer == 0 || *find_answer (node, answer) != 0));
+	      (!count || *find_answer (node, exp, count) != 0));
   else if (pfile->cur_token[-1].type == CPP_EOF)
     _cpp_backup_tokens (pfile, 1);
 
@@ -2345,43 +2349,61 @@ _cpp_test_assertion (cpp_reader *pfile, unsigned int *value)
 static void
 do_assert (cpp_reader *pfile)
 {
-  struct answer *new_answer;
-  cpp_hashnode *node;
+  cpp_token *exp;
+  unsigned count;
+  cpp_hashnode *node = parse_assertion (pfile, T_ASSERT, &exp, &count);
 
-  node = parse_assertion (pfile, &new_answer, T_ASSERT);
   if (node)
     {
-      size_t answer_size;
+      answer *next = NULL;
 
       /* Place the new answer in the answer list.  First check there
          is not a duplicate.  */
-      new_answer->next = 0;
       if (node->type == NT_ASSERTION)
 	{
-	  if (*find_answer (node, new_answer))
+	  if (*find_answer (node, exp, count))
 	    {
 	      cpp_error (pfile, CPP_DL_WARNING, "\"%s\" re-asserted",
 			 NODE_NAME (node) + 1);
 	      return;
 	    }
-	  new_answer->next = node->value.answers;
+	  next = node->value.answers;
 	}
 
-      answer_size = sizeof (struct answer) + ((new_answer->count - 1)
-					      * sizeof (cpp_token));
-      /* Commit or allocate storage for the object.  */
+      size_t size = count * sizeof (cpp_token);
+      /* Commit or allocate storage for the expansion.  */
       if (pfile->hash_table->alloc_subobject)
 	{
-	  struct answer *temp_answer = new_answer;
-	  new_answer = (struct answer *) pfile->hash_table->alloc_subobject
-            (answer_size);
-	  memcpy (new_answer, temp_answer, answer_size);
+	  cpp_token *saved_exp
+	    = (cpp_token *)pfile->hash_table->alloc_subobject (size);
+	  memcpy (saved_exp, exp, size);
+	  exp = saved_exp;
 	}
       else
-	BUFF_FRONT (pfile->a_buff) += answer_size;
+	{
+	  gcc_assert (BUFF_FRONT (pfile->a_buff) == (void *)exp);
+	  BUFF_FRONT (pfile->a_buff) += size;
+	}
+
+      /* Create the answer object.  */
+      answer *ans = NULL;
+      if (pfile->hash_table->alloc_subobject)
+	ans = (answer *)pfile->hash_table->alloc_subobject (sizeof (answer));
+      else
+	{
+	  if (BUFF_ROOM (pfile->a_buff) < sizeof (answer))
+	    _cpp_extend_buff (pfile, &pfile->a_buff, sizeof (answer));
+	  ans = (answer *)BUFF_FRONT (pfile->a_buff);
+	  BUFF_FRONT (pfile->a_buff) += sizeof (answer);
+	}
+
+      ans->count = count;
+      ans->exp = exp;
+      ans->next = next;
 
       node->type = NT_ASSERTION;
-      node->value.answers = new_answer;
+      node->value.answers = ans;
+
       check_eol (pfile, false);
     }
 }
@@ -2390,16 +2412,16 @@ do_assert (cpp_reader *pfile)
 static void
 do_unassert (cpp_reader *pfile)
 {
-  cpp_hashnode *node;
-  struct answer *answer;
+  cpp_token *exp;
+  unsigned count;
+  cpp_hashnode *node =parse_assertion (pfile, T_UNASSERT, &exp, &count);
 
-  node = parse_assertion (pfile, &answer, T_UNASSERT);
   /* It isn't an error to #unassert something that isn't asserted.  */
   if (node && node->type == NT_ASSERTION)
     {
-      if (answer)
+      if (count)
 	{
-	  struct answer **p = find_answer (node, answer), *temp;
+	  struct answer **p = find_answer (node, exp, count), *temp;
 
 	  /* Remove the answer from the list.  */
 	  temp = *p;

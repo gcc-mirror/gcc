@@ -1,3 +1,13 @@
+2018-07-12  Nathan Sidwell  <nathan@acm.org>
+
+	assert body is indirect.
+	libcpp/
+	* include/cpp-id-data.h (struct answer): Make body an external
+	pointer.
+	* directives.c (parse_answer, parse_assertion, find_answer): Use
+	separate base-ptr/len tuple for body.
+	(_cpp_test_assertion, do_assert, do_unassert): Adjust.
+
 2018-07-11  Nathan Sidwell  <nathan@acm.org>
 
 	Add cmk_assert structures
