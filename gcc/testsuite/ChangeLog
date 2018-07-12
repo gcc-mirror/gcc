@@ -1,3 +1,7 @@
+2018-07-12  Jim Wilson  <jimw@sifive.com>
+
+	* gnat.dg/warn5.adb: Expect warning for riscv*-*-*.
+
 2018-07-12  Kito Cheng  <kito.cheng@gmail.com>
 
         * gcc.target/riscv/interrupt-conflict-mode.c: New.
