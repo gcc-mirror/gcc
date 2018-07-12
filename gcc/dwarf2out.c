@@ -25627,22 +25627,28 @@ gen_block_die (tree stmt, dw_die_ref context_die)
        we might have pruned all BLOCK_VARS as optimized out but we
        still want to generate high/low PC attributes so output it.  */
     must_output_die = 1;
-  else
+  else if (TREE_USED (stmt)
+	   || TREE_ASM_WRITTEN (stmt)
+	   || BLOCK_ABSTRACT (stmt))
     {
       /* Determine if this block directly contains any "significant"
 	 local declarations which we will need to output DIEs for.  */
       if (debug_info_level > DINFO_LEVEL_TERSE)
-	/* We are not in terse mode so *any* local declaration counts
-	   as being a "significant" one.  */
-	must_output_die = ((BLOCK_VARS (stmt) != NULL
-			    || BLOCK_NUM_NONLOCALIZED_VARS (stmt))
-			   && (TREE_USED (stmt)
-			       || TREE_ASM_WRITTEN (stmt)
-			       || BLOCK_ABSTRACT (stmt)));
-      else if ((TREE_USED (stmt)
-		|| TREE_ASM_WRITTEN (stmt)
-		|| BLOCK_ABSTRACT (stmt))
-      	       && !dwarf2out_ignore_block (stmt))
+	{
+	  /* We are not in terse mode so any local declaration that
+	     is not ignored for debug purposes counts as being a
+	     "significant" one.  */
+	  if (BLOCK_NUM_NONLOCALIZED_VARS (stmt))
+	    must_output_die = 1;
+	  else
+	    for (tree var = BLOCK_VARS (stmt); var; var = DECL_CHAIN (var))
+	      if (!DECL_IGNORED_P (var))
+		{
+		  must_output_die = 1;
+		  break;
+		}
+	}
+      else if (!dwarf2out_ignore_block (stmt))
 	must_output_die = 1;
     }
 
