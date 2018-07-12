@@ -1,3 +1,9 @@
+2018-07-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/86453
+	* attribs.c (decl_attributes): Reject conflicting attributes before
+	calling attribute handlers.
+
 2018-07-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* dumpfile.c (gcc::dump_manager::get_dump_file_name): Add PART
