@@ -6438,6 +6438,23 @@ Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
 integer if @var{m} is scalar, otherwise it has the mode returned by
 @code{TARGET_VECTORIZE_GET_MASK_MODE}.
 
+@cindex @code{cond_fma@var{mode}} instruction pattern
+@cindex @code{cond_fms@var{mode}} instruction pattern
+@cindex @code{cond_fnma@var{mode}} instruction pattern
+@cindex @code{cond_fnms@var{mode}} instruction pattern
+@item @samp{cond_fma@var{mode}}
+@itemx @samp{cond_fms@var{mode}}
+@itemx @samp{cond_fnma@var{mode}}
+@itemx @samp{cond_fnms@var{mode}}
+Like @samp{cond_add@var{m}}, except that the conditional operation
+takes 3 operands rather than two.  For example, the vector form of
+@samp{cond_fma@var{mode}} is equivalent to:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
+@end smallexample
+
 @cindex @code{neg@var{mode}cc} instruction pattern
 @item @samp{neg@var{mode}cc}
 Similar to @samp{mov@var{mode}cc} but for conditional negation.  Conditionally

@@ -1320,14 +1320,18 @@ aarch64_get_mask_mode (poly_uint64 nunits, poly_uint64 nbytes)
   return default_get_mask_mode (nunits, nbytes);
 }
 
-/* Implement TARGET_PREFERRED_ELSE_VALUE.  Prefer to use the first
-   arithmetic operand as the else value if the else value doesn't matter,
-   since that exactly matches the SVE destructive merging form.  */
+/* Implement TARGET_PREFERRED_ELSE_VALUE.  For binary operations,
+   prefer to use the first arithmetic operand as the else value if
+   the else value doesn't matter, since that exactly matches the SVE
+   destructive merging form.  For ternary operations we could either
+   pick the first operand and use FMAD-like instructions or the last
+   operand and use FMLA-like instructions; the latter seems more
+   natural.  */
 
 static tree
-aarch64_preferred_else_value (unsigned, tree, unsigned int, tree *ops)
+aarch64_preferred_else_value (unsigned, tree, unsigned int nops, tree *ops)
 {
-  return ops[0];
+  return nops == 3 ? ops[2] : ops[0];
 }
 
 /* Implement TARGET_HARD_REGNO_NREGS.  */

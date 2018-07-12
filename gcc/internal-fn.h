@@ -193,7 +193,9 @@ direct_internal_fn_supported_p (internal_fn fn, tree type0, tree type1,
 extern bool set_edom_supported_p (void);
 
 extern internal_fn get_conditional_internal_fn (tree_code);
+extern internal_fn get_conditional_internal_fn (internal_fn);
 extern tree_code conditional_internal_fn_code (internal_fn);
+extern internal_fn get_unconditional_internal_fn (internal_fn);
 
 extern bool internal_load_fn_p (internal_fn);
 extern bool internal_store_fn_p (internal_fn);

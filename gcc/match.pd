@@ -86,6 +86,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   IFN_COND_MUL IFN_COND_DIV IFN_COND_MOD IFN_COND_RDIV
   IFN_COND_MIN IFN_COND_MAX
   IFN_COND_AND IFN_COND_IOR IFN_COND_XOR)
+
+/* Same for ternary operations.  */
+(define_operator_list UNCOND_TERNARY
+  IFN_FMA IFN_FMS IFN_FNMA IFN_FNMS)
+(define_operator_list COND_TERNARY
+  IFN_COND_FMA IFN_COND_FMS IFN_COND_FNMA IFN_COND_FNMS)
     
 /* As opposed to convert?, this still creates a single pattern, so
    it is not a suitable replacement for convert? in all cases.  */
@@ -4885,6 +4891,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (element_precision (type) == element_precision (op_type))
     (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1)))))))
 
+/* Same for ternary operations.  */
+(for uncond_op (UNCOND_TERNARY)
+     cond_op (COND_TERNARY)
+ (simplify
+  (vec_cond @0 (view_convert? (uncond_op@5 @1 @2 @3)) @4)
+  (with { tree op_type = TREE_TYPE (@5); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_op @0 @1 @2 @3 (view_convert:op_type @4))))))
+ (simplify
+  (vec_cond @0 @1 (view_convert? (uncond_op@5 @2 @3 @4)))
+  (with { tree op_type = TREE_TYPE (@5); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_op (bit_not @0) @2 @3 @4
+		  (view_convert:op_type @1)))))))
+
 /* Detect cases in which a VEC_COND_EXPR effectively replaces the
    "else" value of an IFN_COND_*.  */
 (for cond_op (COND_BINARY)
@@ -4893,3 +4914,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with { tree op_type = TREE_TYPE (@3); }
    (if (element_precision (type) == element_precision (op_type))
     (view_convert (cond_op @0 @1 @2 (view_convert:op_type @4)))))))
+
+/* Same for ternary operations.  */
+(for cond_op (COND_TERNARY)
+ (simplify
+  (vec_cond @0 (view_convert? (cond_op @0 @1 @2 @3 @4)) @5)
+  (with { tree op_type = TREE_TYPE (@4); }
+   (if (element_precision (type) == element_precision (op_type))
+    (view_convert (cond_op @0 @1 @2 @3 (view_convert:op_type @5)))))))

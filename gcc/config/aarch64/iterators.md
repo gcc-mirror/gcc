@@ -471,6 +471,10 @@
     UNSPEC_COND_DIV	; Used in aarch64-sve.md.
     UNSPEC_COND_MAX	; Used in aarch64-sve.md.
     UNSPEC_COND_MIN	; Used in aarch64-sve.md.
+    UNSPEC_COND_FMLA	; Used in aarch64-sve.md.
+    UNSPEC_COND_FMLS	; Used in aarch64-sve.md.
+    UNSPEC_COND_FNMLA	; Used in aarch64-sve.md.
+    UNSPEC_COND_FNMLS	; Used in aarch64-sve.md.
     UNSPEC_COND_LT	; Used in aarch64-sve.md.
     UNSPEC_COND_LE	; Used in aarch64-sve.md.
     UNSPEC_COND_EQ	; Used in aarch64-sve.md.
@@ -1567,6 +1571,11 @@
 					 UNSPEC_COND_MUL UNSPEC_COND_DIV
 					 UNSPEC_COND_MAX UNSPEC_COND_MIN])
 
+(define_int_iterator SVE_COND_FP_TERNARY [UNSPEC_COND_FMLA
+					  UNSPEC_COND_FMLS
+					  UNSPEC_COND_FNMLA
+					  UNSPEC_COND_FNMLS])
+
 (define_int_iterator SVE_COND_FP_CMP [UNSPEC_COND_LT UNSPEC_COND_LE
 				      UNSPEC_COND_EQ UNSPEC_COND_NE
 				      UNSPEC_COND_GE UNSPEC_COND_GT])
@@ -1599,7 +1608,11 @@
 			(UNSPEC_COND_MUL "mul")
 			(UNSPEC_COND_DIV "div")
 			(UNSPEC_COND_MAX "smax")
-			(UNSPEC_COND_MIN "smin")])
+			(UNSPEC_COND_MIN "smin")
+			(UNSPEC_COND_FMLA "fma")
+			(UNSPEC_COND_FMLS "fnma")
+			(UNSPEC_COND_FNMLA "fnms")
+			(UNSPEC_COND_FNMLS "fms")])
 
 (define_int_attr  maxmin_uns [(UNSPEC_UMAXV "umax")
 			      (UNSPEC_UMINV "umin")
@@ -1825,6 +1838,16 @@
 			        (UNSPEC_COND_DIV "fdivr")
 			        (UNSPEC_COND_MAX "fmaxnm")
 			        (UNSPEC_COND_MIN "fminnm")])
+
+(define_int_attr sve_fmla_op [(UNSPEC_COND_FMLA "fmla")
+			      (UNSPEC_COND_FMLS "fmls")
+			      (UNSPEC_COND_FNMLA "fnmla")
+			      (UNSPEC_COND_FNMLS "fnmls")])
+
+(define_int_attr sve_fmad_op [(UNSPEC_COND_FMLA "fmad")
+			      (UNSPEC_COND_FMLS "fmsb")
+			      (UNSPEC_COND_FNMLA "fnmad")
+			      (UNSPEC_COND_FNMLS "fnmsb")])
 
 (define_int_attr commutative [(UNSPEC_COND_ADD "true")
 			      (UNSPEC_COND_SUB "false")
