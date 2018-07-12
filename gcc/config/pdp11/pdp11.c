@@ -2437,7 +2437,7 @@ pdp11_output_def (FILE *file, const char *label1, const char *label2)
     }
   else
     {
-      fputs (".set", file);
+      fputs ("\t.set\t", file);
       assemble_name (file, label1);
       putc (',', file);
       assemble_name (file, label2);
