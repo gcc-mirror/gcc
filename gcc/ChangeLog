@@ -1,5 +1,10 @@
 2018-07-12  Paul Koning  <ni1d@arrl.net>
 
+	* config/pdp11/pdp11.c (pdp11_output_def): Fix typo in .set
+	directive.
+
+2018-07-12  Paul Koning  <ni1d@arrl.net>
+
 	* doc/rtl.texi (REG_NONNEG): Remove decrement and branch until
 	zero reference, add doloop_end instead.
 	* doc/md.texi (decrement_and_branch_until_zero): Remove.
