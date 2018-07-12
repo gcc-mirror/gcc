@@ -113,6 +113,7 @@ init_internal_fns ()
 #define ternary_direct { 0, 0, true }
 #define cond_unary_direct { 1, 1, true }
 #define cond_binary_direct { 1, 1, true }
+#define cond_ternary_direct { 1, 1, true }
 #define while_direct { 0, 2, false }
 #define fold_extract_direct { 2, 2, false }
 #define fold_left_direct { 1, 1, false }
@@ -2993,6 +2994,9 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_cond_binary_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 4)
 
+#define expand_cond_ternary_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 5)
+
 #define expand_fold_extract_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 3)
 
@@ -3075,6 +3079,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_ternary_optab_supported_p direct_optab_supported_p
 #define direct_cond_unary_optab_supported_p direct_optab_supported_p
 #define direct_cond_binary_optab_supported_p direct_optab_supported_p
+#define direct_cond_ternary_optab_supported_p direct_optab_supported_p
 #define direct_mask_load_optab_supported_p direct_optab_supported_p
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
@@ -3274,6 +3279,57 @@ conditional_internal_fn_code (internal_fn ifn)
 #undef CASE
     default:
       return ERROR_MARK;
+    }
+}
+
+/* Invoke T(IFN) for each internal function IFN that also has an
+   IFN_COND_* form.  */
+#define FOR_EACH_COND_FN_PAIR(T) \
+  T (FMA) \
+  T (FMS) \
+  T (FNMA) \
+  T (FNMS)
+
+/* Return a function that only performs internal function FN when a
+   certain condition is met and that uses a given fallback value otherwise.
+   In other words, the returned function FN' is such that:
+
+     LHS = FN' (COND, A1, ... An, ELSE)
+
+   is equivalent to the C expression:
+
+     LHS = COND ? FN (A1, ..., An) : ELSE;
+
+   operating elementwise if the operands are vectors.
+
+   Return IFN_LAST if no such function exists.  */
+
+internal_fn
+get_conditional_internal_fn (internal_fn fn)
+{
+  switch (fn)
+    {
+#define CASE(NAME) case IFN_##NAME: return IFN_COND_##NAME;
+      FOR_EACH_COND_FN_PAIR(CASE)
+#undef CASE
+    default:
+      return IFN_LAST;
+    }
+}
+
+/* If IFN implements the conditional form of an unconditional internal
+   function, return that unconditional function, otherwise return IFN_LAST.  */
+
+internal_fn
+get_unconditional_internal_fn (internal_fn ifn)
+{
+  switch (ifn)
+    {
+#define CASE(NAME) case IFN_COND_##NAME: return IFN_##NAME;
+      FOR_EACH_COND_FN_PAIR(CASE)
+#undef CASE
+    default:
+      return IFN_LAST;
     }
 }
 

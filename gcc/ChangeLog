@@ -1,5 +1,52 @@
 2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* doc/md.texi (cond_fma, cond_fms, cond_fnma, cond_fnms): Document.
+	* optabs.def (cond_fma_optab, cond_fms_optab, cond_fnma_optab)
+	(cond_fnms_optab): New optabs.
+	* internal-fn.def (COND_FMA, COND_FMS, COND_FNMA, COND_FNMS): New
+	internal functions.
+	(FMA): Use DEF_INTERNAL_FLT_FN rather than DEF_INTERNAL_FLT_FLOATN_FN.
+	* internal-fn.h (get_conditional_internal_fn): Declare.
+	(get_unconditional_internal_fn): Likewise.
+	* internal-fn.c (cond_ternary_direct): New macro.
+	(expand_cond_ternary_optab_fn): Likewise.
+	(direct_cond_ternary_optab_supported_p): Likewise.
+	(FOR_EACH_COND_FN_PAIR): Likewise.
+	(get_conditional_internal_fn): New function.
+	(get_unconditional_internal_fn): Likewise.
+	* gimple-match.h (gimple_match_op::MAX_NUM_OPS): Bump to 5.
+	(gimple_match_op::gimple_match_op): Add a new overload for 5
+	operands.
+	(gimple_match_op::set_op): Likewise.
+	(gimple_resimplify5): Declare.
+	* genmatch.c (decision_tree::gen): Generate simplifications for
+	5 operands.
+	* gimple-match-head.c (gimple_simplify): Define an overload for
+	5 operands.  Handle calls with 5 arguments in the top-level overload.
+	(convert_conditional_op): Handle conversions from unconditional
+	internal functions to conditional ones.
+	(gimple_resimplify5): New function.
+	(build_call_internal): Pass a fifth operand.
+	(maybe_push_res_to_seq): Likewise.
+	(try_conditional_simplification): Try converting conditional
+	internal functions to unconditional internal functions.
+	Handle 3-operand unconditional forms.
+	* match.pd (UNCOND_TERNARY, COND_TERNARY): Operator lists.
+	Define ternary equivalents of the current rules for binary conditional
+	internal functions.
+	* config/aarch64/aarch64.c (aarch64_preferred_else_value): Handle
+	ternary operations.
+	* config/aarch64/iterators.md (UNSPEC_COND_FMLA, UNSPEC_COND_FMLS)
+	(UNSPEC_COND_FNMLA, UNSPEC_COND_FNMLS): New unspecs.
+	(optab): Handle them.
+	(SVE_COND_FP_TERNARY): New int iterator.
+	(sve_fmla_op, sve_fmad_op): New int attributes.
+	* config/aarch64/aarch64-sve.md (cond_<optab><mode>)
+	(*cond_<optab><mode>_2, *cond_<optab><mode_4)
+	(*cond_<optab><mode>_any): New SVE_COND_FP_TERNARY patterns.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* target.def (preferred_else_value): New target hook.
 	* doc/tm.texi.in (TARGET_PREFERRED_ELSE_VALUE): New hook.
 	* doc/tm.texi: Regenerate.

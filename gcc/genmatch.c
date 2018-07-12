@@ -3750,7 +3750,7 @@ decision_tree::gen (FILE *f, bool gimple)
     }
   fprintf (stderr, "removed %u duplicate tails\n", rcnt);
 
-  for (unsigned n = 1; n <= 4; ++n)
+  for (unsigned n = 1; n <= 5; ++n)
     {
       /* First generate split-out functions.  */
       for (unsigned i = 0; i < root->kids.length (); i++)
