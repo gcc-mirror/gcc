@@ -1,3 +1,8 @@
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.c (c_common_attribute_table): Add
+	"omp declare target implicit" attribute.
+
 2018-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86210
