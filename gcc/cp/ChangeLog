@@ -1,3 +1,12 @@
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (cplus_decl_attributes): Don't diagnose vars without mappable
+	type here, instead add "omp declare target implicit" attribute.  Add
+	that attribute instead of "omp declare target" also when
+	processing_template_decl.
+	* decl.c (cp_finish_decl): Diagnose vars without mappable type here,
+	and before calling cp_omp_mappable_type call complete_type.
+
 2018-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/86406
