@@ -1,3 +1,20 @@
+2018-07-12  Nathan Sidwell  <nathan@acm.org>
+
+	Hide NT_MACRO
+	libcpp/
+	* include/cpplib.h (cpp_macro_p): New.
+	* macro.c (cpp_fun_like_macro_p): Use it.
+	gcc/c-family/
+	* c-ada-spec.c (count_ada_macro, store_ada_macro): Use
+	cpp_macro_p.
+	* c-ppoutput.c (dump_macro): Likewise.
+	* c-spellcheck.cc (should_suggest_as_macro_p): Likewise.
+	gcc/
+	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): Use cpp_macro_p.
+	* config/powerpcspe/powerpcspe-c.c (rs6000_macro_to_expand): Likewise.
+	gcc/fortran/
+	* cpp.c (dump_macro): Use cpp_macro_p.
+
 2018-07-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/testsuite/
