@@ -1669,17 +1669,8 @@ vn_lookup_simplify_result (gimple_match_op *res_op)
 	ops[i] = CONSTRUCTOR_ELT (res_op->ops[0], i)->value;
     }
   vn_nary_op_t vnresult = NULL;
-  tree res = vn_nary_op_lookup_pieces (length, (tree_code) res_op->code,
-				       res_op->type, ops, &vnresult);
-  if (res
-      && mprts_hook)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Resetting mprts_hook after too many "
-		 "invocations.\n");
-      mprts_hook = NULL;
-    }
-  return res;
+  return vn_nary_op_lookup_pieces (length, (tree_code) res_op->code,
+				   res_op->type, ops, &vnresult);
 }
 
 /* Return a value-number for RCODE OPS... either by looking up an existing

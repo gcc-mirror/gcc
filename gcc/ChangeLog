@@ -1,3 +1,8 @@
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_lookup_simplify_result): Remove bogus
+	left-over from last patch.
+
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86492
