@@ -1,3 +1,14 @@
+2018-07-12  Kito Cheng  <kito.cheng@gmail.com>
+
+        * config/riscv/riscv.c (enum riscv_privilege_levels): Add UNKNOWN_MODE.
+        (riscv_expand_epilogue): Add assertion to check interrupt mode.
+        (riscv_set_current_function): Extract getting interrupt type to new
+        function.
+        (riscv_get_interrupt_type): New function.
+        (riscv_merge_decl_attributes): New function, checking interrupt type is
+        same.
+        (TARGET_MERGE_DECL_ATTRIBUTES): Define.
+
 2018-07-12  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.c (pdp11_output_def): Fix typo in .set
