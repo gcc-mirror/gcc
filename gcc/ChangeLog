@@ -1,5 +1,11 @@
 2018-07-12  Richard Biener  <rguenther@suse.de>
 
+	PR target/84829
+	* config/gnu-user.h (GNU_USER_TARGET_NO_PTHREADS_LIB_SPEC):
+	Remove -mieee-fp handling.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-sccvn.c (vn_lookup_simplify_result): Remove bogus
 	left-over from last patch.
 
