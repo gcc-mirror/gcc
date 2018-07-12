@@ -3333,6 +3333,62 @@ get_unconditional_internal_fn (internal_fn ifn)
     }
 }
 
+/* Return true if STMT can be interpreted as a conditional tree code
+   operation of the form:
+
+     LHS = COND ? OP (RHS1, ...) : ELSE;
+
+   operating elementwise if the operands are vectors.  This includes
+   the case of an all-true COND, so that the operation always happens.
+
+   When returning true, set:
+
+   - *COND_OUT to the condition COND, or to NULL_TREE if the condition
+     is known to be all-true
+   - *CODE_OUT to the tree code
+   - OPS[I] to operand I of *CODE_OUT
+   - *ELSE_OUT to the fallback value ELSE, or to NULL_TREE if the
+     condition is known to be all true.  */
+
+bool
+can_interpret_as_conditional_op_p (gimple *stmt, tree *cond_out,
+				   tree_code *code_out,
+				   tree (&ops)[3], tree *else_out)
+{
+  if (gassign *assign = dyn_cast <gassign *> (stmt))
+    {
+      *cond_out = NULL_TREE;
+      *code_out = gimple_assign_rhs_code (assign);
+      ops[0] = gimple_assign_rhs1 (assign);
+      ops[1] = gimple_assign_rhs2 (assign);
+      ops[2] = gimple_assign_rhs3 (assign);
+      *else_out = NULL_TREE;
+      return true;
+    }
+  if (gcall *call = dyn_cast <gcall *> (stmt))
+    if (gimple_call_internal_p (call))
+      {
+	internal_fn ifn = gimple_call_internal_fn (call);
+	tree_code code = conditional_internal_fn_code (ifn);
+	if (code != ERROR_MARK)
+	  {
+	    *cond_out = gimple_call_arg (call, 0);
+	    *code_out = code;
+	    unsigned int nops = gimple_call_num_args (call) - 2;
+	    for (unsigned int i = 0; i < 3; ++i)
+	      ops[i] = i < nops ? gimple_call_arg (call, i + 1) : NULL_TREE;
+	    *else_out = gimple_call_arg (call, nops + 1);
+	    if (integer_truep (*cond_out))
+	      {
+		*cond_out = NULL_TREE;
+		*else_out = NULL_TREE;
+	      }
+	    return true;
+	  }
+      }
+  return false;
+}
+
 /* Return true if IFN is some form of load from memory.  */
 
 bool

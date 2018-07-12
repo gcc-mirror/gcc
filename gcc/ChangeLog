@@ -1,4 +1,14 @@
 2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* internal-fn.h (can_interpret_as_conditional_op_p): Declare.
+	* internal-fn.c (can_interpret_as_conditional_op_p): New function.
+	* tree-ssa-math-opts.c (convert_mult_to_fma_1): Handle conditional
+	plus and minus and convert them into IFN_COND_FMA-based sequences.
+	(convert_mult_to_fma): Handle conditional plus and minus.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/md.texi (cond_fma, cond_fms, cond_fnma, cond_fnms): Document.
 	* optabs.def (cond_fma_optab, cond_fms_optab, cond_fnma_optab)
