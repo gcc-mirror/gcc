@@ -5280,6 +5280,7 @@ free_lang_data_in_decl (tree decl)
   free_lang_data_in_one_sizepos (&DECL_SIZE_UNIT (decl));
   if (TREE_CODE (decl) == FIELD_DECL)
     {
+      DECL_FCONTEXT (decl) = NULL;
       free_lang_data_in_one_sizepos (&DECL_FIELD_OFFSET (decl));
       if (TREE_CODE (DECL_CONTEXT (decl)) == QUAL_UNION_TYPE)
 	DECL_QUALIFIER (decl) = NULL_TREE;

@@ -1,3 +1,13 @@
+2018-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not stream
+	DECL_FCONTEXT
+	(hash_tree): Do not hash DECL_FCONTEXT
+	* tree-streamer-in.c (lto_input_ts_field_decl_tree_pointers):
+	Do not stream DECL_FCONTEXT.
+	* tree-streamer-out.c (write_ts_field_decl_tree_pointers): Likewise.
+	* tree.c (free_lang_data_in_decl): Free DECL_FCONTEXT.
+
 2018-07-12  Richard Biener  <rguenther@suse.de>
 
 	PR debug/86462
