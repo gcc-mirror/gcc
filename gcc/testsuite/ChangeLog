@@ -1,3 +1,13 @@
+2018-07-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/86453
+	* c-c++-common/Wattributes.c: Adjust.
+	* gcc.dg/Wattributes-10.c: New test.
+	* g++.dg/Wattributes-3.C: Adjust.
+	* gcc.dg/Wattributes-6.c: Adjust.
+	* gcc.dg/pr18079.c: Adjust.
+	* gcc.dg/torture/pr42363.c: Adjust.
+
 2018-07-12  Julia Koval  <julia.koval@intel.com>
 
 	 * gcc.target/i386/avx512vl-vpclmulqdq-2.c: Remove 128bit
