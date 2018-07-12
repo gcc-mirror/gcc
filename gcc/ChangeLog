@@ -1,5 +1,11 @@
 2018-07-12  Richard Biener  <rguenther@suse.de>
 
+	PR debug/86462
+	* dwarf2out.c (gen_block_die): Only output blocks when they have
+	at least one !DECL_IGNORED_P variable.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
 	PR target/84829
 	* config/gnu-user.h (GNU_USER_TARGET_NO_PTHREADS_LIB_SPEC):
 	Remove -mieee-fp handling.
