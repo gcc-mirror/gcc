@@ -123,7 +123,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define GNU_USER_TARGET_NO_PTHREADS_LIB_SPEC \
   "%{shared:-lc} \
-   %{!shared:%{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}}"
+   %{!shared:%{profile:-lc_p}%{!profile:-lc}}"
 
 #define GNU_USER_TARGET_LIB_SPEC \
   "%{pthread:-lpthread} " \
