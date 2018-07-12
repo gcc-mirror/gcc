@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "gimplify.h"
 #include "optabs-tree.h"
+#include "tree-eh.h"
 
 
 /* Forward declarations of the private auto-generated matchers.
@@ -68,6 +69,95 @@ constant_for_folding (tree t)
 	      && TREE_CODE (TREE_OPERAND (t, 0)) == STRING_CST));
 }
 
+/* Try to convert conditional operation ORIG_OP into an IFN_COND_*
+   operation.  Return true on success, storing the new operation in NEW_OP.  */
+
+static bool
+convert_conditional_op (gimple_match_op *orig_op,
+			gimple_match_op *new_op)
+{
+  internal_fn ifn;
+  if (orig_op->code.is_tree_code ())
+    ifn = get_conditional_internal_fn ((tree_code) orig_op->code);
+  else
+    return false;
+  if (ifn == IFN_LAST)
+    return false;
+  unsigned int num_ops = orig_op->num_ops;
+  new_op->set_op (as_combined_fn (ifn), orig_op->type, num_ops + 2);
+  new_op->ops[0] = orig_op->cond.cond;
+  for (unsigned int i = 0; i < num_ops; ++i)
+    new_op->ops[i + 1] = orig_op->ops[i];
+  tree else_value = orig_op->cond.else_value;
+  if (!else_value)
+    else_value = targetm.preferred_else_value (ifn, orig_op->type,
+					       num_ops, orig_op->ops);
+  new_op->ops[num_ops + 1] = else_value;
+  return true;
+}
+
+/* RES_OP is the result of a simplification.  If it is conditional,
+   try to replace it with the equivalent UNCOND form, such as an
+   IFN_COND_* call or a VEC_COND_EXPR.  Also try to resimplify the
+   result of the replacement if appropriate, adding any new statements to
+   SEQ and using VALUEIZE as the valueization function.  Return true if
+   this resimplification occurred and resulted in at least one change.  */
+
+static bool
+maybe_resimplify_conditional_op (gimple_seq *seq, gimple_match_op *res_op,
+				 tree (*valueize) (tree))
+{
+  if (!res_op->cond.cond)
+    return false;
+
+  if (!res_op->cond.else_value
+      && res_op->code.is_tree_code ())
+    {
+      /* The "else" value doesn't matter.  If the "then" value is a
+	 gimple value, just use it unconditionally.  This isn't a
+	 simplification in itself, since there was no operation to
+	 build in the first place.  */
+      if (gimple_simplified_result_is_gimple_val (res_op))
+	{
+	  res_op->cond.cond = NULL_TREE;
+	  return false;
+	}
+
+      /* Likewise if the operation would not trap.  */
+      bool honor_trapv = (INTEGRAL_TYPE_P (res_op->type)
+			  && TYPE_OVERFLOW_TRAPS (res_op->type));
+      if (!operation_could_trap_p ((tree_code) res_op->code,
+				   FLOAT_TYPE_P (res_op->type),
+				   honor_trapv, res_op->op_or_null (1)))
+	{
+	  res_op->cond.cond = NULL_TREE;
+	  return false;
+	}
+    }
+
+  /* If the "then" value is a gimple value and the "else" value matters,
+     create a VEC_COND_EXPR between them, then see if it can be further
+     simplified.  */
+  gimple_match_op new_op;
+  if (res_op->cond.else_value
+      && VECTOR_TYPE_P (res_op->type)
+      && gimple_simplified_result_is_gimple_val (res_op))
+    {
+      new_op.set_op (VEC_COND_EXPR, res_op->type,
+		     res_op->cond.cond, res_op->ops[0],
+		     res_op->cond.else_value);
+      *res_op = new_op;
+      return gimple_resimplify3 (seq, res_op, valueize);
+    }
+
+  /* Otherwise try rewriting the operation as an IFN_COND_* call.
+     Again, this isn't a simplification in itself, since it's what
+     RES_OP already described.  */
+  if (convert_conditional_op (res_op, &new_op))
+    *res_op = new_op;
+
+  return false;
+}
 
 /* Helper that matches and simplifies the toplevel result from
    a gimple_simplify run (where we don't want to build
@@ -93,6 +183,7 @@ gimple_resimplify1 (gimple_seq *seq, gimple_match_op *res_op,
 	  if (TREE_OVERFLOW_P (tem))
 	    tem = drop_tree_overflow (tem);
 	  res_op->set_value (tem);
+	  maybe_resimplify_conditional_op (seq, res_op, valueize);
 	  return true;
 	}
     }
@@ -121,6 +212,9 @@ gimple_resimplify1 (gimple_seq *seq, gimple_match_op *res_op,
       return true;
     }
   --depth;
+
+  if (maybe_resimplify_conditional_op (seq, res_op, valueize))
+    return true;
 
   return false;
 }
@@ -151,6 +245,7 @@ gimple_resimplify2 (gimple_seq *seq, gimple_match_op *res_op,
 	  if (TREE_OVERFLOW_P (tem))
 	    tem = drop_tree_overflow (tem);
 	  res_op->set_value (tem);
+	  maybe_resimplify_conditional_op (seq, res_op, valueize);
 	  return true;
 	}
     }
@@ -190,6 +285,9 @@ gimple_resimplify2 (gimple_seq *seq, gimple_match_op *res_op,
     }
   --depth;
 
+  if (maybe_resimplify_conditional_op (seq, res_op, valueize))
+    return true;
+
   return canonicalized;
 }
 
@@ -221,6 +319,7 @@ gimple_resimplify3 (gimple_seq *seq, gimple_match_op *res_op,
 	  if (TREE_OVERFLOW_P (tem))
 	    tem = drop_tree_overflow (tem);
 	  res_op->set_value (tem);
+	  maybe_resimplify_conditional_op (seq, res_op, valueize);
 	  return true;
 	}
     }
@@ -256,6 +355,9 @@ gimple_resimplify3 (gimple_seq *seq, gimple_match_op *res_op,
       return true;
     }
   --depth;
+
+  if (maybe_resimplify_conditional_op (seq, res_op, valueize))
+    return true;
 
   return canonicalized;
 }
@@ -294,6 +396,9 @@ gimple_resimplify4 (gimple_seq *seq, gimple_match_op *res_op,
       return true;
     }
   --depth;
+
+  if (maybe_resimplify_conditional_op (seq, res_op, valueize))
+    return true;
 
   return false;
 }
@@ -352,6 +457,12 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
 {
   tree *ops = res_op->ops;
   unsigned num_ops = res_op->num_ops;
+
+  /* The caller should have converted conditional operations into an UNCOND
+     form and resimplified as appropriate.  The conditional form only
+     survives this far if that conversion failed.  */
+  if (res_op->cond.cond)
+    return NULL_TREE;
 
   if (res_op->code.is_tree_code ())
     {
@@ -614,6 +725,50 @@ do_valueize (tree op, tree (*valueize)(tree), bool &valueized)
   return op;
 }
 
+/* If RES_OP is a call to a conditional internal function, try simplifying
+   the associated unconditional operation and using the result to build
+   a new conditional operation.  For example, if RES_OP is:
+
+     IFN_COND_ADD (COND, A, B, ELSE)
+
+   try simplifying (plus A B) and using the result to build a replacement
+   for the whole IFN_COND_ADD.
+
+   Return true if this approach led to a simplification, otherwise leave
+   RES_OP unchanged (and so suitable for other simplifications).  When
+   returning true, add any new statements to SEQ and use VALUEIZE as the
+   valueization function.
+
+   RES_OP is known to be a call to IFN.  */
+
+static bool
+try_conditional_simplification (internal_fn ifn, gimple_match_op *res_op,
+				gimple_seq *seq, tree (*valueize) (tree))
+{
+  tree_code code = conditional_internal_fn_code (ifn);
+  if (code == ERROR_MARK)
+    return false;
+
+  unsigned int num_ops = res_op->num_ops;
+  gimple_match_op cond_op (gimple_match_cond (res_op->ops[0],
+					      res_op->ops[num_ops - 1]),
+			   code, res_op->type, num_ops - 2);
+  for (unsigned int i = 1; i < num_ops - 1; ++i)
+    cond_op.ops[i - 1] = res_op->ops[i];
+  switch (num_ops - 2)
+    {
+    case 2:
+      if (!gimple_resimplify2 (seq, &cond_op, valueize))
+	return false;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  *res_op = cond_op;
+  maybe_resimplify_conditional_op (seq, res_op, valueize);
+  return true;
+}
+
 /* The main STMT based simplification entry.  It is used by the fold_stmt
    and the fold_stmt_to_constant APIs.  */
 
@@ -699,7 +854,7 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 		      tree rhs = TREE_OPERAND (rhs1, 1);
 		      lhs = do_valueize (lhs, top_valueize, valueized);
 		      rhs = do_valueize (rhs, top_valueize, valueized);
-		      gimple_match_op res_op2 (TREE_CODE (rhs1),
+		      gimple_match_op res_op2 (res_op->cond, TREE_CODE (rhs1),
 					       TREE_TYPE (rhs1), lhs, rhs);
 		      if ((gimple_resimplify2 (seq, &res_op2, valueize)
 			   || valueized)
@@ -770,6 +925,10 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 	      tree arg = gimple_call_arg (stmt, i);
 	      res_op->ops[i] = do_valueize (arg, top_valueize, valueized);
 	    }
+	  if (internal_fn_p (cfn)
+	      && try_conditional_simplification (as_internal_fn (cfn),
+						 res_op, seq, valueize))
+	    return true;
 	  switch (num_args)
 	    {
 	    case 1:

@@ -1,3 +1,40 @@
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target.def (preferred_else_value): New target hook.
+	* doc/tm.texi.in (TARGET_PREFERRED_ELSE_VALUE): New hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_preferred_else_value): Declare.
+	* targhooks.c (default_preferred_else_value): New function.
+	* internal-fn.h (conditional_internal_fn_code): Declare.
+	* internal-fn.c (FOR_EACH_CODE_MAPPING): New macro.
+	(get_conditional_internal_fn): Use it.
+	(conditional_internal_fn_code): New function.
+	* gimple-match.h (gimple_match_cond): New struct.
+	(gimple_match_op): Add a cond member function.
+	(gimple_match_op::gimple_match_op): Update all forms to take a
+	gimple_match_cond.
+	* genmatch.c (expr::gen_transform): Use the same condition as res_op
+	for the suboperation, but don't specify a particular else_value.
+	* tree-ssa-sccvn.c (vn_nary_simplify, vn_reference_lookup_3)
+	(visit_nary_op, visit_reference_op_load): Pass
+	gimple_match_cond::UNCOND to the gimple_match_op constructor.
+	* gimple-match-head.c: Include tree-eh.h
+	(convert_conditional_op): New function.
+	(maybe_resimplify_conditional_op): Likewise.
+	(gimple_resimplify1): Call maybe_resimplify_conditional_op.
+	(gimple_resimplify2): Likewise.
+	(gimple_resimplify3): Likewise.
+	(gimple_resimplify4): Likewise.
+	(maybe_push_res_to_seq): Return null for conditional operations.
+	(try_conditional_simplification): New function.
+	(gimple_simplify): Call it.  Pass conditions to the gimple_match_op
+	constructor.
+	* match.pd: Fold VEC_COND_EXPRs of an IFN_COND_* call to a new
+	IFN_COND_* call.
+	* config/aarch64/aarch64.c (aarch64_preferred_else_value): New
+	function.
+	(TARGET_PREFERRED_ELSE_VALUE): Redefine.
+
 2018-07-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not stream

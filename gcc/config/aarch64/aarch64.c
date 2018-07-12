@@ -1320,6 +1320,16 @@ aarch64_get_mask_mode (poly_uint64 nunits, poly_uint64 nbytes)
   return default_get_mask_mode (nunits, nbytes);
 }
 
+/* Implement TARGET_PREFERRED_ELSE_VALUE.  Prefer to use the first
+   arithmetic operand as the else value if the else value doesn't matter,
+   since that exactly matches the SVE destructive merging form.  */
+
+static tree
+aarch64_preferred_else_value (unsigned, tree, unsigned int, tree *ops)
+{
+  return ops[0];
+}
+
 /* Implement TARGET_HARD_REGNO_NREGS.  */
 
 static unsigned int
@@ -17990,6 +18000,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE
 #define TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE \
   aarch64_empty_mask_is_expensive
+#undef TARGET_PREFERRED_ELSE_VALUE
+#define TARGET_PREFERRED_ELSE_VALUE \
+  aarch64_preferred_else_value
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS aarch64_init_libfuncs
