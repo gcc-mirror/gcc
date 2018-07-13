@@ -1,3 +1,11 @@
+2018-07-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86374
+	* pt.c (lookup_template_class_1): Use tsubst_aggr_type for
+	contexts that are classes.
+	* parser.c (cp_parser_template_id): Combine entering_scope decl &
+	initializer.
+
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl2.c (cplus_decl_attributes): Don't diagnose vars without mappable
