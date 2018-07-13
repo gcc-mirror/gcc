@@ -1,3 +1,7 @@
+2018-07-13  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.src/maintainers.exp: New file.
+
 2018-07-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/86489
