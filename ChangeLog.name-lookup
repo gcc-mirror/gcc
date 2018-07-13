@@ -1,6 +1,15 @@
 2018-07-13  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* macro.c (parse_params): Re implement state machine.
+	(create_iso_definition): Adjust first token peeking.
+	* traditional.c (save_replacement_text): No need to set macro kind
+	here.
+	gcc/testsuite/
+	* gcc.dg/cpp/macsyntx.c: Update errors.
+	* gcc.dg/cpp/macsyntx2.c: Update errors.
+
+	libcpp/
 	* internal.h (_cpp_new_macro): Declare.
 	(_cpp_unsave_parameters): Declare.
 	(_cpp_create_trad_definition): Return cpp_macro.

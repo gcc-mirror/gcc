@@ -3117,71 +3117,91 @@ _cpp_unsave_parameters (cpp_reader *pfile, unsigned n)
 }
 
 /* Check the syntax of the parameters in a MACRO definition.  Return
-   number of parameters, or -1 on failure
-   false if an error occurs.  */
+   false on failure.  Set *N_PTR and *VARADIC_PTR as appropriate.
+   '(' ')'
+   '(' parm-list ',' last-parm ')'
+   '(' last-parm ')'
+   parm-list: name
+            | parm-list, name
+   last-parm: name
+   	    | name '...'
+            | '...'
+*/
 
 static bool
 parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
 {
-  unsigned int prev_ident = 0;
   unsigned nparms = 0;
   bool ok = false;
 
-  for (;;)
+  for (bool prev_ident = false;;)
     {
       const cpp_token *token = _cpp_lex_token (pfile);
 
       switch (token->type)
 	{
-	default:
+	case CPP_COMMENT:
 	  /* Allow/ignore comments in parameter lists if we are
 	     preserving comments in macro expansions.  */
-	  if (token->type == CPP_COMMENT
-	      && ! CPP_OPTION (pfile, discard_comments_in_macro_exp))
-	    continue;
+	  if (!CPP_OPTION (pfile, discard_comments_in_macro_exp))
+	    break;
 
-	  cpp_error (pfile, CPP_DL_ERROR,
-		     "\"%s\" may not appear in macro parameter list",
-		     cpp_token_as_text (pfile, token));
+	  /* FALLTHRU  */
+	default:
+	bad:
+	  {
+	    const char *const msgs[5] =
+	      {
+	       N_("expected parameter name, found \"%s\""),
+	       N_("expected ',' or ')', found \"%s\""),
+	       N_("expected parameter name before end of line"),
+	       N_("expected ')' before end of line"),
+	       N_("expected ')' after \"...\"")
+	      };
+	    unsigned ix = prev_ident;
+	    const unsigned char *as_text = NULL;
+	    if (*varadic_ptr)
+	      ix = 4;
+	    else if (token->type == CPP_EOF)
+	      ix += 2;
+	    else
+	      as_text = cpp_token_as_text (pfile, token);
+	    cpp_error (pfile, CPP_DL_ERROR, msgs[ix], as_text);
+	  }
 	  goto out;
 
 	case CPP_NAME:
-	  if (prev_ident)
-	    {
-	      cpp_error (pfile, CPP_DL_ERROR,
-			 "macro parameters must be comma-separated");
-	      goto out;
-	    }
-	  prev_ident = 1;
+	  if (prev_ident || *varadic_ptr)
+	    goto bad;
+	  prev_ident = true;
 
 	  if (!_cpp_save_parameter (pfile, nparms, token->val.node.node,
 				    token->val.node.spelling))
 	    goto out;
 	  nparms++;
-	  continue;
+	  break;
 
 	case CPP_CLOSE_PAREN:
-	  if (prev_ident || !nparms)
+	  if (prev_ident || !nparms || *varadic_ptr)
 	    {
 	      ok = true;
 	      goto out;
 	    }
 
-	  /* Fall through to pick up the error.  */
 	  /* FALLTHRU */
 	case CPP_COMMA:
-	  if (!prev_ident)
-	    {
-	      cpp_error (pfile, CPP_DL_ERROR, "parameter name missing");
-	      goto out;
-	    }
-	  prev_ident = 0;
-	  continue;
+	  if (!prev_ident || *varadic_ptr)
+	    goto bad;
+	  prev_ident = false;
+	  break;
 
 	case CPP_ELLIPSIS:
+	  if (*varadic_ptr)
+	    goto bad;
 	  *varadic_ptr = true;
 	  if (!prev_ident)
 	    {
+	      /* An ISO bare ellipsis.  */
 	      _cpp_save_parameter (pfile, nparms,
 				   pfile->spec_nodes.n__VA_ARGS__,
 				   pfile->spec_nodes.n__VA_ARGS__);
@@ -3190,16 +3210,11 @@ parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
 	      if (! CPP_OPTION (pfile, c99)
 		  && CPP_OPTION (pfile, cpp_pedantic)
 		  && CPP_OPTION (pfile, warn_variadic_macros))
-		{
-		  if (CPP_OPTION (pfile, cplusplus))
-		    cpp_pedwarning
-			(pfile, CPP_W_VARIADIC_MACROS,
-			"anonymous variadic macros were introduced in C++11");
-		  else
-		    cpp_pedwarning
-			(pfile, CPP_W_VARIADIC_MACROS,
-			"anonymous variadic macros were introduced in C99");
-		}
+		cpp_pedwarning
+		  (pfile, CPP_W_VARIADIC_MACROS,
+		   CPP_OPTION (pfile, cplusplus)
+		   ? N_("anonymous variadic macros were introduced in C++11")
+		   : N_("anonymous variadic macros were introduced in C99"));
 	      else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
 		       && ! CPP_OPTION (pfile, cplusplus))
 		cpp_error (pfile, CPP_DL_WARNING,
@@ -3207,28 +3222,11 @@ parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
 	    }
 	  else if (CPP_OPTION (pfile, cpp_pedantic)
 		   && CPP_OPTION (pfile, warn_variadic_macros))
-	    {
-	      if (CPP_OPTION (pfile, cplusplus))
-		cpp_pedwarning (pfile, CPP_W_VARIADIC_MACROS,
-		            "ISO C++ does not permit named variadic macros");
-	      else
-		cpp_pedwarning (pfile, CPP_W_VARIADIC_MACROS,
-		            "ISO C does not permit named variadic macros");
-	    }
-
-	  /* We're at the end, and just expect a closing parenthesis.  */
-	  token = _cpp_lex_token (pfile);
-	  if (token->type == CPP_CLOSE_PAREN)
-	    {
-	      ok = true;
-	      goto out;
-	    }
-
-	  /* Fall through.  */
-
-	case CPP_EOF:
-	  cpp_error (pfile, CPP_DL_ERROR, "missing ')' in macro parameter list");
-	  goto out;
+	    cpp_pedwarning (pfile, CPP_W_VARIADIC_MACROS,
+			    CPP_OPTION (pfile, cplusplus)
+			    ? N_("ISO C++ does not permit named variadic macros")
+			    : N_("ISO C does not permit named variadic macros"));
+	  break;
 	}
     }
 
@@ -3280,8 +3278,6 @@ static cpp_macro *
 create_iso_definition (cpp_reader *pfile)
 {
   cpp_macro *macro = _cpp_new_macro (pfile, cmk_macro);
-  cpp_token *token;
-  const cpp_token *ctoken;
   bool following_paste_op = false;
   const char *paste_op_error_msg =
     N_("'##' cannot appear at either end of a macro expansion");
@@ -3289,12 +3285,14 @@ create_iso_definition (cpp_reader *pfile)
   unsigned nparms = 0;
   bool ok = false;
 
-  /* Get the first token of the expansion (or the '(' of a
-     function-like macro).  */
-  ctoken = _cpp_lex_token (pfile);
-
-  if (ctoken->type == CPP_OPEN_PAREN && !(ctoken->flags & PREV_WHITE))
+  /* Look at the first token, to see if this is a function-like
+     macro.   */
+  cpp_token *token = lex_expansion_token (pfile, macro);
+  if (token->flags & PREV_WHITE)
+    /* Preceeded by space, must be part of expansion.  */;
+  else if (token->type == CPP_OPEN_PAREN)
     {
+      /* An open-paren, get a parameter list.  */
       bool varadic = false;
       if (!parse_params (pfile, &nparms, &varadic))
 	goto out;
@@ -3317,25 +3315,27 @@ create_iso_definition (cpp_reader *pfile)
 	BUFF_FRONT (pfile->a_buff)
 	  = (uchar *) &macro->parm.params[macro->paramc];
       macro->fun_like = 1;
+
+      /* Drop the '(' token.  */
+      macro->count = 0;
+      token = NULL;
     }
-  else if (ctoken->type != CPP_EOF && !(ctoken->flags & PREV_WHITE))
+  else if (token->type != CPP_EOF
+	   && !(token->type == CPP_COMMENT
+		&& ! CPP_OPTION (pfile, discard_comments_in_macro_exp)))
     {
       /* While ISO C99 requires whitespace before replacement text
 	 in a macro definition, ISO C90 with TC1 allows characters
 	 from the basic source character set there.  */
       if (CPP_OPTION (pfile, c99))
-	{
-	  if (CPP_OPTION (pfile, cplusplus))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "ISO C++11 requires whitespace after the macro name");
-	  else
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "ISO C99 requires whitespace after the macro name");
-	}
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   CPP_OPTION (pfile, cplusplus)
+		   ? N_("ISO C++11 requires whitespace after the macro name")
+		   : N_("ISO C99 requires whitespace after the macro name"));
       else
 	{
 	  int warntype = CPP_DL_WARNING;
-	  switch (ctoken->type)
+	  switch (token->type)
 	    {
 	    case CPP_ATSIGN:
 	    case CPP_AT_NAME:
@@ -3346,7 +3346,7 @@ create_iso_definition (cpp_reader *pfile)
 	    case CPP_OTHER:
 	      /* Basic character set sans letters, digits and _.  */
 	      if (strchr ("!\"#%&'()*+,-./:;<=>?[\\]^{|}~",
-			  ctoken->val.str.text[0]) == NULL)
+			  token->val.str.text[0]) == NULL)
 		warntype = CPP_DL_PEDWARN;
 	      break;
 	    default:
@@ -3359,16 +3359,11 @@ create_iso_definition (cpp_reader *pfile)
 	}
     }
 
-  if (macro->fun_like)
-    token = lex_expansion_token (pfile, macro);
-  else
+  for (vaopt_state vaopt_tracker (pfile, macro->variadic, true);; token = NULL)
     {
-      token = alloc_expansion_token (pfile, macro);
-      *token = *ctoken;
-    }
+      if (!token)
+	token = lex_expansion_token (pfile, macro);
 
-  for (vaopt_state vaopt_tracker (pfile, macro->variadic, true);;)
-    {
       /* Check the stringifying # constraint 6.10.3.2.1 of
 	 function-like macros when lexing the subsequent token.  */
       if (macro->count > 1 && token[-1].type == CPP_HASH && macro->fun_like)
@@ -3441,13 +3436,11 @@ create_iso_definition (cpp_reader *pfile)
 	goto out;
 
       following_paste_op = (token->type == CPP_PASTE);
-      token = lex_expansion_token (pfile, macro);
     }
 
   ok = true;
 
   macro->exp.tokens = (cpp_token *) BUFF_FRONT (pfile->a_buff);
-  macro->kind = cmk_macro;
 
   /* Don't count the CPP_EOF.  */
   macro->count--;

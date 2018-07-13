@@ -21,14 +21,14 @@
 
 #define ;			/* { dg-error "identifier" } */
 #define SEMI;			/* { dg-warning "space" } */
-#define foo(X			/* { dg-error "missing" } */
+#define foo(X			/* { dg-error "expected" } */
 #define foo\
 (X,)				/* { dg-error "parameter name" } */
 #define foo(, X)		/* { dg-error "parameter name" } */
 #define foo(X, X)		/* { dg-error "duplicate" } */
-#define foo(X Y)		/* { dg-error "comma" } */
-#define foo(()			/* { dg-error "may not appear" } */
-#define foo(..., X)		/* { dg-error "missing" } */
+#define foo(X Y)		/* { dg-error "expected" } */
+#define foo(()			/* { dg-error "parameter name" } */
+#define foo(..., X)		/* { dg-error "expected" } */
 #define foo \
 __VA_ARGS__			/* { dg-warning "__VA_ARGS__" } */
 #define goo(__VA_ARGS__)	/* { dg-warning "__VA_ARGS__" } */

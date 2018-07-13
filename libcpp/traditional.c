@@ -1135,8 +1135,6 @@ save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
   size_t len = pfile->out.cur - pfile->out.base;
   uchar *exp;
 
-  /* This is a traditional macro now.  */
-  macro->kind = cmk_traditional;
   if (macro->paramc == 0)
     {
       /* Object-like and function-like macros without parameters
