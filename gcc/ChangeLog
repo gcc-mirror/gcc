@@ -1,3 +1,9 @@
+2018-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85974
+	* match.pd (addr1 - addr2): Allow either of the operand to
+	have a conversion.
+
 2018-07-13  Tom de Vries  <tdevries@suse.de>
 
 	* tree-inline.c (remap_ssa_name): Save and reuse debug exprs generated
