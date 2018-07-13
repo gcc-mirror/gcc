@@ -1,3 +1,8 @@
+2018-07-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (copy_function_or_variable): Dump info about
+	copying section.
+
 2018-07-13  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Steve Munroe  <munroesj52@gmail.com>
 
