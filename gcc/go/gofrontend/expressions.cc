@@ -13666,6 +13666,7 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function,
 
   for (int depth = 0; depth < this->depth_; ++depth)
     {
+      type = type->deref();
       if (type->array_type() != NULL)
 	type = type->array_type()->element_type();
       else if (type->map_type() != NULL)
