@@ -1,3 +1,11 @@
+2018-07-13  H.J. Lu  <hongjiu.lu@intel.com>
+	    Sunil K Pandey  <sunil.k.pandey@intel.com>
+
+	PR target/84413
+	* gcc.target/i386/pr84413-1.c: New test.
+	* gcc.target/i386/pr84413-2.c: Likewise.
+	* gcc.target/i386/pr84413-3.c: Likewise.
+
 2018-07-13  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Steve Munroe  <munroesj52@gmail.com>
 
