@@ -1,3 +1,17 @@
+2018-07-13  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/78809
+	* builtins.c (expand_builtin_memcmp): Inline the calls first
+	when result_eq is false.
+	(expand_builtin_strcmp): Inline the calls first.
+	(expand_builtin_strncmp): Likewise.
+	(inline_string_cmp): New routine. Expand a string compare 
+	call by using a sequence of char comparison.
+	(inline_expand_builtin_string_cmp): New routine. Inline expansion
+	a call to str(n)cmp/memcmp.
+	* doc/invoke.texi (--param builtin-string-cmp-inline-length): New option.
+	* params.def (BUILTIN_STRING_CMP_INLINE_LENGTH): New.
+
 2018-07-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/driver-arm.c: Include arm-native.h.

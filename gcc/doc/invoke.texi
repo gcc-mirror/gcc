@@ -10594,6 +10594,11 @@ Control the probability of the expression having the specified value. This
 parameter takes a percentage (i.e. 0 ... 100) as input.
 The default probability of 90 is obtained empirically.
 
+@item builtin-string-cmp-inline-length
+The maximum length of a constant string for a builtin string cmp call 
+eligible for inlining.
+The default value is 3.
+
 @item align-threshold
 
 Select fraction of the maximal frequency of executions of a basic block in
