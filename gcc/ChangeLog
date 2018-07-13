@@ -1,3 +1,8 @@
+2018-07-13  Tom de Vries  <tdevries@suse.de>
+
+	* tree-inline.c (remap_ssa_name): Save and reuse debug exprs generated
+	in remap_ssa_name.
+
 2018-07-13  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_operands_adjust_ok_for_ldpstp): Use
