@@ -1,3 +1,9 @@
+2018-07-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (do_stream_out): Add PART parameter; open dump file.
+	(stream_out): Add PART parameter; pass it to do_stream_out.
+	(lto_wpa_write_files): Update call of stream_out.
+
 2018-07-04  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/66240

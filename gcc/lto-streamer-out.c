@@ -2293,6 +2293,8 @@ copy_function_or_variable (struct symtab_node *node)
   struct lto_in_decl_state *in_state;
   struct lto_out_decl_state *out_state = lto_get_out_decl_state ();
 
+  if (streamer_dump_file)
+    fprintf (streamer_dump_file, "Copying section for %s\n", name);
   lto_begin_section (section_name, false);
   free (section_name);
 
