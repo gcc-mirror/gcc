@@ -1,3 +1,8 @@
+2018-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-protos.h (sparc_compute_frame_size): Delete.
+	* config/sparc/sparc.c (sparc_compute_frame_size): Make static.
+
 2018-07-13  Richard Biener  <rguenther@suse.de>
 
 	PR debug/86452
