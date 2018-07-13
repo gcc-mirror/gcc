@@ -1087,6 +1087,7 @@ scan_parameters (cpp_reader *pfile, cpp_macro *macro)
   const uchar *cur = CUR (pfile->context) + 1;
   bool ok;
 
+  unsigned nparms = 0;
   for (;;)
     {
       cur = skip_whitespace (pfile, cur, true /* skip_comments */);
@@ -1095,8 +1096,9 @@ scan_parameters (cpp_reader *pfile, cpp_macro *macro)
 	{
 	  struct cpp_hashnode *id = lex_identifier (pfile, cur);
 	  ok = false;
-	  if (_cpp_save_parameter (pfile, macro, id, id))
+	  if (!_cpp_save_parameter (pfile, nparms, id, id))
 	    break;
+	  nparms++;
 	  cur = skip_whitespace (pfile, CUR (pfile->context),
 				 true /* skip_comments */);
 	  if (*cur == ',')
@@ -1108,9 +1110,11 @@ scan_parameters (cpp_reader *pfile, cpp_macro *macro)
 	  break;
 	}
 
-      ok = (*cur == ')' && macro->paramc == 0);
+      ok = (*cur == ')' && !nparms);
       break;
     }
+
+  macro->paramc = nparms;
 
   if (!ok)
     cpp_error (pfile, CPP_DL_ERROR, "syntax error in macro parameter list");

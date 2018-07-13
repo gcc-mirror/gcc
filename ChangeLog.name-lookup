@@ -1,3 +1,11 @@
+2018-07-13  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* internal.h (_cpp_save_parameter): Take parm no, not macro.
+	* macro,c (_cpp_save_parameter): Adjust.  Invert sense of return value.
+	(parse_params): Adjust.
+	* traditional.c (scan_parameters): Likewise.
+
 2018-07-12  Nathan Sidwell  <nathan@acm.org>
 
 	assert body is indirect.

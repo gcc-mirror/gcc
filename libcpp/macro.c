@@ -3060,42 +3060,43 @@ _cpp_free_definition (cpp_hashnode *h)
 }
 
 /* Save parameter NODE (spelling SPELLING) to the parameter list of
-   macro MACRO.  Returns zero on success, nonzero if the parameter is
-   a duplicate.  */
+   macro MACRO.  Returns true on success, false on failure.   */
+
 bool
-_cpp_save_parameter (cpp_reader *pfile, cpp_macro *macro, cpp_hashnode *node,
+_cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
 		     cpp_hashnode *spelling)
 {
-  unsigned int len;
   /* Constraint 6.10.3.6 - duplicate parameter names.  */
   if (node->flags & NODE_MACRO_ARG)
     {
       cpp_error (pfile, CPP_DL_ERROR, "duplicate macro parameter \"%s\"",
 		 NODE_NAME (node));
-      return true;
+      return false;
     }
 
-  if (BUFF_ROOM (pfile->a_buff)
-      < (macro->paramc + 1) * sizeof (cpp_hashnode *))
-    _cpp_extend_buff (pfile, &pfile->a_buff, sizeof (cpp_hashnode *));
-
-  ((cpp_hashnode **) BUFF_FRONT (pfile->a_buff))[macro->paramc++] = spelling;
-  node->flags |= NODE_MACRO_ARG;
-  len = macro->paramc * sizeof (struct macro_arg_saved_data);
+  unsigned len = (n + 1) * sizeof (struct macro_arg_saved_data);
   if (len > pfile->macro_buffer_len)
     {
-      pfile->macro_buffer = XRESIZEVEC (unsigned char, pfile->macro_buffer,
-                                        len);
+      pfile->macro_buffer
+	= XRESIZEVEC (unsigned char, pfile->macro_buffer, len);
       pfile->macro_buffer_len = len;
     }
-  struct macro_arg_saved_data save;
-  save.value = node->value;
-  save.canonical_node = node;
-  ((struct macro_arg_saved_data *) pfile->macro_buffer)[macro->paramc - 1]
-    = save;
   
-  node->value.arg_index  = macro->paramc;
-  return false;
+  macro_arg_saved_data *saved = (macro_arg_saved_data *)pfile->macro_buffer;
+  saved[n].value = node->value;
+  saved[n].canonical_node = node;
+
+  if (BUFF_ROOM (pfile->a_buff) < (n + 1) * sizeof (cpp_hashnode *))
+    _cpp_extend_buff (pfile, &pfile->a_buff, sizeof (cpp_hashnode *));
+
+  ((cpp_hashnode **) BUFF_FRONT (pfile->a_buff))[n++] = spelling;
+
+  /* Morph into a macro arg.  */
+  node->flags |= NODE_MACRO_ARG;
+  /* Index is 1 based.  */
+  node->value.arg_index = n;
+
+  return true;
 }
 
 /* Check the syntax of the parameters in a MACRO definition.  Returns
@@ -3104,6 +3105,8 @@ static bool
 parse_params (cpp_reader *pfile, cpp_macro *macro)
 {
   unsigned int prev_ident = 0;
+  unsigned nparms = 0;
+  bool ok = false;
 
   for (;;)
     {
@@ -3121,25 +3124,29 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	  cpp_error (pfile, CPP_DL_ERROR,
 		     "\"%s\" may not appear in macro parameter list",
 		     cpp_token_as_text (pfile, token));
-	  return false;
+	  goto out;
 
 	case CPP_NAME:
 	  if (prev_ident)
 	    {
 	      cpp_error (pfile, CPP_DL_ERROR,
 			 "macro parameters must be comma-separated");
-	      return false;
+	      goto out;
 	    }
 	  prev_ident = 1;
 
-	  if (_cpp_save_parameter (pfile, macro, token->val.node.node,
-				   token->val.node.spelling))
-	    return false;
+	  if (!_cpp_save_parameter (pfile, nparms, token->val.node.node,
+				    token->val.node.spelling))
+	    goto out;
+	  nparms++;
 	  continue;
 
 	case CPP_CLOSE_PAREN:
-	  if (prev_ident || macro->paramc == 0)
-	    return true;
+	  if (prev_ident || !nparms)
+	    {
+	      ok = true;
+	      goto out;
+	    }
 
 	  /* Fall through to pick up the error.  */
 	  /* FALLTHRU */
@@ -3147,7 +3154,7 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	  if (!prev_ident)
 	    {
 	      cpp_error (pfile, CPP_DL_ERROR, "parameter name missing");
-	      return false;
+	      goto out;
 	    }
 	  prev_ident = 0;
 	  continue;
@@ -3156,9 +3163,10 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	  macro->variadic = 1;
 	  if (!prev_ident)
 	    {
-	      _cpp_save_parameter (pfile, macro,
+	      _cpp_save_parameter (pfile, nparms,
 				   pfile->spec_nodes.n__VA_ARGS__,
 				   pfile->spec_nodes.n__VA_ARGS__);
+	      nparms++;
 	      pfile->state.va_args_ok = 1;
 	      if (! CPP_OPTION (pfile, c99)
 		  && CPP_OPTION (pfile, cpp_pedantic)
@@ -3192,14 +3200,22 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	  /* We're at the end, and just expect a closing parenthesis.  */
 	  token = _cpp_lex_token (pfile);
 	  if (token->type == CPP_CLOSE_PAREN)
-	    return true;
+	    {
+	      ok = true;
+	      goto out;
+	    }
+
 	  /* Fall through.  */
 
 	case CPP_EOF:
 	  cpp_error (pfile, CPP_DL_ERROR, "missing ')' in macro parameter list");
-	  return false;
+	  goto out;
 	}
     }
+
+ out:
+  macro->paramc = nparms;
+  return ok;
 }
 
 /* Allocate room for a token from a macro's replacement list.  */
