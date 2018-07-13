@@ -1,3 +1,11 @@
+2018-07-13  Marek Polacek  <polacek@redhat.com>
+
+	Backport from trunk
+	2018-07-03  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/86202
+	* gimple-fold.c (size_must_be_zero_p): Check the type of the size.
+
 2018-07-12  Richard Biener  <rguenther@suse.de>
 
 	PR target/84829
