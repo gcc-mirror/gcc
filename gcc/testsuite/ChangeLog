@@ -1,3 +1,8 @@
+2018-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85974
+	* gcc.c-torture/compile/930326-1.c: Adjust to cover widening.
+
 2018-07-13  Tom de Vries  <tdevries@suse.de>
 
 	* gcc.dg/guality/clztest.c: Add -fno-ipa-icf in dg-options.
