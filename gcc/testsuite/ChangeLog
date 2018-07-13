@@ -1,3 +1,8 @@
+2018-07-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86374
+	* g++.dg/pr86374.C: New.
+
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/declare-target-3.c: New test.
