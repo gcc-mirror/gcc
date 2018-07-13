@@ -308,7 +308,7 @@ static void replace_args (cpp_reader *, cpp_hashnode *, cpp_macro *,
 			  macro_arg *, source_location);
 static _cpp_buff *funlike_invocation_p (cpp_reader *, cpp_hashnode *,
 					_cpp_buff **, unsigned *);
-static bool create_iso_definition (cpp_reader *, cpp_macro *);
+static cpp_macro *create_iso_definition (cpp_reader *);
 
 /* #define directive parsing and handling.  */
 
@@ -316,7 +316,7 @@ static cpp_token *alloc_expansion_token (cpp_reader *, cpp_macro *);
 static cpp_token *lex_expansion_token (cpp_reader *, cpp_macro *);
 static bool warn_of_redefinition (cpp_reader *, cpp_hashnode *,
 				  const cpp_macro *);
-static bool parse_params (cpp_reader *, cpp_macro *);
+static bool parse_params (cpp_reader *, unsigned *, bool *);
 static void check_trad_stringification (cpp_reader *, const cpp_macro *,
 					const cpp_string *);
 static bool reached_end_of_context (cpp_context *);
@@ -3099,10 +3099,29 @@ _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
   return true;
 }
 
-/* Check the syntax of the parameters in a MACRO definition.  Returns
+/* Restore the parameters to their previous state.  */
+
+void
+_cpp_unsave_parameters (cpp_reader *pfile, unsigned n)
+{
+  /* Clear the fast argument lookup indices.  */
+  while (n--)
+    {
+      struct macro_arg_saved_data *save =
+	&((struct macro_arg_saved_data *) pfile->macro_buffer)[n];
+
+      struct cpp_hashnode *node = save->canonical_node;
+      node->flags &= ~ NODE_MACRO_ARG;
+      node->value = save->value;
+    }
+}
+
+/* Check the syntax of the parameters in a MACRO definition.  Return
+   number of parameters, or -1 on failure
    false if an error occurs.  */
+
 static bool
-parse_params (cpp_reader *pfile, cpp_macro *macro)
+parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
 {
   unsigned int prev_ident = 0;
   unsigned nparms = 0;
@@ -3160,7 +3179,7 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	  continue;
 
 	case CPP_ELLIPSIS:
-	  macro->variadic = 1;
+	  *varadic_ptr = true;
 	  if (!prev_ident)
 	    {
 	      _cpp_save_parameter (pfile, nparms,
@@ -3214,7 +3233,8 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
     }
 
  out:
-  macro->paramc = nparms;
+  *n_ptr = nparms;
+
   return ok;
 }
 
@@ -3256,15 +3276,18 @@ lex_expansion_token (cpp_reader *pfile, cpp_macro *macro)
   return token;
 }
 
-static bool
-create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
+static cpp_macro *
+create_iso_definition (cpp_reader *pfile)
 {
+  cpp_macro *macro = _cpp_new_macro (pfile, cmk_macro);
   cpp_token *token;
   const cpp_token *ctoken;
   bool following_paste_op = false;
   const char *paste_op_error_msg =
     N_("'##' cannot appear at either end of a macro expansion");
   unsigned int num_extra_tokens = 0;
+  unsigned nparms = 0;
+  bool ok = false;
 
   /* Get the first token of the expansion (or the '(' of a
      function-like macro).  */
@@ -3272,10 +3295,13 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 
   if (ctoken->type == CPP_OPEN_PAREN && !(ctoken->flags & PREV_WHITE))
     {
-      bool ok = parse_params (pfile, macro);
+      bool varadic = false;
+      if (!parse_params (pfile, &nparms, &varadic))
+	goto out;
+
       macro->parm.params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
-      if (!ok)
-	return false;
+      macro->variadic = varadic;
+      macro->paramc = nparms;
 
       /* Success.  Commit or allocate the parameter array.  */
       if (pfile->hash_table->alloc_subobject)
@@ -3341,10 +3367,7 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
       *token = *ctoken;
     }
 
-  /* The argument doesn't matter here.  */
-  vaopt_state vaopt_tracker (pfile, macro->variadic, true);
-
-  for (;;)
+  for (vaopt_state vaopt_tracker (pfile, macro->variadic, true);;)
     {
       /* Check the stringifying # constraint 6.10.3.2.1 of
 	 function-like macros when lexing the subsequent token.  */
@@ -3367,7 +3390,7 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 	    {
 	      cpp_error (pfile, CPP_DL_ERROR,
 			 "'#' is not followed by a macro parameter");
-	      return false;
+	      goto out;
 	    }
 	}
 
@@ -3379,8 +3402,10 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 	  if (following_paste_op)
 	    {
 	      cpp_error (pfile, CPP_DL_ERROR, paste_op_error_msg);
-	      return false;
+	      goto out;
 	    }
+	  if (!vaopt_tracker.completed ())
+	    goto out;
 	  break;
 	}
 
@@ -3392,7 +3417,7 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 	  if (macro->count == 1)
 	    {
 	      cpp_error (pfile, CPP_DL_ERROR, paste_op_error_msg);
-	      return false;
+	      goto out;
 	    }
 
 	  if (token[-1].flags & PASTE_LEFT)
@@ -3413,14 +3438,13 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 	}
 
       if (vaopt_tracker.update (token) == vaopt_state::ERROR)
-	return false;
+	goto out;
 
       following_paste_op = (token->type == CPP_PASTE);
       token = lex_expansion_token (pfile, macro);
     }
 
-  if (!vaopt_tracker.completed ())
-    return false;
+  ok = true;
 
   macro->exp.tokens = (cpp_token *) BUFF_FRONT (pfile->a_buff);
   macro->kind = cmk_macro;
@@ -3463,17 +3487,17 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
     }
   else
     BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->exp.tokens[macro->count];
+ out:
+  pfile->state.va_args_ok = 0;
+  _cpp_unsave_parameters (pfile, nparms);
 
-  return true;
+  return ok ? macro : NULL;
 }
 
-/* Parse a macro and save its expansion.  Returns nonzero on success.  */
-bool
-_cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
+cpp_macro *
+_cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind)
 {
   cpp_macro *macro;
-  unsigned int i;
-  bool ok;
 
   if (pfile->hash_table->alloc_subobject)
     macro = (cpp_macro *) pfile->hash_table->alloc_subobject
@@ -3491,33 +3515,24 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   /* To suppress some diagnostics.  */
   macro->syshdr = pfile->buffer && pfile->buffer->sysp != 0;
 
+  macro->kind = kind;
+
+  return macro;
+}
+
+/* Parse a macro and save its expansion.  Returns nonzero on success.  */
+bool
+_cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
+{
+  cpp_macro *macro;
+
   if (CPP_OPTION (pfile, traditional))
-    ok = _cpp_create_trad_definition (pfile, macro);
+    macro = _cpp_create_trad_definition (pfile);
   else
-    {
-      ok = create_iso_definition (pfile, macro);
+    macro = create_iso_definition (pfile);
 
-      /* We set the type for SEEN_EOL() in directives.c.
-
-	 Longer term we should lex the whole line before coming here,
-	 and just copy the expansion.  */
-
-      /* Stop the lexer accepting __VA_ARGS__.  */
-      pfile->state.va_args_ok = 0;
-    }
-
-  /* Clear the fast argument lookup indices.  */
-  for (i = macro->paramc; i-- > 0; )
-    {
-      struct macro_arg_saved_data *save =
-	&((struct macro_arg_saved_data *) pfile->macro_buffer)[i];
-      struct cpp_hashnode *node = save->canonical_node;
-      node->flags &= ~ NODE_MACRO_ARG;
-      node->value = save->value;
-    }
-
-  if (!ok)
-    return ok;
+  if (!macro)
+    return false;
 
   if (node->type == NT_MACRO)
     {
@@ -3562,7 +3577,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
      conditional flag */
   node->flags &= ~NODE_CONDITIONAL;
 
-  return ok;
+  return true;
 }
 
 /* Warn if a token in STRING matches one of a function-like MACRO's

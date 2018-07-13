@@ -1,6 +1,18 @@
 2018-07-13  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/
+	* internal.h (_cpp_new_macro): Declare.
+	(_cpp_unsave_parameters): Declare.
+	(_cpp_create_trad_definition): Return cpp_macro.
+	* macro.c (_cpp_unsave_parameters): New.
+	(parse_params): Take nparm & varadic ptr parms, not macro.
+	(create_iso_definition): Return cpp_macro.  Adjust throughout.
+	(_cpp_new_macro): New.
+	(_cpp_create_definition): Adjust.
+	* traditional.c (scan_parameters): Take nparm ptr, not macro.
+	(_cpp_create_trad_definition): Return cpp_macro, adjust.
+
+	libcpp/
 	* internal.h (_cpp_save_parameter): Take parm no, not macro.
 	* macro,c (_cpp_save_parameter): Adjust.  Invert sense of return value.
 	(parse_params): Adjust.
