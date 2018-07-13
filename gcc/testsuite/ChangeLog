@@ -1,3 +1,8 @@
+2018-07-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/86489
+	* gcc.dg/pr86489.c: New test.
+
 2018-07-12  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/86510
