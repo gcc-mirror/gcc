@@ -1,3 +1,9 @@
+2018-07-13  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/78809
+	* gcc.dg/strcmpopt_5.c: New test.
+	* gcc.dg/strcmpopt_6.c: New test.
+
 2018-07-13  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85974
