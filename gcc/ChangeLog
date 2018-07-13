@@ -1,3 +1,8 @@
+2018-07-13  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_operands_adjust_ok_for_ldpstp): Use
+	arrays instead of numbered variables.
+
 2018-07-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-protos.h (sparc_compute_frame_size): Delete.

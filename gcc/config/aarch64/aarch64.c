@@ -17040,23 +17040,20 @@ bool
 aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 				       scalar_mode mode)
 {
-  enum reg_class rclass_1, rclass_2, rclass_3, rclass_4;
-  HOST_WIDE_INT offvals[4], msize;
-  rtx mem_1, mem_2, mem_3, mem_4, reg_1, reg_2, reg_3, reg_4;
-  rtx base_1, base_2, base_3, base_4, offset_1, offset_2, offset_3, offset_4;
+  const int num_insns = 4;
+  enum reg_class rclass;
+  HOST_WIDE_INT offvals[num_insns], msize;
+  rtx mem[num_insns], reg[num_insns], base[num_insns], offset[num_insns];
 
   if (load)
     {
-      reg_1 = operands[0];
-      mem_1 = operands[1];
-      reg_2 = operands[2];
-      mem_2 = operands[3];
-      reg_3 = operands[4];
-      mem_3 = operands[5];
-      reg_4 = operands[6];
-      mem_4 = operands[7];
-      gcc_assert (REG_P (reg_1) && REG_P (reg_2)
-		  && REG_P (reg_3) && REG_P (reg_4));
+      for (int i = 0; i < num_insns; i++)
+	{
+	  reg[i] = operands[2 * i];
+	  mem[i] = operands[2 * i + 1];
+
+	  gcc_assert (REG_P (reg[i]));
+	}
 
       /* Do not attempt to merge the loads if the loads clobber each other.  */
       for (int i = 0; i < 8; i += 2)
@@ -17065,53 +17062,47 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 	    return false;
     }
   else
+    for (int i = 0; i < num_insns; i++)
+      {
+	mem[i] = operands[2 * i];
+	reg[i] = operands[2 * i + 1];
+      }
+
+  /* Skip if memory operand is by itself valid for ldp/stp.  */
+  if (!MEM_P (mem[0]) || aarch64_mem_pair_operand (mem[0], mode))
+    return false;
+
+  for (int i = 0; i < num_insns; i++)
     {
-      mem_1 = operands[0];
-      reg_1 = operands[1];
-      mem_2 = operands[2];
-      reg_2 = operands[3];
-      mem_3 = operands[4];
-      reg_3 = operands[5];
-      mem_4 = operands[6];
-      reg_4 = operands[7];
+      /* The mems cannot be volatile.  */
+      if (MEM_VOLATILE_P (mem[i]))
+	return false;
+
+      /* Check if the addresses are in the form of [base+offset].  */
+      extract_base_offset_in_addr (mem[i], base + i, offset + i);
+      if (base[i] == NULL_RTX || offset[i] == NULL_RTX)
+	return false;
     }
-  /* Skip if memory operand is by itslef valid for ldp/stp.  */
-  if (!MEM_P (mem_1) || aarch64_mem_pair_operand (mem_1, mode))
-    return false;
 
-  /* The mems cannot be volatile.  */
-  if (MEM_VOLATILE_P (mem_1) || MEM_VOLATILE_P (mem_2)
-      || MEM_VOLATILE_P (mem_3) ||MEM_VOLATILE_P (mem_4))
-    return false;
-
-  /* Check if the addresses are in the form of [base+offset].  */
-  extract_base_offset_in_addr (mem_1, &base_1, &offset_1);
-  if (base_1 == NULL_RTX || offset_1 == NULL_RTX)
-    return false;
-  extract_base_offset_in_addr (mem_2, &base_2, &offset_2);
-  if (base_2 == NULL_RTX || offset_2 == NULL_RTX)
-    return false;
-  extract_base_offset_in_addr (mem_3, &base_3, &offset_3);
-  if (base_3 == NULL_RTX || offset_3 == NULL_RTX)
-    return false;
-  extract_base_offset_in_addr (mem_4, &base_4, &offset_4);
-  if (base_4 == NULL_RTX || offset_4 == NULL_RTX)
-    return false;
+  /* Check if addresses are clobbered by load.  */
+  if (load)
+    for (int i = 0; i < num_insns; i++)
+      if (reg_mentioned_p (reg[i], mem[i]))
+	return false;
 
   /* Check if the bases are same.  */
-  if (!rtx_equal_p (base_1, base_2)
-      || !rtx_equal_p (base_2, base_3)
-      || !rtx_equal_p (base_3, base_4))
-    return false;
+  for (int i = 0; i < num_insns - 1; i++)
+    if (!rtx_equal_p (base[i], base[i + 1]))
+      return false;
 
-  offvals[0] = INTVAL (offset_1);
-  offvals[1] = INTVAL (offset_2);
-  offvals[2] = INTVAL (offset_3);
-  offvals[3] = INTVAL (offset_4);
+  for (int i = 0; i < num_insns; i++)
+    offvals[i] = INTVAL (offset[i]);
+
   msize = GET_MODE_SIZE (mode);
 
   /* Check if the offsets can be put in the right order to do a ldp/stp.  */
-  qsort (offvals, 4, sizeof (HOST_WIDE_INT), aarch64_host_wide_int_compare);
+  qsort (offvals, num_insns, sizeof (HOST_WIDE_INT),
+	 aarch64_host_wide_int_compare);
 
   if (!(offvals[1] == offvals[0] + msize
 	&& offvals[3] == offvals[2] + msize))
@@ -17126,45 +17117,30 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
   if (offvals[0] % msize != offvals[2] % msize)
     return false;
 
-  /* Check if the addresses are clobbered by load.  */
-  if (load && (reg_mentioned_p (reg_1, mem_1)
-	       || reg_mentioned_p (reg_2, mem_2)
-	       || reg_mentioned_p (reg_3, mem_3)
-	       || reg_mentioned_p (reg_4, mem_4)))
-    return false;
-
   /* If we have SImode and slow unaligned ldp,
      check the alignment to be at least 8 byte. */
   if (mode == SImode
       && (aarch64_tune_params.extra_tuning_flags
-          & AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW)
+	  & AARCH64_EXTRA_TUNE_SLOW_UNALIGNED_LDPW)
       && !optimize_size
-      && MEM_ALIGN (mem_1) < 8 * BITS_PER_UNIT)
+      && MEM_ALIGN (mem[0]) < 8 * BITS_PER_UNIT)
     return false;
-
-  if (REG_P (reg_1) && FP_REGNUM_P (REGNO (reg_1)))
-    rclass_1 = FP_REGS;
-  else
-    rclass_1 = GENERAL_REGS;
-
-  if (REG_P (reg_2) && FP_REGNUM_P (REGNO (reg_2)))
-    rclass_2 = FP_REGS;
-  else
-    rclass_2 = GENERAL_REGS;
-
-  if (REG_P (reg_3) && FP_REGNUM_P (REGNO (reg_3)))
-    rclass_3 = FP_REGS;
-  else
-    rclass_3 = GENERAL_REGS;
-
-  if (REG_P (reg_4) && FP_REGNUM_P (REGNO (reg_4)))
-    rclass_4 = FP_REGS;
-  else
-    rclass_4 = GENERAL_REGS;
 
   /* Check if the registers are of same class.  */
-  if (rclass_1 != rclass_2 || rclass_2 != rclass_3 || rclass_3 != rclass_4)
-    return false;
+  rclass = REG_P (reg[0]) && FP_REGNUM_P (REGNO (reg[0]))
+    ? FP_REGS : GENERAL_REGS;
+
+  for (int i = 1; i < num_insns; i++)
+    if (REG_P (reg[i]) && FP_REGNUM_P (REGNO (reg[i])))
+      {
+	if (rclass != FP_REGS)
+	  return false;
+      }
+    else
+      {
+	if (rclass != GENERAL_REGS)
+	  return false;
+      }
 
   return true;
 }
