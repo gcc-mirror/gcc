@@ -1,3 +1,15 @@
+2018-07-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/driver-arm.c: Include arm-native.h.
+	(host_detect_local_cpu): Use auto-generated data tables.
+	(vendors, arm_cpu_table): Delete.  Move part information to ...
+	* config/arm/arm-cpus.in: ... here.
+	* config/arm/parsecpu.awk (gen_native): New function.
+	(vendor, part): New CPU fields.
+	(END): Add support for building the native CPU detection tables.
+	* config/arm/t-arm (arm-native.h): Add build rule.
+	(driver-arm.o): Add dependency on arm-native.h.
+
 2018-07-13  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/85974
