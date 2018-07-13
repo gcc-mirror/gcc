@@ -1684,7 +1684,7 @@ record_builtin_type (const char *name, tree type, bool artificial_p)
   integral types are unsigned.
 
   Unfortunately the signedness of 'char' in C is implementation-defined
-  and GCC even has the option -fsigned-char to toggle it at run time.
+  and GCC even has the option -f{un}signed-char to toggle it at run time.
   Since GNAT's philosophy is to be compatible with C by default, to wit
   Interfaces.C.char is defined as a mere copy of Character, we may need
   to declare character types as signed types in GENERIC and generate the

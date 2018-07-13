@@ -1,3 +1,9 @@
+2018-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/lang.opt (funsigned-char): New option.
+	* gcc-interface/misc.c (gnat_handle_option): Accept it.
+	* gcc-interface/utils.c (finish_character_type): Tweak comment.
+
 2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Add GNAT_DECL local
@@ -2351,7 +2357,7 @@
 2018-05-21  Jerome Lambourg  <lambourg@adacore.com>
 
 	* gcc-interface/Makefile.in: Add g-soliop__qnx.ads to the runtime build
-	for QNX.
+	for QNX.
 
 2018-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
