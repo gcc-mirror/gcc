@@ -1,5 +1,5 @@
 /* { dg-do run { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
-/* { dg-options "-g" } */
+/* { dg-options "-g -fno-ipa-icf" } */
 
 volatile int vv;
 

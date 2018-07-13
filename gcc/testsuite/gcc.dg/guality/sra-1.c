@@ -1,6 +1,6 @@
 /* PR debug/43983 */
 /* { dg-do run } */
-/* { dg-options "-g" } */
+/* { dg-options "-g -fno-ipa-icf" } */
 
 struct A { int i; int j; };
 struct B { int : 4; int i : 12; int j : 12; int : 4; };

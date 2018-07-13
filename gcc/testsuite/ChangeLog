@@ -1,5 +1,11 @@
 2018-07-13  Tom de Vries  <tdevries@suse.de>
 
+	* gcc.dg/guality/clztest.c: Add -fno-ipa-icf in dg-options.
+	* gcc.dg/guality/ctztest.c: Same.
+	* gcc.dg/guality/sra-1.c: Same.
+
+2018-07-13  Tom de Vries  <tdevries@suse.de>
+
 	* gcc.dg/vla-1.c: Update.
 
 2018-07-13  Tom de Vries  <tdevries@suse.de>
