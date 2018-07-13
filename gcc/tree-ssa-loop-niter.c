@@ -2555,6 +2555,7 @@ number_of_iterations_popcount (loop_p loop, edge exit,
    ... = PHI <b_5(2), b_6(3)>.  */
   gimple *phi = SSA_NAME_DEF_STMT (b_11);
   if (gimple_code (phi) != GIMPLE_PHI
+      || (gimple_bb (phi) != loop_latch_edge (loop)->dest)
       || (gimple_assign_lhs (and_stmt)
 	  != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx)))
     return false;

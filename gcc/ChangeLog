@@ -1,3 +1,10 @@
+2018-07-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86489
+	* tree-ssa-loop-niter.c (number_of_iterations_popcount): Check
+	that the loop latch destination where phi is defined.
+
 2018-07-12  Kito Cheng  <kito.cheng@gmail.com>
 
         * config/riscv/riscv.c (enum riscv_privilege_levels): Add UNKNOWN_MODE.
