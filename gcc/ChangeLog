@@ -1,3 +1,11 @@
+2018-07-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Steve Munroe  <munroesj52@gmail.com>
+
+	* config/rs6000/emmintrin.h (_mm_and_si128): New function.
+	(_mm_andnot_si128): Likewise.
+	(_mm_or_si128): Likewise.
+	(_mm_xor_si128): Likewise.
+
 2018-07-13  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR middle-end/78809

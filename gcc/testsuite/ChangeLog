@@ -1,3 +1,11 @@
+2018-07-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Steve Munroe  <munroesj52@gmail.com>
+
+	* gcc.target/powerpc/sse2-pand-1.c: New file.
+	* gcc.target/powerpc/sse2-pandn-1.c: Likewise.
+	* gcc.target/powerpc/sse2-por-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pxor-1.c: Likewise.
+
 2018-07-13  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/86374
