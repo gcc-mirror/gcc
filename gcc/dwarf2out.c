@@ -25388,11 +25388,8 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
      generate debug info for the typedef.  */
   if (is_naming_typedef_decl (TYPE_NAME (type)))
     {
-      /* Use the DIE of the containing namespace as the parent DIE of
-         the type description DIE we want to generate.  */
-      if (DECL_CONTEXT (TYPE_NAME (type))
-	  && TREE_CODE (DECL_CONTEXT (TYPE_NAME (type))) == NAMESPACE_DECL)
-	context_die = get_context_die (DECL_CONTEXT (TYPE_NAME (type)));
+      /* Give typedefs the right scope.  */
+      context_die = scope_die_for (type, context_die);
 
       gen_decl_die (TYPE_NAME (type), NULL, NULL, context_die);
       return;
