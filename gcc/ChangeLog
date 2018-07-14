@@ -1,3 +1,7 @@
+2018-07-14  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/linux.h (TARGET_ASM_FILE_END): New.
+
 2018-07-14  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.c (pdp11_rtx_costs): Bugfixes.
