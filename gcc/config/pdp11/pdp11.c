@@ -1014,6 +1014,7 @@ pdp11_rtx_costs (rtx x, machine_mode mode, int outer_code,
   const int code = GET_CODE (x);
   const int asize = (mode == QImode) ? 2 : GET_MODE_SIZE (mode);
   rtx src, dest;
+  const char *fmt;
   
   switch (code)
     {
@@ -1035,12 +1036,29 @@ pdp11_rtx_costs (rtx x, machine_mode mode, int outer_code,
       *total = pdp11_addr_cost (x, mode, ADDR_SPACE_GENERIC, speed);
       return true;
     }
+  if (GET_RTX_LENGTH (code) == 0)
+    {
+      if (speed)
+	*total = 0;
+      else
+	*total = 2;
+      return true;
+    }
 
   /* Pick up source and dest.  We don't necessarily use the standard
      recursion in rtx_costs to figure the cost, because that would
      count the destination operand twice for three-operand insns.
      Also, this way we can catch special cases like move of zero, or
      add one.  */
+  fmt = GET_RTX_FORMAT (code);
+  if (fmt[0] != 'e' || (GET_RTX_LENGTH (code) > 1 && fmt[1] != 'e'))
+    {
+      if (speed)
+	*total = 0;
+      else
+	*total = 2;
+      return true;
+    }
   if (GET_RTX_LENGTH (code) > 1)
     src = XEXP (x, 1);
   dest = XEXP (x, 0);

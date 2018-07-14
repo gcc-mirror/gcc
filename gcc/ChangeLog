@@ -1,3 +1,7 @@
+2018-07-14  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.c (pdp11_rtx_costs): Bugfixes.
+
 2018-07-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (copy_function_or_variable): Dump info about
