@@ -166,3 +166,17 @@ proc report_gdb { gdb loc } {
     }
     send_log -- "---\n$gdb_version\n---\n"
 }
+
+# Argument 0 is the option list.
+# Return the option list, ensuring that at least -Og is present.
+
+proc guality_minimal_options { args } {
+    set options [lindex $args 0]
+    foreach opt $options {
+	if { [regexp -- "-Og" $opt] } {
+	    return $options
+	}
+    }
+    
+    return [lappend options "-Og"]
+}
