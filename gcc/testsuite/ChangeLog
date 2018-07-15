@@ -1,3 +1,12 @@
+2018-07-15  Tom de Vries  <tdevries@suse.de>
+
+	* lib/gcc-gdb-test.exp (guality_minimal_options): New proc.
+	* lib/gfortran-dg.exp (gfortran-dg-runtest): Don't call torture-init if
+	already called.
+	* g++.dg/guality/guality.exp: Ensure Og is part of torture options.
+	* gcc.dg/guality/guality.exp: Same.
+	* gfortran.dg/guality/guality.exp: Same.
+
 2018-07-13  H.J. Lu  <hongjiu.lu@intel.com>
 	    Sunil K Pandey  <sunil.k.pandey@intel.com>
 
