@@ -29,10 +29,15 @@ if ![info exists ::env(GUALITY_GDB_NAME)] {
 }
 report_gdb $::env(GUALITY_GDB_NAME) [info script]
 
+global DG_TORTURE_OPTIONS
+set save_dg_torture_options $DG_TORTURE_OPTIONS
+set DG_TORTURE_OPTIONS [guality_minimal_options $DG_TORTURE_OPTIONS]
+
 gfortran-dg-runtest [lsort [glob $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] "" ""
 
 if [info exists guality_gdb_name] {
     unsetenv GUALITY_GDB_NAME
 }
 
+set DG_TORTURE_OPTIONS save_dg_torture_options
 dg-finish
