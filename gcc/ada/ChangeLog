@@ -1,5 +1,10 @@
 2018-07-16  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch4.adb (Expand_N_Op_Xor): Use common routine
+	Expand_Nonbinary_Modular_Op.  Needed for unnesting.
+
+2018-07-16  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb (Inherit_Predicate_Flags): A non-discrete type may have a
 	static predicate (for example True) but has no
 	static_discrete_predicate.
