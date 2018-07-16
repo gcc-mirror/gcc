@@ -2720,16 +2720,23 @@ package body Sem_Eval is
    --  Start of processing for Eval_Integer_Literal
 
    begin
-
       --  If the literal appears in a non-expression context, then it is
       --  certainly appearing in a non-static context, so check it. This is
       --  actually a redundant check, since Check_Non_Static_Context would
       --  check it, but it seems worthwhile to optimize out the call.
 
-      --  An exception is made for a literal in an if or case expression
+      --  Additionally, when the literal appears within an if or case
+      --  expression it must be checked as well. However, due to the literal
+      --  appearing within a conditional statement, expansion greatly changes
+      --  the nature of its context and performing some of the checks within
+      --  Check_Non_Static_Context on an expanded literal may lead to spurious
+      --  and misleading warnings.
 
       if (Nkind_In (Parent (N), N_If_Expression, N_Case_Expression_Alternative)
            or else Nkind (Parent (N)) not in N_Subexpr)
+        and then (not Nkind_In (Parent (N), N_If_Expression,
+                                 N_Case_Expression_Alternative)
+                   or else Comes_From_Source (N))
         and then not In_Any_Integer_Context
       then
          Check_Non_Static_Context (N);
