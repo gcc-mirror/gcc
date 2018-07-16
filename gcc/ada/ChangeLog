@@ -1,3 +1,7 @@
+2018-07-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_eval.adb: Fix spelling for compile-time-known.
+
 2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_eval.adb (Compile_Time_Known_Value): Add a guard which prevents

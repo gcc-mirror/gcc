@@ -104,7 +104,7 @@ package body Sem_Eval is
    --  Used to convert unsigned (modular) values for folding logical ops
 
    --  The following declarations are used to maintain a cache of nodes that
-   --  have compile time known values. The cache is maintained only for
+   --  have compile-time-known values. The cache is maintained only for
    --  discrete types (the most common case), and is populated by calls to
    --  Compile_Time_Known_Value and Expr_Value, but only used by Expr_Value
    --  since it is possible for the status to change (in particular it is
@@ -171,7 +171,7 @@ package body Sem_Eval is
    --  result is No_Match, then it continues and checks the next element. If
    --  the result is Match or Non_Static, this result is immediately given
    --  as the result without checking the rest of the list. Expr can be of
-   --  discrete, real, or string type and must be a compile time known value
+   --  discrete, real, or string type and must be a compile-time-known value
    --  (it is an error to make the call if these conditions are not met).
 
    function Find_Universal_Operator_Type (N : Node_Id) return Entity_Id;
@@ -231,7 +231,7 @@ package body Sem_Eval is
 
    procedure Out_Of_Range (N : Node_Id);
    --  This procedure is called if it is determined that node N, which appears
-   --  in a non-static context, is a compile time known value which is outside
+   --  in a non-static context, is a compile-time-known value which is outside
    --  its range, i.e. the range of Etype. This is used in contexts where
    --  this is an illegality if N is static, and should generate a warning
    --  otherwise.
@@ -840,7 +840,7 @@ package body Sem_Eval is
 
       function Is_Same_Value (L, R : Node_Id) return Boolean;
       --  Returns True iff L and R represent expressions that definitely have
-      --  identical (but not necessarily compile time known) values Indeed the
+      --  identical (but not necessarily compile-time-known) values Indeed the
       --  caller is expected to have already dealt with the cases of compile
       --  time known values, so these are not tested here.
 
@@ -1043,7 +1043,7 @@ package body Sem_Eval is
          then
             return True;
 
-         --  Or if they are compile time known and identical
+         --  Or if they are compile-time-known and identical
 
          elsif Compile_Time_Known_Value (Lf)
                  and then
@@ -1192,7 +1192,7 @@ package body Sem_Eval is
             return Unknown;
          end if;
 
-      --  Case where comparison involves two compile time known values
+      --  Case where comparison involves two compile-time-known values
 
       elsif Compile_Time_Known_Value (L)
               and then
@@ -1515,7 +1515,7 @@ package body Sem_Eval is
          end if;
 
          --  Next attempt is to see if we have an entity compared with a
-         --  compile time known value, where there is a current value
+         --  compile-time-known value, where there is a current value
          --  conditional for the entity which can tell us the result.
 
          declare
@@ -1667,7 +1667,7 @@ package body Sem_Eval is
             return False;
          end if;
 
-         --  Otherwise check bounds for compile time known
+         --  Otherwise check bounds for compile-time-known
 
          if not Compile_Time_Known_Value (Type_Low_Bound (Typ)) then
             return False;
@@ -1731,7 +1731,7 @@ package body Sem_Eval is
 
                   --  Guard against an illegal deferred constant whose full
                   --  view is initialized with a reference to itself. Treat
-                  --  this case as value not known at compile time.
+                  --  this case as a value not known at compile time.
 
                   if Is_Entity_Name (Val) and then Entity (Val) = Ent then
                      return False;
@@ -1739,7 +1739,7 @@ package body Sem_Eval is
                      return Compile_Time_Known_Value (Val);
                   end if;
 
-               --  Otherwise the constant does not have a compile time known
+               --  Otherwise, the constant does not have a compile-time-known
                --  value.
 
                else
@@ -1748,7 +1748,7 @@ package body Sem_Eval is
             end if;
          end;
 
-      --  We have a value, see if it is compile time known
+      --  We have a value, see if it is compile-time-known
 
       else
          --  Integer literals are worth storing in the cache
@@ -1811,7 +1811,7 @@ package body Sem_Eval is
             end if;
          end;
 
-      --  We have a value, see if it is compile time known
+      --  We have a value, see if it is compile-time-known
 
       else
          if Compile_Time_Known_Value (Op) then
@@ -2633,7 +2633,7 @@ package body Sem_Eval is
                   if List_Length (Expressions (Arr)) >= Lin then
                      Elm := Pick (Expressions (Arr), Lin);
 
-                     --  If the resulting expression is compile time known,
+                     --  If the resulting expression is compile-time-known,
                      --  then we can rewrite the indexed component with this
                      --  value, being sure to mark the result as non-static.
                      --  We also reset the Sloc, in case this generates an
@@ -4191,9 +4191,9 @@ package body Sem_Eval is
       Val    : Uint;
 
    begin
-      --  If already in cache, then we know it's compile time known and we can
+      --  If already in cache, then we know it's compile-time-known and we can
       --  return the value that was previously stored in the cache since
-      --  compile time known values cannot change.
+      --  compile-time-known values cannot change.
 
       if CV_Ent.N = N then
          return CV_Ent.V;
@@ -4708,7 +4708,7 @@ package body Sem_Eval is
          end if;
 
          --  If bounds not comparable at compile time, then the bounds of T2
-         --  must be compile time known or we cannot answer the query.
+         --  must be compile-time-known or we cannot answer the query.
 
          if not Compile_Time_Known_Value (L2)
            or else not Compile_Time_Known_Value (H2)
@@ -6381,7 +6381,7 @@ package body Sem_Eval is
 
       pragma Warnings (Off, Assume_Valid);
       --  For now Assume_Valid is unreferenced since the current implementation
-      --  always returns Unknown if N is not a compile time known value, but we
+      --  always returns Unknown if N is not a compile-time-known value, but we
       --  keep the parameter to allow for future enhancements in which we try
       --  to get the information in the variable case as well.
 
@@ -6414,7 +6414,7 @@ package body Sem_Eval is
 
       --  Never known if this is a generic type, since the bounds of generic
       --  types are junk. Note that if we only checked for static expressions
-      --  (instead of compile time known values) below, we would not need this
+      --  (instead of compile-time-known values) below, we would not need this
       --  check, because values of a generic type can never be static, but they
       --  can be known at compile time.
 
