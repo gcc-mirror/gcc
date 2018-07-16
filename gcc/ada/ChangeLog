@@ -1,3 +1,8 @@
+2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Check_No_Hidden_State): Ignore internally-generated
+	states and variables.
+
 2018-07-16  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sinfo.ads, sinfo.adb (Withed_Body): Remove.

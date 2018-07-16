@@ -1,5 +1,10 @@
 2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* gnat.dg/abstract_state1.adb, gnat.dg/abstract_state1.ads: New
+	testcase.
+
+2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* gnat.dg/validity_check3.adb, gnat.dg/validity_check3.ads: New
 	testcase.
 
