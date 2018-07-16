@@ -1,5 +1,7 @@
 2018-07-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* scripts/create_testsuite_files: Fix typo in comment.
+
 	PR libstdc++/86537
 	* include/bits/shared_ptr.h (less<shared_ptr<_Tp>>): Remove
 	non-standard partial specialization.
