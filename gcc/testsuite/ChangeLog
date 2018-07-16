@@ -1,3 +1,8 @@
+2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/target-supports.exp (check_ppc_float128_hw_available): Fix
+	syntax error.
+
 2018-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86526
