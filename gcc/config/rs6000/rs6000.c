@@ -17847,12 +17847,12 @@ init_float128_ibm (machine_mode mode)
      names.  */
   if (mode == IFmode)
     {
-      set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdtf2");
-      set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddtf2");
-      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctdtf2");
-      set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunctfsd2");
-      set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunctfdd2");
-      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtftd2");
+      set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdtf");
+      set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddtf");
+      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctdtf");
+      set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunctfsd");
+      set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunctfdd");
+      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtftd");
 
       if (TARGET_POWERPC64)
 	{
@@ -17951,12 +17951,12 @@ init_float128_ieee (machine_mode mode)
       if (mode != TFmode && FLOAT128_IBM_P (TFmode))
 	set_conv_libfunc (trunc_optab, TFmode, mode, "__extendkftf2");
 
-      set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdkf2");
-      set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddkf2");
-      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctdkf2");
-      set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunckfsd2");
-      set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunckfdd2");
-      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendkftd2");
+      set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdkf");
+      set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddkf");
+      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctdkf");
+      set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunckfsd");
+      set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunckfdd");
+      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendkftd");
 
       set_conv_libfunc (sfix_optab, SImode, mode, "__fixkfsi");
       set_conv_libfunc (ufix_optab, SImode, mode, "__fixunskfsi");
