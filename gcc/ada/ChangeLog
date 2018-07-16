@@ -1,5 +1,10 @@
 2018-07-16  Piotr Trojanek  <trojanek@adacore.com>
 
+	* sem.adb (Walk_Library_Items): Skip units with configuration pragmas
+	when printing debug info.
+
+2018-07-16  Piotr Trojanek  <trojanek@adacore.com>
+
 	* sem.adb (Walk_Library_Items): Reuse local constant.
 	(Is_Subunit_Of_Main): Turn condition to positive and flip the
 	IF-THEN-ELSE branches; avoid potentially ineffective assignment to the

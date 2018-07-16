@@ -2242,8 +2242,14 @@ package body Sem is
 
             for Unit_Num in Done'Range loop
                if not Done (Unit_Num) then
-                  Write_Unit_Info
-                    (Unit_Num, Unit (Cunit (Unit_Num)), Withs => True);
+
+                  --  Units with configuration pragmas (.ads files) have empty
+                  --  compilation-unit nodes; skip printing info about them.
+
+                  if Present (Cunit (Unit_Num)) then
+                     Write_Unit_Info
+                       (Unit_Num, Unit (Cunit (Unit_Num)), Withs => True);
+                  end if;
                end if;
             end loop;
 
