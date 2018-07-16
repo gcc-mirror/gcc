@@ -859,7 +859,8 @@ package body Exp_Unst is
                      end;
                   end if;
 
-               --  A 'Access reference is a (potential) call. Other attributes
+               --  A 'Access reference is a (potential) call. So is 'Address,
+               --  in particular on imported subprograms. Other attributes
                --  require special handling.
 
                when N_Attribute_Reference =>
@@ -871,6 +872,7 @@ package body Exp_Unst is
                         when Attribute_Access
                            | Attribute_Unchecked_Access
                            | Attribute_Unrestricted_Access
+                           | Attribute_Address
                         =>
                            if Nkind (Prefix (N)) in N_Has_Entity then
                               Ent := Entity (Prefix (N));
