@@ -1,5 +1,11 @@
 2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (trunc<mode>sf2): Expand truncates of
+	double-double modes to SFmode directly directly.
+	(trunc<mode>sf2_fprs): Delete.
+
+2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.c (init_float128_ibm): Use the correct names
 	for conversions between IFmode and the decimal floating point modes.
 	(init_float128_ieee): Use the correct names for conversions between
