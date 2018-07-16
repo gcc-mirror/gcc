@@ -3192,6 +3192,10 @@ check_access (tree exp, tree, tree, tree dstwrite,
   if (dstwrite)
     get_size_range (dstwrite, range);
 
+  /* This can happen at -O0.  */
+  if (range[0] && TREE_CODE (range[0]) != INTEGER_CST)
+    return false;
+
   tree func = get_callee_fndecl (exp);
 
   /* First check the number of bytes to be written against the maximum

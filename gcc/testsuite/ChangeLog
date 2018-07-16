@@ -1,3 +1,9 @@
+2018-07-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/86528
+	* gcc.c-torture/execute/pr86528.c: New test.
+	* gcc.dg/Wrestrict-10.c (test_arr_strcat_2): Fix typo.
+
 2018-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/template/spec40.C: New.
