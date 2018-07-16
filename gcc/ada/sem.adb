@@ -36,7 +36,6 @@ with Nlists;    use Nlists;
 with Output;    use Output;
 with Restrict;  use Restrict;
 with Sem_Attr;  use Sem_Attr;
-with Sem_Aux;   use Sem_Aux;
 with Sem_Ch2;   use Sem_Ch2;
 with Sem_Ch3;   use Sem_Ch3;
 with Sem_Ch4;   use Sem_Ch4;
@@ -1705,7 +1704,7 @@ package body Sem is
       --  The main unit and its spec may depend on bodies that contain generics
       --  that are instantiated in them. Iterate through the corresponding
       --  contexts before processing main (spec/body) itself, to process bodies
-      --  that may be present, together with their  context. The spec of main
+      --  that may be present, together with their context. The spec of main
       --  is processed wherever it appears in the list of units, while the body
       --  is processed as the last unit in the list.
 
@@ -2020,8 +2019,7 @@ package body Sem is
                if Present (Body_CU)
                  and then Body_CU /= Cunit (Main_Unit)
                  and then Nkind (Unit (Body_CU)) /= N_Subprogram_Body
-                 and then (Nkind (Unit (Comp)) /= N_Package_Declaration
-                             or else Present (Withed_Body (Clause)))
+                 and then Nkind (Unit (Comp)) /= N_Package_Declaration
                then
                   Body_U := Get_Cunit_Unit_Number (Body_CU);
 
@@ -2335,7 +2333,6 @@ package body Sem is
 
       Context_Item : Node_Id;
       Lib_Unit     : Node_Id;
-      Body_CU      : Node_Id;
 
    begin
       Context_Item := First (Context_Items (CU));
@@ -2346,30 +2343,6 @@ package body Sem is
          then
             Lib_Unit := Library_Unit (Context_Item);
             Action (Lib_Unit);
-
-            --  If the context item indicates that a package body is needed
-            --  because of an instantiation in CU, traverse the body now, even
-            --  if CU is not related to the main unit. If the generic itself
-            --  appears in a package body, the context item is this body, and
-            --  it already appears in the traversal order, so we only need to
-            --  examine the case of a context item being a package declaration.
-
-            if Present (Withed_Body (Context_Item))
-              and then Nkind (Unit (Lib_Unit)) = N_Package_Declaration
-              and then Present (Corresponding_Body (Unit (Lib_Unit)))
-            then
-               Body_CU :=
-                 Parent
-                   (Unit_Declaration_Node
-                     (Corresponding_Body (Unit (Lib_Unit))));
-
-               --  A body may have an implicit with on its own spec, in which
-               --  case we must ignore this context item to prevent looping.
-
-               if Unit (CU) /= Unit (Body_CU) then
-                  Action (Body_CU);
-               end if;
-            end if;
          end if;
 
          Context_Item := Next (Context_Item);
