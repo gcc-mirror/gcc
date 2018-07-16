@@ -3049,6 +3049,16 @@ package body Exp_Attr is
          --  Protected case
 
          if Is_Protected_Type (Conctyp) then
+
+            --  No need to transform 'Count into a function call if the current
+            --  scope has been eliminated. In this case such transformation is
+            --  also not viable because the enclosing protected object is not
+            --  available.
+
+            if Is_Eliminated (Current_Scope) then
+               return;
+            end if;
+
             case Corresponding_Runtime_Package (Conctyp) is
                when System_Tasking_Protected_Objects_Entries =>
                   Name := New_Occurrence_Of (RTE (RE_Protected_Count), Loc);
