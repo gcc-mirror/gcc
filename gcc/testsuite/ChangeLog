@@ -1,3 +1,8 @@
+2018-07-16  Martin Liska  <mliska@suse.cz>
+
+        PR ipa/86529
+	* g++.dg/ipa/pr86529.C: New test.
+
 2018-07-16  Tom de Vries  <tdevries@suse.de>
 
 	PR debug/86455
