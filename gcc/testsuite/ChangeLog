@@ -1,5 +1,12 @@
 2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* lib/target-supports.exp (check_effective_target_longdouble64,
+	check_effective_target_ppc_float128,
+	check_effective_target_ppc_float128_insns,
+	check_effective_target_powerpc_vsx): New.
+
+2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* lib/target-supports.exp (check_ppc_float128_hw_available): Fix
 	syntax error.
 
