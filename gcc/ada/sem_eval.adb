@@ -1705,29 +1705,46 @@ package body Sem_Eval is
       end if;
 
       --  If we have an entity name, then see if it is the name of a constant
-      --  and if so, test the corresponding constant value, or the name of
-      --  an enumeration literal, which is always a constant.
+      --  and if so, test the corresponding constant value, or the name of an
+      --  enumeration literal, which is always a constant.
 
       if Present (Etype (Op)) and then Is_Entity_Name (Op) then
          declare
-            E : constant Entity_Id := Entity (Op);
-            V : Node_Id;
+            Ent : constant Entity_Id := Entity (Op);
+            Val : Node_Id;
 
          begin
-            --  Never known at compile time if it is a packed array value.
-            --  We might want to try to evaluate these at compile time one
-            --  day, but we do not make that attempt now.
+            --  Never known at compile time if it is a packed array value. We
+            --  might want to try to evaluate these at compile time one day,
+            --  but we do not make that attempt now.
 
             if Is_Packed_Array_Impl_Type (Etype (Op)) then
                return False;
-            end if;
 
-            if Ekind (E) = E_Enumeration_Literal then
+            elsif Ekind (Ent) = E_Enumeration_Literal then
                return True;
 
-            elsif Ekind (E) = E_Constant then
-               V := Constant_Value (E);
-               return Present (V) and then Compile_Time_Known_Value (V);
+            elsif Ekind (Ent) = E_Constant then
+               Val := Constant_Value (Ent);
+
+               if Present (Val) then
+
+                  --  Guard against an illegal deferred constant whose full
+                  --  view is initialized with a reference to itself. Treat
+                  --  this case as value not known at compile time.
+
+                  if Is_Entity_Name (Val) and then Entity (Val) = Ent then
+                     return False;
+                  else
+                     return Compile_Time_Known_Value (Val);
+                  end if;
+
+               --  Otherwise the constant does not have a compile time known
+               --  value.
+
+               else
+                  return False;
+               end if;
             end if;
          end;
 
