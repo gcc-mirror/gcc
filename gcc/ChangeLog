@@ -1,3 +1,10 @@
+2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (init_float128_ibm): Use more correct names
+	for the conversions between TDmode and IFmode.
+	(init_float128_ieee): Use more correct names for the conversions
+	between TDmode and KFmode.
+
 2018-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86526

@@ -17849,10 +17849,10 @@ init_float128_ibm (machine_mode mode)
     {
       set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdtf2");
       set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddtf2");
-      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctftd2");
+      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctdtf2");
       set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunctfsd2");
       set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunctfdd2");
-      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtdtf2");
+      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtftd2");
 
       if (TARGET_POWERPC64)
 	{
@@ -17953,10 +17953,10 @@ init_float128_ieee (machine_mode mode)
 
       set_conv_libfunc (sext_optab, mode, SDmode, "__dpd_extendsdkf2");
       set_conv_libfunc (sext_optab, mode, DDmode, "__dpd_extendddkf2");
-      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunckftd2");
+      set_conv_libfunc (trunc_optab, mode, TDmode, "__dpd_trunctdkf2");
       set_conv_libfunc (trunc_optab, SDmode, mode, "__dpd_trunckfsd2");
       set_conv_libfunc (trunc_optab, DDmode, mode, "__dpd_trunckfdd2");
-      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendtdkf2");
+      set_conv_libfunc (sext_optab, TDmode, mode, "__dpd_extendkftd2");
 
       set_conv_libfunc (sfix_optab, SImode, mode, "__fixkfsi");
       set_conv_libfunc (ufix_optab, SImode, mode, "__fixunskfsi");
