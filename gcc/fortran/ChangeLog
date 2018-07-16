@@ -1,3 +1,8 @@
+2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/86417
+	* module.c (mio_component): Set component->loc when loading from module.
+
 2018-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/86421
