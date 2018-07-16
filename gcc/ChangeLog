@@ -1,3 +1,10 @@
+2018-07-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/86511
+	* expmed.c (emit_store_flag): Do not emit setcc followed by a
+	conditional move when trapping comparison was split to a
+	non-trapping one (and vice versa).
+
 2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/s390.c (s390_function_profiler): Generate nops
@@ -126,11 +133,12 @@
 	when result_eq is false.
 	(expand_builtin_strcmp): Inline the calls first.
 	(expand_builtin_strncmp): Likewise.
-	(inline_string_cmp): New routine. Expand a string compare 
+	(inline_string_cmp): New routine. Expand a string compare
 	call by using a sequence of char comparison.
 	(inline_expand_builtin_string_cmp): New routine. Inline expansion
 	a call to str(n)cmp/memcmp.
-	* doc/invoke.texi (--param builtin-string-cmp-inline-length): New option.
+	* doc/invoke.texi (--param builtin-string-cmp-inline-length):
+	New option.
 	* params.def (BUILTIN_STRING_CMP_INLINE_LENGTH): New.
 
 2018-07-13  Richard Earnshaw  <rearnsha@arm.com>
@@ -724,9 +732,9 @@
 
 	* config.gcc (riscv*-*-*): When setting xlen, handle riscv-*.
 
-2018-07-05  Indu Bhagat  <indu.bhagat@oracle.com> 
+2018-07-05  Indu Bhagat  <indu.bhagat@oracle.com>
 
-	* config/aarch64/aarch64-simd.md: correct flags text for 
+	* config/aarch64/aarch64-simd.md: correct flags text for
 	MIN_EXPR replacement.
 
 2018-07-05  James Clarke  <jrtc27@jrtc27.com>
