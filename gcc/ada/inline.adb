@@ -197,10 +197,10 @@ package body Inline is
 
    function Has_Single_Return (N : Node_Id) return Boolean;
    --  In general we cannot inline functions that return unconstrained type.
-   --  However, we can handle such functions if all return statements return a
-   --  local variable that is the only declaration in the body of the function.
-   --  In that case the call can be replaced by that local variable as is done
-   --  for other inlined calls.
+   --  However, we can handle such functions if all return statements return
+   --  a local variable that is the first declaration in the body of the
+   --  function. In that case the call can be replaced by that local
+   --  variable as is done for other inlined calls.
 
    function In_Main_Unit_Or_Subunit (E : Entity_Id) return Boolean;
    --  Return True if E is in the main unit or its spec or in a subunit
