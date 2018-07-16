@@ -466,7 +466,9 @@ begin
 
             --  At this stage we can unnest subprogram bodies if required
 
-            Exp_Unst.Unnest_Subprograms (Cunit (Main_Unit));
+            if Total_Errors_Detected = 0 then
+               Exp_Unst.Unnest_Subprograms (Cunit (Main_Unit));
+            end if;
 
             --  List library units if requested
 
