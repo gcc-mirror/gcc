@@ -1,3 +1,7 @@
+2018-07-16  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Has_Single_Return): Rewrap comment.
+
 2018-07-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.ads: Minor tweak in comment.
