@@ -1778,8 +1778,7 @@ package body Sem is
 
                --  A subprogram body must be the main unit
 
-               pragma Assert (Acts_As_Spec (CU)
-                               or else CU = Cunit (Main_Unit));
+               pragma Assert (Acts_As_Spec (CU) or else CU = Main_CU);
                null;
 
             when N_Function_Instantiation
@@ -1940,9 +1939,7 @@ package body Sem is
             if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)
               or else Acts_As_Spec (CU)
             then
-               if CU = Cunit (Main_Unit)
-                   and then not Do_Main
-               then
+               if CU = Main_CU and then not Do_Main then
                   Seen (Unit_Num) := False;
 
                else
@@ -2017,7 +2014,7 @@ package body Sem is
                --  parents that are instances have been loaded already.
 
                if Present (Body_CU)
-                 and then Body_CU /= Cunit (Main_Unit)
+                 and then Body_CU /= Main_CU
                  and then Nkind (Unit (Body_CU)) /= N_Subprogram_Body
                  and then Nkind (Unit (Comp)) /= N_Package_Declaration
                then
@@ -2152,6 +2149,7 @@ package body Sem is
                   if Par /= Cunit_Entity (Main_Unit) then
                      Do_Unit_And_Dependents (CU, N);
                   end if;
+
             end case;
          end;
 
@@ -2183,14 +2181,11 @@ package body Sem is
             function Is_Subunit_Of_Main (U : Node_Id) return Boolean is
                Lib : Node_Id;
             begin
-               if No (U) then
-                  return False;
-               else
+               if Present (U) and then Nkind (Unit (U)) = N_Subunit then
                   Lib := Library_Unit (U);
-                  return Nkind (Unit (U)) = N_Subunit
-                    and then
-                      (Lib = Cunit (Main_Unit)
-                        or else Is_Subunit_Of_Main (Lib));
+                  return Lib = Main_CU or else Is_Subunit_Of_Main (Lib);
+               else
+                  return False;
                end if;
             end Is_Subunit_Of_Main;
 
