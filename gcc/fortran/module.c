@@ -2848,6 +2848,8 @@ mio_component (gfc_component *c, int vtype)
   if (c->attr.proc_pointer)
     mio_typebound_proc (&c->tb);
 
+  c->loc = gfc_current_locus;
+
   mio_rparen ();
 }
 
