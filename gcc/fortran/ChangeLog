@@ -1,3 +1,20 @@
+2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
+
+	Backport from trunk:
+
+	PR fortran/86417
+	* module.c (mio_component): Set component->loc when loading from module.
+
+	PR fortran/83183
+	PR fortran/86325
+	* expr.c (class_allocatable, class_pointer, comp_allocatable,
+	comp_pointer): New helpers.
+	(component_initializer): Generate EXPR_NULL for allocatable or pointer
+	components. Do not generate initializers for components within BT_CLASS.
+	Do not assign to comp->initializer.
+	(gfc_generate_initializer): Use new helpers; move code to generate
+	EXPR_NULL for class allocatable components into component_initializer().
+
 2018-07-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82969
