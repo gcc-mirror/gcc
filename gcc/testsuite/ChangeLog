@@ -1,3 +1,13 @@
+2018-07-16  Carl Love  <cel@us.ibm.com>
+
+ 	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
+	longdouble128.
+	* gcc.target/powerpc/divkc3-3.c: Ditto.
+ 	* gcc.target/powerpc/mulkc3-2.c: Ditto.
+	* gcc.target/powerpc/mulkc3-3.c: Ditto.
+	* gcc.target/powerpc/fold-vec-mergehl-double.c: Update counts.
+	* gcc.target/powerpc/pr85456.c: Make check Linux and AIX specific.
+
 2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/83184
