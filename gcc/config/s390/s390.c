@@ -13144,14 +13144,22 @@ s390_function_profiler (FILE *file, int labelno)
   op[3] = gen_rtx_SYMBOL_REF (Pmode, label);
   SYMBOL_REF_FLAGS (op[3]) = SYMBOL_FLAG_LOCAL;
 
-  op[4] = gen_rtx_SYMBOL_REF (Pmode, "_mcount");
+  op[4] = gen_rtx_SYMBOL_REF (Pmode, flag_fentry ? "__fentry__" : "_mcount");
   if (flag_pic)
     {
       op[4] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[4]), UNSPEC_PLT);
       op[4] = gen_rtx_CONST (Pmode, op[4]);
     }
 
-  if (TARGET_64BIT)
+  if (flag_fentry)
+    {
+      if (cfun->static_chain_decl)
+        warning (OPT_Wcannot_profile, "nested functions cannot be profiled "
+                 "with -mfentry on s390");
+      else
+        output_asm_insn ("brasl\t0,%4", op);
+    }
+  else if (TARGET_64BIT)
     {
       output_asm_insn ("stg\t%0,%1", op);
       output_asm_insn ("larl\t%2,%3", op);
@@ -15562,6 +15570,12 @@ s390_option_override_internal (bool main_args_p,
   /* Call target specific restore function to do post-init work.  At the moment,
      this just sets opts->x_s390_cost_pointer.  */
   s390_function_specific_restore (opts, NULL);
+
+  /* Check whether -mfentry is supported. It cannot be used in 31-bit mode,
+     because 31-bit PLT stubs assume that %r12 contains GOT address, which is
+     not the case when the code runs before the prolog. */
+  if (opts->x_flag_fentry && !TARGET_64BIT)
+    error ("-mfentry is supported only for 64-bit CPUs");
 }
 
 static void
