@@ -1,3 +1,9 @@
+2018-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/86514
+	* tree-ssa-reassoc.c (init_range_entry) <CASE_CONVERT>: Return for a
+	conversion to a boolean type from a type with greater precision.
+
 2018-07-16  Tom de Vries  <tdevries@suse.de>
 
 	* var-tracking.c (vt_initialize): Print adjusted insn slim if
