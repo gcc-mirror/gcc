@@ -1,3 +1,8 @@
+2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Build_Record_VS_Func): Handle corner cases dealing with
+	class-wide types and record extensions.
+
 2018-07-16  Justin Squirek  <squirek@adacore.com>
 
 	* sem_eval.adb (Eval_Integer_Literal): Add exception for avoiding
