@@ -1,5 +1,14 @@
 2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
 
+	PR fortran/83184
+	Backport from trunk.
+	* decl.c (match_old_style_init): Initialize locus of variable expr when
+	creating a data variable.
+	(match_clist_expr): Verify array is explicit shape/size before
+	attempting to allocate constant array constructor.
+
+2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
+
 	Backport from trunk:
 
 	PR fortran/86417
