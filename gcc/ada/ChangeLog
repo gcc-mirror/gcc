@@ -1,5 +1,13 @@
 2018-07-16  Javier Miranda  <miranda@adacore.com>
 
+	* inline.adb (Build_Body_To_Inline): Minor code reorganization that
+	ensures that calls to function Has_Single_Return() pass a decorated
+	tree.
+	(Has_Single_Return.Check_Return): Peform checks on entities (instead on
+	relying on their characters).
+
+2018-07-16  Javier Miranda  <miranda@adacore.com>
+
 	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): Code cleanup. Required
 	to avoid generating an ill-formed tree that confuses gnatprove causing
 	it to blowup.
