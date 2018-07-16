@@ -1,5 +1,9 @@
 2018-07-16  Javier Miranda  <miranda@adacore.com>
 
+	* sem_ch4.adb (Analyze_Membership_Op): Code cleanup.
+
+2018-07-16  Javier Miranda  <miranda@adacore.com>
+
 	* exp_attr.adb (Expand_N_Attribute_Reference ['Count]): Do not
 	transform 'Count into a function call if the current scope has been
 	eliminated.

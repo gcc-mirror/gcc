@@ -3031,15 +3031,9 @@ package body Sem_Ch4 is
       Analyze_Expression (L);
 
       if No (R) then
-         if Ada_Version >= Ada_2012 then
-            Analyze_Set_Membership;
-            Check_Function_Writable_Actuals (N);
-         else
-            Error_Msg_N
-              ("multiple choices in membership tests only allowed in Ada 2012",
-               N);
-         end if;
-
+         pragma Assert (Ada_Version >= Ada_2012);
+         Analyze_Set_Membership;
+         Check_Function_Writable_Actuals (N);
          return;
       end if;
 
