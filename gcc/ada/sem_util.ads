@@ -1313,6 +1313,9 @@ package Sem_Util is
    --  Return True iff type E has preelaborable initialization as defined in
    --  Ada 2005 (see AI-161 for details of the definition of this attribute).
 
+   function Has_Prefix (N : Node_Id) return Boolean;
+   --  Return True if N has attribute Prefix
+
    function Has_Private_Component (Type_Id : Entity_Id) return Boolean;
    --  Check if a type has a (sub)component of a private type that has not
    --  yet received a full declaration.
