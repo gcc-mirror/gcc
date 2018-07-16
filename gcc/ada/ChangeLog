@@ -1,5 +1,14 @@
 2018-07-16  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch12.adb (Analyze_Package_Instantiation): Handle properly an
+	instance that carries an aspect Default_Storage_Pool that overrides a
+	default storage pool that applies to the generic unit. The aspect in
+	the generic unit was removed before copying it in the instance, rather
+	than removing it from the copy of the aspects that are appended to the
+	aspects in the instance.
+
+2018-07-16  Ed Schonberg  <schonberg@adacore.com>
+
 	* einfo.adb (Set_Is_Uplevel_Referenced_Entity): Flag can appear on
 	loop parameters.
 	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): Handle subprogram
