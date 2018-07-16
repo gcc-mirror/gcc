@@ -1,3 +1,7 @@
+2018-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/iter2.adb, gnat.dg/iter2.ads: New testcase.
+
 2018-07-16  Richard Biener  <rguenther@suse.de>
 
 	PR lto/86523
