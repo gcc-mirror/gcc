@@ -2688,9 +2688,7 @@ package body Sem_Eval is
    --  the expander that do not correspond to static expressions.
 
    procedure Eval_Integer_Literal (N : Node_Id) is
-      T : constant Entity_Id := Etype (N);
-
-      function In_Any_Integer_Context return Boolean;
+      function In_Any_Integer_Context (Context : Node_Id) return Boolean;
       --  If the literal is resolved with a specific type in a context where
       --  the expected type is Any_Integer, there are no range checks on the
       --  literal. By the time the literal is evaluated, it carries the type
@@ -2701,21 +2699,24 @@ package body Sem_Eval is
       -- In_Any_Integer_Context --
       ----------------------------
 
-      function In_Any_Integer_Context return Boolean is
-         Par : constant Node_Id   := Parent (N);
-         K   : constant Node_Kind := Nkind (Par);
-
+      function In_Any_Integer_Context (Context : Node_Id) return Boolean is
       begin
          --  Any_Integer also appears in digits specifications for real types,
          --  but those have bounds smaller that those of any integer base type,
          --  so we can safely ignore these cases.
 
-         return Nkind_In (K, N_Number_Declaration,
-                             N_Attribute_Reference,
-                             N_Attribute_Definition_Clause,
-                             N_Modular_Type_Definition,
-                             N_Signed_Integer_Type_Definition);
+         return
+           Nkind_In (Context, N_Attribute_Definition_Clause,
+                              N_Attribute_Reference,
+                              N_Modular_Type_Definition,
+                              N_Number_Declaration,
+                              N_Signed_Integer_Type_Definition);
       end In_Any_Integer_Context;
+
+      --  Local variables
+
+      Par : constant Node_Id   := Parent (N);
+      Typ : constant Entity_Id := Etype (N);
 
    --  Start of processing for Eval_Integer_Literal
 
@@ -2732,20 +2733,20 @@ package body Sem_Eval is
       --  Check_Non_Static_Context on an expanded literal may lead to spurious
       --  and misleading warnings.
 
-      if (Nkind_In (Parent (N), N_If_Expression, N_Case_Expression_Alternative)
+      if (Nkind_In (Par, N_If_Expression, N_Case_Expression_Alternative)
            or else Nkind (Parent (N)) not in N_Subexpr)
-        and then (not Nkind_In (Parent (N), N_If_Expression,
-                                 N_Case_Expression_Alternative)
+        and then (not Nkind_In (Par, N_Case_Expression_Alternative,
+                                     N_If_Expression)
                    or else Comes_From_Source (N))
-        and then not In_Any_Integer_Context
+        and then not In_Any_Integer_Context (Par)
       then
          Check_Non_Static_Context (N);
       end if;
 
       --  Modular integer literals must be in their base range
 
-      if Is_Modular_Integer_Type (T)
-        and then Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True)
+      if Is_Modular_Integer_Type (Typ)
+        and then Is_Out_Of_Range (N, Base_Type (Typ), Assume_Valid => True)
       then
          Out_Of_Range (N);
       end if;

@@ -3984,9 +3984,9 @@ package body Exp_Ch7 is
       end if;
    end Cleanup_Task;
 
-   -----------------------------------
+   --------------------------------------
    -- Check_Unnesting_Elaboration_Code --
-   -----------------------------------
+   --------------------------------------
 
    procedure Check_Unnesting_Elaboration_Code (N : Node_Id) is
       Loc       : constant Source_Ptr := Sloc (N);

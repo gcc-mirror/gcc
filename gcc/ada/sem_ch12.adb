@@ -4216,15 +4216,19 @@ package body Sem_Ch12 is
 
             else
                declare
-                  ASN1, ASN2 : Node_Id;
                   Inherited_Aspects : constant List_Id :=
-                    New_Copy_List_Tree (Aspect_Specifications (Gen_Spec));
+                                        New_Copy_List_Tree
+                                          (Aspect_Specifications (Gen_Spec));
+
+                  ASN1         : Node_Id;
+                  ASN2         : Node_Id;
                   Pool_Present : Boolean := False;
 
                begin
                   ASN1 := First (Aspect_Specifications (N));
                   while Present (ASN1) loop
-                     if Chars (Identifier (ASN1)) = Name_Default_Storage_Pool
+                     if Chars (Identifier (ASN1)) =
+                          Name_Default_Storage_Pool
                      then
                         Pool_Present := True;
                         exit;
@@ -4234,13 +4238,14 @@ package body Sem_Ch12 is
                   end loop;
 
                   if Pool_Present then
-                     --  If generic carries a default storage pool, remove
-                     --  it in favor of the instance one.
+
+                     --  If generic carries a default storage pool, remove it
+                     --  in favor of the instance one.
 
                      ASN2 := First (Inherited_Aspects);
                      while Present (ASN2) loop
                         if Chars (Identifier (ASN2)) =
-                                                 Name_Default_Storage_Pool
+                             Name_Default_Storage_Pool
                         then
                            Remove (ASN2);
                            exit;

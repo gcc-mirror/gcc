@@ -18621,9 +18621,7 @@ package body Sem_Ch3 is
       if Is_Itype (Subt) and then Present (Predicate_Function (Par)) then
          Set_Subprograms_For_Type (Subt, Subprograms_For_Type (Par));
 
-         if Has_Static_Predicate (Par)
-           and then Is_Discrete_Type (Par)
-         then
+         if Has_Static_Predicate (Par) and then Is_Discrete_Type (Par) then
             Set_Static_Discrete_Predicate
               (Subt, Static_Discrete_Predicate (Par));
          end if;
