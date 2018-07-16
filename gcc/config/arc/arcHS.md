@@ -35,12 +35,14 @@
        (eq_attr "type" "store"))
   "hs_issue+hs_ld_st")
 
-(define_insn_reservation "hs_alu0" 2
+;; Advanced ALU
+(define_insn_reservation "hs_alu0" 4
   (and (match_test "TARGET_HS")
        (eq_attr "tune" "none")
        (eq_attr "type" "cc_arith, two_cycle_core, shift, lr, sr"))
-  "hs_issue+x1,x2")
+  "hs_issue+x1,x2, nothing*2")
 
+;; Basic ALU
 (define_insn_reservation "hs_alu1" 4
   (and (match_test "TARGET_HS")
        (eq_attr "tune" "none")
@@ -54,19 +56,26 @@
        (eq_attr "type" "div_rem"))
   "hs_issue+divrem_hs, (divrem_hs)*12")
 
-(define_insn_reservation "hs_mul" 3
+(define_insn_reservation "hs_mul" 4
   (and (match_test "TARGET_HS")
        (eq_attr "tune" "none")
        (eq_attr "type" "mul16_em, multi, umulti"))
   "hs_issue+mul_hs, nothing*3")
 
-;; BYPASS EALU ->
+;; BYPASS Advanced ALU ->
 (define_bypass 1 "hs_alu0" "hs_divrem")
 (define_bypass 1 "hs_alu0" "hs_mul")
+(define_bypass 2 "hs_alu0" "hs_alu0")
+(define_bypass 1 "hs_alu0" "hs_alu1")
+(define_bypass 1 "hs_alu0" "hs_data_load")
+(define_bypass 1 "hs_alu0" "hs_data_store" "store_data_bypass_p")
+(define_bypass 2 "hs_alu0" "hs_data_store")
 
-;; BYPASS BALU ->
+;; BYPASS Basic ALU ->
 (define_bypass 1 "hs_alu1" "hs_alu1")
 (define_bypass 1 "hs_alu1" "hs_data_store" "store_data_bypass_p")
+(define_bypass 3 "hs_alu1" "hs_mul")
+(define_bypass 3 "hs_alu1" "hs_divrem")
 
 ;; BYPASS LD ->
 (define_bypass 1 "hs_data_load" "hs_alu1")
@@ -76,7 +85,7 @@
 (define_bypass 1 "hs_data_load" "hs_data_store" "store_data_bypass_p")
 
 ;; BYPASS MPY ->
-;;(define_bypass 3 "hs_mul" "hs_mul")
+(define_bypass 3 "hs_mul" "hs_mul")
 (define_bypass 1 "hs_mul" "hs_alu1")
 (define_bypass 3 "hs_mul" "hs_divrem")
 (define_bypass 1 "hs_mul" "hs_data_store" "store_data_bypass_p")
