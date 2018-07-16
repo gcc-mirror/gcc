@@ -102,7 +102,7 @@ rs6000 vector extns	Aldy Hernandez		<aldyh@redhat.com>
 rx port			Nick Clifton		<nickc@redhat.com>
 s390 port		Hartmut Penner		<hepenner@us.ibm.com>
 s390 port		Ulrich Weigand		<uweigand@de.ibm.com>
-s390 port		Andreas Krebbel		<Andreas.Krebbel@de.ibm.com>
+s390 port		Andreas Krebbel		<krebbel@linux.ibm.com>
 sh port			Alexandre Oliva		<aoliva@redhat.com>
 sh port			Oleg Endo		<olegendo@gcc.gnu.org>
 sparc port		David S. Miller		<davem@redhat.com>
@@ -353,7 +353,7 @@ Ludovic Courtès					<ludo@gnu.org>
 Lawrence Crowl					<crowl@google.com>
 Ian Dall					<ian@beware.dropbear.id.au>
 David Daney					<david.daney@caviumnetworks.com>
-Robin Dapp					<rdapp@linux.vnet.ibm.com>
+Robin Dapp					<rdapp@linux.ibm.com>
 Simon Dardis					<simon.dardis@imgtec.com>
 Sudakshina Das					<sudi.das@arm.com>
 Bud Davis					<jmdavis@link.com>
