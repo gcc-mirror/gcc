@@ -1,3 +1,9 @@
+2018-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Inherit_Predicate_Flags): A non-discrete type may have a
+	static predicate (for example True) but has no
+	static_discrete_predicate.
+
 2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_attr.adb (Build_Record_VS_Func): Handle corner cases dealing with

@@ -18615,11 +18615,15 @@ package body Sem_Ch3 is
       --  A named subtype does not inherit the predicate function of its
       --  parent but an itype declared for a loop index needs the discrete
       --  predicate information of its parent to execute the loop properly.
+      --  A non-discrete type may has a static predicate (for example True)
+      --  but has no static_discrete_predicate.
 
       if Is_Itype (Subt) and then Present (Predicate_Function (Par)) then
          Set_Subprograms_For_Type (Subt, Subprograms_For_Type (Par));
 
-         if Has_Static_Predicate (Par) then
+         if Has_Static_Predicate (Par)
+           and then Is_Discrete_Type (Par)
+         then
             Set_Static_Discrete_Predicate
               (Subt, Static_Discrete_Predicate (Par));
          end if;
