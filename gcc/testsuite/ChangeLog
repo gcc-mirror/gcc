@@ -1,3 +1,8 @@
+2018-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86526
+	* gcc.c-torture/compile/pr86526.c: New test.
+
 2018-07-16  Carl Love  <cel@us.ibm.com>
 
  	* gcc.target/powerpc/divkc3-2.c: Add dg-require-effective-target
