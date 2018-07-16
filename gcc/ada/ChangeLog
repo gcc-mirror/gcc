@@ -1,5 +1,16 @@
 2018-07-16  Gary Dismukes  <dismukes@adacore.com>
 
+	* exp_ch4.adb (Expand_N_Allocator): Test for Storage_Pool being RTE in
+	addition to the existing test for no Storage_Pool as a condition
+	enabling generation of the call to Check_Standard_Allocator when the
+	restriction No_Standard_Allocators_After_Elaboration is active.
+	* libgnat/s-elaall.ads (Check_Standard_Allocator): Correct comment to
+	say that Storage_Error will be raised (rather than Program_Error).
+	* libgnat/s-elaall.adb (Check_Standard_Allocator): Raise Storage_Error
+	rather than Program_Error when Elaboration_In_Progress is False.
+
+2018-07-16  Gary Dismukes  <dismukes@adacore.com>
+
 	* sem_eval.adb: Fix spelling for compile-time-known.
 
 2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>

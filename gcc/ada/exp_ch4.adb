@@ -4561,12 +4561,14 @@ package body Exp_Ch4 is
          end if;
       end if;
 
-      --  If no storage pool has been specified and we have the restriction
+      --  If no storage pool has been specified, or the storage pool
+      --  is System.Pool_Global.Global_Pool_Object, and the restriction
       --  No_Standard_Allocators_After_Elaboration is present, then generate
       --  a call to Elaboration_Allocators.Check_Standard_Allocator.
 
       if Nkind (N) = N_Allocator
-        and then No (Storage_Pool (N))
+        and then (No (Storage_Pool (N))
+                   or else Is_RTE (Storage_Pool (N), RE_Global_Pool_Object))
         and then Restriction_Active (No_Standard_Allocators_After_Elaboration)
       then
          Insert_Action (N,
