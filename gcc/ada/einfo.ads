@@ -3139,8 +3139,8 @@ package Einfo is
 --       flag may be set for any other functions or procedures that are known
 --       to be side effect free, so in the case of subprograms, the Is_Pure
 --       flag may be used by the optimizer to imply that it can assume freedom
---       from side effects (other than those resulting from assignment to out
---       parameters, or to objects designated by access parameters).
+--       from side effects (other than those resulting from assignment to Out
+--       or In Out parameters, or to objects designated by access parameters).
 
 --    Is_Pure_Unit_Access_Type (Flag189)
 --       Defined in access type and subtype entities. Set if the type or
