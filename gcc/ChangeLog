@@ -1,5 +1,9 @@
 2017-07-16  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arcHS.md: Update ARCHS scheduling rules.
+
+2017-07-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-arch.h (arc_tune_attr): Add new tune parameters
 	for ARCHS4x.
 	* config/arc/arc-cpus.def (hs4x): New cpu.
