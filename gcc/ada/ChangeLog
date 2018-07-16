@@ -1,5 +1,10 @@
 2018-07-16  Piotr Trojanek  <trojanek@adacore.com>
 
+	* sinfo.ads, sinfo.adb (Withed_Body): Remove.
+	(Set_Withed_Body): Remove.
+
+2018-07-16  Piotr Trojanek  <trojanek@adacore.com>
+
 	* sem.adb (Walk_Library_Items): Skip units with configuration pragmas
 	when printing debug info.
 
