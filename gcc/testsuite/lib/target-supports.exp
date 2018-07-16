@@ -2182,7 +2182,7 @@ proc check_ppc_float128_hw_available { } {
 		    __float128 w = -1.0q;
 
 		    __asm__ ("xsaddqp %0,%1,%2" : "+v" (w) : "v" (x), "v" (y));
-		    return ((z != 3.0q) || (z != w);
+		    return ((z != 3.0q) || (z != w));
 		}
 	    } $options
 	}
