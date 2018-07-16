@@ -5331,6 +5331,12 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("Bit_Order can only be defined for record type", Nam);
 
+            elsif Is_Tagged_Type (U_Ent)
+               and then Is_Derived_Type (U_Ent)
+            then
+               Error_Msg_N
+                 ("Bit_Order cannot be defined for record extensions", Nam);
+
             elsif Duplicate_Clause then
                null;
 
