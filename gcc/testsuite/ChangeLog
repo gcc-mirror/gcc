@@ -1,3 +1,8 @@
+2018-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/86389
+	* gcc.dg/torture/pr86389.c: Require trampolines.
+
 2018-07-15  Tom de Vries  <tdevries@suse.de>
 
 	* lib/gcc-gdb-test.exp (guality_minimal_options): New proc.
