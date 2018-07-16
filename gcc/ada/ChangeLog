@@ -1,3 +1,8 @@
+2018-07-16  Justin Squirek  <squirek@adacore.com>
+
+	* sem_eval.adb (Eval_Integer_Literal): Add exception for avoiding
+	checks on expanded literals within if and case expressions.
+
 2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* libgnat/s-wchwts.adb (Wide_String_To_String): Use the appropriate
