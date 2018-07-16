@@ -1,3 +1,22 @@
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.c (c_common_attribute_table): Add
+	"omp declare target implicit" attribute.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR c/86453
+	* c-attribs.c (handle_packed_attribute): Do not build a variant
+	type with TYPE_PACKED, instead ignore the attribute if we may
+	not apply to the original type.
+
+2018-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86443
+	* c-omp.c (c_omp_check_loop_iv_r, c_omp_check_loop_iv): Allow declv
+	to contain TREE_LIST for both the original class iterator and the
+	"last" helper var.
+
 2018-07-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (to_ada_name): Remove index parameter.

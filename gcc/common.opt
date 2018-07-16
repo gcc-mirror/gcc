@@ -987,7 +987,7 @@ Common Report Var(flag_align_loops) Optimization
 Align the start of loops.
 
 falign-loops=
-Common RejectNegative Joined Var(str_align_loops)
+Common RejectNegative Joined Var(str_align_loops) Optimization
 
 fargument-alias
 Common Ignore

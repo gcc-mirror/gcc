@@ -7679,7 +7679,7 @@ static bool
 handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 			       tree declv, tree orig_declv, tree initv,
 			       tree condv, tree incrv, tree *body,
-			       tree *pre_body, tree &clauses, tree *lastp,
+			       tree *pre_body, tree &clauses,
 			       int collapse, int ordered)
 {
   tree diff, iter_init, iter_incr = NULL, last;
@@ -7983,7 +7983,8 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
   TREE_VEC_ELT (initv, i) = init;
   TREE_VEC_ELT (condv, i) = cond;
   TREE_VEC_ELT (incrv, i) = incr;
-  *lastp = last;
+  TREE_VEC_ELT (orig_declv, i)
+    = tree_cons (TREE_VEC_ELT (orig_declv, i), last, NULL_TREE);
 
   return false;
 }
@@ -8002,7 +8003,6 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 {
   tree omp_for = NULL, orig_incr = NULL;
   tree decl = NULL, init, cond, incr;
-  tree last = NULL_TREE;
   location_t elocus;
   int i;
   int collapse = 1;
@@ -8169,7 +8169,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	    }
 	  if (handle_omp_for_class_iterator (i, locus, code, declv, orig_declv,
 					     initv, condv, incrv, &body,
-					     &pre_body, clauses, &last,
+					     &pre_body, clauses,
 					     collapse, ordered))
 	    return NULL;
 	  continue;

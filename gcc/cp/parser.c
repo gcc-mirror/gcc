@@ -15973,15 +15973,14 @@ cp_parser_template_id (cp_parser *parser,
   else if (DECL_TYPE_TEMPLATE_P (templ)
 	   || DECL_TEMPLATE_TEMPLATE_PARM_P (templ))
     {
-      bool entering_scope;
       /* In "template <typename T> ... A<T>::", A<T> is the abstract A
 	 template (rather than some instantiation thereof) only if
 	 is not nested within some other construct.  For example, in
 	 "template <typename T> void f(T) { A<T>::", A<T> is just an
 	 instantiation of A.  */
-      entering_scope = (template_parm_scope_p ()
-			&& cp_lexer_next_token_is (parser->lexer,
-						   CPP_SCOPE));
+      bool entering_scope
+	= (template_parm_scope_p ()
+	   && cp_lexer_next_token_is (parser->lexer, CPP_SCOPE));
       template_id
 	= finish_template_type (templ, arguments, entering_scope);
     }

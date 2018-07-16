@@ -110,6 +110,14 @@ s-arm-cdata: $(srcdir)/config/arm/parsecpu.awk \
 	$(SHELL) $(srcdir)/../move-if-change tmp-arm-cpu-cdata.h arm-cpu-cdata.h
 	$(STAMP) s-arm-cdata
 
+arm-native.h: s-arm-native ; @true
+s-arm-native: $(srcdir)/config/arm/parsecpu.awk \
+  $(srcdir)/config/arm/arm-cpus.in
+	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=native \
+		$(srcdir)/config/arm/arm-cpus.in > tmp-arm-native.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-arm-native.h arm-native.h
+	$(STAMP) s-arm-native
+
 aarch-common.o: $(srcdir)/config/arm/aarch-common.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TM_P_H) $(RTL_H) $(TREE_H) output.h $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
@@ -145,3 +153,5 @@ arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \
 		$(srcdir)/config/arm/arm-c.c
 
 arm-common.o: arm-cpu-cdata.h
+
+driver-arm.o: arm-native.h

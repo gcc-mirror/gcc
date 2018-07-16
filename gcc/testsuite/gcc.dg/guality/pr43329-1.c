@@ -8,8 +8,8 @@ static inline void
 foo (int argx)
 {
   int varx = argx;
-  __asm__ volatile (NOP);			/* { dg-final { gdb-test 12 "argx" "25" } } */
-  __asm__ volatile (NOP : : "g" (varx));	/* { dg-final { gdb-test 12 "varx" "25" } } */
+  __asm__ volatile (NOP);			/* { dg-final { gdb-test .+1 "argx" "25" } } */
+  __asm__ volatile (NOP : : "g" (varx));	/* { dg-final { gdb-test . "varx" "25" } } */
 }
 
 int i;

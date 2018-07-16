@@ -117,8 +117,9 @@ extern void zero_nonzero_bits_from_bounds (signop, const wide_int&,
 					   wide_int *);
 extern bool zero_nonzero_bits_from_vr (const tree, value_range *,
 				       wide_int *, wide_int *);
-extern bool vr_easy_mask_min_max (tree_code code, const wide_int& lb,
-                           const wide_int& ub, const wide_int& mask);
+extern bool range_easy_mask_min_max (tree_code,
+				     const wide_int &lb, const wide_int &ub,
+				     const wide_int &mask);
 extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern bool range_int_cst_singleton_p (value_range *);
 extern int value_inside_range (tree, tree, tree);

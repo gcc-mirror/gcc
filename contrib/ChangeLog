@@ -1,3 +1,11 @@
+2018-07-13  Tom de Vries  <tdevries@suse.de>
+
+	* maintainers-verify.sh: New file.
+
+2018-07-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* compare_tests: Print number of tests in each category.
+
 2018-06-19  Alexander Monakov  <amonakov@ispras.ru>
 
 	* vim-gcc-dev/README: New file.

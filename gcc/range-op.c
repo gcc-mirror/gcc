@@ -1361,7 +1361,7 @@ operator_bitwise_and::apply_mask_to_pair (irange& r, const wide_int& lb,
 					  const wide_int& mask) const
 {
   wide_int new_lb, new_ub;
-  if (vr_easy_mask_min_max (BIT_AND_EXPR, lb, ub, mask))
+  if (range_easy_mask_min_max (BIT_AND_EXPR, lb, ub, mask))
     {
       new_lb = lb & mask;
       new_ub = ub & mask;

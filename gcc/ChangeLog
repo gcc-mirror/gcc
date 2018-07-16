@@ -1,3 +1,592 @@
+2017-07-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arcHS.md: Update ARCHS scheduling rules.
+
+2017-07-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-arch.h (arc_tune_attr): Add new tune parameters
+	for ARCHS4x.
+	* config/arc/arc-cpus.def (hs4x): New cpu.
+	(hs4xd): Likewise.
+	* config/arc/arc-tables.opt: Regenerate.
+	* config/arc/arc.c (arc_sched_issue_rate): New function.
+	(TARGET_SCHED_ISSUE_RATE): Define.
+	(TARGET_SCHED_EXPOSED_PIPELINE): Likewise.
+	* config/arc/arc.md (attr type): Add fpu_fuse, fpu_sdiv, fpu_ddiv,
+	fpu_cvt.
+	(attr tune): Add ARCHS4x tune values.
+	(attr tune_dspmpy): Define.
+	(*tst): Correct instruction type.
+	* config/arc/arcHS.md: Don't use this automaton for ARCHS4x cpus.
+	* config/arc/arcHS4x.md: New file.
+	* config/arc/fpu.md: Update instruction type attributes.
+	* config/arc/t-multilib: Regenerate.
+
+2018-07-16  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86455
+	* var-tracking.c (vt_initialize): Fix pre_dec handling.
+
+2018-07-16  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/atomics.md (aarch64_store_execlusive<mode>): Add
+	early clobber.
+
+2018-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/86514
+	* tree-ssa-reassoc.c (init_range_entry) <CASE_CONVERT>: Return for a
+	conversion to a boolean type from a type with greater precision.
+
+2018-07-16  Tom de Vries  <tdevries@suse.de>
+
+	* var-tracking.c (vt_initialize): Print adjusted insn slim if
+	dump_flags request TDF_SLIM.
+
+2018-07-16  Aldy Hernandez  <aldyh@redhat.com>
+
+        * fold-const.c (int_const_binop_1): Abstract...
+        (wide_int_binop): ...wide int code here.
+	(poly_int_binop): ...poly int code here.
+	Abstract the rest of int_const_binop_1 into int_const_binop.
+        * fold-const.h (wide_int_binop): New.
+        * tree-vrp.c (vrp_int_const_binop): Call wide_int_binop.
+	Remove useless PLUS/MINUS_EXPR case.
+        (zero_nonzero_bits_from_vr): Move wide int code...
+        (zero_nonzero_bits_from_bounds): ...here.
+        (extract_range_from_binary_expr_1): Move mask optimization code...
+        (range_easy_mask_min_max): ...here.
+        * tree-vrp.h (zero_nonzero_bits_from_bounds): New.
+        (range_easy_mask_min_max): New.
+
+2018-07-15  Jeff Law  <law@redhat.com>
+
+	PR target/85993
+	* config/sh/sh.c (output_mi_thunk): Remove dead conditional
+	block.
+
+2018-07-14  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/linux.h (TARGET_ASM_FILE_END): New.
+
+2018-07-14  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.c (pdp11_rtx_costs): Bugfixes.
+
+2018-07-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (copy_function_or_variable): Dump info about
+	copying section.
+
+2018-07-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Steve Munroe  <munroesj52@gmail.com>
+
+	* config/rs6000/emmintrin.h (_mm_and_si128): New function.
+	(_mm_andnot_si128): Likewise.
+	(_mm_or_si128): Likewise.
+	(_mm_xor_si128): Likewise.
+
+2018-07-13  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/78809
+	* builtins.c (expand_builtin_memcmp): Inline the calls first
+	when result_eq is false.
+	(expand_builtin_strcmp): Inline the calls first.
+	(expand_builtin_strncmp): Likewise.
+	(inline_string_cmp): New routine. Expand a string compare 
+	call by using a sequence of char comparison.
+	(inline_expand_builtin_string_cmp): New routine. Inline expansion
+	a call to str(n)cmp/memcmp.
+	* doc/invoke.texi (--param builtin-string-cmp-inline-length): New option.
+	* params.def (BUILTIN_STRING_CMP_INLINE_LENGTH): New.
+
+2018-07-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/driver-arm.c: Include arm-native.h.
+	(host_detect_local_cpu): Use auto-generated data tables.
+	(vendors, arm_cpu_table): Delete.  Move part information to ...
+	* config/arm/arm-cpus.in: ... here.
+	* config/arm/parsecpu.awk (gen_native): New function.
+	(vendor, part): New CPU fields.
+	(END): Add support for building the native CPU detection tables.
+	* config/arm/t-arm (arm-native.h): Add build rule.
+	(driver-arm.o): Add dependency on arm-native.h.
+
+2018-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85974
+	* match.pd (addr1 - addr2): Allow either of the operand to
+	have a conversion.
+
+2018-07-13  Tom de Vries  <tdevries@suse.de>
+
+	* tree-inline.c (remap_ssa_name): Save and reuse debug exprs generated
+	in remap_ssa_name.
+
+2018-07-13  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_operands_adjust_ok_for_ldpstp): Use
+	arrays instead of numbered variables.
+
+2018-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-protos.h (sparc_compute_frame_size): Delete.
+	* config/sparc/sparc.c (sparc_compute_frame_size): Make static.
+
+2018-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86452
+	* dwarf2out.c (gen_type_die_with_usage): Use scope_die_for
+	instead of get_context_die.
+
+2018-07-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86489
+	* tree-ssa-loop-niter.c (number_of_iterations_popcount): Check
+	that the loop latch destination where phi is defined.
+
+2018-07-12  Kito Cheng  <kito.cheng@gmail.com>
+
+        * config/riscv/riscv.c (enum riscv_privilege_levels): Add UNKNOWN_MODE.
+        (riscv_expand_epilogue): Add assertion to check interrupt mode.
+        (riscv_set_current_function): Extract getting interrupt type to new
+        function.
+        (riscv_get_interrupt_type): New function.
+        (riscv_merge_decl_attributes): New function, checking interrupt type is
+        same.
+        (TARGET_MERGE_DECL_ATTRIBUTES): Define.
+
+2018-07-12  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.c (pdp11_output_def): Fix typo in .set
+	directive.
+
+2018-07-12  Paul Koning  <ni1d@arrl.net>
+
+	* doc/rtl.texi (REG_NONNEG): Remove decrement and branch until
+	zero reference, add doloop_end instead.
+	* doc/md.texi (decrement_and_branch_until_zero): Remove.
+	(Looping patterns): Remove decrement_and_branch_until_zero.  Add
+	detail for doloop_end.
+
+2018-07-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/86453
+	* attribs.c (decl_attributes): Reject conflicting attributes before
+	calling attribute handlers.
+
+2018-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* dumpfile.c (gcc::dump_manager::get_dump_file_name): Add PART
+	 parameter.
+	(gcc::dump_manager::get_dump_file_name): likewise.
+	(dump_begin): Likewise.
+	* dumpfile.h (dump_begin): Update prototype.
+	(gcc::dump_manager::get_dump_file_name,
+	gcc::dump_manager::get_dump_file_name): Update prototype.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* internal-fn.h (vectorizable_internal_fn_p): New function.
+	* tree-vect-slp.c (compatible_calls_p): Likewise.
+	(vect_build_slp_tree_1): Remove nops argument.  Handle calls
+	to internal functions.
+	(vect_build_slp_tree_2): Update call to vect_build_slp_tree_1.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* fold-const.h (inverse_conditions_p): Declare.
+	* fold-const.c (inverse_conditions_p): New function.
+	* match.pd: Use inverse_conditions_p.  Add folds of view_converts
+	that test the inverse condition of a conditional internal function.
+	* internal-fn.h (vectorized_internal_fn_supported_p): Declare.
+	* internal-fn.c (internal_fn_mask_index): Handle conditional
+	internal functions.
+	(vectorized_internal_fn_supported_p): New function.
+	* tree-if-conv.c: Include internal-fn.h and fold-const.h.
+	(any_pred_load_store): Replace with...
+	(need_to_predicate): ...this new variable.
+	(redundant_ssa_names): New variable.
+	(ifcvt_can_use_mask_load_store): Move initial checks to...
+	(ifcvt_can_predicate): ...this new function.  Handle tree codes
+	for which a conditional internal function exists.
+	(if_convertible_gimple_assign_stmt_p): Use ifcvt_can_predicate
+	instead of ifcvt_can_use_mask_load_store.  Update after variable
+	name change.
+	(predicate_load_or_store): New function, split out from
+	predicate_mem_writes.
+	(check_redundant_cond_expr): New function.
+	(value_available_p): Likewise.
+	(predicate_rhs_code): Likewise.
+	(predicate_mem_writes): Rename to...
+	(predicate_statements): ...this.  Use predicate_load_or_store
+	and predicate_rhs_code.
+	(combine_blocks, tree_if_conversion): Update after above name changes.
+	(ifcvt_local_dce): Handle redundant_ssa_names.
+	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): Handle
+	general conditional functions.
+	* tree-vect-stmts.c (vectorizable_call): Likewise.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* internal-fn.h (can_interpret_as_conditional_op_p): Declare.
+	* internal-fn.c (can_interpret_as_conditional_op_p): New function.
+	* tree-ssa-math-opts.c (convert_mult_to_fma_1): Handle conditional
+	plus and minus and convert them into IFN_COND_FMA-based sequences.
+	(convert_mult_to_fma): Handle conditional plus and minus.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/md.texi (cond_fma, cond_fms, cond_fnma, cond_fnms): Document.
+	* optabs.def (cond_fma_optab, cond_fms_optab, cond_fnma_optab)
+	(cond_fnms_optab): New optabs.
+	* internal-fn.def (COND_FMA, COND_FMS, COND_FNMA, COND_FNMS): New
+	internal functions.
+	(FMA): Use DEF_INTERNAL_FLT_FN rather than DEF_INTERNAL_FLT_FLOATN_FN.
+	* internal-fn.h (get_conditional_internal_fn): Declare.
+	(get_unconditional_internal_fn): Likewise.
+	* internal-fn.c (cond_ternary_direct): New macro.
+	(expand_cond_ternary_optab_fn): Likewise.
+	(direct_cond_ternary_optab_supported_p): Likewise.
+	(FOR_EACH_COND_FN_PAIR): Likewise.
+	(get_conditional_internal_fn): New function.
+	(get_unconditional_internal_fn): Likewise.
+	* gimple-match.h (gimple_match_op::MAX_NUM_OPS): Bump to 5.
+	(gimple_match_op::gimple_match_op): Add a new overload for 5
+	operands.
+	(gimple_match_op::set_op): Likewise.
+	(gimple_resimplify5): Declare.
+	* genmatch.c (decision_tree::gen): Generate simplifications for
+	5 operands.
+	* gimple-match-head.c (gimple_simplify): Define an overload for
+	5 operands.  Handle calls with 5 arguments in the top-level overload.
+	(convert_conditional_op): Handle conversions from unconditional
+	internal functions to conditional ones.
+	(gimple_resimplify5): New function.
+	(build_call_internal): Pass a fifth operand.
+	(maybe_push_res_to_seq): Likewise.
+	(try_conditional_simplification): Try converting conditional
+	internal functions to unconditional internal functions.
+	Handle 3-operand unconditional forms.
+	* match.pd (UNCOND_TERNARY, COND_TERNARY): Operator lists.
+	Define ternary equivalents of the current rules for binary conditional
+	internal functions.
+	* config/aarch64/aarch64.c (aarch64_preferred_else_value): Handle
+	ternary operations.
+	* config/aarch64/iterators.md (UNSPEC_COND_FMLA, UNSPEC_COND_FMLS)
+	(UNSPEC_COND_FNMLA, UNSPEC_COND_FNMLS): New unspecs.
+	(optab): Handle them.
+	(SVE_COND_FP_TERNARY): New int iterator.
+	(sve_fmla_op, sve_fmad_op): New int attributes.
+	* config/aarch64/aarch64-sve.md (cond_<optab><mode>)
+	(*cond_<optab><mode>_2, *cond_<optab><mode_4)
+	(*cond_<optab><mode>_any): New SVE_COND_FP_TERNARY patterns.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target.def (preferred_else_value): New target hook.
+	* doc/tm.texi.in (TARGET_PREFERRED_ELSE_VALUE): New hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_preferred_else_value): Declare.
+	* targhooks.c (default_preferred_else_value): New function.
+	* internal-fn.h (conditional_internal_fn_code): Declare.
+	* internal-fn.c (FOR_EACH_CODE_MAPPING): New macro.
+	(get_conditional_internal_fn): Use it.
+	(conditional_internal_fn_code): New function.
+	* gimple-match.h (gimple_match_cond): New struct.
+	(gimple_match_op): Add a cond member function.
+	(gimple_match_op::gimple_match_op): Update all forms to take a
+	gimple_match_cond.
+	* genmatch.c (expr::gen_transform): Use the same condition as res_op
+	for the suboperation, but don't specify a particular else_value.
+	* tree-ssa-sccvn.c (vn_nary_simplify, vn_reference_lookup_3)
+	(visit_nary_op, visit_reference_op_load): Pass
+	gimple_match_cond::UNCOND to the gimple_match_op constructor.
+	* gimple-match-head.c: Include tree-eh.h
+	(convert_conditional_op): New function.
+	(maybe_resimplify_conditional_op): Likewise.
+	(gimple_resimplify1): Call maybe_resimplify_conditional_op.
+	(gimple_resimplify2): Likewise.
+	(gimple_resimplify3): Likewise.
+	(gimple_resimplify4): Likewise.
+	(maybe_push_res_to_seq): Return null for conditional operations.
+	(try_conditional_simplification): New function.
+	(gimple_simplify): Call it.  Pass conditions to the gimple_match_op
+	constructor.
+	* match.pd: Fold VEC_COND_EXPRs of an IFN_COND_* call to a new
+	IFN_COND_* call.
+	* config/aarch64/aarch64.c (aarch64_preferred_else_value): New
+	function.
+	(TARGET_PREFERRED_ELSE_VALUE): Redefine.
+
+2018-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not stream
+	DECL_FCONTEXT
+	(hash_tree): Do not hash DECL_FCONTEXT
+	* tree-streamer-in.c (lto_input_ts_field_decl_tree_pointers):
+	Do not stream DECL_FCONTEXT.
+	* tree-streamer-out.c (write_ts_field_decl_tree_pointers): Likewise.
+	* tree.c (free_lang_data_in_decl): Free DECL_FCONTEXT.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86462
+	* dwarf2out.c (gen_block_die): Only output blocks when they have
+	at least one !DECL_IGNORED_P variable.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR target/84829
+	* config/gnu-user.h (GNU_USER_TARGET_NO_PTHREADS_LIB_SPEC):
+	Remove -mieee-fp handling.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_lookup_simplify_result): Remove bogus
+	left-over from last patch.
+
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86492
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::coalesce_immediate_stores): Call
+	check_no_overlap even for the merge_overlapping case.  Formatting fix.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86479
+	* fold-const.c (fold_binary_op_with_conditional_arg): Do not
+	move possibly trapping operations into the conditional.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (mprts_hook_cnt): Remove.
+	(vn_lookup_simplify_result): Remove recursion limit applied
+	here.
+	(vn_nary_build_or_lookup_1): Adjust.
+	(try_to_simplify): Likewise.
+	* gimple-match-head.c (gimple_resimplify1): Instead apply one
+	here.
+	(gimple_resimplify2): Likewise.
+	(gimple_resimplify3): Likewise.
+	(gimple_resimplify4): Likewise.
+
+2018-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/avx512bitalgintrin.h (_mm512_mask_bitshuffle_epi64_mask):
+	Use __mmask64 type instead of __mmask8 for __M argument.
+	* config/i386/avx512fintrin.h (_mm512_mask_xor_epi64,
+	_mm512_maskz_xor_epi64): Use __mmask8 type instead of __mmask16 for
+	__U argument.
+	(_mm512_mask_cmpneq_epi64_mask): Use __mmask8 type instead of
+	__mmask16 for __M argument.
+	(_mm512_maskz_insertf32x4, _mm512_maskz_inserti32x4,
+	_mm512_mask_insertf32x4, _mm512_mask_inserti32x4): Cast last argument
+	to __mmask16 instead of __mmask8.
+	* config/i386/avx512vlintrin.h (_mm_mask_add_ps, _mm_maskz_add_ps,
+	_mm256_mask_add_ps, _mm256_maskz_add_ps, _mm_mask_sub_ps,
+	_mm_maskz_sub_ps, _mm256_mask_sub_ps, _mm256_maskz_sub_ps,
+	_mm256_maskz_cvtepi32_ps, _mm_maskz_cvtepi32_ps): Use __mmask8 type
+	instead of __mmask16 for __U argument.
+	* config/i386/avx512vlbwintrin.h (_mm_mask_cmp_epi8_mask): Use
+	__mmask16 instead of __mmask8 for __U argument.
+	(_mm256_mask_cmp_epi8_mask): Use __mmask32 instead of __mmask16 for
+	__U argument.
+	(_mm256_cmp_epi8_mask): Use __mmask32 return type instead of
+	__mmask16.
+	(_mm_mask_cmp_epu8_mask): Use __mmask16 instead of __mmask8 for __U
+	argument.
+	(_mm256_mask_cmp_epu8_mask): Use __mmask32 instead of __mmask16 for
+	__U argument.
+	(_mm256_cmp_epu8_mask): Use __mmask32 return type instead of
+	__mmask16.
+	(_mm_mask_cmp_epi16_mask): Cast last argument to __mmask8 instead
+	of __mmask16.
+	(_mm256_mask_cvtepi8_epi16): Use __mmask16 instead of __mmask32 for
+	__U argument.
+	(_mm_mask_cvtepi8_epi16): Use __mmask8 instead of __mmask32 for
+	__U argument.
+	(_mm256_mask_cvtepu8_epi16): Use __mmask16 instead of __mmask32 for
+	__U argument.
+	(_mm_mask_cvtepu8_epi16): Use __mmask8 instead of __mmask32 for
+	__U argument.
+	(_mm256_mask_cmpneq_epu8_mask, _mm256_mask_cmplt_epu8_mask,
+	_mm256_mask_cmpge_epu8_mask, _mm256_mask_cmple_epu8_mask): Change
+	return type as well as __M argument type and all casts from __mmask8
+	to __mmask32.
+	(_mm256_mask_cmpneq_epu16_mask, _mm256_mask_cmplt_epu16_mask,
+	_mm256_mask_cmpge_epu16_mask, _mm256_mask_cmple_epu16_mask): Change
+	return type as well as __M argument type and all casts from __mmask8
+	to __mmask16.
+	(_mm256_mask_cmpneq_epi8_mask, _mm256_mask_cmplt_epi8_mask,
+	_mm256_mask_cmpge_epi8_mask, _mm256_mask_cmple_epi8_mask): Change
+	return type as well as __M argument type and all casts from __mmask8
+	to __mmask32.
+	(_mm256_mask_cmpneq_epi16_mask, _mm256_mask_cmplt_epi16_mask,
+	_mm256_mask_cmpge_epi16_mask, _mm256_mask_cmple_epi16_mask): Change
+	return type as well as __M argument type and all casts from __mmask8
+	to __mmask16.
+	* config/i386/avx512vbmi2vlintrin.h (_mm_mask_shrdi_epi32,
+	_mm_mask_shldi_epi32): Cast last argument to __mmask8 instead of
+	__mmask16.
+
+2018-07-11  Grazvydas Ignotas  <notasas@gmail.com>
+
+	* config/i386/avx512bwintrin.h: (_mm512_mask_cmp_epi8_mask,
+	_mm512_mask_cmp_epu8_mask): Use __mmask64 type instead of __mmask32
+	for __U argument.
+
+2018-07-11  Paul Koning  <ni1d@arrl.net>
+
+	* doc/md.texi (define_subst): Document how multiple occurrences of
+	the same argument in the replacement pattern are handled.
+
+2018-07-11  Paul Koning  <ni1d@arrl.net>
+
+	* doc/extend.texi (Common Variable Attributes): Move "mode" into
+	alphabetical order.
+	(Common Type Attributes): Add "mode" attribute.
+
+2018-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Do not
+	stream DECL_ORIGINAL_TYPE.
+	(DFS::DFS_write_tree_body): Drop hack handling local external decls.
+	(hash_tree): Do not walk DECL_ORIGINAL_TYPE.
+	* tree-streamer-in.c (lto_input_ts_decl_non_common_tree_pointers):
+	Do not walk original type.
+	* tree-streamer-out.c (streamer_write_chain): Drop hack handling
+	external decls.
+	(write_ts_decl_non_common_tree_pointers): Do not stream
+	DECL_ORIGINAL_TYPE
+	* tree.c (free_lang_data_in_decl): Clear DECL_ORIGINAL_TYPE.
+	(find_decls_types_r): Do not walk DEC_ORIGINAL_TYPE.
+
+2018-07-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        * tree-ssa-threadupdate.c (thread_through_all_blocks): Do not jump
+	thread twice from the same starting edge.
+
+2018-07-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (gimple_stmt_nonzero_p): Abstract common code to...
+	* gimple.c (gimple_call_nonnull_result_p): ...here...
+	(gimple_call_nonnull_arg): ...and here.
+	* gimple.h (gimple_call_nonnull_result_p): New.
+	(gimple_call_nonnull_arg): New.
+
+2018-07-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in: Move information from fpu field of each
+	cpu definition to the isa field.
+	* config/arm/parsecpu.awk (fpu): Delete match rule.
+	(gen_comm_data): Don't add bits from the CPU's FPU entry.
+
+2018-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86457
+	* dwarf2out.c (init_sections_and_labels): Use
+	output_asm_line_debug_info consistently.
+	(dwarf2out_early_finish): Likewise.
+	(dwarf2out_finish): Remove DW_AT_stmt_list from early generated
+	type units.
+
+2018-07-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely_1):
+	Rework father_bb setting in a way to avoid propagating constants
+	multiple times on a loop body.
+
+2018-07-10  Mark Wielaard  <mark@klomp.org>
+
+	PR debug/86459
+	* dwarf2out.c (output_macinfo_op): Fix dwarf_FORM typo in gcc_assert.
+
+2018-07-10  Richard Biener  <rguenther@suse.de>
+
+	* hash-map.h (hash_map::iterator::operator*): Return
+	references to key and value.
+
+2018-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86443
+	* gimplify.c (find_combined_omp_for): Add DATA argument, in addition
+	to finding the inner OMP_FOR/OMP_SIMD stmt find non-trivial wrappers,
+	BLOCKs with BLOCK_VARs, OMP_PARALLEL in between, OMP_FOR in between.
+	(gimplify_omp_for): For composite loops, move outer
+	OMP_{DISTRIBUTE,TASKLOOP,FOR,PARALLEL} right around innermost
+	OMP_FOR/OMP_SIMD if there are any non-trivial wrappers.  For class
+	iterators add any needed clauses.  Allow OMP_FOR_ORIG_DECLS to contain
+	TREE_LIST for both the original class iterator and the "last" helper
+	var.  Gimplify OMP_FOR_PRE_BODY before the outermost composite
+	loop, remember has_decl_expr from outer composite loops for the
+	innermost OMP_SIMD in TREE_PRIVATE bit on OMP_FOR_INIT.
+
+2018-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77357
+	PR middle-end/86428
+	* builtins.c (c_strlen): Avoid out-of-bounds warnings when
+	accessing implicitly initialized array elements.
+	* expr.c (string_constant): Handle string initializers of
+	character arrays within aggregates.
+	* gimple-fold.c (fold_array_ctor_reference): Add argument.
+	Store element offset.  As a special case, handle zero size.
+	(fold_nonarray_ctor_reference): Same.
+	(fold_ctor_reference): Add argument.  Store subobject offset.
+	* gimple-fold.h (fold_ctor_reference): Add argument.
+
+2018-07-09  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.c (pdp11_addr_cost): New function.
+	(pdp11_insn_cost): New function.
+	(pdp11_md_asm_adjust): New function.
+	(TARGET_INVALID_WITHIN_DOLOOP): Define.
+	(pdp11_rtx_costs): Update to match machine better.
+	(output_addr_const_pdp11): Correct format mismatch warnings.
+	* config/pdp11/pdp11.h (SLOW_BYTE_ACCESS): Correct definition.
+	* config/pdp11/pdp11.md: General change to add base_cost and/or
+	length attributes for use by new pdp11_insn_cost function.
+	(MIN_BRANCH): Correct definition.
+	(MIN_SOB): Ditto.
+	(doloop_end): Use standard pattern name for looping pattern.
+	(doloop_end_nocc): New.
+	(movsf): Add another constraint alternative.
+	(zero_extendqihi2): Add constraint alternatives for not in place
+	extend.
+	(zero_extendhisi2): Remove.
+	(shift patterns): Add CC handling variants.
+	(bswaphi2): New.
+	(bswapsi2): New.
+	(rothi3): New.
+	(define_peephole2): New peephole to recognize mov that sets CC for
+	subsequent test.
+
+2018-07-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sparc.c (sparc_fold_builtin) <SPARC_BUILTIN_PDIST,
+	SPARC_BUILTIN_PDISTN>: Adapt for signature change of wi::neg,
+	wi::add.
+
+2018-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86420
+	* real.c (real_nextafter): Return true if result is denormal.
+
+2018-07-09  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Add back wrongly removed attribute.
+
+2018-07-09  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86413
+	* dwarf2out.c (gen_block_die): For an early generated DIE
+	always output high/low PC attributes.
+
 2018-07-09  Tom de Vries  <tdevries@suse.de>
 
 	* cfgexpand.c (expand_debug_source_expr): Handle VAR_DECL.

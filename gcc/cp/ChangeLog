@@ -1,3 +1,46 @@
+2018-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/3698
+	PR c++/86208
+	* cp-gimplify.c (cp_genericize_r): When using extern_decl_map, or
+	in TREE_USED flag from stmt to h->to.
+
+2018-07-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86374
+	* pt.c (lookup_template_class_1): Use tsubst_aggr_type for
+	contexts that are classes.
+	* parser.c (cp_parser_template_id): Combine entering_scope decl &
+	initializer.
+
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (cplus_decl_attributes): Don't diagnose vars without mappable
+	type here, instead add "omp declare target implicit" attribute.  Add
+	that attribute instead of "omp declare target" also when
+	processing_template_decl.
+	* decl.c (cp_finish_decl): Diagnose vars without mappable type here,
+	and before calling cp_omp_mappable_type call complete_type.
+
+2018-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/86406
+	* cp-gimplify.c (cp_maybe_instrument_return): Skip trailing
+	DEBUG_BEGIN_STMTs.
+
+	PR c++/86443
+	* semantics.c (handle_omp_for_class_iterator): Remove lastp argument,
+	instead of setting *lastp turn orig_declv elt into a TREE_LIST.
+	(finish_omp_for): Adjust handle_omp_for_class_iterator caller.
+	* pt.c (tsubst_omp_for_iterator): Allow OMP_FOR_ORIG_DECLS to contain
+	TREE_LIST for both the original class iterator and the "last" helper
+	var.
+
+2018-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use rich_location::add_range in three
+	more places; include gcc-rich-location.h.
+
 2018-07-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* decl.c (build_enumerator): Change overflow type to overflow_type.

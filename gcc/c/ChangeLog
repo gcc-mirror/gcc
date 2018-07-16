@@ -1,3 +1,9 @@
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (c_decl_attributes): Don't diagnose vars without mappable
+	type here, instead add "omp declare target implicit" attribute.
+	(finish_decl): Diagnose vars without mappable type here.
+
 2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>

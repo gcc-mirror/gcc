@@ -313,7 +313,7 @@ gimple_stmt_nonzero_p (gimple *stmt)
     case GIMPLE_CALL:
       {
         gcall *call_stmt = as_a<gcall *> (stmt);
-	return (gimple_call_nonnull_result (call_stmt)
+	return (gimple_call_nonnull_result_p (call_stmt)
 		|| gimple_call_nonnull_arg (call_stmt));
       }
     default:

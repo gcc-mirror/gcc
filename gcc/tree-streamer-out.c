@@ -494,14 +494,10 @@ streamer_write_chain (struct output_block *ob, tree t, bool ref_p)
     {
       /* We avoid outputting external vars or functions by reference
 	 to the global decls section as we do not want to have them
-	 enter decl merging.  This is, of course, only for the call
-	 for streaming BLOCK_VARS, but other callers are safe.
-	 See also lto-streamer-out.c:DFS_write_tree_body.  */
-      if (VAR_OR_FUNCTION_DECL_P (t)
-	  && DECL_EXTERNAL (t))
-	stream_write_tree_shallow_non_ref (ob, t, ref_p);
-      else
-	stream_write_tree (ob, t, ref_p);
+	 enter decl merging.  We should not need to do this anymore because
+	 free_lang_data removes them from block scopes.  */
+      gcc_assert (!VAR_OR_FUNCTION_DECL_P (t) || !DECL_EXTERNAL (t));
+      stream_write_tree (ob, t, ref_p);
 
       t = TREE_CHAIN (t);
     }
@@ -617,11 +613,8 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
    pointer fields.  */
 
 static void
-write_ts_decl_non_common_tree_pointers (struct output_block *ob, tree expr,
-				        bool ref_p)
+write_ts_decl_non_common_tree_pointers (struct output_block *, tree, bool)
 {
-  if (TREE_CODE (expr) == TYPE_DECL)
-    stream_write_tree (ob, DECL_ORIGINAL_TYPE (expr), ref_p);
 }
 
 
@@ -653,7 +646,6 @@ write_ts_field_decl_tree_pointers (struct output_block *ob, tree expr,
   stream_write_tree (ob, DECL_BIT_FIELD_TYPE (expr), ref_p);
   stream_write_tree (ob, DECL_BIT_FIELD_REPRESENTATIVE (expr), ref_p);
   stream_write_tree (ob, DECL_FIELD_BIT_OFFSET (expr), ref_p);
-  stream_write_tree (ob, DECL_FCONTEXT (expr), ref_p);
 }
 
 

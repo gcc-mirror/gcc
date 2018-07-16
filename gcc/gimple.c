@@ -1550,8 +1550,8 @@ gimple_call_return_flags (const gcall *stmt)
 
 /* Return true if call STMT is known to return a non-zero result.  */
 
-bool 
-gimple_call_nonnull_result (gcall *call)
+bool
+gimple_call_nonnull_result_p (gcall *call)
 {
   tree fndecl = gimple_call_fndecl (call);
   if (!fndecl)
@@ -1566,15 +1566,15 @@ gimple_call_nonnull_result (gcall *call)
       && TREE_CODE (TREE_TYPE (fndecl)) == REFERENCE_TYPE)
     return true;
 
-  if (flag_delete_null_pointer_checks && 
-      lookup_attribute ("returns_nonnull",
-			TYPE_ATTRIBUTES (gimple_call_fntype (call))))
+  if (flag_delete_null_pointer_checks
+      && lookup_attribute ("returns_nonnull",
+			   TYPE_ATTRIBUTES (gimple_call_fntype (call))))
     return true;
   return gimple_alloca_call_p (call);
 }
 
 
-/* If call STMT returns a non-null result in an argument, return that arg.  */
+/* If CALL returns a non-null result in an argument, return that arg.  */
 
 tree
 gimple_call_nonnull_arg (gcall *call)

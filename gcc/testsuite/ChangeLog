@@ -1,3 +1,309 @@
+2018-07-16  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86455
+	* gcc.target/i386/vartrack-1.c: New test.
+
+2018-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt73.adb: New test.
+
+2018-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/3698
+	PR c++/86208
+	* g++.dg/opt/pr3698.C: New test.
+
+2018-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/86389
+	* gcc.dg/torture/pr86389.c: Require trampolines.
+
+2018-07-15  Tom de Vries  <tdevries@suse.de>
+
+	* lib/gcc-gdb-test.exp (guality_minimal_options): New proc.
+	* lib/gfortran-dg.exp (gfortran-dg-runtest): Don't call torture-init if
+	already called.
+	* g++.dg/guality/guality.exp: Ensure Og is part of torture options.
+	* gcc.dg/guality/guality.exp: Same.
+	* gfortran.dg/guality/guality.exp: Same.
+
+2018-07-13  H.J. Lu  <hongjiu.lu@intel.com>
+	    Sunil K Pandey  <sunil.k.pandey@intel.com>
+
+	PR target/84413
+	* gcc.target/i386/pr84413-1.c: New test.
+	* gcc.target/i386/pr84413-2.c: Likewise.
+	* gcc.target/i386/pr84413-3.c: Likewise.
+
+2018-07-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Steve Munroe  <munroesj52@gmail.com>
+
+	* gcc.target/powerpc/sse2-pand-1.c: New file.
+	* gcc.target/powerpc/sse2-pandn-1.c: Likewise.
+	* gcc.target/powerpc/sse2-por-1.c: Likewise.
+	* gcc.target/powerpc/sse2-pxor-1.c: Likewise.
+
+2018-07-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86374
+	* g++.dg/pr86374.C: New.
+
+2018-07-13  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/78809
+	* gcc.dg/strcmpopt_5.c: New test.
+	* gcc.dg/strcmpopt_6.c: New test.
+
+2018-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85974
+	* gcc.c-torture/compile/930326-1.c: Adjust to cover widening.
+
+2018-07-13  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/guality/clztest.c: Add -fno-ipa-icf in dg-options.
+	* gcc.dg/guality/ctztest.c: Same.
+	* gcc.dg/guality/sra-1.c: Same.
+
+2018-07-13  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/vla-1.c: Update.
+
+2018-07-13  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.src/maintainers.exp: New file.
+
+2018-07-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/86489
+	* gcc.dg/pr86489.c: New test.
+
+2018-07-12  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/86510
+	g++.dg/warn/pr86453.C: Adjust.
+
+2018-07-12  Jim Wilson  <jimw@sifive.com>
+
+	* gnat.dg/warn5.adb: Expect warning for riscv*-*-*.
+
+2018-07-12  Kito Cheng  <kito.cheng@gmail.com>
+
+        * gcc.target/riscv/interrupt-conflict-mode.c: New.
+
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-target-3.c: New test.
+	* g++.dg/gomp/declare-target-2.C: New test.
+
+2018-07-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/86453
+	* c-c++-common/Wattributes.c: Adjust.
+	* gcc.dg/Wattributes-10.c: New test.
+	* g++.dg/Wattributes-3.C: Adjust.
+	* gcc.dg/Wattributes-6.c: Adjust.
+	* gcc.dg/pr18079.c: Adjust.
+	* gcc.dg/torture/pr42363.c: Adjust.
+
+2018-07-12  Julia Koval  <julia.koval@intel.com>
+
+	 * gcc.target/i386/avx512vl-vpclmulqdq-2.c: Remove 128bit
+	 version.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-cond-arith-6.c: New test.
+	* gcc.target/aarch64/sve/cond_arith_4.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_14.c: Likewise.
+	* gcc.target/aarch64/sve/slp_14_run.c: Likewise.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-cond-arith-4.c: New test.
+	* gcc.dg/vect/vect-cond-arith-5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_3_run.c: Likewise.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/vect/vect-fma-2.c: New test.
+	* gcc.target/aarch64/sve/reduc_4.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_6.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_7.c: Likewise.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-cond-arith-3.c: New test.
+	* gcc.target/aarch64/sve/vcond_13.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_13_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_14.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_14_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_15.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_15_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_16.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_16_run.c: Likewise.
+
+2018-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-cond-arith-2.c: New test.
+	* gcc.target/aarch64/sve/loop_add_6.c: Likewise.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR target/84829
+	* gcc.target/i386/pr84829.c: New testcase.
+
+2018-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/20180712-1.c: New test.
+
+	PR tree-optimization/86492
+	* gcc.c-torture/execute/pr86492.c: New test.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR c/86453
+	* g++.dg/warn/pr86453.C: New testcase.
+
+2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86479
+	* gcc.dg/graphite/pr86479.c: New testcase.
+
+2018-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512bw-vpcmpb-2.c (CMP): Use SIZE macro instead
+	of hardcoding size.  Cast (rel) to MASK_TYPE.
+	* gcc.target/i386/avx512bw-vpcmpub-2.c (CMP): Likewise.
+	* gcc.target/i386/avx512f-vinserti32x4-3.c: New test.
+	* gcc.target/i386/avx512f-vinsertf32x4-3.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpnequb-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpgeub-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpleb-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpgeb-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpltb-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpltub-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpleub-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpneqb-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpnequw-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpgeuw-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmplew-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpgew-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpltw-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpltuw-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpleuw-2.c: New test.
+	* gcc.target/i386/avx512vl-vpcmpneqw-2.c: New test.
+
+2018-07-11  Grazvydas Ignotas  <notasas@gmail.com>
+
+	* gcc.target/i386/avx512bw-vpcmpb-2.c (SIZE): Define to
+	(AVX512F_LEN / 8) instead of (AVX512F_LEN / 16).
+	* gcc.target/i386/avx512bw-vpcmpub-2.c (SIZE): Likewise.
+
+2018-07-10  Mark Wielaard  <mark@klomp.org>
+
+	PR debug/86459
+	* gcc.dg/pr86459.c: New test.
+
+2018-07-10  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/86461
+	* gcc.c-torture/execute/builtins/strlen-3.c: Adjust.
+
+2018-07-10  Martin Liska  <mliska@suse.cz>
+
+        PR testsuite/86445
+	* gcc.dg/pr84100.c: Change it back to dg-bogus.
+
+2018-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/86406
+	* g++.dg/ubsan/pr86406.C: New test.
+
+	PR fortran/86421
+	* gfortran.dg/vect/pr86421.f90: New test.
+
+2018-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86415
+	* gcc.dg/strlenopt-53.c: New test.
+
+2018-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77357
+	* gcc.dg/strlenopt-49.c: New test.
+	* gcc.dg/strlenopt-50.c: New test.
+	* gcc.dg/strlenopt-51.c: New test.
+	* gcc.dg/strlenopt-52.c: New test.
+	* gcc.c-torture/execute/builtins/strlen-3.c: Adjust.
+
+2018-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/86420
+	* gcc.dg/nextafter-1.c (TEST): Adjust the tests that expect denormals
+	to be returned and when first argument is not 0, so that they don't do
+	anything for NEED_EXC or NEED_ERRNO.
+
+2018-07-09  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/guality/asm-1.c: Use relative line numbers where obvious.
+	* gcc.dg/guality/bswaptest.c: Same.
+	* gcc.dg/guality/clztest.c: Same.
+	* gcc.dg/guality/csttest.c: Same.
+	* gcc.dg/guality/ctztest.c: Same.
+	* gcc.dg/guality/drap.c: Same.
+	* gcc.dg/guality/nrv-1.c: Same.
+	* gcc.dg/guality/pr41353-1.c: Same.
+	* gcc.dg/guality/pr41353-2.c: Same.
+	* gcc.dg/guality/pr41404-1.c: Same.
+	* gcc.dg/guality/pr43051-1.c: Same.
+	* gcc.dg/guality/pr43077-1.c: Same.
+	* gcc.dg/guality/pr43177.c: Same.
+	* gcc.dg/guality/pr43329-1.c: Same.
+	* gcc.dg/guality/pr43479.c: Same.
+	* gcc.dg/guality/pr43593.c: Same.
+	* gcc.dg/guality/pr45003-1.c: Same.
+	* gcc.dg/guality/pr45003-2.c: Same.
+	* gcc.dg/guality/pr45003-3.c: Same.
+	* gcc.dg/guality/pr48437.c: Same.
+	* gcc.dg/guality/pr48466.c: Same.
+	* gcc.dg/guality/pr49888.c: Same.
+	* gcc.dg/guality/pr54200.c: Same.
+	* gcc.dg/guality/pr54519-1.c: Same.
+	* gcc.dg/guality/pr54519-2.c: Same.
+	* gcc.dg/guality/pr54519-3.c: Same.
+	* gcc.dg/guality/pr54519-4.c: Same.
+	* gcc.dg/guality/pr54519-5.c: Same.
+	* gcc.dg/guality/pr54519-6.c: Same.
+	* gcc.dg/guality/pr54551.c: Same.
+	* gcc.dg/guality/pr54693-2.c: Same.
+	* gcc.dg/guality/pr54693.c: Same.
+	* gcc.dg/guality/pr54796.c: Same.
+	* gcc.dg/guality/pr54970.c: Same.
+	* gcc.dg/guality/pr67192.c: Same.
+	* gcc.dg/guality/pr69947.c: Same.
+	* gcc.dg/guality/pr78726.c: Same.
+	* gcc.dg/guality/rotatetest.c: Same.
+	* gcc.dg/guality/sra-1.c: Same.
+	* gcc.dg/guality/vla-2.c: Same.
+
+2018-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/long-short.C: New.
+	* g++.dg/diagnostic/signed-unsigned.C: Likewise.
+	* g++.dg/diagnostic/virtual-friend.C: Likewise.
+	* g++.old-deja/g++.brendan/crash11.C: Adjust.
+
 2018-07-09  Tom de Vries  <tdevries@suse.de>
 
 	* gcc.dg/vla-1.c: New test.

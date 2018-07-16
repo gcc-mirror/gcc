@@ -170,6 +170,7 @@ gnat_handle_option (size_t scode, const char *arg, int value, int kind,
 
     case OPT_fshort_enums:
     case OPT_fsigned_char:
+    case OPT_funsigned_char:
       /* These are handled by the middle-end.  */
       break;
 

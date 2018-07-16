@@ -655,7 +655,7 @@ bool
 path_ranger::process_call (irange& r, gimple *call)
 {
   gcall *call_stmt = as_a<gcall *> (call);
-  if (gimple_call_nonnull_result (call_stmt))
+  if (gimple_call_nonnull_result_p (call_stmt))
     {
       r.set_range (gimple_call_return_type (call_stmt), 0, 0, irange::INVERSE);
       return true;

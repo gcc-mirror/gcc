@@ -80,6 +80,10 @@ fsigned-char
 Ada AdaWhy AdaSCIL
 Make \"char\" signed by default.
 
+funsigned-char
+Ada AdaWhy AdaSCIL
+Make \"char\" unsigned by default.
+
 gant
 Ada AdaWhy AdaSCIL Driver Joined Undocumented RejectNegative
 Catch typos.

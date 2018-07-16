@@ -2474,7 +2474,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 	  continue;
 	}
 
-      /* Do not jump-thread twice the same starting edge.
+      /* Do not jump-thread twice from the same starting edge.
 
 	 Previously we only checked that we weren't threading twice
 	 from the same BB, but that was too restrictive.  Imagine a

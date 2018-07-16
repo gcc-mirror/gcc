@@ -9368,8 +9368,15 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	  return found;
 	}
 
-      context = tsubst (DECL_CONTEXT (gen_tmpl), arglist,
-			complain, in_decl);
+      context = DECL_CONTEXT (gen_tmpl);
+      if (context && TYPE_P (context))
+	{
+	  context = tsubst_aggr_type (context, arglist, complain, in_decl, true);
+	  context = complete_type (context);
+	}
+      else
+	context = tsubst (context, arglist, complain, in_decl);
+
       if (context == error_mark_node)
 	return error_mark_node;
 
@@ -16267,7 +16274,12 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree orig_declv,
   if (orig_declv && OMP_FOR_ORIG_DECLS (t))
     {
       tree o = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (t), i);
-      TREE_VEC_ELT (orig_declv, i) = RECUR (o);
+      if (TREE_CODE (o) == TREE_LIST)
+	TREE_VEC_ELT (orig_declv, i)
+	  = tree_cons (RECUR (TREE_PURPOSE (o)),
+		       RECUR (TREE_VALUE (o)), NULL_TREE);
+      else
+	TREE_VEC_ELT (orig_declv, i) = RECUR (o);
     }
 
   decl = TREE_OPERAND (init, 0);

@@ -54,7 +54,11 @@ static int __attribute__ ((pure, const, noreturn))
 barf (void) {
   /* { dg-warning "ignoring attribute .const." "const" { target *-*-* } .-1 } */
   /* { dg-warning "ignoring attribute .noreturn." "noreturn" { target *-*-* } .-2 } */
-} /* { dg-warning "does return" } */
+
+  /* The noreturn attribute is ignored so verify there is no warning
+     for returning from the function:
+     { dg-bogus "does return" } */
+}
 
 static int __attribute__ ((pure, const))
 bark (void) {   /* { dg-warning "ignoring attribute .const." } */

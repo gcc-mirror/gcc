@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
+#include "insn-attr.h"
 #include "regs.h"
 #include "emit-rtl.h"
 #include "recog.h"
@@ -150,6 +151,11 @@ decode_pdp11_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
 static const char *singlemove_string (rtx *);
 static bool pdp11_assemble_integer (rtx, unsigned int, int);
 static bool pdp11_rtx_costs (rtx, machine_mode, int, int, int *, bool);
+static int pdp11_addr_cost (rtx, machine_mode, addr_space_t, bool);
+static int pdp11_insn_cost (rtx_insn *insn, bool speed);
+static rtx_insn *pdp11_md_asm_adjust (vec<rtx> &, vec<rtx> &,
+				      vec<const char *> &,
+				      vec<rtx> &, HARD_REG_SET &);
 static bool pdp11_return_in_memory (const_tree, const_tree);
 static rtx pdp11_function_value (const_tree, const_tree, bool);
 static rtx pdp11_libcall_value (machine_mode, const_rtx);
@@ -174,6 +180,8 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 #undef TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER pdp11_assemble_integer
 
+/* These two apply to Unix and GNU assembler; for DEC, they are
+   overridden during option processing.  */
 #undef TARGET_ASM_OPEN_PAREN
 #define TARGET_ASM_OPEN_PAREN "["
 #undef TARGET_ASM_CLOSE_PAREN
@@ -181,6 +189,15 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS pdp11_rtx_costs
+
+#undef  TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST pdp11_addr_cost
+
+#undef  TARGET_INSN_COST
+#define TARGET_INSN_COST pdp11_insn_cost
+
+#undef  TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST pdp11_md_asm_adjust
 
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG pdp11_function_arg
@@ -271,6 +288,9 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 
 #undef  TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS pdp11_can_change_mode_class
+
+#undef TARGET_INVALID_WITHIN_DOLOOP
+#define TARGET_INVALID_WITHIN_DOLOOP hook_constcharptr_const_rtx_insn_null
 
 /* A helper function to determine if REGNO should be saved in the
    current function's stack frame.  */
@@ -968,12 +988,8 @@ pdp11_assemble_integer (rtx x, unsigned int size, int aligned_p)
 }
 
 
-/* Register to register moves are cheap if both are general registers.
-   The same is true for FPU, but there we return cost of 3 rather than
-   2 to make reload look at the constraints.  The raeson is that
-   load/store double require extra care since load touches condition
-   codes and store doesn't, which is (partly anyway) described by
-   constraints.  */
+/* Register to register moves are cheap if both are general
+   registers.  */
 static int 
 pdp11_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			  reg_class_t c1, reg_class_t c2)
@@ -983,151 +999,288 @@ pdp11_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
     return 2;
   else if ((c1 >= LOAD_FPU_REGS && c1 <= FPU_REGS && c2 == LOAD_FPU_REGS) ||
 	   (c2 >= LOAD_FPU_REGS && c2 <= FPU_REGS && c1 == LOAD_FPU_REGS))
-    return 3;
+    return 2;
   else
     return 22;
 }
 
-
+/* This tries to approximate what pdp11_insn_cost would do, but
+   without visibility into the actual instruction being generated it's
+   inevitably a rough approximation.  */
 static bool
-pdp11_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
-		 int opno ATTRIBUTE_UNUSED, int *total,
-		 bool speed ATTRIBUTE_UNUSED)
+pdp11_rtx_costs (rtx x, machine_mode mode, int outer_code,
+		 int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
-  int code = GET_CODE (x);
-
+  const int code = GET_CODE (x);
+  const int asize = (mode == QImode) ? 2 : GET_MODE_SIZE (mode);
+  rtx src, dest;
+  const char *fmt;
+  
   switch (code)
     {
     case CONST_INT:
-      if (INTVAL (x) == 0 || INTVAL (x) == -1 || INTVAL (x) == 1)
+      /* Treat -1, 0, 1 as things that are optimized as clr or dec
+	 etc. though that doesn't apply to every case.  */
+      if (INTVAL (x) >= -1 && INTVAL (x) <= 1)
 	{
 	  *total = 0;
 	  return true;
 	}
-      /* FALLTHRU */
-
+      /* FALL THROUGH.  */
+    case REG:
+    case MEM:
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-      /* Twice as expensive as REG.  */
-      *total = 2;
-      return true;
-
     case CONST_DOUBLE:
-      /* Twice (or 4 times) as expensive as 16 bit.  */
-      *total = 4;
+      *total = pdp11_addr_cost (x, mode, ADDR_SPACE_GENERIC, speed);
       return true;
-
-    case MULT:
-      /* ??? There is something wrong in MULT because MULT is not 
-         as cheap as total = 2 even if we can shift!  */
-      /* If optimizing for size make mult etc cheap, but not 1, so when 
-         in doubt the faster insn is chosen.  */
-      if (optimize_size)
-        *total = COSTS_N_INSNS (2);
-      else
-        *total = COSTS_N_INSNS (11);
-      return false;
-
-    case DIV:
-      if (optimize_size)
-        *total = COSTS_N_INSNS (2);
-      else
-        *total = COSTS_N_INSNS (25);
-      return false;
-
-    case MOD:
-      if (optimize_size)
-        *total = COSTS_N_INSNS (2);
-      else
-        *total = COSTS_N_INSNS (26);
-      return false;
-
-    case ABS:
-      /* Equivalent to length, so same for optimize_size.  */
-      *total = COSTS_N_INSNS (3);
-      return false;
-
-    case ZERO_EXTEND:
-      /* Only used for qi->hi.  */
-      *total = COSTS_N_INSNS (1);
-      return false;
-
-    case SIGN_EXTEND:
-      if (mode == HImode)
-      	*total = COSTS_N_INSNS (1);
-      else if (mode == SImode)
-	*total = COSTS_N_INSNS (6);
-      else
-	*total = COSTS_N_INSNS (2);
-      return false;
-
-    case ASHIFT:
-    case ASHIFTRT:
-      if (optimize_size)
-        *total = COSTS_N_INSNS (1);
-      else if (mode ==  QImode)
-        {
-          if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-   	    *total = COSTS_N_INSNS (8); /* worst case */
-          else
-	    *total = COSTS_N_INSNS (INTVAL (XEXP (x, 1)));
-        }
-      else if (mode == HImode)
-        {
-          if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-            {
-	      if (abs (INTVAL (XEXP (x, 1))) == 1)
-                *total = COSTS_N_INSNS (1);
-              else
-	        *total = COSTS_N_INSNS (2.5 + 0.5 * INTVAL (XEXP (x, 1)));
-            }
-          else
-            *total = COSTS_N_INSNS (10); /* worst case */
-        }
-      else if (mode == SImode)
-        {
-          if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-	    *total = COSTS_N_INSNS (2.5 + 0.5 * INTVAL (XEXP (x, 1)));
-          else /* worst case */
-            *total = COSTS_N_INSNS (18);
-        }
-      return false;
-
-    case LSHIFTRT:
-      if (optimize_size)
-        *total = COSTS_N_INSNS (2);
-      else if (mode ==  QImode)
-        {
-          if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-   	    *total = COSTS_N_INSNS (12); /* worst case */
-          else
-	    *total = COSTS_N_INSNS (1 + INTVAL (XEXP (x, 1)));
-        }
-      else if (mode == HImode)
-        {
-          if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-            {
-	      if (abs (INTVAL (XEXP (x, 1))) == 1)
-                *total = COSTS_N_INSNS (2);
-              else
-	        *total = COSTS_N_INSNS (3.5 + 0.5 * INTVAL (XEXP (x, 1)));
-            }
-          else
-            *total = COSTS_N_INSNS (12); /* worst case */
-        }
-      else if (mode == SImode)
-        {
-          if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-	    *total = COSTS_N_INSNS (3.5 + 0.5 * INTVAL (XEXP (x, 1)));
-          else /* worst case */
-            *total = COSTS_N_INSNS (20);
-        }
-      return false;
-
-    default:
-      return false;
     }
+  if (GET_RTX_LENGTH (code) == 0)
+    {
+      if (speed)
+	*total = 0;
+      else
+	*total = 2;
+      return true;
+    }
+
+  /* Pick up source and dest.  We don't necessarily use the standard
+     recursion in rtx_costs to figure the cost, because that would
+     count the destination operand twice for three-operand insns.
+     Also, this way we can catch special cases like move of zero, or
+     add one.  */
+  fmt = GET_RTX_FORMAT (code);
+  if (fmt[0] != 'e' || (GET_RTX_LENGTH (code) > 1 && fmt[1] != 'e'))
+    {
+      if (speed)
+	*total = 0;
+      else
+	*total = 2;
+      return true;
+    }
+  if (GET_RTX_LENGTH (code) > 1)
+    src = XEXP (x, 1);
+  dest = XEXP (x, 0);
+      
+  /* If optimizing for size, claim everything costs 2 per word, plus
+     whatever the operands require.  */
+  if (!speed)
+    *total = asize;
+  else
+    {
+      if (FLOAT_MODE_P (mode))
+	{
+	  switch (code)
+	    {
+	    case MULT:
+	    case DIV:
+	    case MOD:
+	      *total = 20;
+	      break;
+
+	    case COMPARE:
+	      *total = 4;
+	      break;
+
+	    case PLUS:
+	    case MINUS:
+	      *total = 6;
+	      break;
+
+	    default:
+	      *total = 2;
+	      break;
+	    }
+	}
+      else
+	{
+	  /* Integer operations are scaled for SI and DI modes, though the
+	     scaling is not exactly accurate.  */
+	  switch (code)
+	    {
+	    case MULT:
+	      *total = 5 * asize * asize;
+	      break;
+
+	    case DIV:
+	      *total = 10 * asize * asize;
+	      break;
+	  
+	    case MOD:
+	      /* Fake value because it's accounted for under DIV, since we
+		 use a divmod pattern.  */
+	      total = 0;
+	      break;
+
+	    case ASHIFT:
+	    case ASHIFTRT:
+	    case LSHIFTRT:
+	      /* This is a bit problematic because the cost depends on the
+		 shift amount.  Make it <asize> for now, which is for the
+		 case of a one bit shift.  */
+	      *total = asize;
+	      break;
+	  
+	    default:
+	      *total = asize;
+	      break;
+	    }
+	}
+    }
+  
+  /* Now see if we're looking at a SET.  If yes, then look at the
+     source to see if this is a move or an arithmetic operation, and
+     continue accordingly to handle the operands.  */
+  if (code == SET)
+    {
+      switch (GET_CODE (src))
+	{
+	case REG:
+	case MEM:
+	case CONST_INT:
+	case CONST:
+	case LABEL_REF:
+	case SYMBOL_REF:
+	case CONST_DOUBLE:
+	  /* It's a move.  */
+	  *total += pdp11_addr_cost (dest, mode, ADDR_SPACE_GENERIC, speed);
+	  if (src != const0_rtx)
+	    *total += pdp11_addr_cost (src, mode, ADDR_SPACE_GENERIC, speed);
+	  return true;
+	default:
+	  /* Not a move.  Get the cost of the source operand and add
+	     that in, but not the destination operand since we're
+	     dealing with read/modify/write operands.  */
+	  *total += rtx_cost (src, mode, (enum rtx_code) outer_code, 1, speed);
+	  return true;
+	}
+    }
+  else if (code == PLUS || code == MINUS)
+    {
+      if (GET_CODE (src) == CONST_INT &&
+	  (INTVAL (src) == 1 || INTVAL (src) == -1))
+	{
+	  *total += rtx_cost (dest, mode, (enum rtx_code) outer_code, 0, speed);
+	  return true;
+	}
+    }
+  return false;
+}
+
+/* Return cost of accessing the supplied operand.  Registers are free.
+   Anything else starts with a cost of two.  Add to that for memory
+   references the memory accesses of the addressing mode (if any) plus
+   the data reference; for other operands just the memory access (if
+   any) for the mode.  */
+static int
+pdp11_addr_cost (rtx addr, machine_mode mode, addr_space_t as ATTRIBUTE_UNUSED,
+		 bool speed)
+{
+  int cost = 0;
+  
+  if (GET_CODE (addr) != REG)
+    {
+      if (!simple_memory_operand (addr, mode))
+	cost = 2;
+
+      /* If optimizing for speed, account for the memory reference if
+	 any.  */
+      if (speed && !CONSTANT_P (addr))
+	cost += (mode == QImode) ? 2 : GET_MODE_SIZE (mode);
+    }
+  return cost;
+}
+
+
+static int
+pdp11_insn_cost (rtx_insn *insn, bool speed)
+{
+  int base_cost, i;
+  rtx pat, set, dest, src, src2;
+  machine_mode mode;
+  const char *fmt;
+  enum rtx_code op;
+  
+  if (recog_memoized (insn) < 0)
+    return 0;
+
+  /* If optimizing for size, we want the insn size.  */
+  if (!speed)
+    return get_attr_length (insn);
+  else
+    {
+      /* Optimizing for speed.  Get the base cost of the insn, then
+	 adjust for the cost of accessing operands.  Zero means use
+	 the length as the cost even when optimizing for speed.  */
+      base_cost = get_attr_base_cost (insn);
+      if (base_cost <= 0)
+	base_cost = get_attr_length (insn);
+    }
+  /* Look for the operands.  Often we have a PARALLEL that's either
+     the actual operation plus a clobber, or the implicit compare plus
+     the actual operation.  Find the actual operation.  */
+  pat = PATTERN (insn);
+  
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      set = XVECEXP (pat, 0, 0);
+      if (GET_CODE (set) != SET || GET_CODE (XEXP (set, 1)) == COMPARE)
+	set = XVECEXP (pat, 0, 1);
+      if (GET_CODE (set) != SET || GET_CODE (XEXP (set, 1)) == COMPARE)
+	return 0;
+    }
+  else
+    {
+      set = pat;
+      if (GET_CODE (set) != SET)
+	return 0;
+    }
+  
+  /* Pick up the SET source and destination RTL.  */
+  dest = XEXP (set, 0);
+  src = XEXP (set, 1);
+  mode = GET_MODE (dest);
+
+  /* See if we have a move, or some arithmetic operation.  If a move,
+     account for source and destination operand costs.  Otherwise,
+     account for the destination and for the second operand of the
+     operation -- the first is also destination and we don't want to
+     double-count it.  */
+  base_cost += pdp11_addr_cost (dest, mode, ADDR_SPACE_GENERIC, speed);
+  op = GET_CODE (src);
+  switch (op)
+    {
+    case REG:
+    case MEM:
+    case CONST_INT:
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_DOUBLE:
+      /* It's a move.  */
+      if (src != const0_rtx)
+	base_cost += pdp11_addr_cost (src, mode, ADDR_SPACE_GENERIC, speed);
+      return base_cost;
+    default:
+      break;
+    }
+  /* There are some other cases where souce and dest are distinct.  */
+  if (FLOAT_MODE_P (mode) &&
+      (op == FLOAT_TRUNCATE || op == FLOAT_EXTEND || op == FIX || op == FLOAT))
+    {
+      src2 = XEXP (src, 0);
+      base_cost += pdp11_addr_cost (src2, mode, ADDR_SPACE_GENERIC, speed);
+    }
+  /* Otherwise, pick up the second operand of the arithmetic
+     operation, if it has two operands.  */
+  else if (op != SUBREG && op != UNSPEC && GET_RTX_LENGTH (op) > 1)
+    {
+      src2 = XEXP (src, 1);
+      base_cost += pdp11_addr_cost (src2, mode, ADDR_SPACE_GENERIC, speed);
+    }
+  
+  return base_cost;
 }
 
 const char *
@@ -1192,7 +1345,7 @@ output_jump (rtx *operands, int ccnz, int length)
    zero, given the compare operation code in op and the compare
    operands in x in and y.  */
 machine_mode
-pdp11_cc_mode (enum rtx_code op, rtx x, rtx y)
+pdp11_cc_mode (enum rtx_code op ATTRIBUTE_UNUSED, rtx x, rtx y ATTRIBUTE_UNUSED)
 {
   if (FLOAT_MODE_P (GET_MODE (x)))
     {
@@ -1863,11 +2016,10 @@ output_addr_const_pdp11 (FILE *file, rtx x)
       if (GET_MODE (x) == VOIDmode)
 	{
 	  /* We can use %o if the number is one word and positive.  */
-	  gcc_assert (!CONST_DOUBLE_HIGH (x));
 	  if (TARGET_DEC_ASM)
-	    fprintf (file, "%ho", CONST_DOUBLE_LOW (x) & 0xffff);
+	    fprintf (file, "%o", (int) CONST_DOUBLE_LOW (x) & 0xffff);
 	  else
-	    fprintf (file, "%#ho", CONST_DOUBLE_LOW (x) & 0xffff);
+	    fprintf (file, "%#o", (int) CONST_DOUBLE_LOW (x) & 0xffff);
 	}
       else
 	/* We can't handle floating point constants;
@@ -2138,6 +2290,26 @@ pdp11_shift_length (rtx *operands, machine_mode m, int code, bool simple_operand
   return shift_size;
 }
 
+/* Prepend to CLOBBERS hard registers that are automatically clobbered
+   for an asm We do this for CC_REGNUM and FCC_REGNUM (on FPU target)
+   to maintain source compatibility with the original cc0-based
+   compiler.  */
+
+static rtx_insn *
+pdp11_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
+		     vec<const char *> &/*constraints*/,
+		     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+{
+  clobbers.safe_push (gen_rtx_REG (CCmode, CC_REGNUM));
+  SET_HARD_REG_BIT (clobbered_regs, CC_REGNUM);
+  if (TARGET_FPU)
+    {
+      clobbers.safe_push (gen_rtx_REG (CCmode, FCC_REGNUM));
+      SET_HARD_REG_BIT (clobbered_regs, FCC_REGNUM);
+    }
+  return NULL;
+}
+
 /* Worker function for TARGET_TRAMPOLINE_INIT.
 
    trampoline - how should i do it in separate i+d ? 
@@ -2283,7 +2455,7 @@ pdp11_output_def (FILE *file, const char *label1, const char *label2)
     }
   else
     {
-      fputs (".set", file);
+      fputs ("\t.set\t", file);
       assemble_name (file, label1);
       putc (',', file);
       assemble_name (file, label2);

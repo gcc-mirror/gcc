@@ -49,9 +49,9 @@ DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
    over partial stores.  For example preffer MOVZBL or MOVQ to load 8bit
    value over movb.  */
 DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency",
-          m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_HASWELL
+          m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2
 	  | m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS | m_INTEL
-	  | m_KNL | m_KNM | m_AMD_MULTIPLE | m_SKYLAKE_AVX512 | m_TREMONT
+	  | m_KNL | m_KNM | m_AMD_MULTIPLE | m_TREMONT
 	  | m_GENERIC)
 
 /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: This knob promotes all store
@@ -87,8 +87,8 @@ DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall",
 DEF_TUNE (X86_TUNE_MOVX, "movx",
           m_PPRO | m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
 	  | m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_KNL | m_KNM | m_INTEL
-	  | m_GOLDMONT_PLUS | m_GEODE | m_AMD_MULTIPLE | m_SKYLAKE_AVX512
-	  | m_HASWELL | m_TREMONT | m_GENERIC)
+	  | m_GOLDMONT_PLUS | m_GEODE | m_AMD_MULTIPLE
+	  | m_CORE_AVX2 | m_TREMONT | m_GENERIC)
 
 /* X86_TUNE_MEMORY_MISMATCH_STALL: Avoid partial stores that are followed by
    full sized loads.  */
@@ -105,19 +105,19 @@ DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_32, "fuse_cmp_and_branch_32",
 /* X86_TUNE_FUSE_CMP_AND_BRANCH_64: Fuse compare with a subsequent
    conditional jump instruction for TARGET_64BIT.  */
 DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_64, "fuse_cmp_and_branch_64",
-	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER | m_ZNVER1 | m_GENERIC)
+	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_BDVER | m_ZNVER1 | m_GENERIC)
 
 /* X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS: Fuse compare with a
    subsequent conditional jump instruction when the condition jump
    check sign flag (SF) or overflow flag (OF).  */
 DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS, "fuse_cmp_and_branch_soflags",
-	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER | m_ZNVER1 | m_GENERIC)
+	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_BDVER | m_ZNVER1 | m_GENERIC)
 
 /* X86_TUNE_FUSE_ALU_AND_BRANCH: Fuse alu with a subsequent conditional
    jump instruction when the alu instruction produces the CCFLAG consumed by
    the conditional jump instruction. */
 DEF_TUNE (X86_TUNE_FUSE_ALU_AND_BRANCH, "fuse_alu_and_branch",
-          m_SANDYBRIDGE | m_HASWELL | m_GENERIC)
+          m_SANDYBRIDGE | m_CORE_AVX2 | m_GENERIC)
 
 
 /*****************************************************************************/
@@ -297,7 +297,7 @@ DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
 /* X86_TUNE_AVOID_FALSE_DEP_FOR_BMI: Avoid false dependency
    for bit-manipulation instructions.  */
 DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, "avoid_false_dep_for_bmi",
-	  m_SANDYBRIDGE | m_HASWELL | m_GENERIC)
+	  m_SANDYBRIDGE | m_CORE_AVX2 | m_GENERIC)
 
 /* X86_TUNE_ADJUST_UNROLL: This enables adjusting the unroll factor based
    on hardware capabilities. Bdver3 hardware has a loop buffer which makes
@@ -349,15 +349,15 @@ DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill",
 /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL: Use movups for misaligned loads instead
    of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
-	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_SILVERMONT | m_KNL | m_KNM
-	  | m_INTEL | m_SKYLAKE_AVX512 | m_GOLDMONT | m_GOLDMONT_PLUS
+	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_SILVERMONT | m_KNL | m_KNM
+	  | m_INTEL | m_GOLDMONT | m_GOLDMONT_PLUS
 	  | m_TREMONT | m_AMDFAM10 | m_BDVER | m_BTVER | m_ZNVER1 | m_GENERIC)
 
 /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL: Use movups for misaligned stores instead
    of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
-	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_SILVERMONT | m_KNL | m_KNM
-	  | m_INTEL | m_SKYLAKE_AVX512 | m_GOLDMONT | m_GOLDMONT_PLUS
+	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_SILVERMONT | m_KNL | m_KNM
+	  | m_INTEL | m_GOLDMONT | m_GOLDMONT_PLUS
 	  | m_TREMONT | m_BDVER | m_ZNVER1 | m_GENERIC)
 
 /* Use packed single precision instructions where posisble.  I.e. movups instead
@@ -446,7 +446,7 @@ DEF_TUNE (X86_TUNE_AVX128_OPTIMAL, "avx128_optimal", m_BDVER | m_BTVER2
 
 /* X86_TUNE_AVX256_OPTIMAL: Use 256-bit AVX instructions instead of 512-bit AVX
    instructions in the auto-vectorizer.  */
-DEF_TUNE (X86_TUNE_AVX256_OPTIMAL, "avx256_optimal", m_SKYLAKE_AVX512)
+DEF_TUNE (X86_TUNE_AVX256_OPTIMAL, "avx256_optimal", m_CORE_AVX512)
 
 /*****************************************************************************/
 /* Historical relics: tuning flags that helps a specific old CPU designs     */
