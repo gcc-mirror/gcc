@@ -1,3 +1,15 @@
+2018-07-16  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* internal.h (_cpp_reserve_room): New inline.
+	(_cpp_commit_buff): Declare.
+	* lex.c (_cpp_commit_buff): Implement.
+	* directives.c (parse_answer): Use them.
+	* macro.c (alloc_expansion_token): Fold ito ...
+	(lex_expansion_token): ... here.
+	(_cpp_save_parameter): Use _cpp_reserve_room.
+	(create_iso_definition): Use _cpp_reserve_room, _cpp_commit_buff).
+
 2018-07-13  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

@@ -687,6 +687,14 @@ extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
 extern cpp_hashnode *_cpp_lex_identifier (cpp_reader *, const char *);
 extern int _cpp_remaining_tokens_num_in_context (cpp_context *);
 extern void _cpp_init_lexer (void);
+static inline void *_cpp_reserve_room (cpp_reader *pfile, size_t have,
+				       size_t extra)
+{
+  if (BUFF_ROOM (pfile->a_buff) < (have + extra))
+    _cpp_extend_buff (pfile, &pfile->a_buff, extra);
+  return BUFF_FRONT (pfile->a_buff);
+}
+extern void *_cpp_commit_buff (cpp_reader *pfile, size_t size);
 
 /* In init.c.  */
 extern void _cpp_maybe_push_include_file (cpp_reader *);

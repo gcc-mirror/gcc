@@ -2227,11 +2227,9 @@ parse_answer (cpp_reader *pfile, int type, source_location pred_loc,
 	  return 1;
 	}
 
-      size_t needed = (count + 1) * sizeof (cpp_token) + sizeof (answer);
-      if (BUFF_ROOM (pfile->a_buff) < needed)
-	_cpp_extend_buff (pfile, &pfile->a_buff, needed);
-
-      cpp_token *dest = &((cpp_token *)BUFF_FRONT (pfile->a_buff))[count++];
+      void *base = _cpp_reserve_room (pfile, count * sizeof (cpp_token),
+				      sizeof (cpp_token));
+      cpp_token *dest = &((cpp_token *)base)[count++];
       *dest = *token;
     }
 
@@ -2370,36 +2368,19 @@ do_assert (cpp_reader *pfile)
 	  next = node->value.answers;
 	}
 
-      size_t size = count * sizeof (cpp_token);
       /* Commit or allocate storage for the expansion.  */
-      if (pfile->hash_table->alloc_subobject)
-	{
-	  cpp_token *saved_exp
-	    = (cpp_token *)pfile->hash_table->alloc_subobject (size);
-	  memcpy (saved_exp, exp, size);
-	  exp = saved_exp;
-	}
-      else
-	{
-	  gcc_assert (BUFF_FRONT (pfile->a_buff) == (void *)exp);
-	  BUFF_FRONT (pfile->a_buff) += size;
-	}
+      size_t size = count * sizeof (cpp_token);
+      exp = (cpp_token *)_cpp_commit_buff (pfile, size);
 
       /* Create the answer object.  */
-      answer *ans = NULL;
-      if (pfile->hash_table->alloc_subobject)
-	ans = (answer *)pfile->hash_table->alloc_subobject (sizeof (answer));
-      else
-	{
-	  if (BUFF_ROOM (pfile->a_buff) < sizeof (answer))
-	    _cpp_extend_buff (pfile, &pfile->a_buff, sizeof (answer));
-	  ans = (answer *)BUFF_FRONT (pfile->a_buff);
-	  BUFF_FRONT (pfile->a_buff) += sizeof (answer);
-	}
+      // FIXME: This'll get simpler reverting to trailing array hack
+      answer *ans = (answer *)_cpp_reserve_room (pfile, 0, sizeof (answer));
 
       ans->count = count;
       ans->exp = exp;
       ans->next = next;
+
+      ans = (answer *)_cpp_commit_buff (pfile, sizeof (answer));
 
       node->type = NT_ASSERTION;
       node->value.answers = ans;

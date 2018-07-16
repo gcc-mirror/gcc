@@ -312,7 +312,6 @@ static cpp_macro *create_iso_definition (cpp_reader *);
 
 /* #define directive parsing and handling.  */
 
-static cpp_token *alloc_expansion_token (cpp_reader *, cpp_macro *);
 static cpp_token *lex_expansion_token (cpp_reader *, cpp_macro *);
 static bool warn_of_redefinition (cpp_reader *, cpp_hashnode *,
 				  const cpp_macro *);
@@ -3086,10 +3085,9 @@ _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
   saved[n].value = node->value;
   saved[n].canonical_node = node;
 
-  if (BUFF_ROOM (pfile->a_buff) < (n + 1) * sizeof (cpp_hashnode *))
-    _cpp_extend_buff (pfile, &pfile->a_buff, sizeof (cpp_hashnode *));
-
-  ((cpp_hashnode **) BUFF_FRONT (pfile->a_buff))[n++] = spelling;
+  void *base = _cpp_reserve_room (pfile, n * sizeof (cpp_hashnode *),
+				  sizeof (cpp_hashnode *));
+  ((cpp_hashnode **)base)[n++] = spelling;
 
   /* Morph into a macro arg.  */
   node->flags |= NODE_MACRO_ARG;
@@ -3236,32 +3234,23 @@ parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *varadic_ptr)
   return ok;
 }
 
-/* Allocate room for a token from a macro's replacement list.  */
-static cpp_token *
-alloc_expansion_token (cpp_reader *pfile, cpp_macro *macro)
-{
-  if (BUFF_ROOM (pfile->a_buff) < (macro->count + 1) * sizeof (cpp_token))
-    _cpp_extend_buff (pfile, &pfile->a_buff, sizeof (cpp_token));
-
-  return &((cpp_token *) BUFF_FRONT (pfile->a_buff))[macro->count++];
-}
-
 /* Lex a token from the expansion of MACRO, but mark parameters as we
    find them and warn of traditional stringification.  */
 static cpp_token *
 lex_expansion_token (cpp_reader *pfile, cpp_macro *macro)
 {
-  cpp_token *token, *saved_cur_token;
-
-  saved_cur_token = pfile->cur_token;
-  pfile->cur_token = alloc_expansion_token (pfile, macro);
-  token = _cpp_lex_direct (pfile);
+  void *base = _cpp_reserve_room (pfile, macro->count * sizeof (cpp_token),
+				  sizeof (cpp_token));
+  cpp_token *saved_cur_token = pfile->cur_token;
+  pfile->cur_token = &((cpp_token *) base)[macro->count++];
+  cpp_token *token = _cpp_lex_direct (pfile);
   pfile->cur_token = saved_cur_token;
 
   /* Is this a parameter?  */
   if (token->type == CPP_NAME
       && (token->val.node.node->flags & NODE_MACRO_ARG) != 0)
     {
+      /* Morph into a parameter reference.  */
       cpp_hashnode *spelling = token->val.node.spelling;
       token->type = CPP_MACRO_ARG;
       token->val.macro_arg.arg_no = token->val.node.node->value.arg_index;
@@ -3294,30 +3283,18 @@ create_iso_definition (cpp_reader *pfile)
     {
       /* An open-paren, get a parameter list.  */
       bool varadic = false;
-      if (!parse_params (pfile, &nparms, &varadic))
-	goto out;
-
-      macro->parm.params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
-      macro->variadic = varadic;
-      macro->paramc = nparms;
-
-      /* Success.  Commit or allocate the parameter array.  */
-      if (pfile->hash_table->alloc_subobject)
-	{
-	  cpp_hashnode **params =
-            (cpp_hashnode **) pfile->hash_table->alloc_subobject
-            (sizeof (cpp_hashnode *) * macro->paramc);
-	  memcpy (params, macro->parm.params,
-		  sizeof (cpp_hashnode *) * macro->paramc);
-	  macro->parm.params = params;
-	}
-      else
-	BUFF_FRONT (pfile->a_buff)
-	  = (uchar *) &macro->parm.params[macro->paramc];
-      macro->fun_like = 1;
 
       /* Drop the '(' token.  */
       macro->count = 0;
+      if (!parse_params (pfile, &nparms, &varadic))
+	goto out;
+
+      macro->parm.params = (cpp_hashnode **)_cpp_commit_buff
+	(pfile, sizeof (cpp_hashnode *) * nparms);
+      macro->variadic = varadic;
+      macro->paramc = nparms;
+      macro->fun_like = 1;
+
       token = NULL;
     }
   else if (token->type != CPP_EOF
@@ -3415,14 +3392,16 @@ create_iso_definition (cpp_reader *pfile)
 	      goto out;
 	    }
 
-	  if (token[-1].flags & PASTE_LEFT)
+	  if (following_paste_op)
 	    {
-	      macro->extra_tokens = 1;
+	      /* Consecutive paste operators.  This one will be moved
+		 to the end.  */
 	      num_extra_tokens++;
 	      token->val.token_no = macro->count - 1;
 	    }
 	  else
 	    {
+	      /* Drop the paste operator.  */
 	      --macro->count;
 	      token[-1].flags |= PASTE_LEFT;
 	      if (token->flags & DIGRAPH)
@@ -3430,56 +3409,50 @@ create_iso_definition (cpp_reader *pfile)
 	      if (token->flags & PREV_WHITE)
 		token[-1].flags |= SP_PREV_WHITE;
 	    }
+	  following_paste_op = true;
 	}
+      else
+	following_paste_op = false;
 
       if (vaopt_tracker.update (token) == vaopt_state::ERROR)
 	goto out;
-
-      following_paste_op = (token->type == CPP_PASTE);
     }
 
   ok = true;
 
-  macro->exp.tokens = (cpp_token *) BUFF_FRONT (pfile->a_buff);
-
   /* Don't count the CPP_EOF.  */
   macro->count--;
+
+  macro->exp.tokens = (cpp_token *)_cpp_commit_buff
+    (pfile, sizeof (cpp_token) * macro->count);
 
   /* Clear whitespace on first token for warn_of_redefinition().  */
   if (macro->count)
     macro->exp.tokens[0].flags &= ~PREV_WHITE;
 
-  /* Commit or allocate the memory.  */
-  if (pfile->hash_table->alloc_subobject)
+  if (num_extra_tokens)
     {
-      cpp_token *tokns =
-        (cpp_token *) pfile->hash_table->alloc_subobject (sizeof (cpp_token)
-                                                          * macro->count);
-      if (num_extra_tokens)
-	{
-	  /* Place second and subsequent ## or %:%: tokens in
-	     sequences of consecutive such tokens at the end of the
-	     list to preserve information about where they appear, how
-	     they are spelt and whether they are preceded by
-	     whitespace without otherwise interfering with macro
-	     expansion.  */
-	  cpp_token *normal_dest = tokns;
-	  cpp_token *extra_dest = tokns + macro->count - num_extra_tokens;
-	  unsigned int i;
-	  for (i = 0; i < macro->count; i++)
-	    {
-	      if (macro->exp.tokens[i].type == CPP_PASTE)
-		*extra_dest++ = macro->exp.tokens[i];
-	      else
-		*normal_dest++ = macro->exp.tokens[i];
-	    }
-	}
-      else
-	memcpy (tokns, macro->exp.tokens, sizeof (cpp_token) * macro->count);
-      macro->exp.tokens = tokns;
+      /* Place second and subsequent ## or %:%: tokens in sequences of
+	 consecutive such tokens at the end of the list to preserve
+	 information about where they appear, how they are spelt and
+	 whether they are preceded by whitespace without otherwise
+	 interfering with macro expansion.   Remember, this is
+	 extremely rare, so efficiency is not a priority.  */
+      cpp_token *temp = (cpp_token *)_cpp_reserve_room
+	(pfile, 0, num_extra_tokens * sizeof (cpp_token));
+      unsigned extra_ix = 0, norm_ix = 0;
+      cpp_token *exp = macro->exp.tokens;
+      for (unsigned ix = 0; ix != macro->count; ix++)
+	if (exp[ix].type == CPP_PASTE)
+	  temp[extra_ix++] = exp[ix];
+	else
+	  exp[norm_ix++] = exp[ix];
+      memcpy (&exp[norm_ix], temp, num_extra_tokens * sizeof (cpp_token));
+
+      /* Record there are extra tokens.  */
+      macro->extra_tokens = 1;
     }
-  else
-    BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->exp.tokens[macro->count];
+
  out:
   pfile->state.va_args_ok = 0;
   _cpp_unsave_parameters (pfile, nparms);
