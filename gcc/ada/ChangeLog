@@ -1,3 +1,8 @@
+2018-07-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Process_Discriminants): Adjust reference to the SPARM RM
+	rule.
+
 2018-07-16  Arnaud Charlet  <charlet@adacore.com>
 
 	* adaint.c (__gnat_set_file_time_name): Code clean up.

@@ -20125,7 +20125,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  A discriminant cannot be effectively volatile (SPARK RM 7.1.3(6)).
+         --  A discriminant cannot be effectively volatile (SPARK RM 7.1.3(4)).
          --  This check is relevant only when SPARK_Mode is on as it is not a
          --  standard Ada legality rule.
 
