@@ -800,10 +800,10 @@ check_specialization_namespace (tree tmpl)
     return true;
   else
     {
-      permerror (input_location,
-		 "specialization of %qD in different namespace", tmpl);
-      inform (DECL_SOURCE_LOCATION (tmpl),
-	      "  from definition of %q#D", tmpl);
+      if (permerror (input_location,
+		     "specialization of %qD in different namespace", tmpl))
+	inform (DECL_SOURCE_LOCATION (tmpl),
+		"  from definition of %q#D", tmpl);
       return false;
     }
 }

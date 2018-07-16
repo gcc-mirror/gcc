@@ -1,3 +1,9 @@
+2018-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (resolve_address_of_overloaded_function): Don't emit an
+	inform if the matching permerror returns false.
+	* pt.c (check_specialization_namespace): Likewise.
+
 2018-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/3698

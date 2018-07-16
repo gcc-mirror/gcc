@@ -1,3 +1,8 @@
+2018-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/spec40.C: New.
+	* g++.dg/parse/ptrmem8.C: Likewise.
+
 2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/mnop-mcount-m31-fpic.c: New testcase.
