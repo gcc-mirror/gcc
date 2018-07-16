@@ -1,3 +1,25 @@
+2018-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85974
+	* match.pd (addr1 - addr2): Allow either of the operand to
+	have a conversion.
+
+	2018-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86076
+	* tree-cfg.c (move_stmt_op): unshare invariant addresses
+	before adjusting their block.
+
+	2018-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85935
+	* graphite-scop-detection.c (find_params_in_bb): Analyze
+	condition operands with respect to the correct loop.  Assert
+	the analysis doesn't fail.
+
 2018-07-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/86514

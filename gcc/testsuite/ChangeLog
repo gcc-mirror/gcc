@@ -1,3 +1,21 @@
+2018-07-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/85974
+	* gcc.c-torture/compile/930326-1.c: Adjust to cover widening.
+
+	2018-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86076
+	* gcc.dg/pr86076.c: New testcase.
+
+	2018-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/85935
+	* gcc.dg/graphite/pr85935.c: New testcase.
+
 2018-07-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt73.adb: New test.

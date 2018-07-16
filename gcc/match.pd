@@ -1590,14 +1590,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (ptr_difference_const (@0, @1, &diff))
     { build_int_cst_type (type, diff); }))))
 (simplify
- (pointer_diff (convert?@2 ADDR_EXPR@0) (convert?@3 @1))
+ (pointer_diff (convert?@2 ADDR_EXPR@0) (convert1?@3 @1))
  (if (tree_nop_conversion_p (TREE_TYPE(@2), TREE_TYPE (@0))
       && tree_nop_conversion_p (TREE_TYPE(@3), TREE_TYPE (@1)))
   (with { poly_int64 diff; }
    (if (ptr_difference_const (@0, @1, &diff))
     { build_int_cst_type (type, diff); }))))
 (simplify
- (pointer_diff (convert?@2 @0) (convert?@3 ADDR_EXPR@1))
+ (pointer_diff (convert?@2 @0) (convert1?@3 ADDR_EXPR@1))
  (if (tree_nop_conversion_p (TREE_TYPE(@2), TREE_TYPE (@0))
       && tree_nop_conversion_p (TREE_TYPE(@3), TREE_TYPE (@1)))
   (with { poly_int64 diff; }
