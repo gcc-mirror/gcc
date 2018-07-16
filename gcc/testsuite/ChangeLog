@@ -1,5 +1,14 @@
 2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
 
+	PR fortran/83184
+	Backport from trunk.
+	* gfortran.dg/assumed_rank_14.f90: New testcase.
+	* gfortran.dg/assumed_rank_15.f90: New testcase.
+	* gfortran.dg/dec_structure_8.f90: Update error messages.
+	* gfortran.dg/dec_structure_23.f90: Update error messages.
+
+2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
+
 	Backport from trunk:
 
 	PR fortran/83183
