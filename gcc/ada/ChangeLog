@@ -1,3 +1,7 @@
+2018-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-objrea.ads: Minor code clean up.
+
 2018-07-16  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_ch3.adb (Process_Discriminants): Adjust reference to the SPARM RM
