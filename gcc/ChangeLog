@@ -1,3 +1,9 @@
+2018-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86523
+	* dwarf2out.c (dwarf2out_register_external_die): Assign DIE parents
+	for function-local FUNCTION_DECL and RESULT_DECL immediately.
+
 2018-07-16  Martin Liska  <mliska@suse.cz>
 
         PR ipa/86529

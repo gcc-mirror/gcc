@@ -5959,7 +5959,9 @@ dwarf2out_register_external_die (tree decl, const char *sym,
 	   imports the original CUs.  */
 	parent = comp_unit_die ();
       else if (TREE_CODE (ctx) == FUNCTION_DECL
+	       && TREE_CODE (decl) != FUNCTION_DECL
 	       && TREE_CODE (decl) != PARM_DECL
+	       && TREE_CODE (decl) != RESULT_DECL
 	       && TREE_CODE (decl) != BLOCK)
 	/* Leave function local entities parent determination to when
 	   we process scope vars.  */
