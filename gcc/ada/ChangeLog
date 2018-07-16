@@ -1,5 +1,12 @@
 2018-07-16  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): Handle loops that
+	contain blocks in the elaboration code for a package body. Create the
+	elaboration subprogram wrapper only if there is a subprogram
+	declaration in a block or loop.
+
+2018-07-16  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch4.adb (Expand_Set_Membership): Use New_Copy_Tree to perform a
 	deep copy of the left operand when building each conjuct of the
 	expanded membership operation, to avoid sharing nodes between them.
