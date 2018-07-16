@@ -1,5 +1,9 @@
 2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
 
+	* testsuite/gcc.target/s390/mrecord-mcount.c: New testcase.
+
+2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
 	* gcc.target/s390/mfentry-m64.c: New testcase.
 
 2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>

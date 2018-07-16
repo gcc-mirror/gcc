@@ -298,3 +298,7 @@ mfentry
 Target Report Var(flag_fentry)
 Emit profiling counter call at function entry before prologue. The compiled
 code will require a 64-bit CPU and glibc 2.29 or newer to run.
+
+mrecord-mcount
+Target Report Var(flag_record_mcount)
+Generate __mcount_loc section with all _mcount and __fentry__ calls.

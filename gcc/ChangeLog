@@ -1,5 +1,11 @@
 2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
 
+	* gcc/config/s390/s390.c (s390_function_profiler): Generate
+	__mcount_loc section.
+	* gcc/config/s390/s390.opt: Add the new option.
+
+2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
 	* common.opt: Add the new warning.
 	* config/s390/s390.c (s390_function_profiler): Emit "brasl
 	%r0,__fentry__" when -mfentry is specified.
