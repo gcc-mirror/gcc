@@ -13151,6 +13151,9 @@ s390_function_profiler (FILE *file, int labelno)
       op[4] = gen_rtx_CONST (Pmode, op[4]);
     }
 
+  if (flag_record_mcount)
+    fprintf (file, "1:\n");
+
   if (flag_fentry)
     {
       if (cfun->static_chain_decl)
@@ -13203,6 +13206,13 @@ s390_function_profiler (FILE *file, int labelno)
       output_asm_insn ("a\t%2,4(%2)", op);
       output_asm_insn ("basr\t%0,%0", op);
       output_asm_insn ("l\t%0,%1", op);
+    }
+
+  if (flag_record_mcount)
+    {
+      fprintf (file, "\t.section __mcount_loc, \"a\",@progbits\n");
+      fprintf (file, "\t.%s 1b\n", TARGET_64BIT ? "quad" : "long");
+      fprintf (file, "\t.previous\n");
     }
 }
 
