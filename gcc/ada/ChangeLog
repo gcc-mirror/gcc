@@ -1,5 +1,18 @@
 2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* contracts.adb (Analyze_Contracts): Add specialized processing for
+	package instantiation contracts.
+	(Analyze_Package_Contract): Remove the verification of a missing
+	Part_Of indicator.
+	(Analyze_Package_Instantiation_Contract): New routine.
+	* contracts.ads (Analyze_Package_Contract): Update the comment on
+	usage.
+	* sem_prag.adb (Check_Missing_Part_Of): Ensure that the entity of the
+	instance is being examined when trying to determine whether a package
+	instantiation needs a Part_Of indicator.
+
+2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* einfo.adb, exp_ch7.adb, exp_ch9.adb, exp_unst.adb, inline.adb,
 	sem.adb, sem_ch12.adb, sem_ch13.adb, sem_ch3.adb, sem_eval.adb,
 	sem_util.adb: Minor reformatting.

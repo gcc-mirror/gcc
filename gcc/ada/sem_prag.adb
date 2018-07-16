@@ -28897,9 +28897,9 @@ package body Sem_Prag is
          --  A package instantiation does not need a Part_Of indicator when the
          --  related generic template has no visible state.
 
-         elsif Ekind (Pack_Id) = E_Package
-           and then Is_Generic_Instance (Pack_Id)
-           and then not Has_Visible_State (Pack_Id)
+         elsif Ekind (Item_Id) = E_Package
+           and then Is_Generic_Instance (Item_Id)
+           and then not Has_Visible_State (Item_Id)
          then
             null;
 
