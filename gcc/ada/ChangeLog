@@ -1,3 +1,7 @@
+2018-07-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem.adb (Walk_Library_Items): Deconstruct dead code.
+
 2018-07-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Op_Xor): Use common routine
