@@ -3228,6 +3228,13 @@ package body Sem_Util is
    begin
       pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
 
+      --  Nothing to do for internally-generated abstract states and variables
+      --  because they do not represent the hidden state of the source unit.
+
+      if not Comes_From_Source (Id) then
+         return;
+      end if;
+
       --  Find the proper context where the object or state appears
 
       Scop := Scope (Id);
