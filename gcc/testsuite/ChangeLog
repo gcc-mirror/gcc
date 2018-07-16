@@ -1,3 +1,9 @@
+2018-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86523
+	* g++.dg/lto/pr86523-1_0.C: New testcase.
+	* g++.dg/lto/pr86523-2_0.C: Likewise.
+
 2018-07-16  Martin Liska  <mliska@suse.cz>
 
         PR ipa/86529
