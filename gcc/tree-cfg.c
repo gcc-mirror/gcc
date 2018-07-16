@@ -6925,7 +6925,16 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 	;
       else if (block == p->orig_block
 	       || p->orig_block == NULL_TREE)
-	TREE_SET_BLOCK (t, p->new_block);
+	{
+	  /* tree_node_can_be_shared says we can share invariant
+	     addresses but unshare_expr copies them anyways.  Make sure
+	     to unshare before adjusting the block in place - we do not
+	     always see a copy here.  */
+	  if (TREE_CODE (t) == ADDR_EXPR
+	      && is_gimple_min_invariant (t))
+	    *tp = t = unshare_expr (t);
+	  TREE_SET_BLOCK (t, p->new_block);
+	}
       else if (flag_checking)
 	{
 	  while (block && TREE_CODE (block) == BLOCK && block != p->orig_block)

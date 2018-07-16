@@ -1176,13 +1176,15 @@ find_params_in_bb (sese_info_p region, gimple_poly_bb_p gbb)
 
   /* Find parameters in conditional statements.  */
   gimple *stmt;
-  loop_p loop = GBB_BB (gbb)->loop_father;
   FOR_EACH_VEC_ELT (GBB_CONDITIONS (gbb), i, stmt)
     {
+      loop_p loop = gimple_bb (stmt)->loop_father;
       tree lhs = scalar_evolution_in_region (region->region, loop,
 					     gimple_cond_lhs (stmt));
       tree rhs = scalar_evolution_in_region (region->region, loop,
 					     gimple_cond_rhs (stmt));
+      gcc_assert (!chrec_contains_undetermined (lhs)
+		  && !chrec_contains_undetermined (rhs));
 
       scan_tree_for_params (region, lhs);
       scan_tree_for_params (region, rhs);
