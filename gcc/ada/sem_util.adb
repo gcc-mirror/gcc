@@ -5989,9 +5989,6 @@ package body Sem_Util is
       Obj1 : Node_Id := A1;
       Obj2 : Node_Id := A2;
 
-      function Has_Prefix (N : Node_Id) return Boolean;
-      --  Return True if N has attribute Prefix
-
       function Is_Renaming (N : Node_Id) return Boolean;
       --  Return true if N names a renaming entity
 
@@ -6000,23 +5997,6 @@ package body Sem_Util is
       --  the renamed object_name is a variable, or any expression within the
       --  renamed object_name contains references to variables or calls on
       --  nonstatic functions; otherwise return True (RM 6.4.1(6.10/3))
-
-      ----------------
-      -- Has_Prefix --
-      ----------------
-
-      function Has_Prefix (N : Node_Id) return Boolean is
-      begin
-         return
-           Nkind_In (N,
-             N_Attribute_Reference,
-             N_Expanded_Name,
-             N_Explicit_Dereference,
-             N_Indexed_Component,
-             N_Reference,
-             N_Selected_Component,
-             N_Slice);
-      end Has_Prefix;
 
       -----------------
       -- Is_Renaming --
@@ -11547,6 +11527,23 @@ package body Sem_Util is
 
       return Has_PE;
    end Has_Preelaborable_Initialization;
+
+   ----------------
+   -- Has_Prefix --
+   ----------------
+
+   function Has_Prefix (N : Node_Id) return Boolean is
+   begin
+      return
+        Nkind_In (N,
+          N_Attribute_Reference,
+          N_Expanded_Name,
+          N_Explicit_Dereference,
+          N_Indexed_Component,
+          N_Reference,
+          N_Selected_Component,
+          N_Slice);
+   end Has_Prefix;
 
    ---------------------------
    -- Has_Private_Component --

@@ -1,3 +1,8 @@
+2018-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Has_Prefix): Move this function to the
+	public part of this package.
+
 2018-07-16  Yannick Moy  <moy@adacore.com>
 
 	* sem_res.adb (Resolve_Call): Do not inline calls inside
