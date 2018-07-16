@@ -1,3 +1,10 @@
+2018-07-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions):
+	Alphabetize prototypes of built-in functions, separating out
+	built-in functions that are listed in this section but should be
+	described elsewhere.
+
 2018-07-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/86511
