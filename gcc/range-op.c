@@ -745,8 +745,8 @@ op_wi (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
   switch (code)
     {
     case PLUS_EXPR:
-      wide_int_binop (code, new_lb, lh_lb, rh_lb, s, ov_lb);
-      wide_int_binop (code, new_ub, lh_ub, rh_ub, s, ov_ub);
+      wide_int_binop (new_lb, code, lh_lb, rh_lb, s, &ov_lb);
+      wide_int_binop (new_ub, code, lh_ub, rh_ub, s, &ov_ub);
       // Double Integral overflow calculations work fine, If one of the two
       // operands is a constant.  ie   [0, 100] + ([MAXINT-1),(MAXINT-1)] 
       // Otherwise we don't know if the overflows "overflow" into each other.
@@ -759,8 +759,8 @@ op_wi (enum tree_code code, signop s, irange& r, const wide_int& lh_lb,
       return false;
 
     case MINUS_EXPR:
-      wide_int_binop (code, new_lb, lh_lb, rh_ub, s, ov_lb);
-      wide_int_binop (code, new_ub, lh_ub, rh_lb, s, ov_ub);
+      wide_int_binop (new_lb, code, lh_lb, rh_ub, s, &ov_lb);
+      wide_int_binop (new_ub, code, lh_ub, rh_lb, s, &ov_ub);
       if (!ov_lb || !ov_ub || wi::eq_p (lh_lb, lh_ub)
 	  || wi::eq_p (rh_lb, rh_ub))
 	{
@@ -2006,10 +2006,10 @@ operator_min_max::fold_range (irange& r, const irange& lh,
   // intersect the union with the max/min values of both to get a set of values.
   // This allows   MIN  ([1,5][20,30] , [0,4][18,60])  to produce 
   // [0,5][18,30]  rather than [0,30]
-  wide_int_binop (code, lb, lh.lower_bound (), rh.lower_bound (),
-			TYPE_SIGN (type), ov);
-  wide_int_binop (code, ub, lh.upper_bound (), rh.upper_bound (),
-			TYPE_SIGN (type), ov);
+  wide_int_binop (lb, code, lh.lower_bound (), rh.lower_bound (),
+		  TYPE_SIGN (type), &ov);
+  wide_int_binop (ub, code, lh.upper_bound (), rh.upper_bound (),
+		  TYPE_SIGN (type), &ov);
   r.intersect (irange (type, lb, ub));
   return true;
 }

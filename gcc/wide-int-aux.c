@@ -48,205 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vrp.h"
 #include "fold-const.h"
 
-
-
-/* Perform a binary tree operation on wide_ints  */
-
-bool
-wide_int_binop (enum tree_code code, wide_int& res, const wide_int& arg1,
-		const wide_int& arg2, signop sign, wi::overflow_type &overflow)
-{
-  wide_int tmp;
-  overflow = wi::OVF_NONE;
-  switch (code)
-    {
-    case BIT_IOR_EXPR:
-      res = wi::bit_or (arg1, arg2);
-      break;
-
-    case BIT_XOR_EXPR:
-      res = wi::bit_xor (arg1, arg2);
-      break;
-
-    case BIT_AND_EXPR:
-      res = wi::bit_and (arg1, arg2);
-      break;
-
-    case RSHIFT_EXPR:
-    case LSHIFT_EXPR:
-      if (wi::neg_p (arg2))
-	{
-	  tmp = -arg2;
-	  if (code == RSHIFT_EXPR)
-	    code = LSHIFT_EXPR;
-	  else
-	    code = RSHIFT_EXPR;
-	}
-      else
-        tmp = arg2;
-
-      if (code == RSHIFT_EXPR)
-	/* It's unclear from the C standard whether shifts can overflow.
-	   The following code ignores overflow; perhaps a C standard
-	   interpretation ruling is needed.  */
-	res = wi::rshift (arg1, tmp, sign);
-      else
-	res = wi::lshift (arg1, tmp);
-      break;
-
-    case RROTATE_EXPR:
-    case LROTATE_EXPR:
-      if (wi::neg_p (arg2))
-	{
-	  tmp = -arg2;
-	  if (code == RROTATE_EXPR)
-	    code = LROTATE_EXPR;
-	  else
-	    code = RROTATE_EXPR;
-	}
-      else
-        tmp = arg2;
-
-      if (code == RROTATE_EXPR)
-	res = wi::rrotate (arg1, tmp);
-      else
-	res = wi::lrotate (arg1, tmp);
-      break;
-
-    case PLUS_EXPR:
-      res = wi::add (arg1, arg2, sign, &overflow);
-      break;
-
-    case MINUS_EXPR:
-      res = wi::sub (arg1, arg2, sign, &overflow);
-      break;
-
-    case MULT_EXPR:
-      res = wi::mul (arg1, arg2, sign, &overflow);
-      break;
-
-    case MULT_HIGHPART_EXPR:
-      res = wi::mul_high (arg1, arg2, sign);
-      break;
-
-    case TRUNC_DIV_EXPR:
-    case EXACT_DIV_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::div_trunc (arg1, arg2, sign, &overflow);
-      break;
-
-    case FLOOR_DIV_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::div_floor (arg1, arg2, sign, &overflow);
-      break;
-
-    case CEIL_DIV_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::div_ceil (arg1, arg2, sign, &overflow);
-      break;
-
-    case ROUND_DIV_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::div_round (arg1, arg2, sign, &overflow);
-      break;
-
-    case TRUNC_MOD_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::mod_trunc (arg1, arg2, sign, &overflow);
-      break;
-
-    case FLOOR_MOD_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::mod_floor (arg1, arg2, sign, &overflow);
-      break;
-
-    case CEIL_MOD_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::mod_ceil (arg1, arg2, sign, &overflow);
-      break;
-
-    case ROUND_MOD_EXPR:
-      if (arg2 == 0)
-	return false;
-      res = wi::mod_round (arg1, arg2, sign, &overflow);
-      break;
-
-    case MIN_EXPR:
-      res = wi::min (arg1, arg2, sign);
-      break;
-
-    case MAX_EXPR:
-      res = wi::max (arg1, arg2, sign);
-      break;
-
-    default:
-      return false;
-    }
-
-  return true;
-}
-
-bool
-range_binop (enum tree_code code, wide_int& res, const wide_int& arg1,
-	     const wide_int& arg2, signop sign,
-	     wi::overflow_type &overflow, bool ov_undefined)
-{
-  if (!wide_int_binop (code, res, arg1, arg2, sign, overflow))
-    return false;
-  // for ranges, overflows can be converted to either max or min sometimes.
-  if (overflow && ov_undefined)
-    {
-      switch (code)
-        {
-	  /* For multiplication, the sign of the overflow is given
-	     by the comparison of the signs of the operands.  */
-	  case MULT_EXPR:
-	    if (sign == UNSIGNED || arg1.sign_mask () == arg2.sign_mask ())
-	      res = wi::max_value (arg1.get_precision (), sign);
-	    else
-	      res = wi::min_value (arg1.get_precision (), sign);
-	    break;
-
-	  /* For division, the only case is -INF / -1 = +INF.  */
-	  case TRUNC_DIV_EXPR:
-          case FLOOR_DIV_EXPR:
-          case CEIL_DIV_EXPR:
-          case EXACT_DIV_EXPR:
-          case ROUND_DIV_EXPR:
-	    res = wi::max_value (arg1.get_precision (), sign);
-	    break;
-
-	  /* For addition, the operands must be of the same sign
-             to yield an overflow.
-	     For subtraction, operands must be of
-             different signs to yield an overflow.  Its sign is
-             therefore that of the first operand or the opposite of
-             that of the second operand.  A first operand of 0 counts
-             as positive here, for the corner case 0 - (-INF), which
-             overflows, but must yield +INF.  */
-	  case PLUS_EXPR:
-	  case MINUS_EXPR:
-	    if (sign == UNSIGNED || arg1.sign_mask () == 0)
-	      res = wi::max_value (arg1.get_precision (), sign);
-	    else
-	      res = wi::min_value (arg1.get_precision (), sign);
-	    break;
-	      
-	  default:
-	    return false;
-	}
-      /* reset overflow if we set a max/min.  */
-      overflow = wi::OVF_NONE;
-    }
-  return true;
-}
 void
 choose_min_max (signop s, wide_int& min, wide_int& max, wide_int& w0,
 		wide_int& w1, wide_int& w2, wide_int& w3)
@@ -273,25 +74,25 @@ do_cross_product (enum tree_code code, signop s, wide_int& lb, wide_int& ub,
 
   // Compute the 4 cross operations, bailing if an overflow occurs.
   
-  if (!wide_int_binop (code, cp1, lh_lb, rh_lb, s, ov) || ov)
+  if (!wide_int_binop (cp1, code, lh_lb, rh_lb, s, &ov) || ov)
     return false;
 
   if (wi::eq_p (lh_lb, lh_ub))
     cp3 = cp1;
   else
-    if (!wide_int_binop (code, cp3, lh_ub, rh_lb, s, ov) || ov)
+    if (!wide_int_binop (cp3, code, lh_ub, rh_lb, s, &ov) || ov)
       return false;
 
   if (wi::eq_p (rh_lb, rh_ub))
     cp2 = cp1;
   else
-    if (!wide_int_binop (code, cp2, lh_lb, rh_ub, s, ov) || ov)
+    if (!wide_int_binop (cp2, code, lh_lb, rh_ub, s, &ov) || ov)
       return false;
 
   if (wi::eq_p (lh_lb, lh_ub))
     cp4 = cp2;
   else
-    if (!wide_int_binop (code, cp4, lh_ub, rh_ub, s, ov) || ov)
+    if (!wide_int_binop (cp4, code, lh_ub, rh_ub, s, &ov) || ov)
       return false;
 
   // Order properly and add to the range.
