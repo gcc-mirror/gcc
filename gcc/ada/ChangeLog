@@ -1,3 +1,8 @@
+2018-07-16  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Do not inline calls inside
+	compiler-generated functions translated as predicates in GNATprove.
+
 2018-07-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Allocator): Test for Storage_Pool being RTE in
