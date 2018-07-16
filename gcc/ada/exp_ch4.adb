@@ -4072,7 +4072,7 @@ package body Exp_Ch4 is
          --  we avoid never-ending loops expanding them, and we also ensure
          --  the back end never receives nonbinary modular type expressions.
 
-         if Nkind_In (Nkind (N), N_Op_And, N_Op_Or) then
+         if Nkind_In (Nkind (N), N_Op_And, N_Op_Or, N_Op_Xor) then
             Set_Left_Opnd (Op_Expr,
               Unchecked_Convert_To (Standard_Unsigned,
                 New_Copy_Tree (Left_Opnd (N))));
@@ -10021,6 +10021,8 @@ package body Exp_Ch4 is
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
       end if;
+
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Xor;
 
    ----------------------
