@@ -1,3 +1,8 @@
+2018-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Report an error
+	on Bit_Order when defined for a record extension.
+
 2018-07-16  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnat/s-objrea.ads: Minor code clean up.

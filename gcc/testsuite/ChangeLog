@@ -1,5 +1,9 @@
 2018-07-16  Javier Miranda  <miranda@adacore.com>
 
+	* gnat.dg/bit_order1.adb: New testcase.
+
+2018-07-16  Javier Miranda  <miranda@adacore.com>
+
 	* gnat.dg/iter2.adb, gnat.dg/iter2.ads: New testcase.
 
 2018-07-16  Richard Biener  <rguenther@suse.de>
