@@ -1,3 +1,8 @@
+2018-07-16  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86455
+	* gcc.target/i386/vartrack-1.c: New test.
+
 2018-07-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt73.adb: New test.

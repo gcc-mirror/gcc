@@ -1,3 +1,8 @@
+2018-07-16  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86455
+	* var-tracking.c (vt_initialize): Fix pre_dec handling.
+
 2018-07-16  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/atomics.md (aarch64_store_execlusive<mode>): Add

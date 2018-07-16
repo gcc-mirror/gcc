@@ -10209,12 +10209,15 @@ vt_initialize (void)
 			    log_op_type (PATTERN (insn), bb, insn,
 					 MO_ADJUST, dump_file);
 			  VTI (bb)->mos.safe_push (mo);
-			  VTI (bb)->out.stack_adjust += pre;
 			}
 		    }
 
 		  cselib_hook_called = false;
 		  adjust_insn (bb, insn);
+
+		  if (!frame_pointer_needed && pre)
+		    VTI (bb)->out.stack_adjust += pre;
+
 		  if (DEBUG_MARKER_INSN_P (insn))
 		    {
 		      reemit_marker_as_note (insn);
