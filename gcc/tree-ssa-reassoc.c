@@ -2168,8 +2168,13 @@ init_range_entry (struct range_entry *r, tree exp, gimple *stmt)
 	  continue;
 	CASE_CONVERT:
 	  if (is_bool)
-	    goto do_default;
-	  if (TYPE_PRECISION (TREE_TYPE (arg0)) == 1)
+	    {
+	      if ((TYPE_PRECISION (exp_type) == 1
+		   || TREE_CODE (exp_type) == BOOLEAN_TYPE)
+		  && TYPE_PRECISION (TREE_TYPE (arg0)) > 1)
+		return;
+	    }
+	  else if (TYPE_PRECISION (TREE_TYPE (arg0)) == 1)
 	    {
 	      if (TYPE_UNSIGNED (TREE_TYPE (arg0)))
 		is_bool = true;

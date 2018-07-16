@@ -1,3 +1,7 @@
+2018-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt73.adb: New test.
+
 2018-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/3698
