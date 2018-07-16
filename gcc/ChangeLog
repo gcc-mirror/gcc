@@ -1,3 +1,27 @@
+2018-07-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backport from mainline
+	2017-03-24  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_pad_return): Remove.
+	* config/arc/arc.c (machine_function): Remove force_short_suffix
+	and size_reason.
+	(arc_print_operand): Adjust printing of '&'.
+	(arc_verify_short): Remove conditional printing of short suffix.
+	(arc_final_prescan_insn): Remove reference to size_reason.
+	(pad_return): New function.
+	(arc_reorg): Call pad_return.
+	(arc_pad_return): Remove.
+	(arc_init_machine_status): Remove reference to force_short_suffix.
+	* config/arc/arc.md (vunspec): Add VUNSPEC_ARC_BLOCKAGE.
+	(attr length): When attribute iscompact is true force to 2
+	regardless; in the case of maybe check if we want to force the
+	instruction to have 4 bytes length.
+	(nopv): Change it to generate 4 byte long nop as well.
+	(blockage): New pattern.
+	(simple_return): Remove call to arc_pad_return.
+	(p_return_i): Likewise.
+
 2018-07-19  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

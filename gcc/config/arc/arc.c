@@ -2564,8 +2564,6 @@ typedef struct GTY (()) machine_function
   struct arc_frame_info frame_info;
   /* To keep track of unalignment caused by short insns.  */
   int unalign;
-  int force_short_suffix; /* Used when disgorging return delay slot insns.  */
-  const char *size_reason;
   struct arc_ccfsm ccfsm_current;
   /* Map from uid to ccfsm state during branch shortening.  */
   rtx ccfsm_current_insn;
@@ -4220,7 +4218,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 	}
       break;
     case '&':
-      if (TARGET_ANNOTATE_ALIGN && cfun->machine->size_reason)
+      if (TARGET_ANNOTATE_ALIGN)
 	fprintf (file, "; unalign: %d", cfun->machine->unalign);
       return;
     case '+':
@@ -4906,7 +4904,6 @@ static int
 arc_verify_short (rtx_insn *insn, int, int check_attr)
 {
   enum attr_iscompact iscompact;
-  struct machine_function *machine;
 
   if (check_attr > 0)
     {
@@ -4914,10 +4911,6 @@ arc_verify_short (rtx_insn *insn, int, int check_attr)
       if (iscompact == ISCOMPACT_FALSE)
 	return 0;
     }
-  machine = cfun->machine;
-
-  if (machine->force_short_suffix >= 0)
-    return machine->force_short_suffix;
 
   return (get_attr_length (insn) & 2) != 0;
 }
@@ -4956,8 +4949,6 @@ arc_final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
       cfun->machine->prescan_initialized = 1;
     }
   arc_ccfsm_advance (insn, &arc_ccfsm_current);
-
-  cfun->machine->size_reason = 0;
 }
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
@@ -7599,6 +7590,76 @@ jli_call_scan (void)
     }
 }
 
+/* Add padding if necessary to avoid a mispredict.  A return could
+   happen immediately after the function start.  A call/return and
+   return/return must be 6 bytes apart to avoid mispredict.  */
+
+static void
+pad_return (void)
+{
+  rtx_insn *insn;
+  long offset;
+
+  if (!TARGET_PAD_RETURN)
+    return;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      rtx_insn *prev0 = prev_active_insn (insn);
+      bool wantlong = false;
+
+      if (!INSN_P (insn) || GET_CODE (PATTERN (insn)) != SIMPLE_RETURN)
+	continue;
+
+      if (!prev0)
+	{
+	  prev0 = emit_insn_before (gen_nopv (), insn);
+	  /* REG_SAVE_NOTE is used by Haifa scheduler, we are in reorg
+	     so it is safe to reuse it for forcing a particular length
+	     for an instruction.  */
+	  add_reg_note (prev0, REG_SAVE_NOTE, GEN_INT (1));
+	  emit_insn_before (gen_nopv (), insn);
+	  continue;
+	}
+      offset = get_attr_length (prev0);
+
+      if (get_attr_length (prev0) == 2
+	  && get_attr_iscompact (prev0) != ISCOMPACT_TRUE)
+	{
+	  /* Force long version of the insn.  */
+	  wantlong = true;
+	  offset += 2;
+	}
+
+     rtx_insn *prev = prev_active_insn (prev0);
+      if (prev)
+	offset += get_attr_length (prev);
+
+      prev = prev_active_insn (prev);
+      if (prev)
+	offset += get_attr_length (prev);
+
+      switch (offset)
+	{
+	case 2:
+	  prev = emit_insn_before (gen_nopv (), insn);
+	  add_reg_note (prev, REG_SAVE_NOTE, GEN_INT (1));
+	  break;
+	case 4:
+	  emit_insn_before (gen_nopv (), insn);
+	  break;
+	default:
+	  continue;
+	}
+
+      if (wantlong)
+	add_reg_note (prev0, REG_SAVE_NOTE, GEN_INT (1));
+
+      /* Emit a blockage to avoid delay slot scheduling.  */
+      emit_insn_before (gen_blockage (), insn);
+    }
+}
+
 static int arc_reorg_in_progress = 0;
 
 /* ARC's machince specific reorg function.  */
@@ -7624,6 +7685,7 @@ arc_reorg (void)
 
   workaround_arc_anomaly ();
   jli_call_scan ();
+  pad_return ();
 
 /* FIXME: should anticipate ccfsm action, generate special patterns for
    to-be-deleted branches that have no delay slot and have at least the
@@ -9332,79 +9394,6 @@ arc_branch_size_unknown_p (void)
   return !optimize_size && arc_reorg_in_progress;
 }
 
-/* We are about to output a return insn.  Add padding if necessary to avoid
-   a mispredict.  A return could happen immediately after the function
-   start, but after a call we know that there will be at least a blink
-   restore.  */
-
-void
-arc_pad_return (void)
-{
-  rtx_insn *insn = current_output_insn;
-  rtx_insn *prev = prev_active_insn (insn);
-  int want_long;
-
-  if (!prev)
-    {
-      fputs ("\tnop_s\n", asm_out_file);
-      cfun->machine->unalign ^= 2;
-      want_long = 1;
-    }
-  /* If PREV is a sequence, we know it must be a branch / jump or a tailcall,
-     because after a call, we'd have to restore blink first.  */
-  else if (GET_CODE (PATTERN (prev)) == SEQUENCE)
-    return;
-  else
-    {
-      want_long = (get_attr_length (prev) == 2);
-      prev = prev_active_insn (prev);
-    }
-  if (!prev
-      || ((NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	  ? CALL_ATTR (as_a <rtx_sequence *> (PATTERN (prev))->insn (0),
-		       NON_SIBCALL)
-	  : CALL_ATTR (prev, NON_SIBCALL)))
-    {
-      if (want_long)
-	cfun->machine->size_reason
-	  = "call/return and return/return must be 6 bytes apart to avoid mispredict";
-      else if (TARGET_UNALIGN_BRANCH && cfun->machine->unalign)
-	{
-	  cfun->machine->size_reason
-	    = "Long unaligned jump avoids non-delay slot penalty";
-	  want_long = 1;
-	}
-      /* Disgorge delay insn, if there is any, and it may be moved.  */
-      if (final_sequence
-	  /* ??? Annulled would be OK if we can and do conditionalize
-	     the delay slot insn accordingly.  */
-	  && !INSN_ANNULLED_BRANCH_P (insn)
-	  && (get_attr_cond (insn) != COND_USE
-	      || !reg_set_p (gen_rtx_REG (CCmode, CC_REG),
-			     XVECEXP (final_sequence, 0, 1))))
-	{
-	  prev = as_a <rtx_insn *> (XVECEXP (final_sequence, 0, 1));
-	  gcc_assert (!prev_real_insn (insn)
-		      || !arc_hazard (prev_real_insn (insn), prev));
-	  cfun->machine->force_short_suffix = !want_long;
-	  rtx save_pred = current_insn_predicate;
-	  final_scan_insn (prev, asm_out_file, optimize, 1, NULL);
-	  cfun->machine->force_short_suffix = -1;
-	  prev->set_deleted ();
-	  current_output_insn = insn;
-	  current_insn_predicate = save_pred;
-	}
-      else if (want_long)
-	fputs ("\tnop\n", asm_out_file);
-      else
-	{
-	  fputs ("\tnop_s\n", asm_out_file);
-	  cfun->machine->unalign ^= 2;
-	}
-    }
-  return;
-}
-
 /* The usual; we set up our machine_function data.  */
 
 static struct machine_function *
@@ -9413,7 +9402,6 @@ arc_init_machine_status (void)
   struct machine_function *machine;
   machine = ggc_cleared_alloc<machine_function> ();
   machine->fn_type = ARC_FUNCTION_UNKNOWN;
-  machine->force_short_suffix = -1;
 
   return machine;
 }
