@@ -1,3 +1,8 @@
+2018-07-16  Nicolas Roche  <roche@adacore.com>
+
+	* libgnat/a-strunb.adb, libgnat/a-strunb__shared.adb: Adjust growth
+	factor from 1/32 to 1/2 for Unbounded_String.
+
 2018-07-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/lang.opt (funsigned-char): New option.
