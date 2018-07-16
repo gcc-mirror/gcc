@@ -3926,12 +3926,12 @@ package body Inline is
                   end if;
                end if;
 
-            --  A return statement within an extended return is a noop
-            --  after inlining.
+            --  A return statement within an extended return is a noop after
+            --  inlining.
 
             elsif No (Expression (N))
-              and then
-                Nkind (Parent (Parent (N))) = N_Extended_Return_Statement
+              and then Nkind (Parent (Parent (N))) =
+                         N_Extended_Return_Statement
             then
                return OK;
 
@@ -3970,10 +3970,11 @@ package body Inline is
          return True;
 
       else
-         return Present (Declarations (N))
-           and then Present (First (Declarations (N)))
-           and then Entity (Expression (Return_Statement)) =
-                    Defining_Identifier (First (Declarations (N)));
+         return
+           Present (Declarations (N))
+             and then Present (First (Declarations (N)))
+             and then Entity (Expression (Return_Statement)) =
+                        Defining_Identifier (First (Declarations (N)));
       end if;
    end Has_Single_Return;
 

@@ -5993,9 +5993,6 @@ package body Sem_Util is
    -------------------------
 
    function Denotes_Same_Object (A1, A2 : Node_Id) return Boolean is
-      Obj1 : Node_Id := A1;
-      Obj2 : Node_Id := A2;
-
       function Is_Renaming (N : Node_Id) return Boolean;
       --  Return true if N names a renaming entity
 
@@ -6011,8 +6008,8 @@ package body Sem_Util is
 
       function Is_Renaming (N : Node_Id) return Boolean is
       begin
-         return Is_Entity_Name (N)
-           and then Present (Renamed_Entity (Entity (N)));
+         return
+           Is_Entity_Name (N) and then Present (Renamed_Entity (Entity (N)));
       end Is_Renaming;
 
       -----------------------
@@ -6020,9 +6017,12 @@ package body Sem_Util is
       -----------------------
 
       function Is_Valid_Renaming (N : Node_Id) return Boolean is
-
          function Check_Renaming (N : Node_Id) return Boolean;
          --  Recursive function used to traverse all the prefixes of N
+
+         --------------------
+         -- Check_Renaming --
+         --------------------
 
          function Check_Renaming (N : Node_Id) return Boolean is
          begin
@@ -6082,6 +6082,11 @@ package body Sem_Util is
       begin
          return Check_Renaming (N);
       end Is_Valid_Renaming;
+
+      --  Local variables
+
+      Obj1 : Node_Id := A1;
+      Obj2 : Node_Id := A2;
 
    --  Start of processing for Denotes_Same_Object
 
@@ -11542,14 +11547,13 @@ package body Sem_Util is
    function Has_Prefix (N : Node_Id) return Boolean is
    begin
       return
-        Nkind_In (N,
-          N_Attribute_Reference,
-          N_Expanded_Name,
-          N_Explicit_Dereference,
-          N_Indexed_Component,
-          N_Reference,
-          N_Selected_Component,
-          N_Slice);
+        Nkind_In (N, N_Attribute_Reference,
+                     N_Expanded_Name,
+                     N_Explicit_Dereference,
+                     N_Indexed_Component,
+                     N_Reference,
+                     N_Selected_Component,
+                     N_Slice);
    end Has_Prefix;
 
    ---------------------------

@@ -475,9 +475,9 @@ package body Exp_Ch9 is
    --    <actualN> := P.<formalN>;
 
    procedure Reset_Scopes_To (Proc_Body : Node_Id; E : Entity_Id);
-   --  Reset the scope of declarations and blocks at the top level of
-   --  Proc_Body to be E. Used after expanding entry bodies into their
-   --  corresponding procedures.
+   --  Reset the scope of declarations and blocks at the top level of Proc_Body
+   --  to be E. Used after expanding entry bodies into their corresponding
+   --  procedures.
 
    function Trivial_Accept_OK return Boolean;
    --  If there is no DO-END block for an accept, or if the DO-END block has
@@ -10557,13 +10557,14 @@ package body Exp_Ch9 is
          Eloc      : constant Source_Ptr := Sloc (Ename);
          Eent      : constant Entity_Id  := Entity (Ename);
          Index     : constant Node_Id    := Entry_Index (Acc_Stm);
-         Null_Body : Node_Id;
-         Proc_Body : Node_Id;
-         PB_Ent    : Entity_Id;
-         Expr      : Node_Id;
-         Call      : Node_Id;
 
-         --  Start of processing for Add_Accept
+         Call      : Node_Id;
+         Expr      : Node_Id;
+         Null_Body : Node_Id;
+         PB_Ent    : Entity_Id;
+         Proc_Body : Node_Id;
+
+      --  Start of processing for Add_Accept
 
       begin
          if No (Ann) then
@@ -10577,9 +10578,7 @@ package body Exp_Ch9 is
                 Entry_Index_Expression (Eloc, Eent, Index, Scope (Eent)),
                 New_Occurrence_Of (RTE (RE_Null_Task_Entry), Eloc)));
          else
-            Expr :=
-              Entry_Index_Expression
-                (Eloc, Eent, Index, Scope (Eent));
+            Expr := Entry_Index_Expression (Eloc, Eent, Index, Scope (Eent));
          end if;
 
          if Present (Handled_Statement_Sequence (Accept_Statement (Alt))) then
@@ -10603,7 +10602,7 @@ package body Exp_Ch9 is
               Make_Defining_Identifier (Eloc,
                 New_External_Name (Chars (Ename), 'A', Num_Accept));
 
-            --  Link the acceptor to the original receiving entry.
+            --  Link the acceptor to the original receiving entry
 
             Set_Ekind           (PB_Ent, E_Procedure);
             Set_Receiving_Entry (PB_Ent, Eent);
@@ -14731,12 +14730,10 @@ package body Exp_Ch9 is
    ---------------------
 
    procedure Reset_Scopes_To (Proc_Body : Node_Id; E : Entity_Id) is
-
       function Reset_Scope (N : Node_Id) return Traverse_Result;
-      --  Temporaries may have been declared during expansion of the
-      --  procedure alternative. Indicate that their scope is the new
-      --  body, to prevent generation of spurious uplevel references
-      --  for these entities.
+      --  Temporaries may have been declared during expansion of the procedure
+      --  alternative. Indicate that their scope is the new body, to prevent
+      --  generation of spurious uplevel references for these entities.
 
       procedure Reset_Scopes is new Traverse_Proc (Reset_Scope);
 
@@ -14748,10 +14745,11 @@ package body Exp_Ch9 is
          Decl : Node_Id;
 
       begin
-         --  If this is a block statement with an Identifier, it forms
-         --  a scope, so we want to reset its scope but not look inside.
+         --  If this is a block statement with an Identifier, it forms a scope,
+         --  so we want to reset its scope but not look inside.
 
-         if Nkind (N) = N_Block_Statement and then Present (Identifier (N))
+         if Nkind (N) = N_Block_Statement
+           and then Present (Identifier (N))
          then
             Set_Scope (Entity (Identifier (N)), E);
             return Skip;
@@ -14778,6 +14776,8 @@ package body Exp_Ch9 is
 
          return OK;
       end Reset_Scope;
+
+   --  Start of processing for Reset_Scopes_To
 
    begin
       Reset_Scopes (Proc_Body);

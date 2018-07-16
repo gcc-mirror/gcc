@@ -2180,6 +2180,7 @@ package body Sem is
 
             function Is_Subunit_Of_Main (U : Node_Id) return Boolean is
                Lib : Node_Id;
+
             begin
                if Present (U) and then Nkind (Unit (U)) = N_Subunit then
                   Lib := Library_Unit (U);

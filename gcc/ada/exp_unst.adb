@@ -526,8 +526,8 @@ package body Exp_Unst is
                         end loop;
                      end;
 
-                  --  Binary operator cases. These can apply
-                  --  to arrays for which we may need bounds.
+                  --  Binary operator cases. These can apply to arrays for
+                  --  which we may need bounds.
 
                   elsif Nkind (N) in N_Binary_Op then
                      Note_Uplevel_Bound (Left_Opnd (N),  Ref);
@@ -944,7 +944,9 @@ package body Exp_Unst is
                --  and if the lower bound (or an inner bound for a multi-
                --  dimensional array) is uplevel.
 
-               when N_Indexed_Component | N_Slice =>
+               when N_Indexed_Component
+                  | N_Slice
+               =>
                   if Is_Constrained (Etype (Prefix (N))) then
                      declare
                         DT : Boolean := False;
@@ -975,7 +977,9 @@ package body Exp_Unst is
                --  in order to do the comparison, which means we need the
                --  bounds.
 
-               when N_Op_Eq | N_Op_Ne =>
+               when N_Op_Eq
+                  | N_Op_Ne
+               =>
                   declare
                      DT : Boolean := False;
                   begin
@@ -1075,13 +1079,14 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
-               --  Pragmas and component declarations can be ignored.
+               --  Pragmas and component declarations can be ignored
 
-               when N_Pragma | N_Component_Declaration =>
+               when N_Component_Declaration
+                  | N_Pragma
+               =>
                   return Skip;
 
-               --  Otherwise record an uplevel reference in a local
-               --  identifier.
+               --  Otherwise record an uplevel reference in a local identifier
 
                when others =>
                   if Nkind (N) in N_Has_Entity
@@ -1103,23 +1108,25 @@ package body Exp_Unst is
                         --  references to global declarations.
 
                        and then
-                         (Ekind_In
-                           (Ent, E_Constant, E_Variable, E_Loop_Parameter)
+                         (Ekind_In (Ent, E_Constant,
+                                         E_Loop_Parameter,
+                                         E_Variable)
 
-                        --  Formals are interesting, but not if being used as
-                        --  mere names of parameters for name notation calls.
+                           --  Formals are interesting, but not if being used
+                           --  as mere names of parameters for name notation
+                           --  calls.
 
-                        or else
-                          (Is_Formal (Ent)
-                            and then not
-                             (Nkind (Parent (N)) = N_Parameter_Association
-                               and then Selector_Name (Parent (N)) = N))
+                           or else
+                             (Is_Formal (Ent)
+                               and then not
+                                 (Nkind (Parent (N)) = N_Parameter_Association
+                                   and then Selector_Name (Parent (N)) = N))
 
-                        --  Types other than known Is_Static types are
-                        --  potentially interesting.
+                           --  Types other than known Is_Static types are
+                           --  potentially interesting.
 
-                        or else (Is_Type (Ent)
-                                  and then not Is_Static_Type (Ent)))
+                           or else
+                             (Is_Type (Ent) and then not Is_Static_Type (Ent)))
                      then
                         --  Here we have a potentially interesting uplevel
                         --  reference to examine.
@@ -1284,10 +1291,10 @@ package body Exp_Unst is
                   loop
                      S := Enclosing_Subprogram (S);
 
-                     --  if we are at the top level, as can happen with
+                     --  If we are at the top level, as can happen with
                      --  references to formals in aspects of nested subprogram
-                     --  declarations, there are no further subprograms to
-                     --  mark as requiring activation records.
+                     --  declarations, there are no further subprograms to mark
+                     --  as requiring activation records.
 
                      exit when No (S);
 
@@ -1298,10 +1305,10 @@ package body Exp_Unst is
 
                         --  If this entity was marked reachable because it is
                         --  in a task or protected type, there may not appear
-                        --  to be any calls to it, which would normally
-                        --  adjust the levels of the parent subprograms.
-                        --  So we need to be sure that the uplevel reference
-                        --  of that entity takes into account possible calls.
+                        --  to be any calls to it, which would normally adjust
+                        --  the levels of the parent subprograms. So we need to
+                        --  be sure that the uplevel reference of that entity
+                        --  takes into account possible calls.
 
                         if In_Synchronized_Unit (SUBF.Ent)
                           and then SUBT.Lev < SUBI.Uplevel_Ref
@@ -1874,10 +1881,10 @@ package body Exp_Unst is
                               begin
                                  --  For parameters, we insert the assignment
                                  --  right after the declaration of ARECnP.
-                                 --  For all other entities, we insert
-                                 --  the assignment immediately after the
-                                 --  declaration of the entity or after
-                                 --  the freeze node if present.
+                                 --  For all other entities, we insert the
+                                 --  assignment immediately after the
+                                 --  declaration of the entity or after the
+                                 --  freeze node if present.
 
                                  --  Note: we don't need to mark the entity
                                  --  as being aliased, because the address
@@ -1928,8 +1935,9 @@ package body Exp_Unst is
                                  --  N_Loop_Parametrer_Specification.
 
                                  if Ekind (Ent) = E_Loop_Parameter then
-                                    Ins := First (Statements
-                                                    (Parent (Parent (Ins))));
+                                    Ins :=
+                                      First
+                                        (Statements (Parent (Parent (Ins))));
                                     Insert_Before (Ins, Asn);
 
                                  else
