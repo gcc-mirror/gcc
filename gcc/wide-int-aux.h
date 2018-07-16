@@ -22,9 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define WIDE_INT_AUX_H
 
 
-extern void choose_min_max (signop s, wide_int& min, wide_int& max,
-			    wide_int& w0, wide_int& w1, wide_int& w2,
-			    wide_int& w3);
 extern bool do_cross_product (enum tree_code code, signop s, wide_int& lb,
 			      wide_int& ub, const wide_int& lh_lb,
 			      const wide_int& lh_ub, const wide_int& rh_lb,

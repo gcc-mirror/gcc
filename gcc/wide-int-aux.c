@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vrp.h"
 #include "fold-const.h"
 
-void
+static void
 choose_min_max (signop s, wide_int& min, wide_int& max, wide_int& w0,
 		wide_int& w1, wide_int& w2, wide_int& w3)
 
