@@ -812,7 +812,7 @@ package body Exp_Unst is
 
                --  Similarly, the following constructs include a semantic
                --  attribute Procedure_To_Call that must be handled like
-               --  other calls.
+               --  other calls. Likewise for attribute Storage_Pool.
 
                when N_Allocator
                   | N_Extended_Return_Statement
@@ -820,13 +820,27 @@ package body Exp_Unst is
                   | N_Simple_Return_Statement
                =>
                   declare
+                     Pool : constant Entity_Id := Storage_Pool (N);
                      Proc : constant Entity_Id := Procedure_To_Call (N);
+
                   begin
                      if Present (Proc)
                        and then Scope_Within (Proc, Subp)
                        and then not Is_Imported (Proc)
                      then
                         Append_Unique_Call ((N, Current_Subprogram, Proc));
+                     end if;
+
+                     if Present (Pool)
+                       and then not Is_Library_Level_Entity (Pool)
+                       and then Scope_Within_Or_Same (Scope (Pool), Subp)
+                     then
+                        Caller := Current_Subprogram;
+                        Callee := Enclosing_Subprogram (Pool);
+
+                        if Callee /= Caller then
+                           Note_Uplevel_Ref (Pool, Empty, Caller, Callee);
+                        end if;
                      end if;
                   end;
 
