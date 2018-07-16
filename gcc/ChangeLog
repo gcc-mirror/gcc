@@ -1,3 +1,23 @@
+2017-07-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-arch.h (arc_tune_attr): Add new tune parameters
+	for ARCHS4x.
+	* config/arc/arc-cpus.def (hs4x): New cpu.
+	(hs4xd): Likewise.
+	* config/arc/arc-tables.opt: Regenerate.
+	* config/arc/arc.c (arc_sched_issue_rate): New function.
+	(TARGET_SCHED_ISSUE_RATE): Define.
+	(TARGET_SCHED_EXPOSED_PIPELINE): Likewise.
+	* config/arc/arc.md (attr type): Add fpu_fuse, fpu_sdiv, fpu_ddiv,
+	fpu_cvt.
+	(attr tune): Add ARCHS4x tune values.
+	(attr tune_dspmpy): Define.
+	(*tst): Correct instruction type.
+	* config/arc/arcHS.md: Don't use this automaton for ARCHS4x cpus.
+	* config/arc/arcHS4x.md: New file.
+	* config/arc/fpu.md: Update instruction type attributes.
+	* config/arc/t-multilib: Regenerate.
+
 2018-07-16  Tom de Vries  <tdevries@suse.de>
 
 	PR debug/86455

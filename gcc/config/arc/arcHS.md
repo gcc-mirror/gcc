@@ -25,32 +25,38 @@
 
 (define_insn_reservation "hs_data_load" 4
   (and (match_test "TARGET_HS")
+       (eq_attr "tune" "none")
        (eq_attr "type" "load"))
   "hs_issue+hs_ld_st,hs_ld_st,nothing*2")
 
 (define_insn_reservation "hs_data_store" 1
   (and (match_test "TARGET_HS")
+       (eq_attr "tune" "none")
        (eq_attr "type" "store"))
   "hs_issue+hs_ld_st")
 
 (define_insn_reservation "hs_alu0" 2
   (and (match_test "TARGET_HS")
+       (eq_attr "tune" "none")
        (eq_attr "type" "cc_arith, two_cycle_core, shift, lr, sr"))
   "hs_issue+x1,x2")
 
 (define_insn_reservation "hs_alu1" 4
   (and (match_test "TARGET_HS")
+       (eq_attr "tune" "none")
        (eq_attr "type" "move, cmove, unary, binary, compare, misc"))
   "hs_issue+x1, nothing*3")
 
 (define_insn_reservation "hs_divrem" 13
   (and (match_test "TARGET_HS")
        (match_test "TARGET_DIVREM")
+       (eq_attr "tune" "none")
        (eq_attr "type" "div_rem"))
   "hs_issue+divrem_hs, (divrem_hs)*12")
 
 (define_insn_reservation "hs_mul" 3
   (and (match_test "TARGET_HS")
+       (eq_attr "tune" "none")
        (eq_attr "type" "mul16_em, multi, umulti"))
   "hs_issue+mul_hs, nothing*3")
 
