@@ -1,3 +1,11 @@
+2018-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR c/86453
+	* g++.dg/warn/pr86453.C: New testcase.
+
 2018-07-16  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

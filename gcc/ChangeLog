@@ -1,3 +1,21 @@
+2018-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86452
+	* dwarf2out.c (gen_type_die_with_usage): Use scope_die_for
+	instead of get_context_die.
+
+	2018-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR debug/86457
+	* dwarf2out.c (init_sections_and_labels): Use
+	output_asm_line_debug_info consistently.
+	(dwarf2out_early_finish): Likewise.
+	(dwarf2out_finish): Remove DW_AT_stmt_list from early generated
+	type units.
+
 2018-07-16  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

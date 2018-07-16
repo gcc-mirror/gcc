@@ -519,8 +519,13 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   if (TYPE_P (*node))
     {
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
-	*node = build_variant_type_copy (*node);
-      TYPE_PACKED (*node) = 1;
+	{
+	  warning (OPT_Wattributes,
+		   "%qE attribute ignored for type %qT", name, *node);
+	  *no_add_attrs = true;
+	}
+      else
+	TYPE_PACKED (*node) = 1;
     }
   else if (TREE_CODE (*node) == FIELD_DECL)
     {
