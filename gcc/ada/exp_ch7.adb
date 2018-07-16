@@ -3994,6 +3994,34 @@ package body Exp_Ch7 is
       Elab_Call : Node_Id;
       Elab_Proc : Entity_Id;
       Stat      : Node_Id;
+      function Contains_Subprogram (Blk : Entity_Id) return Boolean;
+      --  Check recursively whether a loop or block contains a subprogram
+      --  that may need an activation record.
+
+      --------------------------
+      --  Contains_Subprogram --
+      --------------------------
+
+      function Contains_Subprogram (Blk : Entity_Id) return Boolean is
+         E : Entity_Id;
+      begin
+         E := First_Entity (Blk);
+
+         while Present (E) loop
+            if Is_Subprogram (E) then
+               return True;
+
+            elsif Ekind_In (E, E_Block, E_Loop)
+              and then Contains_Subprogram (E)
+            then
+               return True;
+            end if;
+
+            Next_Entity (E);
+         end loop;
+
+         return False;
+      end Contains_Subprogram;
 
    begin
       if Unnest_Subprogram_Mode
@@ -4002,8 +4030,10 @@ package body Exp_Ch7 is
       then
          Stat := First (Statements (Handled_Statement_Sequence (N)));
          while Present (Stat) loop
-            exit when Nkind (Stat) = N_Block_Statement
-              and then Present (Identifier (Stat));
+            exit when ((Nkind (Stat) = N_Block_Statement
+                         and then Present (Identifier (Stat)))
+                or else Nkind (Stat) = N_Loop_Statement)
+              and then Contains_Subprogram (Entity (Identifier (Stat)));
             Next (Stat);
          end loop;
 
@@ -4035,17 +4065,18 @@ package body Exp_Ch7 is
 
             Analyze (Elab_Call);
 
-            --  The scope of all blocks in the elaboration code is now the
-            --  constructed elaboration procedure. Nested subprograms within
-            --  those blocks will have activation records if they contain
-            --  references to entities in the enclosing block.
+            --  The scope of all blocks and loops in the elaboration code is
+            --  now the constructed elaboration procedure. Nested subprograms
+            --  within those blocks will have activation records if they
+            --  contain references to entities in the enclosing block.
 
             Stat :=
               First (Statements (Handled_Statement_Sequence (Elab_Body)));
 
             while Present (Stat) loop
-               if Nkind (Stat) = N_Block_Statement
-                 and then Present (Identifier (Stat))
+               if (Nkind (Stat) = N_Block_Statement
+                    and then Present (Identifier (Stat)))
+                 or else Nkind (Stat) = N_Loop_Statement
                then
                   Set_Scope (Entity (Identifier (Stat)), Elab_Proc);
 
