@@ -8,7 +8,7 @@
 
 2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
 
-	* testsuite/gcc.target/s390/mrecord-mcount.c: New testcase.
+	* gcc.target/s390/mrecord-mcount.c: New testcase.
 
 2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
 
