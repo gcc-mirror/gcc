@@ -1,3 +1,9 @@
+2018-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): Code cleanup. Required
+	to avoid generating an ill-formed tree that confuses gnatprove causing
+	it to blowup.
+
 2018-07-16  Yannick Moy  <moy@adacore.com>
 
 	* inline.adb (Has_Single_Return): Rewrap comment.
