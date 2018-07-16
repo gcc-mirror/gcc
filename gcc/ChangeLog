@@ -1,3 +1,19 @@
+2018-07-16  Aldy Hernandez  <aldyh@redhat.com>
+
+        * fold-const.c (int_const_binop_1): Abstract...
+        (wide_int_binop): ...wide int code here.
+	(poly_int_binop): ...poly int code here.
+	Abstract the rest of int_const_binop_1 into int_const_binop.
+        * fold-const.h (wide_int_binop): New.
+        * tree-vrp.c (vrp_int_const_binop): Call wide_int_binop.
+	Remove useless PLUS/MINUS_EXPR case.
+        (zero_nonzero_bits_from_vr): Move wide int code...
+        (zero_nonzero_bits_from_bounds): ...here.
+        (extract_range_from_binary_expr_1): Move mask optimization code...
+        (range_easy_mask_min_max): ...here.
+        * tree-vrp.h (zero_nonzero_bits_from_bounds): New.
+        (range_easy_mask_min_max): New.
+
 2018-07-15  Jeff Law  <law@redhat.com>
 
 	PR target/85993
