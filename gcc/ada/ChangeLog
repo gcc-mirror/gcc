@@ -1,5 +1,10 @@
 2018-07-16  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.adb (Visit_Node): Handle 'Address references that are
+	calls.
+
+2018-07-16  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_unst.adb (Visit_Node): Handle the semantic of Storage_Pool field
 	in relevant nodes: Allocate, Free, and return statements.
 
