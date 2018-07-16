@@ -115,6 +115,7 @@
 #include "tree-pretty-print.h"
 #include "rtl-iter.h"
 #include "fibonacci_heap.h"
+#include "print-rtl.h"
 
 typedef fibonacci_heap <long, basic_block_def> bb_heap_t;
 typedef fibonacci_node <long, basic_block_def> bb_heap_node_t;
@@ -10227,7 +10228,10 @@ vt_initialize (void)
 		      cselib_process_insn (insn);
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			{
-			  print_rtl_single (dump_file, insn);
+			  if (dump_flags & TDF_SLIM)
+			    dump_insn_slim (dump_file, insn);
+			  else
+			    print_rtl_single (dump_file, insn);
 			  dump_cselib_table (dump_file);
 			}
 		    }
