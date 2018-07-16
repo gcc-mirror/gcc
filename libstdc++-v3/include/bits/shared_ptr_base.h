@@ -1502,22 +1502,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(nullptr_t, const __shared_ptr<_Tp, _Lp>& __a) noexcept
     { return !(nullptr < __a); }
 
-  template<typename _Sp>
-    struct _Sp_less : public binary_function<_Sp, _Sp, bool>
-    {
-      bool
-      operator()(const _Sp& __lhs, const _Sp& __rhs) const noexcept
-      {
-	typedef typename _Sp::element_type element_type;
-	return std::less<element_type*>()(__lhs.get(), __rhs.get());
-      }
-    };
-
-  template<typename _Tp, _Lock_policy _Lp>
-    struct less<__shared_ptr<_Tp, _Lp>>
-    : public _Sp_less<__shared_ptr<_Tp, _Lp>>
-    { };
-
   // 20.7.2.2.8 shared_ptr specialized algorithms.
   template<typename _Tp, _Lock_policy _Lp>
     inline void
