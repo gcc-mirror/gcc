@@ -1,3 +1,10 @@
+2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/s-wchwts.adb (Wide_String_To_String): Use the appropriate
+	longest sequence factor. Code clean up.
+	(Wide_Wide_String_To_String): Use the appropriate longest sequence
+	factor.  Code clean up.
+
 2018-07-16  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Report an error

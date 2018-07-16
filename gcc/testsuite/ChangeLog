@@ -1,3 +1,7 @@
+2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/wide_wide_value1.adb: New testcase.
+
 2018-07-16  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/bit_order1.adb: New testcase.
