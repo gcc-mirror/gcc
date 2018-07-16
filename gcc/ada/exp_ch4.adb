@@ -12248,7 +12248,7 @@ package body Exp_Ch4 is
 
       function Make_Cond (Alt : Node_Id) return Node_Id is
          Cond : Node_Id;
-         L    : constant Node_Id := New_Copy (Lop);
+         L    : constant Node_Id := New_Copy_Tree (Lop);
          R    : constant Node_Id := Relocate_Node (Alt);
 
       begin
