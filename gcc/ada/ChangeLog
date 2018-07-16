@@ -1,3 +1,17 @@
+2018-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.adb (Set_Is_Uplevel_Referenced_Entity): Flag can appear on
+	loop parameters.
+	* exp_ch7.adb (Check_Unnesting_Elaboration_Code): Handle subprogram
+	bodies.
+	* exp_ch9.adb (Reset_Scopes_To): Set the scopes of entities local to an
+	entry body to be the corresponding generated subprogram, for correct
+	analysis of uplevel references.
+	* exp_unst.adb (Visit_Node): Handle properly binary and unary operators
+	Ignore pragmas, fix component associations.
+	(Register_Subprograms): Subprograms in synchronized types must be
+	treated as reachable.
+
 2018-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_util.adb (Check_No_Hidden_State): Ignore internally-generated

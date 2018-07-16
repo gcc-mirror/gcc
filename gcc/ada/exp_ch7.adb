@@ -4048,6 +4048,9 @@ package body Exp_Ch7 is
                  and then Present (Identifier (Stat))
                then
                   Set_Scope (Entity (Identifier (Stat)), Elab_Proc);
+
+               elsif Nkind (Stat) = N_Subprogram_Body then
+                  Set_Scope (Defining_Entity (Stat), Elab_Proc);
                end if;
 
                Next (Stat);
