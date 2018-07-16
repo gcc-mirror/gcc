@@ -1,3 +1,9 @@
+2018-07-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/86528
+	* builtins.c (check_access): Bail out if range[0] is no INTEGER_CST.
+	* expr.c (string_constant): Fix the element size of ARRAY_TYPE.
+
 2018-07-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* doc/extend.texi (PowerPC AltiVec Built-in Functions):
