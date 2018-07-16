@@ -1,5 +1,13 @@
 2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
 
+	* gcc.target/s390/mnop-mcount-m31-fpic.c: New testcase.
+	* gcc.target/s390/mnop-mcount-m31-mzarch.c: New testcase.
+	* gcc.target/s390/mnop-mcount-m31.c: New testcase.
+	* gcc.target/s390/mnop-mcount-m64-mfentry.c: New testcase.
+	* gcc.target/s390/mnop-mcount-m64.c: New testcase.
+
+2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
 	* testsuite/gcc.target/s390/mrecord-mcount.c: New testcase.
 
 2018-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
