@@ -1,3 +1,48 @@
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* frontend.adb (Frontend): Update the call to Register_Config_Switches.
+	* inline.ads: Add new component Config_Switches to record
+	Pending_Body_Info which captures the configuration state of the pending
+	body.  Remove components Version, Version_Pragma, SPARK_Mode, and
+	SPARK_Mode_Pragma from record Pending_Body_Info because they are
+	already captured in component Config_Switches.
+	* opt.adb (Register_Opt_Config_Switches): Rename to
+	Register_Config_Switches.
+	(Restore_Opt_Config_Switches): Rename to Restore_Config_Switches.
+	(Save_Opt_Config_Switches): Rename to Save_Config_Switches. This
+	routine is now a function, and returns the saved configuration state as
+	an aggregate to avoid missing an attribute.
+	(Set_Opt_Config_Switches): Rename to Set_Config_Switches.
+	* opt.ads (Register_Opt_Config_Switches): Rename to
+	Register_Config_Switches.
+	(Restore_Opt_Config_Switches): Rename to Restore_Config_Switches.
+	(Save_Opt_Config_Switches): Rename to Save_Config_Switches. This
+	routine is now a function.
+	(Set_Opt_Config_Switches): Rename to Set_Config_Switches.
+	* par.adb (Par): Update the calls to configuration switch-related
+	subprograms.
+	* sem.adb (Semantics): Update the calls to configuration switch-related
+	subprograms.
+	* sem_ch10.adb (Analyze_Package_Body_Stub): Update the calls to
+	configuration switch-related subprograms.
+	(Analyze_Protected_Body_Stub): Update the calls to configuration
+	switch-related subprograms.
+	(Analyze_Subprogram_Body_Stub): Update calls to configuration
+	switch-related subprograms.
+	* sem_ch12.adb (Add_Pending_Instantiation): Update the capture of
+	pending instantiation attributes.
+	(Inline_Instance_Body): Update the capture of pending instantiation
+	attributes.  It is no longer needed to explicitly manipulate the SPARK
+	mode.
+	(Instantiate_Package_Body): Update the restoration of the context
+	attributes.
+	(Instantiate_Subprogram_Body): Update the restoration of context
+	attributes.
+	(Load_Parent_Of_Generic): Update the capture of pending instantiation
+	attributes.
+	(Set_Instance_Env): Update the way relevant configuration attributes
+	are saved and restored.
+
 2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Deal with

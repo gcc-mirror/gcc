@@ -303,7 +303,7 @@ begin
       --  capture the values of the configuration switches (see Opt for further
       --  details).
 
-      Opt.Register_Opt_Config_Switches;
+      Register_Config_Switches;
 
       --  Check for file which contains No_Body pragma
 
