@@ -1,3 +1,7 @@
+2018-07-17  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/split_args.adb: New testcase.
+
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/discr54.adb, gnat.dg/discr54_pkg.ads: New testcase.
