@@ -1,3 +1,7 @@
+2018-07-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.target/m68k/mulsi_highpart.c: New test.
+
 2018-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/cpp/pr61854-c90.c (foo): Expect a note, rather than error.
