@@ -1,5 +1,9 @@
 2018-07-17  Martin Liska  <mliska@suse.cz>
 
+	* opts.c: Do not enable OPT_falign_* for -Os.
+
+2018-07-17  Martin Liska  <mliska@suse.cz>
+
 	* align.h (MAX_CODE_ALIGN): New.
 	(MAX_CODE_ALIGN_VALUE): New.
 	* common/config/i386/i386-common.c (ix86_handle_option):
