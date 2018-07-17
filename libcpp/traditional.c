@@ -1180,11 +1180,12 @@ save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
 cpp_macro *
 _cpp_create_trad_definition (cpp_reader *pfile)
 {
-  cpp_macro *macro = _cpp_new_macro (pfile, cmk_traditional);
   const uchar *cur;
   uchar *limit;
   cpp_context *context = pfile->context;
   unsigned nparms = 0;
+  int fun_like = 0;
+  cpp_hashnode **params = NULL;
 
   /* The context has not been set up for command line defines, and CUR
      has not been updated for the macro name for in-file defines.  */
@@ -1196,16 +1197,22 @@ _cpp_create_trad_definition (cpp_reader *pfile)
   /* Is this a function-like macro?  */
   if (* CUR (context) == '(')
     {
+      fun_like = +1;
       if (scan_parameters (pfile, &nparms))
-	{
-	  macro->paramc = nparms;
-	  macro->parm.params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
-	  BUFF_FRONT (pfile->a_buff)
-	    = (uchar *) &macro->parm.params[macro->paramc];
-	  macro->fun_like = 1;
-	}
+	params = (cpp_hashnode **)_cpp_commit_buff
+	  (pfile, sizeof (cpp_hashnode *) * nparms);
       else
-	macro = NULL;
+	fun_like = -1;
+    }
+
+  cpp_macro *macro = NULL;
+
+  if (fun_like >= 0)
+    {
+      macro = _cpp_new_macro (pfile, cmk_traditional);
+      macro->parm.params = params;
+      macro->paramc = nparms;
+      macro->fun_like = fun_like != 0;
     }
 
   /* Skip leading whitespace in the replacement text.  */

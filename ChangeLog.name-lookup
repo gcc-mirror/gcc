@@ -1,3 +1,10 @@
+2018-07-17  Nathan Sidwell  <nathan@acm.org>
+
+	libcpp/
+	* macro.c (create_iso_definition): Create macro after saving
+	parms.
+	* traditional.c (_cpp_create_trad_definition): Likewise.
+
 2018-07-16  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

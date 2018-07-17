@@ -3266,35 +3266,34 @@ lex_expansion_token (cpp_reader *pfile, cpp_macro *macro)
 static cpp_macro *
 create_iso_definition (cpp_reader *pfile)
 {
-  cpp_macro *macro = _cpp_new_macro (pfile, cmk_macro);
   bool following_paste_op = false;
   const char *paste_op_error_msg =
     N_("'##' cannot appear at either end of a macro expansion");
   unsigned int num_extra_tokens = 0;
   unsigned nparms = 0;
+  cpp_hashnode **params = NULL;
+  bool varadic = false;
   bool ok = false;
+  cpp_macro *macro = NULL;
 
   /* Look at the first token, to see if this is a function-like
      macro.   */
-  cpp_token *token = lex_expansion_token (pfile, macro);
+  cpp_token first;
+  cpp_token *saved_cur_token = pfile->cur_token;
+  pfile->cur_token = &first;
+  cpp_token *token = _cpp_lex_direct (pfile);
+  pfile->cur_token = saved_cur_token;
+
   if (token->flags & PREV_WHITE)
     /* Preceeded by space, must be part of expansion.  */;
   else if (token->type == CPP_OPEN_PAREN)
     {
       /* An open-paren, get a parameter list.  */
-      bool varadic = false;
-
-      /* Drop the '(' token.  */
-      macro->count = 0;
       if (!parse_params (pfile, &nparms, &varadic))
 	goto out;
 
-      macro->parm.params = (cpp_hashnode **)_cpp_commit_buff
+      params = (cpp_hashnode **)_cpp_commit_buff
 	(pfile, sizeof (cpp_hashnode *) * nparms);
-      macro->variadic = varadic;
-      macro->paramc = nparms;
-      macro->fun_like = 1;
-
       token = NULL;
     }
   else if (token->type != CPP_EOF
@@ -3334,6 +3333,23 @@ create_iso_definition (cpp_reader *pfile)
 	  cpp_error (pfile, warntype,
 		     "missing whitespace after the macro name");
 	}
+    }
+
+  macro = _cpp_new_macro (pfile, cmk_macro);
+  if (!token)
+    {
+      macro->variadic = varadic;
+      macro->paramc = nparms;
+      macro->parm.params = params;
+      macro->fun_like = true;
+    }
+  else
+    {
+      /* Preserve the token we peeked.  */
+      void *base = _cpp_reserve_room (pfile, 0, sizeof (cpp_token));
+      *(cpp_token *)base = *token;
+      token = (cpp_token *)base;
+      macro->count = 1;
     }
 
   for (vaopt_state vaopt_tracker (pfile, macro->variadic, true);; token = NULL)
