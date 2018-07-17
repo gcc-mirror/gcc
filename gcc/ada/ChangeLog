@@ -1,5 +1,10 @@
 2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Deal with
+	more rvalues in the expression of a renaming.
+
+2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (TYPE_RETURN_BY_DIRECT_REF_P): Define for
 	METHOD_TYPE too.
 	(TYPE_RETURN_UNCONSTRAINED_P): Likewise.
