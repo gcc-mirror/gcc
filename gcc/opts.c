@@ -1805,10 +1805,6 @@ parse_and_check_align_values (const char *flag,
       return false;
     }
 
-  /* Comes from final.c -- no real reason to change it.  */
-#define MAX_CODE_ALIGN 16
-#define MAX_CODE_ALIGN_VALUE (1 << MAX_CODE_ALIGN)
-
   for (unsigned i = 0; i < result_values.length (); i++)
     if (result_values[i] > MAX_CODE_ALIGN_VALUE)
       {
