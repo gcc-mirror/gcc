@@ -7442,7 +7442,17 @@ package body Sem_Util is
             --    Ren : ... renames Obj;
 
             if Is_Entity_Name (Ren) then
-               Id := Entity (Ren);
+
+               --  Do not follow a renaming that goes through a generic formal,
+               --  because these entities are hidden and must not be referenced
+               --  from outside the generic.
+
+               if Is_Hidden (Entity (Ren)) then
+                  exit;
+
+               else
+                  Id := Entity (Ren);
+               end if;
 
             --  The reference renames a function result. Check the original
             --  node in case expansion relocates the function call.
@@ -8819,7 +8829,7 @@ package body Sem_Util is
                --  Stored_Constraint as well.
 
                --  An inherited discriminant may have been constrained in a
-               --  later ancestor (no the immediate parent) so we must examine
+               --  later ancestor (not the immediate parent) so we must examine
                --  the stored constraint of all of them to locate the inherited
                --  value.
 
@@ -8858,7 +8868,7 @@ package body Sem_Util is
                         end loop;
                      end if;
 
-                     --  Discriminant may be inherited from ancestor.
+                     --  Discriminant may be inherited from ancestor
                      T := Etype (T);
                   end loop;
                end;

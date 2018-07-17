@@ -126,8 +126,8 @@ package Sem_Util is
       Loc    : Source_Ptr := No_Location;
       Rep    : Boolean    := True;
       Warn   : Boolean    := False);
-   --  N is a subexpression which will raise constraint error when evaluated
-   --  at runtime. Msg is a message that explains the reason for raising the
+   --  N is a subexpression that will raise Constraint_Error when evaluated
+   --  at run time. Msg is a message that explains the reason for raising the
    --  exception. The last character is ? if the message is always a warning,
    --  even in Ada 95, and is not a ? if the message represents an illegality
    --  (because of violation of static expression rules) in Ada 95 (but not
@@ -614,19 +614,19 @@ package Sem_Util is
    --  Emit an error if iterated component association N is actually an illegal
    --  quantified expression lacking a quantifier.
 
-   function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id;
-   --  Expr should be an expression of an access type. Builds an integer
-   --  literal except in cases involving anonymous access types where
-   --  accessibility levels are tracked at runtime (access parameters and Ada
-   --  2012 stand-alone objects).
-
    function Discriminated_Size (Comp : Entity_Id) return Boolean;
    --  If a component size is not static then a warning will be emitted
    --  in Ravenscar or other restricted contexts. When a component is non-
    --  static because of a discriminant constraint we can specialize the
    --  warning by mentioning discriminants explicitly. This was created for
    --  private components of protected objects, but is generally useful when
-   --  retriction (No_Implicit_Heap_Allocation) is active.
+   --  restriction No_Implicit_Heap_Allocation is active.
+
+   function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id;
+   --  Expr should be an expression of an access type. Builds an integer
+   --  literal except in cases involving anonymous access types, where
+   --  accessibility levels are tracked at run time (access parameters and
+   --  Ada 2012 stand-alone objects).
 
    function Effective_Extra_Accessibility (Id : Entity_Id) return Entity_Id;
    --  Same as Einfo.Extra_Accessibility except thtat object renames
@@ -705,7 +705,8 @@ package Sem_Util is
    function Entity_Of (N : Node_Id) return Entity_Id;
    --  Obtain the entity of arbitrary node N. If N is a renaming, return the
    --  entity of the earliest renamed source abstract state or whole object.
-   --  If no suitable entity is available, return Empty.
+   --  If no suitable entity is available, return Empty. This routine carries
+   --  out actions that are tied to SPARK semantics.
 
    procedure Explain_Limited_Type (T : Entity_Id; N : Node_Id);
    --  This procedure is called after issuing a message complaining about an
@@ -2025,7 +2026,7 @@ package Sem_Util is
 
    function Is_Transfer (N : Node_Id) return Boolean;
    --  Returns True if the node N is a statement which is known to cause an
-   --  unconditional transfer of control at runtime, i.e. the following
+   --  unconditional transfer of control at run time, i.e. the following
    --  statement definitely will not be executed.
 
    function Is_True (U : Uint) return Boolean;
