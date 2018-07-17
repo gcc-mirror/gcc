@@ -6906,9 +6906,24 @@ package body Sem_Util is
       elsif Ekind (Dynamic_Scope) = E_Subprogram_Body then
          return Corresponding_Spec (Parent (Parent (Dynamic_Scope)));
 
-      elsif Ekind_In (Dynamic_Scope, E_Block, E_Return_Statement, E_Entry)
-      then
+      elsif Ekind_In (Dynamic_Scope, E_Block, E_Return_Statement) then
          return Enclosing_Subprogram (Dynamic_Scope);
+
+      elsif Ekind (Dynamic_Scope) = E_Entry then
+
+         --  For a task entry, return the enclosing subprogram of the
+         --  task itself.
+
+         if Ekind (Scope (Dynamic_Scope)) = E_Task_Type then
+            return Enclosing_Subprogram (Dynamic_Scope);
+
+         --  A protected entry is rewritten as a protected procedure
+         --  which is the desired enclosing subprogram. This is relevant
+         --  when unnesting a procedure local to an entry body
+
+         else
+            return Protected_Body_Subprogram (Dynamic_Scope);
+         end if;
 
       elsif Ekind (Dynamic_Scope) = E_Task_Type then
          return Get_Task_Body_Procedure (Dynamic_Scope);

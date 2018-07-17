@@ -1,3 +1,12 @@
+2018-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Enclosing_Subprogram): Protected entries and task
+	entries must be treated separately: task entries are within the
+	enclosing subprogram of the task type, while protected entries are
+	transformed into the corresponding Protected_Body_Subprogram, which is
+	the enclosing_subprogram of any subprogram declared within the entry
+	body.
+
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Add missing
