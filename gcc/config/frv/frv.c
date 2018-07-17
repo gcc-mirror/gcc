@@ -7936,7 +7936,7 @@ frv_align_label (void)
     {
       if (LABEL_P (x))
 	{
-	  unsigned int subalign = 1 << label_to_alignment (x);
+	  unsigned int subalign = 1 << label_to_alignment (x).levels[0].log;
 	  alignment = MAX (alignment, subalign);
 	  label = x;
 	}
