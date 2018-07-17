@@ -6906,17 +6906,21 @@ package body Sem_Util is
       elsif Ekind (Dynamic_Scope) = E_Subprogram_Body then
          return Corresponding_Spec (Parent (Parent (Dynamic_Scope)));
 
-      elsif Ekind (Dynamic_Scope) = E_Block
-        or else Ekind (Dynamic_Scope) = E_Return_Statement
+      elsif Ekind_In (Dynamic_Scope, E_Block, E_Return_Statement, E_Entry)
       then
          return Enclosing_Subprogram (Dynamic_Scope);
 
       elsif Ekind (Dynamic_Scope) = E_Task_Type then
          return Get_Task_Body_Procedure (Dynamic_Scope);
 
-      elsif Ekind (Dynamic_Scope) = E_Limited_Private_Type
+      --  The scope may appear as a private type or as a private extension
+      --  whose completion is a task or protected type.
+
+      elsif Ekind_In (Dynamic_Scope,
+              E_Limited_Private_Type, E_Record_Type_With_Private)
         and then Present (Full_View (Dynamic_Scope))
-        and then Ekind (Full_View (Dynamic_Scope)) = E_Task_Type
+        and then Ekind_In (Full_View (Dynamic_Scope),
+                            E_Task_Type, E_Protected_Type)
       then
          return Get_Task_Body_Procedure (Full_View (Dynamic_Scope));
 
@@ -23993,6 +23997,21 @@ package body Sem_Util is
          Curr := Scope (Curr);
 
          if Curr = Outer then
+            return True;
+
+         --  A selective accept body appears within a task type, but the
+         --  enclosing subprogram is the procedure of the task body.
+
+         elsif Ekind (Curr) = E_Task_Type
+           and then Outer = Task_Body_Procedure (Curr)
+         then
+            return True;
+
+         --  Ditto for the body of a protected operation.
+
+         elsif Is_Subprogram (Curr)
+           and then Outer = Protected_Body_Subprogram (Curr)
+         then
             return True;
          end if;
       end loop;
