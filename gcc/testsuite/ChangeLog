@@ -1,3 +1,8 @@
+2018-07-17  Fritz Reese  <fritzoreese@gmail.com>
+
+	PR fortran/83184
+	* gfortran.dg/dec_structure_23.f90: Oops, "un-fix" error messages.
+
 2018-07-17  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-unpack-char.c: New.
