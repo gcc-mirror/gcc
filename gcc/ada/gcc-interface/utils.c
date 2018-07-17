@@ -391,15 +391,13 @@ make_dummy_type (Entity_Id gnat_type)
 
   SET_DUMMY_NODE (gnat_equiv, gnu_type);
 
-  /* Create a debug type so that debug info consumers only see an unspecified
-     type.  */
+  /* Create a debug type so that debuggers only see an unspecified type.  */
   if (Needs_Debug_Info (gnat_type))
     {
       debug_type = make_node (LANG_TYPE);
-      SET_TYPE_DEBUG_TYPE (gnu_type, debug_type);
-
       TYPE_NAME (debug_type) = TYPE_NAME (gnu_type);
       TYPE_ARTIFICIAL (debug_type) = TYPE_ARTIFICIAL (gnu_type);
+      SET_TYPE_DEBUG_TYPE (gnu_type, debug_type);
     }
 
   return gnu_type;
@@ -1056,7 +1054,9 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
 
   finish_record_type (new_type, nreverse (new_field_list), 2, false);
   relate_alias_sets (new_type, type, ALIAS_SET_COPY);
-  if (TYPE_STUB_DECL (type))
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    SET_TYPE_DEBUG_TYPE (new_type, TYPE_DEBUG_TYPE (type));
+  else if (TYPE_STUB_DECL (type))
     SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
 			    DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
 
@@ -1413,7 +1413,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     }
 
   if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-    SET_TYPE_DEBUG_TYPE (record, type);
+    SET_TYPE_DEBUG_TYPE (record, maybe_debug_type (type));
 
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
