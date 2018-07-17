@@ -19991,6 +19991,9 @@ package body Sem_Prag is
 
                      --  The Part_Of indicator turns an abstract state or an
                      --  object into a constituent of the encapsulating state.
+                     --  Note that constants are considered here even though
+                     --  they may not depend on variable input. This check is
+                     --  left to the SPARK prover.
 
                      elsif Ekind_In (Item_Id, E_Abstract_State,
                                               E_Constant,
@@ -28789,12 +28792,12 @@ package body Sem_Prag is
             elsif Is_Hidden (Item_Id) then
                null;
 
-            --  A visible state has been found
+            --  A visible state has been found. Note that constants are not
+            --  considered here because it is not possible to determine whether
+            --  they depend on variable input. This check is left to the SPARK
+            --  prover.
 
-            elsif Ekind_In (Item_Id, E_Abstract_State,
-                                     E_Constant,
-                                     E_Variable)
-            then
+            elsif Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
                return True;
 
             --  Recursively peek into nested packages and instantiations
