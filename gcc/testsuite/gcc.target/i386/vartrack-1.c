@@ -1,5 +1,5 @@
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O1 -g -fdump-rtl-vartrack-details-slim" } */
+/* { dg-options "-O1 -g -fomit-frame-pointer -fdump-rtl-vartrack-details-slim" } */
 
 static volatile int vv = 1;
 
