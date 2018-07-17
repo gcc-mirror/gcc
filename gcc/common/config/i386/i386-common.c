@@ -1318,9 +1318,6 @@ ix86_handle_option (struct gcc_options *opts,
       return true;
 
 
-  /* Comes from final.c -- no real reason to change it.  */
-#define MAX_CODE_ALIGN 16
-
     case OPT_malign_loops_:
       warning_at (loc, 0, "-malign-loops is obsolete, use -falign-loops");
       if (value > MAX_CODE_ALIGN)

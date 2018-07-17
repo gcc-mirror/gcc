@@ -74,3 +74,7 @@ struct align_flags
 
   align_flags_tuple levels[2];
 };
+
+/* Define maximum supported code alignment.  */
+#define MAX_CODE_ALIGN 16
+#define MAX_CODE_ALIGN_VALUE (1 << MAX_CODE_ALIGN)

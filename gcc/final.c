@@ -842,7 +842,6 @@ shorten_branches (rtx_insn *first)
   rtx_insn *insn;
   int max_uid;
   int i;
-#define MAX_CODE_ALIGN 16
   rtx_insn *seq;
   int something_changed = 1;
   char *varying_length;
