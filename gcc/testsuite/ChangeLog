@@ -1,3 +1,7 @@
+2018-07-17  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/powerpc/loop_align.c: Update scanned pattern.
+
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/generic_call_cw.adb, gnat.dg/generic_call_iface.adb: New

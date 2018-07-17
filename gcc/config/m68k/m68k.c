@@ -653,15 +653,17 @@ m68k_option_override (void)
 
 #ifndef ASM_OUTPUT_ALIGN_WITH_NOP
   parse_alignment_opts ();
-  if (align_labels_value > 2)
+  int label_alignment = align_labels.levels[0].get_value ();
+  if (label_alignment > 2)
     {
-      warning (0, "-falign-labels=%d is not supported", align_labels_value);
+      warning (0, "-falign-labels=%d is not supported", label_alignment);
       str_align_labels = "1";
     }
 
-  if (align_loops_value > 2)
+  int loop_alignment = align_loops.levels[0].get_value ();
+  if (loop_alignment > 2)
     {
-      warning (0, "-falign-loops=%d is not supported", align_loops_value);
+      warning (0, "-falign-loops=%d is not supported", loop_alignment);
       str_align_loops = "1";
     }
 #endif

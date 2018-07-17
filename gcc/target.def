@@ -65,46 +65,6 @@ the string should contain a tab, a pseudo-op, and then another tab.",
 DEFHOOKPOD (aligned_op, "*", struct asm_int_op, TARGET_ASM_ALIGNED_INT_OP)
 DEFHOOKPOD (unaligned_op, "*", struct asm_int_op, TARGET_ASM_UNALIGNED_INT_OP)
 
-/* The maximum number of bytes to skip when applying
-   LABEL_ALIGN_AFTER_BARRIER.  */
-DEFHOOK
-(label_align_after_barrier_max_skip,
- "The maximum number of bytes to skip before @var{label} when applying\n\
-@code{LABEL_ALIGN_AFTER_BARRIER}.  This works only if\n\
-@code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.",
- int, (rtx_insn *label),
- default_label_align_after_barrier_max_skip)
-
-/* The maximum number of bytes to skip when applying
-   LOOP_ALIGN.  */
-DEFHOOK
-(loop_align_max_skip,
- "The maximum number of bytes to skip when applying @code{LOOP_ALIGN} to\n\
-@var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is\n\
-defined.",
- int, (rtx_insn *label),
- default_loop_align_max_skip)
-
-/* The maximum number of bytes to skip when applying
-   LABEL_ALIGN.  */
-DEFHOOK
-(label_align_max_skip,
- "The maximum number of bytes to skip when applying @code{LABEL_ALIGN}\n\
-to @var{label}.  This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN}\n\
-is defined.",
- int, (rtx_insn *label),
- default_label_align_max_skip)
-
-/* The maximum number of bytes to skip when applying
-   JUMP_ALIGN.  */
-DEFHOOK
-(jump_align_max_skip,
- "The maximum number of bytes to skip before @var{label} when applying\n\
-@code{JUMP_ALIGN}.  This works only if\n\
-@code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.",
- int, (rtx_insn *label),
- default_jump_align_max_skip)
-
 /* Try to output the assembler code for an integer object whose
    value is given by X.  SIZE is the size of the object in bytes and
    ALIGNED_P indicates whether it is aligned.  Return true if

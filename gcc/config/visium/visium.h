@@ -1450,6 +1450,10 @@ do									\
 #define ASM_OUTPUT_CASE_END(STREAM, NUM, TABLE) \
   asm_fprintf (STREAM, "\t.long   0\n")
 
+/* Support subalignment values.  */
+
+#define SUBALIGN_LOG 3
+
 /* Assembler Commands for Alignment
 
    This describes commands for alignment.
@@ -1495,15 +1499,8 @@ do									\
   if ((LOG) != 0) {							\
     if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1<<(LOG))-1)			\
       fprintf ((STREAM), "\t.p2align %d\n", (LOG));			\
-    else {								\
+    else								\
       fprintf ((STREAM), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
-      /* Make sure that we have at least 8-byte alignment if > 8-byte	\
-	 alignment is preferred.  */					\
-      if ((LOG) > 3							\
-	  && (1 << (LOG)) > ((MAX_SKIP) + 1)				\
-	  && (MAX_SKIP) >= 7)						\
-	fputs ("\t.p2align 3\n", (STREAM));				\
-    }									\
   }
 
 /* Controlling Debugging Information Format
