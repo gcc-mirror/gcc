@@ -1,3 +1,9 @@
+2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_disp.adb (Make_Tags): When the type has user-defined primitives,
+	build the access type that is later used by Build_Get_Prim_Op_Address
+	as pointing to a subtype of Ada.Tags.Address_Array.
+
 2018-07-17  Patrick Bernardi  <bernardi@adacore.com>
 
 	* libgnat/s-memory__mingw.adb: Remove.
