@@ -5707,9 +5707,16 @@ package body Sem_Eval is
       --  Else build an explicit N_Raise_CE
 
       else
-         Rewrite (N,
-           Make_Raise_Constraint_Error (Sloc (Exp),
-             Reason => CE_Range_Check_Failed));
+         if Nkind (Exp) = N_Raise_Constraint_Error then
+            Rewrite (N,
+              Make_Raise_Constraint_Error (Sloc (Exp),
+                Reason => Reason (Exp)));
+         else
+            Rewrite (N,
+              Make_Raise_Constraint_Error (Sloc (Exp),
+                Reason => CE_Range_Check_Failed));
+         end if;
+
          Set_Raises_Constraint_Error (N);
          Set_Etype (N, Typ);
       end if;

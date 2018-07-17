@@ -1,5 +1,10 @@
 2018-07-17  Arnaud Charlet  <charlet@adacore.com>
 
+	* sem_eval.adb (Rewrite_In_Raise_CE): Keep the original reason in more
+	cases.
+
+2018-07-17  Arnaud Charlet  <charlet@adacore.com>
+
 	* checks.adb (Apply_Division_Check): Add provision for floating-point
 	checks.
 
