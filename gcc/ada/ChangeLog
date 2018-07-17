@@ -1,3 +1,10 @@
+2018-07-17  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch7.adb (Make_Transient_Block): When determining whether an
+	enclosing scope already handles the secondary stack, take into account
+	transient blocks nested in a block that do not manage the secondary
+	stack and are located within a loop.
+
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Enclosing_Subprogram): Protected entries and task
