@@ -21033,7 +21033,8 @@ package body Sem_Util is
    -----------------
 
    function Next_Actual (Actual_Id : Node_Id) return Node_Id is
-      N  : Node_Id;
+      N   : Node_Id;
+      Par : constant Node_Id := Parent (Actual_Id);
 
    begin
       --  If we are pointing at a positional parameter, it is a member of a
@@ -21053,11 +21054,22 @@ package body Sem_Util is
             --  In case of a build-in-place call, the call will no longer be a
             --  call; it will have been rewritten.
 
-            if Nkind_In (Parent (Actual_Id), N_Entry_Call_Statement,
-                                             N_Function_Call,
-                                             N_Procedure_Call_Statement)
+            if Nkind_In (Par, N_Entry_Call_Statement,
+                              N_Function_Call,
+                              N_Procedure_Call_Statement)
             then
-               return First_Named_Actual (Parent (Actual_Id));
+               return First_Named_Actual (Par);
+
+            --  In case of a call rewritten in GNATprove mode while "inlining
+            --  for proof" go to the original call.
+
+            elsif Nkind (Par) = N_Null_Statement then
+               pragma Assert
+                 (GNATprove_Mode
+                    and then
+                  Nkind (Original_Node (Par)) in N_Subprogram_Call);
+
+               return First_Named_Actual (Original_Node (Par));
             else
                return Empty;
             end if;
