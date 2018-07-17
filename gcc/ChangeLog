@@ -1,3 +1,11 @@
+2018-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/86539
+	* gimplify.c (gimplify_omp_for): Ensure taskloop firstprivatized init
+	and cond temporaries don't have reference type if iterator has
+	pointer type.  For init use &for_pre_body instead of pre_p if
+	for_pre_body is non-empty.
+
 2018-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (trunc<mode>sf2): Expand truncates of
