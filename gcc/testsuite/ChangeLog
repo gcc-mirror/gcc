@@ -1,3 +1,8 @@
+2018-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86456
+	* g++.dg/debug/dwarf2/pr86456.C: New testcase.
+
 2018-07-17  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* gcc.target/s390/function-align1.c: New test.

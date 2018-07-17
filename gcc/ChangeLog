@@ -1,3 +1,13 @@
+2018-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR lto/86456
+	* dwarf2out.c (init_sections_and_labels): Always generate
+	a debug_line_str_section for early LTO debug.
+	(dwarf2out_finish): Reset debug_line_str_hash output early.
+	Bump counter for extra dwarf5 .debug_loc labels to not conflict
+	with fat LTO part.
+	(dwarf2out_early_finish): Output debug_line_str.
+
 2018-07-17  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* config/s390/s390.c (preferred_la_operand_p): Do not use LA with
