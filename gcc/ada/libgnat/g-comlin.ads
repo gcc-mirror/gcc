@@ -703,7 +703,8 @@ package GNAT.Command_Line is
    --  automatically generated list of supported switches.
 
    procedure Display_Help (Config : Command_Line_Configuration);
-   --  Display the help for the tool (ie its usage, and its supported switches)
+   --  Display the help for the tool (i.e. its usage, and its supported
+   --  switches).
 
    function Get_Switches
      (Config      : Command_Line_Configuration;
@@ -843,9 +844,9 @@ package GNAT.Command_Line is
    --
    --  This function can be used to reset Cmd by passing an empty string
    --
-   --  If an invalid switch is found on the command line (ie wasn't defined in
-   --  the configuration via Define_Switch), and the configuration wasn't set
-   --  to accept all switches (by defining "*" as a valid switch), then an
+   --  If an invalid switch is found on the command line (i.e. wasn't defined
+   --  in the configuration via Define_Switch), and the configuration wasn't
+   --  set to accept all switches (by defining "*" as a valid switch), then an
    --  exception Invalid_Switch is raised. The exception message indicates the
    --  invalid switch.
 
@@ -896,7 +897,7 @@ package GNAT.Command_Line is
    --     -from bar
    --
    --  Note however that Getopt doesn't know how to handle ":" as a separator.
-   --  So the recommendation is to declare the switch as "-from!" (ie no
+   --  So the recommendation is to declare the switch as "-from!" (i.e. no
    --  space between the switch and its parameter). Then Getopt will return
    --  ":bar" as the parameter, and you can trim the ":" in your application.
    --
