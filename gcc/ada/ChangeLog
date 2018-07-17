@@ -1,5 +1,10 @@
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* frontend.adb (Frontend): The removal of ignored Ghost code must be
+	the last semantic operation performed on the tree.
+
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* frontend.adb (Frontend): Update the call to Register_Config_Switches.
 	* inline.ads: Add new component Config_Switches to record
 	Pending_Body_Info which captures the configuration state of the pending
