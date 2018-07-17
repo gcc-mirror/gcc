@@ -1,3 +1,8 @@
+2018-07-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* checks.adb (Apply_Division_Check): Add provision for floating-point
+	checks.
+
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_aggr.adb (Component_OK_For_Backend): If an array component of the
