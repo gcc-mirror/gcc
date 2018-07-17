@@ -1,3 +1,7 @@
+2018-07-17  David Edelsohn <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr85456.c: Require longdouble128.
+
 2018-07-17  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/83184
