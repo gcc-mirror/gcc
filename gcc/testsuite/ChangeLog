@@ -1,5 +1,10 @@
 2018-07-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gcc.target/i386/vartrack-1.c (dg-options): Add
+	-fomit-frame-pointer.
+
+2018-07-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* g++.dg/lto/pr86523-1_0.C: Require fpic, shared support.
 	(dg-lto-options): Add -fPIC.
 	* g++.dg/lto/pr86523-2_0.C: Likewise.
