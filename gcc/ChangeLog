@@ -1,3 +1,11 @@
+2018-07-17  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.c (s390_default_align): Set default function
+	alignment to 16.
+	(s390_override_options_after_change): Call s390_default align.
+	(s390_option_override_internal): Call s390_default_align.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Define.
+
 2018-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86542

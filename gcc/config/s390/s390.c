@@ -15397,6 +15397,22 @@ s390_function_specific_restore (struct gcc_options *opts,
 }
 
 static void
+s390_default_align (struct gcc_options *opts)
+{
+  /* Set the default function alignment to 16 in order to get rid of
+     some unwanted performance effects. */
+  if (opts->x_flag_align_functions && !opts->x_str_align_functions
+      && opts->x_s390_tune >= PROCESSOR_2964_Z13)
+    opts->x_str_align_functions = "16";
+}
+
+static void
+s390_override_options_after_change (void)
+{
+  s390_default_align (&global_options);
+}
+
+static void
 s390_option_override_internal (bool main_args_p,
 			       struct gcc_options *opts,
 			       const struct gcc_options *opts_set)
@@ -15632,6 +15648,9 @@ s390_option_override_internal (bool main_args_p,
   maybe_set_param_value (PARAM_MIN_VECT_LOOP_BOUND, 2,
 			 opts->x_param_values,
 			 opts_set->x_param_values);
+
+  /* Set the default alignment.  */
+  s390_default_align (opts);
 
   /* Call target specific restore function to do post-init work.  At the moment,
      this just sets opts->x_s390_cost_pointer.  */
@@ -16830,6 +16849,9 @@ s390_case_values_threshold (void)
 #define TARGET_PROMOTE_FUNCTION_MODE s390_promote_function_mode
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE s390_pass_by_reference
+
+#undef  TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE s390_override_options_after_change
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL s390_function_ok_for_sibcall
