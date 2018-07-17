@@ -41927,8 +41927,9 @@ ix86_avoid_jump_mispredicts (void)
 
       if (LABEL_P (insn))
 	{
-	  int align = label_to_alignment (insn);
-	  int max_skip = label_to_max_skip (insn);
+	  align_flags alignment = label_to_alignment (insn);
+	  int align = alignment.levels[0].log;
+	  int max_skip = alignment.levels[0].maxskip;
 
 	  if (max_skip > 15)
 	    max_skip = 15;

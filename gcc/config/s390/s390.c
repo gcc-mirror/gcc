@@ -1233,7 +1233,7 @@ s390_label_align (rtx_insn *label)
     return 0;
 
  old:
-  return align_labels_log;
+  return align_labels.levels[0].log;
 }
 
 static GTY(()) rtx got_symbol;
@@ -7542,10 +7542,11 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
 	 NOPs.  */
       function_alignment = MAX (8, DECL_ALIGN (decl) / BITS_PER_UNIT);
       if (! DECL_USER_ALIGN (decl))
-	function_alignment = MAX (function_alignment,
-				  (unsigned int) align_functions_max_skip + 1);
+	function_alignment
+	  = MAX (function_alignment,
+		 (unsigned int) align_functions.levels[0].get_value ());
       fputs ("\t# alignment for hotpatch\n", asm_out_file);
-      ASM_OUTPUT_ALIGN (asm_out_file, align_functions_log);
+      ASM_OUTPUT_ALIGN (asm_out_file, align_functions.levels[0].log);
     }
 
   if (S390_USE_TARGET_ATTRIBUTE && TARGET_DEBUG_ARG)

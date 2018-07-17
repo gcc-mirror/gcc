@@ -1,3 +1,112 @@
+2018-07-17  Martin Liska  <mliska@suse.cz>
+
+	* align.h: New file.
+	* config/alpha/alpha.c (alpha_align_insns_1): Use align_functions directly.
+	* config/i386/i386.c (ix86_avoid_jump_mispredicts): Use new return type
+	align_flags of label_to_alignment.
+	* config/m32r/m32r.h (LOOP_ALIGN): Wrap returned values into align_flags
+	class.
+	* config/m68k/m68k.c: Do not use removed align_labels_value and
+	align_loops_value.
+	* config/nds32/nds32.h (JUMP_ALIGN): Wrap result into align_flags class.
+	(LOOP_ALIGN): Likewise.
+	(LABEL_ALIGN): Likewise.
+	* config/powerpcspe/powerpcspe.c (TARGET_ASM_LOOP_ALIGN_MAX_SKIP):
+	Remove not used macro.
+	(rs6000_loop_align): Change return type to align_flags.
+	(rs6000_loop_align_max_skip): Remove.
+	* config/rs6000/rs6000-protos.h (rs6000_loop_align):
+	Change return type to align_flags.
+	* config/rs6000/rs6000.c (TARGET_ASM_LOOP_ALIGN_MAX_SKIP):
+	Remove not used macro.
+	(rs6000_loop_align):  Change return type to align_flags.
+	(rs6000_loop_align_max_skip): Remove.
+	* config/rx/rx.h (JUMP_ALIGN): Wrap integer values
+	* config/rx/rx-protos.h (rx_align_for_label): Make it
+        static function.
+	* config/rx/rx.c (rx_align_for_label): Change return type
+        to align_flags.
+	(rx_max_skip_for_label): Remove TARGET_ASM_*_ALIGN_MAX_SKIP
+        macro definitions.
+	into align_flags class.
+	(LABEL_ALIGN): Likewise.
+	(LOOP_ALIGN): Likewise.
+	* config/s390/s390.c (s390_label_align): Use align_flags
+	class member.
+	(s390_asm_output_function_label): Likewise.
+	* config/sh/sh.c (sh_override_options_after_change):
+	Use align_flags class directly without macros.
+	(find_barrier): Likewise.
+	(barrier_align): Likewise.
+	(sh_loop_align): Likewise.
+	* config/spu/spu.c (spu_option_override):
+	Use align_flags_tuple::get_value instead of removed macros.
+	(spu_sched_init): Likewise.
+	* config/spu/spu.h (GTY): Likewise.
+	* config/visium/visium.c (visium_option_override):
+	Set "8" as default secondary alignment.
+	* config/visium/visium.h (SUBALIGN_LOG): Define to 3
+	in order to guarantee secondary alignment of 8.
+	* coretypes.h: Include align.h header file.
+	* doc/tm.texi: Remove TARGET_ASM_JUMP_ALIGN_MAX_SKIP,
+	TARGET_ASM_LOOP_ALIGN_MAX_SKIP, TARGET_ASM_LABEL_ALIGN_MAX_SKIP
+        and TARGET_ASM_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP macros.
+	* doc/tm.texi.in: Likewise.
+	* final.c (struct label_alignment): Remove not used structure.
+	(LABEL_ALIGN): Change type to align_flags.
+	(LOOP_ALIGN): Likewise.
+	(JUMP_ALIGN): Likewise.
+	(default_loop_align_max_skip): Remove.
+	(default_label_align_max_skip): Likewise.
+	(default_jump_align_max_skip): Likewise.
+	(default_label_align_after_barrier_max_skip):
+	(LABEL_TO_ALIGNMENT): Change to access label_align vector.
+	(LABEL_TO_MAX_SKIP): Remove.
+	(label_to_alignment): Return align_flags type instead of integer.
+	(label_to_max_skip): Remove.
+	(align_fuzz): Use align_flags type.
+	(compute_alignments): Use align_flags type and use align_flags::max
+	to combine multiple alignments.
+	(grow_label_align): Grow vec instead of C array.
+	(update_alignments): Assign just LABEL_TO_ALIGNMENT.
+	(shorten_branches):  Use align_flags type and use align_flags::max
+	to combine multiple alignments.
+	(final_scan_insn_1): Remove usage of secondary alignment that comes
+	from label alignment, but instead use proper secondary alignment
+	which is computed in grow_label_align.
+	* flags.h (struct align_flags_tuple): Move to align.h.
+	(struct align_flags): Likewise.
+	(state_align_loops): Rename to align_loops.
+	(state_align_jumps): Rename to align_jumps.
+	(state_align_labels): Rename to align_labels.
+	(state_align_functions): Rename to align_functions.
+	(align_loops_log): Remove.
+	(align_jumps_log): Remove.
+	(align_labels_log): Remove.
+	(align_functions_log): Remove.
+	(align_loops_max_skip): Remove.
+	(align_jumps_max_skip): Remove.
+	(align_labels_max_skip): Remove.
+	(align_functions_max_skip): Remove.
+	(align_loops_value): Remove.
+	(align_jumps_value): Remove.
+	(align_labels_value): Remove.
+	(align_functions_value): Remove.
+	* output.h (label_to_alignment): Change return type to align_flags.
+	(label_to_max_skip): Remove.
+	* target.def: Remove loop_align_max_skip, label_align_max_skip,
+	jump_align_max_skip macros.
+	* targhooks.h (default_loop_align_max_skip): Remove.
+	(default_label_align_max_skip): Likewise.
+	(default_jump_align_max_skip): Likewise.
+	(default_label_align_after_barrier_max_skip): Remove.
+	* toplev.c (read_log_maxskip): Use ::normalize function.
+	(parse_N_M): Remove not used argument and also call ::normalize.
+	(parse_alignment_opts): Do not pass unused arguments.
+	* varasm.c (assemble_start_function): Use directly align_functions
+	instead of removed macros.
+	* system.h: Do not poison removed macros.
+
 2018-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86539

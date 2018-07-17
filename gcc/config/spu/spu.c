@@ -241,7 +241,7 @@ spu_option_override (void)
 
   /* Functions must be 8 byte aligned so we correctly handle dual issue */
   parse_alignment_opts ();
-  if (align_functions_value < 8)
+  if (align_functions.levels[0].get_value () < 8)
     str_align_functions = "8";
 
   spu_hint_dist = 8*4 - spu_max_nops*4;
@@ -2772,7 +2772,9 @@ static void
 spu_sched_init (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 		int max_ready ATTRIBUTE_UNUSED)
 {
-  if (align_labels_value > 4 || align_loops_value > 4 || align_jumps_value > 4)
+  if (align_labels.levels[0].get_value () > 4
+      || align_loops.levels[0].get_value () > 4
+      || align_jumps.levels[0].get_value () > 4)
     {
       /* When any block might be at least 8-byte aligned, assume they
          will all be at least 8-byte aligned to make sure dual issue

@@ -3308,23 +3308,6 @@ rx_match_ccmode (rtx insn, machine_mode cc_mode)
   return true;
 }
 
-int
-rx_align_for_label (rtx lab, int uses_threshold)
-{
-  /* This is a simple heuristic to guess when an alignment would not be useful
-     because the delay due to the inserted NOPs would be greater than the delay
-     due to the misaligned branch.  If uses_threshold is zero then the alignment
-     is always useful.  */
-  if (LABEL_P (lab) && LABEL_NUSES (lab) < uses_threshold)
-    return 0;
-
-  if (optimize_size)
-    return 0;
-  /* These values are log, not bytes.  */
-  if (rx_cpu_type == RX100 || rx_cpu_type == RX200)
-    return 2; /* 4 bytes */
-  return 3;   /* 8 bytes */
-}
 
 static int
 rx_max_skip_for_label (rtx_insn *lab)
@@ -3350,8 +3333,39 @@ rx_max_skip_for_label (rtx_insn *lab)
 
   opsize = get_attr_length (op);
   if (opsize >= 0 && opsize < 8)
-    return opsize - 1;
+    return MAX (0, opsize - 1);
   return 0;
+}
+
+static int
+rx_align_log_for_label (rtx_insn *lab, int uses_threshold)
+{
+  /* This is a simple heuristic to guess when an alignment would not be useful
+     because the delay due to the inserted NOPs would be greater than the delay
+     due to the misaligned branch.  If uses_threshold is zero then the alignment
+     is always useful.  */
+  if (LABEL_P (lab) && LABEL_NUSES (lab) < uses_threshold)
+    return 0;
+
+  if (optimize_size)
+    return 0;
+
+  /* Return zero if max_skip not a positive number.  */
+  int max_skip = rx_max_skip_for_label (lab);
+  if (max_skip <= 0)
+    return 0;
+
+  /* These values are log, not bytes.  */
+  if (rx_cpu_type == RX100 || rx_cpu_type == RX200)
+    return 2; /* 4 bytes */
+  return 3;   /* 8 bytes */
+}
+
+align_flags
+rx_align_for_label (rtx_insn *lab, int uses_threshold)
+{
+  return align_flags (rx_align_log_for_label (lab, uses_threshold),
+		      rx_max_skip_for_label (lab));
 }
 
 /* Compute the real length of the extending load-and-op instructions.  */
@@ -3632,15 +3646,6 @@ rx_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef  TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P			rx_ok_to_inline
-
-#undef  TARGET_ASM_JUMP_ALIGN_MAX_SKIP
-#define TARGET_ASM_JUMP_ALIGN_MAX_SKIP			rx_max_skip_for_label
-#undef  TARGET_ASM_LOOP_ALIGN_MAX_SKIP
-#define TARGET_ASM_LOOP_ALIGN_MAX_SKIP			rx_max_skip_for_label
-#undef  TARGET_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
-#define TARGET_LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP	rx_max_skip_for_label
-#undef  TARGET_ASM_LABEL_ALIGN_MAX_SKIP
-#define TARGET_ASM_LABEL_ALIGN_MAX_SKIP			rx_max_skip_for_label
 
 #undef  TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE		rx_function_value

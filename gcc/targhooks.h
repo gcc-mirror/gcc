@@ -236,10 +236,6 @@ extern enum unwind_info_type default_debug_unwind_info (void);
 
 extern void default_canonicalize_comparison (int *, rtx *, rtx *, bool);
 
-extern int default_label_align_after_barrier_max_skip (rtx_insn *);
-extern int default_loop_align_max_skip (rtx_insn *);
-extern int default_label_align_max_skip (rtx_insn *);
-extern int default_jump_align_max_skip (rtx_insn *);
 extern section * default_function_section(tree decl, enum node_frequency freq,
 					  bool startup, bool exit);
 extern unsigned int default_dwarf_poly_indeterminate_value (unsigned int,
