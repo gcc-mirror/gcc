@@ -721,6 +721,10 @@ package body Exp_Unst is
                    Bod           => Bod,
                    Lev           => L,
                    Reachable     => In_Synchronized_Unit (E),
+
+                   --  Subprograms declared in tasks and protected types are
+                   --  reachable and cannot be eliminated.
+
                    Uplevel_Ref   => L,
                    Declares_AREC => False,
                    Uents         => No_Elist,
@@ -1932,7 +1936,7 @@ package body Exp_Unst is
                                  --  If we have a loop parameter, we have
                                  --  to insert before the first statement
                                  --  of the loop. Ins points to the
-                                 --  N_Loop_Parametrer_Specification.
+                                 --  N_Loop_Parameter_Specification.
 
                                  if Ekind (Ent) = E_Loop_Parameter then
                                     Ins :=
@@ -1980,9 +1984,18 @@ package body Exp_Unst is
          begin
             --  Ignore type references, these are implicit references that do
             --  not need rewriting (e.g. the appearence in a conversion).
-            --  Also ignore if no reference was specified.
+            --  Also ignore if no reference was specified or if the rewriting
+            --  has already been done (this can happen if the N_Identifier
+            --  occurs more than one time in the tree).
+           --  Also ignore uplevel references to bounds of types that come
+           --  from the original type reference.
 
-            if Is_Type (UPJ.Ent) or else No (UPJ.Ref) then
+            if Is_Type (UPJ.Ent)
+              or else No (UPJ.Ref)
+              or else not Is_Entity_Name (UPJ.Ref)
+              or else not Present (Entity (UPJ.Ref))
+              or else Is_Type (Entity (UPJ.Ref))
+            then
                goto Continue;
             end if;
 
@@ -2005,7 +2018,7 @@ package body Exp_Unst is
                Typ : constant Entity_Id := Etype (UPJ.Ent);
                --  The type of the referenced entity
 
-               Atyp : constant Entity_Id := Get_Actual_Subtype (UPJ.Ref);
+               Atyp : Entity_Id;
                --  The actual subtype of the reference
 
                RS_Caller : constant SI_Type := Subp_Index (UPJ.Caller);
@@ -2025,6 +2038,12 @@ package body Exp_Unst is
                SI   : SI_Type;
 
             begin
+               Atyp := Etype (UPJ.Ref);
+
+               if Ekind (Atyp) /= E_Record_Subtype then
+                  Atyp := Get_Actual_Subtype (UPJ.Ref);
+               end if;
+
                --  Ignore if no ARECnF entity for enclosing subprogram which
                --  probably happens as a result of not properly treating
                --  instance bodies. To be examined ???
@@ -2344,7 +2363,7 @@ package body Exp_Unst is
    --  Start of processing for Unnest_Subprograms
 
    begin
-      if not Opt.Unnest_Subprogram_Mode then
+      if not Opt.Unnest_Subprogram_Mode or not Opt.Expander_Active then
          return;
       end if;
 
