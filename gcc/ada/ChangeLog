@@ -1,3 +1,46 @@
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* alloc.ads: Update the allocation metrics of the ignored Ghost nodes
+	table.
+	* atree.adb: Add a soft link for a procedure which is invoked whenever
+	an ignored Ghost node or entity is created.
+	(Change_Node): Preserve relevant attributes which come from the Flags
+	table.
+	(Mark_New_Ghost_Node): Record a newly created ignored Ghost node or
+	entity.
+	(Rewrite): Preserve relevant attributes which come from the Flags
+	table.
+	(Set_Ignored_Ghost_Recording_Proc): New routine.
+	* atree.ads: Define an access-to-suprogram type for a soft link which
+	records a newly created ignored Ghost node or entity.
+	(Set_Ignored_Ghost_Recording_Proc): New routine.
+	* ghost.adb: Remove with and use clause for Lib.  Remove table
+	Ignored_Ghost_Units.  Add new table Ignored_Ghost_Nodes.
+	(Add_Ignored_Ghost_Unit): Removed.
+	(Initialize): Initialize the table which stores ignored Ghost nodes.
+	Set the soft link which allows Atree.Mark_New_Ghost_Node to record an
+	ignored Ghost node.
+	(Is_Ignored_Ghost_Unit): Use the ultimate original node when checking
+	an eliminated ignored Ghost unit.
+	(Lock): Release and lock the table which stores ignored Ghost nodes.
+	(Mark_And_Set_Ghost_Assignment): Record rather than propagate ignored
+	Ghost nodes.
+	(Mark_And_Set_Ghost_Procedure_Call): Record rather than propagate
+	ignored Ghost nodes.
+	(Mark_Ghost_Clause): Record rather than propagate ignored Ghost nodes.
+	(Mark_Ghost_Declaration_Or_Body): Record rather than propagate ignored
+	Ghost nodes.
+	(Mark_Ghost_Pragma): Record rather than propagate ignored Ghost nodes.
+	(Propagate_Ignored_Ghost_Code): Removed.
+	(Record_Ignored_Ghost_Node): New routine.
+	(Remove_Ignored_Ghost_Code): Reimplemented.
+	(Remove_Ignored_Ghost_Node): New routine.
+	(Ultimate_Original_Node): New routine.
+	* ghost.ads (Check_Ghost_Completion): Removed.
+	* sem_ch8.adb (Analyze_Use_Package): Remove obsolete code. Mark a use
+	package clause as ignored Ghost if applicable.
+	* sem_util.adb (Is_Body_Or_Package_Declaration): Reimplemented.
+
 2018-07-17  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch5.adb (Has_Call_Using_Secondary_Stack): Moved to library level

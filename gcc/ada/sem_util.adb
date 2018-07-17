@@ -13401,12 +13401,7 @@ package body Sem_Util is
 
    function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean is
    begin
-      return Nkind_In (N, N_Entry_Body,
-                          N_Package_Body,
-                          N_Package_Declaration,
-                          N_Protected_Body,
-                          N_Subprogram_Body,
-                          N_Task_Body);
+      return Is_Body (N) or else Nkind (N) = N_Package_Declaration;
    end Is_Body_Or_Package_Declaration;
 
    -----------------------
