@@ -1,3 +1,8 @@
+2018-07-17  Jeff Law  <law@redhat.com>
+
+	* config/nios2/nios2.c (nios2_label_align): Update for recent
+	changes which dropped ALIGN_LABELS_LOG.
+
 2018-07-17  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.md (umulsi3_highpart+1, const_umulsi3_highpart)
