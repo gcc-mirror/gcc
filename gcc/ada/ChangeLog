@@ -1,3 +1,10 @@
+2018-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Component_OK_For_Backend): If an array component of the
+	enclosing record has a bound that is out of range (and that has been
+	rewritten as a raise statement) the aggregate is not OK for any back
+	end, and should be expanded into individual assignments.
+
 2018-07-17  Piotr Trojanek  <trojanek@adacore.com>
 
 	* atree.adb (Relocate_Node): Simplify with Is_Rewrite_Substitution.

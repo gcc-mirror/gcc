@@ -7238,6 +7238,34 @@ package body Exp_Aggr is
                Expr_Q := Expression (C);
             end if;
 
+            --  Return False for array components whose bounds raise
+            --  constraint error.
+
+            declare
+               Comp : Entity_Id;
+               Indx : Node_Id;
+
+            begin
+               Comp := First (Choices (C));
+               if Present (Etype (Comp))
+                 and then Is_Array_Type (Etype (Comp))
+               then
+                  Indx := First_Index (Etype (Comp));
+
+                  while Present (Indx) loop
+                     if Nkind (Type_Low_Bound (Etype (Indx)))
+                       = N_Raise_Constraint_Error
+                     or else Nkind (Type_High_Bound (Etype (Indx)))
+                       = N_Raise_Constraint_Error
+                     then
+                        return False;
+                     end if;
+
+                     Indx := Next_Index (Indx);
+                  end loop;
+               end if;
+            end;
+
             --  Return False if the aggregate has any associations for tagged
             --  components that may require tag adjustment.
 
