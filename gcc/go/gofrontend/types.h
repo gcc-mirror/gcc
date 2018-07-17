@@ -3243,8 +3243,8 @@ class Named_type : public Type
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
       location_(location), named_btype_(NULL), dependencies_(),
       is_alias_(false), is_visible_(true), is_error_(false), in_heap_(true),
-      is_placeholder_(false), is_converted_(false), is_circular_(false),
-      is_verified_(false), seen_(false), seen_in_compare_is_identity_(false),
+      is_placeholder_(false), is_converted_(false), is_verified_(false),
+      seen_(false), seen_in_compare_is_identity_(false),
       seen_in_get_backend_(false), seen_alias_(false)
   { }
 
@@ -3344,12 +3344,6 @@ class Named_type : public Type
   bool
   is_valid() const
   { return !this->is_error_; }
-
-  // Whether this is a circular type: a pointer or function type that
-  // refers to itself, which is not possible in C.
-  bool
-  is_circular() const
-  { return this->is_circular_; }
 
   // Return the base type for this type.
   Type*
@@ -3557,9 +3551,6 @@ class Named_type : public Type
   // Whether this type has been converted to the backend
   // representation.  Implies that is_placeholder_ is false.
   bool is_converted_;
-  // Whether this is a pointer or function type which refers to the
-  // type itself.
-  bool is_circular_;
   // Whether this type has been verified.
   bool is_verified_;
   // In a recursive operation such as has_pointer, this flag is used

@@ -10786,15 +10786,10 @@ Named_type::do_get_backend(Gogo* gogo)
       // Don't build a circular data structure.  GENERIC can't handle
       // it.
       if (this->seen_in_get_backend_)
-	{
-	  this->is_circular_ = true;
-	  return gogo->backend()->circular_pointer_type(bt, true);
-	}
+        return gogo->backend()->circular_pointer_type(bt, true);
       this->seen_in_get_backend_ = true;
       bt1 = Type::get_named_base_btype(gogo, base);
       this->seen_in_get_backend_ = false;
-      if (this->is_circular_)
-	bt1 = gogo->backend()->circular_pointer_type(bt, true);
       if (!gogo->backend()->set_placeholder_pointer_type(bt, bt1))
 	bt = gogo->backend()->error_type();
       return bt;
@@ -10803,15 +10798,10 @@ Named_type::do_get_backend(Gogo* gogo)
       // Don't build a circular data structure. GENERIC can't handle
       // it.
       if (this->seen_in_get_backend_)
-	{
-	  this->is_circular_ = true;
-	  return gogo->backend()->circular_pointer_type(bt, false);
-	}
+        return gogo->backend()->circular_pointer_type(bt, false);
       this->seen_in_get_backend_ = true;
       bt1 = Type::get_named_base_btype(gogo, base);
       this->seen_in_get_backend_ = false;
-      if (this->is_circular_)
-	bt1 = gogo->backend()->circular_pointer_type(bt, false);
       if (!gogo->backend()->set_placeholder_pointer_type(bt, bt1))
 	bt = gogo->backend()->error_type();
       return bt;
