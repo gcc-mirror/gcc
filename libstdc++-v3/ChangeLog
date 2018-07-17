@@ -1,3 +1,12 @@
+2018-07-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/compatibility-thread-c++0x.cc [_GLIBCXX_SHARED]
+	(_Async_state_common::_M_join): Simplify use of std::call_once and
+	corresponding explicit instantiation.
+	(_Maybe_wrap_member_pointer, _Bind_simple, _Bind_simple_helper)
+	(__bind_simple): Remove definitions and explicit instantiation that
+	are not required by exported symbols.
+
 2018-07-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* scripts/create_testsuite_files: Fix typo in comment.
