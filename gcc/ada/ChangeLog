@@ -1,5 +1,11 @@
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch6.adb (Check_Untagged_Equality): Extend check to operations
+	declared in the same scope as the operand type, when that scope is a
+	procedure.
+
+2018-07-17  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_unst.adb (Unnest_Subprograms): Do nothing if the expander is not
 	active.  Don't use Get_Actual_Subtype for record subtypes.  Ignore
 	rewritten identifiers and uplevel references to bounds of types that
