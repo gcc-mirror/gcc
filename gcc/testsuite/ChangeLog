@@ -1,3 +1,8 @@
+2018-07-17  David Edelsohn <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr57150.c: Require longdouble128.
+	* gcc.target/powerpc/pr79916.c: Require dfp.
+
 2018-07-17  Richard Biener  <rguenther@suse.de>
 
 	PR lto/86456
