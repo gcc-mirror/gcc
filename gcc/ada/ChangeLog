@@ -1,3 +1,9 @@
+2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_disp.adb (Gen_Parameters_Profile): Make the _Init parameter an
+	In/Out parameter.
+	(Set_CPP_Constructors): Adjust comment accordingly.
+
 2018-07-17  Bob Duff  <duff@adacore.com>
 
 	* exp_disp.adb (Build_Class_Wide_Check): Return early if the
