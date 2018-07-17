@@ -473,6 +473,7 @@ gnat_print_type (FILE *file, tree node, int indent)
   switch (TREE_CODE (node))
     {
     case FUNCTION_TYPE:
+    case METHOD_TYPE:
       print_node (file, "ci/co list", TYPE_CI_CO_LIST (node), indent + 4);
       break;
 
@@ -684,12 +685,12 @@ gnat_get_fixed_point_type_info (const_tree type,
 
 /* Return true if types T1 and T2 are identical for type hashing purposes.
    Called only after doing all language independent checks.  At present,
-   this function is only called when both types are FUNCTION_TYPE.  */
+   this is only called when both types are FUNCTION_TYPE or METHOD_TYPE.  */
 
 static bool
 gnat_type_hash_eq (const_tree t1, const_tree t2)
 {
-  gcc_assert (TREE_CODE (t1) == FUNCTION_TYPE);
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (t1) && TREE_CODE (t1) == TREE_CODE (t2));
   return fntype_same_flags_p (t1, TYPE_CI_CO_LIST (t2),
 			      TYPE_RETURN_UNCONSTRAINED_P (t2),
 			      TYPE_RETURN_BY_DIRECT_REF_P (t2),

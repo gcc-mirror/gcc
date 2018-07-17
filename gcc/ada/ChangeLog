@@ -1,3 +1,30 @@
+2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_RETURN_BY_DIRECT_REF_P): Define for
+	METHOD_TYPE too.
+	(TYPE_RETURN_UNCONSTRAINED_P): Likewise.
+	(TYPE_CI_CO_LIST): Likewise.
+	* gcc-interface/gigi.h (is_cplusplus_method): Delete.
+	(fntype_same_flags_p): Adjust comment.
+	* gcc-interface/decl.c (Has_Thiscall_Convention): Delete.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Do not set the "thiscall"
+	attribute directly.
+	(is_cplusplus_method): Make static and adjust head comment.
+	(gnat_to_gnu_param): Return a pointer for the "this" parameter of
+	C++ constructors.
+	(gnat_to_gnu_subprog_type): Turn imported C++ constructors into their
+	callable form.  Generate a METHOD_TYPE node for imported C++ methods.
+	Set param_list at the very end of the processing.
+	(substitute_in_type) <METHOD_TYPE>: New case.
+	* gcc-interface/misc.c (gnat_print_type) <METHOD_TYPE>: Likewise.
+	(gnat_type_hash_eq): Accept METHOD_TYPE.
+	* gcc-interface/trans.c (Identifier_to_gnu): Deal with METHOD_TYPE.
+	(Attribute_to_gnu): Likewise.
+	(Call_to_gnu): Likewise.
+	(process_freeze_entity): Likewise.
+	* gcc-interface/utils.c (create_subprog_decl): Adjust head comment.
+	(fntype_same_flags_p): Likewise.
+
 2018-07-17  Piotr Trojanek  <trojanek@adacore.com>
 
 	* inline.adb (Expand_Inlined_Call): Remove extra parentheses.

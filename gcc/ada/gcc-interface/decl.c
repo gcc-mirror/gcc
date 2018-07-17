@@ -52,23 +52,19 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-/* "stdcall" and "thiscall" conventions should be processed in a specific way
-   on 32-bit x86/Windows only.  The macros below are helpers to avoid having
-   to check for a Windows specific attribute throughout this unit.  */
+/* The "stdcall" convention is really supported on 32-bit x86/Windows only.
+   The following macro is a helper to avoid having to check for a Windows
+   specific attribute throughout this unit.  */
 
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
 #ifdef TARGET_64BIT
 #define Has_Stdcall_Convention(E) \
   (!TARGET_64BIT && Convention (E) == Convention_Stdcall)
-#define Has_Thiscall_Convention(E) \
-  (!TARGET_64BIT && is_cplusplus_method (E))
 #else
 #define Has_Stdcall_Convention(E) (Convention (E) == Convention_Stdcall)
-#define Has_Thiscall_Convention(E) (is_cplusplus_method (E))
 #endif
 #else
 #define Has_Stdcall_Convention(E) 0
-#define Has_Thiscall_Convention(E) 0
 #endif
 
 #define STDCALL_PREFIX "_imp__"
@@ -3983,11 +3979,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("stdcall"), NULL_TREE,
 	     gnat_entity);
-	else if (Has_Thiscall_Convention (gnat_entity))
-	  prepend_one_attribute
-	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
-	     get_identifier ("thiscall"), NULL_TREE,
-	     gnat_entity);
 
 	/* If we should request stack realignment for a foreign convention
 	   subprogram, do so.  Note that this applies to task entry points
@@ -4841,11 +4832,12 @@ get_unpadded_type (Entity_Id gnat_entity)
 /* Return whether the E_Subprogram_Type/E_Function/E_Procedure GNAT_ENTITY is
    a C++ imported method or equivalent.
 
-   We use the predicate on 32-bit x86/Windows to find out whether we need to
-   use the "thiscall" calling convention for GNAT_ENTITY.  This convention is
-   used for C++ methods (functions with METHOD_TYPE) by the back-end.  */
+   We use the predicate to find out whether we need to use METHOD_TYPE instead
+   of FUNCTION_TYPE for GNAT_ENTITY for the sake compatibility with C++.  This
+   in turn determines whether the "thiscall" calling convention is used by the
+   back-end for GNAT_ENTITY on 32-bit x86/Windows.  */
 
-bool
+static bool
 is_cplusplus_method (Entity_Id gnat_entity)
 {
   /* A constructor is a method on the C++ side.  We deal with it now because
@@ -5258,6 +5250,14 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
     gnu_param_type
       = make_type_from_size (gnu_param_type, size_int (POINTER_SIZE), 0);
 
+  /* Use a pointer type for the "this" pointer of C++ constructors.  */
+  else if (Chars (gnat_param) == Name_uInit && Is_Constructor (gnat_subprog))
+    {
+      gcc_assert (mech == By_Reference);
+      gnu_param_type = build_pointer_type (gnu_param_type);
+      by_ref = true;
+    }
+
   /* If we were requested or muss pass by reference, do so.
      If we were requested to pass by copy, do so.
      Otherwise, for foreign conventions, pass In Out or Out parameters
@@ -5557,6 +5557,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			  bool debug_info_p, tree *param_list)
 {
   const Entity_Kind kind = Ekind (gnat_subprog);
+  const bool method_p = is_cplusplus_method (gnat_subprog);
   Entity_Id gnat_return_type = Etype (gnat_subprog);
   Entity_Id gnat_param;
   tree gnu_type = present_gnu_tree (gnat_subprog)
@@ -5598,7 +5599,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
     gnu_return_type = void_type_node;
 
   else if (gnu_type
-	   && TREE_CODE (gnu_type) == FUNCTION_TYPE
+	   && FUNC_OR_METHOD_TYPE_P (gnu_type)
 	   && !TYPE_IS_DUMMY_P (TREE_TYPE (gnu_type)))
     {
       gnu_return_type = TREE_TYPE (gnu_type);
@@ -5743,7 +5744,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
      Similarly, if the function returns an unconstrained type, then the
      function will allocate the return value on the secondary stack and
      thus calls to it cannot be CSE'ed, lest the stack be reclaimed.  */
-  if (TREE_CODE (gnu_return_type) == VOID_TYPE || return_unconstrained_p)
+  if (VOID_TYPE_P (gnu_return_type) || return_unconstrained_p)
     const_flag = false;
 
   /* Loop over the parameters and get their associated GCC tree.  While doing
@@ -5862,7 +5863,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	{
 	  gnu_param_type_list
 	    = tree_cons (NULL_TREE, gnu_param_type, gnu_param_type_list);
-	  gnu_param_list = chainon (gnu_param, gnu_param_list);
+	  DECL_CHAIN (gnu_param) = gnu_param_list;
+	  gnu_param_list = gnu_param;
 	  save_gnu_tree (gnat_param, gnu_param, false);
 
 	  /* A pure function in the Ada sense which takes an access parameter
@@ -5975,18 +5977,37 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   /* The lists have been built in reverse.  */
   gnu_param_type_list = nreverse (gnu_param_type_list);
   gnu_param_type_list = chainon (gnu_param_type_list, void_list_node);
-  *param_list = nreverse (gnu_param_list);
+  gnu_param_list = nreverse (gnu_param_list);
   gnu_cico_list = nreverse (gnu_cico_list);
+
+  /* Turn imported C++ constructors into their callable form as done in the
+     front-end, i.e. add the "this" pointer and void the return type.  */
+  if (method_p
+      && Is_Constructor (gnat_subprog)
+      && !VOID_TYPE_P (gnu_return_type))
+    {
+      tree gnu_param_type
+	= build_pointer_type (gnat_to_gnu_profile_type (gnat_return_type));
+      tree gnu_param_name = get_identifier (Get_Name_String (Name_uInit));
+      tree gnu_param
+	= build_decl (input_location, PARM_DECL, gnu_param_name,
+		      gnu_param_type);
+      gnu_param_type_list
+	= tree_cons (NULL_TREE, gnu_param_type, gnu_param_type_list);
+      DECL_CHAIN (gnu_param) = gnu_param_list;
+      gnu_param_list = gnu_param;
+      gnu_return_type = void_type_node;
+    }
 
   /* If the profile is incomplete, we only set the (temporary) return and
      parameter types; otherwise, we build the full type.  In either case,
      we reuse an already existing GCC tree that we built previously here.  */
   if (incomplete_profile_p)
     {
-      if (gnu_type && TREE_CODE (gnu_type) == FUNCTION_TYPE)
+      if (gnu_type && FUNC_OR_METHOD_TYPE_P (gnu_type))
 	;
       else
-	gnu_type = make_node (FUNCTION_TYPE);
+	gnu_type = make_node (method_p ? METHOD_TYPE : FUNCTION_TYPE);
       TREE_TYPE (gnu_type) = gnu_return_type;
       TYPE_ARG_TYPES (gnu_type) = gnu_param_type_list;
       TYPE_RETURN_UNCONSTRAINED_P (gnu_type) = return_unconstrained_p;
@@ -5995,10 +6016,16 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
     }
   else
     {
-      if (gnu_type && TREE_CODE (gnu_type) == FUNCTION_TYPE)
+      if (gnu_type && FUNC_OR_METHOD_TYPE_P (gnu_type))
 	{
 	  TREE_TYPE (gnu_type) = gnu_return_type;
 	  TYPE_ARG_TYPES (gnu_type) = gnu_param_type_list;
+	  if (method_p)
+	    {
+	      tree gnu_basetype = TREE_TYPE (TREE_VALUE (gnu_param_type_list));
+	      TYPE_METHOD_BASETYPE (gnu_type)
+		= TYPE_MAIN_VARIANT (gnu_basetype);
+	    }
 	  TYPE_CI_CO_LIST (gnu_type) = gnu_cico_list;
 	  TYPE_RETURN_UNCONSTRAINED_P (gnu_type) = return_unconstrained_p;
 	  TYPE_RETURN_BY_DIRECT_REF_P (gnu_type) = return_by_direct_ref_p;
@@ -6008,8 +6035,16 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	}
       else
 	{
-	  gnu_type
-	    = build_function_type (gnu_return_type, gnu_param_type_list);
+	  if (method_p)
+	    {
+	      tree gnu_basetype = TREE_TYPE (TREE_VALUE (gnu_param_type_list));
+	      gnu_type
+		= build_method_type_directly (gnu_basetype, gnu_return_type,
+					      TREE_CHAIN (gnu_param_type_list));
+	    }
+	  else
+	    gnu_type
+	      = build_function_type (gnu_return_type, gnu_param_type_list);
 
 	  /* GNU_TYPE may be shared since GCC hashes types.  Unshare it if it
 	     has a different TYPE_CI_CO_LIST or flags.  */
@@ -6069,6 +6104,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	    post_error ("?gcc intrinsic not found for&!", gnat_subprog);
 	}
     }
+
+  *param_list = gnu_param_list;
 
   return gnu_type;
 }
@@ -9857,6 +9894,7 @@ substitute_in_type (tree t, tree f, tree r)
       return build_complex_type (nt);
 
     case FUNCTION_TYPE:
+    case METHOD_TYPE:
       /* These should never show up here.  */
       gcc_unreachable ();
 
