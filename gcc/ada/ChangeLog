@@ -1,3 +1,35 @@
+2018-07-17  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch13.adb (Expand_N_Freeze_Entity): Handle subtype declared for an
+	iterator.
+	* freeze.adb (Freeze_Expression): Handle freeze of an entity defined
+	outside of a subprogram body. This case was previously handled during
+	preanalysis; the frozen entities were remembered and left pending until
+	we continued freezeing entities outside of the subprogram. Now, when
+	climbing the parents chain to locate the correct placement for the
+	freezeing node, we check if the entity can be frozen and only when no
+	enclosing node is marked as Must_Not_Freeze the entity is frozen.
+	* sem_ch3.ads (Preanalyze_Default_Expression): Declaration moved to the
+	package body.
+	* sem_ch3.adb (Preanalyze_Default_Expression): Code adjusted to invoke
+	the new subprogram Preanalyze_With_Freezing_And_Resolve.
+	* sem_ch6.adb (Preanalyze_Formal_Expression): New subprogram.
+	(Analyze_Expression_Function, Process_Formals): Invoke
+	Preanalyze_Formal_Expression instead of Preanalyze_Spec_Expression
+	since the analysis of the formals may freeze entities.
+	(Analyze_Subprogram_Body_Helper): Skip building the body of the
+	class-wide clone for eliminated subprograms.
+	* sem_res.ads, sem_res.adb (Preanalyze_And_Resolve): New subprogram.
+	Its code is basically the previous version of this routine but extended
+	with an additional parameter which is used to specify if during
+	preanalysis we are allowed to freeze entities.  If the new parameter is
+	True then the subtree root node is marked as Must_Not_Freeze and no
+	entities are frozen during preanalysis.
+	(Preanalyze_And_Resolve): Invokes the internal version of
+	Preanalyze_And_Resolve without entity freezing.
+	(Preanalyze_With_Freezing_And_Resolve): Invokes the internal version of
+	Prenalyze_And_Resolve with freezing enabled.
+
 2018-07-17  Piotr Trojanek  <trojanek@adacore.com>
 
 	* einfo.ads, libgnat/g-comlin.ads: Minor change "ie" to "i.e." in docs

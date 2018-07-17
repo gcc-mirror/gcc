@@ -605,6 +605,10 @@ package body Sem_Ch3 is
    --  Create a new ordinary fixed point type, and apply the constraint to
    --  obtain subtype of it.
 
+   procedure Preanalyze_Default_Expression (N : Node_Id; T : Entity_Id);
+   --  Wrapper on Preanalyze_Spec_Expression for default expressions, so that
+   --  In_Default_Expr can be properly adjusted.
+
    procedure Prepare_Private_Subtype_Completion
      (Id          : Entity_Id;
       Related_Nod : Node_Id);
@@ -19818,11 +19822,14 @@ package body Sem_Ch3 is
    -----------------------------------
 
    procedure Preanalyze_Default_Expression (N : Node_Id; T : Entity_Id) is
-      Save_In_Default_Expr : constant Boolean := In_Default_Expr;
+      Save_In_Default_Expr    : constant Boolean := In_Default_Expr;
+      Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
    begin
-      In_Default_Expr := True;
-      Preanalyze_Spec_Expression (N, T);
-      In_Default_Expr := Save_In_Default_Expr;
+      In_Default_Expr    := True;
+      In_Spec_Expression := True;
+      Preanalyze_With_Freezing_And_Resolve (N, T);
+      In_Default_Expr    := Save_In_Default_Expr;
+      In_Spec_Expression := Save_In_Spec_Expression;
    end Preanalyze_Default_Expression;
 
    --------------------------------
