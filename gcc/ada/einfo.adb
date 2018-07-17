@@ -8385,7 +8385,7 @@ package body Einfo is
 
    function Is_Wrapper_Package (Id : E) return B is
    begin
-      return (Ekind (Id) = E_Package and then Present (Related_Instance (Id)));
+      return Ekind (Id) = E_Package and then Present (Related_Instance (Id));
    end Is_Wrapper_Package;
 
    -----------------

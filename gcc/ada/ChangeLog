@@ -1,3 +1,7 @@
+2018-07-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb (Is_Wrapper_Package): Remove extra parentheses.
+
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Enclosing_Subprogram): Handle properly entries, and
