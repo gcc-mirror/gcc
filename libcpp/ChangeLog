@@ -1,3 +1,11 @@
+2018-07-17  Jason Franklin  <j_fra@fastmail.us>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* lex.c (_cpp_lex_direct): Use CPP_DL_NOTE instead of CPP_DL_PEDWARN,
+	CPP_DL_WARNING or CPP_DL_ERROR for note that diagnostics for C++ style
+	comments is reported only once per file and guard those calls on the
+	preceding cpp_error returning true.
+
 2018-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	Reorg line_map data structures for better packing.
