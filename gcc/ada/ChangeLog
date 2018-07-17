@@ -1,3 +1,11 @@
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Has_Visible_State): Do not consider constants as
+	visible state because it is not possible to determine whether a
+	constant depends on variable input.
+	(Propagate_Part_Of): Add comment clarifying the behavior with respect
+	to constant.
+
 2018-07-17  Yannick Moy  <moy@adacore.com>
 
 	* gnat1drv.adb (Gnat1drv): Do not issue warning about exception not
