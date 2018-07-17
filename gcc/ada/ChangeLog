@@ -1,3 +1,8 @@
+2018-07-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads, libgnat/g-comlin.ads: Minor change "ie" to "i.e." in docs
+	and comments.
+
 2018-07-17  Justin Squirek  <squirek@adacore.com>
 
 	* libgnat/s-os_lib.adb (Argument_String_To_List): Fix trimming of

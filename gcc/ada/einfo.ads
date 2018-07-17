@@ -1034,7 +1034,7 @@ package Einfo is
 --       base type).
 --
 --       In all other cases Discriminant_Constraint contains the empty
---       Elist (ie it is initialized with a call to New_Elmt_List).
+--       Elist (i.e. it is initialized with a call to New_Elmt_List).
 
 --    Discriminant_Default_Value (Node20)
 --       Defined in discriminants. Points to the node representing the
