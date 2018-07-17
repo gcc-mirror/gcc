@@ -1,3 +1,9 @@
+2018-07-17  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.adb, libgnat/g-socket.ads: Reorganize and make
+	public components of Inet_Addr_Type. Introduce public binary
+	operations.
+
 2018-07-17  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch7.adb (Make_Transient_Block): When determining whether an
