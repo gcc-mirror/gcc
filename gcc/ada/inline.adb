@@ -3295,8 +3295,8 @@ package body Inline is
                  and then Ekind (F) /= E_Out_Parameter
                  and then not Same_Type (Etype (F), Etype (A))
                then
-                  pragma Assert (not (Is_By_Reference_Type (Etype (A))));
-                  pragma Assert (not (Is_Limited_Type (Etype (A))));
+                  pragma Assert (not Is_By_Reference_Type (Etype (A)));
+                  pragma Assert (not Is_Limited_Type (Etype (A)));
 
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,

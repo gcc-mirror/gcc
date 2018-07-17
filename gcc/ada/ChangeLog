@@ -1,3 +1,7 @@
+2018-07-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): Remove extra parentheses.
+
 2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_disp.adb (Gen_Parameters_Profile): Make the _Init parameter an
