@@ -1,3 +1,8 @@
+2018-07-17  Bob Duff  <duff@adacore.com>
+
+	* exp_disp.adb (Build_Class_Wide_Check): Return early if the
+	precondition is supposed to be ignored.
+
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Check_Untagged_Equality): Extend check to operations
