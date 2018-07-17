@@ -1438,7 +1438,7 @@ package body Sem is
                                In_Extended_Main_Source_Unit (Comp_Unit);
       --  Determine if unit is in extended main source unit
 
-      Save_Config_Switches : Config_Switches_Type;
+      Save_Config_Attrs : Config_Switches_Type;
       --  Variable used to save values of config switches while we analyze the
       --  new unit, to be restored on exit for proper recursive behavior.
 
@@ -1518,8 +1518,8 @@ package body Sem is
 
       --  Save current config switches and reset then appropriately
 
-      Save_Opt_Config_Switches (Save_Config_Switches);
-      Set_Opt_Config_Switches
+      Save_Config_Attrs := Save_Config_Switches;
+      Set_Config_Switches
         (Is_Internal_Unit (Current_Sem_Unit),
          Is_Main_Unit_Or_Main_Unit_Spec);
 
@@ -1602,7 +1602,7 @@ package body Sem is
       Outer_Generic_Scope  := S_Outer_Gen_Scope;
       Style_Check          := S_Style_Check;
 
-      Restore_Opt_Config_Switches (Save_Config_Switches);
+      Restore_Config_Switches (Save_Config_Attrs);
 
       --  Deal with restore of restrictions
 

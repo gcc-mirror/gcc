@@ -1,3 +1,7 @@
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/config_pragma1.adb, gnat.dg/config_pragma1_pkg.ads: New testcase.
+
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/equal3.adb: New testcase.
