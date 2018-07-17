@@ -1,3 +1,7 @@
+2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr55.adb: New test.
+
 2018-07-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/vartrack-1.c (dg-options): Add
