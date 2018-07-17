@@ -1,3 +1,10 @@
+2018-07-17  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch5.adb (Has_Call_Using_Secondary_Stack): Moved to library level
+	to reuse it.
+	(Analyze_Loop_Statement): Wrap the loop in a block when the evaluation
+	of the loop iterator relies on the secondary stack.
+
 2018-07-17  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_util.adb (Next_Actual): If the parent is a N_Null_Statement,
