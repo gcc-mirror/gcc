@@ -18539,7 +18539,7 @@ vr4130_align_insns (void)
 	}
 
       /* See whether INSN is an aligned label.  */
-      if (LABEL_P (insn) && label_to_alignment (insn) >= 3)
+      if (LABEL_P (insn) && label_to_alignment (insn).levels[0].log >= 3)
 	aligned_p = true;
     }
   dfa_finish ();
