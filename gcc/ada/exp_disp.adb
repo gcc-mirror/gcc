@@ -809,7 +809,7 @@ package body Exp_Disp is
                Prec := Next_Pragma (Prec);
             end loop;
 
-            if No (Prec) then
+            if No (Prec) or else Is_Ignored (Prec) then
                return;
             end if;
 
