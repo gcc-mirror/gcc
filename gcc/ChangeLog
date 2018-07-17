@@ -1,5 +1,19 @@
 2018-07-17  Martin Liska  <mliska@suse.cz>
 
+	* config/i386/att.h (ASM_OUTPUT_ALIGN): Fix spacing
+        in order to fulfil coding style.
+	* config/i386/cygming.h (ASM_OUTPUT_ALIGN): Likewise.
+	* config/i386/gas.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_PAD): Likewise.
+	* config/iq2000/iq2000.h (ASM_OUTPUT_ALIGN): Likewise.
+	* config/pa/pa.h (ASM_OUTPUT_ALIGN): Likewise.
+	* config/sparc/sol2.h (ASM_OUTPUT_ALIGN_WITH_NOP): Likewise.
+	* config/sparc/sparc.h (ASM_OUTPUT_ALIGN): Likewise.
+	* config/visium/visium.h (ASM_OUTPUT_ALIGN): Likewise.
+	(ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+
+2018-07-17  Martin Liska  <mliska@suse.cz>
+
 	* align.h: New file.
 	* config/alpha/alpha.c (alpha_align_insns_1): Use align_functions directly.
 	* config/i386/i386.c (ix86_avoid_jump_mispredicts): Use new return type

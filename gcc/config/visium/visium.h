@@ -1486,7 +1486,7 @@ do									\
    POWER bytes.  POWER will be a C expression of type `int'. */
 #define ASM_OUTPUT_ALIGN(STREAM,LOG)      \
   if ((LOG) != 0)                       \
-    fprintf (STREAM, "\t.align  %d\n", (1<<(LOG)))
+    fprintf (STREAM, "\t.align  %d\n", (1 << (LOG)))
 
 /* `ASM_OUTPUT_MAX_SKIP_ALIGN (STREAM, POWER, MAX_SKIP)`
 
@@ -1497,7 +1497,7 @@ do									\
    expression of type `int'. */
 #define ASM_OUTPUT_MAX_SKIP_ALIGN(STREAM,LOG,MAX_SKIP)			\
   if ((LOG) != 0) {							\
-    if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1<<(LOG))-1)			\
+    if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)		\
       fprintf ((STREAM), "\t.p2align %d\n", (LOG));			\
     else								\
       fprintf ((STREAM), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
