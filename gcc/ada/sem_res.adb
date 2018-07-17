@@ -142,6 +142,12 @@ package body Sem_Res is
    --  a call, so such an operator is not treated as predefined by this
    --  predicate.
 
+   procedure Preanalyze_And_Resolve
+     (N             : Node_Id;
+      T             : Entity_Id;
+      With_Freezing : Boolean);
+   --  Subsidiary of public versions of Preanalyze_And_Resolve.
+
    procedure Replace_Actual_Discriminants (N : Node_Id; Default : Node_Id);
    --  If a default expression in entry call N depends on the discriminants
    --  of the task, it must be replaced with a reference to the discriminant
@@ -1660,10 +1666,21 @@ package body Sem_Res is
    -- Preanalyze_And_Resolve --
    ----------------------------
 
-   procedure Preanalyze_And_Resolve (N : Node_Id; T : Entity_Id) is
-      Save_Full_Analysis : constant Boolean := Full_Analysis;
+   procedure Preanalyze_And_Resolve
+     (N             : Node_Id;
+      T             : Entity_Id;
+      With_Freezing : Boolean)
+   is
+      Save_Full_Analysis   : constant Boolean := Full_Analysis;
+      Save_Must_Not_Freeze : constant Boolean := Must_Not_Freeze (N);
 
    begin
+      pragma Assert (Nkind (N) in N_Subexpr);
+
+      if not With_Freezing then
+         Set_Must_Not_Freeze (N);
+      end if;
+
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
@@ -1690,6 +1707,16 @@ package body Sem_Res is
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
+      Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
+   end Preanalyze_And_Resolve;
+
+   ----------------------------
+   -- Preanalyze_And_Resolve --
+   ----------------------------
+
+   procedure Preanalyze_And_Resolve (N : Node_Id; T : Entity_Id) is
+   begin
+      Preanalyze_And_Resolve (N, T, With_Freezing => False);
    end Preanalyze_And_Resolve;
 
    --  Version without context type
@@ -1707,6 +1734,16 @@ package body Sem_Res is
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
    end Preanalyze_And_Resolve;
+
+   ------------------------------------------
+   -- Preanalyze_With_Freezing_And_Resolve --
+   ------------------------------------------
+
+   procedure Preanalyze_With_Freezing_And_Resolve (N : Node_Id; T : Entity_Id)
+   is
+   begin
+      Preanalyze_And_Resolve (N, T, With_Freezing => True);
+   end Preanalyze_With_Freezing_And_Resolve;
 
    ----------------------------------
    -- Replace_Actual_Discriminants --
