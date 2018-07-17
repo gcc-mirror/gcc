@@ -1,7 +1,9 @@
-2018-07-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
 
-	Backport from mainline
-	2018-07-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Deal with
+	more rvalues in the expression of a renaming.
+
+2018-07-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* libgnat/system-rtems.ads (Frontend_Exceptions): Set to False.
 	(ZCX_By_Default): Set to True.
