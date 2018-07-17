@@ -1,5 +1,10 @@
 2018-07-17  Robin Dapp  <rdapp@linux.ibm.com>
 
+	* config/s390/s390.c (preferred_la_operand_p): Do not use LA with
+	index register on z196 or later.
+
+2018-07-17  Robin Dapp  <rdapp@linux.ibm.com>
+
 	* config/s390/s390.c (s390_default_align): Set default function
 	alignment to 16.
 	(s390_override_options_after_change): Call s390_default align.
