@@ -1,3 +1,8 @@
+2018-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/generic_call_cw.adb, gnat.dg/generic_call_iface.adb: New
+	testcase.
+
 2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/sso10.adb, gnat.dg/sso10_pkg.ads: New testcase.
