@@ -160,7 +160,7 @@ the new document structure.
 * :ref:`GNAT_and_Program_Execution` is a new chapter consolidating the following:
 
   - :ref:`Running_and_Debugging_Ada_Programs`
-  - :ref:`Code_Coverage_and_Profiling`
+  - :ref:`Profiling`
   - :ref:`Improving_Performance`
   - :ref:`Overflow Check Handling in GNAT <Overflow_Check_Handling_in_GNAT>`
   - :ref:`Performing Dimensionality Analysis in GNAT <Performing_Dimensionality_Analysis_in_GNAT>`
