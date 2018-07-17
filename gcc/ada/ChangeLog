@@ -1,3 +1,8 @@
+2018-07-17  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Do not issue warning about exception not
+	being propagated in GNATprove mode.
+
 2018-07-17  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-socket.adb, libgnat/g-socket.ads: Reorganize and make
