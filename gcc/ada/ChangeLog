@@ -1,3 +1,10 @@
+2018-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Gather_Components): A discriminant of an ancestor may
+	have been constrained by a later ancestor, so when looking for the
+	value of that hidden discriminant we must examine the stored constraint
+	of other ancestors than the immediate parent type.
+
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb (Build_Heap_Or_Pool_Allocator): Ensure that scoping
