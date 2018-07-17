@@ -178,6 +178,7 @@ package body System.OS_Lib is
 
       return Len;
    end Args_Length;
+
    -----------------------------
    -- Argument_String_To_List --
    -----------------------------
@@ -186,22 +187,22 @@ package body System.OS_Lib is
      (Arg_String : String) return Argument_List_Access
    is
       Max_Args : constant Integer := Arg_String'Length;
-      New_Argv : Argument_List (1 .. Max_Args);
-      Idx      : Integer;
-      New_Argc : Natural := 0;
-
-      Backqd : Boolean := False;
-      Quoted : Boolean := False;
-
-      Cleaned     : String (1 .. Arg_String'Length);
-      Cleaned_Idx : Natural;
-      --  A cleaned up version of the argument. This function is taking
-      --  backslash escapes when computing the bounds for arguments. It is
-      --  then removing the extra backslashes from the argument.
 
       Backslash_Is_Sep : constant Boolean := Directory_Separator = '\';
       --  Whether '\' is a directory separator (as on Windows), or a way to
       --  quote special characters.
+
+      Backqd   : Boolean := False;
+      Idx      : Integer;
+      New_Argc : Natural := 0;
+      New_Argv : Argument_List (1 .. Max_Args);
+      Quoted   : Boolean := False;
+
+      Cleaned     : String (1 .. Arg_String'Length);
+      Cleaned_Idx : Natural;
+      --  A cleaned up version of the argument. This function is taking
+      --  backslash escapes when computing the bounds for arguments. It
+      --  is then removing the extra backslashes from the argument.
 
    begin
       Idx := Arg_String'First;
@@ -222,25 +223,19 @@ package body System.OS_Lib is
          loop
             --  An unquoted space is the end of an argument
 
-            if not (Backqd or Quoted)
-              and then Arg_String (Idx) = ' '
-            then
+            if not (Backqd or Quoted) and then Arg_String (Idx) = ' ' then
                exit;
 
             --  Start of a quoted string
 
-            elsif not (Backqd or Quoted)
-              and then Arg_String (Idx) = '"'
-            then
+            elsif not (Backqd or Quoted) and then Arg_String (Idx) = '"' then
                Quoted := True;
                Cleaned (Cleaned_Idx) := Arg_String (Idx);
                Cleaned_Idx := Cleaned_Idx + 1;
 
             --  End of a quoted string and end of an argument
 
-            elsif (Quoted and not Backqd)
-              and then Arg_String (Idx) = '"'
-            then
+            elsif (Quoted and not Backqd) and then Arg_String (Idx) = '"' then
                Cleaned (Cleaned_Idx) := Arg_String (Idx);
                Cleaned_Idx := Cleaned_Idx + 1;
                Idx := Idx + 1;

@@ -7027,13 +7027,14 @@ package body Freeze is
       --  Local variables
 
       In_Spec_Exp : constant Boolean := In_Spec_Expression;
-      Typ         : Entity_Id;
-      Nam         : Entity_Id;
-      Desig_Typ   : Entity_Id;
-      P           : Node_Id;
-      Parent_P    : Node_Id;
 
-      Freeze_Outside       : Boolean := False;
+      Desig_Typ : Entity_Id;
+      Nam       : Entity_Id;
+      P         : Node_Id;
+      Parent_P  : Node_Id;
+      Typ       : Entity_Id;
+
+      Freeze_Outside : Boolean := False;
       --  This flag is set true if the entity must be frozen outside the
       --  current subprogram. This happens in the case of expander generated
       --  subprograms (_Init_Proc, _Input, _Output, _Read, _Write) which do
@@ -7090,8 +7091,8 @@ package body Freeze is
          if not Is_Frozen (Etype (N)) then
             Typ := Etype (N);
 
-         --  Base type may be an derived numeric type that is frozen at
-         --  the point of declaration, but first_subtype is still unfrozen.
+         --  Base type may be an derived numeric type that is frozen at the
+         --  point of declaration, but first_subtype is still unfrozen.
 
          elsif not Is_Frozen (First_Subtype (Etype (N))) then
             Typ := First_Subtype (Etype (N));
@@ -7147,8 +7148,7 @@ package body Freeze is
             if Is_Array_Type (Etype (N))
               and then Is_Access_Type (Component_Type (Etype (N)))
             then
-
-               --  Check whether aggregate includes allocators.
+               --  Check whether aggregate includes allocators
 
                Desig_Typ := Find_Aggregate_Component_Desig_Type;
             end if;
@@ -7224,7 +7224,7 @@ package body Freeze is
          end;
       end if;
 
-      --  Examine the enclosing context by climbing the parent chain.
+      --  Examine the enclosing context by climbing the parent chain
 
       --  If we identified that we must freeze the entity outside of a given
       --  subprogram then we just climb up to that subprogram checking if some
@@ -7254,8 +7254,10 @@ package body Freeze is
                return;
             end if;
 
-            exit when Nkind (Parent_P) = N_Subprogram_Body
-              and then Unique_Defining_Entity (Parent_P) = Freeze_Outside_Subp;
+            exit when
+              Nkind (Parent_P) = N_Subprogram_Body
+                and then Unique_Defining_Entity (Parent_P) =
+                           Freeze_Outside_Subp;
 
             P := Parent_P;
          end loop;
@@ -7354,10 +7356,10 @@ package body Freeze is
                      --  function call for overloading analysis purposes.
 
                      elsif Nkind (Parent (N)) = N_Function_Call
-                        and then
-                          Nkind (Parent (Parent (N))) = N_Component_Association
-                        and then
-                          First (Choices (Parent (Parent (N)))) = Parent (N)
+                        and then Nkind (Parent (Parent (N))) =
+                                   N_Component_Association
+                        and then First (Choices (Parent (Parent (N)))) =
+                                   Parent (N)
                      then
                         return;
                      end if;

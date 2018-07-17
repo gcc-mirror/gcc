@@ -2733,7 +2733,7 @@ package body Sem_Eval is
       --  Check_Non_Static_Context on an expanded literal may lead to spurious
       --  and misleading warnings.
 
-      if (Nkind_In (Par, N_If_Expression, N_Case_Expression_Alternative)
+      if (Nkind_In (Par, N_Case_Expression_Alternative, N_If_Expression)
            or else Nkind (Parent (N)) not in N_Subexpr)
         and then (not Nkind_In (Par, N_Case_Expression_Alternative,
                                      N_If_Expression)

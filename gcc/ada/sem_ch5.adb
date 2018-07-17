@@ -3594,12 +3594,12 @@ package body Sem_Ch5 is
         and then not Is_Wrapped_In_Block (N)
       then
          declare
-            LPS       : constant Node_Id :=
-                          Loop_Parameter_Specification (Iter);
-            DSD       : constant Node_Id :=
-                          Original_Node (Discrete_Subtype_Definition (LPS));
-            Block_Nod : Node_Id;
+            LPS : constant Node_Id := Loop_Parameter_Specification (Iter);
+            DSD : constant Node_Id :=
+                    Original_Node (Discrete_Subtype_Definition (LPS));
+
             Block_Id  : Entity_Id;
+            Block_Nod : Node_Id;
             HB        : Node_Id;
             LB        : Node_Id;
 
@@ -3607,23 +3607,25 @@ package body Sem_Ch5 is
             if Nkind (DSD) = N_Subtype_Indication
               and then Nkind (Range_Expression (Constraint (DSD))) = N_Range
             then
-               LB := New_Copy_Tree
-                       (Low_Bound (Range_Expression (Constraint (DSD))));
-               HB := New_Copy_Tree
-                       (High_Bound (Range_Expression (Constraint (DSD))));
+               LB :=
+                 New_Copy_Tree
+                   (Low_Bound (Range_Expression (Constraint (DSD))));
+               HB :=
+                 New_Copy_Tree
+                   (High_Bound (Range_Expression (Constraint (DSD))));
 
                Preanalyze (LB);
                Preanalyze (HB);
 
                if Has_Call_Using_Secondary_Stack (LB)
-                    or else Has_Call_Using_Secondary_Stack (HB)
+                 or else Has_Call_Using_Secondary_Stack (HB)
                then
                   Block_Nod :=
                     Make_Block_Statement (Loc,
-                      Declarations => New_List,
-                    Handled_Statement_Sequence =>
-                      Make_Handled_Sequence_Of_Statements (Loc,
-                        Statements => New_List (Relocate_Node (N))));
+                      Declarations               => New_List,
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => New_List (Relocate_Node (N))));
 
                   Add_Block_Identifier (Block_Nod, Block_Id);
                   Set_Uses_Sec_Stack (Block_Id);

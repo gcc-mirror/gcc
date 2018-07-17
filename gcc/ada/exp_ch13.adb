@@ -471,7 +471,7 @@ package body Exp_Ch13 is
       then
          E_Scope := Scope (E_Scope);
 
-      --  The entity may be a subtype declared for an iterator.
+      --  The entity may be a subtype declared for an iterator
 
       elsif Ekind (E_Scope) = E_Loop then
          E_Scope := Scope (E_Scope);
