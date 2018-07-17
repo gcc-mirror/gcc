@@ -1,3 +1,15 @@
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Has_Visible_State): Do not consider generic formals
+	because they are not part of the visible state space. Add constants to
+	the list of acceptable visible states.
+	(Propagate_Part_Of): Do not consider generic formals when propagating
+	the Part_Of indicator.
+	* sem_util.adb (Entity_Of): Do not follow renaming chains which go
+	through a generic formal because they are not visible for SPARK
+	purposes.
+	* sem_util.ads (Entity_Of): Update the comment on usage.
+
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Gather_Components): A discriminant of an ancestor may

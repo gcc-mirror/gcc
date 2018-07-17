@@ -19982,6 +19982,13 @@ package body Sem_Prag is
                      if not Comes_From_Source (Item_Id) then
                         null;
 
+                     --  Do not consider generic formals or their corresponding
+                     --  actuals because they are not part of a visible state.
+                     --  Note that both entities are marked as hidden.
+
+                     elsif Is_Hidden (Item_Id) then
+                        null;
+
                      --  The Part_Of indicator turns an abstract state or an
                      --  object into a constituent of the encapsulating state.
 
@@ -28775,9 +28782,19 @@ package body Sem_Prag is
             if not Comes_From_Source (Item_Id) then
                null;
 
+            --  Do not consider generic formals or their corresponding actuals
+            --  because they are not part of a visible state. Note that both
+            --  entities are marked as hidden.
+
+            elsif Is_Hidden (Item_Id) then
+               null;
+
             --  A visible state has been found
 
-            elsif Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
+            elsif Ekind_In (Item_Id, E_Abstract_State,
+                                     E_Constant,
+                                     E_Variable)
+            then
                return True;
 
             --  Recursively peek into nested packages and instantiations
