@@ -1,3 +1,9 @@
+2018-07-17  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnat/s-memory__mingw.adb: Remove.
+	* Makefile.rtl: Remove s-memory.adb target pair from the Cygwin/Mingw32
+	section.
+
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* frontend.adb (Frontend): The removal of ignored Ghost code must be
