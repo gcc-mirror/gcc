@@ -1,3 +1,20 @@
+2018-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/create_testsuite_files: Fix typo in comment.
+
+	PR libstdc++/86537
+	* include/bits/shared_ptr.h (less<shared_ptr<_Tp>>): Remove
+	non-standard partial specialization.
+	* include/bits/shared_ptr_base.h (_Sp_less): Remove class definition.
+	(less<__shared_ptr<_Tp, _Lp>): Remove partial specialization.
+	* testsuite/20_util/shared_ptr/comparison/86537.cc: New test.
+
+2018-07-16  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+
 2018-07-06  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/functions.h (__gnu_debug::__check_string): Move...

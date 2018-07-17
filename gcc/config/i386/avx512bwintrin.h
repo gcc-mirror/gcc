@@ -3043,7 +3043,7 @@ _mm512_cmp_epi16_mask (__m512i __X, __m512i __Y, const int __P)
 
 extern __inline __mmask64
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_cmp_epi8_mask (__mmask32 __U, __m512i __X, __m512i __Y,
+_mm512_mask_cmp_epi8_mask (__mmask64 __U, __m512i __X, __m512i __Y,
 			   const int __P)
 {
   return (__mmask64) __builtin_ia32_cmpb512_mask ((__v64qi) __X,
@@ -3081,7 +3081,7 @@ _mm512_cmp_epu16_mask (__m512i __X, __m512i __Y, const int __P)
 
 extern __inline __mmask64
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_cmp_epu8_mask (__mmask32 __U, __m512i __X, __m512i __Y,
+_mm512_mask_cmp_epu8_mask (__mmask64 __U, __m512i __X, __m512i __Y,
 			   const int __P)
 {
   return (__mmask64) __builtin_ia32_ucmpb512_mask ((__v64qi) __X,

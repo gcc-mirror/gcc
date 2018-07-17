@@ -307,7 +307,7 @@ get_dump_file_info_by_switch (const char *swtch) const
 
 char *
 gcc::dump_manager::
-get_dump_file_name (int phase) const
+get_dump_file_name (int phase, int part) const
 {
   struct dump_file_info *dfi;
 
@@ -316,7 +316,7 @@ get_dump_file_name (int phase) const
 
   dfi = get_dump_file_info (phase);
 
-  return get_dump_file_name (dfi);
+  return get_dump_file_name (dfi, part);
 }
 
 /* Return the name of the dump file for the given dump_file_info.
@@ -326,7 +326,7 @@ get_dump_file_name (int phase) const
 
 char *
 gcc::dump_manager::
-get_dump_file_name (struct dump_file_info *dfi) const
+get_dump_file_name (struct dump_file_info *dfi, int part) const
 {
   char dump_id[10];
 
@@ -350,7 +350,14 @@ get_dump_file_name (struct dump_file_info *dfi) const
 	dump_id[0] = '\0';
     }
 
-  return concat (dump_base_name, dump_id, dfi->suffix, NULL);
+  if (part != -1)
+    {
+       char part_id[8];
+       snprintf (part_id, sizeof (part_id), ".%i", part);
+       return concat (dump_base_name, dump_id, part_id, dfi->suffix, NULL);
+    }
+  else
+    return concat (dump_base_name, dump_id, dfi->suffix, NULL);
 }
 
 /* Open a dump file called FILENAME.  Some filenames are special and
@@ -768,17 +775,19 @@ dump_finish (int phase)
 /* Begin a tree dump for PHASE. Stores any user supplied flag in
    *FLAG_PTR and returns a stream to write to. If the dump is not
    enabled, returns NULL.
-   Multiple calls will reopen and append to the dump file.  */
+   PART can be used for dump files which should be split to multiple
+   parts. PART == -1 indicates dump file with no parts.
+   If PART is -1, multiple calls will reopen and append to the dump file.  */
 
 FILE *
-dump_begin (int phase, dump_flags_t *flag_ptr)
+dump_begin (int phase, dump_flags_t *flag_ptr, int part)
 {
-  return g->get_dumps ()->dump_begin (phase, flag_ptr);
+  return g->get_dumps ()->dump_begin (phase, flag_ptr, part);
 }
 
 FILE *
 gcc::dump_manager::
-dump_begin (int phase, dump_flags_t *flag_ptr)
+dump_begin (int phase, dump_flags_t *flag_ptr, int part)
 {
   char *name;
   struct dump_file_info *dfi;
@@ -787,12 +796,14 @@ dump_begin (int phase, dump_flags_t *flag_ptr)
   if (phase == TDI_none || !dump_phase_enabled_p (phase))
     return NULL;
 
-  name = get_dump_file_name (phase);
+  name = get_dump_file_name (phase, part);
   if (!name)
     return NULL;
   dfi = get_dump_file_info (phase);
 
-  stream = dump_open (name, dfi->pstate < 0);
+  /* We do not support re-opening of dump files with parts.  This would require
+     tracking pstate per part of the dump file.  */
+  stream = dump_open (name, part != -1 || dfi->pstate < 0);
   if (stream)
     dfi->pstate = 1;
   free (name);

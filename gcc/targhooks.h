@@ -236,10 +236,6 @@ extern enum unwind_info_type default_debug_unwind_info (void);
 
 extern void default_canonicalize_comparison (int *, rtx *, rtx *, bool);
 
-extern int default_label_align_after_barrier_max_skip (rtx_insn *);
-extern int default_loop_align_max_skip (rtx_insn *);
-extern int default_label_align_max_skip (rtx_insn *);
-extern int default_jump_align_max_skip (rtx_insn *);
 extern section * default_function_section(tree decl, enum node_frequency freq,
 					  bool startup, bool exit);
 extern unsigned int default_dwarf_poly_indeterminate_value (unsigned int,
@@ -283,5 +279,6 @@ extern enum flt_eval_method
 default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED);
 extern bool default_stack_clash_protection_final_dynamic_probe (rtx);
 extern void default_select_early_remat_modes (sbitmap);
+extern tree default_preferred_else_value (unsigned, tree, unsigned, tree *);
 
 #endif /* GCC_TARGHOOKS_H */

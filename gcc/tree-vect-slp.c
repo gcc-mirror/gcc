@@ -562,6 +562,41 @@ again:
   return 0;
 }
 
+/* Return true if call statements CALL1 and CALL2 are similar enough
+   to be combined into the same SLP group.  */
+
+static bool
+compatible_calls_p (gcall *call1, gcall *call2)
+{
+  unsigned int nargs = gimple_call_num_args (call1);
+  if (nargs != gimple_call_num_args (call2))
+    return false;
+
+  if (gimple_call_combined_fn (call1) != gimple_call_combined_fn (call2))
+    return false;
+
+  if (gimple_call_internal_p (call1))
+    {
+      if (!types_compatible_p (TREE_TYPE (gimple_call_lhs (call1)),
+			       TREE_TYPE (gimple_call_lhs (call2))))
+	return false;
+      for (unsigned int i = 0; i < nargs; ++i)
+	if (!types_compatible_p (TREE_TYPE (gimple_call_arg (call1, i)),
+				 TREE_TYPE (gimple_call_arg (call2, i))))
+	  return false;
+    }
+  else
+    {
+      if (!operand_equal_p (gimple_call_fn (call1),
+			    gimple_call_fn (call2), 0))
+	return false;
+
+      if (gimple_call_fntype (call1) != gimple_call_fntype (call2))
+	return false;
+    }
+  return true;
+}
+
 /* A subroutine of vect_build_slp_tree for checking VECTYPE, which is the
    caller's attempt to find the vector type in STMT with the narrowest
    element type.  Return true if VECTYPE is nonnull and if it is valid
@@ -650,8 +685,8 @@ vect_two_operations_perm_ok_p (vec<gimple *> stmts, unsigned int group_size,
 static bool
 vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		       vec<gimple *> stmts, unsigned int group_size,
-		       unsigned nops, poly_uint64 *max_nunits,
-		       bool *matches, bool *two_operators)
+		       poly_uint64 *max_nunits, bool *matches,
+		       bool *two_operators)
 {
   unsigned int i;
   gimple *first_stmt = stmts[0], *stmt = stmts[0];
@@ -727,7 +762,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	{
 	  rhs_code = CALL_EXPR;
-	  if (gimple_call_internal_p (call_stmt)
+	  if ((gimple_call_internal_p (call_stmt)
+	       && (!vectorizable_internal_fn_p
+		   (gimple_call_internal_fn (call_stmt))))
 	      || gimple_call_tail_p (call_stmt)
 	      || gimple_call_noreturn_p (call_stmt)
 	      || !gimple_call_nothrow_p (call_stmt)
@@ -873,11 +910,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  if (rhs_code == CALL_EXPR)
 	    {
 	      gimple *first_stmt = stmts[0];
-	      if (gimple_call_num_args (stmt) != nops
-		  || !operand_equal_p (gimple_call_fn (first_stmt),
-				       gimple_call_fn (stmt), 0)
-		  || gimple_call_fntype (first_stmt)
-		     != gimple_call_fntype (stmt))
+	      if (!compatible_calls_p (as_a <gcall *> (first_stmt),
+				       as_a <gcall *> (stmt)))
 		{
 		  if (dump_enabled_p ())
 		    {
@@ -1193,8 +1227,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 
   bool two_operators = false;
   unsigned char *swap = XALLOCAVEC (unsigned char, group_size);
-  if (!vect_build_slp_tree_1 (vinfo, swap,
-			      stmts, group_size, nops,
+  if (!vect_build_slp_tree_1 (vinfo, swap, stmts, group_size,
 			      &this_max_nunits, matches, &two_operators))
     return NULL;
 

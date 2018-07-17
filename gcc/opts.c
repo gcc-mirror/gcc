@@ -510,10 +510,10 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fdevirtualize, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fdevirtualize_speculatively, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fipa_sra, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_falign_loops, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_falign_jumps, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_falign_labels, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_falign_functions, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_loops, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_jumps, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_labels, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_functions, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_tail_merge, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_CHEAP },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_foptimize_strlen, NULL, 1 },
@@ -1804,10 +1804,6 @@ parse_and_check_align_values (const char *flag,
 		  "option: %qs", name, flag);
       return false;
     }
-
-  /* Comes from final.c -- no real reason to change it.  */
-#define MAX_CODE_ALIGN 16
-#define MAX_CODE_ALIGN_VALUE (1 << MAX_CODE_ALIGN)
 
   for (unsigned i = 0; i < result_values.length (); i++)
     if (result_values[i] > MAX_CODE_ALIGN_VALUE)

@@ -206,6 +206,10 @@ package body Sem_Ch6 is
    --  Create the declaration for an inequality operator that is implicitly
    --  created by a user-defined equality operator that yields a boolean.
 
+   procedure Preanalyze_Formal_Expression (N : Node_Id; T : Entity_Id);
+   --  Preanalysis of default expressions of subprogram formals. N is the
+   --  expression to be analyzed and T is the expected type.
+
    procedure Set_Formal_Validity (Formal_Id : Entity_Id);
    --  Formal_Id is an formal parameter entity. This procedure deals with
    --  setting the proper validity status for this entity, which depends on
@@ -761,7 +765,7 @@ package body Sem_Ch6 is
                if not Inside_A_Generic then
                   Push_Scope (Def_Id);
                   Install_Formals (Def_Id);
-                  Preanalyze_Spec_Expression (Expr, Typ);
+                  Preanalyze_Formal_Expression (Expr, Typ);
                   Check_Limited_Return (Original_Node (N), Expr, Typ);
                   End_Scope;
                end if;
@@ -3862,12 +3866,14 @@ package body Sem_Ch6 is
       --  If the subprogram has a class-wide clone, build its body as a copy
       --  of the original body, and rewrite body of original subprogram as a
       --  wrapper that calls the clone. If N is a stub, this construction will
-      --  take place when the proper body is analyzed.
+      --  take place when the proper body is analyzed. No action needed if this
+      --  subprogram has been eliminated.
 
       if Present (Spec_Id)
         and then Present (Class_Wide_Clone (Spec_Id))
         and then (Comes_From_Source (N) or else Was_Expression_Function (N))
         and then Nkind (N) /= N_Subprogram_Body_Stub
+        and then not (Expander_Active and then Is_Eliminated (Spec_Id))
       then
          Build_Class_Wide_Clone_Body (Spec_Id, N);
 
@@ -8575,14 +8581,10 @@ package body Sem_Ch6 is
 
       if Is_Frozen (Typ) then
 
-         --  If the type is not declared in a package, or if we are in the body
-         --  of the package or in some other scope, the new operation is not
-         --  primitive, and therefore legal, though suspicious. Should we
-         --  generate a warning in this case ???
+         --  The check applies to a primitive operation, so check that type
+         --  and equality operation are in the same scope.
 
-         if Ekind (Scope (Typ)) /= E_Package
-           or else Scope (Typ) /= Current_Scope
-         then
+         if Scope (Typ) /= Current_Scope then
             return;
 
          --  If the type is a generic actual (sub)type, the operation is not
@@ -8625,7 +8627,7 @@ package body Sem_Ch6 is
                     ("\move declaration to package spec (Ada 2012)?y?", Eq_Op);
                end if;
 
-            --  Otherwise try to find the freezing point
+            --  Otherwise try to find the freezing point for better message.
 
             else
                Obj_Decl := Next (Parent (Typ));
@@ -8653,6 +8655,13 @@ package body Sem_Ch6 is
                      end if;
 
                      exit;
+
+                  --  If we reach generated code for subprogram declaration
+                  --  or body, it is the body that froze the type and the
+                  --  declaration is legal.
+
+                  elsif Sloc (Obj_Decl) = Sloc (Decl) then
+                     return;
                   end if;
 
                   Next (Obj_Decl);
@@ -11333,6 +11342,18 @@ package body Sem_Ch6 is
          end if;
    end New_Overloaded_Entity;
 
+   ----------------------------------
+   -- Preanalyze_Formal_Expression --
+   ----------------------------------
+
+   procedure Preanalyze_Formal_Expression (N : Node_Id; T : Entity_Id) is
+      Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
+   begin
+      In_Spec_Expression := True;
+      Preanalyze_With_Freezing_And_Resolve (N, T);
+      In_Spec_Expression := Save_In_Spec_Expression;
+   end Preanalyze_Formal_Expression;
+
    ---------------------
    -- Process_Formals --
    ---------------------
@@ -11625,7 +11646,7 @@ package body Sem_Ch6 is
             --  Do the special preanalysis of the expression (see section on
             --  "Handling of Default Expressions" in the spec of package Sem).
 
-            Preanalyze_Spec_Expression (Default, Formal_Type);
+            Preanalyze_Formal_Expression (Default, Formal_Type);
 
             --  An access to constant cannot be the default for
             --  an access parameter that is an access to variable.

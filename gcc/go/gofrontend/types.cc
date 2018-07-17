@@ -991,6 +991,11 @@ Type::get_backend(Gogo* gogo)
   if (this->btype_ != NULL)
     return this->btype_;
 
+  if (this->named_type() != NULL && this->named_type()->is_alias()) {
+    this->btype_ = this->unalias()->get_backend(gogo);
+    return this->btype_;
+  }
+
   if (this->forward_declaration_type() != NULL
       || this->named_type() != NULL)
     return this->get_btype_without_hash(gogo);

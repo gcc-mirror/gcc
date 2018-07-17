@@ -2428,6 +2428,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   unsigned int i;
   struct loop *loop;
   auto_bitmap threaded_blocks;
+  hash_set<edge> visited_starting_edges;
 
   if (!paths.exists ())
     {
@@ -2473,10 +2474,17 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 	  continue;
 	}
 
-      /* Do not jump-thread twice from the same block.  */
-      if (bitmap_bit_p (threaded_blocks, entry->src->index)
-	  /* We may not want to realize this jump thread path
-	     for various reasons.  So check it first.  */
+      /* Do not jump-thread twice from the same starting edge.
+
+	 Previously we only checked that we weren't threading twice
+	 from the same BB, but that was too restrictive.  Imagine a
+	 path that starts from GIMPLE_COND(x_123 == 0,...), where both
+	 edges out of this conditional yield paths that can be
+	 threaded (for example, both lead to an x_123==0 or x_123!=0
+	 conditional further down the line.  */
+      if (visited_starting_edges.contains (entry)
+	  /* We may not want to realize this jump thread path for
+	     various reasons.  So check it first.  */
 	  || !valid_jump_thread_path (path))
 	{
 	  /* Remove invalid FSM jump-thread paths.  */
@@ -2496,7 +2504,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 	{
 	  /* We do not update dominance info.  */
 	  free_dominance_info (CDI_DOMINATORS);
-	  bitmap_set_bit (threaded_blocks, entry->src->index);
+	  visited_starting_edges.add (entry);
 	  retval = true;
 	  thread_stats.num_threaded_edges++;
 	}
@@ -2514,7 +2522,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       edge entry = (*path)[0]->e;
 
       /* Do not jump-thread twice from the same block.  */
-      if (bitmap_bit_p (threaded_blocks, entry->src->index))
+      if (visited_starting_edges.contains (entry))
 	{
 	  delete_jump_thread_path (path);
 	  paths.unordered_remove (i);
@@ -2522,8 +2530,6 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       else
 	i++;
     }
-
-  bitmap_clear (threaded_blocks);
 
   mark_threaded_blocks (threaded_blocks);
 

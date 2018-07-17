@@ -1233,7 +1233,7 @@ s390_label_align (rtx_insn *label)
     return 0;
 
  old:
-  return align_labels_log;
+  return align_labels.levels[0].log;
 }
 
 static GTY(()) rtx got_symbol;
@@ -7542,10 +7542,11 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
 	 NOPs.  */
       function_alignment = MAX (8, DECL_ALIGN (decl) / BITS_PER_UNIT);
       if (! DECL_USER_ALIGN (decl))
-	function_alignment = MAX (function_alignment,
-				  (unsigned int) align_functions_max_skip + 1);
+	function_alignment
+	  = MAX (function_alignment,
+		 (unsigned int) align_functions.levels[0].get_value ());
       fputs ("\t# alignment for hotpatch\n", asm_out_file);
-      ASM_OUTPUT_ALIGN (asm_out_file, align_functions_log);
+      ASM_OUTPUT_ALIGN (asm_out_file, align_functions.levels[0].log);
     }
 
   if (S390_USE_TARGET_ATTRIBUTE && TARGET_DEBUG_ARG)
@@ -13123,6 +13124,30 @@ s390_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
   emit_move_insn (mem, fnaddr);
 }
 
+static void
+output_asm_nops (const char *user, int hw)
+{
+  asm_fprintf (asm_out_file, "\t# NOPs for %s (%d halfwords)\n", user, hw);
+  while (hw > 0)
+    {
+      if (TARGET_CPU_ZARCH && hw >= 3)
+        {
+          output_asm_insn ("brcl\t0,0", NULL);
+          hw -= 3;
+        }
+      else if (hw >= 2)
+        {
+          output_asm_insn ("bc\t0,0", NULL);
+          hw -= 2;
+        }
+      else
+        {
+          output_asm_insn ("bcr\t0,0", NULL);
+          hw -= 1;
+        }
+    }
+}
+
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
@@ -13144,57 +13169,106 @@ s390_function_profiler (FILE *file, int labelno)
   op[3] = gen_rtx_SYMBOL_REF (Pmode, label);
   SYMBOL_REF_FLAGS (op[3]) = SYMBOL_FLAG_LOCAL;
 
-  op[4] = gen_rtx_SYMBOL_REF (Pmode, "_mcount");
+  op[4] = gen_rtx_SYMBOL_REF (Pmode, flag_fentry ? "__fentry__" : "_mcount");
   if (flag_pic)
     {
       op[4] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[4]), UNSPEC_PLT);
       op[4] = gen_rtx_CONST (Pmode, op[4]);
     }
 
-  if (TARGET_64BIT)
+  if (flag_record_mcount)
+    fprintf (file, "1:\n");
+
+  if (flag_fentry)
     {
-      output_asm_insn ("stg\t%0,%1", op);
-      output_asm_insn ("larl\t%2,%3", op);
-      output_asm_insn ("brasl\t%0,%4", op);
-      output_asm_insn ("lg\t%0,%1", op);
+      if (flag_nop_mcount)
+        output_asm_nops ("-mnop-mcount", /* brasl */ 3);
+      else if (cfun->static_chain_decl)
+        warning (OPT_Wcannot_profile, "nested functions cannot be profiled "
+                 "with -mfentry on s390");
+      else
+        output_asm_insn ("brasl\t0,%4", op);
+    }
+  else if (TARGET_64BIT)
+    {
+      if (flag_nop_mcount)
+        output_asm_nops ("-mnop-mcount", /* stg */ 3 + /* larl */ 3 +
+                         /* brasl */ 3 + /* lg */ 3);
+      else
+        {
+          output_asm_insn ("stg\t%0,%1", op);
+          output_asm_insn ("larl\t%2,%3", op);
+          output_asm_insn ("brasl\t%0,%4", op);
+          output_asm_insn ("lg\t%0,%1", op);
+        }
     }
   else if (TARGET_CPU_ZARCH)
     {
-      output_asm_insn ("st\t%0,%1", op);
-      output_asm_insn ("larl\t%2,%3", op);
-      output_asm_insn ("brasl\t%0,%4", op);
-      output_asm_insn ("l\t%0,%1", op);
+      if (flag_nop_mcount)
+        output_asm_nops ("-mnop-mcount", /* st */ 2 + /* larl */ 3 +
+                         /* brasl */ 3 + /* l */ 2);
+      else
+        {
+          output_asm_insn ("st\t%0,%1", op);
+          output_asm_insn ("larl\t%2,%3", op);
+          output_asm_insn ("brasl\t%0,%4", op);
+          output_asm_insn ("l\t%0,%1", op);
+        }
     }
   else if (!flag_pic)
     {
       op[6] = gen_label_rtx ();
 
-      output_asm_insn ("st\t%0,%1", op);
-      output_asm_insn ("bras\t%2,%l6", op);
-      output_asm_insn (".long\t%4", op);
-      output_asm_insn (".long\t%3", op);
-      targetm.asm_out.internal_label (file, "L", CODE_LABEL_NUMBER (op[6]));
-      output_asm_insn ("l\t%0,0(%2)", op);
-      output_asm_insn ("l\t%2,4(%2)", op);
-      output_asm_insn ("basr\t%0,%0", op);
-      output_asm_insn ("l\t%0,%1", op);
+      if (flag_nop_mcount)
+        output_asm_nops ("-mnop-mcount", /* st */ 2 + /* bras */ 2 +
+                         /* .long */ 2 + /* .long */ 2 + /* l */ 2 +
+                         /* l */ 2 + /* basr */ 1 + /* l */ 2);
+      else
+        {
+          output_asm_insn ("st\t%0,%1", op);
+          output_asm_insn ("bras\t%2,%l6", op);
+          output_asm_insn (".long\t%4", op);
+          output_asm_insn (".long\t%3", op);
+          targetm.asm_out.internal_label (file, "L",
+                                          CODE_LABEL_NUMBER (op[6]));
+          output_asm_insn ("l\t%0,0(%2)", op);
+          output_asm_insn ("l\t%2,4(%2)", op);
+          output_asm_insn ("basr\t%0,%0", op);
+          output_asm_insn ("l\t%0,%1", op);
+        }
     }
   else
     {
       op[5] = gen_label_rtx ();
       op[6] = gen_label_rtx ();
 
-      output_asm_insn ("st\t%0,%1", op);
-      output_asm_insn ("bras\t%2,%l6", op);
-      targetm.asm_out.internal_label (file, "L", CODE_LABEL_NUMBER (op[5]));
-      output_asm_insn (".long\t%4-%l5", op);
-      output_asm_insn (".long\t%3-%l5", op);
-      targetm.asm_out.internal_label (file, "L", CODE_LABEL_NUMBER (op[6]));
-      output_asm_insn ("lr\t%0,%2", op);
-      output_asm_insn ("a\t%0,0(%2)", op);
-      output_asm_insn ("a\t%2,4(%2)", op);
-      output_asm_insn ("basr\t%0,%0", op);
-      output_asm_insn ("l\t%0,%1", op);
+      if (flag_nop_mcount)
+        output_asm_nops ("-mnop-mcount", /* st */ 2 + /* bras */ 2 +
+                         /* .long */ 2 + /* .long */ 2 + /* lr */ 1 +
+                         /* a */ 2 + /* a */ 2 + /* basr */ 1 + /* l */ 2);
+      else
+        {
+          output_asm_insn ("st\t%0,%1", op);
+          output_asm_insn ("bras\t%2,%l6", op);
+          targetm.asm_out.internal_label (file, "L",
+                                          CODE_LABEL_NUMBER (op[5]));
+          output_asm_insn (".long\t%4-%l5", op);
+          output_asm_insn (".long\t%3-%l5", op);
+          targetm.asm_out.internal_label (file, "L",
+                                          CODE_LABEL_NUMBER (op[6]));
+          output_asm_insn ("lr\t%0,%2", op);
+          output_asm_insn ("a\t%0,0(%2)", op);
+          output_asm_insn ("a\t%2,4(%2)", op);
+          output_asm_insn ("basr\t%0,%0", op);
+          output_asm_insn ("l\t%0,%1", op);
+        }
+    }
+
+  if (flag_record_mcount)
+    {
+      fprintf (file, "\t.section __mcount_loc, \"a\",@progbits\n");
+      fprintf (file, "\t.%s 1b\n", TARGET_64BIT ? "quad" : "long");
+      fprintf (file, "\t.previous\n");
     }
 }
 
@@ -15562,6 +15636,12 @@ s390_option_override_internal (bool main_args_p,
   /* Call target specific restore function to do post-init work.  At the moment,
      this just sets opts->x_s390_cost_pointer.  */
   s390_function_specific_restore (opts, NULL);
+
+  /* Check whether -mfentry is supported. It cannot be used in 31-bit mode,
+     because 31-bit PLT stubs assume that %r12 contains GOT address, which is
+     not the case when the code runs before the prolog. */
+  if (opts->x_flag_fentry && !TARGET_64BIT)
+    error ("-mfentry is supported only for 64-bit CPUs");
 }
 
 static void

@@ -10898,6 +10898,20 @@ Array_index_expression::do_check_types(Gogo*)
     }
 }
 
+// The subexpressions of an array index must be evaluated in order.
+// If this is indexing into an array, rather than a slice, then only
+// the index should be evaluated.  Since this is called for values on
+// the left hand side of an assigment, evaluating the array, meaning
+// copying the array, will cause a different array to be modified.
+
+bool
+Array_index_expression::do_must_eval_subexpressions_in_order(
+    int* skip) const
+{
+  *skip = this->array_->type()->is_slice_type() ? 0 : 1;
+  return true;
+}
+
 // Flatten array indexing by using temporary variables for slices and indexes.
 
 Expression*
@@ -13652,6 +13666,7 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function,
 
   for (int depth = 0; depth < this->depth_; ++depth)
     {
+      type = type->deref();
       if (type->array_type() != NULL)
 	type = type->array_type()->element_type();
       else if (type->map_type() != NULL)

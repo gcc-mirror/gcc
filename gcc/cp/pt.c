@@ -800,10 +800,10 @@ check_specialization_namespace (tree tmpl)
     return true;
   else
     {
-      permerror (input_location,
-		 "specialization of %qD in different namespace", tmpl);
-      inform (DECL_SOURCE_LOCATION (tmpl),
-	      "  from definition of %q#D", tmpl);
+      if (permerror (input_location,
+		     "specialization of %qD in different namespace", tmpl))
+	inform (DECL_SOURCE_LOCATION (tmpl),
+		"  from definition of %q#D", tmpl);
       return false;
     }
 }
@@ -9368,8 +9368,15 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	  return found;
 	}
 
-      context = tsubst (DECL_CONTEXT (gen_tmpl), arglist,
-			complain, in_decl);
+      context = DECL_CONTEXT (gen_tmpl);
+      if (context && TYPE_P (context))
+	{
+	  context = tsubst_aggr_type (context, arglist, complain, in_decl, true);
+	  context = complete_type (context);
+	}
+      else
+	context = tsubst (context, arglist, complain, in_decl);
+
       if (context == error_mark_node)
 	return error_mark_node;
 

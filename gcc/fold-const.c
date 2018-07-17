@@ -966,21 +966,17 @@ int_binop_types_match_p (enum tree_code code, const_tree type1, const_tree type2
 	 && TYPE_MODE (type1) == TYPE_MODE (type2);
 }
 
-/* Subroutine of int_const_binop_1 that handles two INTEGER_CSTs.  */
+/* Combine two wide ints ARG1 and ARG2 under operation CODE to produce
+   a new constant in RES.  Return FALSE if we don't know how to
+   evaluate CODE at compile-time.  */
 
-static tree
-int_const_binop_2 (enum tree_code code, const_tree parg1, const_tree parg2,
-		   int overflowable)
+bool
+wide_int_binop (wide_int &res,
+		enum tree_code code, const wide_int &arg1, const wide_int &arg2,
+		signop sign, wi::overflow_type *overflow)
 {
-  wide_int res;
-  tree t;
-  tree type = TREE_TYPE (parg1);
-  signop sign = TYPE_SIGN (type);
-  wi::overflow_type overflow = wi::OVF_NONE;
-
-  wi::tree_to_wide_ref arg1 = wi::to_wide (parg1);
-  wide_int arg2 = wi::to_wide (parg2, TYPE_PRECISION (type));
-
+  wide_int tmp;
+  *overflow = wi::OVF_NONE;
   switch (code)
     {
     case BIT_IOR_EXPR:
@@ -999,49 +995,53 @@ int_const_binop_2 (enum tree_code code, const_tree parg1, const_tree parg2,
     case LSHIFT_EXPR:
       if (wi::neg_p (arg2))
 	{
-	  arg2 = -arg2;
+	  tmp = -arg2;
 	  if (code == RSHIFT_EXPR)
 	    code = LSHIFT_EXPR;
 	  else
 	    code = RSHIFT_EXPR;
 	}
+      else
+        tmp = arg2;
 
       if (code == RSHIFT_EXPR)
 	/* It's unclear from the C standard whether shifts can overflow.
 	   The following code ignores overflow; perhaps a C standard
 	   interpretation ruling is needed.  */
-	res = wi::rshift (arg1, arg2, sign);
+	res = wi::rshift (arg1, tmp, sign);
       else
-	res = wi::lshift (arg1, arg2);
+	res = wi::lshift (arg1, tmp);
       break;
 
     case RROTATE_EXPR:
     case LROTATE_EXPR:
       if (wi::neg_p (arg2))
 	{
-	  arg2 = -arg2;
+	  tmp = -arg2;
 	  if (code == RROTATE_EXPR)
 	    code = LROTATE_EXPR;
 	  else
 	    code = RROTATE_EXPR;
 	}
+      else
+        tmp = arg2;
 
       if (code == RROTATE_EXPR)
-	res = wi::rrotate (arg1, arg2);
+	res = wi::rrotate (arg1, tmp);
       else
-	res = wi::lrotate (arg1, arg2);
+	res = wi::lrotate (arg1, tmp);
       break;
 
     case PLUS_EXPR:
-      res = wi::add (arg1, arg2, sign, &overflow);
+      res = wi::add (arg1, arg2, sign, overflow);
       break;
 
     case MINUS_EXPR:
-      res = wi::sub (arg1, arg2, sign, &overflow);
+      res = wi::sub (arg1, arg2, sign, overflow);
       break;
 
     case MULT_EXPR:
-      res = wi::mul (arg1, arg2, sign, &overflow);
+      res = wi::mul (arg1, arg2, sign, overflow);
       break;
 
     case MULT_HIGHPART_EXPR:
@@ -1051,50 +1051,50 @@ int_const_binop_2 (enum tree_code code, const_tree parg1, const_tree parg2,
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
       if (arg2 == 0)
-	return NULL_TREE;
-      res = wi::div_trunc (arg1, arg2, sign, &overflow);
+	return false;
+      res = wi::div_trunc (arg1, arg2, sign, overflow);
       break;
 
     case FLOOR_DIV_EXPR:
       if (arg2 == 0)
-	return NULL_TREE;
-      res = wi::div_floor (arg1, arg2, sign, &overflow);
+	return false;
+      res = wi::div_floor (arg1, arg2, sign, overflow);
       break;
 
     case CEIL_DIV_EXPR:
       if (arg2 == 0)
-	return NULL_TREE;
-      res = wi::div_ceil (arg1, arg2, sign, &overflow);
+	return false;
+      res = wi::div_ceil (arg1, arg2, sign, overflow);
       break;
 
     case ROUND_DIV_EXPR:
       if (arg2 == 0)
-	return NULL_TREE;
-      res = wi::div_round (arg1, arg2, sign, &overflow);
+	return false;
+      res = wi::div_round (arg1, arg2, sign, overflow);
       break;
 
     case TRUNC_MOD_EXPR:
       if (arg2 == 0)
-	return NULL_TREE;
-      res = wi::mod_trunc (arg1, arg2, sign, &overflow);
+	return false;
+      res = wi::mod_trunc (arg1, arg2, sign, overflow);
       break;
 
     case FLOOR_MOD_EXPR:
       if (arg2 == 0)
-	return NULL_TREE;
-      res = wi::mod_floor (arg1, arg2, sign, &overflow);
+	return false;
+      res = wi::mod_floor (arg1, arg2, sign, overflow);
       break;
 
     case CEIL_MOD_EXPR:
       if (arg2 == 0)
-	return NULL_TREE;
-      res = wi::mod_ceil (arg1, arg2, sign, &overflow);
+	return false;
+      res = wi::mod_ceil (arg1, arg2, sign, overflow);
       break;
 
     case ROUND_MOD_EXPR:
       if (arg2 == 0)
-	return NULL_TREE;
-      res = wi::mod_round (arg1, arg2, sign, &overflow);
+	return false;
+      res = wi::mod_round (arg1, arg2, sign, overflow);
       break;
 
     case MIN_EXPR:
@@ -1106,89 +1106,94 @@ int_const_binop_2 (enum tree_code code, const_tree parg1, const_tree parg2,
       break;
 
     default:
-      return NULL_TREE;
+      return false;
     }
-
-  t = force_fit_type (type, res, overflowable,
-		      (((sign == SIGNED || overflowable == -1)
-			&& overflow)
-		       | TREE_OVERFLOW (parg1) | TREE_OVERFLOW (parg2)));
-
-  return t;
+  return true;
 }
 
-/* Combine two integer constants PARG1 and PARG2 under operation CODE
-   to produce a new constant.  Return NULL_TREE if we don't know how
+/* Combine two poly int's ARG1 and ARG2 under operation CODE to
+   produce a new constant in RES.  Return FALSE if we don't know how
    to evaluate CODE at compile-time.  */
 
-static tree
-int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
-		   int overflowable)
+static bool
+poly_int_binop (poly_wide_int &res, enum tree_code code,
+		const_tree arg1, const_tree arg2,
+		signop sign, wi::overflow_type *overflow)
 {
-  if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg2) == INTEGER_CST)
-    return int_const_binop_2 (code, arg1, arg2, overflowable);
-
   gcc_assert (NUM_POLY_INT_COEFFS != 1);
-
-  if (poly_int_tree_p (arg1) && poly_int_tree_p (arg2))
+  gcc_assert (poly_int_tree_p (arg1) && poly_int_tree_p (arg2));
+  switch (code)
     {
-      poly_wide_int res;
-      wi::overflow_type overflow;
-      tree type = TREE_TYPE (arg1);
-      signop sign = TYPE_SIGN (type);
-      switch (code)
-	{
-	case PLUS_EXPR:
-	  res = wi::add (wi::to_poly_wide (arg1),
-			 wi::to_poly_wide (arg2), sign, &overflow);
-	  break;
+    case PLUS_EXPR:
+      res = wi::add (wi::to_poly_wide (arg1),
+		     wi::to_poly_wide (arg2), sign, overflow);
+      break;
 
-	case MINUS_EXPR:
-	  res = wi::sub (wi::to_poly_wide (arg1),
-			 wi::to_poly_wide (arg2), sign, &overflow);
-	  break;
+    case MINUS_EXPR:
+      res = wi::sub (wi::to_poly_wide (arg1),
+		     wi::to_poly_wide (arg2), sign, overflow);
+      break;
 
-	case MULT_EXPR:
-	  if (TREE_CODE (arg2) == INTEGER_CST)
-	    res = wi::mul (wi::to_poly_wide (arg1),
-			   wi::to_wide (arg2), sign, &overflow);
-	  else if (TREE_CODE (arg1) == INTEGER_CST)
-	    res = wi::mul (wi::to_poly_wide (arg2),
-			   wi::to_wide (arg1), sign, &overflow);
-	  else
-	    return NULL_TREE;
-	  break;
+    case MULT_EXPR:
+      if (TREE_CODE (arg2) == INTEGER_CST)
+	res = wi::mul (wi::to_poly_wide (arg1),
+		       wi::to_wide (arg2), sign, overflow);
+      else if (TREE_CODE (arg1) == INTEGER_CST)
+	res = wi::mul (wi::to_poly_wide (arg2),
+		       wi::to_wide (arg1), sign, overflow);
+      else
+	return NULL_TREE;
+      break;
 
-	case LSHIFT_EXPR:
-	  if (TREE_CODE (arg2) == INTEGER_CST)
-	    res = wi::to_poly_wide (arg1) << wi::to_wide (arg2);
-	  else
-	    return NULL_TREE;
-	  break;
+    case LSHIFT_EXPR:
+      if (TREE_CODE (arg2) == INTEGER_CST)
+	res = wi::to_poly_wide (arg1) << wi::to_wide (arg2);
+      else
+	return false;
+      break;
 
-	case BIT_IOR_EXPR:
-	  if (TREE_CODE (arg2) != INTEGER_CST
-	      || !can_ior_p (wi::to_poly_wide (arg1), wi::to_wide (arg2),
-			     &res))
-	    return NULL_TREE;
-	  break;
+    case BIT_IOR_EXPR:
+      if (TREE_CODE (arg2) != INTEGER_CST
+	  || !can_ior_p (wi::to_poly_wide (arg1), wi::to_wide (arg2),
+			 &res))
+	return false;
+      break;
 
-	default:
-	  return NULL_TREE;
-	}
-      return force_fit_type (type, res, overflowable,
-			     (((sign == SIGNED || overflowable == -1)
-			       && overflow)
-			      | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2)));
+    default:
+      return false;
     }
-
-  return NULL_TREE;
+  return true;
 }
 
+/* Combine two integer constants ARG1 and ARG2 under operation CODE to
+   produce a new constant.  Return NULL_TREE if we don't know how to
+   evaluate CODE at compile-time.  */
+
 tree
-int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2)
+int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2,
+		 int overflowable)
 {
-  return int_const_binop_1 (code, arg1, arg2, 1);
+  bool success = false;
+  poly_wide_int poly_res;
+  tree type = TREE_TYPE (arg1);
+  signop sign = TYPE_SIGN (type);
+  wi::overflow_type overflow = wi::OVF_NONE;
+
+  if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg2) == INTEGER_CST)
+    {
+      wide_int warg1 = wi::to_wide (arg1), res;
+      wide_int warg2 = wi::to_wide (arg2, TYPE_PRECISION (type));
+      success = wide_int_binop (res, code, warg1, warg2, sign, &overflow);
+      poly_res = res;
+    }
+  else if (poly_int_tree_p (arg1) && poly_int_tree_p (arg2))
+    success = poly_int_binop (poly_res, code, arg1, arg2, sign, &overflow);
+  if (success)
+    return force_fit_type (type, poly_res, overflowable,
+			   (((sign == SIGNED || overflowable == -1)
+			     && overflow)
+			    | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2)));
+  return NULL_TREE;
 }
 
 /* Return true if binary operation OP distributes over addition in operand
@@ -1925,7 +1930,7 @@ size_binop_loc (location_t loc, enum tree_code code, tree arg0, tree arg1)
       /* Handle general case of two integer constants.  For sizetype
          constant calculations we always want to know about overflow,
 	 even in the unsigned case.  */
-      tree res = int_const_binop_1 (code, arg0, arg1, -1);
+      tree res = int_const_binop (code, arg0, arg1, -1);
       if (res != NULL_TREE)
 	return res;
     }
@@ -2785,6 +2790,22 @@ compcode_to_comparison (enum comparison_code code)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Return true if COND1 tests the opposite condition of COND2.  */
+
+bool
+inverse_conditions_p (const_tree cond1, const_tree cond2)
+{
+  return (COMPARISON_CLASS_P (cond1)
+	  && COMPARISON_CLASS_P (cond2)
+	  && (invert_tree_comparison
+	      (TREE_CODE (cond1),
+	       HONOR_NANS (TREE_OPERAND (cond1, 0))) == TREE_CODE (cond2))
+	  && operand_equal_p (TREE_OPERAND (cond1, 0),
+			      TREE_OPERAND (cond2, 0), 0)
+	  && operand_equal_p (TREE_OPERAND (cond1, 1),
+			      TREE_OPERAND (cond2, 1), 0));
 }
 
 /* Return a tree for the comparison which is the combination of
@@ -6586,6 +6607,13 @@ fold_binary_op_with_conditional_arg (location_t loc,
   tree lhs = NULL_TREE;
   tree rhs = NULL_TREE;
   enum tree_code cond_code = COND_EXPR;
+
+  /* Do not move possibly trapping operations into the conditional as this
+     pessimizes code and causes gimplification issues when applied late.  */
+  if (operation_could_trap_p (code, FLOAT_TYPE_P (type),
+			      ANY_INTEGRAL_TYPE_P (type)
+			      && TYPE_OVERFLOW_TRAPS (type), op1))
+    return NULL_TREE;
 
   if (TREE_CODE (cond) == COND_EXPR
       || TREE_CODE (cond) == VEC_COND_EXPR)

@@ -31,7 +31,6 @@ extern unsigned long sparc_type_code (tree);
 #endif /* TREE_CODE */
 
 extern void order_regs_for_local_alloc (void);
-extern HOST_WIDE_INT sparc_compute_frame_size (HOST_WIDE_INT, int);
 extern int sparc_initial_elimination_offset (int);
 extern void sparc_expand_prologue (void);
 extern void sparc_flat_expand_prologue (void);

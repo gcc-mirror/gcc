@@ -138,7 +138,6 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_NEHALEM (HOST_WIDE_INT_1U<<PROCESSOR_NEHALEM)
 #define m_SANDYBRIDGE (HOST_WIDE_INT_1U<<PROCESSOR_SANDYBRIDGE)
 #define m_HASWELL (HOST_WIDE_INT_1U<<PROCESSOR_HASWELL)
-#define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_HASWELL)
 #define m_BONNELL (HOST_WIDE_INT_1U<<PROCESSOR_BONNELL)
 #define m_SILVERMONT (HOST_WIDE_INT_1U<<PROCESSOR_SILVERMONT)
 #define m_KNL (HOST_WIDE_INT_1U<<PROCESSOR_KNL)
@@ -148,6 +147,10 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_CANNONLAKE (HOST_WIDE_INT_1U<<PROCESSOR_CANNONLAKE)
 #define m_ICELAKE_CLIENT (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_CLIENT)
 #define m_ICELAKE_SERVER (HOST_WIDE_INT_1U<<PROCESSOR_ICELAKE_SERVER)
+#define m_CORE_AVX512 (m_SKYLAKE_AVX512 | m_CANNONLAKE \
+		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER)
+#define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_CORE_AVX512)
+#define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2)
 #define m_GOLDMONT (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT)
 #define m_GOLDMONT_PLUS (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT_PLUS)
 #define m_TREMONT (HOST_WIDE_INT_1U<<PROCESSOR_TREMONT)
@@ -41924,8 +41927,9 @@ ix86_avoid_jump_mispredicts (void)
 
       if (LABEL_P (insn))
 	{
-	  int align = label_to_alignment (insn);
-	  int max_skip = label_to_max_skip (insn);
+	  align_flags alignment = label_to_alignment (insn);
+	  int align = alignment.levels[0].log;
+	  int max_skip = alignment.levels[0].maxskip;
 
 	  if (max_skip > 15)
 	    max_skip = 15;

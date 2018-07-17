@@ -2771,12 +2771,10 @@ class Index_expression : public Parser_expression
 				this->location());
   }
 
+  // This shouldn't be called--we don't know yet.
   bool
-  do_must_eval_subexpressions_in_order(int* skip) const
-  {
-    *skip = 1;
-    return true;
-  }
+  do_must_eval_subexpressions_in_order(int*) const
+  { go_unreachable(); }
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2882,11 +2880,7 @@ class Array_index_expression : public Expression
   }
 
   bool
-  do_must_eval_subexpressions_in_order(int* skip) const
-  {
-    *skip = 1;
-    return true;
-  }
+  do_must_eval_subexpressions_in_order(int* skip) const;
 
   bool
   do_is_addressable() const;
@@ -2965,11 +2959,8 @@ class String_index_expression : public Expression
   }
 
   bool
-  do_must_eval_subexpressions_in_order(int* skip) const
-  {
-    *skip = 1;
-    return true;
-  }
+  do_must_eval_subexpressions_in_order(int*) const
+  { return true; }
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3052,11 +3043,8 @@ class Map_index_expression : public Expression
   }
 
   bool
-  do_must_eval_subexpressions_in_order(int* skip) const
-  {
-    *skip = 1;
-    return true;
-  }
+  do_must_eval_subexpressions_in_order(int*) const
+  { return true; }
 
   // A map index expression is an lvalue but it is not addressable.
 

@@ -160,6 +160,17 @@ direct_internal_fn_p (internal_fn fn)
   return direct_internal_fn_array[fn].type0 >= -1;
 }
 
+/* Return true if FN is a direct internal function that can be vectorized by
+   converting the return type and all argument types to vectors of the same
+   number of elements.  E.g. we can vectorize an IFN_SQRT on floats as an
+   IFN_SQRT on vectors of N floats.  */
+
+inline bool
+vectorizable_internal_fn_p (internal_fn fn)
+{
+  return direct_internal_fn_array[fn].vectorizable;
+}
+
 /* Return optab information about internal function FN.  Only meaningful
    if direct_internal_fn_p (FN).  */
 
@@ -193,6 +204,12 @@ direct_internal_fn_supported_p (internal_fn fn, tree type0, tree type1,
 extern bool set_edom_supported_p (void);
 
 extern internal_fn get_conditional_internal_fn (tree_code);
+extern internal_fn get_conditional_internal_fn (internal_fn);
+extern tree_code conditional_internal_fn_code (internal_fn);
+extern internal_fn get_unconditional_internal_fn (internal_fn);
+extern bool can_interpret_as_conditional_op_p (gimple *, tree *,
+					       tree_code *, tree (&)[3],
+					       tree *);
 
 extern bool internal_load_fn_p (internal_fn);
 extern bool internal_store_fn_p (internal_fn);
@@ -205,5 +222,7 @@ extern bool internal_gather_scatter_fn_supported_p (internal_fn, tree,
 extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);
 extern void expand_PHI (internal_fn, gcall *);
+
+extern bool vectorized_internal_fn_supported_p (internal_fn, tree);
 
 #endif

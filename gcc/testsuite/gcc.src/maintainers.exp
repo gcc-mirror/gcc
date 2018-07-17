@@ -1,0 +1,43 @@
+#   Copyright (C) 2018 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib "gcc-defs.exp"
+
+proc gcc_src_run_maintainers_verify_sh {} {
+    set script maintainers-verify.sh
+
+    global srcdir
+    set rootdir $srcdir/../..
+    set contrib $rootdir/contrib
+
+    set maintainers $rootdir/MAINTAINERS
+
+    set verify_output [exec $contrib/$script $maintainers]
+    if { "$verify_output"  == "" } {
+	pass "$script"
+    } else {
+	send_log "$verify_output\n"
+	fail "$script"
+    }
+}
+
+if ![gcc_parallel_test_run_p maintainers] {
+    return
+}
+gcc_parallel_test_enable 0
+gcc_src_run_maintainers_verify_sh
+gcc_parallel_test_enable 1
+

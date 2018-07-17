@@ -3984,16 +3984,51 @@ package body Exp_Ch7 is
       end if;
    end Cleanup_Task;
 
-   -----------------------------------
+   --------------------------------------
    -- Check_Unnesting_Elaboration_Code --
-   -----------------------------------
+   --------------------------------------
 
    procedure Check_Unnesting_Elaboration_Code (N : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
+
+      function Contains_Subprogram (Blk : Entity_Id) return Boolean;
+      --  Check recursively whether a loop or block contains a subprogram that
+      --  may need an activation record.
+
+      --------------------------
+      --  Contains_Subprogram --
+      --------------------------
+
+      function Contains_Subprogram (Blk : Entity_Id) return Boolean is
+         E : Entity_Id;
+
+      begin
+         E := First_Entity (Blk);
+
+         while Present (E) loop
+            if Is_Subprogram (E) then
+               return True;
+
+            elsif Ekind_In (E, E_Block, E_Loop)
+              and then Contains_Subprogram (E)
+            then
+               return True;
+            end if;
+
+            Next_Entity (E);
+         end loop;
+
+         return False;
+      end Contains_Subprogram;
+
+      --  Local variables
+
       Elab_Body : Node_Id;
       Elab_Call : Node_Id;
       Elab_Proc : Entity_Id;
       Stat      : Node_Id;
+
+   --  Start of processing for Check_Unnesting_Elaboration_Code
 
    begin
       if Unnest_Subprogram_Mode
@@ -4002,8 +4037,10 @@ package body Exp_Ch7 is
       then
          Stat := First (Statements (Handled_Statement_Sequence (N)));
          while Present (Stat) loop
-            exit when Nkind (Stat) = N_Block_Statement
-              and then Present (Identifier (Stat));
+            exit when ((Nkind (Stat) = N_Block_Statement
+                         and then Present (Identifier (Stat)))
+                or else Nkind (Stat) = N_Loop_Statement)
+              and then Contains_Subprogram (Entity (Identifier (Stat)));
             Next (Stat);
          end loop;
 
@@ -4035,19 +4072,23 @@ package body Exp_Ch7 is
 
             Analyze (Elab_Call);
 
-            --  The scope of all blocks in the elaboration code is now the
-            --  constructed elaboration procedure. Nested subprograms within
-            --  those blocks will have activation records if they contain
-            --  references to entities in the enclosing block.
+            --  The scope of all blocks and loops in the elaboration code is
+            --  now the constructed elaboration procedure. Nested subprograms
+            --  within those blocks will have activation records if they
+            --  contain references to entities in the enclosing block.
 
             Stat :=
               First (Statements (Handled_Statement_Sequence (Elab_Body)));
 
             while Present (Stat) loop
-               if Nkind (Stat) = N_Block_Statement
-                 and then Present (Identifier (Stat))
+               if (Nkind (Stat) = N_Block_Statement
+                    and then Present (Identifier (Stat)))
+                 or else Nkind (Stat) = N_Loop_Statement
                then
                   Set_Scope (Entity (Identifier (Stat)), Elab_Proc);
+
+               elsif Nkind (Stat) = N_Subprogram_Body then
+                  Set_Scope (Defining_Entity (Stat), Elab_Proc);
                end if;
 
                Next (Stat);
@@ -8664,6 +8705,9 @@ package body Exp_Ch7 is
       function Manages_Sec_Stack (Id : Entity_Id) return Boolean;
       --  Determine whether scoping entity Id manages the secondary stack
 
+      function Within_Loop_Statement (N : Node_Id) return Boolean;
+      --  Return True when N appears within a loop and no block is containing N
+
       -----------------------
       -- Manages_Sec_Stack --
       -----------------------
@@ -8692,6 +8736,26 @@ package body Exp_Ch7 is
                return False;
          end case;
       end Manages_Sec_Stack;
+
+      ---------------------------
+      -- Within_Loop_Statement --
+      ---------------------------
+
+      function Within_Loop_Statement (N : Node_Id) return Boolean is
+         Par : Node_Id := Parent (N);
+
+      begin
+         while not (Nkind_In (Par, N_Handled_Sequence_Of_Statements,
+                                   N_Loop_Statement,
+                                   N_Package_Specification)
+                      or else Nkind (Par) in N_Proper_Body)
+         loop
+            pragma Assert (Present (Par));
+            Par := Parent (Par);
+         end loop;
+
+         return Nkind (Par) = N_Loop_Statement;
+      end Within_Loop_Statement;
 
       --  Local variables
 
@@ -8744,6 +8808,16 @@ package body Exp_Ch7 is
             --  each iteration.
 
             elsif Ekind (Scop) = E_Loop then
+               exit;
+
+            --  Ditto when the block appears without a block that does not
+            --  manage the secondary stack and is located within a loop.
+
+            elsif Ekind (Scop) = E_Block
+              and then not Manages_Sec_Stack (Scop)
+              and then Present (Block_Node (Scop))
+              and then Within_Loop_Statement (Block_Node (Scop))
+            then
                exit;
 
             --  The transient block does not need to manage the secondary stack

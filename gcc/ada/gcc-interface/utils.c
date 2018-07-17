@@ -391,15 +391,13 @@ make_dummy_type (Entity_Id gnat_type)
 
   SET_DUMMY_NODE (gnat_equiv, gnu_type);
 
-  /* Create a debug type so that debug info consumers only see an unspecified
-     type.  */
+  /* Create a debug type so that debuggers only see an unspecified type.  */
   if (Needs_Debug_Info (gnat_type))
     {
       debug_type = make_node (LANG_TYPE);
-      SET_TYPE_DEBUG_TYPE (gnu_type, debug_type);
-
       TYPE_NAME (debug_type) = TYPE_NAME (gnu_type);
       TYPE_ARTIFICIAL (debug_type) = TYPE_ARTIFICIAL (gnu_type);
+      SET_TYPE_DEBUG_TYPE (gnu_type, debug_type);
     }
 
   return gnu_type;
@@ -1073,7 +1071,9 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
 
   finish_record_type (new_type, nreverse (new_field_list), 2, false);
   relate_alias_sets (new_type, type, ALIAS_SET_COPY);
-  if (TYPE_STUB_DECL (type))
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    SET_TYPE_DEBUG_TYPE (new_type, TYPE_DEBUG_TYPE (type));
+  else if (TYPE_STUB_DECL (type))
     SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
 			    DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
 
@@ -1417,7 +1417,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     }
 
   if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-    SET_TYPE_DEBUG_TYPE (record, type);
+    SET_TYPE_DEBUG_TYPE (record, maybe_debug_type (type));
 
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
@@ -1684,7 +1684,7 @@ record_builtin_type (const char *name, tree type, bool artificial_p)
   integral types are unsigned.
 
   Unfortunately the signedness of 'char' in C is implementation-defined
-  and GCC even has the option -fsigned-char to toggle it at run time.
+  and GCC even has the option -f[un]signed-char to toggle it at run time.
   Since GNAT's philosophy is to be compatible with C by default, to wit
   Interfaces.C.char is defined as a mere copy of Character, we may need
   to declare character types as signed types in GENERIC and generate the
@@ -3191,9 +3191,9 @@ create_label_decl (tree name, Node_Id gnat_node)
 }
 
 /* Return a FUNCTION_DECL node.  NAME is the name of the subprogram, ASM_NAME
-   its assembler name, TYPE its type (a FUNCTION_TYPE node), PARAM_DECL_LIST
-   the list of its parameters (a list of PARM_DECL nodes chained through the
-   DECL_CHAIN field).
+   its assembler name, TYPE its type (a FUNCTION_TYPE or METHOD_TYPE node),
+   PARAM_DECL_LIST the list of its parameters (a list of PARM_DECL nodes
+   chained through the DECL_CHAIN field).
 
    INLINE_STATUS describes the inline flags to be set on the FUNCTION_DECL.
 
@@ -3589,7 +3589,7 @@ gnat_useless_type_conversion (tree expr)
   return false;
 }
 
-/* Return true if T, a FUNCTION_TYPE, has the specified list of flags.  */
+/* Return true if T, a {FUNCTION,METHOD}_TYPE, has the specified flags.  */
 
 bool
 fntype_same_flags_p (const_tree t, tree cico_list, bool return_unconstrained_p,

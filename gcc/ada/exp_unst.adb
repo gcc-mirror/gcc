@@ -526,6 +526,23 @@ package body Exp_Unst is
                         end loop;
                      end;
 
+                  --  Binary operator cases. These can apply to arrays for
+                  --  which we may need bounds.
+
+                  elsif Nkind (N) in N_Binary_Op then
+                     Note_Uplevel_Bound (Left_Opnd (N),  Ref);
+                     Note_Uplevel_Bound (Right_Opnd (N), Ref);
+
+                  --  Unary operator case
+
+                  elsif Nkind (N) in N_Unary_Op then
+                     Note_Uplevel_Bound (Right_Opnd (N), Ref);
+
+                  --  Explicit dereference case
+
+                  elsif Nkind (N) = N_Explicit_Dereference then
+                     Note_Uplevel_Bound (Prefix (N), Ref);
+
                   --  Conversion case
 
                   elsif Nkind (N) = N_Type_Conversion then
@@ -695,11 +712,19 @@ package body Exp_Unst is
                L : constant Nat := Get_Level (Subp, E);
 
             begin
+               --  Subprograms declared in tasks and protected types cannot
+               --  be eliminated because calls to them may be in other units,
+               --  so they must be treated as reachable.
+
                Subps.Append
                  ((Ent           => E,
                    Bod           => Bod,
                    Lev           => L,
-                   Reachable     => False,
+                   Reachable     => In_Synchronized_Unit (E),
+
+                   --  Subprograms declared in tasks and protected types are
+                   --  reachable and cannot be eliminated.
+
                    Uplevel_Ref   => L,
                    Declares_AREC => False,
                    Uents         => No_Elist,
@@ -791,7 +816,7 @@ package body Exp_Unst is
 
                --  Similarly, the following constructs include a semantic
                --  attribute Procedure_To_Call that must be handled like
-               --  other calls.
+               --  other calls. Likewise for attribute Storage_Pool.
 
                when N_Allocator
                   | N_Extended_Return_Statement
@@ -799,13 +824,27 @@ package body Exp_Unst is
                   | N_Simple_Return_Statement
                =>
                   declare
+                     Pool : constant Entity_Id := Storage_Pool (N);
                      Proc : constant Entity_Id := Procedure_To_Call (N);
+
                   begin
                      if Present (Proc)
                        and then Scope_Within (Proc, Subp)
                        and then not Is_Imported (Proc)
                      then
                         Append_Unique_Call ((N, Current_Subprogram, Proc));
+                     end if;
+
+                     if Present (Pool)
+                       and then not Is_Library_Level_Entity (Pool)
+                       and then Scope_Within_Or_Same (Scope (Pool), Subp)
+                     then
+                        Caller := Current_Subprogram;
+                        Callee := Enclosing_Subprogram (Pool);
+
+                        if Callee /= Caller then
+                           Note_Uplevel_Ref (Pool, Empty, Caller, Callee);
+                        end if;
                      end if;
                   end;
 
@@ -824,7 +863,8 @@ package body Exp_Unst is
                      end;
                   end if;
 
-               --  A 'Access reference is a (potential) call. Other attributes
+               --  A 'Access reference is a (potential) call. So is 'Address,
+               --  in particular on imported subprograms. Other attributes
                --  require special handling.
 
                when N_Attribute_Reference =>
@@ -836,6 +876,7 @@ package body Exp_Unst is
                         when Attribute_Access
                            | Attribute_Unchecked_Access
                            | Attribute_Unrestricted_Access
+                           | Attribute_Address
                         =>
                            if Nkind (Prefix (N)) in N_Has_Entity then
                               Ent := Entity (Prefix (N));
@@ -890,7 +931,9 @@ package body Exp_Unst is
                --  no relevant code generation.
 
                when N_Component_Association =>
-                  if No (Etype (Expression (N))) then
+                  if No (Expression (N))
+                    or else No (Etype (Expression (N)))
+                  then
                      return Skip;
                   end if;
 
@@ -905,7 +948,9 @@ package body Exp_Unst is
                --  and if the lower bound (or an inner bound for a multi-
                --  dimensional array) is uplevel.
 
-               when N_Indexed_Component | N_Slice =>
+               when N_Indexed_Component
+                  | N_Slice
+               =>
                   if Is_Constrained (Etype (Prefix (N))) then
                      declare
                         DT : Boolean := False;
@@ -931,6 +976,31 @@ package body Exp_Unst is
                         Check_Static_Type (Etype (Prefix (N)), Empty, DT);
                      end;
                   end if;
+
+               --  For EQ/NE comparisons, we need the type of the operands
+               --  in order to do the comparison, which means we need the
+               --  bounds.
+
+               when N_Op_Eq
+                  | N_Op_Ne
+               =>
+                  declare
+                     DT : Boolean := False;
+                  begin
+                     Check_Static_Type (Etype (Left_Opnd  (N)), Empty, DT);
+                     Check_Static_Type (Etype (Right_Opnd (N)), Empty, DT);
+                  end;
+
+               --  Likewise we need the sizes to compute how much to move in
+               --  an assignment.
+
+               when N_Assignment_Statement =>
+                  declare
+                     DT : Boolean := False;
+                  begin
+                     Check_Static_Type (Etype (Name       (N)), Empty, DT);
+                     Check_Static_Type (Etype (Expression (N)), Empty, DT);
+                  end;
 
                --  Record a subprogram. We record a subprogram body that acts
                --  as a spec. Otherwise we record a subprogram declaration,
@@ -1013,8 +1083,14 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
-               --  Otherwise record an uplevel reference in a local
-               --  identifier.
+               --  Pragmas and component declarations can be ignored
+
+               when N_Component_Declaration
+                  | N_Pragma
+               =>
+                  return Skip;
+
+               --  Otherwise record an uplevel reference in a local identifier
 
                when others =>
                   if Nkind (N) in N_Has_Entity
@@ -1036,22 +1112,25 @@ package body Exp_Unst is
                         --  references to global declarations.
 
                        and then
-                         (Ekind_In (Ent, E_Constant, E_Variable)
+                         (Ekind_In (Ent, E_Constant,
+                                         E_Loop_Parameter,
+                                         E_Variable)
 
-                        --  Formals are interesting, but not if being used as
-                        --  mere names of parameters for name notation calls.
+                           --  Formals are interesting, but not if being used
+                           --  as mere names of parameters for name notation
+                           --  calls.
 
-                        or else
-                          (Is_Formal (Ent)
-                            and then not
-                             (Nkind (Parent (N)) = N_Parameter_Association
-                               and then Selector_Name (Parent (N)) = N))
+                           or else
+                             (Is_Formal (Ent)
+                               and then not
+                                 (Nkind (Parent (N)) = N_Parameter_Association
+                                   and then Selector_Name (Parent (N)) = N))
 
-                        --  Types other than known Is_Static types are
-                        --  potentially interesting.
+                           --  Types other than known Is_Static types are
+                           --  potentially interesting.
 
-                        or else (Is_Type (Ent)
-                                  and then not Is_Static_Type (Ent)))
+                           or else
+                             (Is_Type (Ent) and then not Is_Static_Type (Ent)))
                      then
                         --  Here we have a potentially interesting uplevel
                         --  reference to examine.
@@ -1216,13 +1295,32 @@ package body Exp_Unst is
                   loop
                      S := Enclosing_Subprogram (S);
 
-                     --  if we are at the top level, as can happen with
+                     --  If we are at the top level, as can happen with
                      --  references to formals in aspects of nested subprogram
-                     --  declarations, there are no further subprograms to
-                     --  mark as requiring activation records.
+                     --  declarations, there are no further subprograms to mark
+                     --  as requiring activation records.
 
                      exit when No (S);
-                     Subps.Table (Subp_Index (S)).Declares_AREC := True;
+
+                     declare
+                        SUBI : Subp_Entry renames Subps.Table (Subp_Index (S));
+                     begin
+                        SUBI.Declares_AREC := True;
+
+                        --  If this entity was marked reachable because it is
+                        --  in a task or protected type, there may not appear
+                        --  to be any calls to it, which would normally adjust
+                        --  the levels of the parent subprograms. So we need to
+                        --  be sure that the uplevel reference of that entity
+                        --  takes into account possible calls.
+
+                        if In_Synchronized_Unit (SUBF.Ent)
+                          and then SUBT.Lev < SUBI.Uplevel_Ref
+                        then
+                           SUBI.Uplevel_Ref := SUBT.Lev;
+                        end if;
+                     end;
+
                      exit when S = URJ.Callee;
                   end loop;
 
@@ -1272,13 +1370,6 @@ package body Exp_Unst is
                Decl : Node_Id;
 
             begin
-               --  Subprograms declared in tasks and protected types are
-               --  reachable and cannot be eliminated.
-
-               if In_Synchronized_Unit (STJ.Ent) then
-                  STJ.Reachable := True;
-               end if;
-
                --  Subprogram is reachable, copy and reset index
 
                if STJ.Reachable then
@@ -1794,9 +1885,10 @@ package body Exp_Unst is
                               begin
                                  --  For parameters, we insert the assignment
                                  --  right after the declaration of ARECnP.
-                                 --  For all other entities, we insert
-                                 --  the assignment immediately after the
-                                 --  declaration of the entity.
+                                 --  For all other entities, we insert the
+                                 --  assignment immediately after the
+                                 --  declaration of the entity or after the
+                                 --  freeze node if present.
 
                                  --  Note: we don't need to mark the entity
                                  --  as being aliased, because the address
@@ -1805,6 +1897,10 @@ package body Exp_Unst is
 
                                  if Is_Formal (Ent) then
                                     Ins := Decl_ARECnP;
+
+                                 elsif Has_Delayed_Freeze (Ent) then
+                                    Ins := Freeze_Node (Ent);
+
                                  else
                                     Ins := Dec;
                                  end if;
@@ -1837,7 +1933,20 @@ package body Exp_Unst is
                                            New_Occurrence_Of (Ent, Loc),
                                          Attribute_Name => Attr));
 
-                                 Insert_After (Ins, Asn);
+                                 --  If we have a loop parameter, we have
+                                 --  to insert before the first statement
+                                 --  of the loop. Ins points to the
+                                 --  N_Loop_Parameter_Specification.
+
+                                 if Ekind (Ent) = E_Loop_Parameter then
+                                    Ins :=
+                                      First
+                                        (Statements (Parent (Parent (Ins))));
+                                    Insert_Before (Ins, Asn);
+
+                                 else
+                                    Insert_After (Ins, Asn);
+                                 end if;
 
                                  --  Analyze the assignment statement. We do
                                  --  not need to establish the relevant scope
@@ -1875,9 +1984,18 @@ package body Exp_Unst is
          begin
             --  Ignore type references, these are implicit references that do
             --  not need rewriting (e.g. the appearence in a conversion).
-            --  Also ignore if no reference was specified.
+            --  Also ignore if no reference was specified or if the rewriting
+            --  has already been done (this can happen if the N_Identifier
+            --  occurs more than one time in the tree).
+           --  Also ignore uplevel references to bounds of types that come
+           --  from the original type reference.
 
-            if Is_Type (UPJ.Ent) or else No (UPJ.Ref) then
+            if Is_Type (UPJ.Ent)
+              or else No (UPJ.Ref)
+              or else not Is_Entity_Name (UPJ.Ref)
+              or else not Present (Entity (UPJ.Ref))
+              or else Is_Type (Entity (UPJ.Ref))
+            then
                goto Continue;
             end if;
 
@@ -1900,7 +2018,7 @@ package body Exp_Unst is
                Typ : constant Entity_Id := Etype (UPJ.Ent);
                --  The type of the referenced entity
 
-               Atyp : constant Entity_Id := Get_Actual_Subtype (UPJ.Ref);
+               Atyp : Entity_Id;
                --  The actual subtype of the reference
 
                RS_Caller : constant SI_Type := Subp_Index (UPJ.Caller);
@@ -1920,6 +2038,12 @@ package body Exp_Unst is
                SI   : SI_Type;
 
             begin
+               Atyp := Etype (UPJ.Ref);
+
+               if Ekind (Atyp) /= E_Record_Subtype then
+                  Atyp := Get_Actual_Subtype (UPJ.Ref);
+               end if;
+
                --  Ignore if no ARECnF entity for enclosing subprogram which
                --  probably happens as a result of not properly treating
                --  instance bodies. To be examined ???
@@ -2239,7 +2363,7 @@ package body Exp_Unst is
    --  Start of processing for Unnest_Subprograms
 
    begin
-      if not Opt.Unnest_Subprogram_Mode then
+      if not Opt.Unnest_Subprogram_Mode or not Opt.Expander_Active then
          return;
       end if;
 

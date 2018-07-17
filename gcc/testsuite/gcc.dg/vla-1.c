@@ -20,6 +20,7 @@ main ()
   return 0;
 }
 
-/* One debug source bind is generated for the parameter, and two to describe the
+/* One debug source bind is generated for the parameter, and one to describe the
    sizes of a and b.  */
-/* { dg-final { scan-tree-dump-times " s=> i" 3 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " s=> i" 2 "optimized" } } */
+

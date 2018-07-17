@@ -2,10 +2,7 @@
 
    Test strlen on const variables initialized to string literals.
 
-   Written by Jakub Jelinek, 9/14/2004.
-
-   { dg-do compile }
-   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
+   Written by Jakub Jelinek, 9/14/2004.  */
 
 extern void abort (void);
 extern __SIZE_TYPE__ strlen (const char *);
@@ -13,6 +10,7 @@ extern char *strcpy (char *, const char *);
 static const char bar[] = "Hello, World!";
 static const char baz[] = "hello, world?";
 static const char larger[20] = "short string";
+extern int inside_main;
 
 int l1 = 1;
 int x = 6;
@@ -20,6 +18,8 @@ int x = 6;
 void
 main_test(void)
 {
+  inside_main = 1;
+
 #ifdef __OPTIMIZE__
   const char *foo;
   int i;
@@ -61,10 +61,16 @@ main_test(void)
   if (strlen (&larger[10]) != 2)
     abort ();
 
+  inside_main = 0;
+  /* The following call may or may not be folded depending on
+     the optimization level, and when it isn't folded (such
+     as may be the case with -Og) it may or may not result in
+     a library call, depending on whether or not it's expanded
+     inline (e.g., powerpc64 makes a call while x86_64 expands
+     it inline).  */
   if (strlen (larger + (x++ & 7)) != 5)
     abort ();
   if (x != 8)
     abort ();
+  inside_main = 1;
 }
-
-/* { dg-final { scan-tree-dump-not "strlen" "optimized" } } */

@@ -1960,19 +1960,17 @@ endif
 # Cygwin/Mingw32
 ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   # Cygwin provides a full Posix environment, and so we use the default
-  # versions of s-memory and g-socthi rather than the Windows-specific
-  # MinGW versions.  Ideally we would use all the default versions for
-  # Cygwin and none of the MinGW versions, but for historical reasons
-  # the Cygwin port has always been a CygMing frankenhybrid and it is
-  # a long-term project to disentangle them.
+  # versions g-socthi rather than the Windows-specific MinGW version.
+  # Ideally we would use all the default versions for Cygwin and none
+  # of the MinGW versions, but for historical reasons the Cygwin port
+  # has always been a CygMing frankenhybrid and it is a long-term project
+  # to disentangle them.
   ifeq ($(strip $(filter-out cygwin%,$(target_os))),)
     LIBGNAT_TARGET_PAIRS = \
-    s-memory.adb<libgnat/s-memory.adb \
     g-socthi.ads<libgnat/g-socthi.ads \
     g-socthi.adb<libgnat/g-socthi.adb
   else
     LIBGNAT_TARGET_PAIRS = \
-    s-memory.adb<libgnat/s-memory__mingw.adb \
     g-socthi.ads<libgnat/g-socthi__mingw.ads \
     g-socthi.adb<libgnat/g-socthi__mingw.adb
   endif

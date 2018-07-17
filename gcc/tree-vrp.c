@@ -956,11 +956,13 @@ value_range_constant_singleton (value_range *vr)
   return NULL_TREE;
 }
 
-/* Wrapper around int_const_binop.  Return true if we can compute the
-   result; i.e. if the operation doesn't overflow or if the overflow is
-   undefined.  In the latter case (if the operation overflows and
-   overflow is undefined), then adjust the result to be -INF or +INF
-   depending on CODE, VAL1 and VAL2.  Return the value in *RES.
+/* Wrapper around wide_int_binop that adjusts for overflow.
+
+   Return true if we can compute the result; i.e. if the operation
+   doesn't overflow or if the overflow is undefined.  In the latter
+   case (if the operation overflows and overflow is undefined), then
+   adjust the result to be -INF or +INF depending on CODE, VAL1 and
+   VAL2.  Return the value in *RES.
 
    Return false for division by zero, for which the result is
    indeterminate.  */
@@ -970,78 +972,36 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2, wide_int *res)
 {
   wi::overflow_type overflow = wi::OVF_NONE;
   signop sign = TYPE_SIGN (TREE_TYPE (val1));
+  wide_int w1 = wi::to_wide (val1);
+  wide_int w2 = wi::to_wide (val2);
 
   switch (code)
     {
     case RSHIFT_EXPR:
     case LSHIFT_EXPR:
-      {
-	wide_int wval2 = wi::to_wide (val2, TYPE_PRECISION (TREE_TYPE (val1)));
-	if (wi::neg_p (wval2))
-	  {
-	    wval2 = -wval2;
-	    if (code == RSHIFT_EXPR)
-	      code = LSHIFT_EXPR;
-	    else
-	      code = RSHIFT_EXPR;
-	  }
-
-	if (code == RSHIFT_EXPR)
-	  /* It's unclear from the C standard whether shifts can overflow.
-	     The following code ignores overflow; perhaps a C standard
-	     interpretation ruling is needed.  */
-	  *res = wi::rshift (wi::to_wide (val1), wval2, sign);
-	else
-	  *res = wi::lshift (wi::to_wide (val1), wval2);
-	break;
-      }
-
+      w2 = wi::to_wide (val2, TYPE_PRECISION (TREE_TYPE (val1)));
+      /* FALLTHRU */
     case MULT_EXPR:
-      *res = wi::mul (wi::to_wide (val1),
-		      wi::to_wide (val2), sign, &overflow);
-      break;
-
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      if (val2 == 0)
-	return false;
-      else
-	*res = wi::div_trunc (wi::to_wide (val1),
-			      wi::to_wide (val2), sign, &overflow);
-      break;
-
     case FLOOR_DIV_EXPR:
-      if (val2 == 0)
-	return false;
-      *res = wi::div_floor (wi::to_wide (val1),
-			    wi::to_wide (val2), sign, &overflow);
-      break;
-
     case CEIL_DIV_EXPR:
-      if (val2 == 0)
-	return false;
-      *res = wi::div_ceil (wi::to_wide (val1),
-			   wi::to_wide (val2), sign, &overflow);
-      break;
-
     case ROUND_DIV_EXPR:
-      if (val2 == 0)
+      if (!wide_int_binop (*res, code, w1, w2, sign, &overflow))
 	return false;
-      *res = wi::div_round (wi::to_wide (val1),
-			    wi::to_wide (val2), sign, &overflow);
       break;
 
     default:
       gcc_unreachable ();
     }
 
+  /* If the operation overflowed return -INF or +INF depending on the
+     operation and the combination of signs of the operands.  */
   if (overflow
       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1)))
     {
-      /* If the operation overflowed return -INF or +INF depending
-	 on the operation and the combination of signs of the operands.  */
-      int sgn1 = tree_int_cst_sgn (val1);
-      int sgn2 = tree_int_cst_sgn (val2);
+      int sign1 = tree_int_cst_sgn (val1);
+      int sign2 = tree_int_cst_sgn (val2);
 
       /* Notice that we only need to handle the restricted set of
 	 operations handled by extract_range_from_binary_expr.
@@ -1053,64 +1013,47 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2, wide_int *res)
 
       /* For multiplication, the sign of the overflow is given
 	 by the comparison of the signs of the operands.  */
-      if ((code == MULT_EXPR && sgn1 == sgn2)
-          /* For addition, the operands must be of the same sign
-	     to yield an overflow.  Its sign is therefore that
-	     of one of the operands, for example the first.  */
-	  || (code == PLUS_EXPR && sgn1 >= 0)
-	  /* For subtraction, operands must be of
-	     different signs to yield an overflow.  Its sign is
-	     therefore that of the first operand or the opposite of
-	     that of the second operand.  A first operand of 0 counts
-	     as positive here, for the corner case 0 - (-INF), which
-	     overflows, but must yield +INF.  */
-	  || (code == MINUS_EXPR && sgn1 >= 0)
+      if ((code == MULT_EXPR && sign1 == sign2)
 	  /* For division, the only case is -INF / -1 = +INF.  */
 	  || code == TRUNC_DIV_EXPR
 	  || code == FLOOR_DIV_EXPR
 	  || code == CEIL_DIV_EXPR
 	  || code == EXACT_DIV_EXPR
 	  || code == ROUND_DIV_EXPR)
-	*res = wi::max_value (TYPE_PRECISION (TREE_TYPE (val1)),
-			      TYPE_SIGN (TREE_TYPE (val1)));
+	*res = wi::max_value (TYPE_PRECISION (TREE_TYPE (val1)), sign);
       else
-	*res = wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)),
-			      TYPE_SIGN (TREE_TYPE (val1)));
+	*res = wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)), sign);
       return true;
     }
 
   return !overflow;
 }
 
-
-/* For range VR compute two wide_int bitmasks.  In *MAY_BE_NONZERO
-   bitmask if some bit is unset, it means for all numbers in the range
+/* For range [LB, UB] compute two wide_int bitmasks.  In *MAY_BE_NONZERO
+   bitmask, if some bit is unset, it means for all numbers in the range
    the bit is 0, otherwise it might be 0 or 1.  In *MUST_BE_NONZERO
-   bitmask if some bit is set, it means for all numbers in the range
+   bitmask, if some bit is set, it means for all numbers in the range
    the bit is 1, otherwise it might be 0 or 1.  */
 
-bool
-zero_nonzero_bits_from_vr (const tree expr_type,
-			   value_range *vr,
-			   wide_int *may_be_nonzero,
-			   wide_int *must_be_nonzero)
+void
+zero_nonzero_bits_from_bounds (signop sign,
+			       const wide_int &lb, const wide_int &ub,
+			       wide_int *may_be_nonzero,
+			       wide_int *must_be_nonzero)
 {
-  *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
-  *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
-  if (!range_int_cst_p (vr))
-    return false;
+  *may_be_nonzero = wi::minus_one (lb.get_precision ());
+  *must_be_nonzero = wi::zero (lb.get_precision ());
 
-  if (range_int_cst_singleton_p (vr))
+  if (wi::eq_p (lb, ub))
     {
-      *may_be_nonzero = wi::to_wide (vr->min);
+      *may_be_nonzero = lb;
       *must_be_nonzero = *may_be_nonzero;
     }
-  else if (tree_int_cst_sgn (vr->min) >= 0
-	   || tree_int_cst_sgn (vr->max) < 0)
+  else if (wi::ge_p (lb, 0, sign) || wi::lt_p (ub, 0, sign))
     {
-      wide_int xor_mask = wi::to_wide (vr->min) ^ wi::to_wide (vr->max);
-      *may_be_nonzero = wi::to_wide (vr->min) | wi::to_wide (vr->max);
-      *must_be_nonzero = wi::to_wide (vr->min) & wi::to_wide (vr->max);
+      wide_int xor_mask = lb ^ ub;
+      *may_be_nonzero = lb | ub;
+      *must_be_nonzero = lb & ub;
       if (xor_mask != 0)
 	{
 	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
@@ -1119,7 +1062,26 @@ zero_nonzero_bits_from_vr (const tree expr_type,
 	  *must_be_nonzero = wi::bit_and_not (*must_be_nonzero, mask);
 	}
     }
+}
 
+/* Like zero_nonzero_bits_from_bounds, but use the range in value_range VR.  */
+
+bool
+zero_nonzero_bits_from_vr (const tree expr_type,
+			   value_range *vr,
+			   wide_int *may_be_nonzero,
+			   wide_int *must_be_nonzero)
+{
+  if (!range_int_cst_p (vr))
+    {
+      *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
+      *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
+      return false;
+    }
+
+  zero_nonzero_bits_from_bounds (TYPE_SIGN (expr_type),
+				 wi::to_wide (vr->min), wi::to_wide (vr->max),
+				 may_be_nonzero, must_be_nonzero);
   return true;
 }
 
@@ -1273,6 +1235,52 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
   set_value_range (vr, rtype,
 		   wide_int_to_tree (type, min),
 		   wide_int_to_tree (type, max), NULL);
+}
+
+/* For op & or | attempt to optimize:
+
+	[LB, UB] op Z
+   into:
+	[LB op Z, UB op Z]
+
+   if Z is a constant which (for op | its bitwise not) has n
+   consecutive least significant bits cleared followed by m 1
+   consecutive bits set immediately above it and either
+   m + n == precision, or (x >> (m + n)) == (y >> (m + n)).
+
+   The least significant n bits of all the values in the range are
+   cleared or set, the m bits above it are preserved and any bits
+   above these are required to be the same for all values in the
+   range.
+
+   Return TRUE if the min and max can simply be folded.  */
+
+bool
+range_easy_mask_min_max (tree_code code,
+			 const wide_int &lb, const wide_int &ub,
+			 const wide_int &mask)
+
+{
+  wide_int w = mask;
+  int m = 0, n = 0;
+  if (code == BIT_IOR_EXPR)
+    w = ~w;
+  if (wi::eq_p (w, 0))
+    n = w.get_precision ();
+  else
+    {
+      n = wi::ctz (w);
+      w = ~(w | wi::mask (n, false, w.get_precision ()));
+      if (wi::eq_p (w, 0))
+	m = w.get_precision () - n;
+      else
+	m = wi::ctz (w) - n;
+    }
+  wide_int new_mask = wi::mask (m + n, true, w.get_precision ());
+  if ((new_mask & lb) == (new_mask & ub))
+    return true;
+
+  return false;
 }
 
 /* If BOUND will include a symbolic bound, adjust it accordingly,
@@ -2175,39 +2183,14 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	      vr1p = &vr0;
 	    }
 	  /* For op & or | attempt to optimize:
-	     [x, y] op z into [x op z, y op z]
-	     if z is a constant which (for op | its bitwise not) has n
-	     consecutive least significant bits cleared followed by m 1
-	     consecutive bits set immediately above it and either
-	     m + n == precision, or (x >> (m + n)) == (y >> (m + n)).
-	     The least significant n bits of all the values in the range are
-	     cleared or set, the m bits above it are preserved and any bits
-	     above these are required to be the same for all values in the
-	     range.  */
-	  if (vr0p && range_int_cst_p (vr0p))
+	     [x, y] op z into [x op z, y op z].  */
+	  if (vr0p && range_int_cst_p (vr0p)
+	      && range_easy_mask_min_max (code, wi::to_wide (vr0p->min),
+					  wi::to_wide (vr0p->max),
+					  wi::to_wide (vr1p->min)))
 	    {
-	      wide_int w = wi::to_wide (vr1p->min);
-	      int m = 0, n = 0;
-	      if (code == BIT_IOR_EXPR)
-		w = ~w;
-	      if (wi::eq_p (w, 0))
-		n = TYPE_PRECISION (expr_type);
-	      else
-		{
-		  n = wi::ctz (w);
-		  w = ~(w | wi::mask (n, false, w.get_precision ()));
-		  if (wi::eq_p (w, 0))
-		    m = TYPE_PRECISION (expr_type) - n;
-		  else
-		    m = wi::ctz (w) - n;
-		}
-	      wide_int mask = wi::mask (m + n, true, w.get_precision ());
-	      if ((mask & wi::to_wide (vr0p->min))
-		  == (mask & wi::to_wide (vr0p->max)))
-		{
-		  min = int_const_binop (code, vr0p->min, vr1p->min);
-		  max = int_const_binop (code, vr0p->max, vr1p->min);
-		}
+	      min = int_const_binop (code, vr0p->min, vr1p->min);
+	      max = int_const_binop (code, vr0p->max, vr1p->min);
 	    }
 	}
 

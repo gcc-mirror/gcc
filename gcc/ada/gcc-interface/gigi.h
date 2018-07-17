@@ -110,10 +110,6 @@ extern void elaborate_entity (Entity_Id gnat_entity);
 /* Get the unpadded version of a GNAT type.  */
 extern tree get_unpadded_type (Entity_Id gnat_entity);
 
-/* Return whether the E_Subprogram_Type/E_Function/E_Procedure GNAT_ENTITY is
-   a C++ imported method or equivalent.  */
-extern bool is_cplusplus_method (Entity_Id gnat_entity);
-
 /* Create a record type that contains a SIZE bytes long field of TYPE with a
     starting bit position so that it is aligned to ALIGN bits, and leaving at
     least ROOM bytes free before the field.  BASE_ALIGN is the alignment the
@@ -548,7 +544,7 @@ extern int gnat_types_compatible_p (tree t1, tree t2);
 /* Return true if EXPR is a useless type conversion.  */
 extern bool gnat_useless_type_conversion (tree expr);
 
-/* Return true if T, a FUNCTION_TYPE, has the specified list of flags.  */
+/* Return true if T, a {FUNCTION,METHOD}_TYPE, has the specified flags.  */
 extern bool fntype_same_flags_p (const_tree, tree, bool, bool, bool);
 
 /* Create an expression whose value is that of EXPR,

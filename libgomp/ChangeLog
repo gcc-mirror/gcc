@@ -1,3 +1,18 @@
+2018-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/86542
+	* testsuite/libgomp.c++/pr86542.C: New test.
+
+	PR middle-end/86539
+	* testsuite/libgomp.c++/pr86539.C: New test.
+
+2018-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86443
+	* testsuite/libgomp.c++/for-15.C (a): Remove unused variable.
+	(results): Make sure the variable is not inside declare target region.
+	(qux): Remove unused function.
+
 2018-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86443

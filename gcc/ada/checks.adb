@@ -1888,13 +1888,24 @@ package body Checks is
             Set_Do_Division_Check (N, False);
 
             if (not ROK) or else (Rlo <= 0 and then 0 <= Rhi) then
-               Insert_Action (N,
-                 Make_Raise_Constraint_Error (Loc,
-                   Condition =>
-                     Make_Op_Eq (Loc,
-                       Left_Opnd  => Duplicate_Subexpr_Move_Checks (Right),
-                       Right_Opnd => Make_Integer_Literal (Loc, 0)),
-                   Reason => CE_Divide_By_Zero));
+               if Is_Floating_Point_Type (Etype (N)) then
+                  Insert_Action (N,
+                    Make_Raise_Constraint_Error (Loc,
+                      Condition =>
+                        Make_Op_Eq (Loc,
+                          Left_Opnd  => Duplicate_Subexpr_Move_Checks (Right),
+                          Right_Opnd => Make_Real_Literal (Loc, Ureal_0)),
+                      Reason => CE_Divide_By_Zero));
+
+               else
+                  Insert_Action (N,
+                    Make_Raise_Constraint_Error (Loc,
+                      Condition =>
+                        Make_Op_Eq (Loc,
+                          Left_Opnd  => Duplicate_Subexpr_Move_Checks (Right),
+                          Right_Opnd => Make_Integer_Literal (Loc, 0)),
+                      Reason => CE_Divide_By_Zero));
+               end if;
             end if;
          end if;
       end if;

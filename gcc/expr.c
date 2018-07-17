@@ -11341,7 +11341,9 @@ string_constant (tree arg, tree *ptr_offset)
   tree offset = wide_int_to_tree (sizetype, base_off);
   if (varidx)
     {
-      if (tree eltsize = TYPE_SIZE_UNIT (TREE_TYPE (array)))
+      if (TREE_CODE (TREE_TYPE (array)) != ARRAY_TYPE)
+	return NULL_TREE;
+      if (tree eltsize = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (array))))
 	{
 	  /* Add the scaled variable index to the constant offset.  */
 	  tree eltoff = fold_build2 (MULT_EXPR, TREE_TYPE (offset),

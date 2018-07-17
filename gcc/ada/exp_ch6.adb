@@ -4562,7 +4562,10 @@ package body Exp_Ch6 is
                Fin_Mas_Id : constant Entity_Id :=
                               Build_In_Place_Formal
                                 (Func_Id, BIP_Finalization_Master);
-               Orig_Expr  : constant Node_Id := New_Copy_Tree (Alloc_Expr);
+               Orig_Expr  : constant Node_Id :=
+                              New_Copy_Tree
+                                (Source           => Alloc_Expr,
+                                 Scopes_In_EWA_OK => True);
                Stmts      : constant List_Id := New_List;
                Desig_Typ  : Entity_Id;
                Local_Id   : Entity_Id;
@@ -5022,7 +5025,10 @@ package body Exp_Ch6 is
                   Init_Assignment :=
                     Make_Assignment_Statement (Loc,
                       Name       => New_Occurrence_Of (Ret_Obj_Id, Loc),
-                      Expression => New_Copy_Tree (Ret_Obj_Expr));
+                      Expression =>
+                        New_Copy_Tree
+                          (Source           => Ret_Obj_Expr,
+                           Scopes_In_EWA_OK => True));
 
                   Set_Etype (Name (Init_Assignment), Etype (Ret_Obj_Id));
                   Set_Assignment_OK (Name (Init_Assignment));
@@ -5153,7 +5159,10 @@ package body Exp_Ch6 is
                                 Subtype_Mark =>
                                   New_Occurrence_Of
                                     (Etype (Ret_Obj_Expr), Loc),
-                                Expression   => New_Copy_Tree (Ret_Obj_Expr)));
+                                Expression   =>
+                                  New_Copy_Tree
+                                    (Source           => Ret_Obj_Expr,
+                                     Scopes_In_EWA_OK => True)));
 
                      else
                         --  If the function returns a class-wide type we cannot
@@ -5193,7 +5202,11 @@ package body Exp_Ch6 is
                      --  except we set Storage_Pool and Procedure_To_Call so
                      --  it will use the user-defined storage pool.
 
-                     Pool_Allocator := New_Copy_Tree (Heap_Allocator);
+                     Pool_Allocator :=
+                       New_Copy_Tree
+                         (Source           => Heap_Allocator,
+                          Scopes_In_EWA_OK => True);
+
                      pragma Assert (Alloc_For_BIP_Return (Pool_Allocator));
 
                      --  Do not generate the renaming of the build-in-place
@@ -5235,7 +5248,11 @@ package body Exp_Ch6 is
                      --  allocation.
 
                      else
-                        SS_Allocator := New_Copy_Tree (Heap_Allocator);
+                        SS_Allocator :=
+                          New_Copy_Tree
+                            (Source           => Heap_Allocator,
+                             Scopes_In_EWA_OK => True);
+
                         pragma Assert (Alloc_For_BIP_Return (SS_Allocator));
 
                         --  The heap and pool allocators are marked as

@@ -2504,12 +2504,6 @@ package Sinfo is
    --    Original_Node here because of the case of nested instantiations where
    --    the substituted node can be copied.
 
-   --  Withed_Body (Node1-Sem)
-   --    Present in N_With_Clause nodes. Set if the unit in whose context
-   --    the with_clause appears instantiates a generic contained in the
-   --    library unit of the with_clause and as a result loads its body.
-   --    Used for a more precise unit traversal for CodePeer.
-
    --------------------------------------------------
    -- Note on Use of End_Label and End_Span Fields --
    --------------------------------------------------
@@ -6743,7 +6737,6 @@ package Sinfo is
 
       --  N_With_Clause
       --  Sloc points to first token of library unit name
-      --  Withed_Body (Node1-Sem)
       --  Name (Node2)
       --  Private_Present (Flag15) set if with_clause has private keyword
       --  Limited_Present (Flag17) set if LIMITED is present
@@ -10307,9 +10300,6 @@ package Sinfo is
    function Was_Originally_Stub
      (N : Node_Id) return Boolean;    -- Flag13
 
-   function Withed_Body
-     (N : Node_Id) return Node_Id;    -- Node1
-
    --  End functions (note used by xsinfo utility program to end processing)
 
    ----------------------------
@@ -11407,9 +11397,6 @@ package Sinfo is
 
    procedure Set_Was_Originally_Stub
      (N : Node_Id; Val : Boolean := True);    -- Flag13
-
-   procedure Set_Withed_Body
-     (N : Node_Id; Val : Node_Id);            -- Node1
 
    -------------------------
    -- Iterator Procedures --
@@ -13613,7 +13600,6 @@ package Sinfo is
    pragma Inline (Was_Attribute_Reference);
    pragma Inline (Was_Expression_Function);
    pragma Inline (Was_Originally_Stub);
-   pragma Inline (Withed_Body);
 
    pragma Inline (Set_Abort_Present);
    pragma Inline (Set_Abortable_Part);
@@ -13975,6 +13961,5 @@ package Sinfo is
    pragma Inline (Set_Was_Attribute_Reference);
    pragma Inline (Set_Was_Expression_Function);
    pragma Inline (Set_Was_Originally_Stub);
-   pragma Inline (Set_Withed_Body);
 
 end Sinfo;

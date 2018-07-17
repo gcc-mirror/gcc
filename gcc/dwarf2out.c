@@ -5959,7 +5959,9 @@ dwarf2out_register_external_die (tree decl, const char *sym,
 	   imports the original CUs.  */
 	parent = comp_unit_die ();
       else if (TREE_CODE (ctx) == FUNCTION_DECL
+	       && TREE_CODE (decl) != FUNCTION_DECL
 	       && TREE_CODE (decl) != PARM_DECL
+	       && TREE_CODE (decl) != RESULT_DECL
 	       && TREE_CODE (decl) != BLOCK)
 	/* Leave function local entities parent determination to when
 	   we process scope vars.  */
@@ -25388,11 +25390,8 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
      generate debug info for the typedef.  */
   if (is_naming_typedef_decl (TYPE_NAME (type)))
     {
-      /* Use the DIE of the containing namespace as the parent DIE of
-         the type description DIE we want to generate.  */
-      if (DECL_CONTEXT (TYPE_NAME (type))
-	  && TREE_CODE (DECL_CONTEXT (TYPE_NAME (type))) == NAMESPACE_DECL)
-	context_die = get_context_die (DECL_CONTEXT (TYPE_NAME (type)));
+      /* Give typedefs the right scope.  */
+      context_die = scope_die_for (type, context_die);
 
       gen_decl_die (TYPE_NAME (type), NULL, NULL, context_die);
       return;
@@ -25627,22 +25626,28 @@ gen_block_die (tree stmt, dw_die_ref context_die)
        we might have pruned all BLOCK_VARS as optimized out but we
        still want to generate high/low PC attributes so output it.  */
     must_output_die = 1;
-  else
+  else if (TREE_USED (stmt)
+	   || TREE_ASM_WRITTEN (stmt)
+	   || BLOCK_ABSTRACT (stmt))
     {
       /* Determine if this block directly contains any "significant"
 	 local declarations which we will need to output DIEs for.  */
       if (debug_info_level > DINFO_LEVEL_TERSE)
-	/* We are not in terse mode so *any* local declaration counts
-	   as being a "significant" one.  */
-	must_output_die = ((BLOCK_VARS (stmt) != NULL
-			    || BLOCK_NUM_NONLOCALIZED_VARS (stmt))
-			   && (TREE_USED (stmt)
-			       || TREE_ASM_WRITTEN (stmt)
-			       || BLOCK_ABSTRACT (stmt)));
-      else if ((TREE_USED (stmt)
-		|| TREE_ASM_WRITTEN (stmt)
-		|| BLOCK_ABSTRACT (stmt))
-      	       && !dwarf2out_ignore_block (stmt))
+	{
+	  /* We are not in terse mode so any local declaration that
+	     is not ignored for debug purposes counts as being a
+	     "significant" one.  */
+	  if (BLOCK_NUM_NONLOCALIZED_VARS (stmt))
+	    must_output_die = 1;
+	  else
+	    for (tree var = BLOCK_VARS (stmt); var; var = DECL_CHAIN (var))
+	      if (!DECL_IGNORED_P (var))
+		{
+		  must_output_die = 1;
+		  break;
+		}
+	}
+      else if (!dwarf2out_ignore_block (stmt))
 	must_output_die = 1;
     }
 
@@ -28066,7 +28071,7 @@ output_macinfo_op (macinfo_entry *ref)
       node = find_AT_string (ref->info);
       gcc_assert (node
 		  && (node->form == DW_FORM_strp
-		      || node->form == dwarf_form (DW_FORM_strx)));
+		      || node->form == dwarf_FORM (DW_FORM_strx)));
       dw2_asm_output_data (1, ref->code,
 			   ref->code == DW_MACRO_define_strp
 			   ? "Define macro strp"
@@ -28483,7 +28488,7 @@ init_sections_and_labels (bool early_lto_debug)
       debug_str_section = get_section (DEBUG_LTO_STR_SECTION,
 				       DEBUG_STR_SECTION_FLAGS
 				       | SECTION_EXCLUDE, NULL);
-      if (!dwarf_split_debug_info && !dwarf2out_as_loc_support)
+      if (!dwarf_split_debug_info && !output_asm_line_debug_info ())
 	debug_line_str_section
 	  = get_section (DEBUG_LTO_LINE_STR_SECTION,
 			 DEBUG_STR_SECTION_FLAGS | SECTION_EXCLUDE, NULL);
@@ -31125,9 +31130,9 @@ dwarf2out_finish (const char *)
 	  if (*slot != HTAB_EMPTY_ENTRY)
 	    continue;
 
-	  /* Add a pointer to the line table for the main compilation unit
-	     so that the debugger can make sense of DW_AT_decl_file
-	     attributes.  */
+	  /* Remove the pointer to the line table.  */
+	  remove_AT (ctnode->root_die, DW_AT_stmt_list);
+
 	  if (debug_info_level >= DINFO_LEVEL_TERSE)
 	    reset_dies (ctnode->root_die);
 
@@ -31819,7 +31824,7 @@ dwarf2out_early_finish (const char *filename)
 
   /* When emitting DWARF5 .debug_line_str, move DW_AT_name and
      DW_AT_comp_dir into .debug_line_str section.  */
-  if (!dwarf2out_as_loc_support
+  if (!output_asm_line_debug_info ()
       && dwarf_version >= 5
       && DWARF5_USE_DEBUG_LINE_STR)
     {

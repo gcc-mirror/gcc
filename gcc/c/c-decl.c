@@ -4643,8 +4643,8 @@ c_decl_attributes (tree *node, tree attributes, int flags)
     {
       if (VAR_P (*node)
 	  && !lang_hooks.types.omp_mappable_type (TREE_TYPE (*node)))
-	error ("%q+D in declare target directive does not have mappable type",
-	       *node);
+	attributes = tree_cons (get_identifier ("omp declare target implicit"),
+				NULL_TREE, attributes);
       else
 	attributes = tree_cons (get_identifier ("omp declare target"),
 				NULL_TREE, attributes);
@@ -5223,7 +5223,27 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	diagnose_uninitialized_cst_member (decl, type);
     }
 
-	invoke_plugin_callbacks (PLUGIN_FINISH_DECL, decl);
+  if (flag_openmp
+      && VAR_P (decl)
+      && lookup_attribute ("omp declare target implicit",
+			   DECL_ATTRIBUTES (decl)))
+    {
+      DECL_ATTRIBUTES (decl)
+	= remove_attribute ("omp declare target implicit",
+			    DECL_ATTRIBUTES (decl));
+      if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (decl)))
+	error ("%q+D in declare target directive does not have mappable type",
+	       decl);
+      else if (!lookup_attribute ("omp declare target",
+				  DECL_ATTRIBUTES (decl))
+	       && !lookup_attribute ("omp declare target link",
+				     DECL_ATTRIBUTES (decl)))
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("omp declare target"),
+		       NULL_TREE, DECL_ATTRIBUTES (decl));
+    }
+
+  invoke_plugin_callbacks (PLUGIN_FINISH_DECL, decl);
 }
 
 /* Given a parsed parameter declaration, decode it into a PARM_DECL.

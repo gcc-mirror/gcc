@@ -1226,7 +1226,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      of a discriminated type whose full view can be elaborated statically, to
      avoid problematic conversions to the nominal subtype.  But remove any
      padding from the resulting type.  */
-  if (TREE_CODE (TREE_TYPE (gnu_result)) == FUNCTION_TYPE
+  if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_result))
       || Is_Constr_Subt_For_UN_Aliased (gnat_temp_type)
       || (Ekind (gnat_temp) == E_Constant
 	  && Present (Full_View (gnat_temp))
@@ -1730,15 +1730,14 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	 since it can use a special calling convention on some platforms,
 	 which cannot be propagated to the access type.  */
       else if (attribute == Attr_Access
-	       && Nkind (gnat_prefix) == N_Identifier
-	       && is_cplusplus_method (Entity (gnat_prefix)))
+	       && TREE_CODE (TREE_TYPE (gnu_prefix)) == METHOD_TYPE)
 	post_error ("access to C++ constructor or member function not allowed",
 		    gnat_node);
 
       /* For other address attributes applied to a nested function,
 	 find an inner ADDR_EXPR and annotate it so that we can issue
 	 a useful warning with -Wtrampolines.  */
-      else if (TREE_CODE (TREE_TYPE (gnu_prefix)) == FUNCTION_TYPE)
+      else if (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_prefix)))
 	{
 	  gnu_expr = remove_conversions (gnu_result, false);
 
@@ -4283,7 +4282,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   Node_Id gnat_actual;
   bool sync;
 
-  gcc_assert (TREE_CODE (gnu_subprog_type) == FUNCTION_TYPE);
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (gnu_subprog_type));
 
   /* If we are calling a stubbed function, raise Program_Error, but Elaborate
      all our args first.  */
@@ -8743,7 +8742,7 @@ process_freeze_entity (Node_Id gnat_node)
   if (gnu_old
       && ((TREE_CODE (gnu_old) == FUNCTION_DECL
 	   && (kind == E_Function || kind == E_Procedure))
-	  || (TREE_CODE (TREE_TYPE (gnu_old)) == FUNCTION_TYPE
+	  || (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (gnu_old))
 	      && kind == E_Subprogram_Type)))
     return;
 

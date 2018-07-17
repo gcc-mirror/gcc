@@ -5459,7 +5459,7 @@ save_local_or_in_reg_p (unsigned int regno, int leaf_function)
 /* Compute the frame size required by the function.  This function is called
    during the reload pass and also by sparc_expand_prologue.  */
 
-HOST_WIDE_INT
+static HOST_WIDE_INT
 sparc_compute_frame_size (HOST_WIDE_INT size, int leaf_function)
 {
   HOST_WIDE_INT frame_size, apparent_frame_size;

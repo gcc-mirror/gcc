@@ -67,8 +67,8 @@ package Alloc is
    In_Out_Warnings_Initial          : constant := 100;        -- Sem_Warn
    In_Out_Warnings_Increment        : constant := 100;
 
-   Ignored_Ghost_Units_Initial      : constant := 20;         -- Sem_Util
-   Ignored_Ghost_Units_Increment    : constant := 50;
+   Ignored_Ghost_Nodes_Initial      : constant := 100;        -- Ghost
+   Ignored_Ghost_Nodes_Increment    : constant := 100;
 
    Inlined_Initial                  : constant := 100;        -- Inline
    Inlined_Increment                : constant := 100;

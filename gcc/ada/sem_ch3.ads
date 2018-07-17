@@ -236,6 +236,10 @@ package Sem_Ch3 is
    --  Always False in Ada 95 mode. Equivalent to OK_For_Limited_Init_In_05 in
    --  Ada 2005 mode.
 
+   procedure Preanalyze_Assert_Expression (N : Node_Id; T : Entity_Id);
+   --  Wrapper on Preanalyze_Spec_Expression for assertion expressions, so that
+   --  In_Assertion_Expr can be properly adjusted.
+
    procedure Preanalyze_Spec_Expression (N : Node_Id; T : Entity_Id);
    --  Default and per object expressions do not freeze their components, and
    --  must be analyzed and resolved accordingly. The analysis is done by
@@ -245,14 +249,6 @@ package Sem_Ch3 is
    --  details. N is the expression to be analyzed, T is the expected type.
    --  This mechanism is also used for aspect specifications that have an
    --  expression parameter that needs similar preanalysis.
-
-   procedure Preanalyze_Assert_Expression (N : Node_Id; T : Entity_Id);
-   --  Wrapper on Preanalyze_Spec_Expression for assertion expressions, so that
-   --  In_Assertion_Expr can be properly adjusted.
-
-   procedure Preanalyze_Default_Expression (N : Node_Id; T : Entity_Id);
-   --  Wrapper on Preanalyze_Spec_Expression for default expressions, so that
-   --  In_Default_Expr can be properly adjusted.
 
    procedure Process_Full_View (N : Node_Id; Full_T, Priv_T : Entity_Id);
    --  Process some semantic actions when the full view of a private type is

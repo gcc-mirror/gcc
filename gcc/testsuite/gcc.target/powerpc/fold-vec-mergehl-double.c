@@ -19,7 +19,5 @@ testd_h (vector double vd2, vector double vd3)
   return vec_mergeh (vd2, vd3);
 }
 
-/* vec_merge with doubles tend to just use xxpermdi (3 ea for BE, 1 ea for LE).  */
-/* { dg-final { scan-assembler-times "xxpermdi" 2  { target { powerpc*le-*-* } }    } } */
-/* { dg-final { scan-assembler-times "xxpermdi" 6  { target { powerpc-*-* } }     } } */
+/* { dg-final { scan-assembler-times "xxpermdi" 2 } } */
 

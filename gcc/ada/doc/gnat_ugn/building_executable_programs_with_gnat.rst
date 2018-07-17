@@ -720,9 +720,9 @@ is passed to ``gcc`` (e.g., :switch:`-O`, :switch:`-gnato,` etc.)
 .. index:: --RTS  (gnatmake)
 
 :switch:`--RTS={rts-path}`
-  Specifies the default location of the runtime library. GNAT looks for the
-  runtime
-  in the following directories, and stops as soon as a valid runtime is found
+  Specifies the default location of the run-time library. GNAT looks for the
+  run-time
+  in the following directories, and stops as soon as a valid run-time is found
   (:file:`adainclude` or :file:`ada_source_path`, and :file:`adalib` or
   :file:`ada_object_path` present):
 
@@ -1505,7 +1505,7 @@ Alphabetical List of All Switches
 
 
   In the example above, the first call to ``Detect_Aliasing`` fails with a
-  ``Program_Error`` at runtime because the actuals for ``Val_1`` and
+  ``Program_Error`` at run time because the actuals for ``Val_1`` and
   ``Val_2`` denote the same object. The second call executes without raising
   an exception because ``Self(Obj)`` produces an anonymous object which does
   not share the memory location of ``Obj``.
@@ -1817,14 +1817,12 @@ Alphabetical List of All Switches
 .. index:: -gnatg  (gcc)
 
 :switch:`-gnatg`
-  Internal GNAT implementation mode. This should not be used for
-  applications programs, it is intended only for use by the compiler
-  and its run-time library. For documentation, see the GNAT sources.
-  Note that :switch:`-gnatg` implies
-  :switch:`-gnatw.ge` and
-  :switch:`-gnatyg`
-  so that all standard warnings and all standard style options are turned on.
-  All warnings and style messages are treated as errors.
+  Internal GNAT implementation mode. This should not be used for applications
+  programs, it is intended only for use by the compiler and its run-time
+  library. For documentation, see the GNAT sources. Note that :switch:`-gnatg`
+  implies :switch:`-gnatw.ge` and :switch:`-gnatyg` so that all standard
+  warnings and all standard style options are turned on. All warnings and style
+  messages are treated as errors.
 
 
 .. index:: -gnatG[nn]  (gcc)
@@ -1837,6 +1835,13 @@ Alphabetical List of All Switches
 
 :switch:`-gnath`
   Output usage information. The output is written to :file:`stdout`.
+
+
+.. index:: -gnatH  (gcc)
+
+:switch:`-gnatH`
+  Legacy elaboration-checking mode enabled. When this switch is in effect, the
+  pre-18.x access-before-elaboration model becomes the de facto model.
 
 
 .. index:: -gnati  (gcc)
@@ -1872,6 +1877,27 @@ Alphabetical List of All Switches
 
 :switch:`-gnatj{nn}`
   Reformat error messages to fit on ``nn`` character lines
+
+
+.. index:: -gnatJ  (gcc)
+
+:switch:`-gnatJ`
+  Permissive elaboration-checking mode enabled. When this switch is in effect,
+  the post-18.x access-before-elaboration model ignores potential issues with:
+
+  - Accept statements
+  - Activations of tasks defined in instances
+  - Assertion pragmas
+  - Calls from within an instance to its enclosing context
+  - Calls through generic formal parameters
+  - Calls to subprograms defined in instances
+  - Entry calls
+  - Indirect calls using 'Access
+  - Requeue statements
+  - Select statements
+  - Synchronous task suspension
+
+  and does not emit compile-time diagnostics or run-time checks.
 
 
 .. index:: -gnatk  (gcc)
@@ -2195,7 +2221,7 @@ Alphabetical List of All Switches
 .. index:: --RTS  (gcc)
 
 :switch:`--RTS={rts-path}`
-  Specifies the default location of the runtime library. Same meaning as the
+  Specifies the default location of the run-time library. Same meaning as the
   equivalent ``gnatmake`` flag (:ref:`Switches_for_gnatmake`).
 
 
@@ -5062,7 +5088,7 @@ switches refine this default behavior.
   that a certain check will necessarily fail, it will generate code to
   do an unconditional 'raise', even if checks are suppressed. The
   compiler warns in this case. Another case in which checks may not be
-  eliminated is when they are embedded in certain run time routines such
+  eliminated is when they are embedded in certain run-time routines such
   as math library routines.
 
   Of course, run-time checks are omitted whenever the compiler can prove
@@ -5858,7 +5884,7 @@ Debugging Control
 Exception Handling Control
 --------------------------
 
-GNAT uses two methods for handling exceptions at run-time. The
+GNAT uses two methods for handling exceptions at run time. The
 ``setjmp/longjmp`` method saves the context when entering
 a frame with an exception handler. Then when an exception is
 raised, the context can be restored immediately, without the
@@ -6367,7 +6393,7 @@ be presented in subsequent sections.
   .. index:: --RTS  (gnatbind)
 
 :switch:`--RTS={rts-path}`
-  Specifies the default location of the runtime library. Same meaning as the
+  Specifies the default location of the run-time library. Same meaning as the
   equivalent ``gnatmake`` flag (:ref:`Switches_for_gnatmake`).
 
   .. index:: -o   (gnatbind)
@@ -6470,13 +6496,13 @@ be presented in subsequent sections.
 .. index:: -static  (gnatbind)
 
 :switch:`-static`
-  Link against a static GNAT run time.
+  Link against a static GNAT run-time.
 
 
   .. index:: -shared  (gnatbind)
 
 :switch:`-shared`
-  Link against a shared GNAT run time when available.
+  Link against a shared GNAT run-time when available.
 
 
   .. index:: -t  (gnatbind)
@@ -6495,7 +6521,7 @@ be presented in subsequent sections.
   nonzero value will activate round-robin scheduling.
 
   A value of zero is treated specially. It turns off time
-  slicing, and in addition, indicates to the tasking run time that the
+  slicing, and in addition, indicates to the tasking run-time that the
   semantics should match as closely as possible the Annex D
   requirements of the Ada RM, and in particular sets the default
   scheduling policy to ``FIFO_Within_Priorities``.
@@ -6939,7 +6965,7 @@ The output is an Ada unit in source form that can be compiled with GNAT.
 This compilation occurs automatically as part of the ``gnatlink``
 processing.
 
-Currently the GNAT run time requires a FPU using 80 bits mode
+Currently the GNAT run-time requires a FPU using 80 bits mode
 precision. Under targets where this is not the default it is required to
 call GNAT.Float_Control.Reset before using floating point numbers (this
 include float computation, float input and output) in the Ada code. A
@@ -7040,7 +7066,7 @@ directories searched are:
 
 * The content of the :file:`ada_object_path` file which is part of the GNAT
   installation tree and is used to store standard libraries such as the
-  GNAT Run Time Library (RTL) unless the switch :switch:`-nostdlib` is
+  GNAT Run-Time Library (RTL) unless the switch :switch:`-nostdlib` is
   specified. See :ref:`Installing_a_library`
 
 .. index:: -I  (gnatbind)
