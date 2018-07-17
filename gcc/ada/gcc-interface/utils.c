@@ -1036,7 +1036,9 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
 
   finish_record_type (new_type, nreverse (new_field_list), 2, false);
   relate_alias_sets (new_type, type, ALIAS_SET_COPY);
-  if (TYPE_STUB_DECL (type))
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    SET_TYPE_DEBUG_TYPE (new_type, TYPE_DEBUG_TYPE (type));
+  else if (TYPE_STUB_DECL (type))
     SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
 			    DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
 
@@ -1367,7 +1369,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   finish_record_type (record, field, 1, false);
 
   if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-    SET_TYPE_DEBUG_TYPE (record, type);
+    SET_TYPE_DEBUG_TYPE (record, maybe_debug_type (type));
 
   /* Set the RM size if requested.  */
   if (set_rm_size)
