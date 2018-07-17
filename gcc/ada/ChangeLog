@@ -1,3 +1,8 @@
+2018-07-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (Denotes_Same_Object): Likewise.
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Fix RM rule references.
+
 2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_disp.adb (Make_Tags): When the type has user-defined primitives,
