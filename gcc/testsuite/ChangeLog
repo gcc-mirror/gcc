@@ -1,3 +1,11 @@
+2018-07-17  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-unpack-char.c: New.
+	* gcc.target/powerpc/fold-vec-unpack-float.c: New.
+	* gcc.target/powerpc/fold-vec-unpack-int.c: New.
+	* gcc.target/powerpc/fold-vec-unpack-pixel.c: New.
+	* gcc.target/powerpc/fold-vec-unpack-short.c: New.
+
 2018-07-17  David Edelsohn <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/pr57150.c: Require longdouble128.
