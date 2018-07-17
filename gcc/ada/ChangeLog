@@ -1,5 +1,15 @@
 2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (choices_to_gnu): Rename parameters.  Deal with
+	an operand of Character type.  Factor out range generation to the end.
+	Check that the bounds are literals and convert them to the type of the
+	operand before building the ranges.
+	* gcc-interface/utils.c (make_dummy_type): Minor tweak.
+	(make_packable_type): Propagate TYPE_DEBUG_TYPE.
+	(maybe_pad_type): Likewise.
+
+2018-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Deal with
 	more rvalues in the expression of a renaming.
 
