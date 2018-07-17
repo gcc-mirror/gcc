@@ -1,5 +1,24 @@
 2018-07-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/86450
+	* acinclude.m4 (GLIBCXX_CHECK_COMPILER_FEATURES): Don't define WERROR.
+	(GLIBCXX_EXPORT_FLAGS): Use -Wabi=2 instead of -Wabi.
+	* configure: Regenerate.
+	* configure.ac: Change GLIBCXX_ENABLE_WERROR default to "no".
+	* doc/Makefile.in: Regenerate.
+	* fragment.am: Set WERROR_FLAG to -Werror instead of $(WERROR).
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/debug.cc: Use diagnostic pragmas to suppress warnings
+	from -Wabi=2 that don't affect exported symbols.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 	* src/c++11/compatibility-thread-c++0x.cc [_GLIBCXX_SHARED]
 	(_Async_state_common::_M_join): Simplify use of std::call_once and
 	corresponding explicit instantiation.

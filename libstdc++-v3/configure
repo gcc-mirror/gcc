@@ -728,7 +728,6 @@ BASIC_FILE_CC
 BASIC_FILE_H
 CSTDIO_H
 SECTION_FLAGS
-WERROR
 ENABLE_FLOAT128_FALSE
 ENABLE_FLOAT128_TRUE
 thread_header
@@ -1582,7 +1581,7 @@ Optional Features:
                           memory [default=no]
   --enable-extern-template
                           enable extern template [default=yes]
-  --enable-werror         turns on -Werror [default=yes]
+  --enable-werror         turns on -Werror [default=no]
   --enable-vtable-verify  enable vtable verify [default=no]
   --enable-libstdcxx-time[=KIND]
                           use KIND for check type [default=auto]
@@ -11608,7 +11607,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11611 "configure"
+#line 11610 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11714,7 +11713,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11717 "configure"
+#line 11716 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12885,20 +12884,20 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	      prelink_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $objs $libobjs $compile_deplibs~
-		compile_command="$compile_command `find $tpldir -name \*.o | $NL2SP`"'
+		compile_command="$compile_command `find $tpldir -name \*.o | sort | $NL2SP`"'
 	      old_archive_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $oldobjs$old_deplibs~
-		$AR $AR_FLAGS $oldlib$oldobjs$old_deplibs `find $tpldir -name \*.o | $NL2SP`~
+		$AR $AR_FLAGS $oldlib$oldobjs$old_deplibs `find $tpldir -name \*.o | sort | $NL2SP`~
 		$RANLIB $oldlib'
 	      archive_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $predep_objects $libobjs $deplibs $convenience $postdep_objects~
-		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
+		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | sort | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
 	      archive_expsym_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $predep_objects $libobjs $deplibs $convenience $postdep_objects~
-		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname ${wl}-retain-symbols-file ${wl}$export_symbols -o $lib'
+		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | sort | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname ${wl}-retain-symbols-file ${wl}$export_symbols -o $lib'
 	      ;;
 	    *) # Version 6 and above use weak symbols
 	      archive_cmds_CXX='$CC -shared $pic_flag $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
@@ -15400,7 +15399,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15403 "configure"
+#line 15402 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15435,7 +15434,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15438 "configure"
+#line 15437 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15470,7 +15469,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15473 "configure"
+#line 15472 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15506,7 +15505,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15509 "configure"
+#line 15508 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15587,7 +15586,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15590 "configure"
+#line 15589 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15629,7 +15628,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15632 "configure"
+#line 15631 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15663,7 +15662,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15666 "configure"
+#line 15665 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15720,13 +15719,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
 
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
-
   # Check for -ffunction-sections -fdata-sections
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
 $as_echo_n "checking for g++ that supports -ffunction-sections -fdata-sections... " >&6; }
@@ -15765,7 +15757,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 
 
@@ -18104,7 +18095,7 @@ if test "${enable_werror+set}" = set; then :
       esac
 
 else
-  enable_werror=yes
+  enable_werror=no
 fi
 
 
@@ -29055,13 +29046,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
 
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
-
   # Check for -ffunction-sections -fdata-sections
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
 $as_echo_n "checking for g++ that supports -ffunction-sections -fdata-sections... " >&6; }
@@ -29100,7 +29084,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 
 
@@ -35049,13 +35032,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
 
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
-
   # Check for -ffunction-sections -fdata-sections
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
 $as_echo_n "checking for g++ that supports -ffunction-sections -fdata-sections... " >&6; }
@@ -35094,7 +35070,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 
 
@@ -53809,13 +53784,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
 
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
-
   # Check for -ffunction-sections -fdata-sections
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
 $as_echo_n "checking for g++ that supports -ffunction-sections -fdata-sections... " >&6; }
@@ -53854,7 +53822,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 
 
@@ -66510,13 +66477,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
 
-  # Check for maintainer-mode bits.
-  if test x"$USE_MAINTAINER_MODE" = xno; then
-    WERROR=''
-  else
-    WERROR='-Werror'
-  fi
-
   # Check for -ffunction-sections -fdata-sections
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for g++ that supports -ffunction-sections -fdata-sections" >&5
 $as_echo_n "checking for g++ that supports -ffunction-sections -fdata-sections... " >&6; }
@@ -66555,7 +66515,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 
 
 
@@ -81846,7 +81805,7 @@ $as_echo "$gxx_include_dir" >&6; }
   # OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc
 
 
-  WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi'
+  WARN_FLAGS="-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi=2"
 
 
 
