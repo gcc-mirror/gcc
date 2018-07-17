@@ -9762,18 +9762,19 @@ arc_scheduling_not_expected (void)
   return cfun->machine->arc_reorg_started;
 }
 
+/* Code has a minimum p2 alignment of 1, which we must restore after
+   an ADDR_DIFF_VEC.  */
+
 int
 arc_label_align (rtx_insn *label)
 {
-  /* Code has a minimum p2 alignment of 1, which we must restore after an
-     ADDR_DIFF_VEC.  */
-  if (align_labels_log < 1)
+  if (align_labels.levels[0].log < 1)
     {
       rtx_insn *next = next_nonnote_nondebug_insn (label);
       if (INSN_P (next) && recog_memoized (next) >= 0)
 	return 1;
     }
-  return align_labels_log;
+  return align_labels.levels[0].log;
 }
 
 /* Return true if LABEL is in executable code.  */
