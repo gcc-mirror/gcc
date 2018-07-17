@@ -2186,7 +2186,7 @@ package body Atree is
       --  If the node being relocated was a rewriting of some original node,
       --  then the relocated node has the same original node.
 
-      if Orig_Nodes.Table (Source) /= Source then
+      if Is_Rewrite_Substitution (Source) then
          Orig_Nodes.Table (New_Node) := Orig_Nodes.Table (Source);
       end if;
 
