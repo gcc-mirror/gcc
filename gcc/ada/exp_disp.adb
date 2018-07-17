@@ -7179,7 +7179,7 @@ package body Exp_Disp is
          Analyze_List (Result);
 
       --     Generate:
-      --       type Typ_DT is array (1 .. Nb_Prims) of Prim_Ptr;
+      --       subtype Typ_DT is Address_Array (1 .. Nb_Prims);
       --       type Typ_DT_Acc is access Typ_DT;
 
       else
@@ -7196,20 +7196,19 @@ package body Exp_Disp is
                                     Name_DT_Prims_Acc);
          begin
             Append_To (Result,
-              Make_Full_Type_Declaration (Loc,
+              Make_Subtype_Declaration (Loc,
                 Defining_Identifier => DT_Prims,
-                Type_Definition =>
-                  Make_Constrained_Array_Definition (Loc,
-                    Discrete_Subtype_Definitions => New_List (
-                      Make_Range (Loc,
-                        Low_Bound  => Make_Integer_Literal (Loc, 1),
-                        High_Bound => Make_Integer_Literal (Loc,
-                                       DT_Entry_Count
-                                         (First_Tag_Component (Typ))))),
-                    Component_Definition =>
-                      Make_Component_Definition (Loc,
-                        Subtype_Indication =>
-                          New_Occurrence_Of (RTE (RE_Prim_Ptr), Loc)))));
+                Subtype_Indication  =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of (RTE (RE_Address_Array), Loc),
+                    Constraint =>
+                      Make_Index_Or_Discriminant_Constraint (Loc, New_List (
+                        Make_Range (Loc,
+                          Low_Bound  => Make_Integer_Literal (Loc, 1),
+                          High_Bound => Make_Integer_Literal (Loc,
+                                         DT_Entry_Count
+                                           (First_Tag_Component (Typ)))))))));
 
             Append_To (Result,
               Make_Full_Type_Declaration (Loc,
