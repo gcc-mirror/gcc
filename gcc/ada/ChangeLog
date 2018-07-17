@@ -1,3 +1,9 @@
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch13.adb, exp_ch7.adb, exp_unst.adb, freeze.adb,
+	libgnat/s-os_lib.adb, sem_ch3.adb, sem_ch3.ads, sem_ch5.adb,
+	sem_eval.adb, sem_res.adb, sem_util.adb: Minor reformatting.
+
 2018-07-17  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch13.adb (Expand_N_Freeze_Entity): Handle subtype declared for an

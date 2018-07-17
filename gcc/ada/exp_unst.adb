@@ -711,11 +711,11 @@ package body Exp_Unst is
             procedure Register_Subprogram (E : Entity_Id; Bod : Node_Id) is
                L : constant Nat := Get_Level (Subp, E);
 
-            --  Subprograms declared in tasks and protected types cannot
-            --  be eliminated because calls to them may be in other units,
-            --  so they must be treated as reachable.
-
             begin
+               --  Subprograms declared in tasks and protected types cannot
+               --  be eliminated because calls to them may be in other units,
+               --  so they must be treated as reachable.
+
                Subps.Append
                  ((Ent           => E,
                    Bod           => Bod,

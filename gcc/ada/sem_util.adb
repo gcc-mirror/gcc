@@ -6894,61 +6894,60 @@ package body Sem_Util is
    --------------------------
 
    function Enclosing_Subprogram (E : Entity_Id) return Entity_Id is
-      Dynamic_Scope : constant Entity_Id := Enclosing_Dynamic_Scope (E);
+      Dyn_Scop : constant Entity_Id := Enclosing_Dynamic_Scope (E);
 
    begin
-      if Dynamic_Scope = Standard_Standard then
+      if Dyn_Scop = Standard_Standard then
          return Empty;
 
-      elsif Dynamic_Scope = Empty then
+      elsif Dyn_Scop = Empty then
          return Empty;
 
-      elsif Ekind (Dynamic_Scope) = E_Subprogram_Body then
-         return Corresponding_Spec (Parent (Parent (Dynamic_Scope)));
+      elsif Ekind (Dyn_Scop) = E_Subprogram_Body then
+         return Corresponding_Spec (Parent (Parent (Dyn_Scop)));
 
-      elsif Ekind_In (Dynamic_Scope, E_Block, E_Return_Statement) then
-         return Enclosing_Subprogram (Dynamic_Scope);
+      elsif Ekind_In (Dyn_Scop, E_Block, E_Return_Statement) then
+         return Enclosing_Subprogram (Dyn_Scop);
 
-      elsif Ekind (Dynamic_Scope) = E_Entry then
+      elsif Ekind (Dyn_Scop) = E_Entry then
 
          --  For a task entry, return the enclosing subprogram of the
          --  task itself.
 
-         if Ekind (Scope (Dynamic_Scope)) = E_Task_Type then
-            return Enclosing_Subprogram (Dynamic_Scope);
+         if Ekind (Scope (Dyn_Scop)) = E_Task_Type then
+            return Enclosing_Subprogram (Dyn_Scop);
 
-         --  A protected entry is rewritten as a protected procedure
-         --  which is the desired enclosing subprogram. This is relevant
-         --  when unnesting a procedure local to an entry body
+         --  A protected entry is rewritten as a protected procedure which is
+         --  the desired enclosing subprogram. This is relevant when unnesting
+         --  a procedure local to an entry body.
 
          else
-            return Protected_Body_Subprogram (Dynamic_Scope);
+            return Protected_Body_Subprogram (Dyn_Scop);
          end if;
 
-      elsif Ekind (Dynamic_Scope) = E_Task_Type then
-         return Get_Task_Body_Procedure (Dynamic_Scope);
+      elsif Ekind (Dyn_Scop) = E_Task_Type then
+         return Get_Task_Body_Procedure (Dyn_Scop);
 
       --  The scope may appear as a private type or as a private extension
       --  whose completion is a task or protected type.
 
-      elsif Ekind_In (Dynamic_Scope,
-              E_Limited_Private_Type, E_Record_Type_With_Private)
-        and then Present (Full_View (Dynamic_Scope))
-        and then Ekind_In (Full_View (Dynamic_Scope),
-                            E_Task_Type, E_Protected_Type)
+      elsif Ekind_In (Dyn_Scop, E_Limited_Private_Type,
+                                E_Record_Type_With_Private)
+        and then Present (Full_View (Dyn_Scop))
+        and then Ekind_In (Full_View (Dyn_Scop), E_Task_Type, E_Protected_Type)
       then
-         return Get_Task_Body_Procedure (Full_View (Dynamic_Scope));
+         return Get_Task_Body_Procedure (Full_View (Dyn_Scop));
 
       --  No body is generated if the protected operation is eliminated
 
-      elsif Convention (Dynamic_Scope) = Convention_Protected
-        and then not Is_Eliminated (Dynamic_Scope)
-        and then Present (Protected_Body_Subprogram (Dynamic_Scope))
+      elsif Convention (Dyn_Scop) = Convention_Protected
+        and then not Is_Eliminated (Dyn_Scop)
+        and then Present (Protected_Body_Subprogram (Dyn_Scop))
       then
-         return Protected_Body_Subprogram (Dynamic_Scope);
+         return Protected_Body_Subprogram (Dyn_Scop);
 
       else
-         return Dynamic_Scope;
+         return Dyn_Scop;
       end if;
    end Enclosing_Subprogram;
 
@@ -8823,18 +8822,19 @@ package body Sem_Util is
       Assoc := First (Governed_By);
       Find_Constraint : loop
          Discrim := First (Choices (Assoc));
-         exit Find_Constraint when Chars (Discrim_Name) = Chars (Discrim)
-           or else (Present (Corresponding_Discriminant (Entity (Discrim)))
-                     and then
-                       Chars (Corresponding_Discriminant (Entity (Discrim))) =
-                                                       Chars  (Discrim_Name))
-           or else Chars (Original_Record_Component (Entity (Discrim)))
-                         = Chars (Discrim_Name);
+         exit Find_Constraint when
+           Chars (Discrim_Name) = Chars (Discrim)
+             or else
+               (Present (Corresponding_Discriminant (Entity (Discrim)))
+                 and then Chars (Corresponding_Discriminant
+                            (Entity (Discrim))) = Chars  (Discrim_Name))
+             or else
+               Chars (Original_Record_Component (Entity (Discrim))) =
+                 Chars (Discrim_Name);
 
          if No (Next (Assoc)) then
-            if not Is_Constrained (Typ)
-              and then Is_Derived_Type (Typ)
-            then
+            if not Is_Constrained (Typ) and then Is_Derived_Type (Typ) then
+
                --  If the type is a tagged type with inherited discriminants,
                --  use the stored constraint on the parent in order to find
                --  the values of discriminants that are otherwise hidden by an
@@ -8853,8 +8853,8 @@ package body Sem_Util is
                --  value.
 
                declare
-                  D : Entity_Id;
                   C : Elmt_Id;
+                  D : Entity_Id;
                   T : Entity_Id := Typ;
 
                begin
@@ -8879,6 +8879,7 @@ package body Sem_Util is
                                        (New_Occurrence_Of (D, Sloc (Typ))),
                                      Duplicate_Subexpr_No_Checks (Node (C)));
                               end if;
+
                               exit Find_Constraint;
                            end if;
 
@@ -8888,6 +8889,7 @@ package body Sem_Util is
                      end if;
 
                      --  Discriminant may be inherited from ancestor
+
                      T := Etype (T);
                   end loop;
                end;
@@ -8895,8 +8897,10 @@ package body Sem_Util is
          end if;
 
          if No (Next (Assoc)) then
-            Error_Msg_NE (" missing value for discriminant&",
-              First (Governed_By), Discrim_Name);
+            Error_Msg_NE
+              (" missing value for discriminant&",
+               First (Governed_By), Discrim_Name);
+
             Report_Errors := True;
             return;
          end if;
@@ -21043,8 +21047,8 @@ package body Sem_Util is
    -----------------
 
    function Next_Actual (Actual_Id : Node_Id) return Node_Id is
-      N   : Node_Id;
       Par : constant Node_Id := Parent (Actual_Id);
+      N   : Node_Id;
 
    begin
       --  If we are pointing at a positional parameter, it is a member of a
@@ -24029,7 +24033,7 @@ package body Sem_Util is
          then
             return True;
 
-         --  Ditto for the body of a protected operation.
+         --  Ditto for the body of a protected operation
 
          elsif Is_Subprogram (Curr)
            and then Outer = Protected_Body_Subprogram (Curr)

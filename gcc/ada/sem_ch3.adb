@@ -19824,10 +19824,13 @@ package body Sem_Ch3 is
    procedure Preanalyze_Default_Expression (N : Node_Id; T : Entity_Id) is
       Save_In_Default_Expr    : constant Boolean := In_Default_Expr;
       Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
+
    begin
       In_Default_Expr    := True;
       In_Spec_Expression := True;
+
       Preanalyze_With_Freezing_And_Resolve (N, T);
+
       In_Default_Expr    := Save_In_Default_Expr;
       In_Spec_Expression := Save_In_Spec_Expression;
    end Preanalyze_Default_Expression;

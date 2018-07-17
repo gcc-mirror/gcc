@@ -3989,14 +3989,11 @@ package body Exp_Ch7 is
    --------------------------------------
 
    procedure Check_Unnesting_Elaboration_Code (N : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Elab_Body : Node_Id;
-      Elab_Call : Node_Id;
-      Elab_Proc : Entity_Id;
-      Stat      : Node_Id;
+      Loc : constant Source_Ptr := Sloc (N);
+
       function Contains_Subprogram (Blk : Entity_Id) return Boolean;
-      --  Check recursively whether a loop or block contains a subprogram
-      --  that may need an activation record.
+      --  Check recursively whether a loop or block contains a subprogram that
+      --  may need an activation record.
 
       --------------------------
       --  Contains_Subprogram --
@@ -4004,6 +4001,7 @@ package body Exp_Ch7 is
 
       function Contains_Subprogram (Blk : Entity_Id) return Boolean is
          E : Entity_Id;
+
       begin
          E := First_Entity (Blk);
 
@@ -4022,6 +4020,15 @@ package body Exp_Ch7 is
 
          return False;
       end Contains_Subprogram;
+
+      --  Local variables
+
+      Elab_Body : Node_Id;
+      Elab_Call : Node_Id;
+      Elab_Proc : Entity_Id;
+      Stat      : Node_Id;
+
+   --  Start of processing for Check_Unnesting_Elaboration_Code
 
    begin
       if Unnest_Subprogram_Mode
@@ -8695,32 +8702,11 @@ package body Exp_Ch7 is
       Action : Node_Id;
       Par    : Node_Id) return Node_Id
    is
-      function Within_Loop_Statement (N : Node_Id) return Boolean;
-      --  Return True when N appears within a loop and no block is containing N
-
       function Manages_Sec_Stack (Id : Entity_Id) return Boolean;
       --  Determine whether scoping entity Id manages the secondary stack
 
-      ---------------------------
-      -- Within_Loop_Statement --
-      ---------------------------
-
-      function Within_Loop_Statement (N : Node_Id) return Boolean is
-         Par : Node_Id := Parent (N);
-
-      begin
-         while not (Nkind_In (Par,
-                              N_Loop_Statement,
-                              N_Handled_Sequence_Of_Statements,
-                              N_Package_Specification)
-                      or else Nkind (Par) in N_Proper_Body)
-         loop
-            pragma Assert (Present (Par));
-            Par := Parent (Par);
-         end loop;
-
-         return Nkind (Par) = N_Loop_Statement;
-      end Within_Loop_Statement;
+      function Within_Loop_Statement (N : Node_Id) return Boolean;
+      --  Return True when N appears within a loop and no block is containing N
 
       -----------------------
       -- Manages_Sec_Stack --
@@ -8750,6 +8736,26 @@ package body Exp_Ch7 is
                return False;
          end case;
       end Manages_Sec_Stack;
+
+      ---------------------------
+      -- Within_Loop_Statement --
+      ---------------------------
+
+      function Within_Loop_Statement (N : Node_Id) return Boolean is
+         Par : Node_Id := Parent (N);
+
+      begin
+         while not (Nkind_In (Par, N_Handled_Sequence_Of_Statements,
+                                   N_Loop_Statement,
+                                   N_Package_Specification)
+                      or else Nkind (Par) in N_Proper_Body)
+         loop
+            pragma Assert (Present (Par));
+            Par := Parent (Par);
+         end loop;
+
+         return Nkind (Par) = N_Loop_Statement;
+      end Within_Loop_Statement;
 
       --  Local variables
 

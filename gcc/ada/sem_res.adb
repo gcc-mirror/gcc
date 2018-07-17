@@ -1739,7 +1739,9 @@ package body Sem_Res is
    -- Preanalyze_With_Freezing_And_Resolve --
    ------------------------------------------
 
-   procedure Preanalyze_With_Freezing_And_Resolve (N : Node_Id; T : Entity_Id)
+   procedure Preanalyze_With_Freezing_And_Resolve
+     (N : Node_Id;
+      T : Entity_Id)
    is
    begin
       Preanalyze_And_Resolve (N, T, With_Freezing => True);
