@@ -1,3 +1,7 @@
+2018-07-17  Patrick Bernardi  <bernardi@adacore.com>
+
+	* gnat.dg/memorytest.adb: New testcase.
+
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/config_pragma1.adb, gnat.dg/config_pragma1_pkg.ads: New testcase.
