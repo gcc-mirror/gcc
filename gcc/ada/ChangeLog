@@ -1,3 +1,17 @@
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Build_Heap_Or_Pool_Allocator): Ensure that scoping
+	constructs and entities within receive new entities when replicating a
+	tree.
+	(Expand_N_Extended_Return_Statement): Ensure that scoping constructs
+	and entities within receive new entities when replicating a tree.
+	* sem_util.adb (New_Copy_Tree): Add new formal Scopes_In_EWA_OK.
+	(Visit_Entity): Visit entities within scoping constructs inside
+	expression with actions nodes when requested by the caller. Add blocks,
+	labels, and procedures to the list of entities which need replication.
+	* sem_util.ads (New_Copy_Tree): Add new formal Scopes_In_EWA_OK. Update
+	the comment on usage.
+
 2018-07-17  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_ugn/about_this_guide.rst,
