@@ -1,5 +1,11 @@
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Add missing
+	sections on -gnatH and -gnatJ compiler switches.
+	* gnat_ugn.texi: Regenerate.
+
+2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* alloc.ads: Update the allocation metrics of the ignored Ghost nodes
 	table.
 	* atree.adb: Add a soft link for a procedure which is invoked whenever
