@@ -1,3 +1,12 @@
+2018-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Object_Operation): Handle properly a prefixed call
+	in an instance, when the generic parameters include an interface type
+	and a abstract operation of that type, and the actuals in the instance
+	include an interface type and a corresponding abstract operation of it,
+	with a different name than the corresponding generic subprogram
+	parameter.
+
 2018-07-17  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_eval.adb (Rewrite_In_Raise_CE): Keep the original reason in more
