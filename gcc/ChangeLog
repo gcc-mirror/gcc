@@ -1,5 +1,8 @@
 2018-07-17  Jeff Law  <law@redhat.com>
 
+	* config/mips/mips.c (vr4130_align_insns): Update for recent
+	changes to label_to_alignment.
+
 	* config/frv/frv.c (frv_label_align): Update for recent changes
 	to label_to_alignment.
 
