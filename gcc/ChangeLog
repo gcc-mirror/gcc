@@ -1,3 +1,8 @@
+2018-07-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.md (umulsi3_highpart+1, const_umulsi3_highpart)
+	(smulsi3_highpart+1, const_smulsi3_highpart): Add CC_STATUS_INIT.
+
 2018-07-17  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_label_align): Use align_labels instead of
