@@ -4623,11 +4623,11 @@ preferred_la_operand_p (rtx op1, rtx op2)
   if (addr.indx && !REGNO_OK_FOR_INDEX_P (REGNO (addr.indx)))
     return false;
 
-  /* Avoid LA instructions with index register on z196; it is
-     preferable to use regular add instructions when possible.
-     Starting with zEC12 the la with index register is "uncracked"
-     again.  */
-  if (addr.indx && s390_tune == PROCESSOR_2817_Z196)
+  /* Avoid LA instructions with index (and base) register on z196 or
+     later; it is preferable to use regular add instructions when
+     possible.  Starting with zEC12 the la with index register is
+     "uncracked" again but still slower than a regular add.  */
+  if (addr.indx && s390_tune >= PROCESSOR_2817_Z196)
     return false;
 
   if (!TARGET_64BIT && !addr.pointer)
