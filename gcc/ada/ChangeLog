@@ -1,3 +1,10 @@
+2018-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Enclosing_Subprogram): Handle properly entries, and
+	synchronized types that are completions of limited types or private
+	extensions.
+	(Scope_Within): Handle properly accept statements in task bodies.
+
 2018-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Has_Visible_State): Do not consider generic formals
