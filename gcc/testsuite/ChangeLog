@@ -1,3 +1,9 @@
+2018-07-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/lto/pr86523-1_0.C: Require fpic, shared support.
+	(dg-lto-options): Add -fPIC.
+	* g++.dg/lto/pr86523-2_0.C: Likewise.
+
 2018-07-17  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/powerpc/loop_align.c: Update scanned pattern.

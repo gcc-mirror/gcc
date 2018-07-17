@@ -1,5 +1,7 @@
 // { dg-lto-do link }
-// { dg-lto-options {{-O2 -flto -g -shared}} }
+// { dg-require-effective-target fpic }
+// { dg-require-effective-target shared }
+// { dg-lto-options { { -O2 -fPIC -flto -g -shared } } }
 class a typedef b;
 class a {};
 class c {
