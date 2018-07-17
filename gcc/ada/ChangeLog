@@ -1,3 +1,9 @@
+2018-07-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Next_Actual): If the parent is a N_Null_Statement,
+	which happens for inlined calls, then fetch the next actual from the
+	original AST.
+
 2018-07-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads: Update documentation for Scalar_Range.
