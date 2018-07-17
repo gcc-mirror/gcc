@@ -8695,8 +8695,32 @@ package body Exp_Ch7 is
       Action : Node_Id;
       Par    : Node_Id) return Node_Id
    is
+      function Within_Loop_Statement (N : Node_Id) return Boolean;
+      --  Return True when N appears within a loop and no block is containing N
+
       function Manages_Sec_Stack (Id : Entity_Id) return Boolean;
       --  Determine whether scoping entity Id manages the secondary stack
+
+      ---------------------------
+      -- Within_Loop_Statement --
+      ---------------------------
+
+      function Within_Loop_Statement (N : Node_Id) return Boolean is
+         Par : Node_Id := Parent (N);
+
+      begin
+         while not (Nkind_In (Par,
+                              N_Loop_Statement,
+                              N_Handled_Sequence_Of_Statements,
+                              N_Package_Specification)
+                      or else Nkind (Par) in N_Proper_Body)
+         loop
+            pragma Assert (Present (Par));
+            Par := Parent (Par);
+         end loop;
+
+         return Nkind (Par) = N_Loop_Statement;
+      end Within_Loop_Statement;
 
       -----------------------
       -- Manages_Sec_Stack --
@@ -8778,6 +8802,16 @@ package body Exp_Ch7 is
             --  each iteration.
 
             elsif Ekind (Scop) = E_Loop then
+               exit;
+
+            --  Ditto when the block appears without a block that does not
+            --  manage the secondary stack and is located within a loop.
+
+            elsif Ekind (Scop) = E_Block
+              and then not Manages_Sec_Stack (Scop)
+              and then Present (Block_Node (Scop))
+              and then Within_Loop_Statement (Block_Node (Scop))
+            then
                exit;
 
             --  The transient block does not need to manage the secondary stack
