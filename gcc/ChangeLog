@@ -1,3 +1,7 @@
+2018-07-18  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_function_profiler): Generate CFI.
+
 2018-07-17  Jeff Law  <law@redhat.com>
 
 	* config/arm/arm.c (get_label_padding): Update for recent

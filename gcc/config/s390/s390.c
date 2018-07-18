@@ -13154,7 +13154,7 @@ output_asm_nops (const char *user, int hw)
 void
 s390_function_profiler (FILE *file, int labelno)
 {
-  rtx op[7];
+  rtx op[8];
 
   char label[128];
   ASM_GENERATE_INTERNAL_LABEL (label, "LP", labelno);
@@ -13164,6 +13164,7 @@ s390_function_profiler (FILE *file, int labelno)
   op[0] = gen_rtx_REG (Pmode, RETURN_REGNUM);
   op[1] = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
   op[1] = gen_rtx_MEM (Pmode, plus_constant (Pmode, op[1], UNITS_PER_LONG));
+  op[7] = GEN_INT (UNITS_PER_LONG);
 
   op[2] = gen_rtx_REG (Pmode, 1);
   op[3] = gen_rtx_SYMBOL_REF (Pmode, label);
@@ -13197,9 +13198,13 @@ s390_function_profiler (FILE *file, int labelno)
       else
         {
           output_asm_insn ("stg\t%0,%1", op);
+          if (flag_dwarf2_cfi_asm)
+            output_asm_insn (".cfi_rel_offset\t%0,%7", op);
           output_asm_insn ("larl\t%2,%3", op);
           output_asm_insn ("brasl\t%0,%4", op);
           output_asm_insn ("lg\t%0,%1", op);
+          if (flag_dwarf2_cfi_asm)
+            output_asm_insn (".cfi_restore\t%0", op);
         }
     }
   else if (TARGET_CPU_ZARCH)
@@ -13210,9 +13215,13 @@ s390_function_profiler (FILE *file, int labelno)
       else
         {
           output_asm_insn ("st\t%0,%1", op);
+          if (flag_dwarf2_cfi_asm)
+            output_asm_insn (".cfi_rel_offset\t%0,%7", op);
           output_asm_insn ("larl\t%2,%3", op);
           output_asm_insn ("brasl\t%0,%4", op);
           output_asm_insn ("l\t%0,%1", op);
+          if (flag_dwarf2_cfi_asm)
+            output_asm_insn (".cfi_restore\t%0", op);
         }
     }
   else if (!flag_pic)
@@ -13226,6 +13235,8 @@ s390_function_profiler (FILE *file, int labelno)
       else
         {
           output_asm_insn ("st\t%0,%1", op);
+          if (flag_dwarf2_cfi_asm)
+            output_asm_insn (".cfi_rel_offset\t%0,%7", op);
           output_asm_insn ("bras\t%2,%l6", op);
           output_asm_insn (".long\t%4", op);
           output_asm_insn (".long\t%3", op);
@@ -13235,6 +13246,8 @@ s390_function_profiler (FILE *file, int labelno)
           output_asm_insn ("l\t%2,4(%2)", op);
           output_asm_insn ("basr\t%0,%0", op);
           output_asm_insn ("l\t%0,%1", op);
+          if (flag_dwarf2_cfi_asm)
+            output_asm_insn (".cfi_restore\t%0", op);
         }
     }
   else
@@ -13249,6 +13262,8 @@ s390_function_profiler (FILE *file, int labelno)
       else
         {
           output_asm_insn ("st\t%0,%1", op);
+          if (flag_dwarf2_cfi_asm)
+            output_asm_insn (".cfi_rel_offset\t%0,%7", op);
           output_asm_insn ("bras\t%2,%l6", op);
           targetm.asm_out.internal_label (file, "L",
                                           CODE_LABEL_NUMBER (op[5]));
@@ -13261,6 +13276,8 @@ s390_function_profiler (FILE *file, int labelno)
           output_asm_insn ("a\t%2,4(%2)", op);
           output_asm_insn ("basr\t%0,%0", op);
           output_asm_insn ("l\t%0,%1", op);
+          if (flag_dwarf2_cfi_asm)
+            output_asm_insn (".cfi_restore\t%0", op);
         }
     }
 
