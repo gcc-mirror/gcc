@@ -1,4 +1,5 @@
 // { dg-do run { target c++14 } }
+// { dg-require-effective-target random_device }
 // { dg-require-effective-target tls_runtime }
 // { dg-add-options tls }
 

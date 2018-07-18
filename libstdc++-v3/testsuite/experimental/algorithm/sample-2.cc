@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2018 Free Software Foundation, Inc.
+// Copyright (C) 2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,9 +16,12 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++14 } }
+// { dg-require-effective-target random_device }
+// { dg-require-effective-target tls_runtime }
+// { dg-add-options tls }
 
 #include <experimental/algorithm>
-#include <random>
+#include <algorithm>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
@@ -27,8 +30,6 @@ using __gnu_test::input_iterator_wrapper;
 using __gnu_test::output_iterator_wrapper;
 using __gnu_test::forward_iterator_wrapper;
 
-std::mt19937 rng;
-
 void
 test01()
 {
@@ -36,7 +37,7 @@ test01()
   int samp[10] = { };
 
   // population smaller than desired sample size
-  auto it = std::experimental::sample(pop, pop + 2, samp, 10, rng);
+  auto it = std::experimental::sample(pop, pop + 2, samp, 10);
   VERIFY( it == samp + 2 );
   VERIFY( std::accumulate(samp, samp + 10, 0) == 3 );
 }
@@ -47,7 +48,7 @@ test02()
   const int pop[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
   int samp[10] = { };
 
-  auto it = std::experimental::sample(pop, std::end(pop), samp, 10, rng);
+  auto it = std::experimental::sample(pop, std::end(pop), samp, 10);
   VERIFY( it == samp + 10 );
 
   std::sort(samp, it);
@@ -63,9 +64,7 @@ test03()
 
   // input iterator for population
   test_container<const int, input_iterator_wrapper> pop_in{pop};
-  auto it = std::experimental::sample(pop_in.begin(), pop_in.end(),
-                                      samp,
-                                      5, rng);
+  auto it = std::experimental::sample(pop_in.begin(), pop_in.end(), samp, 5);
   VERIFY( it == samp + 5 );
 
   std::sort(samp, it);
@@ -83,7 +82,7 @@ test04()
   test_container<const int, forward_iterator_wrapper> pop_fwd{pop};
   test_container<int, output_iterator_wrapper> samp_out{samp};
   auto it = std::experimental::sample(pop_fwd.begin(), pop_fwd.end(),
-				      samp_out.begin(), 5, rng);
+				      samp_out.begin(), 5);
 
   VERIFY( std::distance(samp, it.ptr) == 5 );
 
