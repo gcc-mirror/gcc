@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
+#include "tree-ssa-strlen.h"
 #include "rtl-chkp.h"
 #include "intl.h"
 #include "stringpool.h"
@@ -1639,8 +1640,10 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
   /* It's safe to call "bounded" string functions with a non-string
      argument since the functions provide an explicit bound for this
-     purpose.  */
-  switch (DECL_FUNCTION_CODE (fndecl))
+     purpose.  The exception is strncat where the bound may refer to
+     either the destination or the source.  */
+  int fncode = DECL_FUNCTION_CODE (fndecl);
+  switch (fncode)
     {
     case BUILT_IN_STRCMP:
     case BUILT_IN_STRNCMP:
@@ -1661,6 +1664,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
       }
       /* Fall through.  */
 
+    case BUILT_IN_STRNCAT:
     case BUILT_IN_STPNCPY:
     case BUILT_IN_STPNCPY_CHK:
     case BUILT_IN_STRNCPY:
@@ -1756,15 +1760,36 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
       if (!decl)
 	continue;
 
-      tree type = TREE_TYPE (decl);
-
       /* The maximum number of array elements accessed.  */
       offset_int wibnd = 0;
-      if (bndrng[0])
+
+      if (argno && fncode == BUILT_IN_STRNCAT)
+	{
+	  /* See if the bound in strncat is derived from the length
+	     of the strlen of the destination (as it's expected to be).
+	     If so, reset BOUND and FNCODE to trigger a warning.  */
+	  tree dstarg = CALL_EXPR_ARG (exp, 0);
+	  if (is_strlen_related_p (dstarg, bound))
+	    {
+	      /* The bound applies to the destination, not to the source,
+		 so reset these to trigger a warning without mentioning
+		 the bound.  */
+	      bound = NULL;
+	      fncode = 0;
+	    }
+	  else if (bndrng[1])
+	    /* Use the upper bound of the range for strncat.  */
+	    wibnd = wi::to_offset (bndrng[1]);
+	}
+      else if (bndrng[0])
+	/* Use the lower bound of the range for functions other than
+	   strncat.  */
 	wibnd = wi::to_offset (bndrng[0]);
 
-      /* Size of the array.  */
+      /* Determine the size of the argument array if it is one.  */
       offset_int asize = wibnd;
+      bool known_size = false;
+      tree type = TREE_TYPE (decl);
 
       /* Determine the array size.  For arrays of unknown bound and
 	 pointers reset BOUND to trigger the appropriate warning.  */
@@ -1773,7 +1798,10 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	  if (tree arrbnd = TYPE_DOMAIN (type))
 	    {
 	      if ((arrbnd = TYPE_MAX_VALUE (arrbnd)))
-		asize = wi::to_offset (arrbnd) + 1;
+		{
+		  asize = wi::to_offset (arrbnd) + 1;
+		  known_size = true;
+		}
 	    }
 	  else if (bound == void_type_node)
 	    bound = NULL_TREE;
@@ -1783,13 +1811,47 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
       location_t loc = EXPR_LOCATION (exp);
 
+      /* In a call to strncat with a bound in a range whose lower but
+	 not upper bound is less than the array size, reset ASIZE to
+	 be the same as the bound and the other variable to trigger
+	 the apprpriate warning below.  */
+      if (fncode == BUILT_IN_STRNCAT
+	  && bndrng[0] != bndrng[1]
+	  && wi::ltu_p (wi::to_offset (bndrng[0]), asize)
+	  && (!known_size
+	      || wi::ltu_p (asize, wibnd)))
+	{
+	  asize = wibnd;
+	  bound = NULL_TREE;
+	  fncode = 0;
+	}
+
       bool warned = false;
 
       if (wi::ltu_p (asize, wibnd))
-	warned = warning_at (loc, OPT_Wstringop_overflow_,
-			     "%qD argument %i declared attribute %<nonstring%> "
-			     "is smaller than the specified bound %E",
-			     fndecl, argno + 1, bndrng[0]);
+	{
+	  if (bndrng[0] == bndrng[1])
+	    warned = warning_at (loc, OPT_Wstringop_overflow_,
+				 "%qD argument %i declared attribute "
+				 "%<nonstring%> is smaller than the specified "
+				 "bound %wu",
+				 fndecl, argno + 1, wibnd.to_uhwi ());
+	  else if (wi::ltu_p (asize, wi::to_offset (bndrng[0])))
+	    warned = warning_at (loc, OPT_Wstringop_overflow_,
+				 "%qD argument %i declared attribute "
+				 "%<nonstring%> is smaller than "
+				 "the specified bound [%E, %E]",
+				 fndecl, argno + 1, bndrng[0], bndrng[1]);
+	  else
+	    warned = warning_at (loc, OPT_Wstringop_overflow_,
+				 "%qD argument %i declared attribute "
+				 "%<nonstring%> may be smaller than "
+				 "the specified bound [%E, %E]",
+				 fndecl, argno + 1, bndrng[0], bndrng[1]);
+	}
+      else if (fncode == BUILT_IN_STRNCAT)
+	; /* Avoid warning for calls to strncat() when the bound
+	     is equal to the size of the non-string argument.  */
       else if (!bound)
 	warned = warning_at (loc, OPT_Wstringop_overflow_,
 			     "%qD argument %i declared attribute %<nonstring%>",
