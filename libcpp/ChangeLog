@@ -1,3 +1,10 @@
+2018-07-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR 69558
+	* macro.c (enter_macro_context): Change the location info for builtin
+	macros and _Pragma from location of the closing parenthesis to location
+	of the macro expansion point.
+
 2018-07-17  Jason Franklin  <j_fra@fastmail.us>
 	    Jakub Jelinek  <jakub@redhat.com>
 
