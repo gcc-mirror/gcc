@@ -1,4 +1,4 @@
-2019-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+2018-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59480, DR 136
 	* g++.dg/other/friend8.C: New.
