@@ -1,6 +1,14 @@
 2018-07-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc: XFAIL for
+	COW strings.
+	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc:
+	Likewise.
+
+	Backport from mainline
 	2018-07-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/25_algorithms/make_heap/complexity.cc: Require effective
